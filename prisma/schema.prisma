@@ -1,0 +1,286 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  displayName   String?
+  avatar        String?
+  bio           String?
+  isCreator     Boolean   @default(false)
+  isPremium     Boolean   @default(false)
+  isAdmin       Boolean   @default(false)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  collections   Collection[]
+  favorites    Favorite[]
+  reviews      Review[]
+  downloads    Download[]
+  creatorProfile CreatorProfile?
+  sessions     Session[]
+  accounts     Account[]
+
+  @@map("users")
+}
+
+model CreatorProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  handle      String   @unique
+  bio         String?
+  website     String?
+  socialLinks Json? // { twitter, instagram, youtube, etc. }
+  isVerified  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mods        Mod[]
+
+  @@map("creator_profiles")
+}
+
+model Mod {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  shortDescription String?
+  version     String?
+  gameVersion String? // Sims 4, Sims 3, etc.
+  category    String  // Build/Buy, CAS, Gameplay, etc.
+  tags        String[] // Array of tags for search
+  thumbnail   String?
+  images      String[] // Array of image URLs
+  downloadUrl String?
+  sourceUrl   String? // Original source URL
+  source      String  // Patreon, CurseForge, Tumblr, etc.
+  sourceId    String? // ID from source platform
+  isFree      Boolean  @default(true)
+  price       Decimal? @db.Decimal(10,2)
+  currency    String?  @default("USD")
+  isNSFW      Boolean  @default(false)
+  isVerified  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  downloadCount Int     @default(0)
+  viewCount   Int      @default(0)
+  rating      Decimal? @db.Decimal(3,2)
+  ratingCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+  lastScraped DateTime?
+
+  // Relations
+  creatorId   String?
+  creator     CreatorProfile? @relation(fields: [creatorId], references: [id])
+  reviews     Review[]
+  favorites   Favorite[]
+  downloads   Download[]
+  collections CollectionItem[]
+  modFiles   ModFile[]
+  searchIndex SearchIndex?
+
+  @@map("mods")
+}
+
+model ModFile {
+  id          String   @id @default(cuid())
+  modId       String
+  filename    String
+  fileSize    Int      // in bytes
+  downloadUrl String
+  version     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  mod         Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@map("mod_files")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
+
+  @@map("collections")
+}
+
+model CollectionItem {
+  id           String @id @default(cuid())
+  collectionId String
+  modId        String
+  addedAt      DateTime @default(now())
+  notes        String?
+
+  // Relations
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  mod          Mod        @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, modId])
+  @@map("collection_items")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  modId     String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, modId])
+  @@map("favorites")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  modId     String
+  rating    Int      // 1-5 stars
+  comment   String?
+  isVerified Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, modId])
+  @@map("reviews")
+}
+
+model Download {
+  id        String   @id @default(cuid())
+  userId    String
+  modId     String
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@map("downloads")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model ContentSource {
+  id          String   @id @default(cuid())
+  name        String   @unique // Patreon, CurseForge, Tumblr, etc.
+  baseUrl     String
+  apiEndpoint String?
+  apiKey      String?
+  isActive    Boolean  @default(true)
+  lastScraped DateTime?
+  scrapeInterval Int    @default(3600) // seconds
+  rateLimit   Int      @default(100) // requests per hour
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  scrapingJobs ScrapingJob[]
+
+  @@map("content_sources")
+}
+
+model ScrapingJob {
+  id          String   @id @default(cuid())
+  sourceId    String
+  status      String   // pending, running, completed, failed
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  itemsFound  Int      @default(0)
+  itemsProcessed Int   @default(0)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  source      ContentSource @relation(fields: [sourceId], references: [id])
+
+  @@map("scraping_jobs")
+}
+
+model SearchIndex {
+  id          String   @id @default(cuid())
+  modId       String   @unique
+  searchVector String  @db.Text // Full-text search vector
+  embedding   Float[]  // Vector embedding for AI search
+  lastIndexed DateTime @default(now())
+
+  // Relations
+  mod         Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+
+  @@map("search_index")
+}

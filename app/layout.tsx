@@ -1,0 +1,77 @@
+import React from 'react';
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
+  description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players. Curated collections, exclusive mods, and intelligent discovery.',
+  authors: [{ name: 'MustHaveMods Team' }],
+  keywords: 'sims 4 mods, custom content, sims mods, premium mods, ai recommendations, sims 4 custom content, mod discovery, musthavemods',
+  creator: 'MustHaveMods',
+  publisher: 'MustHaveMods',
+  robots: 'index, follow',
+  openGraph: {
+    title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
+    description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players.',
+    url: 'https://musthavemods.com',
+    siteName: 'MustHaveMods',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'MustHaveMods - Premium Sims 4 Mods Discovery Platform',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
+    description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players.',
+    images: ['/og-image.jpg'],
+  },
+  metadataBase: new URL('https://musthavemods.com'),
+  alternates: {
+    canonical: '/',
+  },
+  category: 'Gaming',
+  classification: 'Sims 4 Mods Platform',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#1e1b4b',
+  colorScheme: 'light',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className="scroll-smooth">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#1e1b4b" />
+        <meta name="msapplication-TileColor" content="#1e1b4b" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="MustHaveMods" />
+        <meta name="application-name" content="MustHaveMods" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body className="__className_e8ce0c antialiased">
+        {children}
+      </body>
+    </html>
+  );
+}
