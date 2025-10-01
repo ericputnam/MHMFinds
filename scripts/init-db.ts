@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Initializing ModVault database...');
+  console.log('🌱 Initializing MustHaveMods database...');
 
   // Create content sources
   console.log('📡 Creating content sources...');
@@ -21,11 +21,11 @@ async function main() {
     {
       name: 'CurseForge',
       baseUrl: 'https://www.curseforge.com',
-      apiEndpoint: 'https://api.curseforge.com/v1',
-      apiKey: process.env.CURSEFORGE_API_KEY || null,
+      apiEndpoint: null,
+      apiKey: null,
       isActive: true,
       scrapeInterval: 1800, // 30 minutes
-      rateLimit: 200,
+      rateLimit: 80,
     },
     {
       name: 'Tumblr',
@@ -54,6 +54,15 @@ async function main() {
       scrapeInterval: 7200, // 2 hours
       rateLimit: 60,
     },
+    {
+      name: 'Reddit',
+      baseUrl: 'https://www.reddit.com',
+      apiEndpoint: null,
+      apiKey: null,
+      isActive: true,
+      scrapeInterval: 3600, // 1 hour
+      rateLimit: 30,
+    },
   ];
 
   for (const source of contentSources) {
@@ -64,8 +73,85 @@ async function main() {
     });
   }
 
-  // Create sample categories and tags
-  console.log('🏷️ Creating sample categories and tags...');
+  // Create sample users first
+  console.log('👥 Creating sample users...');
+  
+  const sampleUsers = [
+    {
+      email: 'admin@musthavemods.com',
+      username: 'admin',
+      displayName: 'MustHaveMods Admin',
+      isCreator: true,
+      isPremium: true,
+      isAdmin: true,
+    },
+    {
+      email: 'creator@musthavemods.com',
+      username: 'samplecreator',
+      displayName: 'Sample Creator',
+      isCreator: true,
+      isPremium: false,
+      isAdmin: false,
+    },
+    {
+      email: 'user@musthavemods.com',
+      username: 'sampleuser',
+      displayName: 'Sample User',
+      isCreator: false,
+      isPremium: false,
+      isAdmin: false,
+    },
+  ];
+
+  const createdUsers = [];
+  for (const userData of sampleUsers) {
+    const user = await prisma.user.upsert({
+      where: { email: userData.email },
+      update: userData,
+      create: userData,
+    });
+    createdUsers.push(user);
+    console.log(`   ✅ Created user: ${user.email}`);
+  }
+
+  // Create creator profiles
+  console.log('🎨 Creating creator profiles...');
+  
+  const creatorUser = createdUsers.find(u => u.email === 'creator@musthavemods.com');
+  if (creatorUser) {
+    const creatorProfile = await prisma.creatorProfile.upsert({
+      where: { userId: creatorUser.id },
+      update: {
+        handle: 'samplecreator',
+        bio: 'Passionate Sims mod creator specializing in furniture and CAS items.',
+        website: 'https://example.com',
+        socialLinks: {
+          twitter: 'https://twitter.com/samplecreator',
+          instagram: 'https://instagram.com/samplecreator',
+          youtube: 'https://youtube.com/samplecreator',
+        },
+        isVerified: true,
+        isFeatured: true,
+      },
+      create: {
+        userId: creatorUser.id,
+        handle: 'samplecreator',
+        bio: 'Passionate Sims mod creator specializing in furniture and CAS items.',
+        website: 'https://example.com',
+        socialLinks: {
+          twitter: 'https://twitter.com/samplecreator',
+          instagram: 'https://instagram.com/samplecreator',
+          youtube: 'https://youtube.com/samplecreator',
+        },
+        isVerified: true,
+        isFeatured: true,
+      },
+    });
+    console.log(`   ✅ Created creator profile: ${creatorProfile.handle}`);
+  }
+
+  // Create sample mods
+  console.log('📦 Creating sample mods...');
   
   const sampleMods = [
     {
@@ -85,6 +171,10 @@ async function main() {
       isNSFW: false,
       isVerified: true,
       isFeatured: true,
+      downloadCount: 12500,
+      viewCount: 18900,
+      rating: 4.8,
+      ratingCount: 156,
     },
     {
       title: 'Casual Streetwear Collection',
@@ -103,6 +193,10 @@ async function main() {
       isNSFW: false,
       isVerified: true,
       isFeatured: false,
+      downloadCount: 8900,
+      viewCount: 12400,
+      rating: 4.6,
+      ratingCount: 89,
     },
     {
       title: 'Career Overhaul: Tech Industry',
@@ -122,6 +216,10 @@ async function main() {
       isNSFW: false,
       isVerified: true,
       isFeatured: true,
+      downloadCount: 15600,
+      viewCount: 22300,
+      rating: 4.9,
+      ratingCount: 234,
     },
     {
       title: 'Advanced Gardening System',
@@ -140,6 +238,10 @@ async function main() {
       isNSFW: false,
       isVerified: true,
       isFeatured: false,
+      downloadCount: 7200,
+      viewCount: 9800,
+      rating: 4.5,
+      ratingCount: 67,
     },
     {
       title: 'Realistic Weather Effects',
@@ -158,95 +260,37 @@ async function main() {
       isNSFW: false,
       isVerified: true,
       isFeatured: true,
+      downloadCount: 18900,
+      viewCount: 25600,
+      rating: 4.7,
+      ratingCount: 189,
     },
   ];
 
-  console.log('📦 Creating sample mods...');
-  
+  const createdMods = [];
   for (const modData of sampleMods) {
-    await prisma.mod.create({
+    const mod = await prisma.mod.create({
       data: modData,
     });
-  }
-
-  // Create sample users
-  console.log('👥 Creating sample users...');
-  
-  const sampleUsers = [
-    {
-      email: 'admin@modvault.com',
-      username: 'admin',
-      displayName: 'ModVault Admin',
-      isCreator: true,
-      isPremium: true,
-      isAdmin: true,
-    },
-    {
-      email: 'creator@modvault.com',
-      username: 'samplecreator',
-      displayName: 'Sample Creator',
-      isCreator: true,
-      isPremium: false,
-      isAdmin: false,
-    },
-    {
-      email: 'user@modvault.com',
-      username: 'sampleuser',
-      displayName: 'Sample User',
-      isCreator: false,
-      isPremium: false,
-      isAdmin: false,
-    },
-  ];
-
-  for (const userData of sampleUsers) {
-    await prisma.user.upsert({
-      where: { email: userData.email },
-      update: userData,
-      create: userData,
-    });
-  }
-
-  // Create creator profiles
-  console.log('🎨 Creating creator profiles...');
-  
-  const creatorProfiles = [
-    {
-      userId: (await prisma.user.findUnique({ where: { email: 'creator@modvault.com' } }))!.id,
-      handle: 'samplecreator',
-      bio: 'Passionate Sims mod creator specializing in furniture and CAS items.',
-      website: 'https://example.com',
-      socialLinks: {
-        twitter: 'https://twitter.com/samplecreator',
-        instagram: 'https://instagram.com/samplecreator',
-        youtube: 'https://youtube.com/samplecreator',
-      },
-      isVerified: true,
-      isFeatured: true,
-    },
-  ];
-
-  for (const profileData of creatorProfiles) {
-    await prisma.creatorProfile.upsert({
-      where: { userId: profileData.userId },
-      update: profileData,
-      create: profileData,
-    });
+    createdMods.push(mod);
+    console.log(`   ✅ Created mod: ${mod.title}`);
   }
 
   // Create sample collections
   console.log('📚 Creating sample collections...');
   
+  const user = createdUsers.find(u => u.email === 'user@musthavemods.com');
+  if (user) {
   const sampleCollections = [
     {
-      userId: (await prisma.user.findUnique({ where: { email: 'user@modvault.com' } }))!.id,
+        userId: user.id,
       name: 'My Favorite Build Items',
       description: 'A collection of my favorite build and buy items for creating beautiful homes.',
       isPublic: true,
       isFeatured: false,
     },
     {
-      userId: (await prisma.user.findUnique({ where: { email: 'user@modvault.com' } }))!.id,
+        userId: user.id,
       name: 'Essential Gameplay Mods',
       description: 'Must-have gameplay mods that enhance the Sims experience.',
       isPublic: true,
@@ -255,25 +299,28 @@ async function main() {
   ];
 
   for (const collectionData of sampleCollections) {
-    await prisma.collection.create({
+      const collection = await prisma.collection.create({
       data: collectionData,
     });
+      console.log(`   ✅ Created collection: ${collection.name}`);
+    }
   }
 
-  // Create sample reviews
+  // Create sample reviews (only if mods and users exist)
   console.log('⭐ Creating sample reviews...');
   
+  if (user && createdMods.length > 0) {
   const sampleReviews = [
     {
-      userId: (await prisma.user.findUnique({ where: { email: 'user@modvault.com' } }))!.id,
-      modId: (await prisma.mod.findFirst({ where: { title: 'Modern Living Room Set' } }))!.id,
+        userId: user.id,
+        modId: createdMods[0].id, // Modern Living Room Set
       rating: 5,
       comment: 'Absolutely love this furniture set! The quality is amazing and it fits perfectly in my modern builds.',
       isVerified: true,
     },
     {
-      userId: (await prisma.user.findUnique({ where: { email: 'user@modvault.com' } }))!.id,
-      modId: (await prisma.mod.findFirst({ where: { title: 'Career Overhaul: Tech Industry' } }))!.id,
+        userId: user.id,
+        modId: createdMods[2].id, // Career Overhaul: Tech Industry
       rating: 4,
       comment: 'Great mod that adds depth to the tech career. The new interactions are really engaging.',
       isVerified: true,
@@ -281,22 +328,28 @@ async function main() {
   ];
 
   for (const reviewData of sampleReviews) {
-    await prisma.review.create({
+      try {
+        const review = await prisma.review.create({
       data: reviewData,
     });
+        console.log(`   ✅ Created review for mod ${reviewData.modId}`);
+      } catch (error) {
+        console.log(`   ⚠️ Skipping review creation for mod ${reviewData.modId}: ${error}`);
+      }
+    }
   }
 
   console.log('✅ Database initialization completed successfully!');
   console.log('');
   console.log('📊 Sample data created:');
   console.log(`   - ${contentSources.length} content sources`);
-  console.log(`   - ${sampleMods.length} sample mods`);
-  console.log(`   - ${sampleUsers.length} sample users`);
-  console.log(`   - ${creatorProfiles.length} creator profiles`);
-  console.log(`   - ${sampleCollections.length} sample collections`);
-  console.log(`   - ${sampleReviews.length} sample reviews`);
+  console.log(`   - ${createdMods.length} sample mods`);
+  console.log(`   - ${createdUsers.length} sample users`);
+  console.log(`   - 1 creator profile`);
+  console.log(`   - 2 sample collections`);
+  console.log(`   - Sample reviews`);
   console.log('');
-  console.log('🚀 You can now start the development server and explore ModVault!');
+  console.log('🚀 You can now start the development server and explore MustHaveMods!');
 }
 
 main()

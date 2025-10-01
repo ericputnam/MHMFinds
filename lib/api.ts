@@ -15,6 +15,7 @@ export interface Mod {
   sourceUrl: string | null;
   source: string;
   sourceId: string | null;
+  author: string | null;
   isFree: boolean;
   price: string | null;
   currency: string | null;

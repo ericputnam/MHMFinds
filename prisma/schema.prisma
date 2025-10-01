@@ -70,6 +70,7 @@ model Mod {
   sourceUrl   String? // Original source URL
   source      String  // Patreon, CurseForge, Tumblr, etc.
   sourceId    String? // ID from source platform
+  author      String? // Author/creator name from source
   isFree      Boolean  @default(true)
   price       Decimal? @db.Decimal(10,2)
   currency    String?  @default("USD")

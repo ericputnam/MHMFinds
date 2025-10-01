@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       where.isFree = isFree === 'true';
     }
 
-    // Build order by clause
+    // Build order by clause - prioritize mods with creators
     const orderBy: any = {};
     if (sortBy === 'downloadCount') {
       orderBy.downloadCount = sortOrder;
@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
     } else if (sortBy === 'title') {
       orderBy.title = sortOrder;
     } else {
+      // Default: order by creation date (mods with creators will be mixed in)
       orderBy.createdAt = sortOrder;
     }
 

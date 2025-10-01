@@ -45,6 +45,7 @@ export default function HomePage() {
         
         const data = await response.json();
         console.log('Direct fetch success:', data);
+        console.log('First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
         
         setMods(data.mods);
         setPagination(data.pagination);
@@ -76,6 +77,7 @@ export default function HomePage() {
       const response = await fetch('/api/mods');
       const data = await response.json();
       console.log('Manual API test success:', data);
+      console.log('Manual test - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
       setMods(data.mods);
       setPagination(data.pagination);
       setLoading(false);
@@ -92,6 +94,7 @@ export default function HomePage() {
         setLoading(true);
         const response = await fetch(`/api/mods?search=${encodeURIComponent(query)}`);
         const data = await response.json();
+        console.log('Search - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
         setMods(data.mods);
         setPagination(data.pagination);
       } catch (err) {
@@ -103,6 +106,7 @@ export default function HomePage() {
       // Refetch all mods
       const response = await fetch('/api/mods');
       const data = await response.json();
+      console.log('Search refetch - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
       setMods(data.mods);
       setPagination(data.pagination);
     }
@@ -121,6 +125,7 @@ export default function HomePage() {
       
       const response = await fetch(`/api/mods?${params.toString()}`);
       const data = await response.json();
+      console.log('Filter - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
       setMods(data.mods);
       setPagination(data.pagination);
     } catch (err) {
@@ -163,7 +168,7 @@ export default function HomePage() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
                   Sims 4 Mods
                 </span>
-              </h1>
+          </h1>
 
               <div className="flex flex-wrap gap-4 text-sm text-white/90 mb-6">
                 <div className="flex items-center gap-2">
@@ -224,7 +229,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
 
       {/* Debug Section - Enhanced */}
       <div className="py-1 px-6 bg-amber-50/50 border-b border-amber-200/50">
@@ -234,51 +239,51 @@ export default function HomePage() {
               Debug Information (Click to expand)
             </summary>
             <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-amber-700">
-              <div>
-                <p><strong>Mounted:</strong> {mounted ? 'Yes' : 'No'}</p>
-                <p><strong>Main Mods:</strong> {mods.length} items</p>
-                <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
-                <p><strong>Error:</strong> {error || 'None'}</p>
-              </div>
-              <div>
-                {mods.length > 0 && (
-                  <div>
-                    <p><strong>First Mod Title:</strong> {mods[0]?.title}</p>
-                    <p><strong>First Mod Category:</strong> {mods[0]?.category}</p>
-                    <p><strong>Total Mods:</strong> {pagination?.total || 'Unknown'}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+                     <div>
+                       <p><strong>Mounted:</strong> {mounted ? 'Yes' : 'No'}</p>
+                       <p><strong>Main Mods:</strong> {mods.length} items</p>
+                       <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
+                       <p><strong>Error:</strong> {error || 'None'}</p>
+                     </div>
+                     <div>
+                       {mods.length > 0 && (
+                         <div>
+                           <p><strong>First Mod Title:</strong> {mods[0]?.title}</p>
+                           <p><strong>First Mod Category:</strong> {mods[0]?.category}</p>
+                           <p><strong>Total Mods:</strong> {pagination?.total || 'Unknown'}</p>
+                         </div>
+                       )}
+                     </div>
+                   </div>
             
-            {/* Test API Button */}
+                               {/* Test API Button */}
             <div className="mt-2 pt-2 border-t border-amber-300/50">
-              <button
-                onClick={async () => {
-                  try {
-                    console.log('Testing direct API call...');
-                    const response = await fetch('/api/mods');
-                    const data = await response.json();
-                    console.log('Direct API response:', data);
-                    alert(`API Test: Found ${data.mods.length} mods`);
-                  } catch (err) {
-                    console.error('Direct API test error:', err);
-                    alert('API Test Failed: ' + err);
-                  }
-                }}
+                     <button
+                       onClick={async () => {
+                         try {
+                           console.log('Testing direct API call...');
+                           const response = await fetch('/api/mods');
+                           const data = await response.json();
+                           console.log('Direct API response:', data);
+                           alert(`API Test: Found ${data.mods.length} mods`);
+                         } catch (err) {
+                           console.error('Direct API test error:', err);
+                           alert('API Test Failed: ' + err);
+                         }
+                       }}
                 className="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-              >
-                Test API Directly
-              </button>
-              
-              {/* Manual Test Button */}
-              <button
-                onClick={testApiCall}
+                     >
+                       Test API Directly
+                     </button>
+                     
+                     {/* Manual Test Button */}
+                     <button
+                       onClick={testApiCall}
                 className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-              >
-                Manual Test
-              </button>
-            </div>
+                     >
+                       Manual Test
+                     </button>
+                   </div>
           </details>
         </div>
       </div>
@@ -306,7 +311,7 @@ export default function HomePage() {
                   <div className="border-b border-gray-100 pb-4 mb-4">
                     <h3 className="font-semibold text-gray-900 mb-3">CATEGORIES</h3>
                     <div className="space-y-3">
-                      {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => (
+                  {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => (
                         <label key={category} className="flex items-center group cursor-pointer">
                           <input
                             type="checkbox"
@@ -315,18 +320,18 @@ export default function HomePage() {
                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
                           />
                           <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
-                            {category}
+                      {category}
                           </span>
                         </label>
-                      ))}
+                  ))}
                     </div>
-                  </div>
+                </div>
 
                   {/* Game Version Section */}
                   <div className="border-b border-gray-100 pb-4 mb-4">
                     <h3 className="font-semibold text-gray-900 mb-3">GAME VERSION</h3>
                     <div className="space-y-3">
-                      {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => (
+                  {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => (
                         <label key={version} className="flex items-center group cursor-pointer">
                           <input
                             type="checkbox"
@@ -335,28 +340,28 @@ export default function HomePage() {
                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
                           />
                           <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
-                            {version}
+                      {version}
                           </span>
                         </label>
-                      ))}
+                  ))}
                     </div>
-                  </div>
+                </div>
 
                   {/* Price Section */}
                   <div className="border-b border-gray-100 pb-4 mb-4">
                     <h3 className="font-semibold text-gray-900 mb-3">PRICE</h3>
-                    <div className="space-y-3">
+                <div className="space-y-3">
                       <label className="flex items-center group cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={filters.isFree === true}
-                          onChange={(e) => handleFilterChange({ ...filters, isFree: e.target.checked ? true : undefined })}
+                    <input
+                      type="checkbox"
+                      checked={filters.isFree === true}
+                      onChange={(e) => handleFilterChange({ ...filters, isFree: e.target.checked ? true : undefined })}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
-                        />
+                    />
                         <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
                           Free Only
                         </span>
-                      </label>
+                  </label>
                     </div>
                   </div>
 
@@ -376,7 +381,7 @@ export default function HomePage() {
               {/* Enhanced Results Header */}
               <div className="bg-white rounded-xl shadow-lg p-5 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex-1">
+            <div className="flex-1">
                     <h2 className="text-xl font-bold text-gray-900 mb-1">
                       {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Mods'}
                     </h2>
@@ -389,24 +394,24 @@ export default function HomePage() {
                   
                   {/* Enhanced Controls */}
                   <div className="flex items-center space-x-3">
-                    {/* Sort Options */}
+                  {/* Sort Options */}
                     <div className="flex items-center space-x-2">
                       <label className="text-xs font-medium text-gray-700">
                         Sort by:
                       </label>
-                      <select 
+                    <select 
                         className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 bg-white shadow-sm text-sm"
-                        onChange={async (e) => {
-                          const [sortBy, sortOrder] = e.target.value.split('-');
-                          await handleFilterChange({ ...filters, sortBy, sortOrder: sortOrder as 'asc' | 'desc' });
-                        }}
-                      >
-                        <option value="createdAt-desc">Newest First</option>
-                        <option value="createdAt-asc">Oldest First</option>
-                        <option value="downloadCount-desc">Most Downloaded</option>
-                        <option value="rating-desc">Highest Rated</option>
-                        <option value="title-asc">A-Z</option>
-                      </select>
+                      onChange={async (e) => {
+                        const [sortBy, sortOrder] = e.target.value.split('-');
+                        await handleFilterChange({ ...filters, sortBy, sortOrder: sortOrder as 'asc' | 'desc' });
+                      }}
+                    >
+                      <option value="createdAt-desc">Newest First</option>
+                      <option value="createdAt-asc">Oldest First</option>
+                      <option value="downloadCount-desc">Most Downloaded</option>
+                      <option value="rating-desc">Highest Rated</option>
+                      <option value="title-asc">A-Z</option>
+                    </select>
                     </div>
 
                     {/* Grid View Options */}
@@ -474,10 +479,10 @@ export default function HomePage() {
                             setPagination(data.pagination);
                           }}
                           className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                            page === pagination.page
+                                   page === pagination.page
                               ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
-                              : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
-                          }`}
+                                     : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                                 }`}
                         >
                           {page}
                         </button>
@@ -502,8 +507,8 @@ export default function HomePage() {
               )}
             </div>
           </div>
+          </div>
         </div>
-      </div>
     </div>
   );
 }

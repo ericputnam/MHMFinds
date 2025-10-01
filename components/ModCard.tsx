@@ -106,6 +106,21 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
           </span>
         </div>
 
+        {/* Creator Info - Prominent placement right after category */}
+        {(mod.creator || mod.author) && (
+          <div className="flex items-center gap-2 mb-3 text-sm">
+            <span className="text-gray-500 font-medium">by</span>
+            <span className="font-semibold text-gray-700">
+              {mod.creator?.handle || mod.author || 'Creator'}
+            </span>
+            {mod.creator?.isVerified && (
+              <div className="w-4 h-4 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                <Crown size={10} className="text-white" />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Title */}
         <h3 className="font-bold text-lg text-gray-900 mb-3 group-hover:text-[#1e1b4b] transition-colors leading-tight line-clamp-2">
           {mod.title}
@@ -122,7 +137,7 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
         <div className="flex items-center justify-between mb-4 text-xs text-gray-500">
           <div className="flex items-center gap-1">
             <Star size={14} className="text-yellow-500 fill-current" />
-            <span>{mod.rating?.toFixed(1) || '4.5'}</span>
+            <span>{typeof mod.rating === 'number' ? mod.rating.toFixed(1) : '4.5'}</span>
             <span className="text-gray-400">({formatNumber(mod.ratingCount || 0)})</span>
           </div>
           <div className="text-gray-400">
@@ -130,19 +145,6 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
           </div>
         </div>
 
-        {/* Creator Info */}
-        {mod.creator && (
-          <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
-            <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">
-                {typeof mod.creator === 'string' ? mod.creator.charAt(0).toUpperCase() : 'C'}
-              </span>
-            </div>
-            <span className="font-medium">
-              {typeof mod.creator === 'string' ? mod.creator : 'Creator'}
-            </span>
-          </div>
-        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-auto">
