@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Mod } from '../lib/api';
 import { Download, Eye, Star, Heart, Crown, Sparkles } from 'lucide-react';
 
@@ -24,6 +25,32 @@ const formatNumber = (num: number): string => {
 };
 
 export function ModCard({ mod, onFavorite, isFavorited, className = '', style }: ModCardProps) {
+  const router = useRouter();
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/mods/${mod.id}`);
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // If there's a download URL, open it
+    if (mod.downloadUrl) {
+      window.open(mod.downloadUrl, '_blank');
+    } else if (mod.sourceUrl) {
+      // Otherwise, open the source URL
+      window.open(mod.sourceUrl, '_blank');
+    } else {
+      // Fallback to detail page
+      router.push(`/mods/${mod.id}`);
+    }
+  };
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFavorite(mod.id);
+  };
+
   return (
     <div 
       className={`group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2 hover:scale-[1.02] h-full flex flex-col border border-gray-100 ${className}`}
@@ -150,6 +177,7 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
         <div className="flex gap-3 mt-auto">
           {/* Details Button - Icon Only */}
           <button
+            onClick={handleViewDetails}
             className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-md"
             title="View Details"
           >
@@ -158,6 +186,7 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
 
           {/* Download Button - Icon Only */}
           <button
+            onClick={handleDownload}
             className="flex-1 bg-gradient-to-r from-[#1e1b4b] to-[#4338ca] hover:from-[#2d2852] hover:to-[#3730a3] text-white p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-lg hover:scale-105"
             title="Download Mod"
           >
@@ -167,7 +196,7 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
 
         {/* Favorite Button - Floating */}
         <button
-          onClick={() => onFavorite(mod.id)}
+          onClick={handleFavorite}
           className={`absolute top-3 right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
             isFavorited
               ? 'bg-red-500 text-white shadow-lg scale-110'
