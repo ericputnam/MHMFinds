@@ -4,16 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { SearchBar, SearchFilters } from '../components/SearchBar';
 import { ModGrid } from '../components/ModGrid';
 import { Mod } from '../lib/api';
-import { Search, Crown } from 'lucide-react';
+import { Search, Crown, SlidersHorizontal, X } from 'lucide-react';
 
 export default function HomePage() {
   console.log('HomePage component rendering...');
-  
+
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({});
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedGameVersions, setSelectedGameVersions] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   
   // Direct state management instead of hooks
   const [mods, setMods] = useState<Mod[]>([]);
@@ -63,29 +66,30 @@ export default function HomePage() {
   // Debug logging
   useEffect(() => {
     if (!mounted) return;
-    
+
     console.log('Main page - mods:', mods);
     console.log('Main page - loading:', loading);
     console.log('Main page - error:', error);
     console.log('Main page - pagination:', pagination);
   }, [mods, loading, error, pagination, mounted]);
 
-  // Test function to manually trigger API call
-  const testApiCall = async () => {
-    console.log('Manual API test triggered...');
-    try {
-      const response = await fetch('/api/mods');
-      const data = await response.json();
-      console.log('Manual API test success:', data);
-      console.log('Manual test - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
-      setMods(data.mods);
-      setPagination(data.pagination);
-      setLoading(false);
-    } catch (err) {
-      console.error('Manual API test error:', err);
-      setError(err instanceof Error ? err.message : 'Manual test failed');
-    }
-  };
+  // Auto-submit debounced search
+  useEffect(() => {
+    if (!mounted) return;
+
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim()) {
+        handleSearch(searchQuery);
+      } else if (searchQuery === '' && mods.length > 0) {
+        // If search is cleared, reload all mods
+        applyFilters(selectedCategories, selectedGameVersions, filters);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -112,20 +116,53 @@ export default function HomePage() {
     }
   };
 
-  const handleFilterChange = async (newFilters: SearchFilters) => {
-    setFilters(newFilters);
+  const handleCategoryToggle = async (category: string) => {
+    const newCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter(c => c !== category)
+      : [...selectedCategories, category];
+
+    setSelectedCategories(newCategories);
+    await applyFilters(newCategories, selectedGameVersions, filters);
+  };
+
+  const handleGameVersionToggle = async (version: string) => {
+    const newVersions = selectedGameVersions.includes(version)
+      ? selectedGameVersions.filter(v => v !== version)
+      : [...selectedGameVersions, version];
+
+    setSelectedGameVersions(newVersions);
+    await applyFilters(selectedCategories, newVersions, filters);
+  };
+
+  const applyFilters = async (
+    categories: string[],
+    gameVersions: string[],
+    otherFilters: SearchFilters
+  ) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+
+      // Add search query if exists
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+
+      // Add multiple categories
+      categories.forEach(cat => params.append('category', cat));
+
+      // Add multiple game versions
+      gameVersions.forEach(ver => params.append('gameVersion', ver));
+
+      // Add other filters
+      Object.entries(otherFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && key !== 'category' && key !== 'gameVersion') {
           params.append(key, value.toString());
         }
       });
-      
+
       const response = await fetch(`/api/mods?${params.toString()}`);
       const data = await response.json();
-      console.log('Filter - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
       setMods(data.mods);
       setPagination(data.pagination);
     } catch (err) {
@@ -135,22 +172,138 @@ export default function HomePage() {
     }
   };
 
+  const handleFilterChange = async (newFilters: SearchFilters) => {
+    setFilters(newFilters);
+    await applyFilters(selectedCategories, selectedGameVersions, newFilters);
+  };
+
   const handleFavorite = (modId: string) => {
-    setFavorites(prev => 
-      prev.includes(modId) 
+    setFavorites(prev =>
+      prev.includes(modId)
         ? prev.filter(id => id !== modId)
         : [...prev, modId]
     );
   };
 
-  const handleCategoryClick = async (category: string) => {
-    const newFilters = { ...filters, category };
-    setFilters(newFilters);
-    await handleFilterChange(newFilters);
+  const clearAllFilters = async () => {
+    setSelectedCategories([]);
+    setSelectedGameVersions([]);
+    setFilters({});
+    setSearchQuery('');
+
+    const response = await fetch('/api/mods');
+    const data = await response.json();
+    setMods(data.mods);
+    setPagination(data.pagination);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Filter Drawer Overlay */}
+      {mobileFiltersOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileFiltersOpen(false)}
+        />
+      )}
+
+      {/* Mobile Filter Drawer */}
+      <div
+        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${
+          mobileFiltersOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="p-6">
+          {/* Drawer Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+            <button
+              onClick={() => setMobileFiltersOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Filter Content (same as sidebar) */}
+          <div>
+            {/* Categories Section */}
+            <div className="border-b border-gray-100 pb-4 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-3">CATEGORIES</h3>
+              <div className="space-y-3">
+                {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => (
+                  <label key={category} className="flex items-center group cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(category)}
+                      onChange={() => handleCategoryToggle(category)}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                      {category}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Game Version Section */}
+            <div className="border-b border-gray-100 pb-4 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-3">GAME VERSION</h3>
+              <div className="space-y-3">
+                {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => (
+                  <label key={version} className="flex items-center group cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedGameVersions.includes(version)}
+                      onChange={() => handleGameVersionToggle(version)}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                      {version}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Section */}
+            <div className="border-b border-gray-100 pb-4 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-3">PRICE</h3>
+              <div className="space-y-3">
+                <label className="flex items-center group cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.isFree === true}
+                    onChange={(e) => handleFilterChange({ ...filters, isFree: e.target.checked ? true : undefined })}
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
+                  />
+                  <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                    Free Only
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            <button
+              onClick={() => {
+                clearAllFilters();
+                setMobileFiltersOpen(false);
+              }}
+              className="w-full mt-6 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 text-sm font-medium flex items-center justify-center gap-2"
+            >
+              Clear All Filters
+              {(selectedCategories.length > 0 || selectedGameVersions.length > 0 || filters.isFree) && (
+                <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
+                  {selectedCategories.length + selectedGameVersions.length + (filters.isFree ? 1 : 0)}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Enhanced Header - Incorporating Competitor's Design */}
       <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 text-white">
         <div className="max-w-7xl mx-auto px-6 py-8">
@@ -188,105 +341,57 @@ export default function HomePage() {
 
             {/* Enhanced Search Bar - Right Side */}
             <div className="hidden lg:block flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <div className="relative" role="search">
+                <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-all duration-300 ${loading && searchQuery ? 'animate-pulse text-emerald-400' : 'text-gray-400'}`} aria-hidden="true" />
                 <input
-                  type="text"
+                  type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                   placeholder="Search for mods, creators, or content..."
+                  aria-label="Search for mods, creators, or content"
                   className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300"
                 />
-                <button 
-                  onClick={() => handleSearch(searchQuery)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-emerald-500 hover:bg-emerald-400 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200"
-                >
-                  Search
-                </button>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors duration-200"
+                    aria-label="Clear search"
+                    title="Clear search"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
           {/* Mobile Search */}
           <div className="lg:hidden mt-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative" role="search">
+              <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-all duration-300 ${loading && searchQuery ? 'animate-pulse text-emerald-400' : 'text-gray-400'}`} aria-hidden="true" />
               <input
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                 placeholder="Search for mods, creators, or content..."
+                aria-label="Search for mods, creators, or content"
                 className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300"
               />
-              <button 
-                onClick={() => handleSearch(searchQuery)}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-emerald-500 hover:bg-emerald-400 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200"
-              >
-                Search
-              </button>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors duration-200 text-2xl"
+                  aria-label="Clear search"
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              )}
             </div>
           </div>
         </div>
         </div>
 
-      {/* Debug Section - Enhanced */}
-      <div className="py-1 px-6 bg-amber-50/50 border-b border-amber-200/50">
-        <div className="max-w-7xl mx-auto">
-          <details className="bg-amber-100/50 border border-amber-300/50 rounded-lg p-2">
-            <summary className="text-xs font-medium text-amber-800 cursor-pointer">
-              Debug Information (Click to expand)
-            </summary>
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-amber-700">
-                     <div>
-                       <p><strong>Mounted:</strong> {mounted ? 'Yes' : 'No'}</p>
-                       <p><strong>Main Mods:</strong> {mods.length} items</p>
-                       <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
-                       <p><strong>Error:</strong> {error || 'None'}</p>
-                     </div>
-                     <div>
-                       {mods.length > 0 && (
-                         <div>
-                           <p><strong>First Mod Title:</strong> {mods[0]?.title}</p>
-                           <p><strong>First Mod Category:</strong> {mods[0]?.category}</p>
-                           <p><strong>Total Mods:</strong> {pagination?.total || 'Unknown'}</p>
-                         </div>
-                       )}
-                     </div>
-                   </div>
-            
-                               {/* Test API Button */}
-            <div className="mt-2 pt-2 border-t border-amber-300/50">
-                     <button
-                       onClick={async () => {
-                         try {
-                           console.log('Testing direct API call...');
-                           const response = await fetch('/api/mods');
-                           const data = await response.json();
-                           console.log('Direct API response:', data);
-                           alert(`API Test: Found ${data.mods.length} mods`);
-                         } catch (err) {
-                           console.error('Direct API test error:', err);
-                           alert('API Test Failed: ' + err);
-                         }
-                       }}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                     >
-                       Test API Directly
-                     </button>
-                     
-                     {/* Manual Test Button */}
-                     <button
-                       onClick={testApiCall}
-                className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                     >
-                       Manual Test
-                     </button>
-                   </div>
-          </details>
-        </div>
-      </div>
 
       {/* Main Content Section - Enhanced Layout */}
       <div className="py-6 px-6">
@@ -311,41 +416,41 @@ export default function HomePage() {
                   <div className="border-b border-gray-100 pb-4 mb-4">
                     <h3 className="font-semibold text-gray-900 mb-3">CATEGORIES</h3>
                     <div className="space-y-3">
-                  {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => (
+                      {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => (
                         <label key={category} className="flex items-center group cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={filters.category === category}
-                            onChange={() => handleCategoryClick(category)}
+                            checked={selectedCategories.includes(category)}
+                            onChange={() => handleCategoryToggle(category)}
                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
                           />
                           <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
-                      {category}
+                            {category}
                           </span>
                         </label>
-                  ))}
+                      ))}
                     </div>
-                </div>
+                  </div>
 
                   {/* Game Version Section */}
                   <div className="border-b border-gray-100 pb-4 mb-4">
                     <h3 className="font-semibold text-gray-900 mb-3">GAME VERSION</h3>
                     <div className="space-y-3">
-                  {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => (
+                      {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => (
                         <label key={version} className="flex items-center group cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={filters.gameVersion === version}
-                            onChange={() => handleFilterChange({ ...filters, gameVersion: version })}
+                            checked={selectedGameVersions.includes(version)}
+                            onChange={() => handleGameVersionToggle(version)}
                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition-colors duration-200"
                           />
                           <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
-                      {version}
+                            {version}
                           </span>
                         </label>
-                  ))}
+                      ))}
                     </div>
-                </div>
+                  </div>
 
                   {/* Price Section */}
                   <div className="border-b border-gray-100 pb-4 mb-4">
@@ -367,10 +472,15 @@ export default function HomePage() {
 
                   {/* Clear Filters Button */}
                   <button
-                    onClick={() => handleFilterChange({})}
-                    className="w-full mt-6 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 text-sm font-medium"
+                    onClick={clearAllFilters}
+                    className="w-full mt-6 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 text-sm font-medium flex items-center justify-center gap-2"
                   >
                     Clear All Filters
+                    {(selectedCategories.length > 0 || selectedGameVersions.length > 0 || filters.isFree) && (
+                      <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
+                        {selectedCategories.length + selectedGameVersions.length + (filters.isFree ? 1 : 0)}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -381,15 +491,33 @@ export default function HomePage() {
               {/* Enhanced Results Header */}
               <div className="bg-white rounded-xl shadow-lg p-5 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-900 mb-1">
-                      {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Mods'}
-                    </h2>
-                    {pagination && (
-                      <p className="text-gray-600 text-sm">
-                        {pagination.total} results found
-                      </p>
-                    )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      {/* Mobile Filter Button */}
+                      <button
+                        onClick={() => setMobileFiltersOpen(true)}
+                        className="lg:hidden flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                      >
+                        <SlidersHorizontal size={18} />
+                        Filters
+                        {(selectedCategories.length > 0 || selectedGameVersions.length > 0 || filters.isFree) && (
+                          <span className="bg-white text-indigo-600 text-xs px-2 py-0.5 rounded-full font-bold">
+                            {selectedCategories.length + selectedGameVersions.length + (filters.isFree ? 1 : 0)}
+                          </span>
+                        )}
+                      </button>
+
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                          {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Mods'}
+                        </h2>
+                        {pagination && (
+                          <p className="text-gray-600 text-sm">
+                            {pagination.total} results found
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   
                   {/* Enhanced Controls */}
@@ -439,9 +567,57 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Active Filters Chips */}
+              {(selectedCategories.length > 0 || selectedGameVersions.length > 0 || filters.isFree) && (
+                <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+
+                    {selectedCategories.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => handleCategoryToggle(category)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium hover:bg-indigo-200 transition-colors duration-200 group"
+                      >
+                        {category}
+                        <span className="text-indigo-500 group-hover:text-indigo-700">×</span>
+                      </button>
+                    ))}
+
+                    {selectedGameVersions.map((version) => (
+                      <button
+                        key={version}
+                        onClick={() => handleGameVersionToggle(version)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors duration-200 group"
+                      >
+                        {version}
+                        <span className="text-purple-500 group-hover:text-purple-700">×</span>
+                      </button>
+                    ))}
+
+                    {filters.isFree && (
+                      <button
+                        onClick={() => handleFilterChange({ ...filters, isFree: undefined })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium hover:bg-emerald-200 transition-colors duration-200 group"
+                      >
+                        Free Only
+                        <span className="text-emerald-500 group-hover:text-emerald-700">×</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={clearAllFilters}
+                      className="ml-auto text-sm text-gray-500 hover:text-gray-700 underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Enhanced Mods Grid */}
-              <ModGrid 
-                mods={mods} 
+              <ModGrid
+                mods={mods}
                 loading={loading}
                 error={error}
                 onFavorite={handleFavorite}
