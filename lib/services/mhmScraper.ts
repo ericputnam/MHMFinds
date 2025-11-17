@@ -238,7 +238,7 @@ export class MustHaveModsScraper {
           let additionalImages: string[] = [];
 
           // Look ahead for image, description, and download link
-          for (let i = 0; i < 10 && $next.length > 0; i++) {
+          for (let i = 0; i < 15 && $next.length > 0; i++) {
             // Get image - prioritize data-src over src (lazy loading)
             if (!image && $next.is('figure.wp-block-image')) {
               const $img = $next.find('img');
@@ -248,8 +248,18 @@ export class MustHaveModsScraper {
                             $img.attr('data-orig-file') ||
                             $img.attr('src');
 
-              // Skip SVG placeholders
-              if (imgSrc && !imgSrc.startsWith('data:image/svg')) {
+              // Skip SVG placeholders, ads, and tracking pixels
+              const isValidImage = imgSrc &&
+                !imgSrc.startsWith('data:image/svg') &&
+                !imgSrc.includes('doubleclick.net') &&
+                !imgSrc.includes('googleadservices') &&
+                !imgSrc.includes('googlesyndication') &&
+                !imgSrc.includes('/ads/') &&
+                !imgSrc.includes('ad-') &&
+                !imgSrc.includes('banner') &&
+                imgSrc.length > 20;
+
+              if (isValidImage) {
                 // Handle relative URLs
                 image = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
               }
@@ -263,7 +273,19 @@ export class MustHaveModsScraper {
                             $img.attr('data-orig-file') ||
                             $img.attr('src');
 
-              if (imgSrc && !imgSrc.startsWith('data:image/svg') && imgSrc !== image) {
+              // Apply same ad filtering to additional images
+              const isValidAdditionalImage = imgSrc &&
+                !imgSrc.startsWith('data:image/svg') &&
+                !imgSrc.includes('doubleclick.net') &&
+                !imgSrc.includes('googleadservices') &&
+                !imgSrc.includes('googlesyndication') &&
+                !imgSrc.includes('/ads/') &&
+                !imgSrc.includes('ad-') &&
+                !imgSrc.includes('banner') &&
+                imgSrc.length > 20 &&
+                imgSrc !== image;
+
+              if (isValidAdditionalImage) {
                 const fullImgSrc = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
                 additionalImages.push(fullImgSrc);
               }
