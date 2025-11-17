@@ -489,7 +489,17 @@ export default function HomePage() {
                         </div>
                         <div className="space-y-2">
                           {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => {
-                            const count = Math.floor(Math.random() * 500) + 50; // Mock count
+                            // Static counts to avoid hydration mismatch
+                            const categoryCount: Record<string, number> = {
+                              'Build/Buy': 342,
+                              'CAS': 456,
+                              'Gameplay': 289,
+                              'Hair': 523,
+                              'Clothing': 467,
+                              'Furniture': 198,
+                              'Scripts': 124
+                            };
+                            const count = categoryCount[category] || 0;
                             const isSelected = filters.category === category;
                             return (
                               <label
