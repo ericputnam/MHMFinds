@@ -220,8 +220,8 @@ export class MustHaveModsScraper {
           }
         }
 
-        // Look for mod entries with H3 headings (Format 1)
-        if ($el.is('h3')) {
+        // Look for mod entries with H2 or H3 headings
+        if ($el.is('h2') || $el.is('h3')) {
           let modTitle = $el.text().trim();
 
           // Skip if it's not a real mod title
@@ -230,25 +230,37 @@ export class MustHaveModsScraper {
           // Remove listicle numbers from title (e.g., "3. ", "36. ", etc.)
           modTitle = modTitle.replace(/^\d+\.\s*/, '').trim();
 
-          // Find the next image and download link after this h3
+          // STEP 1: Extract the PRIMARY IMAGE from the IMMEDIATE next element(s)
+          // The mod-specific image is ALWAYS within the first 1-2 elements after the header
           let $next = $el.next();
           let image: string | undefined;
-          let downloadUrl: string | undefined;
-          let description = '';
           let additionalImages: string[] = [];
 
-          // Look ahead for image, description, and download link
-          for (let i = 0; i < 15 && $next.length > 0; i++) {
-            // Get image - prioritize data-src over src (lazy loading)
-            if (!image && $next.is('figure.wp-block-image')) {
-              const $img = $next.find('img');
-              // Check data-src FIRST (WordPress lazy loading)
+          // Check ONLY the immediate next element for the primary image
+          if ($next.length > 0) {
+            let $img: cheerio.Cheerio<any> | null = null;
+
+            // Pattern 1: figure.wp-block-image > img (most common)
+            if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+              $img = $next.find('img').first();
+            }
+            // Pattern 2: Direct img tag
+            else if ($next.is('img')) {
+              $img = $next;
+            }
+            // Pattern 3: Paragraph containing an image (rare)
+            else if ($next.is('p') && $next.find('img').length > 0) {
+              $img = $next.find('img').first();
+            }
+
+            // Extract and validate the image
+            if ($img && $img.length > 0) {
               const imgSrc = $img.attr('data-src') ||
                             $img.attr('data-lazy-src') ||
                             $img.attr('data-orig-file') ||
                             $img.attr('src');
 
-              // Skip SVG placeholders, ads, and tracking pixels
+              // Strict validation: no ads, no SVG placeholders
               const isValidImage = imgSrc &&
                 !imgSrc.startsWith('data:image/svg') &&
                 !imgSrc.includes('doubleclick.net') &&
@@ -257,23 +269,25 @@ export class MustHaveModsScraper {
                 !imgSrc.includes('/ads/') &&
                 !imgSrc.includes('ad-') &&
                 !imgSrc.includes('banner') &&
+                !imgSrc.includes('logo') &&
                 imgSrc.length > 20;
 
               if (isValidImage) {
-                // Handle relative URLs
                 image = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
               }
             }
+          }
 
-            // Get additional images
-            if (image && $next.is('figure.wp-block-image')) {
+          // STEP 2: Look for ADDITIONAL IMAGES (gallery) in next 2-3 elements
+          $next = $el.next();
+          for (let i = 0; i < 4 && $next.length > 0; i++) {
+            if (image && ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image'))) {
               const $img = $next.find('img');
               const imgSrc = $img.attr('data-src') ||
                             $img.attr('data-lazy-src') ||
                             $img.attr('data-orig-file') ||
                             $img.attr('src');
 
-              // Apply same ad filtering to additional images
               const isValidAdditionalImage = imgSrc &&
                 !imgSrc.startsWith('data:image/svg') &&
                 !imgSrc.includes('doubleclick.net') &&
@@ -282,6 +296,7 @@ export class MustHaveModsScraper {
                 !imgSrc.includes('/ads/') &&
                 !imgSrc.includes('ad-') &&
                 !imgSrc.includes('banner') &&
+                !imgSrc.includes('logo') &&
                 imgSrc.length > 20 &&
                 imgSrc !== image;
 
@@ -291,7 +306,16 @@ export class MustHaveModsScraper {
               }
             }
 
-            // Get description and download link from paragraphs
+            $next = $next.next();
+          }
+
+          // STEP 3: Look for DOWNLOAD LINK and DESCRIPTION (can be further away)
+          $next = $el.next();
+          let downloadUrl: string | undefined;
+          let description = '';
+
+          for (let i = 0; i < 10 && $next.length > 0; i++) {
+            // Extract download link from paragraphs
             if ($next.is('p')) {
               const text = $next.text().trim();
               const textLower = text.toLowerCase();
@@ -325,7 +349,7 @@ export class MustHaveModsScraper {
               }
             }
 
-            // Stop if we hit another h2 or h3
+            // Stop if we hit another h2 or h3 (next mod entry)
             if ($next.is('h2') || $next.is('h3')) {
               break;
             }

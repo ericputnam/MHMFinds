@@ -269,48 +269,53 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
-      {/* Sticky Enhanced Header */}
-      <div ref={headerRef} className="sticky top-0 z-50 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 text-white shadow-2xl">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      {/* Compact Header */}
+      <div ref={headerRef} className="bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 text-white shadow-2xl">
+        <div className="max-w-[2000px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
           {/* Brand and Main Title */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex-1 max-w-2xl">
-              <div className="flex items-center gap-2 mb-3">
-                <Crown className="w-5 h-5 text-yellow-400 animate-pulse" />
-                <span className="text-xs font-semibold bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/20">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <Crown className="w-6 h-6 text-yellow-400 animate-pulse" />
+                <span className="text-sm font-semibold bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                   MustHaveMods Premium
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight mb-4">
                 Discover Amazing{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 animate-gradient">
                   Sims 4 Mods
                 </span>
               </h1>
 
-              <div className="hidden sm:flex flex-wrap gap-3 mt-4 text-xs text-white/80">
-                <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full">
-                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+              <div className="flex flex-wrap gap-4 text-sm text-white/90">
+                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                   <span className="font-medium">{pagination?.total || '10,000+'}+ Premium Mods</span>
                 </div>
-                <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full">
-                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
+                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                   <span className="font-medium">AI-Powered Discovery</span>
                 </div>
-                <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></div>
+                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
                   <span className="font-medium">Curated Collections</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Integrated Search Section - Directly below header */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
+        <div className="max-w-[2000px] mx-auto px-6 sm:px-8 lg:px-12 py-6">
           {/* Enhanced Search Bar with Autocomplete */}
-          <div ref={searchRef} className="relative max-w-3xl">
+          <div ref={searchRef} className="relative max-w-4xl mx-auto">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 w-5 h-5 transition-colors duration-200" />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 w-6 h-6 transition-colors duration-200" />
               <input
                 type="search"
                 value={searchQuery}
@@ -326,12 +331,12 @@ export default function HomePage() {
                     setShowSearchSuggestions(false);
                   }
                 }}
-                placeholder="Search 10,000+ mods, creators, and collections..."
-                className="w-full pl-12 pr-24 py-4 text-sm bg-white/95 backdrop-blur-md border-0 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-emerald-400/50 focus:bg-white transition-all duration-300 shadow-xl"
+                placeholder="Search mods, creators, and collections..."
+                className="w-full pl-14 pr-32 py-5 text-base bg-white border-2 border-gray-200 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-emerald-400/30 focus:border-emerald-500 transition-all duration-300 shadow-sm hover:shadow-md"
               />
               <button
                 onClick={() => handleSearch(searchQuery)}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 px-6 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 px-8 py-3 rounded-xl text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
                 Search
               </button>
@@ -339,11 +344,11 @@ export default function HomePage() {
 
             {/* Smart Search Suggestions Dropdown */}
             {showSearchSuggestions && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 backdrop-blur-xl animate-fade-in">
+              <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 backdrop-blur-xl animate-fade-in max-w-4xl mx-auto">
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
                   <div className="border-b border-gray-100">
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div className="px-5 py-3 text-sm font-semibold text-gray-500 uppercase tracking-wider">
                       Recent Searches
                     </div>
                     {recentSearches.map((search, idx) => (
@@ -353,10 +358,10 @@ export default function HomePage() {
                           setSearchQuery(search);
                           handleSearch(search);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors group"
+                        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors group"
                       >
-                        <Clock size={16} className="text-gray-400 group-hover:text-emerald-500 transition-colors" />
-                        <span className="text-sm text-gray-700 group-hover:text-gray-900">{search}</span>
+                        <Clock size={18} className="text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                        <span className="text-base text-gray-700 group-hover:text-gray-900">{search}</span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -364,9 +369,9 @@ export default function HomePage() {
                             setRecentSearches(updated);
                             localStorage.setItem('recentSearches', JSON.stringify(updated));
                           }}
-                          className="ml-auto p-1 hover:bg-gray-200 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="ml-auto p-1.5 hover:bg-gray-200 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <X size={12} className="text-gray-500" />
+                          <X size={14} className="text-gray-500" />
                         </button>
                       </button>
                     ))}
@@ -375,7 +380,7 @@ export default function HomePage() {
 
                 {/* Trending/Suggested Searches */}
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div className="px-5 py-3 text-sm font-semibold text-gray-500 uppercase tracking-wider">
                     {searchQuery ? 'Suggestions' : 'Trending Searches'}
                   </div>
                   {searchSuggestions.map((suggestion, idx) => (
@@ -385,11 +390,11 @@ export default function HomePage() {
                         setSearchQuery(suggestion.text);
                         handleSearch(suggestion.text);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors group"
+                      className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors group"
                     >
-                      <suggestion.icon size={16} className="text-gray-400 group-hover:text-emerald-500 transition-colors" />
-                      <span className="text-sm text-gray-700 group-hover:text-gray-900">{suggestion.text}</span>
-                      <span className="ml-auto text-xs text-gray-400 px-2 py-1 bg-gray-100 rounded-full group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                      <suggestion.icon size={18} className="text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                      <span className="text-base text-gray-700 group-hover:text-gray-900">{suggestion.text}</span>
+                      <span className="ml-auto text-sm text-gray-400 px-3 py-1.5 bg-gray-100 rounded-full group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
                         {suggestion.type}
                       </span>
                     </button>
@@ -400,23 +405,23 @@ export default function HomePage() {
           </div>
 
           {/* Quick Filter Tags */}
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-3 max-w-4xl mx-auto">
             {quickFilters.map((filter) => {
               const Icon = filter.icon;
               return (
                 <button
                   key={filter.id}
                   onClick={() => handleQuickFilter(filter.id)}
-                  className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95 ${
+                  className={`group flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 ${
                     (filter.id === 'free' && filters.isFree) ||
                     (filter.id === 'trending' && filters.sortBy === 'downloadCount') ||
                     (filter.id === 'newest' && filters.sortBy === 'createdAt') ||
                     (filter.id === 'topRated' && filters.sortBy === 'rating')
                       ? `bg-gradient-to-r ${filter.color} text-white shadow-lg`
-                      : 'bg-white/10 text-white/90 hover:bg-white/20 backdrop-blur-sm'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  <Icon size={14} className={`${
+                  <Icon size={16} className={`${
                     (filter.id === 'free' && filters.isFree) ||
                     (filter.id === 'trending' && filters.sortBy === 'downloadCount') ||
                     (filter.id === 'newest' && filters.sortBy === 'createdAt') ||
@@ -431,9 +436,9 @@ export default function HomePage() {
             {Object.keys(filters).length > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1.5 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 rounded-xl text-xs font-semibold transition-all duration-200 backdrop-blur-sm border border-red-500/20"
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-xl text-sm font-semibold transition-all duration-200 border border-red-200"
               >
-                <X size={14} />
+                <X size={16} />
                 Clear All
               </button>
             )}
@@ -443,81 +448,72 @@ export default function HomePage() {
 
 
       {/* Main Content Section */}
-      <div className="py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="flex flex-col lg:flex-row gap-8">
+      <div className="py-10 px-6 sm:px-8 lg:px-12">
+        <div className="max-w-[2000px] mx-auto">
+          <div className="flex flex-col lg:flex-row gap-10">
             {/* Enhanced Sticky Left Sidebar */}
-            <div className="lg:w-80 flex-shrink-0">
-              <div className="lg:sticky lg:top-32">
+            <div className="lg:w-96 flex-shrink-0">
+              <div className="lg:sticky lg:top-24">
                 <div className="bg-white border border-gray-200/50 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm">
                   {/* Sidebar Header */}
-                  <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-b border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                          <FilterIcon size={16} className="text-white" />
+                  <div className="p-7 bg-gradient-to-br from-indigo-50 to-purple-50 border-b border-gray-100">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <FilterIcon size={18} className="text-white" />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">Filters</h2>
                       </div>
                       <button
                         onClick={() => setShowFilters(!showFilters)}
                         className="lg:hidden p-2 hover:bg-white/50 rounded-lg transition-colors"
                       >
-                        <ChevronDown size={20} className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                        <ChevronDown size={22} className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                       </button>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm text-gray-600">
                       Refine your search results
                     </p>
                   </div>
 
                   {/* Filter Content */}
                   <div className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
-                    <div className="p-6 space-y-6">
+                    <div className="p-7 space-y-8">
                       {/* Categories Section */}
                       <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-bold text-sm text-gray-900 uppercase tracking-wide">Categories</h3>
+                        <div className="flex items-center justify-between mb-5">
+                          <h3 className="font-bold text-base text-gray-900 uppercase tracking-wide">Categories</h3>
                           {filters.category && (
                             <button
                               onClick={() => handleFilterChange({ ...filters, category: undefined })}
-                              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                             >
                               Clear
                             </button>
                           )}
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => {
-                            // Static counts to avoid hydration mismatch
-                            const categoryCount: Record<string, number> = {
-                              'Build/Buy': 342,
-                              'CAS': 456,
-                              'Gameplay': 289,
-                              'Hair': 523,
-                              'Clothing': 467,
-                              'Furniture': 198,
-                              'Scripts': 124
-                            };
-                            const count = categoryCount[category] || 0;
+                            // Dynamic counts based on actual mods (fallback to 0 if no mods loaded yet)
+                            const count = mods.filter(mod => mod.category === category).length;
                             const isSelected = filters.category === category;
                             return (
                               <label
                                 key={category}
-                                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 group ${
+                                className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
                                   isSelected
                                     ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200'
                                     : 'hover:bg-gray-50 border-2 border-transparent'
                                 }`}
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                <div className="flex items-center gap-4">
+                                  <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                                     isSelected
                                       ? 'border-indigo-600 bg-indigo-600'
                                       : 'border-gray-300 group-hover:border-indigo-400'
                                   }`}>
                                     {isSelected && (
-                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                       </svg>
                                     )}
@@ -525,16 +521,16 @@ export default function HomePage() {
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
-                                    onChange={() => handleCategoryClick(category)}
+                                    onChange={() => handleFilterChange({ ...filters, category: isSelected ? undefined : category })}
                                     className="sr-only"
                                   />
-                                  <span className={`text-sm font-medium transition-colors ${
+                                  <span className={`text-base font-medium transition-colors ${
                                     isSelected ? 'text-indigo-900' : 'text-gray-700 group-hover:text-gray-900'
                                   }`}>
                                     {category}
                                   </span>
                                 </div>
-                                <span className={`text-xs font-semibold px-2 py-1 rounded-full transition-colors ${
+                                <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
                                   isSelected
                                     ? 'bg-indigo-600 text-white'
                                     : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
@@ -549,38 +545,38 @@ export default function HomePage() {
 
                       {/* Game Version Section */}
                       <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-bold text-sm text-gray-900 uppercase tracking-wide">Game Version</h3>
+                        <div className="flex items-center justify-between mb-5">
+                          <h3 className="font-bold text-base text-gray-900 uppercase tracking-wide">Game Version</h3>
                           {filters.gameVersion && (
                             <button
                               onClick={() => handleFilterChange({ ...filters, gameVersion: undefined })}
-                              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                             >
                               Clear
                             </button>
                           )}
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => {
-                            const count = version === 'Sims 4' ? 1850 : version === 'Sims 3' ? 450 : 120;
+                            const count = mods.filter(mod => mod.gameVersion === version).length;
                             const isSelected = filters.gameVersion === version;
                             return (
                               <label
                                 key={version}
-                                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 group ${
+                                className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
                                   isSelected
                                     ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200'
                                     : 'hover:bg-gray-50 border-2 border-transparent'
                                 }`}
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                <div className="flex items-center gap-4">
+                                  <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                                     isSelected
                                       ? 'border-indigo-600 bg-indigo-600'
                                       : 'border-gray-300 group-hover:border-indigo-400'
                                   }`}>
                                     {isSelected && (
-                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                       </svg>
                                     )}
@@ -588,16 +584,16 @@ export default function HomePage() {
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
-                                    onChange={() => handleFilterChange({ ...filters, gameVersion: version })}
+                                    onChange={() => handleFilterChange({ ...filters, gameVersion: isSelected ? undefined : version })}
                                     className="sr-only"
                                   />
-                                  <span className={`text-sm font-medium transition-colors ${
+                                  <span className={`text-base font-medium transition-colors ${
                                     isSelected ? 'text-indigo-900' : 'text-gray-700 group-hover:text-gray-900'
                                   }`}>
                                     {version}
                                   </span>
                                 </div>
-                                <span className={`text-xs font-semibold px-2 py-1 rounded-full transition-colors ${
+                                <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
                                   isSelected
                                     ? 'bg-indigo-600 text-white'
                                     : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
@@ -612,21 +608,21 @@ export default function HomePage() {
 
                       {/* Price Section */}
                       <div>
-                        <h3 className="font-bold text-sm text-gray-900 uppercase tracking-wide mb-4">Price</h3>
-                        <div className="space-y-2">
-                          <label className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 group ${
+                        <h3 className="font-bold text-base text-gray-900 uppercase tracking-wide mb-5">Price</h3>
+                        <div className="space-y-3">
+                          <label className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
                             filters.isFree
                               ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200'
                               : 'hover:bg-gray-50 border-2 border-transparent'
                           }`}>
-                            <div className="flex items-center gap-3">
-                              <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
+                            <div className="flex items-center gap-4">
+                              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                                 filters.isFree
                                   ? 'border-emerald-600 bg-emerald-600'
                                   : 'border-gray-300 group-hover:border-emerald-400'
                               }`}>
                                 {filters.isFree && (
-                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                   </svg>
                                 )}
@@ -637,18 +633,18 @@ export default function HomePage() {
                                 onChange={(e) => handleFilterChange({ ...filters, isFree: e.target.checked ? true : undefined })}
                                 className="sr-only"
                               />
-                              <span className={`text-sm font-medium transition-colors ${
+                              <span className={`text-base font-medium transition-colors ${
                                 filters.isFree ? 'text-emerald-900' : 'text-gray-700 group-hover:text-gray-900'
                               }`}>
                                 Free Only
                               </span>
                             </div>
-                            <span className={`text-xs font-semibold px-2 py-1 rounded-full transition-colors ${
+                            <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
                               filters.isFree
                                 ? 'bg-emerald-600 text-white'
                                 : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                             }`}>
-                              {mods.filter(m => m.isFree).length || 1200}
+                              {mods.filter(m => m.isFree).length}
                             </span>
                           </label>
                         </div>
@@ -658,9 +654,9 @@ export default function HomePage() {
                       {Object.keys(filters).some(key => filters[key as keyof SearchFilters] !== undefined) && (
                         <button
                           onClick={clearAllFilters}
-                          className="w-full mt-6 py-3 px-4 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl transition-all duration-200 text-sm font-bold shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                          className="w-full mt-8 py-4 px-5 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-xl transition-all duration-200 text-base font-bold shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                         >
-                          <X size={16} />
+                          <X size={18} />
                           Clear All Filters
                         </button>
                       )}
@@ -673,12 +669,12 @@ export default function HomePage() {
             {/* Right Main Content */}
             <div className="flex-1 min-w-0">
               {/* Enhanced Results Header */}
-              <div className="bg-white border border-gray-200/50 rounded-2xl shadow-xl p-6 mb-6 backdrop-blur-sm">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="bg-white border border-gray-200/50 rounded-2xl shadow-xl p-8 mb-8 backdrop-blur-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                   {/* Results Info */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h2 className="text-2xl font-bold text-gray-900">
+                    <div className="flex items-center gap-4 mb-3">
+                      <h2 className="text-3xl font-bold text-gray-900">
                         {searchQuery ? (
                           <>
                             Results for <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">"{searchQuery}"</span>
@@ -689,31 +685,31 @@ export default function HomePage() {
                       </h2>
                     </div>
                     {pagination && (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5 text-base text-gray-600">
+                          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
                           <span className="font-semibold text-gray-900">{pagination.total}</span>
                           <span>mods found</span>
                         </div>
                         {Object.keys(filters).length > 0 && (
-                          <span className="text-xs text-gray-500">• {Object.keys(filters).length} filter{Object.keys(filters).length > 1 ? 's' : ''} active</span>
+                          <span className="text-sm text-gray-500">• {Object.keys(filters).length} filter{Object.keys(filters).length > 1 ? 's' : ''} active</span>
                         )}
                       </div>
                     )}
                   </div>
 
                   {/* Controls */}
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-4">
                     {/* Sort Dropdown */}
-                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200">
-                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Sort:</span>
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
+                      <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Sort:</span>
                       <select
                         value={`${filters.sortBy || 'createdAt'}-${filters.sortOrder || 'desc'}`}
                         onChange={async (e) => {
                           const [sortBy, sortOrder] = e.target.value.split('-');
                           await handleFilterChange({ ...filters, sortBy, sortOrder: sortOrder as 'asc' | 'desc' });
                         }}
-                        className="bg-transparent border-0 focus:ring-0 text-sm font-medium text-gray-900 cursor-pointer pr-8"
+                        className="bg-transparent border-0 focus:ring-0 text-base font-medium text-gray-900 cursor-pointer pr-8"
                       >
                         <option value="createdAt-desc">Newest</option>
                         <option value="createdAt-asc">Oldest</option>
@@ -728,25 +724,25 @@ export default function HomePage() {
                     <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 border border-gray-200">
                       <button
                         onClick={() => setViewMode('grid')}
-                        className={`p-2 rounded-lg transition-all duration-200 ${
+                        className={`p-2.5 rounded-lg transition-all duration-200 ${
                           viewMode === 'grid'
                             ? 'bg-white text-indigo-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
                         }`}
                         title="Grid View"
                       >
-                        <LayoutGrid size={18} />
+                        <LayoutGrid size={20} />
                       </button>
                       <button
                         onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-lg transition-all duration-200 ${
+                        className={`p-2.5 rounded-lg transition-all duration-200 ${
                           viewMode === 'list'
                             ? 'bg-white text-indigo-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
                         }`}
                         title="List View"
                       >
-                        <List size={18} />
+                        <List size={20} />
                       </button>
                     </div>
 
@@ -757,7 +753,7 @@ export default function HomePage() {
                           <button
                             key={cols}
                             onClick={() => setGridColumns(cols)}
-                            className={`p-2 rounded-lg transition-all duration-200 ${
+                            className={`p-2.5 rounded-lg transition-all duration-200 ${
                               gridColumns === cols
                                 ? 'bg-white text-indigo-600 shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700'
@@ -766,7 +762,7 @@ export default function HomePage() {
                           >
                             <div className={`grid gap-0.5 ${cols === 3 ? 'grid-cols-3' : cols === 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
                               {Array.from({ length: cols }, (_, i) => (
-                                <div key={i} className="w-1 h-1 bg-current rounded-sm"></div>
+                                <div key={i} className="w-1.5 h-1.5 bg-current rounded-sm"></div>
                               ))}
                             </div>
                           </button>
@@ -778,95 +774,47 @@ export default function HomePage() {
 
                 {/* Active Filters Pills */}
                 {(filters.category || filters.gameVersion || filters.isFree) && (
-                  <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Filters:</span>
+                  <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Active Filters:</span>
                     {filters.category && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium border border-indigo-200">
-                        <Tag size={12} />
+                      <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium border border-indigo-200">
+                        <Tag size={14} />
                         {filters.category}
                         <button
                           onClick={() => handleFilterChange({ ...filters, category: undefined })}
-                          className="hover:bg-indigo-200 rounded-full p-0.5 transition-colors"
+                          className="hover:bg-indigo-200 rounded-full p-1 transition-colors"
                         >
-                          <X size={12} />
+                          <X size={14} />
                         </button>
                       </span>
                     )}
                     {filters.gameVersion && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-200">
-                        <Tag size={12} />
+                      <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+                        <Tag size={14} />
                         {filters.gameVersion}
                         <button
                           onClick={() => handleFilterChange({ ...filters, gameVersion: undefined })}
-                          className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                          className="hover:bg-blue-200 rounded-full p-1 transition-colors"
                         >
-                          <X size={12} />
+                          <X size={14} />
                         </button>
                       </span>
                     )}
                     {filters.isFree && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
-                        <Sparkles size={12} />
+                      <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium border border-emerald-200">
+                        <Sparkles size={14} />
                         Free Only
                         <button
                           onClick={() => handleFilterChange({ ...filters, isFree: undefined })}
-                          className="hover:bg-emerald-200 rounded-full p-0.5 transition-colors"
+                          className="hover:bg-emerald-200 rounded-full p-1 transition-colors"
                         >
-                          <X size={12} />
+                          <X size={14} />
                         </button>
                       </span>
                     )}
                   </div>
                 )}
               </div>
-
-              {/* Active Filters Chips */}
-              {(selectedCategories.length > 0 || selectedGameVersions.length > 0 || filters.isFree) && (
-                <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
-                  <div className="flex items-center flex-wrap gap-2">
-                    <span className="text-sm font-medium text-gray-700">Active Filters:</span>
-
-                    {selectedCategories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => handleCategoryToggle(category)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium hover:bg-indigo-200 transition-colors duration-200 group"
-                      >
-                        {category}
-                        <span className="text-indigo-500 group-hover:text-indigo-700">×</span>
-                      </button>
-                    ))}
-
-                    {selectedGameVersions.map((version) => (
-                      <button
-                        key={version}
-                        onClick={() => handleGameVersionToggle(version)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors duration-200 group"
-                      >
-                        {version}
-                        <span className="text-purple-500 group-hover:text-purple-700">×</span>
-                      </button>
-                    ))}
-
-                    {filters.isFree && (
-                      <button
-                        onClick={() => handleFilterChange({ ...filters, isFree: undefined })}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium hover:bg-emerald-200 transition-colors duration-200 group"
-                      >
-                        Free Only
-                        <span className="text-emerald-500 group-hover:text-emerald-700">×</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={clearAllFilters}
-                      className="ml-auto text-sm text-gray-500 hover:text-gray-700 underline"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* Enhanced Mods Grid */}
               <ModGrid
@@ -880,8 +828,8 @@ export default function HomePage() {
 
               {/* Enhanced Pagination */}
               {pagination && pagination.totalPages > 1 && (
-                <div className="flex justify-center mt-8">
-                  <nav className="flex items-center space-x-2">
+                <div className="flex justify-center mt-10">
+                  <nav className="flex items-center space-x-3">
                     <button
                       onClick={async () => {
                         const newPage = pagination.page - 1;
@@ -891,11 +839,11 @@ export default function HomePage() {
                         setPagination(data.pagination);
                       }}
                       disabled={!pagination.hasPrevPage}
-                      className="px-3 py-1.5 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="px-5 py-3 text-base font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       Previous
                     </button>
-                    
+
                     {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                       const page = Math.max(1, Math.min(pagination.totalPages - 4, pagination.page - 2)) + i;
                       return (
@@ -907,17 +855,17 @@ export default function HomePage() {
                             setMods(data.mods);
                             setPagination(data.pagination);
                           }}
-                          className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          className={`px-5 py-3 text-base font-medium rounded-xl transition-all duration-200 ${
                                    page === pagination.page
                               ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
-                                     : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                                     : 'text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-md'
                                  }`}
                         >
                           {page}
                         </button>
                       );
                     })}
-                    
+
                     <button
                       onClick={async () => {
                         const newPage = pagination.page + 1;
@@ -927,7 +875,7 @@ export default function HomePage() {
                         setPagination(data.pagination);
                       }}
                       disabled={!pagination.hasNextPage}
-                      className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="px-5 py-3 text-base font-medium rounded-xl bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-gray-600 shadow-sm hover:shadow-md"
                     >
                       Next
                     </button>
@@ -936,8 +884,8 @@ export default function HomePage() {
               )}
             </div>
           </div>
-          </div>
         </div>
+      </div>
     </div>
   );
 }
