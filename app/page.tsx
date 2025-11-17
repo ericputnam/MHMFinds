@@ -22,7 +22,7 @@ export default function HomePage() {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(true);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filterCounts, setFilterCounts] = useState<Record<string, number>>({});
 
   // Refs for sticky behavior
@@ -251,17 +251,6 @@ export default function HomePage() {
     }
 
     await handleFilterChange(newFilters);
-  };
-
-  // Clear all filters
-  const clearAllFilters = async () => {
-    setFilters({});
-    setSelectedCategories([]);
-    setSearchQuery('');
-    const response = await fetch('/api/mods');
-    const data = await response.json();
-    setMods(data.mods);
-    setPagination(data.pagination);
   };
 
   // Quick filter tags data
