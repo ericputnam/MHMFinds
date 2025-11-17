@@ -36,10 +36,10 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
     e.stopPropagation();
     // If there's a download URL, open it
     if (mod.downloadUrl) {
-      window.open(mod.downloadUrl, '_blank');
+      window.open(mod.downloadUrl, '_blank', 'noopener,noreferrer');
     } else if (mod.sourceUrl) {
       // Otherwise, open the source URL
-      window.open(mod.sourceUrl, '_blank');
+      window.open(mod.sourceUrl, '_blank', 'noopener,noreferrer');
     } else {
       // Fallback to detail page
       router.push(`/mods/${mod.id}`);
@@ -51,30 +51,41 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
     onFavorite(mod.id);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
+
   return (
-    <div 
+    <article
       className={`group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2 hover:scale-[1.02] h-full flex flex-col border border-gray-100 ${className}`}
       style={style}
+      aria-label={`${mod.title} by ${mod.creator?.handle || mod.author || 'Unknown Creator'}`}
     >
-      {/* Premium Badge - Top Left */}
-      {mod.isVerified && (
-        <div className="absolute top-3 left-3 z-10">
-          <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-            <Crown size={12} />
-            Verified
-          </div>
+      {/* Badge Container - Top */}
+      <div className="absolute top-3 left-3 right-3 z-10 flex items-start justify-between pointer-events-none">
+        <div className="flex flex-col gap-2">
+          {/* Verified Badge */}
+          {mod.isVerified && (
+            <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+              <Crown size={12} />
+              Verified
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Featured Badge - Top Right */}
-      {mod.isFeatured && (
-        <div className="absolute top-3 right-3 z-10">
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-            <Sparkles size={12} />
-            Featured
-          </div>
+        <div className="flex flex-col gap-2 items-end">
+          {/* Featured Badge */}
+          {mod.isFeatured && (
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+              <Sparkles size={12} />
+              Featured
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Thumbnail Container */}
       <div className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
@@ -174,42 +185,50 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
 
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mt-auto">
+        <div className="flex gap-3 mt-auto" role="group" aria-label="Mod actions">
           {/* Details Button - Icon Only */}
           <button
             onClick={handleViewDetails}
+            onKeyDown={(e) => handleKeyDown(e, handleViewDetails)}
             className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-md"
+            aria-label={`View details for ${mod.title}`}
             title="View Details"
           >
-            <Eye size={18} className="group-hover/btn:scale-110 transition-transform" />
+            <Eye size={18} className="group-hover/btn:scale-110 transition-transform" aria-hidden="true" />
           </button>
 
           {/* Download Button - Icon Only */}
           <button
             onClick={handleDownload}
-            className="flex-1 bg-gradient-to-r from-[#1e1b4b] to-[#4338ca] hover:from-[#2d2852] hover:to-[#3730a3] text-white p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-lg hover:scale-105"
+            onKeyDown={(e) => handleKeyDown(e, handleDownload)}
+            className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-lg hover:scale-105"
+            aria-label={`Download ${mod.title}`}
             title="Download Mod"
           >
-            <Download size={18} className="group-hover/btn:scale-110 transition-transform" />
+            <Download size={18} className="group-hover/btn:scale-110 transition-transform" aria-hidden="true" />
           </button>
         </div>
 
-        {/* Favorite Button - Floating */}
+        {/* Favorite Button - Floating (positioned below badges) */}
         <button
           onClick={handleFavorite}
-          className={`absolute top-3 right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+          onKeyDown={(e) => handleKeyDown(e, handleFavorite)}
+          className={`absolute ${mod.isFeatured ? 'top-14' : 'top-3'} right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto ${
             isFavorited
               ? 'bg-red-500 text-white shadow-lg scale-110'
-              : 'bg-white/90 text-gray-600 hover:bg-red-500 hover:text-white hover:scale-110'
+              : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-red-500 hover:text-white hover:scale-110'
           }`}
+          aria-label={isFavorited ? `Remove ${mod.title} from favorites` : `Add ${mod.title} to favorites`}
+          aria-pressed={isFavorited}
           title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         >
-          <Heart 
-            size={18} 
+          <Heart
+            size={18}
             className={`transition-all duration-300 ${isFavorited ? 'fill-current' : ''}`}
+            aria-hidden="true"
           />
         </button>
       </div>
-    </div>
+    </article>
   );
 }
