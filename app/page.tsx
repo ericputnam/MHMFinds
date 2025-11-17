@@ -12,6 +12,8 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({});
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedGameVersions, setSelectedGameVersions] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -87,29 +89,30 @@ export default function HomePage() {
   // Debug logging
   useEffect(() => {
     if (!mounted) return;
-    
+
     console.log('Main page - mods:', mods);
     console.log('Main page - loading:', loading);
     console.log('Main page - error:', error);
     console.log('Main page - pagination:', pagination);
   }, [mods, loading, error, pagination, mounted]);
 
-  // Test function to manually trigger API call
-  const testApiCall = async () => {
-    console.log('Manual API test triggered...');
-    try {
-      const response = await fetch('/api/mods');
-      const data = await response.json();
-      console.log('Manual API test success:', data);
-      console.log('Manual test - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
-      setMods(data.mods);
-      setPagination(data.pagination);
-      setLoading(false);
-    } catch (err) {
-      console.error('Manual API test error:', err);
-      setError(err instanceof Error ? err.message : 'Manual test failed');
-    }
-  };
+  // Auto-submit debounced search
+  useEffect(() => {
+    if (!mounted) return;
+
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim()) {
+        handleSearch(searchQuery);
+      } else if (searchQuery === '' && mods.length > 0) {
+        // If search is cleared, reload all mods
+        applyFilters(selectedCategories, selectedGameVersions, filters);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -147,20 +150,53 @@ export default function HomePage() {
     }
   };
 
-  const handleFilterChange = async (newFilters: SearchFilters) => {
-    setFilters(newFilters);
+  const handleCategoryToggle = async (category: string) => {
+    const newCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter(c => c !== category)
+      : [...selectedCategories, category];
+
+    setSelectedCategories(newCategories);
+    await applyFilters(newCategories, selectedGameVersions, filters);
+  };
+
+  const handleGameVersionToggle = async (version: string) => {
+    const newVersions = selectedGameVersions.includes(version)
+      ? selectedGameVersions.filter(v => v !== version)
+      : [...selectedGameVersions, version];
+
+    setSelectedGameVersions(newVersions);
+    await applyFilters(selectedCategories, newVersions, filters);
+  };
+
+  const applyFilters = async (
+    categories: string[],
+    gameVersions: string[],
+    otherFilters: SearchFilters
+  ) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+
+      // Add search query if exists
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+
+      // Add multiple categories
+      categories.forEach(cat => params.append('category', cat));
+
+      // Add multiple game versions
+      gameVersions.forEach(ver => params.append('gameVersion', ver));
+
+      // Add other filters
+      Object.entries(otherFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && key !== 'category' && key !== 'gameVersion') {
           params.append(key, value.toString());
         }
       });
-      
+
       const response = await fetch(`/api/mods?${params.toString()}`);
       const data = await response.json();
-      console.log('Filter - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
       setMods(data.mods);
       setPagination(data.pagination);
     } catch (err) {
@@ -170,18 +206,29 @@ export default function HomePage() {
     }
   };
 
+  const handleFilterChange = async (newFilters: SearchFilters) => {
+    setFilters(newFilters);
+    await applyFilters(selectedCategories, selectedGameVersions, newFilters);
+  };
+
   const handleFavorite = (modId: string) => {
-    setFavorites(prev => 
-      prev.includes(modId) 
+    setFavorites(prev =>
+      prev.includes(modId)
         ? prev.filter(id => id !== modId)
         : [...prev, modId]
     );
   };
 
-  const handleCategoryClick = async (category: string) => {
-    const newFilters = { ...filters, category };
-    setFilters(newFilters);
-    await handleFilterChange(newFilters);
+  const clearAllFilters = async () => {
+    setSelectedCategories([]);
+    setSelectedGameVersions([]);
+    setFilters({});
+    setSearchQuery('');
+
+    const response = await fetch('/api/mods');
+    const data = await response.json();
+    setMods(data.mods);
+    setPagination(data.pagination);
   };
 
   // Quick filter handlers
@@ -276,7 +323,7 @@ export default function HomePage() {
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 w-5 h-5 transition-colors duration-200" />
               <input
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -405,62 +452,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Debug Section - Enhanced */}
-      <div className="py-1 px-6 bg-amber-50/50 border-b border-amber-200/50">
-        <div className="max-w-7xl mx-auto">
-          <details className="bg-amber-100/50 border border-amber-300/50 rounded-lg p-2">
-            <summary className="text-xs font-medium text-amber-800 cursor-pointer">
-              Debug Information (Click to expand)
-            </summary>
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-amber-700">
-                     <div>
-                       <p><strong>Mounted:</strong> {mounted ? 'Yes' : 'No'}</p>
-                       <p><strong>Main Mods:</strong> {mods.length} items</p>
-                       <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
-                       <p><strong>Error:</strong> {error || 'None'}</p>
-                     </div>
-                     <div>
-                       {mods.length > 0 && (
-                         <div>
-                           <p><strong>First Mod Title:</strong> {mods[0]?.title}</p>
-                           <p><strong>First Mod Category:</strong> {mods[0]?.category}</p>
-                           <p><strong>Total Mods:</strong> {pagination?.total || 'Unknown'}</p>
-                         </div>
-                       )}
-                     </div>
-                   </div>
-            
-                               {/* Test API Button */}
-            <div className="mt-2 pt-2 border-t border-amber-300/50">
-                     <button
-                       onClick={async () => {
-                         try {
-                           console.log('Testing direct API call...');
-                           const response = await fetch('/api/mods');
-                           const data = await response.json();
-                           console.log('Direct API response:', data);
-                           alert(`API Test: Found ${data.mods.length} mods`);
-                         } catch (err) {
-                           console.error('Direct API test error:', err);
-                           alert('API Test Failed: ' + err);
-                         }
-                       }}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                     >
-                       Test API Directly
-                     </button>
-                     
-                     {/* Manual Test Button */}
-                     <button
-                       onClick={testApiCall}
-                className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
-                     >
-                       Manual Test
-                     </button>
-                   </div>
-          </details>
-        </div>
-      </div>
 
       {/* Main Content Section */}
       <div className="py-8 px-4 sm:px-6 lg:px-8">
@@ -830,9 +821,57 @@ export default function HomePage() {
                 )}
               </div>
 
+              {/* Active Filters Chips */}
+              {(selectedCategories.length > 0 || selectedGameVersions.length > 0 || filters.isFree) && (
+                <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+
+                    {selectedCategories.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => handleCategoryToggle(category)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium hover:bg-indigo-200 transition-colors duration-200 group"
+                      >
+                        {category}
+                        <span className="text-indigo-500 group-hover:text-indigo-700">×</span>
+                      </button>
+                    ))}
+
+                    {selectedGameVersions.map((version) => (
+                      <button
+                        key={version}
+                        onClick={() => handleGameVersionToggle(version)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors duration-200 group"
+                      >
+                        {version}
+                        <span className="text-purple-500 group-hover:text-purple-700">×</span>
+                      </button>
+                    ))}
+
+                    {filters.isFree && (
+                      <button
+                        onClick={() => handleFilterChange({ ...filters, isFree: undefined })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium hover:bg-emerald-200 transition-colors duration-200 group"
+                      >
+                        Free Only
+                        <span className="text-emerald-500 group-hover:text-emerald-700">×</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={clearAllFilters}
+                      className="ml-auto text-sm text-gray-500 hover:text-gray-700 underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Enhanced Mods Grid */}
-              <ModGrid 
-                mods={mods} 
+              <ModGrid
+                mods={mods}
                 loading={loading}
                 error={error}
                 onFavorite={handleFavorite}
