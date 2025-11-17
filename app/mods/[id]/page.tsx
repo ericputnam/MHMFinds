@@ -3,20 +3,22 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Mod } from '@/lib/api';
-import { 
-  Download, 
-  Eye, 
-  Star, 
-  Heart, 
-  Crown, 
-  ExternalLink, 
+import {
+  Download,
+  Eye,
+  Star,
+  Heart,
+  Crown,
+  ExternalLink,
   ArrowLeft,
   Calendar,
   Package,
   Tag,
   TrendingUp,
   Users,
-  MessageSquare
+  MessageSquare,
+  ChevronRight,
+  Home
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -96,7 +98,8 @@ export default function ModDetailPage() {
           <p className="text-gray-600 mb-6">The mod you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => router.push('/')}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 font-semibold"
+            aria-label="Return to home page"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Home
@@ -108,14 +111,41 @@ export default function ModDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      {/* Header with Back Button */}
+      {/* Header with Breadcrumbs */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-2 text-sm mb-2" aria-label="Breadcrumb">
+            <button
+              onClick={() => router.push('/')}
+              className="flex items-center gap-1 text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              <Home size={16} />
+              <span>Home</span>
+            </button>
+            <ChevronRight size={16} className="text-gray-400" />
+            {mod && (
+              <>
+                <button
+                  onClick={() => router.push(`/?category=${encodeURIComponent(mod.category)}`)}
+                  className="text-gray-500 hover:text-indigo-600 transition-colors"
+                >
+                  {mod.category}
+                </button>
+                <ChevronRight size={16} className="text-gray-400" />
+                <span className="text-gray-900 font-medium truncate max-w-xs">
+                  {mod.title}
+                </span>
+              </>
+            )}
+          </nav>
+
+          {/* Back Button */}
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
             <span className="font-medium">Back to Browse</span>
           </button>
         </div>
@@ -299,7 +329,8 @@ export default function ModDetailPage() {
               <div className="space-y-3">
                 <button
                   onClick={handleDownload}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  aria-label={mod.isFree ? 'Download this mod now' : `Download this mod for $${mod.price}`}
                 >
                   <Download size={22} />
                   {mod.isFree ? 'Download Now' : `Download - $${mod.price}`}
