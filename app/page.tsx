@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SearchBar, SearchFilters } from '../components/SearchBar';
 import { ModGrid } from '../components/ModGrid';
 import { Mod } from '../lib/api';
-import { Search, Crown, TrendingUp, Clock, Star, Filter as FilterIcon, X, ChevronDown, Grid3x3, LayoutGrid, List, Sparkles, Tag, Zap } from 'lucide-react';
+import { Search, Crown, TrendingUp, Clock, Star, Filter as FilterIcon, X, ChevronDown, Grid3x3, LayoutGrid, List, Sparkles, Tag, Zap, SlidersHorizontal } from 'lucide-react';
 
 export default function HomePage() {
   console.log('HomePage component rendering...');
