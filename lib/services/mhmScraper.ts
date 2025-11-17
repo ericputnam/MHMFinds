@@ -102,6 +102,31 @@ export class MustHaveModsScraper {
   }
 
   /**
+   * Extract featured/fallback image from post
+   */
+  private extractFeaturedImage($: cheerio.CheerioAPI): string | undefined {
+    // Try multiple sources for featured image
+    const sources = [
+      $('meta[property="og:image"]').attr('content'),
+      $('meta[name="twitter:image"]').attr('content'),
+      $('article img').first().attr('data-src'),
+      $('article img').first().attr('src'),
+      $('.entry-content img').first().attr('data-src'),
+      $('.entry-content img').first().attr('src'),
+      $('.wp-post-image').attr('data-src'),
+      $('.wp-post-image').attr('src'),
+    ];
+
+    for (const src of sources) {
+      if (src && !src.startsWith('data:image/svg') && src.length > 10) {
+        return src.startsWith('http') ? src : `${this.baseUrl}${src}`;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
    * Scrape mods from a single blog post
    */
   async scrapeModsFromPost(postUrl: string): Promise<ScrapedMod[]> {
@@ -120,6 +145,9 @@ export class MustHaveModsScraper {
       const postDate = $('time.entry-date').attr('datetime');
       const postCategories = $('span.category-links a').map((_, el) => $(el).text().trim()).get();
       const postTags = $('span.tag-links a').map((_, el) => $(el).text().trim()).get();
+
+      // Get featured image as fallback
+      const featuredImage = this.extractFeaturedImage($);
 
       // Extract main category from h2 tags
       let currentCategory = 'Other';
@@ -178,8 +206,8 @@ export class MustHaveModsScraper {
                 shortDescription: undefined,
                 category: this.normalizeCategory(currentCategory),
                 tags: [...postTags, ...postCategories, currentCategory].filter(t => t && t.length > 0),
-                thumbnail: undefined,
-                images: [],
+                thumbnail: featuredImage, // Use featured image as fallback
+                images: featuredImage ? [featuredImage] : [],
                 downloadUrl: linkHref,
                 sourceUrl: postUrl,
                 source: 'MustHaveMods.com',
@@ -307,15 +335,23 @@ export class MustHaveModsScraper {
           ].filter(t => t && t.length > 0);
 
           // Only add if we have at least a title and either an image or download URL
-          if (modTitle && (image || downloadUrl)) {
+          if (modTitle && (image || downloadUrl || featuredImage)) {
+            // Use specific image, or fallback to featured image
+            const finalThumbnail = image || featuredImage;
+            const finalImages = image
+              ? [image, ...additionalImages]
+              : featuredImage
+              ? [featuredImage, ...additionalImages]
+              : additionalImages;
+
             mods.push({
               title: modTitle,
               description: description || undefined,
               shortDescription: description ? description.substring(0, 200) : undefined,
               category: this.normalizeCategory(currentCategory),
               tags: [...new Set(tags)], // Remove duplicates
-              thumbnail: image,
-              images: image ? [image, ...additionalImages] : additionalImages,
+              thumbnail: finalThumbnail,
+              images: finalImages,
               downloadUrl,
               sourceUrl: postUrl,
               source: 'MustHaveMods.com',
