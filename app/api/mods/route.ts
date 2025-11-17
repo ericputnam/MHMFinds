@@ -106,8 +106,15 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Transform mods to serialize Decimal fields properly
+    const serializedMods = mods.map(mod => ({
+      ...mod,
+      rating: mod.rating ? Number(mod.rating) : null,
+      price: mod.price ? Number(mod.price) : null,
+    }));
+
     return NextResponse.json({
-      mods,
+      mods: serializedMods,
       pagination: {
         page,
         limit,
@@ -213,7 +220,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(mod, { status: 201 });
+    // Serialize Decimal fields
+    const serializedMod = {
+      ...mod,
+      rating: mod.rating ? Number(mod.rating) : null,
+      price: mod.price ? Number(mod.price) : null,
+    };
+
+    return NextResponse.json(serializedMod, { status: 201 });
   } catch (error) {
     console.error('Error creating mod:', error);
     return NextResponse.json(

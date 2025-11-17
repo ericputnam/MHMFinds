@@ -35,19 +35,14 @@ export async function GET(
       );
     }
 
-    // Transform the data to match the frontend interface
-    const transformedMod = {
+    // Serialize Decimal fields to numbers
+    const serializedMod = {
       ...mod,
-      price: mod.price?.toString() || null,
-      rating: mod.rating?.toString() || null,
-      _count: {
-        reviews: mod._count.reviews,
-        favorites: mod._count.favorites,
-        downloads: mod._count.downloads,
-      },
+      rating: mod.rating ? Number(mod.rating) : null,
+      price: mod.price ? Number(mod.price) : null,
     };
 
-    return NextResponse.json(transformedMod);
+    return NextResponse.json(serializedMod);
   } catch (error) {
     console.error('Error fetching mod:', error);
     return NextResponse.json(

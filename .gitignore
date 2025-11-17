@@ -118,3 +118,38 @@ temp/
 
 # Project specific
 project/
+
+# Prisma
+prisma/migrations/
+*.db-journal
+
+# Scraped/Downloaded Data
+data/
+downloads/
+scraped/
+*.json.bak
+mods-cache/
+
+# API Keys and Secrets
+secrets/
+credentials/
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Session Storage
+sessions/
+.session
+
+# Cache
+.cache/
+*.cache
+
+# Test Data
+test-data/
+fixtures/
+
+# Environment-specific
+.env.example.local
+.vercel.env

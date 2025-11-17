@@ -19,6 +19,7 @@
     "content:stealth": "PRIVACY_LEVEL=stealth tsx scripts/run-privacy-aggregation.ts",
     "content:conservative": "PRIVACY_LEVEL=conservative tsx scripts/run-privacy-aggregation.ts",
     "content:test": "tsx scripts/test-privacy-aggregator.ts",
+    "scrape:mhm": "tsx scripts/scrape-musthavemods.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
