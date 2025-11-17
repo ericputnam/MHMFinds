@@ -20,6 +20,7 @@
     "content:conservative": "PRIVACY_LEVEL=conservative tsx scripts/run-privacy-aggregation.ts",
     "content:test": "tsx scripts/test-privacy-aggregator.ts",
     "scrape:mhm": "tsx scripts/scrape-musthavemods.ts",
+    "update:images": "tsx scripts/update-missing-images.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
