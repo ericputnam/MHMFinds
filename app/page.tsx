@@ -34,6 +34,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<any>(null);
+  const [facets, setFacets] = useState<any>(null);
 
   // Set mounted state after hydration and load recent searches
   useEffect(() => {
@@ -72,9 +73,10 @@ export default function HomePage() {
         const data = await response.json();
         console.log('Direct fetch success:', data);
         console.log('First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
-        
+
         setMods(data.mods);
         setPagination(data.pagination);
+        setFacets(data.facets);
       } catch (err) {
         console.error('Direct fetch error:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch mods');
@@ -135,6 +137,7 @@ export default function HomePage() {
         console.log('Search - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
         setMods(data.mods);
         setPagination(data.pagination);
+        setFacets(data.facets);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Search failed');
       } finally {
@@ -147,6 +150,7 @@ export default function HomePage() {
       console.log('Search refetch - First mod rating type:', typeof data.mods[0]?.rating, 'value:', data.mods[0]?.rating);
       setMods(data.mods);
       setPagination(data.pagination);
+      setFacets(data.facets);
     }
   };
 
@@ -199,6 +203,7 @@ export default function HomePage() {
       const data = await response.json();
       setMods(data.mods);
       setPagination(data.pagination);
+      setFacets(data.facets);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Filter failed');
     } finally {
@@ -211,12 +216,57 @@ export default function HomePage() {
     await applyFilters(selectedCategories, selectedGameVersions, newFilters);
   };
 
-  const handleFavorite = (modId: string) => {
-    setFavorites(prev =>
-      prev.includes(modId)
-        ? prev.filter(id => id !== modId)
-        : [...prev, modId]
-    );
+  const handleFavorite = async (modId: string) => {
+    const isFavorited = favorites.includes(modId);
+
+    try {
+      // Optimistically update UI
+      setFavorites(prev =>
+        isFavorited
+          ? prev.filter(id => id !== modId)
+          : [...prev, modId]
+      );
+
+      // Call API
+      const response = await fetch(`/api/mods/${modId}/favorite`, {
+        method: isFavorited ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        // Revert optimistic update on error
+        setFavorites(prev =>
+          isFavorited
+            ? [...prev, modId]
+            : prev.filter(id => id !== modId)
+        );
+
+        const error = await response.json();
+        console.error('Failed to toggle favorite:', error);
+
+        // Show error to user (you could add a toast notification here)
+        if (response.status === 401) {
+          alert('Please sign in to favorite mods');
+        }
+      } else {
+        // Refresh the mod data to get updated rating
+        const modsResponse = await fetch('/api/mods');
+        const data = await modsResponse.json();
+        setMods(data.mods);
+        setPagination(data.pagination);
+        setFacets(data.facets);
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setFavorites(prev =>
+        isFavorited
+          ? [...prev, modId]
+          : prev.filter(id => id !== modId)
+      );
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   const clearAllFilters = async () => {
@@ -229,6 +279,7 @@ export default function HomePage() {
     const data = await response.json();
     setMods(data.mods);
     setPagination(data.pagination);
+    setFacets(data.facets);
   };
 
   // Quick filter handlers
@@ -493,13 +544,11 @@ export default function HomePage() {
                           )}
                         </div>
                         <div className="space-y-3">
-                          {['Build/Buy', 'CAS', 'Gameplay', 'Hair', 'Clothing', 'Furniture', 'Scripts'].map((category) => {
-                            // Dynamic counts based on actual mods (fallback to 0 if no mods loaded yet)
-                            const count = mods.filter(mod => mod.category === category).length;
-                            const isSelected = filters.category === category;
+                          {facets?.categories?.map((cat: any) => {
+                            const isSelected = filters.category === cat.value;
                             return (
                               <label
-                                key={category}
+                                key={cat.value}
                                 className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
                                   isSelected
                                     ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200'
@@ -521,13 +570,13 @@ export default function HomePage() {
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
-                                    onChange={() => handleFilterChange({ ...filters, category: isSelected ? undefined : category })}
+                                    onChange={() => handleFilterChange({ ...filters, category: isSelected ? undefined : cat.value })}
                                     className="sr-only"
                                   />
                                   <span className={`text-base font-medium transition-colors ${
                                     isSelected ? 'text-indigo-900' : 'text-gray-700 group-hover:text-gray-900'
                                   }`}>
-                                    {category}
+                                    {cat.value}
                                   </span>
                                 </div>
                                 <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
@@ -535,11 +584,14 @@ export default function HomePage() {
                                     ? 'bg-indigo-600 text-white'
                                     : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                                 }`}>
-                                  {count}
+                                  {cat.count}
                                 </span>
                               </label>
                             );
                           })}
+                          {(!facets?.categories || facets.categories.length === 0) && (
+                            <p className="text-sm text-gray-500 italic">Loading categories...</p>
+                          )}
                         </div>
                       </div>
 
@@ -557,12 +609,11 @@ export default function HomePage() {
                           )}
                         </div>
                         <div className="space-y-3">
-                          {['Sims 4', 'Sims 3', 'Sims 2'].map((version) => {
-                            const count = mods.filter(mod => mod.gameVersion === version).length;
-                            const isSelected = filters.gameVersion === version;
+                          {facets?.gameVersions?.map((ver: any) => {
+                            const isSelected = filters.gameVersion === ver.value;
                             return (
                               <label
-                                key={version}
+                                key={ver.value}
                                 className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
                                   isSelected
                                     ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200'
@@ -584,13 +635,13 @@ export default function HomePage() {
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
-                                    onChange={() => handleFilterChange({ ...filters, gameVersion: isSelected ? undefined : version })}
+                                    onChange={() => handleFilterChange({ ...filters, gameVersion: isSelected ? undefined : ver.value })}
                                     className="sr-only"
                                   />
                                   <span className={`text-base font-medium transition-colors ${
                                     isSelected ? 'text-indigo-900' : 'text-gray-700 group-hover:text-gray-900'
                                   }`}>
-                                    {version}
+                                    {ver.value}
                                   </span>
                                 </div>
                                 <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
@@ -598,11 +649,14 @@ export default function HomePage() {
                                     ? 'bg-indigo-600 text-white'
                                     : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                                 }`}>
-                                  {count}
+                                  {ver.count}
                                 </span>
                               </label>
                             );
                           })}
+                          {(!facets?.gameVersions || facets.gameVersions.length === 0) && (
+                            <p className="text-sm text-gray-500 italic">Loading game versions...</p>
+                          )}
                         </div>
                       </div>
 
@@ -644,7 +698,7 @@ export default function HomePage() {
                                 ? 'bg-emerald-600 text-white'
                                 : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                             }`}>
-                              {mods.filter(m => m.isFree).length}
+                              {facets?.priceRanges?.free || 0}
                             </span>
                           </label>
                         </div>
@@ -837,6 +891,7 @@ export default function HomePage() {
                         const data = await response.json();
                         setMods(data.mods);
                         setPagination(data.pagination);
+                        setFacets(data.facets);
                       }}
                       disabled={!pagination.hasPrevPage}
                       className="px-5 py-3 text-base font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
@@ -854,6 +909,7 @@ export default function HomePage() {
                             const data = await response.json();
                             setMods(data.mods);
                             setPagination(data.pagination);
+                            setFacets(data.facets);
                           }}
                           className={`px-5 py-3 text-base font-medium rounded-xl transition-all duration-200 ${
                                    page === pagination.page
@@ -873,6 +929,7 @@ export default function HomePage() {
                         const data = await response.json();
                         setMods(data.mods);
                         setPagination(data.pagination);
+                        setFacets(data.facets);
                       }}
                       disabled={!pagination.hasNextPage}
                       className="px-5 py-3 text-base font-medium rounded-xl bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-gray-600 shadow-sm hover:shadow-md"

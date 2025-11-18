@@ -21,6 +21,7 @@
     "content:test": "tsx scripts/test-privacy-aggregator.ts",
     "scrape:mhm": "tsx scripts/scrape-musthavemods.ts",
     "update:images": "tsx scripts/update-missing-images.ts",
+    "ratings:recalculate": "tsx scripts/recalculate-ratings.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
