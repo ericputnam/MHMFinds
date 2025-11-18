@@ -637,13 +637,16 @@ export default function HomePage() {
                   {/* Filter Content */}
                   <div className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
                     <div className="p-7 space-y-8">
-                      {/* Categories Section - Hierarchical Tree */}
+                      {/* Categories Section - Hierarchical Tree or Flat Fallback */}
                       <div>
                         <div className="flex items-center justify-between mb-5">
                           <h3 className="font-bold text-base text-gray-900 uppercase tracking-wide">Categories</h3>
-                          {selectedCategoryPath && (
+                          {(selectedCategoryPath || filters.category) && (
                             <button
-                              onClick={() => handleCategorySelect('', '')}
+                              onClick={() => {
+                                setSelectedCategoryPath(undefined);
+                                handleFilterChange({ ...filters, category: undefined });
+                              }}
                               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                             >
                               Clear
@@ -651,11 +654,66 @@ export default function HomePage() {
                           )}
                         </div>
                         <div className="max-h-96 overflow-y-auto pr-2">
-                          <CategoryTree
-                            nodes={facets?.categoryTree || []}
-                            selectedPath={selectedCategoryPath}
-                            onSelect={handleCategorySelect}
-                          />
+                          {/* Show hierarchical tree if available, otherwise fallback to flat list */}
+                          {facets?.categoryTree && facets.categoryTree.length > 0 ? (
+                            <CategoryTree
+                              nodes={facets.categoryTree}
+                              selectedPath={selectedCategoryPath}
+                              onSelect={handleCategorySelect}
+                            />
+                          ) : (
+                            // Fallback to flat category list
+                            <div className="space-y-3">
+                              {facets?.categories?.map((cat: any) => {
+                                const isSelected = filters.category === cat.value;
+                                return (
+                                  <label
+                                    key={cat.value}
+                                    className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
+                                      isSelected
+                                        ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200'
+                                        : 'hover:bg-gray-50 border-2 border-transparent'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-4">
+                                      <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                        isSelected
+                                          ? 'border-indigo-600 bg-indigo-600'
+                                          : 'border-gray-300 group-hover:border-indigo-400'
+                                      }`}>
+                                        {isSelected && (
+                                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => handleFilterChange({ ...filters, category: isSelected ? undefined : cat.value })}
+                                        className="sr-only"
+                                      />
+                                      <span className={`text-base font-medium transition-colors ${
+                                        isSelected ? 'text-indigo-900' : 'text-gray-700 group-hover:text-gray-900'
+                                      }`}>
+                                        {cat.value}
+                                      </span>
+                                    </div>
+                                    <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
+                                      isSelected
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
+                                    }`}>
+                                      {cat.count}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                              {(!facets?.categories || facets.categories.length === 0) && (
+                                <p className="text-sm text-gray-500 italic">Loading categories...</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 

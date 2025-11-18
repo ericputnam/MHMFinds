@@ -22,6 +22,7 @@
     "scrape:mhm": "tsx scripts/scrape-musthavemods.ts",
     "update:images": "tsx scripts/update-missing-images.ts",
     "ratings:recalculate": "tsx scripts/recalculate-ratings.ts",
+    "categories:migrate": "tsx scripts/migrate-categories.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
