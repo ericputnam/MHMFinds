@@ -133,46 +133,30 @@ export class MustHaveModsScraper {
     const lowerTitle = postTitle.toLowerCase();
     const lowerUrl = postUrl.toLowerCase();
 
-    // FIRST: Check if the post has multiple download links (strong indicator of listicle)
-    // This takes precedence over keyword exclusions
-    let downloadLinkCount = 0;
-    $('.entry-content a[href]').each((_, el) => {
-      const href = $(el).attr('href') || '';
-      const text = $(el).text().toLowerCase();
-
-      if (href.includes('patreon.com') ||
-          href.includes('curseforge.com') ||
-          href.includes('thesimsresource.com') ||
-          href.includes('simsdom.com') ||
-          href.includes('tumblr.com/post') ||
-          text.includes('download')) {
-        downloadLinkCount++;
-      }
-    });
-
-    // If it has 3+ download links, it's definitely a listicle (overrides keyword checks)
-    if (downloadLinkCount >= 3) {
-      return true;
-    }
-
-    // SECOND: If low download count, check for exclude keywords
+    // FIRST: Check for exclude keywords - these override everything
     const excludeKeywords = [
-      'guide to',
-      'tutorial',
       'how to',
       'how-to',
+      'guide to',
+      'guide for',
+      'tutorial',
       'cheat codes',
       'cheats for',
+      'all cheats',
       'walkthrough',
       'tips and tricks',
-      'beginner guide',
+      'beginner',
       'getting started',
       'what is',
+      'what are',
       'why you should',
+      'should you',
+      'review of',
       'game review',
       'mod review',
       'patch notes',
-      'official announcement',
+      'announcement',
+      'news:',
     ];
 
     for (const keyword of excludeKeywords) {
@@ -181,8 +165,25 @@ export class MustHaveModsScraper {
       }
     }
 
-    // If it has very few download links and doesn't match exclude patterns,
-    // still reject it as it's probably not a mod listicle
+    // SECOND: Check if the post has properly structured mod blocks
+    // Count H2/H3 headers followed immediately by images
+    let modBlockCount = 0;
+    $('.entry-content h2, .entry-content h3').each((_, el) => {
+      const $header = $(el);
+      const $next = $header.next();
+
+      // Check if immediately followed by an image (figure.wp-block-image)
+      if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+        modBlockCount++;
+      }
+    });
+
+    // If it has 3+ properly structured mod blocks (header + image), it's a listicle
+    if (modBlockCount >= 3) {
+      return true;
+    }
+
+    // Otherwise, not a mod listicle
     return false;
   }
 
@@ -293,8 +294,13 @@ export class MustHaveModsScraper {
           }
         }
 
-        // Look for mod entries with H2 or H3 headings
-        if ($el.is('h2') || $el.is('h3')) {
+        // Update category when we hit H2 headers (these are category dividers, not mods)
+        if ($el.is('h2')) {
+          currentCategory = $el.text().trim();
+        }
+
+        // Look for mod entries with H3 headings ONLY (H2 are category headers)
+        if ($el.is('h3')) {
           let modTitle = $el.text().trim();
 
           // Skip if it's not a real mod title
@@ -408,82 +414,31 @@ export class MustHaveModsScraper {
             $next = $next.next();
           }
 
-          // STEP 3: Look for DOWNLOAD LINK and DESCRIPTION (can be further away)
+          // STEP 3: Look for DOWNLOAD LINK - MUST be within next 5 elements
+          // Structure: image → (optional description p tags) → download p/button
           $next = $el.next();
           let downloadUrl: string | undefined;
           let description = '';
+          let elementsChecked = 0;
 
-          for (let i = 0; i < 10 && $next.length > 0; i++) {
-            // Skip Mediavine ad blocks
+          // Skip to first element after the image
+          if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+            $next = $next.next();
+          }
+
+
+          // Look ONLY in next 5 elements for download link
+          while (elementsChecked < 5 && $next.length > 0) {
+
+            // Skip ONLY Mediavine ad blocks (not all DIVs!)
             if ($next.hasClass('mv-ad-box') ||
                 $next.attr('id')?.includes('mediavine') ||
+                $next.attr('id')?.includes('ad-') ||
+                $next.attr('class')?.includes('ad-') ||
                 $next.find('.mv-ad-box').length > 0) {
               $next = $next.next();
+              elementsChecked++;
               continue;
-            }
-
-            // Extract download link from paragraphs
-            if ($next.is('p')) {
-              const text = $next.text().trim();
-              const textLower = text.toLowerCase();
-
-              // Check for download link - prioritize external links
-              const links = $next.find('a[href]');
-              links.each((_, linkEl) => {
-                const $linkEl = $(linkEl);
-                const href = $linkEl.attr('href');
-                const linkText = $linkEl.text().toLowerCase();
-
-                // Skip internal blog links
-                if (!href || href.includes(this.baseUrl) || href.startsWith('#')) {
-                  return;
-                }
-
-                // Skip Mediavine and ad links
-                if (href.includes('mediavine.com') ||
-                    href.includes('doubleclick.net') ||
-                    href.includes('googleadservices')) {
-                  return;
-                }
-
-                // Prioritize links with "download" text or after "Download:" label
-                // Also accept direct links to mod platforms
-                if (!downloadUrl && (
-                  linkText.includes('download') ||
-                  linkText.includes('get') ||
-                  textLower.includes('download:') ||
-                  textLower.includes('download link') ||
-                  href.includes('patreon.com') ||
-                  href.includes('curseforge.com') ||
-                  href.includes('thesimsresource.com') ||
-                  href.includes('simsdom.com') ||
-                  href.includes('tumblr.com/post')
-                )) {
-                  downloadUrl = href;
-                }
-              });
-
-              // Get description (skip download-only paragraphs)
-              if (text && !textLower.startsWith('download') && text.length > 10) {
-                description += (description ? ' ' : '') + text;
-              }
-            }
-
-            // Check for download button elements
-            if (!downloadUrl && ($next.is('a') || $next.find('a').length > 0)) {
-              const $link = $next.is('a') ? $next : $next.find('a').first();
-              const href = $link.attr('href');
-              const linkText = $link.text().toLowerCase();
-
-              if (href &&
-                  !href.includes(this.baseUrl) &&
-                  !href.includes('mediavine.com') &&
-                  (linkText.includes('download') ||
-                   href.includes('patreon.com') ||
-                   href.includes('curseforge.com') ||
-                   href.includes('thesimsresource.com'))) {
-                downloadUrl = href;
-              }
             }
 
             // Stop if we hit another h2 or h3 (next mod entry)
@@ -491,7 +446,182 @@ export class MustHaveModsScraper {
               break;
             }
 
+            // Check for download link in: paragraph, DIV with paragraphs, or DIV with direct links
+            let $searchIn: cheerio.Cheerio<any> | null = null;
+            let directLinks: cheerio.Cheerio<any> | null = null;
+
+            if ($next.is('p')) {
+              $searchIn = $next;
+            } else if ($next.is('div')) {
+              // Check if DIV contains paragraphs
+              const $paragraphs = $next.find('p');
+              if ($paragraphs.length > 0) {
+                $searchIn = $paragraphs.first();
+              } else {
+                // DIV has direct links (no paragraphs)
+                directLinks = $next.find('a[href]');
+              }
+            }
+
+            // Process direct links in DIV (no paragraphs)
+            if (directLinks && directLinks.length > 0) {
+              directLinks.each((_, linkEl) => {
+                if (downloadUrl) return; // Already found
+
+                const $linkEl = $(linkEl);
+                const href = $linkEl.attr('href');
+                const linkText = $linkEl.text().toLowerCase().trim();
+
+                // Skip internal/ad links
+                if (!href ||
+                    href.includes(this.baseUrl) ||
+                    href.startsWith('#') ||
+                    href.includes('mediavine.com') ||
+                    href.includes('doubleclick.net') ||
+                    href.includes('googleadservices')) {
+                  return;
+                }
+
+                // Accept download links or mod platform links
+                const isExplicitDownload = (
+                  linkText === 'download' ||
+                  linkText === 'get' ||
+                  linkText === 'download here' ||
+                  linkText === 'get it here'
+                );
+
+                const isModPlatformLink = (
+                  href.includes('patreon.com/posts/') ||
+                  href.includes('curseforge.com/') ||
+                  href.includes('thesimsresource.com/downloads/') ||
+                  href.includes('simsdom.com/') ||
+                  href.includes('tumblr.com/post/')
+                );
+
+                if (isExplicitDownload || isModPlatformLink) {
+                  downloadUrl = href;
+                }
+              });
+            }
+
+            // Process links inside paragraphs
+            if ($searchIn && $searchIn.length > 0) {
+              const text = $searchIn.text().trim();
+              const textLower = text.toLowerCase();
+
+              // Look for explicit "Download:" label or download button
+              const links = $searchIn.find('a[href]');
+              if (links.length === 0 && $searchIn.is('p')) {
+                // Check if the paragraph itself contains a link
+                const directLinks = $searchIn.parent().find('a[href]');
+                directLinks.each((_, linkEl) => {
+                  const $linkEl = $(linkEl);
+                  const href = $linkEl.attr('href');
+                  const linkText = $linkEl.text().toLowerCase();
+
+                  // Skip internal blog links and ads
+                  if (!href ||
+                      href.includes(this.baseUrl) ||
+                      href.startsWith('#') ||
+                      href.includes('mediavine.com') ||
+                      href.includes('doubleclick.net') ||
+                      href.includes('googleadservices')) {
+                    return;
+                  }
+
+                  // Accept if:
+                  // 1. Explicitly marked as download, OR
+                  // 2. Links to a mod platform (Patreon, CurseForge, etc.)
+                  const isExplicitDownload = (
+                    textLower.startsWith('download:') ||
+                    textLower.startsWith('download link:') ||
+                    textLower === 'download' ||
+                    linkText === 'download' ||
+                    linkText === 'get' ||
+                    linkText === 'download here' ||
+                    linkText === 'get it here' ||
+                    linkText.trim() === 'download' ||
+                    linkText.trim() === 'get'
+                  );
+
+                  const isModPlatformLink = (
+                    href.includes('patreon.com/posts/') ||
+                    href.includes('curseforge.com/') ||
+                    href.includes('thesimsresource.com/downloads/') ||
+                    href.includes('simsdom.com/') ||
+                    href.includes('tumblr.com/post/')
+                  );
+
+                  if (!downloadUrl && (isExplicitDownload || isModPlatformLink)) {
+                    downloadUrl = href;
+                  }
+                });
+              } else {
+                links.each((_, linkEl) => {
+                  const $linkEl = $(linkEl);
+                  const href = $linkEl.attr('href');
+                  const linkText = $linkEl.text().toLowerCase();
+
+                  // Skip internal blog links and ads
+                  if (!href ||
+                      href.includes(this.baseUrl) ||
+                      href.startsWith('#') ||
+                      href.includes('mediavine.com') ||
+                      href.includes('doubleclick.net') ||
+                      href.includes('googleadservices')) {
+                    return;
+                  }
+
+                  // Accept if:
+                  // 1. Explicitly marked as download, OR
+                  // 2. Links to a mod platform (Patreon, CurseForge, etc.)
+                  const isExplicitDownload = (
+                    textLower.startsWith('download:') ||
+                    textLower.startsWith('download link:') ||
+                    textLower === 'download' ||
+                    linkText === 'download' ||
+                    linkText === 'get' ||
+                    linkText === 'download here' ||
+                    linkText === 'get it here' ||
+                    linkText.trim() === 'download' ||
+                    linkText.trim() === 'get'
+                  );
+
+                  const isModPlatformLink = (
+                    href.includes('patreon.com/posts/') ||
+                    href.includes('curseforge.com/') ||
+                    href.includes('thesimsresource.com/downloads/') ||
+                    href.includes('simsdom.com/') ||
+                    href.includes('tumblr.com/post/')
+                  );
+
+                  if (!downloadUrl && (isExplicitDownload || isModPlatformLink)) {
+                    downloadUrl = href;
+                  }
+                });
+              }
+
+              // Collect description (skip download paragraphs)
+              if (!textLower.startsWith('download') && text.length > 10) {
+                description += (description ? ' ' : '') + text;
+              }
+            }
+
+            // Check for standalone download link/button
+            if (!downloadUrl && $next.is('a')) {
+              const href = $next.attr('href');
+              const linkText = $next.text().toLowerCase();
+
+              if (href &&
+                  !href.includes(this.baseUrl) &&
+                  !href.includes('mediavine.com') &&
+                  (linkText === 'download' || linkText === 'get')) {
+                downloadUrl = href;
+              }
+            }
+
             $next = $next.next();
+            elementsChecked++;
           }
 
           // CRITICAL FILTER: Skip if no download link found

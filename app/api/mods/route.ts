@@ -104,6 +104,106 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Build base where clause for facets (exclude current filters to show all available options)
+    const facetWhere: any = {
+      isVerified: true,
+      isNSFW: false,
+    };
+
+    if (search) {
+      facetWhere.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { tags: { hasSome: [search] } },
+      ];
+    }
+
+    // Get facet counts
+    const [
+      allMods,
+      categoryGroups,
+      gameVersionGroups,
+      sourceGroups,
+    ] = await Promise.all([
+      // Get all mods matching search to calculate facets
+      prisma.mod.findMany({
+        where: facetWhere,
+        select: {
+          category: true,
+          gameVersion: true,
+          source: true,
+          tags: true,
+          isFree: true,
+          price: true,
+          rating: true,
+        },
+      }),
+      // Category aggregation
+      prisma.mod.groupBy({
+        by: ['category'],
+        where: facetWhere,
+        _count: true,
+        orderBy: {
+          _count: {
+            category: 'desc',
+          },
+        },
+      }),
+      // Game version aggregation
+      prisma.mod.groupBy({
+        by: ['gameVersion'],
+        where: facetWhere,
+        _count: true,
+        orderBy: {
+          _count: {
+            gameVersion: 'desc',
+          },
+        },
+      }),
+      // Source aggregation
+      prisma.mod.groupBy({
+        by: ['source'],
+        where: facetWhere,
+        _count: true,
+        orderBy: {
+          _count: {
+            source: 'desc',
+          },
+        },
+      }),
+    ]);
+
+    // Calculate tag counts
+    const tagCounts: Record<string, number> = {};
+    allMods.forEach(mod => {
+      mod.tags?.forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+
+    // Get top 20 tags
+    const topTags = Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([tag, count]) => ({ tag, count }));
+
+    // Calculate price range counts
+    const priceRanges = {
+      free: allMods.filter(m => m.isFree).length,
+      under5: allMods.filter(m => !m.isFree && m.price && Number(m.price) < 5).length,
+      '5to10': allMods.filter(m => !m.isFree && m.price && Number(m.price) >= 5 && Number(m.price) < 10).length,
+      '10to20': allMods.filter(m => !m.isFree && m.price && Number(m.price) >= 10 && Number(m.price) < 20).length,
+      over20: allMods.filter(m => !m.isFree && m.price && Number(m.price) >= 20).length,
+    };
+
+    // Calculate rating counts
+    const ratingRanges = {
+      '4plus': allMods.filter(m => m.rating && Number(m.rating) >= 4.0).length,
+      '3plus': allMods.filter(m => m.rating && Number(m.rating) >= 3.0 && Number(m.rating) < 4.0).length,
+      '2plus': allMods.filter(m => m.rating && Number(m.rating) >= 2.0 && Number(m.rating) < 3.0).length,
+      under2: allMods.filter(m => m.rating && Number(m.rating) < 2.0).length,
+    };
+
     const totalPages = Math.ceil(total / limit);
 
     // Transform mods to serialize Decimal fields properly
@@ -122,6 +222,25 @@ export async function GET(request: NextRequest) {
         totalPages,
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,
+      },
+      facets: {
+        categories: categoryGroups.map(g => ({
+          value: g.category,
+          count: g._count,
+        })),
+        gameVersions: gameVersionGroups
+          .filter(g => g.gameVersion)
+          .map(g => ({
+            value: g.gameVersion,
+            count: g._count,
+          })),
+        sources: sourceGroups.map(g => ({
+          value: g.source,
+          count: g._count,
+        })),
+        tags: topTags,
+        priceRanges,
+        ratingRanges,
       },
     });
   } catch (error) {

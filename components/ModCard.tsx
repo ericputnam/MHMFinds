@@ -172,13 +172,17 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
         )}
 
         {/* Stats Row */}
-        <div className="flex items-center justify-between mb-4 text-xs text-gray-500">
-          <div className="flex items-center gap-1">
-            <Star size={14} className="text-yellow-500 fill-current" />
-            <span>{typeof mod.rating === 'number' ? mod.rating.toFixed(1) : '4.5'}</span>
-            <span className="text-gray-400">({formatNumber(mod.ratingCount || 0)})</span>
+        <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
+          <div className="flex items-center gap-1.5">
+            <Star size={16} className="text-yellow-500 fill-current" />
+            <span className="font-semibold text-gray-900">
+              {typeof mod.rating === 'number' ? mod.rating.toFixed(1) : 'N/A'}
+            </span>
+            <span className="text-gray-400">
+              ({mod.ratingCount > 0 ? `${formatNumber(mod.ratingCount)} reviews` : 'calculated'})
+            </span>
           </div>
-          <div className="text-gray-400">
+          <div className="text-gray-500 font-medium">
             {mod.gameVersion}
           </div>
         </div>
