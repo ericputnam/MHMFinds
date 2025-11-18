@@ -133,24 +133,46 @@ export class MustHaveModsScraper {
     const lowerTitle = postTitle.toLowerCase();
     const lowerUrl = postUrl.toLowerCase();
 
-    // Exclude guides, tutorials, news, cheats, and how-tos
+    // FIRST: Check if the post has multiple download links (strong indicator of listicle)
+    // This takes precedence over keyword exclusions
+    let downloadLinkCount = 0;
+    $('.entry-content a[href]').each((_, el) => {
+      const href = $(el).attr('href') || '';
+      const text = $(el).text().toLowerCase();
+
+      if (href.includes('patreon.com') ||
+          href.includes('curseforge.com') ||
+          href.includes('thesimsresource.com') ||
+          href.includes('simsdom.com') ||
+          href.includes('tumblr.com/post') ||
+          text.includes('download')) {
+        downloadLinkCount++;
+      }
+    });
+
+    // If it has 3+ download links, it's definitely a listicle (overrides keyword checks)
+    if (downloadLinkCount >= 3) {
+      return true;
+    }
+
+    // SECOND: If low download count, check for exclude keywords
     const excludeKeywords = [
-      'guide',
+      'guide to',
       'tutorial',
       'how to',
       'how-to',
-      'cheat',
+      'cheat codes',
+      'cheats for',
       'walkthrough',
       'tips and tricks',
-      'beginner',
+      'beginner guide',
       'getting started',
       'what is',
       'why you should',
-      'review',
-      'news',
-      'update',
+      'game review',
+      'mod review',
       'patch notes',
-      'announcement',
+      'official announcement',
     ];
 
     for (const keyword of excludeKeywords) {
@@ -159,20 +181,9 @@ export class MustHaveModsScraper {
       }
     }
 
-    // Check if the post has multiple download links (strong indicator of listicle)
-    const downloadLinkCount = $('.entry-content a[href*="patreon.com"], .entry-content a[href*="curseforge.com"], .entry-content a[href*="thesimsresource.com"], .entry-content a:contains("Download")').length;
-
-    // If it has 3+ download links, it's likely a listicle
-    if (downloadLinkCount >= 3) {
-      return true;
-    }
-
-    // If it has fewer than 3 download links and matches exclude keywords, skip it
-    if (downloadLinkCount < 3) {
-      return false;
-    }
-
-    return true;
+    // If it has very few download links and doesn't match exclude patterns,
+    // still reject it as it's probably not a mod listicle
+    return false;
   }
 
   /**
