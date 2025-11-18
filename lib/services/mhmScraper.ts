@@ -228,76 +228,14 @@ export class MustHaveModsScraper {
           currentCategory = $el.text().trim();
         }
 
-        // Look for mod entries in paragraphs with multiple links (Format 2)
-        // Example: <p><a>hair</a>, <a>crown</a>, <a>graphic lines</a></p>
-        if ($el.is('p') && !$el.hasClass('related-post')) {
-          const links = $el.find('a[href]');
-          if (links.length > 0) {
-            links.each((_, linkEl) => {
-              const $link = $(linkEl);
-              const linkText = $link.text().trim();
-              const linkHref = $link.attr('href');
-
-              // Skip if it's just "Download", "Title", or very short
-              if (!linkHref || linkText.length < 3) {
-                return;
-              }
-
-              const lowerLinkText = linkText.toLowerCase();
-              if (lowerLinkText === 'download' ||
-                  lowerLinkText === 'title' ||
-                  lowerLinkText === 'click here' ||
-                  lowerLinkText === 'here' ||
-                  lowerLinkText === 'link') {
-                return;
-              }
-
-              // Skip internal links or related posts
-              if (linkHref.includes(this.baseUrl) || linkHref.startsWith('#')) {
-                return;
-              }
-
-              // Skip Mediavine and ad links
-              if (linkHref.includes('mediavine.com') ||
-                  linkHref.includes('doubleclick.net') ||
-                  linkHref.includes('googleadservices')) {
-                return;
-              }
-
-              // Extract author from URL
-              let author: string | undefined;
-              try {
-                const url = new URL(linkHref);
-                author = this.extractAuthorFromUrl(url);
-              } catch (error) {
-                // Invalid URL
-              }
-
-              // Create mod from link
-              mods.push({
-                title: linkText,
-                description: undefined,
-                shortDescription: undefined,
-                category: this.normalizeCategory(currentCategory),
-                tags: [...postTags, ...postCategories, currentCategory].filter(t => t && t.length > 0),
-                thumbnail: featuredImage, // Use featured image as fallback
-                images: featuredImage ? [featuredImage] : [],
-                downloadUrl: linkHref,
-                sourceUrl: postUrl,
-                source: 'MustHaveMods.com',
-                author,
-                isFree: true, // Assume free if in a link list
-                isNSFW: false,
-                publishedAt: postDate ? new Date(postDate) : new Date(),
-              });
-            });
-          }
-        }
-
-        // Update category when we hit H2 headers (these are category dividers, not mods)
-        if ($el.is('h2')) {
-          currentCategory = $el.text().trim();
-        }
+        // DISABLED: Format 2 (paragraph link lists) - causes false positives
+        // This was creating mods from description links like "Lighting Overlay 1.0" and "by Josh"
+        // MustHaveMods.com uses H3-based structure, so this Format 2 code is not needed
+        //
+        // If we ever need to support simple link-list posts, we should:
+        // 1. Detect if the post has H3 headers first
+        // 2. Only use this Format 2 if there are NO H3 headers
+        // 3. Add stricter validation to avoid description/author links
 
         // Look for mod entries with H3 headings ONLY (H2 are category headers)
         if ($el.is('h3')) {
