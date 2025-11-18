@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SearchBar, SearchFilters } from '../components/SearchBar';
 import { ModGrid } from '../components/ModGrid';
+import { CategoryTree, CategoryNode } from '../components/CategoryTree';
 import { Mod } from '../lib/api';
 import { Search, Crown, TrendingUp, Clock, Star, Filter as FilterIcon, X, ChevronDown, Grid3x3, LayoutGrid, List, Sparkles, Tag, Zap, SlidersHorizontal } from 'lucide-react';
 
@@ -13,6 +14,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({});
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategoryPath, setSelectedCategoryPath] = useState<string | undefined>();
   const [selectedGameVersions, setSelectedGameVersions] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
@@ -163,6 +165,17 @@ export default function HomePage() {
     await applyFilters(newCategories, selectedGameVersions, filters);
   };
 
+  const handleCategorySelect = async (categoryId: string, categoryPath: string) => {
+    // If clicking the same category, deselect it
+    if (selectedCategoryPath === categoryPath) {
+      setSelectedCategoryPath(undefined);
+      await applyFiltersWithCategoryPath(undefined, selectedGameVersions, filters);
+    } else {
+      setSelectedCategoryPath(categoryPath);
+      await applyFiltersWithCategoryPath(categoryPath, selectedGameVersions, filters);
+    }
+  };
+
   const handleGameVersionToggle = async (version: string) => {
     const newVersions = selectedGameVersions.includes(version)
       ? selectedGameVersions.filter(v => v !== version)
@@ -192,6 +205,52 @@ export default function HomePage() {
       } else {
         // Otherwise add from categories array
         categories.forEach(cat => params.append('category', cat));
+      }
+
+      // Add gameVersion from otherFilters if present (takes precedence)
+      if (otherFilters.gameVersion) {
+        params.append('gameVersion', otherFilters.gameVersion);
+      } else {
+        // Otherwise add from gameVersions array
+        gameVersions.forEach(ver => params.append('gameVersion', ver));
+      }
+
+      // Add other filters (excluding category and gameVersion as they're handled above)
+      Object.entries(otherFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && key !== 'category' && key !== 'gameVersion') {
+          params.append(key, value.toString());
+        }
+      });
+
+      const response = await fetch(`/api/mods?${params.toString()}`);
+      const data = await response.json();
+      setMods(data.mods);
+      setPagination(data.pagination);
+      setFacets(data.facets);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Filter failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFiltersWithCategoryPath = async (
+    categoryPath: string | undefined,
+    gameVersions: string[],
+    otherFilters: SearchFilters
+  ) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+
+      // Add search query if exists
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+
+      // Add hierarchical category path
+      if (categoryPath) {
+        params.append('categoryPath', categoryPath);
       }
 
       // Add gameVersion from otherFilters if present (takes precedence)
@@ -578,68 +637,25 @@ export default function HomePage() {
                   {/* Filter Content */}
                   <div className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
                     <div className="p-7 space-y-8">
-                      {/* Categories Section */}
+                      {/* Categories Section - Hierarchical Tree */}
                       <div>
                         <div className="flex items-center justify-between mb-5">
                           <h3 className="font-bold text-base text-gray-900 uppercase tracking-wide">Categories</h3>
-                          {filters.category && (
+                          {selectedCategoryPath && (
                             <button
-                              onClick={() => handleFilterChange({ ...filters, category: undefined })}
+                              onClick={() => handleCategorySelect('', '')}
                               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                             >
                               Clear
                             </button>
                           )}
                         </div>
-                        <div className="space-y-3">
-                          {facets?.categories?.map((cat: any) => {
-                            const isSelected = filters.category === cat.value;
-                            return (
-                              <label
-                                key={cat.value}
-                                className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 group ${
-                                  isSelected
-                                    ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200'
-                                    : 'hover:bg-gray-50 border-2 border-transparent'
-                                }`}
-                              >
-                                <div className="flex items-center gap-4">
-                                  <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-                                    isSelected
-                                      ? 'border-indigo-600 bg-indigo-600'
-                                      : 'border-gray-300 group-hover:border-indigo-400'
-                                  }`}>
-                                    {isSelected && (
-                                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                      </svg>
-                                    )}
-                                  </div>
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => handleFilterChange({ ...filters, category: isSelected ? undefined : cat.value })}
-                                    className="sr-only"
-                                  />
-                                  <span className={`text-base font-medium transition-colors ${
-                                    isSelected ? 'text-indigo-900' : 'text-gray-700 group-hover:text-gray-900'
-                                  }`}>
-                                    {cat.value}
-                                  </span>
-                                </div>
-                                <span className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
-                                  isSelected
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
-                                }`}>
-                                  {cat.count}
-                                </span>
-                              </label>
-                            );
-                          })}
-                          {(!facets?.categories || facets.categories.length === 0) && (
-                            <p className="text-sm text-gray-500 italic">Loading categories...</p>
-                          )}
+                        <div className="max-h-96 overflow-y-auto pr-2">
+                          <CategoryTree
+                            nodes={facets?.categoryTree || []}
+                            selectedPath={selectedCategoryPath}
+                            onSelect={handleCategorySelect}
+                          />
                         </div>
                       </div>
 
