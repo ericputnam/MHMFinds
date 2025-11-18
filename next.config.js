@@ -12,7 +12,8 @@ const nextConfig = {
       'curseforge.com',
       'media.tumblr.com',
       'images.unsplash.com',
-      'via.placeholder.com'
+      'via.placeholder.com',
+      'musthavemods.com'
     ],
   },
   async headers() {

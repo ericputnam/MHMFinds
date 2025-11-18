@@ -1,12 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { aiCategorizer } from './aiCategorizer';
 
 export interface ScrapedMod {
   title: string;
   description?: string;
   shortDescription?: string;
-  category?: string;
+  category?: string; // DEPRECATED: flat category string
+  categoryId?: string; // NEW: hierarchical category reference
+  categoryPath?: string[]; // NEW: category breadcrumb for display
   tags: string[];
   thumbnail?: string;
   images: string[];
@@ -188,6 +191,21 @@ export class MustHaveModsScraper {
   }
 
   /**
+   * Extract URL slug from post URL for AI categorization
+   * Example: https://musthavemods.com/sims-4-lamp-cc/ -> "sims-4-lamp-cc"
+   */
+  private extractUrlSlug(postUrl: string): string {
+    try {
+      const url = new URL(postUrl);
+      const pathParts = url.pathname.split('/').filter(p => p.length > 0);
+      // Get the last part of the path (the slug)
+      return pathParts[pathParts.length - 1] || '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  /**
    * Scrape mods from a single blog post
    */
   async scrapeModsFromPost(postUrl: string): Promise<ScrapedMod[]> {
@@ -213,10 +231,26 @@ export class MustHaveModsScraper {
         return [];
       }
 
+      // Extract URL slug for AI categorization
+      const urlSlug = this.extractUrlSlug(postUrl);
+      console.log(`   📝 URL slug: "${urlSlug}"`);
+
+      // Use AI to determine hierarchical category
+      let categoryId: string | undefined;
+      let categoryPath: string[] | undefined;
+      try {
+        categoryId = await aiCategorizer.categorizeFromSlug(urlSlug, postTitle);
+        categoryPath = await aiCategorizer.getCategoryBreadcrumb(categoryId);
+        console.log(`   🤖 AI Category: ${categoryPath.join(' > ')}`);
+      } catch (error) {
+        console.error(`   ⚠️  AI categorization failed:`, error);
+        // Fallback to old flat category system
+      }
+
       // Get featured image as fallback
       const featuredImage = this.extractFeaturedImage($);
 
-      // Extract main category from h2 tags
+      // Extract main category from h2 tags (used for old flat system)
       let currentCategory = 'Other';
 
       // Iterate through all elements in the content
@@ -525,7 +559,9 @@ export class MustHaveModsScraper {
               title: modTitle,
               description: description || undefined,
               shortDescription: description ? description.substring(0, 200) : undefined,
-              category: this.normalizeCategory(currentCategory),
+              category: this.normalizeCategory(currentCategory), // Flat category (legacy)
+              categoryId, // NEW: hierarchical category ID
+              categoryPath, // NEW: category breadcrumb for display
               tags: [...new Set(tags)], // Remove duplicates
               thumbnail: finalThumbnail,
               images: finalImages,

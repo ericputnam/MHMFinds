@@ -55,6 +55,27 @@ model CreatorProfile {
   @@map("creator_profiles")
 }
 
+model Category {
+  id          String   @id @default(cuid())
+  name        String   // "Lamp", "House", "Build/Buy"
+  slug        String   @unique // "lamp", "house", "build-buy"
+  path        String   @unique // "cc/house/lamp" - materialized path for queries
+  level       Int      // 0 = root (CC), 1 = second level (House), etc.
+  parentId    String?  // Self-referential for tree structure
+  description String?
+  icon        String?
+  order       Int      @default(0) // For sorting categories
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  mods        Mod[]
+
+  @@map("categories")
+}
+
 model Mod {
   id          String   @id @default(cuid())
   title       String
@@ -62,7 +83,8 @@ model Mod {
   shortDescription String?
   version     String?
   gameVersion String? // Sims 4, Sims 3, etc.
-  category    String  // Build/Buy, CAS, Gameplay, etc.
+  category    String  // DEPRECATED: kept for migration, use categoryId
+  categoryId  String? // New hierarchical category reference
   tags        String[] // Array of tags for search
   thumbnail   String?
   images      String[] // Array of image URLs
@@ -89,6 +111,7 @@ model Mod {
   // Relations
   creatorId   String?
   creator     CreatorProfile? @relation(fields: [creatorId], references: [id])
+  categoryRel Category? @relation(fields: [categoryId], references: [id])
   reviews     Review[]
   favorites   Favorite[]
   downloads   Download[]

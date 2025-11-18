@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const search = searchParams.get('search');
-    const category = searchParams.get('category');
+    const category = searchParams.get('category'); // OLD: flat category string
+    const categoryId = searchParams.get('categoryId'); // NEW: hierarchical category ID
+    const categoryPath = searchParams.get('categoryPath'); // NEW: category path for hierarchical filtering
     const gameVersion = searchParams.get('gameVersion');
     const tags = searchParams.get('tags');
     const isFree = searchParams.get('isFree');
@@ -48,7 +50,20 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (category) {
+    // Category filtering: support both old flat categories and new hierarchical categories
+    if (categoryId) {
+      // NEW: Filter by hierarchical category ID
+      where.categoryId = categoryId;
+    } else if (categoryPath) {
+      // NEW: Filter by category path (e.g., "cc/build-buy/house")
+      // This will match all mods in this category and all subcategories
+      where.categoryRel = {
+        path: {
+          startsWith: categoryPath,
+        },
+      };
+    } else if (category) {
+      // OLD: Filter by flat category string (legacy support)
       where.category = category;
     }
 
@@ -94,6 +109,15 @@ export async function GET(request: NextRequest) {
             isVerified: true,
           },
         },
+        categoryRel: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            path: true,
+            level: true,
+          },
+        },
         _count: {
           select: {
             reviews: true,
@@ -122,6 +146,8 @@ export async function GET(request: NextRequest) {
     const [
       allMods,
       categoryGroups,
+      hierarchicalCategoryGroups,
+      allCategories,
       gameVersionGroups,
       sourceGroups,
     ] = await Promise.all([
@@ -130,6 +156,7 @@ export async function GET(request: NextRequest) {
         where: facetWhere,
         select: {
           category: true,
+          categoryId: true,
           gameVersion: true,
           source: true,
           tags: true,
@@ -138,7 +165,7 @@ export async function GET(request: NextRequest) {
           rating: true,
         },
       }),
-      // Category aggregation
+      // OLD: Flat category aggregation (for legacy support)
       prisma.mod.groupBy({
         by: ['category'],
         where: facetWhere,
@@ -148,6 +175,21 @@ export async function GET(request: NextRequest) {
             category: 'desc',
           },
         },
+      }),
+      // NEW: Hierarchical category aggregation
+      prisma.mod.groupBy({
+        by: ['categoryId'],
+        where: {
+          ...facetWhere,
+          categoryId: {
+            not: null,
+          },
+        },
+        _count: true,
+      }),
+      // Get all categories for building the tree
+      prisma.category.findMany({
+        orderBy: [{ level: 'asc' }, { order: 'asc' }, { name: 'asc' }],
       }),
       // Game version aggregation
       prisma.mod.groupBy({
@@ -206,6 +248,59 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Build hierarchical category tree with counts
+    const categoryCounts = new Map<string, number>();
+    hierarchicalCategoryGroups.forEach((group) => {
+      if (group.categoryId) {
+        categoryCounts.set(group.categoryId, group._count);
+      }
+    });
+
+    // Build category tree structure
+    const categoryMap = new Map<string, any>();
+    const categoryTreeRoots: any[] = [];
+
+    // First pass: create all nodes with counts
+    allCategories.forEach((cat) => {
+      const count = categoryCounts.get(cat.id) || 0;
+      categoryMap.set(cat.id, {
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        path: cat.path,
+        level: cat.level,
+        count,
+        children: [],
+      });
+    });
+
+    // Second pass: build tree by connecting parents and children
+    allCategories.forEach((cat) => {
+      const node = categoryMap.get(cat.id);
+      if (cat.parentId) {
+        const parent = categoryMap.get(cat.parentId);
+        if (parent) {
+          parent.children.push(node);
+          // Accumulate child counts to parent
+          parent.count = (parent.count || 0) + (node.count || 0);
+        }
+      } else {
+        categoryTreeRoots.push(node);
+      }
+    });
+
+    // Filter out categories with 0 count (and their empty children)
+    const filterEmptyCategories = (node: any): boolean => {
+      // Filter children first
+      if (node.children && node.children.length > 0) {
+        node.children = node.children.filter(filterEmptyCategories);
+      }
+      // Keep node if it has count > 0 or has non-empty children
+      return node.count > 0 || (node.children && node.children.length > 0);
+    };
+
+    const filteredCategoryTree = categoryTreeRoots.filter(filterEmptyCategories);
+
     // Transform mods to serialize Decimal fields properly
     const serializedMods = mods.map(mod => ({
       ...mod,
@@ -224,10 +319,13 @@ export async function GET(request: NextRequest) {
         hasPrevPage: page > 1,
       },
       facets: {
+        // OLD: Flat categories (for legacy support)
         categories: categoryGroups.map(g => ({
           value: g.category,
           count: g._count,
         })),
+        // NEW: Hierarchical category tree
+        categoryTree: filteredCategoryTree,
         gameVersions: gameVersionGroups
           .filter(g => g.gameVersion)
           .map(g => ({
@@ -266,7 +364,8 @@ export async function POST(request: NextRequest) {
       shortDescription,
       version,
       gameVersion,
-      category,
+      category, // OLD: flat category string
+      categoryId, // NEW: hierarchical category ID
       tags,
       thumbnail,
       images,
@@ -279,7 +378,8 @@ export async function POST(request: NextRequest) {
       isNSFW,
     } = body;
 
-    if (!title || !category || !gameVersion) {
+    // Require either old category or new categoryId
+    if (!title || (!category && !categoryId) || !gameVersion) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -307,7 +407,8 @@ export async function POST(request: NextRequest) {
         shortDescription,
         version,
         gameVersion,
-        category,
+        category: category || 'Other', // Fallback to 'Other' if not provided
+        categoryId, // NEW: hierarchical category reference
         tags,
         thumbnail,
         images,
@@ -327,6 +428,15 @@ export async function POST(request: NextRequest) {
             id: true,
             handle: true,
             isVerified: true,
+          },
+        },
+        categoryRel: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            path: true,
+            level: true,
           },
         },
         _count: {
