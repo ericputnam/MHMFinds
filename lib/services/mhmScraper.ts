@@ -166,9 +166,9 @@ export class MustHaveModsScraper {
     }
 
     // SECOND: Check if the post has properly structured mod blocks
-    // Count H2/H3 headers followed immediately by images
+    // Count H3/H4 headers followed immediately by images (H2 are page sections)
     let modBlockCount = 0;
-    $('.entry-content h2, .entry-content h3').each((_, el) => {
+    $('.entry-content h3, .entry-content h4').each((_, el) => {
       const $header = $(el);
       const $next = $header.next();
 
@@ -223,22 +223,28 @@ export class MustHaveModsScraper {
       $('.entry-content > *').each((_, element) => {
         const $el = $(element);
 
-        // Update category when we hit an h2
-        if ($el.is('h2')) {
-          currentCategory = $el.text().trim();
+        // Update category when we hit H2 or H3 headers (category dividers)
+        if ($el.is('h2') || $el.is('h3')) {
+          const headerText = $el.text().trim();
+          // Only update category if it's NOT followed by an image
+          // (real mods have images, category headers don't)
+          const $nextEl = $el.next();
+          if (!$nextEl.is('figure.wp-block-image') && !$nextEl.hasClass('wp-block-image')) {
+            currentCategory = headerText;
+          }
         }
 
         // DISABLED: Format 2 (paragraph link lists) - causes false positives
         // This was creating mods from description links like "Lighting Overlay 1.0" and "by Josh"
-        // MustHaveMods.com uses H3-based structure, so this Format 2 code is not needed
+        // MustHaveMods.com uses H3/H4-based structure, so this Format 2 code is not needed
         //
         // If we ever need to support simple link-list posts, we should:
-        // 1. Detect if the post has H3 headers first
-        // 2. Only use this Format 2 if there are NO H3 headers
+        // 1. Detect if the post has H3/H4 headers first
+        // 2. Only use this Format 2 if there are NO H3/H4 headers
         // 3. Add stricter validation to avoid description/author links
 
-        // Look for mod entries with H3 headings ONLY (H2 are category headers)
-        if ($el.is('h3')) {
+        // Look for mod entries with H3 or H4 headings (H2 are page sections)
+        if ($el.is('h3') || $el.is('h4')) {
           let modTitle = $el.text().trim();
 
           // Skip if it's not a real mod title
