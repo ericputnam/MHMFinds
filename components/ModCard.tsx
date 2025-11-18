@@ -178,9 +178,11 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
             <span className="font-semibold text-gray-900">
               {typeof mod.rating === 'number' ? mod.rating.toFixed(1) : 'N/A'}
             </span>
-            <span className="text-gray-400">
-              ({mod.ratingCount > 0 ? `${formatNumber(mod.ratingCount)} reviews` : 'calculated'})
-            </span>
+            {mod.ratingCount > 0 && (
+              <span className="text-gray-400">
+                ({formatNumber(mod.ratingCount)} reviews)
+              </span>
+            )}
           </div>
           <div className="text-gray-500 font-medium">
             {mod.gameVersion}

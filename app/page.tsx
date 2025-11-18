@@ -186,13 +186,23 @@ export default function HomePage() {
         params.append('search', searchQuery);
       }
 
-      // Add multiple categories
-      categories.forEach(cat => params.append('category', cat));
+      // Add category from otherFilters if present (takes precedence)
+      if (otherFilters.category) {
+        params.append('category', otherFilters.category);
+      } else {
+        // Otherwise add from categories array
+        categories.forEach(cat => params.append('category', cat));
+      }
 
-      // Add multiple game versions
-      gameVersions.forEach(ver => params.append('gameVersion', ver));
+      // Add gameVersion from otherFilters if present (takes precedence)
+      if (otherFilters.gameVersion) {
+        params.append('gameVersion', otherFilters.gameVersion);
+      } else {
+        // Otherwise add from gameVersions array
+        gameVersions.forEach(ver => params.append('gameVersion', ver));
+      }
 
-      // Add other filters
+      // Add other filters (excluding category and gameVersion as they're handled above)
       Object.entries(otherFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && key !== 'category' && key !== 'gameVersion') {
           params.append(key, value.toString());
@@ -280,6 +290,44 @@ export default function HomePage() {
     setMods(data.mods);
     setPagination(data.pagination);
     setFacets(data.facets);
+  };
+
+  // Helper function to build URL with current filters
+  const buildFilteredUrl = (page?: number) => {
+    const params = new URLSearchParams();
+
+    // Add page if specified
+    if (page) {
+      params.append('page', page.toString());
+    }
+
+    // Add search query if exists
+    if (searchQuery) {
+      params.append('search', searchQuery);
+    }
+
+    // Add category filter
+    if (filters.category) {
+      params.append('category', filters.category);
+    } else {
+      selectedCategories.forEach(cat => params.append('category', cat));
+    }
+
+    // Add gameVersion filter
+    if (filters.gameVersion) {
+      params.append('gameVersion', filters.gameVersion);
+    } else {
+      selectedGameVersions.forEach(ver => params.append('gameVersion', ver));
+    }
+
+    // Add other filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && key !== 'category' && key !== 'gameVersion') {
+        params.append(key, value.toString());
+      }
+    });
+
+    return `/api/mods?${params.toString()}`;
   };
 
   // Quick filter handlers
@@ -887,7 +935,7 @@ export default function HomePage() {
                     <button
                       onClick={async () => {
                         const newPage = pagination.page - 1;
-                        const response = await fetch(`/api/mods?page=${newPage}`);
+                        const response = await fetch(buildFilteredUrl(newPage));
                         const data = await response.json();
                         setMods(data.mods);
                         setPagination(data.pagination);
@@ -905,7 +953,7 @@ export default function HomePage() {
                         <button
                           key={page}
                           onClick={async () => {
-                            const response = await fetch(`/api/mods?page=${page}`);
+                            const response = await fetch(buildFilteredUrl(page));
                             const data = await response.json();
                             setMods(data.mods);
                             setPagination(data.pagination);
@@ -925,7 +973,7 @@ export default function HomePage() {
                     <button
                       onClick={async () => {
                         const newPage = pagination.page + 1;
-                        const response = await fetch(`/api/mods?page=${newPage}`);
+                        const response = await fetch(buildFilteredUrl(newPage));
                         const data = await response.json();
                         setMods(data.mods);
                         setPagination(data.pagination);
