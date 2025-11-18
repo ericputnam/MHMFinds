@@ -127,6 +127,55 @@ export class MustHaveModsScraper {
   }
 
   /**
+   * Check if a post is a mod listicle vs a guide/news article
+   */
+  private isModListiclePost($: cheerio.CheerioAPI, postUrl: string, postTitle: string): boolean {
+    const lowerTitle = postTitle.toLowerCase();
+    const lowerUrl = postUrl.toLowerCase();
+
+    // Exclude guides, tutorials, news, cheats, and how-tos
+    const excludeKeywords = [
+      'guide',
+      'tutorial',
+      'how to',
+      'how-to',
+      'cheat',
+      'walkthrough',
+      'tips and tricks',
+      'beginner',
+      'getting started',
+      'what is',
+      'why you should',
+      'review',
+      'news',
+      'update',
+      'patch notes',
+      'announcement',
+    ];
+
+    for (const keyword of excludeKeywords) {
+      if (lowerTitle.includes(keyword) || lowerUrl.includes(keyword)) {
+        return false;
+      }
+    }
+
+    // Check if the post has multiple download links (strong indicator of listicle)
+    const downloadLinkCount = $('.entry-content a[href*="patreon.com"], .entry-content a[href*="curseforge.com"], .entry-content a[href*="thesimsresource.com"], .entry-content a:contains("Download")').length;
+
+    // If it has 3+ download links, it's likely a listicle
+    if (downloadLinkCount >= 3) {
+      return true;
+    }
+
+    // If it has fewer than 3 download links and matches exclude keywords, skip it
+    if (downloadLinkCount < 3) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Scrape mods from a single blog post
    */
   async scrapeModsFromPost(postUrl: string): Promise<ScrapedMod[]> {
@@ -145,6 +194,12 @@ export class MustHaveModsScraper {
       const postDate = $('time.entry-date').attr('datetime');
       const postCategories = $('span.category-links a').map((_, el) => $(el).text().trim()).get();
       const postTags = $('span.tag-links a').map((_, el) => $(el).text().trim()).get();
+
+      // FILTER: Skip non-listicle posts (guides, news, tutorials, etc.)
+      if (!this.isModListiclePost($, postUrl, postTitle)) {
+        console.log(`   ⏭️  Skipping non-listicle post: ${postTitle}`);
+        return [];
+      }
 
       // Get featured image as fallback
       const featuredImage = this.extractFeaturedImage($);
@@ -190,6 +245,13 @@ export class MustHaveModsScraper {
                 return;
               }
 
+              // Skip Mediavine and ad links
+              if (linkHref.includes('mediavine.com') ||
+                  linkHref.includes('doubleclick.net') ||
+                  linkHref.includes('googleadservices')) {
+                return;
+              }
+
               // Extract author from URL
               let author: string | undefined;
               try {
@@ -227,8 +289,34 @@ export class MustHaveModsScraper {
           // Skip if it's not a real mod title
           if (!modTitle || modTitle.length < 3) return;
 
+          // FILTER: Skip common non-mod sections
+          const lowerTitle = modTitle.toLowerCase();
+          if (
+            lowerTitle.includes('faq') ||
+            lowerTitle.includes('conclusion') ||
+            lowerTitle.includes('final thoughts') ||
+            lowerTitle.includes('final word') ||
+            lowerTitle.includes('summary') ||
+            lowerTitle.includes('introduction') ||
+            lowerTitle.includes('table of contents') ||
+            lowerTitle.includes('related posts') ||
+            lowerTitle.includes('you may also like') ||
+            lowerTitle.includes('share this') ||
+            lowerTitle.includes('about the author') ||
+            lowerTitle === 'conclusion' ||
+            lowerTitle === 'summary' ||
+            lowerTitle === 'faq'
+          ) {
+            return;
+          }
+
           // Remove listicle numbers from title (e.g., "3. ", "36. ", etc.)
           modTitle = modTitle.replace(/^\d+\.\s*/, '').trim();
+
+          // Extract author from title if present (e.g., "Mod Name by AuthorName")
+          const titleParsed = this.extractAuthorFromTitle(modTitle);
+          modTitle = titleParsed.cleanTitle;
+          let authorFromTitle = titleParsed.author;
 
           // STEP 1: Extract the PRIMARY IMAGE from the IMMEDIATE next element(s)
           // The mod-specific image is ALWAYS within the first 1-2 elements after the header
@@ -315,6 +403,14 @@ export class MustHaveModsScraper {
           let description = '';
 
           for (let i = 0; i < 10 && $next.length > 0; i++) {
+            // Skip Mediavine ad blocks
+            if ($next.hasClass('mv-ad-box') ||
+                $next.attr('id')?.includes('mediavine') ||
+                $next.find('.mv-ad-box').length > 0) {
+              $next = $next.next();
+              continue;
+            }
+
             // Extract download link from paragraphs
             if ($next.is('p')) {
               const text = $next.text().trim();
@@ -332,12 +428,25 @@ export class MustHaveModsScraper {
                   return;
                 }
 
+                // Skip Mediavine and ad links
+                if (href.includes('mediavine.com') ||
+                    href.includes('doubleclick.net') ||
+                    href.includes('googleadservices')) {
+                  return;
+                }
+
                 // Prioritize links with "download" text or after "Download:" label
+                // Also accept direct links to mod platforms
                 if (!downloadUrl && (
                   linkText.includes('download') ||
                   linkText.includes('get') ||
                   textLower.includes('download:') ||
-                  textLower.includes('download link')
+                  textLower.includes('download link') ||
+                  href.includes('patreon.com') ||
+                  href.includes('curseforge.com') ||
+                  href.includes('thesimsresource.com') ||
+                  href.includes('simsdom.com') ||
+                  href.includes('tumblr.com/post')
                 )) {
                   downloadUrl = href;
                 }
@@ -349,6 +458,23 @@ export class MustHaveModsScraper {
               }
             }
 
+            // Check for download button elements
+            if (!downloadUrl && ($next.is('a') || $next.find('a').length > 0)) {
+              const $link = $next.is('a') ? $next : $next.find('a').first();
+              const href = $link.attr('href');
+              const linkText = $link.text().toLowerCase();
+
+              if (href &&
+                  !href.includes(this.baseUrl) &&
+                  !href.includes('mediavine.com') &&
+                  (linkText.includes('download') ||
+                   href.includes('patreon.com') ||
+                   href.includes('curseforge.com') ||
+                   href.includes('thesimsresource.com'))) {
+                downloadUrl = href;
+              }
+            }
+
             // Stop if we hit another h2 or h3 (next mod entry)
             if ($next.is('h2') || $next.is('h3')) {
               break;
@@ -357,9 +483,15 @@ export class MustHaveModsScraper {
             $next = $next.next();
           }
 
-          // Extract author from download URL
-          let author: string | undefined;
-          if (downloadUrl) {
+          // CRITICAL FILTER: Skip if no download link found
+          // Rule: No download link = Not a mod
+          if (!downloadUrl) {
+            return;
+          }
+
+          // Extract author - prioritize title, then download URL
+          let author: string | undefined = authorFromTitle;
+          if (!author && downloadUrl) {
             try {
               const url = new URL(downloadUrl);
               author = this.extractAuthorFromUrl(url);
@@ -415,6 +547,39 @@ export class MustHaveModsScraper {
       console.error(`Error scraping post ${postUrl}:`, error);
       return [];
     }
+  }
+
+  /**
+   * Extract author from mod title if present
+   * Common patterns: "Mod by Author", "Mod - Author", "Mod (Author)", "Mod | Author"
+   */
+  private extractAuthorFromTitle(title: string): { cleanTitle: string; author?: string } {
+    // Pattern 1: "Mod Name by AuthorName"
+    const byMatch = title.match(/^(.+?)\s+by\s+(.+)$/i);
+    if (byMatch) {
+      return { cleanTitle: byMatch[1].trim(), author: byMatch[2].trim() };
+    }
+
+    // Pattern 2: "Mod Name - AuthorName" (only if dash is not part of mod name)
+    const dashMatch = title.match(/^(.+?)\s+-\s+([A-Z][a-zA-Z0-9\s]+)$/);
+    if (dashMatch && dashMatch[2].length > 2 && dashMatch[2].length < 30) {
+      return { cleanTitle: dashMatch[1].trim(), author: dashMatch[2].trim() };
+    }
+
+    // Pattern 3: "Mod Name (AuthorName)"
+    const parenMatch = title.match(/^(.+?)\s+\(([^)]+)\)$/);
+    if (parenMatch && parenMatch[2].length > 2 && parenMatch[2].length < 30) {
+      return { cleanTitle: parenMatch[1].trim(), author: parenMatch[2].trim() };
+    }
+
+    // Pattern 4: "Mod Name | AuthorName"
+    const pipeMatch = title.match(/^(.+?)\s+\|\s+(.+)$/);
+    if (pipeMatch && pipeMatch[2].length > 2 && pipeMatch[2].length < 30) {
+      return { cleanTitle: pipeMatch[1].trim(), author: pipeMatch[2].trim() };
+    }
+
+    // No author found in title
+    return { cleanTitle: title };
   }
 
   /**
