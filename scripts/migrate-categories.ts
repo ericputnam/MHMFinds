@@ -71,8 +71,8 @@ async function migrateCategories() {
       errorCount++;
     }
 
-    // Add a small delay to avoid overwhelming the AI API
-    if (urlSlug && i % 5 === 0) {
+    // Add a small delay to avoid overwhelming the AI API (every 5 mods)
+    if (i % 5 === 0) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   }

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { aiCategorizer } from './aiCategorizer';
+import { modBlockParser } from './modBlockParser';
 
 export interface ScrapedMod {
   title: string;
@@ -250,11 +251,59 @@ export class MustHaveModsScraper {
       // Get featured image as fallback
       const featuredImage = this.extractFeaturedImage($);
 
+      // 🚀 FAST CHEERIO PARSING (default) or AI PARSING (if enabled)
+      const useAI = process.env.USE_AI_SCRAPER === 'true';
+
+      if (useAI) {
+        console.log('   🤖 Parsing entire article with AI...');
+        const articleHtml = $('.entry-content').html() || '';
+        const aiParsedMods = await modBlockParser.parseArticleWithAI(articleHtml, this.baseUrl);
+
+        if (aiParsedMods.length > 0) {
+          console.log(`   ✅ AI extracted ${aiParsedMods.length} mods from article`);
+
+          // Convert AI-parsed mods to ScrapedMod format
+          for (const aiMod of aiParsedMods) {
+          const tags = [
+            ...postTags,
+            ...postCategories,
+            ...this.extractTagsFromTitle(aiMod.title),
+          ].filter(t => t && t.length > 0);
+
+          mods.push({
+            title: aiMod.title,
+            description: aiMod.description,
+            shortDescription: aiMod.description ? aiMod.description.substring(0, 200) : undefined,
+            category: 'Other', // Legacy flat category
+            categoryId,
+            categoryPath,
+            tags: [...new Set(tags)],
+            thumbnail: aiMod.image || featuredImage,
+            images: aiMod.image ? [aiMod.image] : featuredImage ? [featuredImage] : [],
+            downloadUrl: aiMod.downloadUrl,
+            sourceUrl: postUrl,
+            source: 'MustHaveMods.com',
+            author: aiMod.author,
+            isFree: !aiMod.description?.toLowerCase().includes('early access') &&
+                    !aiMod.description?.toLowerCase().includes('patreon exclusive'),
+            isNSFW: false,
+            publishedAt: postDate ? new Date(postDate) : new Date(),
+          });
+        }
+
+        return mods;
+        }
+      }
+
+      // Fast cheerio parsing (default)
+      console.log('   ⚡ Fast cheerio parsing...');
+
       // Extract main category from h2 tags (used for old flat system)
       let currentCategory = 'Other';
 
       // Iterate through all elements in the content
-      $('.entry-content > *').each((_, element) => {
+      const contentElements = $('.entry-content > *').toArray();
+      for (const element of contentElements) {
         const $el = $(element);
 
         // Update category when we hit H2 or H3 headers (category dividers)
@@ -282,7 +331,7 @@ export class MustHaveModsScraper {
           let modTitle = $el.text().trim();
 
           // Skip if it's not a real mod title
-          if (!modTitle || modTitle.length < 3) return;
+          if (!modTitle || modTitle.length < 3) continue;
 
           // FILTER: Skip common non-mod sections
           const lowerTitle = modTitle.toLowerCase();
@@ -302,8 +351,16 @@ export class MustHaveModsScraper {
             lowerTitle === 'summary' ||
             lowerTitle === 'faq'
           ) {
-            return;
+            continue;
           }
+
+          // Manual parsing (fallback when bulk AI parsing fails)
+          console.log(`   🔧 Manual parsing: "${modTitle}"`);
+          let author: string | undefined;
+          let image: string | undefined;
+          let description = '';
+          let downloadUrl: string | undefined;
+          let additionalImages: string[] = [];
 
           // Remove listicle numbers from title (e.g., "3. ", "36. ", etc.)
           modTitle = modTitle.replace(/^\d+\.\s*/, '').trim();
@@ -316,8 +373,6 @@ export class MustHaveModsScraper {
           // STEP 1: Extract the PRIMARY IMAGE from the IMMEDIATE next element(s)
           // The mod-specific image is ALWAYS within the first 1-2 elements after the header
           let $next = $el.next();
-          let image: string | undefined;
-          let additionalImages: string[] = [];
 
           // Check ONLY the immediate next element for the primary image
           if ($next.length > 0) {
@@ -361,124 +416,92 @@ export class MustHaveModsScraper {
             }
           }
 
-          // STEP 2: Look for ADDITIONAL IMAGES (gallery) in next 2-3 elements
-          $next = $el.next();
-          for (let i = 0; i < 4 && $next.length > 0; i++) {
-            if (image && ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image'))) {
-              const $img = $next.find('img');
-              const imgSrc = $img.attr('data-src') ||
-                            $img.attr('data-lazy-src') ||
-                            $img.attr('data-orig-file') ||
-                            $img.attr('src');
+            // STEP 2: Look for ADDITIONAL IMAGES (gallery) in next 2-3 elements
+            $next = $el.next();
+            for (let i = 0; i < 4 && $next.length > 0; i++) {
+              if (image && ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image'))) {
+                const $img = $next.find('img');
+                const imgSrc = $img.attr('data-src') ||
+                              $img.attr('data-lazy-src') ||
+                              $img.attr('data-orig-file') ||
+                              $img.attr('src');
 
-              const isValidAdditionalImage = imgSrc &&
-                !imgSrc.startsWith('data:image/svg') &&
-                !imgSrc.includes('doubleclick.net') &&
-                !imgSrc.includes('googleadservices') &&
-                !imgSrc.includes('googlesyndication') &&
-                !imgSrc.includes('/ads/') &&
-                !imgSrc.includes('ad-') &&
-                !imgSrc.includes('banner') &&
-                !imgSrc.includes('logo') &&
-                imgSrc.length > 20 &&
-                imgSrc !== image;
+                const isValidAdditionalImage = imgSrc &&
+                  !imgSrc.startsWith('data:image/svg') &&
+                  !imgSrc.includes('doubleclick.net') &&
+                  !imgSrc.includes('googleadservices') &&
+                  !imgSrc.includes('googlesyndication') &&
+                  !imgSrc.includes('/ads/') &&
+                  !imgSrc.includes('ad-') &&
+                  !imgSrc.includes('banner') &&
+                  !imgSrc.includes('logo') &&
+                  imgSrc.length > 20 &&
+                  imgSrc !== image;
 
-              if (isValidAdditionalImage) {
-                const fullImgSrc = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
-                additionalImages.push(fullImgSrc);
+                if (isValidAdditionalImage) {
+                  const fullImgSrc = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
+                  additionalImages.push(fullImgSrc);
+                }
               }
-            }
 
-            $next = $next.next();
-          }
-
-          // STEP 3: Look for DOWNLOAD LINK - MUST be within next 5 elements
-          // Structure: image → (optional description p tags) → download p/button
-          $next = $el.next();
-          let downloadUrl: string | undefined;
-          let description = '';
-          let elementsChecked = 0;
-
-          // Skip to first element after the image
-          if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
-            $next = $next.next();
-          }
-
-
-          // Look ONLY in next 5 elements for download link
-          while (elementsChecked < 5 && $next.length > 0) {
-
-            // Skip ONLY Mediavine ad blocks (not all DIVs!)
-            if ($next.hasClass('mv-ad-box') ||
-                $next.attr('id')?.includes('mediavine') ||
-                $next.attr('id')?.includes('ad-') ||
-                $next.attr('class')?.includes('ad-') ||
-                $next.find('.mv-ad-box').length > 0) {
               $next = $next.next();
-              elementsChecked++;
-              continue;
             }
 
-            // Stop if we hit another h2 or h3 (next mod entry)
-            if ($next.is('h2') || $next.is('h3')) {
-              break;
+            // STEP 3: Look for DOWNLOAD LINK - MUST be within next 5 elements
+            // Structure: image → (optional description p tags) → download p/button
+            $next = $el.next();
+            let elementsChecked = 0;
+
+            // Skip to first element after the image
+            if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+              $next = $next.next();
             }
 
-            // Check for download link in: paragraph, DIV with paragraphs, or DIV with direct links
-            let $searchIn: cheerio.Cheerio<any> | null = null;
-            let directLinks: cheerio.Cheerio<any> | null = null;
+            // Look ONLY in next 5 elements for download link
+            while (elementsChecked < 5 && $next.length > 0) {
 
-            if ($next.is('p')) {
-              $searchIn = $next;
-            } else if ($next.is('div')) {
-              // Check if DIV contains paragraphs
-              const $paragraphs = $next.find('p');
-              if ($paragraphs.length > 0) {
-                $searchIn = $paragraphs.first();
-              } else {
-                // DIV has direct links (no paragraphs)
-                directLinks = $next.find('a[href]');
+              // Skip ONLY Mediavine ad blocks (not all DIVs!)
+              if ($next.hasClass('mv-ad-box') ||
+                  $next.attr('id')?.includes('mediavine') ||
+                  $next.attr('id')?.includes('ad-') ||
+                  $next.attr('class')?.includes('ad-') ||
+                  $next.find('.mv-ad-box').length > 0) {
+                $next = $next.next();
+                elementsChecked++;
+                continue;
               }
-            }
 
-            // Process direct links in DIV (no paragraphs)
-            if (directLinks && directLinks.length > 0) {
-              directLinks.each((_, linkEl) => {
-                if (downloadUrl) return; // Already found
+              // Stop if we hit another h2 or h3 (next mod entry)
+              if ($next.is('h2') || $next.is('h3')) {
+                break;
+              }
 
-                const $linkEl = $(linkEl);
-                const href = $linkEl.attr('href');
+              // Check for download link in: paragraph, DIV with paragraphs, or DIV with direct links
+              let $searchIn: cheerio.Cheerio<any> | null = null;
+              let directLinks: cheerio.Cheerio<any> | null = null;
 
-                // Skip internal/ad links
-                if (!href ||
-                    href.includes(this.baseUrl) ||
-                    href.startsWith('#') ||
-                    href.includes('mediavine.com') ||
-                    href.includes('doubleclick.net') ||
-                    href.includes('googleadservices')) {
-                  return;
+              if ($next.is('p')) {
+                $searchIn = $next;
+              } else if ($next.is('div')) {
+                // Check if DIV contains paragraphs
+                const $paragraphs = $next.find('p');
+                if ($paragraphs.length > 0) {
+                  $searchIn = $paragraphs.first();
+                } else {
+                  // DIV has direct links (no paragraphs)
+                  directLinks = $next.find('a[href]');
                 }
+              }
 
-                // STRICT: ONLY accept kb-button class (Kadence download buttons)
-                if ($linkEl.hasClass('kb-button')) {
-                  downloadUrl = href;
-                }
-              });
-            }
+              // Process direct links in DIV (no paragraphs)
+              if (directLinks && directLinks.length > 0) {
+                directLinks.each((_, linkEl) => {
+                  if (downloadUrl) return; // Already found
 
-            // Process links inside paragraphs
-            if ($searchIn && $searchIn.length > 0) {
-              const text = $searchIn.text().trim();
-              const textLower = text.toLowerCase();
-
-              // STRICT: ONLY accept links in paragraphs that start with "Download:"
-              if (textLower.startsWith('download:') || textLower.startsWith('download link:')) {
-                const links = $searchIn.find('a[href]');
-                links.each((_, linkEl) => {
                   const $linkEl = $(linkEl);
                   const href = $linkEl.attr('href');
 
-                  // Skip internal blog links and ads
+                  // Skip internal/ad links
                   if (!href ||
                       href.includes(this.baseUrl) ||
                       href.startsWith('#') ||
@@ -488,42 +511,67 @@ export class MustHaveModsScraper {
                     return;
                   }
 
-                  // This is a download link (paragraph starts with "Download:")
-                  if (!downloadUrl) {
+                  // STRICT: ONLY accept kb-button class (Kadence download buttons)
+                  if ($linkEl.hasClass('kb-button')) {
                     downloadUrl = href;
                   }
                 });
-              } else {
-                // Collect description (not a download paragraph)
-                if (text.length > 10) {
-                  description += (description ? ' ' : '') + text;
+              }
+
+              // Process links inside paragraphs
+              if ($searchIn && $searchIn.length > 0) {
+                const text = $searchIn.text().trim();
+                const textLower = text.toLowerCase();
+
+                // STRICT: ONLY accept links in paragraphs that start with "Download:"
+                if (textLower.startsWith('download:') || textLower.startsWith('download link:')) {
+                  const links = $searchIn.find('a[href]');
+                  links.each((_, linkEl) => {
+                    const $linkEl = $(linkEl);
+                    const href = $linkEl.attr('href');
+
+                    // Skip internal blog links and ads
+                    if (!href ||
+                        href.includes(this.baseUrl) ||
+                        href.startsWith('#') ||
+                        href.includes('mediavine.com') ||
+                        href.includes('doubleclick.net') ||
+                        href.includes('googleadservices')) {
+                      return;
+                    }
+
+                    // This is a download link (paragraph starts with "Download:")
+                    if (!downloadUrl) {
+                      downloadUrl = href;
+                    }
+                  });
+                } else {
+                  // Collect description (not a download paragraph)
+                  if (text.length > 10) {
+                    description += (description ? ' ' : '') + text;
+                  }
                 }
               }
-            }
 
-            // Check for standalone download link/button with kb-button class
-            if (!downloadUrl && $next.is('a') && $next.hasClass('kb-button')) {
-              const href = $next.attr('href');
+              // Check for standalone download link/button with kb-button class
+              if (!downloadUrl && $next.is('a') && $next.hasClass('kb-button')) {
+                const href = $next.attr('href');
 
-              if (href &&
-                  !href.includes(this.baseUrl) &&
-                  !href.includes('mediavine.com')) {
-                downloadUrl = href;
+                if (href &&
+                    !href.includes(this.baseUrl) &&
+                    !href.includes('mediavine.com')) {
+                  downloadUrl = href;
+                }
               }
+
+              $next = $next.next();
+              elementsChecked++;
             }
-
-            $next = $next.next();
-            elementsChecked++;
-          }
-
-          // CRITICAL FILTER: Skip if no download link found
-          // Rule: No download link = Not a mod
-          if (!downloadUrl) {
-            return;
-          }
 
           // Extract author - prioritize title, then download URL
-          let author: string | undefined = authorFromTitle;
+          if (!author && authorFromTitle) {
+            author = authorFromTitle;
+          }
           if (!author && downloadUrl) {
             try {
               const url = new URL(downloadUrl);
@@ -531,6 +579,12 @@ export class MustHaveModsScraper {
             } catch (error) {
               // Invalid URL
             }
+          }
+
+          // CRITICAL FILTER: Skip if no download link found
+          // Rule: No download link = Not a mod
+          if (!downloadUrl) {
+            continue;
           }
 
           // Determine if it's free or early access
@@ -575,7 +629,7 @@ export class MustHaveModsScraper {
             });
           }
         }
-      });
+      }
 
       return mods;
     } catch (error) {

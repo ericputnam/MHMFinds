@@ -58,8 +58,8 @@ model CreatorProfile {
 model Category {
   id          String   @id @default(cuid())
   name        String   // "Lamp", "House", "Build/Buy"
-  slug        String   @unique // "lamp", "house", "build-buy"
-  path        String   @unique // "cc/house/lamp" - materialized path for queries
+  slug        String   // "lamp", "house", "build-buy" - can be same across different paths
+  path        String   @unique // "cc/house/lamp" - materialized path for queries (unique)
   level       Int      // 0 = root (CC), 1 = second level (House), etc.
   parentId    String?  // Self-referential for tree structure
   description String?
