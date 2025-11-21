@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## IMPORTANT: newapp_musthavemods Folder
+
+**The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
+
+- This folder contains a Vite/React proof-of-concept app showing the desired look and feel for UI components
+- **DO NOT** migrate the main Next.js app to use this Vite app
+- **DO NOT** try to run or start the newapp_musthavemods dev server
+- **INSTEAD**: Look at the component designs (ModDetailsModal, ModCard, etc.) in newapp_musthavemods as inspiration and apply the same visual design to the main Next.js app components
+- Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes)
+- Only adopt the UI/UX patterns, styling, and layout from newapp_musthavemods
+
+**Main development should ALWAYS happen in the root Next.js project, not in newapp_musthavemods.**
+
 ## Project Overview
 
 ModVault (MHMFinds) is a Sims mod discovery platform built with Next.js 14, TypeScript, Prisma, and PostgreSQL. The platform aggregates content from multiple sources (CurseForge, Patreon, Tumblr, etc.) and uses AI-powered search with OpenAI embeddings for semantic mod discovery.

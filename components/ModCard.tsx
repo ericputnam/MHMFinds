@@ -9,6 +9,7 @@ interface ModCardProps {
   mod: Mod;
   onFavorite: (modId: string) => void;
   isFavorited: boolean;
+  onClick?: (mod: Mod) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -24,12 +25,20 @@ const formatNumber = (num: number): string => {
   return num.toString();
 };
 
-export function ModCard({ mod, onFavorite, isFavorited, className = '', style }: ModCardProps) {
+export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '', style }: ModCardProps) {
   const router = useRouter();
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(mod);
+    } else {
+      router.push(`/mods/${mod.id}`);
+    }
+  };
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/mods/${mod.id}`);
+    handleCardClick();
   };
 
   const handleDownload = (e: React.MouseEvent) => {
@@ -60,181 +69,129 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
 
   return (
     <article
-      className={`group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2 hover:scale-[1.02] h-full flex flex-col border border-gray-100 ${className}`}
+      onClick={handleCardClick}
+      className={`group relative bg-mhm-card border border-white/5 rounded-2xl overflow-hidden hover:border-sims-purple/30 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-900/10 flex flex-col h-full hover:-translate-y-1 cursor-pointer ${className}`}
       style={style}
       aria-label={`${mod.title} by ${mod.creator?.handle || mod.author || 'Unknown Creator'}`}
     >
-      {/* Badge Container - Top */}
-      <div className="absolute top-3 left-3 right-3 z-10 flex items-start justify-between pointer-events-none">
-        <div className="flex flex-col gap-2">
-          {/* Verified Badge */}
-          {mod.isVerified && (
-            <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-              <Crown size={12} />
-              Verified
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-2 items-end">
-          {/* Featured Badge */}
-          {mod.isFeatured && (
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-              <Sparkles size={12} />
-              Featured
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Thumbnail Container */}
-      <div className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-        {/* Thumbnail image or No Preview fallback */}
+      {/* Image Container */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 bg-gradient-to-t from-mhm-card via-transparent to-transparent z-10 opacity-80" />
         {mod.thumbnail ? (
           <img
             src={mod.thumbnail}
             alt={mod.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-200 to-indigo-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Download size={24} className="text-blue-600" />
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Download size={24} className="text-slate-400" />
               </div>
-              <p className="text-blue-600 text-sm font-medium">No Preview</p>
+              <p className="text-slate-400 text-sm font-medium">No Preview</p>
             </div>
           </div>
         )}
 
-        {/* Price Badge - Bottom Right */}
-        <div className="absolute bottom-3 right-3">
-          <span className={`px-3 py-1.5 rounded-full text-sm font-bold shadow-lg ${
-            mod.isFree 
-              ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white' 
-              : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white'
-          }`}>
-            {formatPrice(mod.price)}
+        {/* Floating Tags */}
+        <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 items-end">
+          <span className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white border border-white/10">
+            {mod.category}
           </span>
+          {mod.isFeatured && (
+            <span className="bg-gradient-to-r from-sims-pink to-purple-600 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-lg flex items-center gap-1">
+              <Sparkles size={10} />
+              Featured
+            </span>
+          )}
         </div>
 
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="absolute bottom-3 left-3">
-            <div className="flex items-center gap-2 text-white text-xs">
-              <div className="flex items-center gap-1">
-                <Eye size={14} />
-                <span className="font-medium">{formatNumber(mod.viewCount || 0)}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Download size={14} />
-                <span className="font-medium">{formatNumber(mod.downloadCount || 0)}</span>
-              </div>
-            </div>
+        {/* Price Badge */}
+        <div className="absolute top-3 left-3 z-20">
+          <div className={`px-3 py-1 rounded-full text-[10px] font-bold text-white shadow-lg flex items-center gap-1 ${
+            mod.isFree ? 'bg-sims-green/90' : 'bg-amber-500/90'
+          }`}>
+            {formatPrice(mod.price)}
           </div>
         </div>
       </div>
 
-      {/* Card Content */}
-      <div className="p-5 flex-1 flex flex-col">
-        {/* Category Badge */}
-        <div className="mb-3">
-          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
-            {mod.category}
-          </span>
+      {/* Content */}
+      <div className="p-5 flex-1 flex flex-col relative z-20 -mt-4">
+        <div className="mb-1">
+          {/* Rating Badge */}
+          {typeof mod.rating === 'number' && mod.rating > 0 && (
+            <div className="inline-flex items-center gap-1 text-yellow-400 text-xs font-bold mb-2 bg-yellow-400/10 px-2 py-0.5 rounded">
+              <Star className="w-3 h-3 fill-current" />
+              {mod.rating.toFixed(1)}
+            </div>
+          )}
         </div>
 
-        {/* Creator Info - Prominent placement right after category */}
+        <h3 className="text-lg font-bold text-white leading-tight mb-2 group-hover:text-sims-blue transition-colors line-clamp-2">
+          {mod.title}
+        </h3>
+
+        {/* Author Line */}
         {(mod.creator || mod.author) && (
-          <div className="flex items-center gap-2 mb-3 text-sm">
-            <span className="text-gray-500 font-medium">by</span>
-            <span className="font-semibold text-gray-700">
+          <div className="flex items-center text-slate-400 text-xs mb-4 font-medium">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center mr-2 text-[8px] text-white border border-white/10">
+              {(mod.creator?.handle || mod.author || 'C').substring(0, 2).toUpperCase()}
+            </div>
+            <span className="hover:text-white cursor-pointer transition-colors">
               {mod.creator?.handle || mod.author || 'Creator'}
             </span>
-            {mod.creator?.isVerified && (
-              <div className="w-4 h-4 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
-                <Crown size={10} className="text-white" />
-              </div>
+            {(mod.creator?.isVerified || mod.isVerified) && (
+              <Crown className="w-3 h-3 ml-1 text-sims-blue" />
             )}
           </div>
         )}
 
-        {/* Title */}
-        <h3 className="font-bold text-lg text-gray-900 mb-3 group-hover:text-[#1e1b4b] transition-colors leading-tight line-clamp-2">
-          {mod.title}
-        </h3>
-
-        {/* Description */}
         {mod.description && (
-          <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">
+          <p className="text-slate-400 text-sm line-clamp-2 mb-4 flex-1 leading-relaxed">
             {mod.description}
           </p>
         )}
 
-        {/* Stats Row */}
-        <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
-          <div className="flex items-center gap-1.5">
-            <Star size={16} className="text-yellow-500 fill-current" />
-            <span className="font-semibold text-gray-900">
-              {typeof mod.rating === 'number' ? mod.rating.toFixed(1) : 'N/A'}
-            </span>
-            {mod.ratingCount > 0 && (
-              <span className="text-gray-400">
-                ({formatNumber(mod.ratingCount)} reviews)
-              </span>
-            )}
+        {/* Stats & Action */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+          <div className="flex items-center text-slate-500 text-xs font-medium">
+            <Download className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+            {formatNumber(mod.downloadCount || 0)} Downloads
           </div>
-          <div className="text-gray-500 font-medium">
-            {mod.gameVersion}
-          </div>
-        </div>
 
-
-        {/* Action Buttons */}
-        <div className="flex gap-3 mt-auto" role="group" aria-label="Mod actions">
-          {/* Details Button - Icon Only */}
-          <button
-            onClick={handleViewDetails}
-            onKeyDown={(e) => handleKeyDown(e, handleViewDetails)}
-            className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-md"
-            aria-label={`View details for ${mod.title}`}
-            title="View Details"
-          >
-            <Eye size={18} className="group-hover/btn:scale-110 transition-transform" aria-hidden="true" />
-          </button>
-
-          {/* Download Button - Icon Only */}
           <button
             onClick={handleDownload}
             onKeyDown={(e) => handleKeyDown(e, handleDownload)}
-            className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-3 rounded-xl transition-all duration-300 flex items-center justify-center group/btn hover:shadow-lg hover:scale-105"
+            className="bg-white/5 hover:bg-white text-white hover:text-black p-2.5 rounded-xl transition-all duration-200 group/btn"
             aria-label={`Download ${mod.title}`}
             title="Download Mod"
           >
-            <Download size={18} className="group-hover/btn:scale-110 transition-transform" aria-hidden="true" />
+            <Download className="w-4 h-4" />
           </button>
         </div>
-
-        {/* Favorite Button - Floating (positioned below badges) */}
-        <button
-          onClick={handleFavorite}
-          onKeyDown={(e) => handleKeyDown(e, handleFavorite)}
-          className={`absolute ${mod.isFeatured ? 'top-14' : 'top-3'} right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto ${
-            isFavorited
-              ? 'bg-red-500 text-white shadow-lg scale-110'
-              : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-red-500 hover:text-white hover:scale-110'
-          }`}
-          aria-label={isFavorited ? `Remove ${mod.title} from favorites` : `Add ${mod.title} to favorites`}
-          aria-pressed={isFavorited}
-          title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-        >
-          <Heart
-            size={18}
-            className={`transition-all duration-300 ${isFavorited ? 'fill-current' : ''}`}
-            aria-hidden="true"
-          />
-        </button>
       </div>
+
+      {/* Favorite Button - Floating */}
+      <button
+        onClick={handleFavorite}
+        onKeyDown={(e) => handleKeyDown(e, handleFavorite)}
+        className={`absolute top-3 right-3 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md ${
+          isFavorited
+            ? 'bg-sims-pink text-white shadow-lg scale-110'
+            : 'bg-black/40 text-white hover:bg-sims-pink hover:scale-110'
+        }`}
+        aria-label={isFavorited ? `Remove ${mod.title} from favorites` : `Add ${mod.title} to favorites`}
+        aria-pressed={isFavorited}
+        title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        <Heart
+          size={18}
+          className={`transition-all duration-300 ${isFavorited ? 'fill-current' : ''}`}
+          aria-hidden="true"
+        />
+      </button>
     </article>
   );
 }

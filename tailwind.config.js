@@ -13,6 +13,12 @@ module.exports = {
         'display': ['Poppins', 'system-ui', 'sans-serif'],
       },
       colors: {
+        'mhm-dark': '#0B0F19', // Deeper, richer background
+        'mhm-card': '#151B2B', // Slightly lighter for cards
+        'sims-green': '#10B981', // Plumbob
+        'sims-blue': '#06B6D4', // UI Blue
+        'sims-pink': '#EC4899', // Accent Pink
+        'sims-purple': '#8B5CF6', // Accent Purple
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -132,6 +138,7 @@ module.exports = {
         'flip-in': 'flipIn 0.6s ease-out',
         'zoom-in': 'zoomIn 0.3s ease-out',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'float': 'float 3s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
       },
