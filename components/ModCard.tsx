@@ -60,10 +60,11 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
     onFavorite(mod.id);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
+  const handleKeyDown = (e: React.KeyboardEvent, action: (e: React.MouseEvent) => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      action();
+      // Create a synthetic mouse event from the keyboard event
+      action(e as unknown as React.MouseEvent);
     }
   };
 
