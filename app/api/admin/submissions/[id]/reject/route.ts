@@ -12,6 +12,11 @@ export async function POST(
     return auth.response;
   }
 
+  // TypeScript safety check
+  if (!auth.user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { reason } = body;
