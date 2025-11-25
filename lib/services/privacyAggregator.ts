@@ -38,13 +38,13 @@ export class PrivacyAggregator {
   private currentInstanceIndex = 0;
   private requestCount = 0;
   private lastRequestTime = 0;
-  
+
   // Advanced privacy settings
   private readonly minDelay = 3000; // 3-8 seconds between requests
   private readonly maxDelay = 8000;
   private readonly maxRequestsPerSession = 50; // Rotate after 50 requests
   private readonly sessionTimeout = 30 * 60 * 1000; // 30 minutes
-  
+
   // Rotating user agents (updated regularly)
   private readonly userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -86,8 +86,7 @@ export class PrivacyAggregator {
 
       // Add request interceptor for privacy
       instance.interceptors.request.use((config) => {
-        config.headers = {
-          ...config.headers,
+        Object.assign(config.headers, {
           'User-Agent': this.getRandomUserAgent(),
           'Accept': this.getRandomAcceptHeader(),
           'Accept-Language': this.getRandomLanguage(),
@@ -99,7 +98,7 @@ export class PrivacyAggregator {
           'Sec-Fetch-Mode': 'navigate',
           'Sec-Fetch-Site': 'none',
           'Cache-Control': 'max-age=0',
-        };
+        });
 
         // Add random referer occasionally
         if (Math.random() < 0.3) {
@@ -150,7 +149,11 @@ export class PrivacyAggregator {
     return referers[Math.floor(Math.random() * referers.length)];
   }
 
-  private async delay(): Promise<void> {
+  private async delay(ms?: number): Promise<void> {
+    if (ms !== undefined) {
+      await new Promise(resolve => setTimeout(resolve, ms));
+      return;
+    }
     const delay = Math.random() * (this.maxDelay - this.minDelay) + this.minDelay;
     const jitter = Math.random() * 2000; // Add up to 2 seconds of jitter
     await new Promise(resolve => setTimeout(resolve, delay + jitter));
@@ -165,7 +168,7 @@ export class PrivacyAggregator {
 
   private async handleCloudflareChallenge(url: string): Promise<boolean> {
     console.log(`🛡️  Cloudflare challenge detected for ${url}`);
-    
+
     // Try different approaches to bypass Cloudflare
     const bypassStrategies = [
       // Strategy 1: Wait and retry with different headers
@@ -175,7 +178,7 @@ export class PrivacyAggregator {
         this.rotateSession();
         return false; // Will retry in main loop
       },
-      
+
       // Strategy 2: Try mobile user agent
       async () => {
         console.log('📱 Strategy 2: Trying mobile user agent...');
@@ -184,7 +187,7 @@ export class PrivacyAggregator {
         await this.delay(5000);
         return false; // Will retry in main loop
       },
-      
+
       // Strategy 3: Try different referer
       async () => {
         console.log('🔗 Strategy 3: Trying different referer...');
@@ -192,7 +195,7 @@ export class PrivacyAggregator {
         return false; // Will retry in main loop
       }
     ];
-    
+
     // Try each strategy
     for (const strategy of bypassStrategies) {
       try {
@@ -202,13 +205,13 @@ export class PrivacyAggregator {
         console.error('❌ Bypass strategy failed:', error);
       }
     }
-    
+
     return false; // Always return false to continue trying
   }
 
   private shouldRotateSession(): boolean {
-    return this.requestCount >= this.maxRequestsPerSession || 
-           (Date.now() - this.lastRequestTime) > this.sessionTimeout;
+    return this.requestCount >= this.maxRequestsPerSession ||
+      (Date.now() - this.lastRequestTime) > this.sessionTimeout;
   }
 
   private getCurrentAxiosInstance(): AxiosInstance {
@@ -221,10 +224,10 @@ export class PrivacyAggregator {
   async scrapePatreon(creatorUrl: string): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get(creatorUrl);
-      
+
       this.requestCount++;
       this.lastRequestTime = Date.now();
 
@@ -234,31 +237,31 @@ export class PrivacyAggregator {
       // Enhanced Patreon scraping with better selectors
       $('[data-tag="post-card"], .post-card, .post, .post-card__content, .post-content').each((_, element) => {
         const $el = $(element);
-        
+
         // Try multiple title selectors
         const title = $el.find('h3, .post-title, .title, .post-card__title, .post-title__text').text().trim() ||
-                     $el.find('a[href*="/posts/"]').attr('title') ||
-                     $el.find('a[href*="/posts/"]').text().trim();
-        
+          $el.find('a[href*="/posts/"]').attr('title') ||
+          $el.find('a[href*="/posts/"]').text().trim();
+
         // Try multiple description selectors
         const description = $el.find('.post-card-excerpt, .excerpt, .description, .post-card__excerpt, .post-excerpt').text().trim();
-        
+
         // Try multiple thumbnail selectors
-        const thumbnail = $el.find('img').attr('src') || 
-                         $el.find('img').attr('data-src') || 
-                         $el.find('img').attr('data-lazy-src');
-        
+        const thumbnail = $el.find('img').attr('src') ||
+          $el.find('img').attr('data-src') ||
+          $el.find('img').attr('data-lazy-src');
+
         // Try multiple URL selectors
         const postUrl = $el.find('a[href*="/posts/"]').attr('href') ||
-                       $el.find('a').attr('href');
-        
+          $el.find('a').attr('href');
+
         // Determine if free (more flexible detection)
         const isFree = !$el.find('.post-card-preview, .preview, [class*="preview"], [class*="locked"], [class*="premium"]').length;
 
         if (title && postUrl && title.length > 5) {
           // Clean up the URL
           const fullUrl = postUrl.startsWith('http') ? postUrl : `https://www.patreon.com${postUrl}`;
-          
+
           mods.push({
             title: title.substring(0, 200), // Limit title length
             description,
@@ -286,12 +289,12 @@ export class PrivacyAggregator {
 
   async scrapeCurseForge(gameId: string = '4'): Promise<ScrapedMod[]> {
     console.log('🚀 AGGRESSIVE CURSEFORGE SCRAPING - NO MERCY MODE ACTIVATED');
-    console.log('=' .repeat(60));
-    
+    console.log('='.repeat(60));
+
     const mods: ScrapedMod[] = [];
     let totalAttempts = 0;
     let successfulPages = 0;
-    
+
     // AGGRESSIVE STRATEGY LIST - We're going to try EVERYTHING
     const aggressiveStrategies = [
       // Strategy 1: Direct pages with different parameters
@@ -301,43 +304,43 @@ export class PrivacyAggregator {
       'https://www.curseforge.com/sims4/mods?page=3',
       'https://www.curseforge.com/sims4/mods?page=4',
       'https://www.curseforge.com/sims4/mods?page=5',
-      
+
       // Strategy 2: Different sorting methods
       'https://www.curseforge.com/sims4/mods?sort=popular',
       'https://www.curseforge.com/sims4/mods?sort=updated',
       'https://www.curseforge.com/sims4/mods?sort=downloads',
       'https://www.curseforge.com/sims4/mods?sort=name',
-      
+
       // Strategy 3: Category-specific pages
       'https://www.curseforge.com/sims4/mods/category/all',
       'https://www.curseforge.com/sims4/mods/category/gameplay',
       'https://www.curseforge.com/sims4/mods/category/build-buy',
       'https://www.curseforge.com/sims4/mods/category/cas',
       'https://www.curseforge.com/sims4/mods/category/scripts',
-      
+
       // Strategy 4: Alternative URLs
       'https://www.curseforge.com/sims4/mods?filter-game-version=2024',
       'https://www.curseforge.com/sims4/mods?filter-game-version=2023',
       'https://www.curseforge.com/sims4/mods?filter-game-version=2022',
-      
+
       // Strategy 5: RSS/Feed endpoints
       'https://www.curseforge.com/sims4/mods.rss',
       'https://www.curseforge.com/sims4/mods/feed',
       'https://www.curseforge.com/sims4/mods/feed.xml',
-      
+
       // Strategy 6: API-like endpoints (might be less protected)
       'https://www.curseforge.com/api/v1/mods/search?gameId=4&pageSize=50',
       'https://www.curseforge.com/api/v1/mods/search?gameId=4&sortField=1',
-      
+
       // Strategy 7: Mobile versions (often less protected)
       'https://m.curseforge.com/sims4/mods',
       'https://mobile.curseforge.com/sims4/mods',
-      
+
       // Strategy 8: Archive/old versions
       'https://www.curseforge.com/sims4/mods?sort=oldest',
       'https://www.curseforge.com/sims4/mods?sort=name&order=asc',
     ];
-    
+
     // AGGRESSIVE USER AGENTS - We'll rotate through many
     const aggressiveUserAgents = [
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -349,20 +352,20 @@ export class PrivacyAggregator {
       'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/120.0.0.0',
     ];
-    
+
     for (let i = 0; i < aggressiveStrategies.length; i++) {
       const pageUrl = aggressiveStrategies[i];
       totalAttempts++;
-      
+
       try {
         console.log(`🔥 AGGRESSIVE ATTEMPT ${totalAttempts}/${aggressiveStrategies.length}: ${pageUrl}`);
-        
+
         // Rotate user agent aggressively
         const userAgent = aggressiveUserAgents[i % aggressiveUserAgents.length];
         this.userAgents[this.currentInstanceIndex] = userAgent;
-        
+
         const instance = this.getCurrentAxiosInstance();
-        
+
         // AGGRESSIVE HEADER ROTATION
         const aggressiveHeaders = {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -375,14 +378,14 @@ export class PrivacyAggregator {
           'Sec-Fetch-Site': i % 2 === 0 ? 'none' : 'same-origin',
           'Sec-Fetch-User': '?1',
           'Upgrade-Insecure-Requests': '1',
-          'Referer': i % 4 === 0 ? 'https://www.google.com/' : 
-                    i % 4 === 1 ? 'https://www.bing.com/' :
-                    i % 4 === 2 ? 'https://duckduckgo.com/' : 'https://www.curseforge.com/',
+          'Referer': i % 4 === 0 ? 'https://www.google.com/' :
+            i % 4 === 1 ? 'https://www.bing.com/' :
+              i % 4 === 2 ? 'https://duckduckgo.com/' : 'https://www.curseforge.com/',
           'Origin': 'https://www.curseforge.com',
           'DNT': '1',
           'Connection': 'keep-alive',
         };
-        
+
         // AGGRESSIVE REQUEST CONFIGURATION
         const requestConfig = {
           headers: aggressiveHeaders,
@@ -391,102 +394,102 @@ export class PrivacyAggregator {
           validateStatus: (status: number) => status < 500, // Accept 4xx
           withCredentials: false,
         };
-        
+
         const response = await instance.get(pageUrl, requestConfig);
-        
+
         this.requestCount++;
         this.lastRequestTime = Date.now();
-        
+
         // AGGRESSIVE RESPONSE ANALYSIS
-        if (response.data.includes('Just a moment') || 
-            response.data.includes('cf-chl-opt') || 
-            response.data.includes('Cloudflare') ||
-            response.data.includes('checking your browser')) {
+        if (response.data.includes('Just a moment') ||
+          response.data.includes('cf-chl-opt') ||
+          response.data.includes('Cloudflare') ||
+          response.data.includes('checking your browser')) {
           console.log(`🛡️  Cloudflare challenge detected for ${pageUrl}`);
           console.log(`🔄 Rotating session and trying different approach...`);
           this.rotateSession();
           await this.delay(8000 + Math.random() * 5000); // Random longer delay
           continue;
         }
-        
+
         // Check for valid content
         if (!response.data.includes('<html') || response.data.length < 1000) {
           console.log(`⚠️  Invalid response for ${pageUrl} (${response.data.length} chars)`);
           continue;
         }
-        
+
         console.log(`✅ SUCCESS! Accessed ${pageUrl} (${response.data.length} chars)`);
         successfulPages++;
-        
+
         const $ = cheerio.load(response.data);
-        
+
         // AGGRESSIVE SELECTOR STRATEGY - TARGETING THE ACTUAL CURSEFORGE STRUCTURE
         const aggressiveSelectors = [
           // PRIMARY CURSEFORGE SELECTORS (from the screenshot)
           '.project-card',  // This is the main one!
           '[class*="project-card"]',
-          
+
           // Modern selectors
           '[data-testid="mod-card"]',
           '[data-testid="project-card"]',
           '.mod-card',
           '.mod-item',
           '.project-item',
-          
+
           // Generic selectors
           '[class*="mod"]',
           '[class*="project"]',
           '[class*="card"]',
           '[class*="item"]',
-          
+
           // Data attributes
           '[data-project-id]',
           '[data-mod-id]',
           '[data-id]',
-          
+
           // Semantic selectors
           'article',
           '.card',
           '.item',
           '.tile',
           '.grid-item',
-          
+
           // Link-based selectors
           'a[href*="/mods/"]',
           'a[href*="/project/"]',
           'a[href*="/sims4/"]',
-          
+
           // Fallback selectors
           'div[class*="mod"]',
           'div[class*="project"]',
           'div[class*="card"]',
         ];
-        
+
         let foundMods = 0;
-        
+
         for (const selector of aggressiveSelectors) {
           const elements = $(selector);
           console.log(`🔍 Trying selector "${selector}" - found ${elements.length} elements`);
-          
+
           // Process elements sequentially to handle async operations
           for (let i = 0; i < elements.length; i++) {
             const element = elements[i];
             const $el = $(element);
-            
+
             // AGGRESSIVE TITLE EXTRACTION - TARGETING CURSEFORGE STRUCTURE
             const rawTitle = $el.find('.project-card__title, .mod-card__title, .mod-title, .title, h1, h2, h3, h4, h5, h6, .project-title, .card-title, .item-title').text().trim() ||
-                            $el.find('a[href*="/mods/"]').attr('title') ||
-                            $el.find('a[href*="/mods/"]').text().trim() ||
-                            $el.find('a[href*="/project/"]').attr('title') ||
-                            $el.find('a[href*="/project/"]').text().trim() ||
-                            $el.find('a').attr('title') ||
-                            $el.find('a').text().trim() ||
-                            $el.text().trim();
-            
+              $el.find('a[href*="/mods/"]').attr('title') ||
+              $el.find('a[href*="/mods/"]').text().trim() ||
+              $el.find('a[href*="/project/"]').attr('title') ||
+              $el.find('a[href*="/project/"]').text().trim() ||
+              $el.find('a').attr('title') ||
+              $el.find('a').text().trim() ||
+              $el.text().trim();
+
             // EXTRACT AUTHOR FROM TITLE (e.g., "XML Injector | By ScumbumboCF")
             let title = rawTitle;
             let author = null;
-            
+
             // SIMPLIFIED: Focus on "By" field extraction
             if (rawTitle.includes('| By ')) {
               const parts = rawTitle.split('| By ');
@@ -504,7 +507,7 @@ export class PrivacyAggregator {
               author = parts[1]?.trim() || null;
               console.log(`📝 Extracted author from title: "${author}"`);
             }
-            
+
             // TRY TO EXTRACT AUTHOR FROM THE MOD CARD ELEMENT ITSELF
             if (!author) {
               // Look for author information in the mod card element
@@ -513,10 +516,10 @@ export class PrivacyAggregator {
               if (authorElement.length === 0) {
                 authorElement = $el.find('.author-name').first(); // Fallback to the full element
               }
-              
+
               if (authorElement.length > 0) {
                 let rawAuthor = authorElement.text().trim();
-                
+
                 // Clean up the author name - remove "By" prefix and Pro member text
                 author = rawAuthor
                   .replace(/^By\s*/i, '') // Remove "By" prefix
@@ -524,10 +527,10 @@ export class PrivacyAggregator {
                   .replace(/\s*CurseForge Pro member.*$/i, '') // Remove Pro member text
                   .replace(/\s*Pro member.*$/i, '') // Remove Pro member text
                   .trim();
-                
+
                 console.log(`📝 Extracted author from mod card: "${author}" (raw: "${rawAuthor}")`);
               }
-              
+
               // Also try to find "By" text in the card
               if (!author) {
                 const cardText = $el.text();
@@ -538,30 +541,30 @@ export class PrivacyAggregator {
                 }
               }
             }
-            
+
             // Clean up the title (remove "Go to" and "Project Page") regardless of author extraction
             title = title
               .replace(/^Go to /i, '')
               .replace(/ Project Page$/i, '')
               .trim();
-            
+
             // AGGRESSIVE DESCRIPTION EXTRACTION
             const description = $el.find('.mod-card__description, .mod-description, .description, .summary, .project-summary, .card-description, .item-description, p').text().trim();
-            
+
             // AGGRESSIVE THUMBNAIL EXTRACTION
-            const thumbnail = $el.find('img').attr('src') || 
-                             $el.find('img').attr('data-src') || 
-                             $el.find('img').attr('data-lazy-src') ||
-                             $el.find('img').attr('data-original') ||
-                             $el.find('img').attr('data-srcset')?.split(' ')[0];
-            
+            const thumbnail = $el.find('img').attr('src') ||
+              $el.find('img').attr('data-src') ||
+              $el.find('img').attr('data-lazy-src') ||
+              $el.find('img').attr('data-original') ||
+              $el.find('img').attr('data-srcset')?.split(' ')[0];
+
             // AGGRESSIVE URL EXTRACTION - TARGETING CURSEFORGE STRUCTURE
             const modUrl = $el.find('a[href*="/mods/"]').attr('href') ||
-                          $el.find('a[href*="/project/"]').attr('href') ||
-                          $el.find('a[href*="/sims4/"]').attr('href') ||
-                          $el.find('a[href*="/curseforge/"]').attr('href') ||
-                          $el.find('a').attr('href');
-            
+              $el.find('a[href*="/project/"]').attr('href') ||
+              $el.find('a[href*="/sims4/"]').attr('href') ||
+              $el.find('a[href*="/curseforge/"]').attr('href') ||
+              $el.find('a').attr('href');
+
             // EXTRACT UNIQUE MOD ID FROM URL
             let modId = null;
             if (modUrl) {
@@ -571,10 +574,10 @@ export class PrivacyAggregator {
                 modId = urlMatch[1];
               }
             }
-            
+
             // AGGRESSIVE CATEGORY EXTRACTION
             const category = $el.find('.mod-card__category, .category, .tag, .project-category, .card-category, .item-category, .badge').text().trim();
-            
+
             // DEBUG: Log what we found
             if (title && title.length > 3) {
               console.log(`🎯 Found potential mod: "${title}" (${title.length} chars)`);
@@ -584,54 +587,30 @@ export class PrivacyAggregator {
               console.log(`   Mod ID: ${modId}`);
               console.log(`   Description: ${description?.substring(0, 50)}...`);
             }
-            
+
             // VALIDATION - Require unique mod ID (but not author yet - we'll extract it)
-        if (title && title.length > 3 && title.length < 300 && 
-            !title.includes('Just a moment') && 
-            !title.includes('Cloudflare') &&
-            !title.includes('checking') &&
-            modUrl && modId && (modUrl.includes('curseforge') || modUrl.includes('/mods/') || modUrl.includes('/project/'))) {
-              
+            if (title && title.length > 3 && title.length < 300 &&
+              !title.includes('Just a moment') &&
+              !title.includes('Cloudflare') &&
+              !title.includes('checking') &&
+              modUrl && modId && (modUrl.includes('curseforge') || modUrl.includes('/mods/') || modUrl.includes('/project/'))) {
+
               const fullUrl = modUrl.startsWith('http') ? modUrl : `https://www.curseforge.com${modUrl}`;
-              
+
               // DEBUG: Log the URL being processed
               console.log(`🔗 Processing URL: ${fullUrl}`);
-              
+
               // ONLY EXTRACT AUTHOR FROM MOD PAGE IF NOT FOUND IN LISTING
               if (!author) {
                 try {
                   console.log(`🔍 Author not found in listing, trying mod page: ${fullUrl}`);
-                  
+
                   // Add delay before each mod page request to avoid rate limiting
                   const delay = 3000 + Math.random() * 5000; // 3-8 second delay
                   console.log(`⏳ Waiting ${Math.round(delay)}ms before requesting mod page...`);
                   await this.delay(delay);
-                
-                const modPageResponse = await instance.get(fullUrl, {
-                  headers: {
-                    'User-Agent': this.userAgents[this.currentInstanceIndex],
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'Referer': 'https://www.curseforge.com/sims4/mods',
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                  },
-                  timeout: 30000,
-                  validateStatus: (status) => status < 500, // Accept 4xx responses
-                });
-                
-                console.log(`📄 Page response status: ${modPageResponse.status}`);
-                console.log(`📄 Page content length: ${modPageResponse.data.length}`);
-                
-                // Handle different response statuses
-                if (modPageResponse.status === 403) {
-                  console.log(`🚫 403 Forbidden - rotating session and retrying...`);
-                  this.rotateSession();
-                  await this.delay(5000 + Math.random() * 5000); // 5-10 second delay
-                  
-                  // Retry once with new session
-                  const retryResponse = await instance.get(fullUrl, {
+
+                  const modPageResponse = await instance.get(fullUrl, {
                     headers: {
                       'User-Agent': this.userAgents[this.currentInstanceIndex],
                       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -642,298 +621,338 @@ export class PrivacyAggregator {
                       'Pragma': 'no-cache',
                     },
                     timeout: 30000,
-                    validateStatus: (status) => status < 500,
+                    validateStatus: (status) => status < 500, // Accept 4xx responses
                   });
-                  
-                  console.log(`🔄 Retry response status: ${retryResponse.status}`);
-                  const $modPage = cheerio.load(retryResponse.data);
-                  
-                  // Extract author from retry response
-                  const authorElement = $modPage('.author-name').first();
-                  if (authorElement.length > 0) {
-                    author = authorElement.text().trim();
-                    console.log(`✅ Found author "${author}" on retry using .author-name selector`);
+
+                  console.log(`📄 Page response status: ${modPageResponse.status}`);
+                  console.log(`📄 Page content length: ${modPageResponse.data.length}`);
+
+                  // Handle different response statuses
+                  if (modPageResponse.status === 403) {
+                    console.log(`🚫 403 Forbidden - rotating session and retrying...`);
+                    this.rotateSession();
+                    await this.delay(5000 + Math.random() * 5000); // 5-10 second delay
+
+                    // Retry once with new session
+                    const retryResponse = await instance.get(fullUrl, {
+                      headers: {
+                        'User-Agent': this.userAgents[this.currentInstanceIndex],
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Referer': 'https://www.curseforge.com/sims4/mods',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache',
+                      },
+                      timeout: 30000,
+                      validateStatus: (status) => status < 500,
+                    });
+
+                    console.log(`🔄 Retry response status: ${retryResponse.status}`);
+                    const $modPage = cheerio.load(retryResponse.data);
+
+                    // Extract author from retry response
+                    const authorElement = $modPage('.author-name').first();
+                    if (authorElement.length > 0) {
+                      author = authorElement.text().trim();
+                      console.log(`✅ Found author "${author}" on retry using .author-name selector`);
+                    } else {
+                      console.log(`⚠️  Still no .author-name element found on retry`);
+                    }
                   } else {
-                    console.log(`⚠️  Still no .author-name element found on retry`);
-                  }
-                } else {
-                  const $modPage = cheerio.load(modPageResponse.data);
-                  
-                  // Check if we got a challenge page
-                  if (modPageResponse.data.includes('Cloudflare') || modPageResponse.data.includes('checking')) {
-                    console.log(`⚠️  Got Cloudflare challenge page`);
-                  } else {
-                    console.log(`✅ Got actual page content`);
-                  }
-                  
-                  // SIMPLE: Just look for the author-name class
-                  const authorElement = $modPage('.author-name').first();
-                  console.log(`🔍 Found ${authorElement.length} .author-name elements`);
-                  
-                  if (authorElement.length > 0) {
-                    author = authorElement.text().trim();
-                    console.log(`✅ Found author "${author}" using .author-name selector`);
-                  } else {
-                    console.log(`⚠️  No .author-name element found on page`);
-                    
-                    // Debug: Let's see what author-related elements exist
-                    const allAuthorElements = $modPage('[class*="author"]');
-                    console.log(`🔍 Found ${allAuthorElements.length} elements with "author" in class name`);
-                    
-                    // Also check for any text containing "By"
-                    const pageText = $modPage.text();
-                    if (pageText.includes('By ')) {
-                      console.log(`🔍 Found "By " in page text`);
-                      const byMatches = pageText.match(/By\s+([A-Za-z0-9_-]+)/g);
-                      if (byMatches) {
-                        console.log(`🔍 Found "By" matches: ${byMatches.join(', ')}`);
+                    const $modPage = cheerio.load(modPageResponse.data);
+
+                    // Check if we got a challenge page
+                    if (modPageResponse.data.includes('Cloudflare') || modPageResponse.data.includes('checking')) {
+                      console.log(`⚠️  Got Cloudflare challenge page`);
+                    } else {
+                      console.log(`✅ Got actual page content`);
+                    }
+
+                    // SIMPLE: Just look for the author-name class
+                    const authorElement = $modPage('.author-name').first();
+                    console.log(`🔍 Found ${authorElement.length} .author-name elements`);
+
+                    if (authorElement.length > 0) {
+                      author = authorElement.text().trim();
+                      console.log(`✅ Found author "${author}" using .author-name selector`);
+                    } else {
+                      console.log(`⚠️  No .author-name element found on page`);
+
+                      // Debug: Let's see what author-related elements exist
+                      const allAuthorElements = $modPage('[class*="author"]');
+                      console.log(`🔍 Found ${allAuthorElements.length} elements with "author" in class name`);
+
+                      // Also check for any text containing "By"
+                      const pageText = $modPage.text();
+                      if (pageText.includes('By ')) {
+                        console.log(`🔍 Found "By " in page text`);
+                        const byMatches = pageText.match(/By\s+([A-Za-z0-9_-]+)/g);
+                        if (byMatches) {
+                          console.log(`🔍 Found "By" matches: ${byMatches.join(', ')}`);
+                        }
                       }
                     }
                   }
-                }
-                
+
                 } catch (pageError) {
-                  console.log(`⚠️  Could not extract author from mod page: ${pageError.message}`);
+                  const errorMessage = pageError instanceof Error ? pageError.message : String(pageError);
+                  console.log(`⚠️  Could not extract author from mod page: ${errorMessage}`);
                 }
               }
-              
+
               // Only process mods that have an author
               if (author) {
                 console.log(`✅ Processing mod with author: "${author}"`);
-                
+
                 const modData = {
-                title: title.substring(0, 200),
-                description: description || '',
-                shortDescription: description?.substring(0, 150) || '',
-                category: this.mapCurseForgeCategory(category) || this.categorizeMod(title, description),
-                tags: this.extractTags(title, description),
-                thumbnail: thumbnail || '',
-                images: thumbnail ? [thumbnail] : [],
-                downloadUrl: fullUrl,
-                sourceUrl: fullUrl,
-                source: 'CurseForge',
-                sourceId: modId, // Use the unique mod ID
-                author: author, // Add author information
-                isFree: true,
-                isNSFW: this.detectNSFW(title, description),
-                publishedAt: new Date(),
-              };
-              
-              // IMMEDIATE INSERT/UPDATE WITH VERIFICATION
-              try {
-                console.log(`💾 Immediately inserting: "${modData.title}"`);
-                
-                // Handle creator profile creation/lookup
-                let creatorId = null;
-                if (modData.author) {
-                  console.log(`👤 Processing author: "${modData.author}"`);
-                  
-              // Check if creator profile already exists
-              const normalizedAuthor = modData.author.toLowerCase().replace(/\s+/g, '');
-              let creatorProfile = await prisma.creatorProfile.findFirst({
-                where: {
-                  OR: [
-                    { handle: normalizedAuthor },
-                    { handle: modData.author },
-                    { user: { username: normalizedAuthor } },
-                    { user: { username: modData.author } },
-                    { user: { displayName: modData.author } }
-                  ]
-                }
-              });
-                  
-              if (!creatorProfile) {
-                // Create a new creator profile for this author
-                console.log(`🆕 Creating new creator profile for: "${modData.author}"`);
-                
-                // First, check if a user already exists for this author
-                const normalizedAuthor = modData.author.toLowerCase().replace(/\s+/g, '');
-                const email = `${normalizedAuthor}@external.creator`;
-                
-                let creatorUser = await prisma.user.findFirst({
-                  where: {
-                    OR: [
-                      { email: email },
-                      { username: normalizedAuthor },
-                      { username: modData.author },
-                      { displayName: modData.author }
-                    ]
-                  },
-                  include: {
-                    creatorProfile: true
-                  }
-                });
-                
-                // If user exists and already has a creator profile, use it
-                if (creatorUser && creatorUser.creatorProfile) {
-                  creatorProfile = creatorUser.creatorProfile;
-                  console.log(`👤 Found existing creator profile via user: "${creatorProfile.handle}" (ID: ${creatorProfile.id})`);
-                }
-                
-                if (!creatorUser) {
-                  // Create a new user record for this creator
-                  creatorUser = await prisma.user.create({
-                    data: {
-                      email: email,
-                      username: normalizedAuthor,
-                      displayName: modData.author,
-                      isCreator: true,
-                      emailVerified: new Date(), // Auto-verify external creators
-                    }
-                  });
-                  console.log(`✅ Created new user: "${creatorUser.username}" (ID: ${creatorUser.id})`);
-                } else {
-                  console.log(`👤 Found existing user: "${creatorUser.username}" (ID: ${creatorUser.id})`);
-                }
-                
-                // Only create creator profile if we don't already have one
-                if (!creatorProfile) {
-                  try {
-                    creatorProfile = await prisma.creatorProfile.create({
-                      data: {
-                        userId: creatorUser.id,
-                        handle: normalizedAuthor,
-                        bio: `Creator from ${modData.source}`,
-                        isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit',
+                  title: title.substring(0, 200),
+                  description: description || '',
+                  shortDescription: description?.substring(0, 150) || '',
+                  category: this.mapCurseForgeCategory(category) || this.categorizeMod(title, description),
+                  tags: this.extractTags(title, description),
+                  thumbnail: thumbnail || '',
+                  images: thumbnail ? [thumbnail] : [],
+                  downloadUrl: fullUrl,
+                  sourceUrl: fullUrl,
+                  source: 'CurseForge',
+                  sourceId: modId, // Use the unique mod ID
+                  author: author, // Add author information
+                  isFree: true,
+                  isNSFW: this.detectNSFW(title, description),
+                  publishedAt: new Date(),
+                };
+
+                // IMMEDIATE INSERT/UPDATE WITH VERIFICATION
+                try {
+                  console.log(`💾 Immediately inserting: "${modData.title}"`);
+
+                  // Handle creator profile creation/lookup
+                  let creatorId = null;
+                  if (modData.author) {
+                    console.log(`👤 Processing author: "${modData.author}"`);
+
+                    // Check if creator profile already exists
+                    const normalizedAuthor = modData.author.toLowerCase().replace(/\s+/g, '');
+                    let creatorProfile = await prisma.creatorProfile.findFirst({
+                      where: {
+                        OR: [
+                          { handle: normalizedAuthor },
+                          { handle: modData.author },
+                          { user: { username: normalizedAuthor } },
+                          { user: { username: modData.author } },
+                          { user: { displayName: modData.author } }
+                        ]
                       }
                     });
-                    
-                    console.log(`✅ Created creator profile: "${creatorProfile.handle}" (ID: ${creatorProfile.id})`);
-                  } catch (profileError: any) {
-                    if (profileError.code === 'P2002') {
-                      // Handle already exists, find it
-                      creatorProfile = await prisma.creatorProfile.findFirst({
+
+                    if (!creatorProfile) {
+                      // Create a new creator profile for this author
+                      console.log(`🆕 Creating new creator profile for: "${modData.author}"`);
+
+                      // First, check if a user already exists for this author
+                      const normalizedAuthor = modData.author.toLowerCase().replace(/\s+/g, '');
+                      const email = `${normalizedAuthor}@external.creator`;
+
+                      let creatorUser = await prisma.user.findFirst({
                         where: {
                           OR: [
-                            { handle: normalizedAuthor },
-                            { userId: creatorUser.id }
+                            { email: email },
+                            { username: normalizedAuthor },
+                            { username: modData.author },
+                            { displayName: modData.author }
                           ]
+                        },
+                        include: {
+                          creatorProfile: true
                         }
                       });
-                      console.log(`👤 Found existing creator profile: "${creatorProfile?.handle}" (ID: ${creatorProfile?.id})`);
-                    } else {
-                      throw profileError;
-                    }
-                  }
-                }
-              } else {
-                console.log(`👤 Found existing creator profile: "${creatorProfile.handle}" (ID: ${creatorProfile.id})`);
-              }
-                  
-                  creatorId = creatorProfile.id;
-                }
-                
-                // Check if mod already exists using unique mod ID
-                console.log(`🔍 Checking for existing mod with sourceId: ${modData.sourceId} and source: ${modData.source}`);
-                const existingMod = await prisma.mod.findFirst({
-                  where: {
-                    sourceId: modData.sourceId,
-                    source: modData.source,
-                  },
-                });
-                
-                if (existingMod) {
-                  console.log(`🔄 Found existing mod: "${existingMod.title}" (ID: ${existingMod.id})`);
-                } else {
-                  console.log(`✨ No existing mod found - creating new one`);
-                }
 
-                let result;
-                if (existingMod) {
-                  // Update existing mod
-                  result = await prisma.mod.update({
-                    where: { id: existingMod.id },
-                    data: {
-                      title: modData.title,
-                      description: modData.description,
-                      shortDescription: modData.shortDescription,
-                      category: modData.category || 'Other',
-                      tags: modData.tags,
-                      thumbnail: modData.thumbnail,
-                      images: modData.images,
-                      downloadUrl: modData.downloadUrl,
-                      author: modData.author,
-                      creatorId: creatorId,
-                      isFree: modData.isFree,
-                      isNSFW: modData.isNSFW,
-                      lastScraped: new Date(),
-                      // Auto-verify trusted sources
-                      isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit' || existingMod.isVerified,
-                    },
-                  });
-                  console.log(`✅ Updated existing mod: "${result.title}" (ID: ${result.id})`);
-                } else {
-                  // Create new mod
-                  result = await prisma.mod.create({
-                    data: {
-                      title: modData.title,
-                      description: modData.description,
-                      shortDescription: modData.shortDescription,
-                      category: modData.category || 'Other',
-                      tags: modData.tags,
-                      thumbnail: modData.thumbnail,
-                      images: modData.images,
-                      downloadUrl: modData.downloadUrl,
-                      sourceUrl: modData.sourceUrl,
-                      source: modData.source,
+                      // If user exists and already has a creator profile, use it
+                      if (creatorUser && creatorUser.creatorProfile) {
+                        creatorProfile = creatorUser.creatorProfile;
+                        console.log(`👤 Found existing creator profile via user: "${creatorProfile.handle}" (ID: ${creatorProfile.id})`);
+                      }
+
+                      if (!creatorUser) {
+                        // Create a new user record for this creator
+                        creatorUser = await prisma.user.create({
+                          data: {
+                            email: email,
+                            username: normalizedAuthor,
+                            displayName: modData.author,
+                            isCreator: true,
+                            emailVerified: new Date(), // Auto-verify external creators
+                          },
+                          include: {
+                            creatorProfile: true
+                          }
+                        });
+                        console.log(`✅ Created new user: "${creatorUser.username}" (ID: ${creatorUser.id})`);
+                      } else {
+                        console.log(`👤 Found existing user: "${creatorUser.username}" (ID: ${creatorUser.id})`);
+                      }
+
+                      // Type guard to ensure creatorUser is not null
+                      if (!creatorUser) {
+                        console.log(`⚠️  Failed to create or find user for author: ${modData.author}`);
+                        continue;
+                      }
+
+                      // Only create creator profile if we don't already have one
+                      if (!creatorProfile) {
+                        try {
+                          creatorProfile = await prisma.creatorProfile.create({
+                            data: {
+                              userId: creatorUser.id,
+                              handle: normalizedAuthor,
+                              bio: `Creator from ${modData.source}`,
+                              isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit',
+                            }
+                          });
+
+                          console.log(`✅ Created creator profile: "${creatorProfile.handle}" (ID: ${creatorProfile.id})`);
+                        } catch (profileError: any) {
+                          if (profileError.code === 'P2002') {
+                            // Handle already exists, find it
+                            creatorProfile = await prisma.creatorProfile.findFirst({
+                              where: {
+                                OR: [
+                                  { handle: normalizedAuthor },
+                                  { userId: creatorUser.id }
+                                ]
+                              }
+                            });
+                            console.log(`👤 Found existing creator profile: "${creatorProfile?.handle}" (ID: ${creatorProfile?.id})`);
+                          } else {
+                            throw profileError;
+                          }
+                        }
+                      }
+                    } else {
+                      console.log(`👤 Found existing creator profile: "${creatorProfile.handle}" (ID: ${creatorProfile.id})`);
+                    }
+
+                    // Type guard to ensure creatorProfile is not null
+                    if (!creatorProfile) {
+                      console.log(`⚠️  Failed to create or find creator profile for author: ${modData.author}`);
+                      continue;
+                    }
+
+                    creatorId = creatorProfile.id;
+                  }
+
+                  // Check if mod already exists using unique mod ID
+                  console.log(`🔍 Checking for existing mod with sourceId: ${modData.sourceId} and source: ${modData.source}`);
+                  const existingMod = await prisma.mod.findFirst({
+                    where: {
                       sourceId: modData.sourceId,
-                      author: modData.author,
-                      creatorId: creatorId,
-                      isFree: modData.isFree,
-                      isNSFW: modData.isNSFW,
-                      publishedAt: modData.publishedAt,
-                      lastScraped: new Date(),
-                      // Auto-verify trusted sources
-                      isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit',
+                      source: modData.source,
                     },
                   });
-                  console.log(`✅ Created new mod: "${result.title}" (ID: ${result.id})`);
+
+                  if (existingMod) {
+                    console.log(`🔄 Found existing mod: "${existingMod.title}" (ID: ${existingMod.id})`);
+                  } else {
+                    console.log(`✨ No existing mod found - creating new one`);
+                  }
+
+                  let result;
+                  if (existingMod) {
+                    // Update existing mod
+                    result = await prisma.mod.update({
+                      where: { id: existingMod.id },
+                      data: {
+                        title: modData.title,
+                        description: modData.description,
+                        shortDescription: modData.shortDescription,
+                        category: modData.category || 'Other',
+                        tags: modData.tags,
+                        thumbnail: modData.thumbnail,
+                        images: modData.images,
+                        downloadUrl: modData.downloadUrl,
+                        author: modData.author,
+                        creatorId: creatorId,
+                        isFree: modData.isFree,
+                        isNSFW: modData.isNSFW,
+                        lastScraped: new Date(),
+                        // Auto-verify trusted sources
+                        isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit' || existingMod.isVerified,
+                      },
+                    });
+                    console.log(`✅ Updated existing mod: "${result.title}" (ID: ${result.id})`);
+                  } else {
+                    // Create new mod
+                    result = await prisma.mod.create({
+                      data: {
+                        title: modData.title,
+                        description: modData.description,
+                        shortDescription: modData.shortDescription,
+                        category: modData.category || 'Other',
+                        tags: modData.tags,
+                        thumbnail: modData.thumbnail,
+                        images: modData.images,
+                        downloadUrl: modData.downloadUrl,
+                        sourceUrl: modData.sourceUrl,
+                        source: modData.source,
+                        sourceId: modData.sourceId,
+                        author: modData.author,
+                        creatorId: creatorId,
+                        isFree: modData.isFree,
+                        isNSFW: modData.isNSFW,
+                        publishedAt: modData.publishedAt,
+                        lastScraped: new Date(),
+                        // Auto-verify trusted sources
+                        isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit',
+                      },
+                    });
+                    console.log(`✅ Created new mod: "${result.title}" (ID: ${result.id})`);
+                  }
+
+                  // IMMEDIATE VERIFICATION - Check if mod is actually in database
+                  const verification = await prisma.mod.findUnique({
+                    where: { id: result.id },
+                    select: { id: true, title: true, source: true, isVerified: true }
+                  });
+
+                  if (verification) {
+                    console.log(`✅ VERIFIED: Mod "${verification.title}" is in database (Verified: ${verification.isVerified})`);
+                  } else {
+                    console.log(`❌ VERIFICATION FAILED: Mod not found in database after insert!`);
+                  }
+
+                  mods.push(modData);
+                  foundMods++;
+
+                } catch (insertError) {
+                  console.error(`❌ Failed to insert mod "${modData.title}":`, insertError);
                 }
-                
-                // IMMEDIATE VERIFICATION - Check if mod is actually in database
-                const verification = await prisma.mod.findUnique({
-                  where: { id: result.id },
-                  select: { id: true, title: true, source: true, isVerified: true }
-                });
-                
-                if (verification) {
-                  console.log(`✅ VERIFIED: Mod "${verification.title}" is in database (Verified: ${verification.isVerified})`);
-                } else {
-                  console.log(`❌ VERIFICATION FAILED: Mod not found in database after insert!`);
-                }
-                
-                mods.push(modData);
-                foundMods++;
-                
-              } catch (insertError) {
-                console.error(`❌ Failed to insert mod "${modData.title}":`, insertError);
-              }
               } else {
                 console.log(`⚠️  Skipping mod "${title}" - no author found`);
               }
             }
           }
-          
+
           if (foundMods > 0) {
             console.log(`🎯 Found ${foundMods} mods using selector: ${selector}`);
             break; // Stop trying other selectors if we found mods
           }
         }
-        
+
         if (foundMods === 0) {
           console.log(`⚠️  No mods found on ${pageUrl} - trying next strategy...`);
         } else {
           console.log(`🔥 SUCCESS! Found ${foundMods} mods on ${pageUrl}`);
         }
-        
+
         // AGGRESSIVE DELAY STRATEGY
         const delay = 2000 + Math.random() * 6000; // 2-8 seconds
-        console.log(`⏳ Waiting ${Math.round(delay/1000)}s before next attempt...`);
+        console.log(`⏳ Waiting ${Math.round(delay / 1000)}s before next attempt...`);
         await this.delay(delay);
-        
+
       } catch (pageError: any) {
         console.error(`❌ AGGRESSIVE ATTEMPT FAILED for ${pageUrl}:`, pageError.message);
-        
+
         // AGGRESSIVE ERROR HANDLING
         if (pageError.response?.status === 403) {
           console.log('🔄 403 detected - rotating session aggressively...');
@@ -946,31 +965,31 @@ export class PrivacyAggregator {
           await this.delay(3000 + Math.random() * 3000); // 3-6 second delay
         }
       }
-      
+
       // If we found mods, we can be more aggressive
       if (mods.length > 0 && successfulPages >= 2) {
         console.log(`🔥 BREAKTHROUGH! Found ${mods.length} mods so far. Continuing aggressively...`);
       }
     }
-    
+
     console.log(`🎯 AGGRESSIVE CURSEFORGE SCRAPING COMPLETED!`);
     console.log(`📊 Total attempts: ${totalAttempts}`);
     console.log(`✅ Successful pages: ${successfulPages}`);
     console.log(`🎉 Total mods found: ${mods.length}`);
-    
+
     if (mods.length === 0) {
       console.log(`😤 CURSEFORGE WON THIS ROUND - but we'll be back!`);
     } else {
       console.log(`🔥 VICTORY! We cracked CurseForge's defenses!`);
     }
-    
+
     return mods;
   }
 
   async scrapeTumblr(tag: string): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get(
         `https://www.tumblr.com/tagged/${encodeURIComponent(tag)}`,
@@ -990,29 +1009,29 @@ export class PrivacyAggregator {
       // Enhanced Tumblr scraping with better selectors
       $('.post, [class*="post"], article, .post-content, .post-body').each((_, element) => {
         const $el = $(element);
-        
+
         // Try multiple title selectors
         const title = $el.find('.post-title, .title, h1, h2, h3, .post-heading').text().trim() ||
-                     $el.find('a[href*="/post/"]').attr('title') ||
-                     $el.find('a[href*="/post/"]').text().trim();
-        
+          $el.find('a[href*="/post/"]').attr('title') ||
+          $el.find('a[href*="/post/"]').text().trim();
+
         // Try multiple description selectors
         const description = $el.find('.post-body, .body, .content, .text, .post-text, .post-description').text().trim();
-        
+
         // Try multiple image selectors
         const images = $el.find('img').map((_, img) => {
           const src = $(img).attr('src') || $(img).attr('data-src') || $(img).attr('data-lazy-src');
           return src && src !== 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' ? src : null;
         }).get().filter(Boolean);
-        
+
         // Try multiple URL selectors
         const postUrl = $el.find('a[href*="/post/"]').attr('href') ||
-                       $el.find('a').attr('href');
+          $el.find('a').attr('href');
 
         if (title && postUrl && title.length > 5) {
           // Clean up the URL
           const fullUrl = postUrl.startsWith('http') ? postUrl : `https://www.tumblr.com${postUrl}`;
-          
+
           mods.push({
             title: title.substring(0, 200), // Limit title length
             description,
@@ -1041,7 +1060,7 @@ export class PrivacyAggregator {
   async scrapeSimsResource(): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get('https://www.thesimsresource.com/downloads/browse/category/sims4/');
 
@@ -1088,7 +1107,7 @@ export class PrivacyAggregator {
   async scrapeModTheSims(): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get('https://modthesims.info/browse.php?f=38&gs=4');
 
@@ -1134,7 +1153,7 @@ export class PrivacyAggregator {
   async scrapeReddit(subreddit: string): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get(`https://www.reddit.com/r/${subreddit}/search.json`, {
         params: {
@@ -1190,7 +1209,7 @@ export class PrivacyAggregator {
   async scrapePinterest(): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get('https://www.pinterest.com/search/pins/?q=sims4%20mods');
 
@@ -1210,7 +1229,7 @@ export class PrivacyAggregator {
 
         if (title && pinUrl && title.length > 5) {
           const fullUrl = pinUrl.startsWith('http') ? pinUrl : `https://www.pinterest.com${pinUrl}`;
-          
+
           mods.push({
             title: title.substring(0, 200),
             description,
@@ -1239,7 +1258,7 @@ export class PrivacyAggregator {
   async scrapeInstagram(): Promise<ScrapedMod[]> {
     try {
       await this.delay();
-      
+
       const instance = this.getCurrentAxiosInstance();
       const response = await instance.get('https://www.instagram.com/explore/tags/sims4mods/');
 
@@ -1259,7 +1278,7 @@ export class PrivacyAggregator {
 
         if (title && postUrl && title.length > 5) {
           const fullUrl = postUrl.startsWith('http') ? postUrl : `https://www.instagram.com${postUrl}`;
-          
+
           mods.push({
             title: title.substring(0, 200),
             description,
@@ -1288,7 +1307,7 @@ export class PrivacyAggregator {
   // ... existing helper methods remain the same
   private categorizeMod(title: string, description?: string): string {
     const text = `${title} ${description || ''}`.toLowerCase();
-    
+
     if (text.includes('build') || text.includes('buy') || text.includes('furniture')) {
       return 'Build/Buy';
     } else if (text.includes('cas') || text.includes('sim') || text.includes('clothing')) {
@@ -1321,7 +1340,7 @@ export class PrivacyAggregator {
 
   private mapCurseForgeCategory(categoryName?: string): string {
     if (!categoryName) return 'Other';
-    
+
     const categoryMap: { [key: string]: string } = {
       'Build and Buy': 'Build/Buy',
       'CAS': 'CAS',
@@ -1441,7 +1460,7 @@ export class PrivacyAggregator {
                 'https://www.patreon.com/sims4hair',
                 'https://www.patreon.com/sims4gameplay',
               ];
-              
+
               for (const creatorUrl of patreonCreators) {
                 const creatorMods = await this.scrapePatreon(creatorUrl);
                 mods.push(...creatorMods);

@@ -35,6 +35,7 @@ async function updateMissingImages() {
     // Group by source URL to avoid re-scraping the same page multiple times
     const urlMap = new Map<string, string[]>();
     for (const mod of modsWithoutImages) {
+      if (!mod.sourceUrl) continue; // Skip mods without source URL
       const modIds = urlMap.get(mod.sourceUrl) || [];
       modIds.push(mod.id);
       urlMap.set(mod.sourceUrl, modIds);
@@ -46,7 +47,7 @@ async function updateMissingImages() {
     let processedUrls = 0;
 
     // Process each unique source URL
-    for (const [sourceUrl, modIds] of urlMap.entries()) {
+    for (const [sourceUrl, modIds] of Array.from(urlMap.entries())) {
       processedUrls++;
       console.log(`\n[${processedUrls}/${urlMap.size}] Re-scraping: ${sourceUrl}`);
 
