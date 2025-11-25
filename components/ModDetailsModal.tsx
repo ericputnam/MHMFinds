@@ -53,15 +53,15 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
 
           {/* Floating Badge */}
           <div className="absolute top-6 left-6">
-             {mod.isFree ? (
-                 <div className="bg-sims-green/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg flex items-center gap-2 border border-white/10">
-                   <Layers className="w-3.5 h-3.5" /> Free Mod
-                 </div>
-              ) : (
-                <div className="bg-amber-500/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg flex items-center gap-2 border border-white/10">
-                  <Sparkles className="w-3.5 h-3.5" /> ${parseFloat(mod.price || '0').toFixed(2)}
-                </div>
-              )}
+            {mod.isFree ? (
+              <div className="bg-sims-green/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg flex items-center gap-2 border border-white/10">
+                <Layers className="w-3.5 h-3.5" /> Free Mod
+              </div>
+            ) : (
+              <div className="bg-amber-500/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg flex items-center gap-2 border border-white/10">
+                <Sparkles className="w-3.5 h-3.5" /> ${parseFloat(mod.price || '0').toFixed(2)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -71,18 +71,18 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
           {/* Header Section */}
           <div className="p-8 pb-4">
             <div className="flex justify-between items-start mb-4">
-               <div className="flex items-center gap-2 mb-2">
-                 <span className="px-2.5 py-1 rounded bg-white/5 text-[#06B6D4] text-[10px] font-bold uppercase tracking-wider border border-white/5">
-                   {mod.category}
-                 </span>
-               </div>
-               <button
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2.5 py-1 rounded bg-white/5 text-[#06B6D4] text-[10px] font-bold uppercase tracking-wider border border-white/5">
+                  {mod.category}
+                </span>
+              </div>
+              <button
                 onClick={onClose}
                 className="hidden md:block text-slate-500 hover:text-white transition-colors p-1"
                 aria-label="Close modal"
-               >
-                 <X className="w-6 h-6" />
-               </button>
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
 
             <h2 className="text-3xl md:text-4xl font-black text-white leading-tight mb-4 font-display">
@@ -90,59 +90,59 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
             </h2>
 
             <div className="flex items-center justify-between border-b border-white/5 pb-6 mb-6">
-               <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-[#151B2B] flex items-center justify-center text-white text-xs font-bold">
-                      {(mod.creator?.handle || mod.author || 'C').substring(0,2).toUpperCase()}
-                    </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 p-[2px]">
+                  <div className="w-full h-full rounded-full bg-[#151B2B] flex items-center justify-center text-white text-xs font-bold">
+                    {(mod.creator?.handle || mod.author || 'C').substring(0, 2).toUpperCase()}
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-slate-400 text-xs uppercase tracking-wide font-semibold">Created By</span>
-                    <div className="flex items-center text-white font-bold gap-1">
-                       {mod.creator?.handle || mod.author || 'Creator'}
-                       {(mod.creator?.isVerified || mod.isVerified) && (
-                         <CheckCircle2 className="w-4 h-4 text-[#06B6D4]" />
-                       )}
-                    </div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-slate-400 text-xs uppercase tracking-wide font-semibold">Created By</span>
+                  <div className="flex items-center text-white font-bold gap-1">
+                    {mod.creator?.handle || mod.author || 'Creator'}
+                    {(mod.creator?.isVerified || mod.isVerified) && (
+                      <CheckCircle2 className="w-4 h-4 text-[#06B6D4]" />
+                    )}
                   </div>
-               </div>
+                </div>
+              </div>
 
-               {mod.rating && mod.rating > 0 && (
-                 <div className="flex items-center gap-6 text-center">
-                   <div className="flex flex-col items-end">
-                      <div className="flex items-center gap-1 text-yellow-400 font-bold">
-                        <span>{mod.rating.toFixed(1)}</span>
-                        <Star className="w-4 h-4 fill-current" />
-                      </div>
-                      <span className="text-[10px] text-slate-500 font-medium uppercase">Rating</span>
-                   </div>
-                 </div>
-               )}
+              {mod.rating && mod.rating > 0 && (
+                <div className="flex items-center gap-6 text-center">
+                  <div className="flex flex-col items-end">
+                    <div className="flex items-center gap-1 text-yellow-400 font-bold">
+                      <span>{mod.rating.toFixed(1)}</span>
+                      <Star className="w-4 h-4 fill-current" />
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-medium uppercase">Rating</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-               <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg p-3 text-center border border-white/5 hover:border-sims-pink/30 transition-all">
-                  <div className="flex items-center justify-center gap-1.5 mb-1">
-                    <Download className="w-3.5 h-3.5 text-sims-pink" />
-                    <div className="text-white font-bold text-base">{formatNumber(mod.downloadCount)}</div>
-                  </div>
-                  <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Downloads</div>
-               </div>
-               <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg p-3 text-center border border-white/5 hover:border-pink-500/30 transition-all">
-                  <div className="flex items-center justify-center gap-1.5 mb-1">
-                    <Heart className="w-3.5 h-3.5 text-pink-500" />
-                    <div className="text-white font-bold text-base">{formatNumber(mod.favoritesCount || 0)}</div>
-                  </div>
-                  <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Favorites</div>
-               </div>
-               <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg p-3 text-center border border-white/5 hover:border-cyan-500/30 transition-all">
-                  <div className="flex items-center justify-center gap-1.5 mb-1">
-                    <Eye className="w-3.5 h-3.5 text-cyan-500" />
-                    <div className="text-white font-bold text-base">{formatNumber(mod.viewCount || 0)}</div>
-                  </div>
-                  <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Views</div>
-               </div>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg p-3 text-center border border-white/5 hover:border-sims-pink/30 transition-all">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Download className="w-3.5 h-3.5 text-sims-pink" />
+                  <div className="text-white font-bold text-base">{formatNumber(mod.downloadCount)}</div>
+                </div>
+                <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Downloads</div>
+              </div>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg p-3 text-center border border-white/5 hover:border-pink-500/30 transition-all">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Heart className="w-3.5 h-3.5 text-pink-500" />
+                  <div className="text-white font-bold text-base">{formatNumber(mod._count?.favorites || 0)}</div>
+                </div>
+                <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Favorites</div>
+              </div>
+              <div className="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg p-3 text-center border border-white/5 hover:border-cyan-500/30 transition-all">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Eye className="w-3.5 h-3.5 text-cyan-500" />
+                  <div className="text-white font-bold text-base">{formatNumber(mod.viewCount || 0)}</div>
+                </div>
+                <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Views</div>
+              </div>
             </div>
 
             {/* Main Actions */}
