@@ -23,7 +23,7 @@ export default function TermsPage() {
               <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-white">
                 Terms & Conditions
               </h1>
-              <p className="text-slate-400">Last Updated: March 21, 2022</p>
+              <p className="text-slate-400">Last Updated: November 24, 2025</p>
             </div>
           </div>
         </div>
@@ -33,104 +33,203 @@ export default function TermsPage() {
           <div className="max-w-4xl mx-auto">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 backdrop-blur-sm space-y-8">
 
-              {/* Overview */}
+              {/* Introduction */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Overview</h2>
                 <p className="text-slate-300 leading-relaxed">
-                  Must Have Mods operates https://musthavemods.com/. By using the site, you agree to these binding terms and conditions.
+                  By accessing or using MustHaveMods.com ("the Site"), you agree to be bound by these Terms & Conditions ("Terms"). If you do not agree, do not use the Site.
                 </p>
               </section>
 
-              {/* Eligibility */}
+              {/* 1. Eligibility */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Eligibility</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">1. Eligibility</h2>
                 <p className="text-slate-300 leading-relaxed">
-                  "This Site is intended for individuals who are 18 years of age or older." Users confirm they meet legal age requirements when accessing the platform.
+                  This Site is intended for individuals 18 years of age or older. By using the Site, you confirm you meet the legal age requirements of your jurisdiction.
                 </p>
               </section>
 
-              {/* Content Ownership */}
+              {/* 2. Intellectual Property Rights */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Content Ownership</h2>
-                <p className="text-slate-300 leading-relaxed">
-                  Must Have Mods retains all intellectual property rights to site content. Users cannot reproduce, redistribute, or publish any materials without written consent from olivia@musthavemods.com.
-                </p>
-              </section>
-
-              {/* Linking Policy */}
-              <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Linking Policy</h2>
-                <p className="text-slate-300 leading-relaxed">
-                  External links to the site are permitted only when users clearly credit the company, include hyperlinks, avoid framing, maintain legal content on their own sites, and do not misrepresent endorsement.
-                </p>
-              </section>
-
-              {/* Information Disclaimers */}
-              <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Information Disclaimers</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">2. Intellectual Property Rights</h2>
                 <p className="text-slate-300 leading-relaxed mb-4">
-                  "The Content of this Site is meant for informational purposes only." The company disclaims responsibility for inaccuracies and provides no warranties regarding site performance or reliability.
+                  All content on the Site—including text, images, videos, graphics, guides, and branding—is the exclusive property of Must Have Mods.
                 </p>
-              </section>
-
-              {/* User-Submitted Content */}
-              <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">User-Submitted Content</h2>
                 <p className="text-slate-300 leading-relaxed">
-                  Users grant Must Have Mods a "non-exclusive, fully paid and royalty-free, worldwide, perpetual license" to modify and distribute any content submitted, while remaining solely liable for copyright infringement.
+                  Users may not copy, reproduce, redistribute, or publish any materials without prior written permission from{' '}
+                  <a href="mailto:olivia@musthavemods.com" className="text-sims-blue hover:text-sims-pink transition-colors">
+                    olivia@musthavemods.com
+                  </a>.
                 </p>
               </section>
 
-              {/* Comments & Data */}
+              {/* 3. User-Submitted Content */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Comments & Data</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">3. User-Submitted Content</h2>
+                <p className="text-slate-300 leading-relaxed mb-4">
+                  By submitting comments or content, you grant Must Have Mods a non-exclusive, perpetual, irrevocable, worldwide, royalty-free license to use, modify, reproduce, distribute, and display such content.
+                </p>
                 <p className="text-slate-300 leading-relaxed">
-                  Comment submissions are publicly visible. The site collects IP addresses and browser information for spam detection per the privacy policy.
+                  You remain solely responsible for ensuring your submissions do not infringe the rights of third parties.
                 </p>
               </section>
 
-              {/* Third-Party Content */}
+              {/* 4. Public Comments & Data Collection */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Third-Party Content</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">4. Public Comments & Data Collection</h2>
+                <ul className="list-disc list-inside space-y-2 text-slate-300">
+                  <li>Comments posted on the Site are publicly visible.</li>
+                  <li>The Site collects IP addresses and browser metadata for spam detection as described in our Privacy Policy.</li>
+                </ul>
+              </section>
+
+              {/* 5. Linking Policy */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">5. Linking Policy</h2>
+                <p className="text-slate-300 leading-relaxed mb-4">
+                  You may link to the Site only if you:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-slate-300 ml-4">
+                  <li>Provide proper credit</li>
+                  <li>Include a direct hyperlink</li>
+                  <li>Do not frame Site content</li>
+                  <li>Do not imply endorsement</li>
+                  <li>Comply with all laws when publishing your linked content</li>
+                </ul>
+              </section>
+
+              {/* 6. Third-Party Content & External Websites */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">6. Third-Party Content & External Websites</h2>
+                <p className="text-slate-300 leading-relaxed mb-4">
+                  The Site contains links and embedded content from third-party websites.
+                </p>
                 <p className="text-slate-300 leading-relaxed">
-                  The company bears no responsibility for embedded content from external sites that may track user interactions independently.
+                  Must Have Mods is not responsible for the content, privacy practices, or data collection of any third-party site.
                 </p>
               </section>
 
-              {/* Affiliate Relationships */}
+              {/* 7. Affiliate Disclosure */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Affiliate Relationships</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">7. Affiliate Disclosure</h2>
+                <p className="text-slate-300 leading-relaxed mb-4">
+                  Must Have Mods participates in affiliate programs including Amazon Associates. We may earn commissions on qualifying purchases.
+                </p>
                 <p className="text-slate-300 leading-relaxed">
-                  Must Have Mods participates in Amazon Associates and discloses affiliate links, though editorial opinions remain uninfluenced by partnerships.
+                  Affiliate relationships do not influence editorial content.
                 </p>
               </section>
 
-              {/* Dispute Resolution */}
+              {/* 8. Information Disclaimer */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Dispute Resolution</h2>
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6">
+                <h2 className="text-2xl font-bold mb-4 text-white">8. Information Disclaimer (No Guarantees)</h2>
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 space-y-3">
                   <p className="text-slate-300 leading-relaxed">
-                    "THESE TERMS AND CONDITIONS CONTAIN A BINDING ARBITRATION CLAUSE AND CLASS ACTION WAIVER." Disputes proceed to binding arbitration in Montgomery County under Ohio law, with parties waiving jury trial rights.
+                    All content on the Site is provided for informational purposes only.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed">
+                    We make no warranties regarding accuracy, completeness, reliability, or results.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed">
+                    Guides and instructions may not work on all devices or game versions.
                   </p>
                 </div>
               </section>
 
-              {/* Termination */}
+              {/* 9. No Professional Advice */}
               <section>
-                <h2 className="text-2xl font-bold mb-4 text-white">Termination</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">9. No Professional Advice</h2>
                 <p className="text-slate-300 leading-relaxed">
-                  The company reserves the right to terminate user access for Terms violations without notice.
+                  Content does not constitute professional, technical, or legal advice. You are responsible for evaluating and implementing modifications at your own discretion.
                 </p>
               </section>
 
-              {/* Contact */}
+              {/* 10. Limitation of Liability */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">10. Limitation of Liability</h2>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6">
+                  <p className="text-slate-300 leading-relaxed mb-4">
+                    To the maximum extent permitted by law, Must Have Mods shall not be liable for any damages of any kind, including but not limited to:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-slate-300 ml-4">
+                    <li>Data loss</li>
+                    <li>Corrupted game saves</li>
+                    <li>Device malfunction</li>
+                    <li>Lost profits</li>
+                    <li>Malware from third-party links</li>
+                    <li>Gameplay issues caused by mods</li>
+                  </ul>
+                  <p className="text-slate-300 leading-relaxed mt-4 font-semibold">
+                    Your use of the Site is at your own risk.
+                  </p>
+                </div>
+              </section>
+
+              {/* 11. Indemnification */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">11. Indemnification</h2>
+                <p className="text-slate-300 leading-relaxed">
+                  You agree to indemnify and hold Must Have Mods and its owners harmless from any claims, liabilities, damages, or expenses arising from your use of the Site or violation of these Terms.
+                </p>
+              </section>
+
+              {/* 12. Arbitration & Class Action Waiver */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">12. Arbitration & Class Action Waiver</h2>
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-6 space-y-3">
+                  <p className="text-slate-300 leading-relaxed font-semibold uppercase text-sm">
+                    Binding Arbitration Clause
+                  </p>
+                  <p className="text-slate-300 leading-relaxed">
+                    Any dispute arising out of or relating to these Terms shall be resolved through binding arbitration in Montgomery County, Ohio, under Ohio law.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed font-semibold">
+                    You waive any right to a jury trial or participation in a class action.
+                  </p>
+                </div>
+              </section>
+
+              {/* 13. Governing Law */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">13. Governing Law</h2>
+                <p className="text-slate-300 leading-relaxed">
+                  These Terms are governed by the laws of the State of Ohio, without regard to conflict-of-laws principles.
+                </p>
+              </section>
+
+              {/* 14. Termination */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">14. Termination</h2>
+                <p className="text-slate-300 leading-relaxed">
+                  We reserve the right to suspend or terminate access to the Site at our sole discretion, without notice, for any violation of these Terms.
+                </p>
+              </section>
+
+              {/* 15. Modifications to Terms */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">15. Modifications to Terms</h2>
+                <p className="text-slate-300 leading-relaxed">
+                  Must Have Mods may update or modify these Terms at any time. Continued use of the Site constitutes acceptance of updated Terms.
+                </p>
+              </section>
+
+              {/* 16. Contact Information */}
               <section className="pt-8 border-t border-white/10">
-                <p className="text-slate-400 text-sm">
-                  For questions about these Terms & Conditions, please contact:{' '}
+                <h2 className="text-2xl font-bold mb-4 text-white">16. Contact Information</h2>
+                <p className="text-slate-300 leading-relaxed">
+                  For questions regarding these Terms, contact:{' '}
                   <a href="mailto:olivia@musthavemods.com" className="text-sims-blue hover:text-sims-pink transition-colors">
                     olivia@musthavemods.com
                   </a>
                 </p>
+              </section>
+
+              {/* Acceptance Notice */}
+              <section className="pt-8 border-t border-white/10">
+                <div className="bg-sims-blue/10 border border-sims-blue/20 rounded-lg p-6">
+                  <p className="text-slate-300 leading-relaxed text-center">
+                    By using MustHaveMods.com, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions.
+                  </p>
+                </div>
               </section>
             </div>
           </div>
