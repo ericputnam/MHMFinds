@@ -13,7 +13,8 @@ const nextConfig = {
       'media.tumblr.com',
       'images.unsplash.com',
       'via.placeholder.com',
-      'musthavemods.com'
+      'musthavemods.com',
+      'api.dicebear.com'
     ],
   },
   async headers() {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
+import { CacheService } from '../../../lib/cache';
 
 // Extend the session user type to include the id
 declare module "next-auth" {
@@ -31,16 +32,50 @@ export async function GET(request: NextRequest) {
     const gameVersion = searchParams.get('gameVersion');
     const tags = searchParams.get('tags');
     const isFree = searchParams.get('isFree');
+    const creatorHandle = searchParams.get('creator');
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     const skip = (page - 1) * limit;
+
+    // Try to get from cache first
+    const cacheParams = {
+      page,
+      limit,
+      search,
+      category,
+      categoryId,
+      categoryPath,
+      gameVersion,
+      tags,
+      isFree,
+      creatorHandle,
+      sortBy,
+      sortOrder,
+    };
+
+    const cached = await CacheService.getModsList(cacheParams);
+    if (cached) {
+      console.log('[Cache] HIT - Returning cached mods list');
+      return NextResponse.json({
+        ...cached,
+        fromCache: true,
+      });
+    }
+    console.log('[Cache] MISS - Fetching from database');
 
     // Build where clause
     const where: any = {
       isVerified: true,
       isNSFW: false,
     };
+
+    // Filter by creator handle
+    if (creatorHandle) {
+      where.creator = {
+        handle: creatorHandle,
+      };
+    }
 
     if (search) {
       where.OR = [
@@ -308,7 +343,7 @@ export async function GET(request: NextRequest) {
       price: mod.price ? Number(mod.price) : null,
     }));
 
-    return NextResponse.json({
+    const response = {
       mods: serializedMods,
       pagination: {
         page,
@@ -340,7 +375,13 @@ export async function GET(request: NextRequest) {
         priceRanges,
         ratingRanges,
       },
-    });
+      fromCache: false,
+    };
+
+    // Cache the response for 5 minutes
+    await CacheService.setModsList(cacheParams, response);
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching mods:', error);
     return NextResponse.json(
@@ -455,6 +496,9 @@ export async function POST(request: NextRequest) {
       rating: mod.rating ? Number(mod.rating) : null,
       price: mod.price ? Number(mod.price) : null,
     };
+
+    // Invalidate caches when new mod is created
+    await CacheService.invalidateMod(mod.id);
 
     return NextResponse.json(serializedMod, { status: 201 });
   } catch (error) {

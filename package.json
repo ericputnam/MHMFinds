@@ -23,6 +23,7 @@
     "update:images": "tsx scripts/update-missing-images.ts",
     "ratings:recalculate": "tsx scripts/recalculate-ratings.ts",
     "categories:migrate": "tsx scripts/migrate-categories.ts",
+    "populate:creators": "tsx scripts/populateCreators.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@prisma/client": "^6.15.0",
+    "@upstash/redis": "^1.35.6",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.0.0-rc.12",

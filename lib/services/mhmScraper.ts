@@ -107,6 +107,7 @@ export class MustHaveModsScraper {
 
   /**
    * Extract featured/fallback image from post
+   * IMPORTANT: Be strict - avoid generic blog header images
    */
   private extractFeaturedImage($: cheerio.CheerioAPI): string | undefined {
     // Try multiple sources for featured image
@@ -122,9 +123,24 @@ export class MustHaveModsScraper {
     ];
 
     for (const src of sources) {
-      if (src && !src.startsWith('data:image/svg') && src.length > 10) {
-        return src.startsWith('http') ? src : `${this.baseUrl}${src}`;
+      if (!src || src.startsWith('data:image/svg') || src.length < 10) {
+        continue;
       }
+
+      // FILTER OUT: Generic blog header images
+      const srcLower = src.toLowerCase();
+      if (
+        srcLower.includes('blog-post-image') ||
+        srcLower.includes('featured-image') ||
+        srcLower.includes('header-image') ||
+        srcLower.includes('hero-image') ||
+        srcLower.includes('placeholder') ||
+        srcLower.includes('felister-blog')
+      ) {
+        continue;
+      }
+
+      return src.startsWith('http') ? src : `${this.baseUrl}${src}`;
     }
 
     return undefined;
@@ -309,10 +325,30 @@ export class MustHaveModsScraper {
         // Update category when we hit H2 or H3 headers (category dividers)
         if ($el.is('h2') || $el.is('h3')) {
           const headerText = $el.text().trim();
-          // Only update category if it's NOT followed by an image
-          // (real mods have images, category headers don't)
+          const headerLower = headerText.toLowerCase();
+
+          // FILTER: Skip common article section headers (not categories)
+          const isArticleSection =
+            headerLower.includes('faq') ||
+            headerLower.includes('conclusion') ||
+            headerLower.includes('final thoughts') ||
+            headerLower.includes('introduction') ||
+            headerLower.includes('best sims 4') ||
+            headerLower.includes('sims 4') && (headerLower.includes('cc for') || headerLower.includes('mods for')) ||
+            headerLower.includes('guide') ||
+            headerLower.includes('tips and tricks') ||
+            headerLower.includes('how to') ||
+            headerLower.includes('summary') ||
+            headerLower.includes('table of contents') ||
+            headerLower.includes('related posts') ||
+            headerLower.includes('you may also like') ||
+            headerLower.startsWith('top ') ||
+            headerLower.startsWith('best ');
+
+          // Only update category if it's NOT followed by an image AND it's not an article section
+          // (real mods have images, true category dividers don't and aren't article sections)
           const $nextEl = $el.next();
-          if (!$nextEl.is('figure.wp-block-image') && !$nextEl.hasClass('wp-block-image')) {
+          if (!isArticleSection && !$nextEl.is('figure.wp-block-image') && !$nextEl.hasClass('wp-block-image')) {
             currentCategory = headerText;
           }
         }
@@ -599,15 +635,10 @@ export class MustHaveModsScraper {
             ...this.extractTagsFromTitle(modTitle),
           ].filter(t => t && t.length > 0);
 
-          // Only add if we have at least a title and either an image or download URL
-          if (modTitle && (image || downloadUrl || featuredImage)) {
-            // Use specific image, or fallback to featured image
-            const finalThumbnail = image || featuredImage;
-            const finalImages = image
-              ? [image, ...additionalImages]
-              : featuredImage
-              ? [featuredImage, ...additionalImages]
-              : additionalImages;
+          // STRICT: Only add if we have a title AND a specific mod image
+          // DO NOT use featuredImage as fallback - it's often a generic blog header
+          if (modTitle && image) {
+            const finalImages = [image, ...additionalImages];
 
             mods.push({
               title: modTitle,
@@ -617,7 +648,7 @@ export class MustHaveModsScraper {
               categoryId, // NEW: hierarchical category ID
               categoryPath, // NEW: category breadcrumb for display
               tags: [...new Set(tags)], // Remove duplicates
-              thumbnail: finalThumbnail,
+              thumbnail: image, // Use ONLY the specific mod image
               images: finalImages,
               downloadUrl,
               sourceUrl: postUrl,
