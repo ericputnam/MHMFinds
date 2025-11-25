@@ -17,10 +17,10 @@ export const Footer: React.FC = () => {
             </div>
 
             <div className="flex space-x-8 text-sm font-medium text-slate-400">
-              <a href="#" className="hover:text-sims-blue transition-colors">About</a>
-              <a href="#" className="hover:text-sims-blue transition-colors">Terms</a>
-              <a href="#" className="hover:text-sims-blue transition-colors">Privacy</a>
-              <a href="#" className="hover:text-sims-blue transition-colors">Submit Mod</a>
+              <a href="/about" className="hover:text-sims-blue transition-colors">About</a>
+              <a href="/terms" className="hover:text-sims-blue transition-colors">Terms</a>
+              <a href="/privacy" className="hover:text-sims-blue transition-colors">Privacy</a>
+              <a href="/submit-mod" className="hover:text-sims-blue transition-colors">Submit Mod</a>
             </div>
         </div>
         <div className="border-t border-white/5 mt-12 pt-8 text-center text-slate-600 text-xs">

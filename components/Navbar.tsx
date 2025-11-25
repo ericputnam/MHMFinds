@@ -30,9 +30,8 @@ export const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center bg-white/5 rounded-full px-6 py-2 backdrop-blur-sm border border-white/5">
           <div className="flex space-x-8 text-sm font-semibold text-slate-300">
             <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
-            <a href="#categories" className="hover:text-sims-blue transition-colors">Categories</a>
-            <a href="#creators" className="hover:text-sims-green transition-colors">Creators</a>
-            <a href="#news" className="hover:text-white transition-colors">News</a>
+            <a href="/creators" className="hover:text-sims-green transition-colors">Creators</a>
+            <a href="https://www.musthavemods.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
           </div>
         </div>
 
@@ -41,9 +40,9 @@ export const Navbar: React.FC = () => {
           <button className="p-2.5 text-slate-400 hover:text-sims-pink hover:bg-white/5 rounded-full transition-all">
             <Heart className="h-5 w-5" />
           </button>
-          <button className="hidden md:block bg-white text-mhm-dark hover:bg-slate-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+          <a href="/sign-in" className="hidden md:block bg-white text-mhm-dark hover:bg-slate-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">
             Sign In
-          </button>
+          </a>
           <button className="md:hidden p-2 text-slate-300">
             <Menu className="h-6 w-6" />
           </button>

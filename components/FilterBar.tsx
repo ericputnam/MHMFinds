@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Filter, ArrowUpDown, ChevronDown, LayoutGrid, Check } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronDown, LayoutGrid, Check, RotateCcw } from 'lucide-react';
 
 interface FilterBarProps {
   selectedCategory: string;
@@ -10,6 +10,8 @@ interface FilterBarProps {
   onSortChange: (sortBy: string) => void;
   resultCount: number;
   facets: any;
+  searchQuery?: string;
+  onClearAllFilters?: () => void;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -18,7 +20,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   sortBy,
   onSortChange,
   resultCount,
-  facets
+  facets,
+  searchQuery = '',
+  onClearAllFilters
 }) => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -58,6 +62,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     { value: 'rating', label: 'Highest Rated' },
     { value: 'newest', label: 'Newest Finds' }
   ];
+
+  // Check if any filters are active
+  const hasActiveFilters = selectedCategory !== 'All' || sortBy !== 'relevance' || searchQuery.trim() !== '';
 
   return (
     <div className="w-full sticky top-20 z-40 py-2 transition-all duration-300">
@@ -131,14 +138,39 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               )}
             </div>
 
-            {/* Center: Active Filters (when present) */}
-            {selectedCategory !== 'All' && (
-              <div className="flex items-center flex-wrap gap-2 text-[10px] text-slate-500 font-medium uppercase tracking-widest">
-                <Filter className="w-3 h-3" />
-                <span className="mr-1">Active:</span>
-                <span className="flex items-center gap-1 bg-sims-pink/10 text-sims-pink px-2 py-0.5 rounded border border-sims-pink/20">
-                  {selectedCategory}
-                </span>
+            {/* Center: Active Filters & Clear All Button */}
+            {hasActiveFilters && (
+              <div className="flex items-center flex-wrap gap-3">
+                {/* Active filter pills */}
+                <div className="flex items-center flex-wrap gap-2">
+                  {searchQuery && (
+                    <span className="flex items-center gap-1 bg-purple-600/20 text-purple-300 px-3 py-1 rounded-full border border-purple-500/30 text-xs font-medium">
+                      Search: "{searchQuery.length > 20 ? searchQuery.substring(0, 20) + '...' : searchQuery}"
+                    </span>
+                  )}
+                  {selectedCategory !== 'All' && (
+                    <span className="flex items-center gap-1 bg-sims-pink/20 text-sims-pink px-3 py-1 rounded-full border border-sims-pink/30 text-xs font-medium">
+                      {selectedCategory}
+                    </span>
+                  )}
+                  {sortBy !== 'relevance' && (
+                    <span className="flex items-center gap-1 bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30 text-xs font-medium">
+                      {sortOptions.find(opt => opt.value === sortBy)?.label}
+                    </span>
+                  )}
+                </div>
+
+                {/* Clear All Button */}
+                {onClearAllFilters && (
+                  <button
+                    onClick={onClearAllFilters}
+                    className="flex items-center gap-2 bg-red-600/20 hover:bg-red-600/30 text-red-300 hover:text-red-200 px-4 py-1.5 rounded-full border border-red-500/30 hover:border-red-500/50 transition-all text-xs font-semibold group"
+                    title="Clear all filters and show all mods"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-300" />
+                    Clear All
+                  </button>
+                )}
               </div>
             )}
 

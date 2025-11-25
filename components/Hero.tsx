@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Search, Sparkles, Image as ImageIcon, Loader2, Filter } from 'lucide-react';
+import { Search, Sparkles, Image as ImageIcon, Loader2, Filter, X } from 'lucide-react';
 
 interface HeroProps {
   onSearch: (query: string, category?: string) => void;
@@ -92,6 +92,21 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
                 />
 
                 <div className="flex items-center space-x-2 pr-2">
+                  {/* Clear Button - only show when there's a search query */}
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery('');
+                        onSearch('');
+                      }}
+                      className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
+                      title="Clear search"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+
                   <button
                     type="submit"
                     disabled={isLoading}

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
@@ -15,7 +16,10 @@ interface SearchFilters {
   [key: string]: any;
 }
 
-export default function HomePage() {
+function HomePageContent() {
+  const searchParams = useSearchParams();
+  const creatorParam = searchParams.get('creator');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('relevance');
@@ -45,6 +49,11 @@ export default function HomePage() {
       // Add category filter (if not 'All')
       if (selectedCategory && selectedCategory !== 'All') {
         params.append('category', selectedCategory);
+      }
+
+      // Add creator filter if exists
+      if (creatorParam) {
+        params.append('creator', creatorParam);
       }
 
       // Add sort parameter
@@ -87,7 +96,7 @@ export default function HomePage() {
   useEffect(() => {
     fetchMods();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, sortBy, searchQuery]);
+  }, [selectedCategory, sortBy, searchQuery, creatorParam]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -99,6 +108,12 @@ export default function HomePage() {
 
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy);
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSortBy('relevance');
   };
 
   const handleFavorite = async (modId: string) => {
@@ -174,6 +189,11 @@ export default function HomePage() {
       params.append('category', selectedCategory);
     }
 
+    // Add creator filter if exists
+    if (creatorParam) {
+      params.append('creator', creatorParam);
+    }
+
     // Add sort parameter
     if (sortBy && sortBy !== 'relevance') {
       switch (sortBy) {
@@ -210,7 +230,37 @@ export default function HomePage() {
           onSortChange={handleSortChange}
           resultCount={mods.length}
           facets={facets}
+          searchQuery={searchQuery}
+          onClearAllFilters={handleClearAllFilters}
         />
+
+        {/* Creator Filter Banner */}
+        {creatorParam && (
+          <div className="container mx-auto px-4 py-4">
+            <div className="bg-gradient-to-r from-sims-pink/10 to-purple-600/10 border border-sims-pink/20 rounded-lg px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-sims-pink/20 rounded-full p-2">
+                  <svg className="h-5 w-5 text-sims-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400">Viewing mods by creator</p>
+                  <p className="text-lg font-semibold text-white">@{creatorParam}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  // Navigate to home page without creator parameter
+                  window.location.href = '/';
+                }}
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              >
+                Clear Filter
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="container mx-auto px-4">
@@ -298,5 +348,20 @@ export default function HomePage() {
         />
       )}
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-mhm-dark text-slate-200 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sims-pink mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
   );
 }

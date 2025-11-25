@@ -33,6 +33,8 @@ model User {
   sessions     Session[]
   accounts     Account[]
 
+  @@index([email], name: "email_lookup")
+  @@index([isCreator, isPremium], name: "user_tiers")
   @@map("users")
 }
 
@@ -119,6 +121,15 @@ model Mod {
   modFiles   ModFile[]
   searchIndex SearchIndex?
 
+  // Performance indexes for high-traffic queries
+  @@index([isVerified, isNSFW, createdAt(sort: Desc)], name: "verified_safe_newest")
+  @@index([isVerified, isNSFW, downloadCount(sort: Desc)], name: "verified_safe_popular")
+  @@index([isVerified, isNSFW, rating(sort: Desc)], name: "verified_safe_rated")
+  @@index([categoryId, isVerified, createdAt(sort: Desc)], name: "category_verified_newest")
+  @@index([creatorId, publishedAt(sort: Desc)], name: "creator_mods")
+  @@index([source, sourceId], name: "source_lookup")
+  @@index([isFeatured, publishedAt], name: "featured_mods")
+  @@index([category], name: "legacy_category")
   @@map("mods")
 }
 
@@ -152,6 +163,8 @@ model Collection {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   items       CollectionItem[]
 
+  @@index([userId, isPublic], name: "user_collections")
+  @@index([isFeatured, updatedAt(sort: Desc)], name: "featured_collections")
   @@map("collections")
 }
 
@@ -181,6 +194,8 @@ model Favorite {
   mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@unique([userId, modId])
+  @@index([userId, createdAt(sort: Desc)], name: "user_favorites")
+  @@index([modId, createdAt], name: "mod_favorites_count")
   @@map("favorites")
 }
 
@@ -199,6 +214,9 @@ model Review {
   mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@unique([userId, modId])
+  @@index([modId, createdAt(sort: Desc)], name: "mod_reviews")
+  @@index([userId, createdAt(sort: Desc)], name: "user_reviews")
+  @@index([rating, createdAt], name: "rating_timeline")
   @@map("reviews")
 }
 
@@ -214,6 +232,9 @@ model Download {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt(sort: Desc)], name: "user_downloads")
+  @@index([modId, createdAt(sort: Desc)], name: "mod_downloads_count")
+  @@index([createdAt], name: "download_timeline")
   @@map("downloads")
 }
 
@@ -306,5 +327,27 @@ model SearchIndex {
   // Relations
   mod         Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
 
+  @@index([lastIndexed], name: "reindex_tracking")
   @@map("search_index")
+}
+
+model ModSubmission {
+  id             String   @id @default(cuid())
+  modUrl         String
+  modName        String
+  description    String   @db.Text
+  category       String
+  submitterName  String
+  submitterEmail String
+  submitterIp    String?
+  status         String   @default("pending") // pending, approved, rejected
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  reviewNotes    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status, createdAt(sort: Desc)], name: "pending_submissions")
+  @@index([submitterEmail], name: "submission_tracking")
+  @@map("mod_submissions")
 }

@@ -157,13 +157,13 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
                 Download Mod
               </a>
               <a
-                href="https://musthavemods.com"
+                href={mod.sourceUrl || 'https://musthavemods.com'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 bg-[#1E293B] hover:bg-[#334155] text-white py-3 px-5 rounded-xl font-bold text-sm border border-white/10 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
                 <ExternalLink className="w-4 h-4 text-slate-400" />
-                MustHaveMods Blog
+                {mod.sourceUrl ? 'View Blog Post' : 'MustHaveMods Blog'}
               </a>
             </div>
 
