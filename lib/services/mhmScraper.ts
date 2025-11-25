@@ -95,7 +95,7 @@ export class MustHaveModsScraper {
         }
       }
 
-      const uniqueUrls = [...new Set(allUrls)];
+      const uniqueUrls = Array.from(new Set(allUrls));
       console.log(`\n✅ Total unique blog post URLs: ${uniqueUrls.length}\n`);
       return uniqueUrls;
     } catch (error) {
@@ -280,34 +280,34 @@ export class MustHaveModsScraper {
 
           // Convert AI-parsed mods to ScrapedMod format
           for (const aiMod of aiParsedMods) {
-          const tags = [
-            ...postTags,
-            ...postCategories,
-            ...this.extractTagsFromTitle(aiMod.title),
-          ].filter(t => t && t.length > 0);
+            const tags = [
+              ...postTags,
+              ...postCategories,
+              ...this.extractTagsFromTitle(aiMod.title),
+            ].filter(t => t && t.length > 0);
 
-          mods.push({
-            title: aiMod.title,
-            description: aiMod.description,
-            shortDescription: aiMod.description ? aiMod.description.substring(0, 200) : undefined,
-            category: 'Other', // Legacy flat category
-            categoryId,
-            categoryPath,
-            tags: [...new Set(tags)],
-            thumbnail: aiMod.image || featuredImage,
-            images: aiMod.image ? [aiMod.image] : featuredImage ? [featuredImage] : [],
-            downloadUrl: aiMod.downloadUrl,
-            sourceUrl: postUrl,
-            source: 'MustHaveMods.com',
-            author: aiMod.author,
-            isFree: !aiMod.description?.toLowerCase().includes('early access') &&
-                    !aiMod.description?.toLowerCase().includes('patreon exclusive'),
-            isNSFW: false,
-            publishedAt: postDate ? new Date(postDate) : new Date(),
-          });
-        }
+            mods.push({
+              title: aiMod.title,
+              description: aiMod.description,
+              shortDescription: aiMod.description ? aiMod.description.substring(0, 200) : undefined,
+              category: 'Other', // Legacy flat category
+              categoryId,
+              categoryPath,
+              tags: Array.from(new Set(tags)),
+              thumbnail: aiMod.image || featuredImage,
+              images: aiMod.image ? [aiMod.image] : featuredImage ? [featuredImage] : [],
+              downloadUrl: aiMod.downloadUrl,
+              sourceUrl: postUrl,
+              source: 'MustHaveMods.com',
+              author: aiMod.author,
+              isFree: !aiMod.description?.toLowerCase().includes('early access') &&
+                !aiMod.description?.toLowerCase().includes('patreon exclusive'),
+              isNSFW: false,
+              publishedAt: postDate ? new Date(postDate) : new Date(),
+            });
+          }
 
-        return mods;
+          return mods;
         }
       }
 
@@ -430,9 +430,9 @@ export class MustHaveModsScraper {
             // Extract and validate the image
             if ($img && $img.length > 0) {
               const imgSrc = $img.attr('data-src') ||
-                            $img.attr('data-lazy-src') ||
-                            $img.attr('data-orig-file') ||
-                            $img.attr('src');
+                $img.attr('data-lazy-src') ||
+                $img.attr('data-orig-file') ||
+                $img.attr('src');
 
               // Strict validation: no ads, no SVG placeholders
               const isValidImage = imgSrc &&
@@ -452,157 +452,157 @@ export class MustHaveModsScraper {
             }
           }
 
-            // STEP 2: Look for ADDITIONAL IMAGES (gallery) in next 2-3 elements
-            $next = $el.next();
-            for (let i = 0; i < 4 && $next.length > 0; i++) {
-              if (image && ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image'))) {
-                const $img = $next.find('img');
-                const imgSrc = $img.attr('data-src') ||
-                              $img.attr('data-lazy-src') ||
-                              $img.attr('data-orig-file') ||
-                              $img.attr('src');
+          // STEP 2: Look for ADDITIONAL IMAGES (gallery) in next 2-3 elements
+          $next = $el.next();
+          for (let i = 0; i < 4 && $next.length > 0; i++) {
+            if (image && ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image'))) {
+              const $img = $next.find('img');
+              const imgSrc = $img.attr('data-src') ||
+                $img.attr('data-lazy-src') ||
+                $img.attr('data-orig-file') ||
+                $img.attr('src');
 
-                const isValidAdditionalImage = imgSrc &&
-                  !imgSrc.startsWith('data:image/svg') &&
-                  !imgSrc.includes('doubleclick.net') &&
-                  !imgSrc.includes('googleadservices') &&
-                  !imgSrc.includes('googlesyndication') &&
-                  !imgSrc.includes('/ads/') &&
-                  !imgSrc.includes('ad-') &&
-                  !imgSrc.includes('banner') &&
-                  !imgSrc.includes('logo') &&
-                  imgSrc.length > 20 &&
-                  imgSrc !== image;
+              const isValidAdditionalImage = imgSrc &&
+                !imgSrc.startsWith('data:image/svg') &&
+                !imgSrc.includes('doubleclick.net') &&
+                !imgSrc.includes('googleadservices') &&
+                !imgSrc.includes('googlesyndication') &&
+                !imgSrc.includes('/ads/') &&
+                !imgSrc.includes('ad-') &&
+                !imgSrc.includes('banner') &&
+                !imgSrc.includes('logo') &&
+                imgSrc.length > 20 &&
+                imgSrc !== image;
 
-                if (isValidAdditionalImage) {
-                  const fullImgSrc = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
-                  additionalImages.push(fullImgSrc);
-                }
+              if (isValidAdditionalImage) {
+                const fullImgSrc = imgSrc.startsWith('http') ? imgSrc : `${this.baseUrl}${imgSrc}`;
+                additionalImages.push(fullImgSrc);
               }
-
-              $next = $next.next();
             }
 
-            // STEP 3: Look for DOWNLOAD LINK - MUST be within next 5 elements
-            // Structure: image → (optional description p tags) → download p/button
-            $next = $el.next();
-            let elementsChecked = 0;
+            $next = $next.next();
+          }
 
-            // Skip to first element after the image
-            if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+          // STEP 3: Look for DOWNLOAD LINK - MUST be within next 5 elements
+          // Structure: image → (optional description p tags) → download p/button
+          $next = $el.next();
+          let elementsChecked = 0;
+
+          // Skip to first element after the image
+          if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+            $next = $next.next();
+          }
+
+          // Look ONLY in next 5 elements for download link
+          while (elementsChecked < 5 && $next.length > 0) {
+
+            // Skip ONLY Mediavine ad blocks (not all DIVs!)
+            if ($next.hasClass('mv-ad-box') ||
+              $next.attr('id')?.includes('mediavine') ||
+              $next.attr('id')?.includes('ad-') ||
+              $next.attr('class')?.includes('ad-') ||
+              $next.find('.mv-ad-box').length > 0) {
               $next = $next.next();
+              elementsChecked++;
+              continue;
             }
 
-            // Look ONLY in next 5 elements for download link
-            while (elementsChecked < 5 && $next.length > 0) {
+            // Stop if we hit another h2 or h3 (next mod entry)
+            if ($next.is('h2') || $next.is('h3')) {
+              break;
+            }
 
-              // Skip ONLY Mediavine ad blocks (not all DIVs!)
-              if ($next.hasClass('mv-ad-box') ||
-                  $next.attr('id')?.includes('mediavine') ||
-                  $next.attr('id')?.includes('ad-') ||
-                  $next.attr('class')?.includes('ad-') ||
-                  $next.find('.mv-ad-box').length > 0) {
-                $next = $next.next();
-                elementsChecked++;
-                continue;
+            // Check for download link in: paragraph, DIV with paragraphs, or DIV with direct links
+            let $searchIn: cheerio.Cheerio<any> | null = null;
+            let directLinks: cheerio.Cheerio<any> | null = null;
+
+            if ($next.is('p')) {
+              $searchIn = $next;
+            } else if ($next.is('div')) {
+              // Check if DIV contains paragraphs
+              const $paragraphs = $next.find('p');
+              if ($paragraphs.length > 0) {
+                $searchIn = $paragraphs.first();
+              } else {
+                // DIV has direct links (no paragraphs)
+                directLinks = $next.find('a[href]');
               }
+            }
 
-              // Stop if we hit another h2 or h3 (next mod entry)
-              if ($next.is('h2') || $next.is('h3')) {
-                break;
-              }
+            // Process direct links in DIV (no paragraphs)
+            if (directLinks && directLinks.length > 0) {
+              directLinks.each((_, linkEl) => {
+                if (downloadUrl) return; // Already found
 
-              // Check for download link in: paragraph, DIV with paragraphs, or DIV with direct links
-              let $searchIn: cheerio.Cheerio<any> | null = null;
-              let directLinks: cheerio.Cheerio<any> | null = null;
+                const $linkEl = $(linkEl);
+                const href = $linkEl.attr('href');
 
-              if ($next.is('p')) {
-                $searchIn = $next;
-              } else if ($next.is('div')) {
-                // Check if DIV contains paragraphs
-                const $paragraphs = $next.find('p');
-                if ($paragraphs.length > 0) {
-                  $searchIn = $paragraphs.first();
-                } else {
-                  // DIV has direct links (no paragraphs)
-                  directLinks = $next.find('a[href]');
+                // Skip internal/ad links
+                if (!href ||
+                  href.includes(this.baseUrl) ||
+                  href.startsWith('#') ||
+                  href.includes('mediavine.com') ||
+                  href.includes('doubleclick.net') ||
+                  href.includes('googleadservices')) {
+                  return;
                 }
-              }
 
-              // Process direct links in DIV (no paragraphs)
-              if (directLinks && directLinks.length > 0) {
-                directLinks.each((_, linkEl) => {
-                  if (downloadUrl) return; // Already found
+                // STRICT: ONLY accept kb-button class (Kadence download buttons)
+                if ($linkEl.hasClass('kb-button')) {
+                  downloadUrl = href;
+                }
+              });
+            }
 
+            // Process links inside paragraphs
+            if ($searchIn && $searchIn.length > 0) {
+              const text = $searchIn.text().trim();
+              const textLower = text.toLowerCase();
+
+              // STRICT: ONLY accept links in paragraphs that start with "Download:"
+              if (textLower.startsWith('download:') || textLower.startsWith('download link:')) {
+                const links = $searchIn.find('a[href]');
+                links.each((_, linkEl) => {
                   const $linkEl = $(linkEl);
                   const href = $linkEl.attr('href');
 
-                  // Skip internal/ad links
+                  // Skip internal blog links and ads
                   if (!href ||
-                      href.includes(this.baseUrl) ||
-                      href.startsWith('#') ||
-                      href.includes('mediavine.com') ||
-                      href.includes('doubleclick.net') ||
-                      href.includes('googleadservices')) {
+                    href.includes(this.baseUrl) ||
+                    href.startsWith('#') ||
+                    href.includes('mediavine.com') ||
+                    href.includes('doubleclick.net') ||
+                    href.includes('googleadservices')) {
                     return;
                   }
 
-                  // STRICT: ONLY accept kb-button class (Kadence download buttons)
-                  if ($linkEl.hasClass('kb-button')) {
+                  // This is a download link (paragraph starts with "Download:")
+                  if (!downloadUrl) {
                     downloadUrl = href;
                   }
                 });
-              }
-
-              // Process links inside paragraphs
-              if ($searchIn && $searchIn.length > 0) {
-                const text = $searchIn.text().trim();
-                const textLower = text.toLowerCase();
-
-                // STRICT: ONLY accept links in paragraphs that start with "Download:"
-                if (textLower.startsWith('download:') || textLower.startsWith('download link:')) {
-                  const links = $searchIn.find('a[href]');
-                  links.each((_, linkEl) => {
-                    const $linkEl = $(linkEl);
-                    const href = $linkEl.attr('href');
-
-                    // Skip internal blog links and ads
-                    if (!href ||
-                        href.includes(this.baseUrl) ||
-                        href.startsWith('#') ||
-                        href.includes('mediavine.com') ||
-                        href.includes('doubleclick.net') ||
-                        href.includes('googleadservices')) {
-                      return;
-                    }
-
-                    // This is a download link (paragraph starts with "Download:")
-                    if (!downloadUrl) {
-                      downloadUrl = href;
-                    }
-                  });
-                } else {
-                  // Collect description (not a download paragraph)
-                  if (text.length > 10) {
-                    description += (description ? ' ' : '') + text;
-                  }
+              } else {
+                // Collect description (not a download paragraph)
+                if (text.length > 10) {
+                  description += (description ? ' ' : '') + text;
                 }
               }
-
-              // Check for standalone download link/button with kb-button class
-              if (!downloadUrl && $next.is('a') && $next.hasClass('kb-button')) {
-                const href = $next.attr('href');
-
-                if (href &&
-                    !href.includes(this.baseUrl) &&
-                    !href.includes('mediavine.com')) {
-                  downloadUrl = href;
-                }
-              }
-
-              $next = $next.next();
-              elementsChecked++;
             }
+
+            // Check for standalone download link/button with kb-button class
+            if (!downloadUrl && $next.is('a') && $next.hasClass('kb-button')) {
+              const href = $next.attr('href');
+
+              if (href &&
+                !href.includes(this.baseUrl) &&
+                !href.includes('mediavine.com')) {
+                downloadUrl = href;
+              }
+            }
+
+            $next = $next.next();
+            elementsChecked++;
+          }
 
           // Extract author - prioritize title, then download URL
           if (!author && authorFromTitle) {
@@ -625,7 +625,7 @@ export class MustHaveModsScraper {
 
           // Determine if it's free or early access
           const isFree = !description.toLowerCase().includes('early access') &&
-                         !description.toLowerCase().includes('patreon exclusive');
+            !description.toLowerCase().includes('patreon exclusive');
 
           // Build tags from post tags, categories, and mod title
           const tags = [
@@ -647,7 +647,7 @@ export class MustHaveModsScraper {
               category: this.normalizeCategory(currentCategory), // Flat category (legacy)
               categoryId, // NEW: hierarchical category ID
               categoryPath, // NEW: category breadcrumb for display
-              tags: [...new Set(tags)], // Remove duplicates
+              tags: Array.from(new Set(tags)), // Remove duplicates
               thumbnail: image, // Use ONLY the specific mod image
               images: finalImages,
               downloadUrl,

@@ -69,7 +69,7 @@ export class ModBlockParser {
     });
 
     // Deduplicate sections (same mod might have multiple download links)
-    const uniqueSections = [...new Set(modSections)];
+    const uniqueSections = Array.from(new Set(modSections));
     console.log(`   🤖 Processing ${uniqueSections.length} unique mod sections with AI...`);
 
     // Combine sections into manageable chunks (max 15000 chars per chunk)
