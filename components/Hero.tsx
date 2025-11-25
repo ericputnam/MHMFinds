@@ -49,7 +49,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sims-green opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-sims-green"></span>
             </span>
-            <span className="text-xs font-semibold text-slate-300 tracking-wide uppercase">AI Powered Mod Discovery</span>
+            <span className="text-xs font-semibold text-slate-300 tracking-wide uppercase">Mod Discovery v2.0 (Beta)</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-black mb-3 tracking-tight leading-tight">

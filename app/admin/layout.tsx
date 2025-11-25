@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import {
   LayoutDashboard,
   Package,
@@ -11,13 +12,16 @@ import {
   Folder,
   UserCircle,
   Settings,
-  LogOut
+  LogOut,
+  Shield,
+  Mail
 } from 'lucide-react';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/mods', label: 'Mods', icon: Package },
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },
+  { href: '/admin/waitlist', label: 'Waitlist', icon: Mail },
   { href: '/admin/creators', label: 'Creators', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: Folder },
   { href: '/admin/users', label: 'Users', icon: UserCircle },
@@ -29,6 +33,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
@@ -37,7 +46,7 @@ export default function AdminLayout({
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-br from-sims-pink to-purple-600 p-2 rounded-lg">
-              <LayoutDashboard className="h-5 w-5 text-white" />
+              <Shield className="h-5 w-5 text-white" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-white">MustHaveMods Admin</h1>
@@ -45,6 +54,15 @@ export default function AdminLayout({
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {session?.user && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-slate-800/50 rounded-lg">
+                <UserCircle className="h-5 w-5 text-slate-400" />
+                <div className="text-sm">
+                  <p className="font-semibold text-white">{session.user.username || session.user.email}</p>
+                  <p className="text-xs text-slate-500">Administrator</p>
+                </div>
+              </div>
+            )}
             <Link
               href="/"
               target="_blank"
@@ -52,7 +70,10 @@ export default function AdminLayout({
             >
               View Site →
             </Link>
-            <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors text-sm">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-900/20 hover:bg-red-900/30 border border-red-800/30 hover:border-red-700/50 rounded-lg transition-all text-sm text-red-400 hover:text-red-300"
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </button>

@@ -1,0 +1,10 @@
+{
+  "name": "MustHaveMods",
+  "short_name": "MHMFinds",
+  "description": "Discover premium Sims 4 mods with AI-powered recommendations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0a1e",
+  "theme_color": "#ec4899",
+  "icons": []
+}

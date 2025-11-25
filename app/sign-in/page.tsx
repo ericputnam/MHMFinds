@@ -4,16 +4,45 @@ import React, { useState } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Sparkles, Heart, Crown, Zap, CheckCircle2, Bell, Mail } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleNotifyMe = (e: React.FormEvent) => {
+  const handleNotifyMe = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement email subscription logic
-    setSubscribed(true);
-    setEmail('');
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'sign-in',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubscribed(true);
+        setEmail('');
+      } else {
+        setError(data.message || 'Failed to join waitlist. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      console.error('Waitlist error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -43,6 +72,11 @@ export default function SignInPage() {
               {/* Email Notification Form */}
               {!subscribed ? (
                 <form onSubmit={handleNotifyMe} className="max-w-md mx-auto">
+                  {error && (
+                    <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-sm text-red-400">
+                      {error}
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <input
                       type="email"
@@ -50,14 +84,16 @@ export default function SignInPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="flex-grow px-6 py-4 bg-white/5 border border-white/10 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all"
+                      disabled={isSubmitting}
+                      className="flex-grow px-6 py-4 bg-white/5 border border-white/10 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <button
                       type="submit"
-                      className="bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold px-8 py-4 rounded-lg hover:scale-105 transition-transform duration-300 shadow-lg flex items-center gap-2"
+                      disabled={isSubmitting}
+                      className="bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold px-8 py-4 rounded-lg hover:scale-105 transition-transform duration-300 shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       <Bell className="h-5 w-5" />
-                      Notify Me
+                      {isSubmitting ? 'Joining...' : 'Notify Me'}
                     </button>
                   </div>
                 </form>

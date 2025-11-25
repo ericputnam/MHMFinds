@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
@@ -73,7 +74,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="__className_e8ce0c antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

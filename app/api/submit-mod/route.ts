@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ModSubmissionSchema, formatZodError } from '@/lib/validation/schemas';
 import { ZodError } from 'zod';
+import { verifyTurnstileToken } from '@/lib/services/turnstile';
 
 // Rate limiting map (in-memory - for production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -58,8 +59,10 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body with Zod
     let validatedData;
+    let captchaToken;
     try {
       const body = await request.json();
+      captchaToken = body.captchaToken;
       validatedData = ModSubmissionSchema.parse(body);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -73,6 +76,28 @@ export async function POST(request: NextRequest) {
         );
       }
       throw error;
+    }
+
+    // Verify CAPTCHA token
+    if (!captchaToken) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'CAPTCHA verification required'
+        },
+        { status: 400 }
+      );
+    }
+
+    const captchaResult = await verifyTurnstileToken(captchaToken, ip);
+    if (!captchaResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: captchaResult.error || 'CAPTCHA verification failed'
+        },
+        { status: 400 }
+      );
     }
 
     const { modUrl, modName, description, category, submitterName, submitterEmail } = validatedData;

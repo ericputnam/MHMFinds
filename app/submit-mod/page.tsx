@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Upload, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 interface FormData {
   modUrl: string;
@@ -32,6 +33,7 @@ export default function SubmitModPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   // Client-side validation
   const validateForm = (): boolean => {
@@ -98,6 +100,13 @@ export default function SubmitModPage() {
       return;
     }
 
+    // Validate CAPTCHA
+    if (!captchaToken) {
+      setSubmitStatus('error');
+      setSubmitMessage('Please complete the CAPTCHA verification');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
@@ -107,7 +116,10 @@ export default function SubmitModPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          captchaToken,
+        }),
       });
 
       const data = await response.json();
@@ -115,7 +127,7 @@ export default function SubmitModPage() {
       if (response.ok) {
         setSubmitStatus('success');
         setSubmitMessage('Thank you! Your mod submission has been received and will be reviewed by our team.');
-        // Reset form
+        // Reset form and captcha
         setFormData({
           modUrl: '',
           modName: '',
@@ -124,6 +136,7 @@ export default function SubmitModPage() {
           submitterName: '',
           submitterEmail: '',
         });
+        setCaptchaToken(null);
       } else {
         setSubmitStatus('error');
         setSubmitMessage(data.message || 'Failed to submit mod. Please try again later.');
@@ -366,11 +379,25 @@ export default function SubmitModPage() {
                 </p>
               </div>
 
+              {/* CAPTCHA Verification */}
+              <div className="flex justify-center">
+                <Turnstile
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onError={() => setCaptchaToken(null)}
+                  onExpire={() => setCaptchaToken(null)}
+                  options={{
+                    theme: 'dark',
+                    size: 'normal',
+                  }}
+                />
+              </div>
+
               {/* Submit Button */}
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !captchaToken}
                   className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold px-8 py-4 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? (

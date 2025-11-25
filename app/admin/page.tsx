@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Package, Users, Upload, TrendingUp, Eye, Download, Star, Clock } from 'lucide-react';
+import { Package, Users, Upload, TrendingUp, Eye, Download, Star, Clock, Mail } from 'lucide-react';
 
 interface Stats {
   totalMods: number;
@@ -11,6 +11,7 @@ interface Stats {
   totalDownloads: number;
   totalFavorites: number;
   averageRating: number;
+  waitlistCount: number;
   recentMods: Array<{
     id: string;
     title: string;
@@ -102,6 +103,18 @@ export default function AdminDashboard() {
           </div>
           <h3 className="text-3xl font-bold text-white mb-1">{stats?.totalUsers || 0}</h3>
           <p className="text-sm text-slate-400">User Accounts</p>
+        </div>
+
+        {/* Waitlist */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-purple-500/30 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <div className="bg-purple-500/10 p-3 rounded-lg">
+              <Mail className="h-6 w-6 text-purple-500" />
+            </div>
+            <span className="text-xs text-slate-500 font-medium">WAITING</span>
+          </div>
+          <h3 className="text-3xl font-bold text-white mb-1">{stats?.waitlistCount || 0}</h3>
+          <p className="text-sm text-slate-400">Waitlist Signups</p>
         </div>
       </div>
 

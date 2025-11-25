@@ -1,12 +1,64 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // Find user by email
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          include: {
+            accounts: {
+              where: {
+                provider: 'credentials'
+              }
+            }
+          }
+        });
+
+        if (!user || !user.accounts || user.accounts.length === 0) {
+          return null;
+        }
+
+        // Get hashed password from account (stored in id_token field)
+        const hashedPassword = user.accounts[0].id_token;
+        if (!hashedPassword) {
+          return null;
+        }
+
+        // Verify password
+        const isValid = await bcrypt.compare(credentials.password, hashedPassword);
+        if (!isValid) {
+          return null;
+        }
+
+        // Return user object
+        return {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          isAdmin: user.isAdmin,
+          isCreator: user.isCreator,
+          isPremium: user.isPremium,
+        };
+      }
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -62,8 +114,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
+    signIn: '/admin/login',
+    error: '/admin/login',
   },
   events: {
     async createUser({ user }: any) {
