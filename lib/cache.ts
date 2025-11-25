@@ -3,11 +3,26 @@ import { Redis } from '@upstash/redis';
 // Initialize Redis client (will be null if env vars not set - graceful degradation)
 let redis: Redis | null = null;
 
-if (process.env.REDIS_URL && process.env.REDIS_TOKEN) {
-  redis = new Redis({
-    url: process.env.REDIS_URL,
-    token: process.env.REDIS_TOKEN,
-  });
+// Validate that Redis URL is a proper HTTPS URL (not a placeholder)
+const isValidRedisUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return url.startsWith('https://') && !url.includes('your-');
+};
+
+if (
+  process.env.REDIS_URL &&
+  process.env.REDIS_TOKEN &&
+  isValidRedisUrl(process.env.REDIS_URL)
+) {
+  try {
+    redis = new Redis({
+      url: process.env.REDIS_URL,
+      token: process.env.REDIS_TOKEN,
+    });
+  } catch (error) {
+    console.warn('Failed to initialize Redis client:', error);
+    redis = null;
+  }
 }
 
 /**
