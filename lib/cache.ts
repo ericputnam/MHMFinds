@@ -3,26 +3,38 @@ import { Redis } from '@upstash/redis';
 // Initialize Redis client (will be null if env vars not set - graceful degradation)
 let redis: Redis | null = null;
 
-// Validate that Redis URL is a proper HTTPS URL (not a placeholder)
-const isValidRedisUrl = (url: string | undefined): boolean => {
+// Validate that Redis URL is a proper Upstash HTTPS URL (not localhost or placeholder)
+const isValidUpstashRedisUrl = (url: string | undefined): boolean => {
   if (!url) return false;
-  return url.startsWith('https://') && !url.includes('your-');
+  // Must start with https:// (Upstash requirement)
+  if (!url.startsWith('https://')) return false;
+  // Must not be a placeholder
+  if (url.includes('your-') || url.includes('localhost') || url.includes('127.0.0.1')) return false;
+  // Must be a reasonable length (not just "https://")
+  if (url.length < 20) return false;
+  return true;
 };
 
+// Only initialize Redis if we have valid Upstash credentials
+// This prevents build failures when Redis is not configured
 if (
   process.env.REDIS_URL &&
   process.env.REDIS_TOKEN &&
-  isValidRedisUrl(process.env.REDIS_URL)
+  isValidUpstashRedisUrl(process.env.REDIS_URL) &&
+  !process.env.REDIS_TOKEN.includes('your-')
 ) {
   try {
     redis = new Redis({
       url: process.env.REDIS_URL,
       token: process.env.REDIS_TOKEN,
     });
+    console.log('✓ Redis cache initialized');
   } catch (error) {
-    console.warn('Failed to initialize Redis client:', error);
+    console.warn('⚠ Failed to initialize Redis client:', error);
     redis = null;
   }
+} else {
+  console.log('ℹ Redis not configured - caching disabled (app will work without it)');
 }
 
 /**
