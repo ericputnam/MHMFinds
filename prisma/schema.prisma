@@ -7,10 +7,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // Primary database URL - checks multiple sources
-  url       = env("DATABASE_URL")
+  // Vercel Postgres (pooled for serverless)
+  url       = env("POSTGRES_PRISMA_URL")
   // Direct connection for migrations
-  directUrl = env("DIRECT_DATABASE_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model User {
