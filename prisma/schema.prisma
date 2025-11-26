@@ -7,10 +7,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // Use POSTGRES_URL from Vercel Postgres, fallback to DATABASE_URL for local dev
-  url       = env("POSTGRES_URL")
-  // Use non-pooling connection for migrations
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  // Primary database URL - checks multiple sources
+  url       = env("DATABASE_URL")
+  // Direct connection for migrations
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model User {
