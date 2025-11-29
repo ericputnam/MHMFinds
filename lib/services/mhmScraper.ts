@@ -185,10 +185,28 @@ export class MustHaveModsScraper {
       }
     }
 
-    // SECOND: Check if the post has properly structured mod blocks
-    // Count H3/H4 headers followed immediately by images (H2 are page sections)
+    // SECOND: Check for obvious listicle title patterns
+    // Patterns like "30+ Best", "25 Sims 4", "Top 20", "Must-Have", etc.
+    const listiclePatterns = [
+      /\d+\+\s+(best|top|sims\s*4|must-have)/i,  // "30+ Best", "25+ Sims 4"
+      /^\d+\+\s+/i,                               // Starts with "30+ "
+      /^(top|best)\s+\d+/i,                       // "Top 20", "Best 15"
+      /\d+\s+(best|top|must-have|sims\s*4)/i,     // "20 Best", "15 Top"
+      /must-have\s+sims\s*4/i,                    // "Must-Have Sims 4"
+      /^\d+\s+sims\s*4/i,                         // "25 Sims 4"
+    ];
+
+    for (const pattern of listiclePatterns) {
+      if (pattern.test(postTitle)) {
+        console.log(`   ✅ Listicle detected by title pattern: "${postTitle}"`);
+        return true;
+      }
+    }
+
+    // THIRD: Check if the post has properly structured mod blocks
+    // Count H2/H3/H4 headers followed immediately by images
     let modBlockCount = 0;
-    $('.entry-content h3, .entry-content h4').each((_, el) => {
+    $('.entry-content h2, .entry-content h3, .entry-content h4').each((_, el) => {
       const $header = $(el);
       const $next = $header.next();
 
@@ -231,6 +249,7 @@ export class MustHaveModsScraper {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
         },
+        timeout: 30000, // 30 second timeout to prevent ETIMEDOUT errors
       });
 
       const $ = cheerio.load(response.data);
@@ -260,7 +279,7 @@ export class MustHaveModsScraper {
         categoryPath = await aiCategorizer.getCategoryBreadcrumb(categoryId);
         console.log(`   🤖 AI Category: ${categoryPath.join(' > ')}`);
       } catch (error) {
-        console.error(`   ⚠️  AI categorization failed:`, error);
+        console.log(`   ⚠️  AI categorization unavailable (check OPENAI_API_KEY), using keyword fallback`);
         // Fallback to old flat category system
       }
 
@@ -355,15 +374,16 @@ export class MustHaveModsScraper {
 
         // DISABLED: Format 2 (paragraph link lists) - causes false positives
         // This was creating mods from description links like "Lighting Overlay 1.0" and "by Josh"
-        // MustHaveMods.com uses H3/H4-based structure, so this Format 2 code is not needed
+        // MustHaveMods.com uses H2/H3/H4-based structure, so this Format 2 code is not needed
         //
         // If we ever need to support simple link-list posts, we should:
-        // 1. Detect if the post has H3/H4 headers first
-        // 2. Only use this Format 2 if there are NO H3/H4 headers
+        // 1. Detect if the post has H2/H3/H4 headers first
+        // 2. Only use this Format 2 if there are NO headers
         // 3. Add stricter validation to avoid description/author links
 
-        // Look for mod entries with H3 or H4 headings (H2 are page sections)
-        if ($el.is('h3') || $el.is('h4')) {
+        // Look for mod entries with H2, H3, or H4 headings
+        // (H2/H3/H4 can all be used for mod titles depending on the post)
+        if ($el.is('h2') || $el.is('h3') || $el.is('h4')) {
           let modTitle = $el.text().trim();
 
           // Skip if it's not a real mod title
@@ -604,7 +624,7 @@ export class MustHaveModsScraper {
             elementsChecked++;
           }
 
-          // Extract author - prioritize title, then download URL
+          // Extract author - prioritize title, then download URL, then scrape mod page
           if (!author && authorFromTitle) {
             author = authorFromTitle;
           }
@@ -614,6 +634,13 @@ export class MustHaveModsScraper {
               author = this.extractAuthorFromUrl(url);
             } catch (error) {
               // Invalid URL
+            }
+          }
+          // If still no author, scrape the actual mod page as a last resort
+          if (!author && downloadUrl) {
+            author = await this.scrapeAuthorFromModPage(downloadUrl);
+            if (author) {
+              console.log(`      ✅ Found author from mod page: ${author}`);
             }
           }
 
@@ -748,6 +775,151 @@ export class MustHaveModsScraper {
     }
 
     return author;
+  }
+
+  /**
+   * Scrape author from the actual mod page by following the download link
+   * This is a fallback when we can't determine the author from title or URL pattern
+   */
+  private async scrapeAuthorFromModPage(downloadUrl: string): Promise<string | undefined> {
+    try {
+      console.log(`      🔍 Scraping author from mod page: ${downloadUrl}`);
+
+      const response = await axios.get(downloadUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        },
+        timeout: 10000, // 10 second timeout
+      });
+
+      const $ = cheerio.load(response.data);
+      const url = new URL(downloadUrl);
+      const hostname = url.hostname;
+
+      // Patreon - look for creator name
+      if (hostname.includes('patreon.com')) {
+        // Try multiple selectors for Patreon creator name
+        const selectors = [
+          'a[data-tag="post-card-avatar-link"]',
+          '[data-tag="post-published-at"] a',
+          '.creator-name',
+          'h1[data-tag="creator-page-name"]',
+          'meta[property="og:title"]',
+        ];
+
+        for (const selector of selectors) {
+          const authorEl = $(selector).first();
+          if (selector === 'meta[property="og:title"]') {
+            const content = authorEl.attr('content');
+            if (content) {
+              // Extract name from "Creator Name is creating..." or "Post Title | Creator Name"
+              const match = content.match(/^(.+?)\s+is creating|(.+?)\s*\|/) || content.match(/^(.+?)$/);
+              if (match) {
+                return (match[1] || match[2] || match[3])?.trim();
+              }
+            }
+          } else {
+            const text = authorEl.text().trim();
+            if (text && text.length > 0 && text.length < 50) {
+              return text;
+            }
+          }
+        }
+      }
+
+      // The Sims Resource - look for creator/member name
+      else if (hostname.includes('thesimsresource.com')) {
+        const selectors = [
+          '.artist-profile-name',
+          '.member-name',
+          'a[href*="/members/"]',
+          'meta[property="og:title"]',
+        ];
+
+        for (const selector of selectors) {
+          const authorEl = $(selector).first();
+          if (selector === 'meta[property="og:title"]') {
+            const content = authorEl.attr('content');
+            if (content) {
+              // Extract creator name from title like "ModName by CreatorName"
+              const match = content.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
+              if (match) {
+                return match[1].trim();
+              }
+            }
+          } else {
+            const text = authorEl.text().trim();
+            if (text && text.length > 0 && text.length < 50) {
+              return text;
+            }
+          }
+        }
+      }
+
+      // Tumblr - extract from subdomain
+      else if (hostname.includes('tumblr.com')) {
+        const match = hostname.match(/^([^\.]+)\.tumblr\.com/);
+        if (match) {
+          let author = match[1].replace(/-/g, ' ').replace(/_/g, ' ');
+          author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          return author;
+        }
+      }
+
+      // CurseForge - look for author
+      else if (hostname.includes('curseforge.com')) {
+        const selectors = [
+          '.user-tag a',
+          '.author-name',
+          'a[href*="/members/"]',
+          'meta[name="author"]',
+        ];
+
+        for (const selector of selectors) {
+          const authorEl = $(selector).first();
+          if (selector === 'meta[name="author"]') {
+            const content = authorEl.attr('content');
+            if (content) {
+              return content.trim();
+            }
+          } else {
+            const text = authorEl.text().trim();
+            if (text && text.length > 0 && text.length < 50) {
+              return text;
+            }
+          }
+        }
+      }
+
+      // Generic fallback - look for common author metadata
+      const genericSelectors = [
+        'meta[name="author"]',
+        'meta[property="article:author"]',
+        '.author-name',
+        '.creator-name',
+        '[rel="author"]',
+      ];
+
+      for (const selector of genericSelectors) {
+        const authorEl = $(selector).first();
+        if (selector.startsWith('meta')) {
+          const content = authorEl.attr('content');
+          if (content && content.length > 0 && content.length < 50) {
+            return content.trim();
+          }
+        } else {
+          const text = authorEl.text().trim();
+          if (text && text.length > 0 && text.length < 50) {
+            return text;
+          }
+        }
+      }
+
+      return undefined;
+    } catch (error) {
+      console.log(`      ⚠️  Could not scrape author from mod page: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return undefined;
+    }
   }
 
   /**
@@ -893,7 +1065,7 @@ export class MustHaveModsScraper {
   /**
    * Run the full scraping process
    */
-  async runFullScrape(): Promise<void> {
+  async runFullScrape(options?: { startUrl?: string; startIndex?: number }): Promise<void> {
     console.log('🚀 Starting MustHaveMods.com scraper...\n');
 
     // Step 1: Get all blog post URLs
@@ -904,11 +1076,37 @@ export class MustHaveModsScraper {
       return;
     }
 
-    // Step 2: Scrape mods from each post
+    // Step 2: Determine starting position
+    let startPosition = 0;
+
+    if (options?.startIndex) {
+      // Start from specific index (1-based, convert to 0-based)
+      startPosition = Math.max(0, options.startIndex - 1);
+      if (startPosition >= postUrls.length) {
+        console.log(`❌ Start index ${options.startIndex} is beyond the total ${postUrls.length} posts`);
+        return;
+      }
+      console.log(`📍 Resuming from index ${options.startIndex} (skipping first ${startPosition} posts)`);
+    } else if (options?.startUrl) {
+      // Find the URL in the list
+      const urlIndex = postUrls.findIndex(url => url === options.startUrl);
+      if (urlIndex === -1) {
+        console.log(`❌ Start URL not found in sitemap: ${options.startUrl}`);
+        console.log(`💡 Make sure the URL exactly matches a post URL from the sitemap`);
+        return;
+      }
+      startPosition = urlIndex;
+      console.log(`📍 Resuming from URL (position ${startPosition + 1}/${postUrls.length})`);
+    }
+
+    // Step 3: Scrape mods from each post (starting from startPosition)
     let totalMods = 0;
     let totalSaved = 0;
+    const remainingPosts = postUrls.length - startPosition;
 
-    for (let i = 0; i < postUrls.length; i++) {
+    console.log(`📊 Total posts to scrape: ${remainingPosts} (${startPosition} skipped)\n`);
+
+    for (let i = startPosition; i < postUrls.length; i++) {
       const postUrl = postUrls[i];
       console.log(`\n[${i + 1}/${postUrls.length}] Scraping: ${postUrl}`);
 
