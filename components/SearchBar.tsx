@@ -99,10 +99,18 @@ export function SearchBar({ onSearch, onFilterChange, className = '' }: SearchBa
               onChange={(e) => { setSearchQuery(e.target.value); setShowSuggestions(e.target.value.length > 0); }}
               onFocus={() => { setIsSearchFocused(true); setShowSuggestions(searchQuery.length > 0); }}
               placeholder="Search for mods, creators, or content..."
-              className="w-full pl-10 pr-20 py-2.5 text-sm bg-white/95 backdrop-blur-sm border-0 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1e1b4b] focus:ring-offset-2 transition-all duration-200 font-['Poppins'] placeholder-gray-500 focus:outline-none"
+              className="w-full pl-10 pr-12 sm:pr-20 py-2.5 text-sm bg-white/95 backdrop-blur-sm border-0 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1e1b4b] focus:ring-offset-2 transition-all duration-200 font-['Poppins'] placeholder-gray-500 focus:outline-none"
             />
-            <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#1e1b4b] hover:bg-[#2d2852] text-white px-3 py-1 rounded-md font-medium transition-all duration-200 text-xs">
-              Search
+            {/* Mobile: Icon only, Desktop: Text button */}
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#1e1b4b] hover:bg-[#2d2852] text-white rounded-md font-medium transition-all duration-200 flex items-center justify-center p-2 sm:p-0"
+              aria-label="Search"
+            >
+              {/* Icon only on mobile */}
+              <Search size={16} className="sm:hidden" />
+              {/* Text on desktop */}
+              <span className="hidden sm:inline px-3 py-1 text-xs">Search</span>
             </button>
           </div>
           <div className="absolute -bottom-5 left-0 text-xs text-white/70 font-['Poppins'] flex items-center gap-1">
