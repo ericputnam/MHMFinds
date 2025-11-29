@@ -31,15 +31,39 @@ async function populateCreators() {
     let creatorsData: CreatorData[];
     try {
       // Try to parse the response as JSON
-      // Perplexity sometimes includes markdown, so we need to extract JSON
-      const jsonMatch = response.match(/\[[\s\S]*\]/);
+      // Perplexity sometimes includes markdown or extra text, so we need to extract JSON
+
+      // First, try to find JSON array in the response
+      const jsonMatch = response.match(/\[[\s\S]*?\]/);
       if (!jsonMatch) {
+        console.error('❌ No JSON array found in Perplexity response');
+        console.error('Full response:', response);
+        console.error('\n⚠️  Perplexity did not return structured data.');
+        console.error('💡 Try using the manual seed script instead:');
+        console.error('   npx tsx scripts/seed-creators-manual.ts');
         throw new Error('No JSON array found in response');
       }
+
+      // Try to parse the extracted JSON
       creatorsData = JSON.parse(jsonMatch[0]);
+
+      // Validate that we got an array
+      if (!Array.isArray(creatorsData)) {
+        throw new Error('Response is not a valid array');
+      }
+
+      // Validate that array has items
+      if (creatorsData.length === 0) {
+        throw new Error('Response array is empty');
+      }
+
     } catch (parseError) {
       console.error('❌ Failed to parse Perplexity response as JSON');
-      console.error('Response:', response);
+      console.error('Parse error:', parseError);
+      console.error('\nRaw response:');
+      console.error('─'.repeat(50));
+      console.error(response);
+      console.error('─'.repeat(50));
       throw parseError;
     }
 

@@ -91,41 +91,35 @@ export class PerplexityService {
    * Research top Sims 4 mod creators
    */
   static async researchTopSimsCreators(): Promise<string> {
-    const systemMessage = `You are a research assistant specializing in The Sims 4 modding community.
-Your responses should be factual, up-to-date, and well-structured.
-Always include sources when possible.`;
+    const systemMessage = `You are a JSON API that returns structured data about The Sims 4 modding community.
+You MUST respond with ONLY valid JSON. Do not include any explanatory text, markdown formatting, or commentary.
+If you cannot provide complete information, make your best educated guess based on available data.`;
 
-    const prompt = `Please provide a comprehensive list of the top 30 most popular and influential Sims 4 mod creators as of 2025.
+    const prompt = `List the top 20 most well-known Sims 4 mod creators. Include popular creators like:
+- Sacrificial (Extreme Violence mod)
+- Basemental (Drugs/Gangs mods)
+- Turbodriver (WickedWhims)
+- MC Command Center team
+- LittleMsSam
+- Kawaiistacie (Slice of Life)
+- SimRealist
+- And 13 more popular creators
 
-For each creator, include:
-1. Creator name/handle
-2. Primary platform (Patreon, CurseForge, Tumblr, etc.)
-3. Profile URL
-4. Brief bio (1-2 sentences about what they create)
-5. Verification status (if they're officially recognized)
-6. Specialization (gameplay mods, CAS, Build/Buy, etc.)
-
-Please format the response as a structured JSON array with the following format:
+Response format - return ONLY this JSON array with no other text:
 [
   {
-    "name": "Creator Name",
-    "handle": "creatorhandle",
+    "name": "Sacrificial",
+    "handle": "sacrificialmods",
     "platform": "Patreon",
-    "profileUrl": "https://...",
-    "bio": "Description of what they create",
-    "isVerified": true/false,
-    "specialization": "Gameplay Mods",
+    "profileUrl": "https://www.patreon.com/sacrificialmods",
+    "bio": "Creator of Extreme Violence and Life Tragedies mods",
+    "isVerified": true,
+    "specialization": "Gameplay Scripts",
     "estimatedFollowers": "50k+"
   }
 ]
 
-Focus on creators who are:
-- Currently active (2024-2025)
-- Have significant community following
-- Produce high-quality, well-maintained content
-- Are well-known in the Sims 4 modding community
-
-Return ONLY the JSON array, no additional text.`;
+Include 20 creators total. Return ONLY the JSON array starting with [ and ending with ]. No other text.`;
 
     return await this.query(prompt, systemMessage);
   }
