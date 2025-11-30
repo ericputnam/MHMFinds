@@ -23,7 +23,16 @@ export default function SignInPage() {
   const [error, setError] = useState('');
   const [selectedTier, setSelectedTier] = useState('ANNUAL');
 
-  const pricingTiers = {
+  const pricingTiers: {
+    [key: string]: {
+      price: string;
+      interval: string;
+      perMonth?: string;
+      save?: string;
+      badge?: string;
+      priceId: string | undefined;
+    };
+  } = {
     MONTHLY: {
       price: '$6.49',
       interval: '/month',
