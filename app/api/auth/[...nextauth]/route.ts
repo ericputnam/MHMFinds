@@ -20,7 +20,48 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Find user by email
+        // Check for admin login with env vars
+        const adminUsername = process.env.ADMIN_USERNAME || 'adminuser45';
+        const adminEmail = `${adminUsername}@admin.local`;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+
+        if (credentials.email === adminEmail && adminPassword && credentials.password === adminPassword) {
+          // Admin login with environment variables
+          let adminUser = await prisma.user.findUnique({
+            where: { email: adminEmail }
+          });
+
+          // Create admin user if doesn't exist
+          if (!adminUser) {
+            adminUser = await prisma.user.create({
+              data: {
+                email: adminEmail,
+                username: adminUsername,
+                displayName: 'Administrator',
+                isAdmin: true,
+                isPremium: true,
+                emailVerified: new Date(),
+              }
+            });
+          } else if (!adminUser.isAdmin) {
+            // Update to admin if not already
+            adminUser = await prisma.user.update({
+              where: { id: adminUser.id },
+              data: { isAdmin: true }
+            });
+          }
+
+          return {
+            id: adminUser.id,
+            email: adminUser.email,
+            username: adminUser.username,
+            isAdmin: adminUser.isAdmin,
+            isCreator: adminUser.isCreator,
+            isPremium: adminUser.isPremium,
+          };
+        }
+
+        // Regular user login with database credentials
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           include: {
@@ -127,6 +168,17 @@ export const authOptions: NextAuthOptions = {
           description: "Your favorite mods",
           isPublic: false,
         },
+      });
+
+      // Create subscription record for new users
+      await prisma.subscription.create({
+        data: {
+          userId: user.id,
+          isPremium: false,
+          clickLimit: 5,
+          lifetimeClicksUsed: 0,
+          status: 'ACTIVE'
+        }
       });
     },
   },

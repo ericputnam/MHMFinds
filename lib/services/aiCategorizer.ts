@@ -115,7 +115,7 @@ ${modDescription ? `Description: "${modDescription}"` : ''}
 
     try {
       const response = await openai.chat.completions.create({
-        model: useOllama ? ollamaModel : 'gpt-4o-mini',
+        model: useOllama ? ollamaModel : 'gpt-4o',
         messages: [
           {
             role: 'system',

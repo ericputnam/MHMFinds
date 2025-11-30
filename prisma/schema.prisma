@@ -13,6 +13,22 @@ datasource db {
   directUrl = env("DIRECT_DATABASE_URL")
 }
 
+// Subscription enums
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  INCOMPLETE
+  TRIALING
+}
+
+enum BillingInterval {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -36,6 +52,8 @@ model User {
   sessions     Session[]
   accounts     Account[]
   auditLogs    AdminAuditLog[]
+  subscription  Subscription?
+  downloadClicks DownloadClick[]
 
   @@index([email], name: "email_lookup")
   @@index([isCreator, isPremium], name: "user_tiers")
@@ -124,6 +142,7 @@ model Mod {
   collections CollectionItem[]
   modFiles   ModFile[]
   searchIndex SearchIndex?
+  downloadClicks DownloadClick[]
 
   // Performance indexes for high-traffic queries
   @@index([isVerified, isNSFW, createdAt(sort: Desc)], name: "verified_safe_newest")
@@ -388,4 +407,77 @@ model Waitlist {
   @@index([createdAt(sort: Desc)], name: "recent_signups")
   @@index([notified], name: "notification_status")
   @@map("waitlist")
+}
+
+// Subscription and Payment Models
+model Subscription {
+  id                    String              @id @default(cuid())
+  userId                String              @unique
+  isPremium             Boolean             @default(false)
+  status                SubscriptionStatus  @default(ACTIVE)
+  billingInterval       BillingInterval?
+
+  // Stripe fields
+  stripeCustomerId      String?             @unique
+  stripeSubscriptionId  String?             @unique
+  stripePriceId         String?
+  stripeCurrentPeriodEnd DateTime?
+
+  // LIFETIME usage tracking (not monthly reset)
+  lifetimeClicksUsed    Int                 @default(0)
+  clickLimit            Int                 @default(5)
+
+  startedAt             DateTime            @default(now())
+  canceledAt            DateTime?
+  cancelAtPeriodEnd     Boolean             @default(false)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clickHistory          DownloadClick[]
+  invoices              Invoice[]
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model DownloadClick {
+  id             String       @id @default(cuid())
+  userId         String
+  modId          String
+  subscriptionId String
+  ipAddress      String?
+  userAgent      String?
+  referrer       String?
+  clickedAt      DateTime     @default(now())
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod            Mod          @relation(fields: [modId], references: [id], onDelete: Cascade)
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, clickedAt])
+  @@index([modId])
+  @@map("download_clicks")
+}
+
+model Invoice {
+  id                  String       @id @default(cuid())
+  subscriptionId      String
+  stripeInvoiceId     String       @unique
+  amountPaid          Decimal      @db.Decimal(10,2)
+  currency            String       @default("USD")
+  status              String
+  hostedInvoiceUrl    String?
+  invoicePdf          String?
+  periodStart         DateTime
+  periodEnd           DateTime
+  paidAt              DateTime?
+  createdAt           DateTime     @default(now())
+
+  subscription        Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@map("invoices")
 }

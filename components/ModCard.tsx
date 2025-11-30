@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Mod } from '../lib/api';
 import { Download, Eye, Star, Heart, Crown, Sparkles } from 'lucide-react';
+import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
 
 interface ModCardProps {
   mod: Mod;
@@ -39,20 +40,6 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
     handleCardClick();
-  };
-
-  const handleDownload = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // If there's a download URL, open it
-    if (mod.downloadUrl) {
-      window.open(mod.downloadUrl, '_blank', 'noopener,noreferrer');
-    } else if (mod.sourceUrl) {
-      // Otherwise, open the source URL
-      window.open(mod.sourceUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      // Fallback to detail page
-      router.push(`/mods/${mod.id}`);
-    }
   };
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -162,15 +149,14 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
             {formatNumber(mod.downloadCount || 0)} Downloads
           </div>
 
-          <button
-            onClick={handleDownload}
-            onKeyDown={(e) => handleKeyDown(e, handleDownload)}
+          <ProtectedDownloadButton
+            modId={mod.id}
+            downloadUrl={mod.downloadUrl}
+            sourceUrl={mod.sourceUrl}
             className="bg-white/5 hover:bg-white text-white hover:text-black p-2.5 rounded-xl transition-all duration-200 group/btn"
-            aria-label={`Download ${mod.title}`}
-            title="Download Mod"
           >
             <Download className="w-4 h-4" />
-          </button>
+          </ProtectedDownloadButton>
         </div>
       </div>
 

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
@@ -16,8 +17,13 @@ interface SearchFilters {
   [key: string]: any;
 }
 
+const ANONYMOUS_DOWNLOAD_LIMIT = 5;
+const STORAGE_KEY = 'mhm_anonymous_downloads';
+
 function HomePageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const creatorParam = searchParams.get('creator');
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,6 +103,51 @@ function HomePageContent() {
     fetchMods();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, sortBy, searchQuery, creatorParam]);
+
+  // Check download limits and redirect if exhausted
+  useEffect(() => {
+    const checkDownloadLimit = async () => {
+      // Check anonymous users
+      if (status === 'unauthenticated') {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        const anonymousCount = stored ? parseInt(stored, 10) : 0;
+
+        // Redirect if anonymous user has exhausted free downloads
+        if (anonymousCount >= ANONYMOUS_DOWNLOAD_LIMIT) {
+          router.push('/sign-in?mode=premium');
+          return;
+        }
+      }
+
+      // Check authenticated users
+      if (status === 'authenticated') {
+        try {
+          const response = await fetch('/api/subscription/check-limit', {
+            method: 'POST',
+          });
+          const data = await response.json();
+
+          // Don't redirect if user is premium
+          if (data.isPremium) {
+            return;
+          }
+
+          // Redirect if user has no downloads remaining
+          if (data.clicksRemaining <= 0) {
+            router.push('/sign-in?mode=premium');
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking download limit:', error);
+        }
+      }
+    };
+
+    // Only check if session status is resolved (not loading)
+    if (status !== 'loading') {
+      checkDownloadLimit();
+    }
+  }, [status, router]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);

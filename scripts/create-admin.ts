@@ -1,18 +1,22 @@
+import 'dotenv/config';
 import { prisma } from '../lib/prisma';
 import bcrypt from 'bcryptjs';
 
 /**
  * Script to create an admin user
- * Usage: npx tsx scripts/create-admin.ts
+ * Usage: npm run admin:create
  *
  * Credentials are read from environment variables:
- * - ADMIN_USERNAME
- * - ADMIN_PASSWORD
+ * - ADMIN_USERNAME (default: adminuser45)
+ * - ADMIN_PASSWORD (required!)
  */
 async function createAdminUser() {
   const username = process.env.ADMIN_USERNAME || 'adminuser45';
   const password = process.env.ADMIN_PASSWORD || '5GbHE%X9c%#tIg4i';
   const email = `${username}@admin.local`;
+
+  console.log('🔧 Admin User Setup');
+  console.log('==================\n');
 
   try {
     console.log('🔐 Creating admin user...');

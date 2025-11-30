@@ -153,3 +153,4 @@ fixtures/
 # Environment-specific
 .env.example.local
 .vercel.env
+.env*.local

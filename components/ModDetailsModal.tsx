@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Download, Heart, ExternalLink, CheckCircle2, Star, Eye, Layers, Sparkles } from 'lucide-react';
 import { Mod } from '../lib/api';
+import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
 
 interface ModDetailsModalProps {
   mod: Mod;
@@ -147,15 +148,15 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
 
             {/* Main Actions */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <a
-                href={mod.downloadUrl || mod.sourceUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
+              <ProtectedDownloadButton
+                modId={mod.id}
+                downloadUrl={mod.downloadUrl}
+                sourceUrl={mod.sourceUrl}
                 className="flex-1 bg-gradient-to-r from-[#EC4899] to-purple-600 hover:brightness-110 text-white py-3 px-5 rounded-xl font-bold text-sm shadow-lg shadow-purple-900/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download Mod
-              </a>
+              </ProtectedDownloadButton>
               <a
                 href={mod.sourceUrl || 'https://musthavemods.com'}
                 target="_blank"

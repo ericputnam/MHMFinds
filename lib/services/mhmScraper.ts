@@ -418,8 +418,8 @@ export class MustHaveModsScraper {
           let downloadUrl: string | undefined;
           let additionalImages: string[] = [];
 
-          // Remove listicle numbers from title (e.g., "3. ", "36. ", etc.)
-          modTitle = modTitle.replace(/^\d+\.\s*/, '').trim();
+          // Remove listicle numbers from title (e.g., "3. ", "36. ", "3.) ", "36.) ", etc.)
+          modTitle = modTitle.replace(/^\d+\.\)?\s*/, '').trim();
 
           // Extract author from title if present (e.g., "Mod Name by AuthorName")
           const titleParsed = this.extractAuthorFromTitle(modTitle);
@@ -437,6 +437,10 @@ export class MustHaveModsScraper {
             // Pattern 1: figure.wp-block-image > img (most common)
             if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
               $img = $next.find('img').first();
+            }
+            // Pattern 1b: div.wp-block-image > figure > img (newer WordPress structure)
+            else if ($next.is('div.wp-block-image') || ($next.is('div') && $next.hasClass('wp-block-image'))) {
+              $img = $next.find('figure img').first();
             }
             // Pattern 2: Direct img tag
             else if ($next.is('img')) {
@@ -475,7 +479,11 @@ export class MustHaveModsScraper {
           // STEP 2: Look for ADDITIONAL IMAGES (gallery) in next 2-3 elements
           $next = $el.next();
           for (let i = 0; i < 4 && $next.length > 0; i++) {
-            if (image && ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image'))) {
+            const isImageBlock = $next.is('figure.wp-block-image') ||
+                                 $next.hasClass('wp-block-image') ||
+                                 ($next.is('div.wp-block-image') || ($next.is('div') && $next.hasClass('wp-block-image')));
+
+            if (image && isImageBlock) {
               const $img = $next.find('img');
               const imgSrc = $img.attr('data-src') ||
                 $img.attr('data-lazy-src') ||
@@ -509,7 +517,11 @@ export class MustHaveModsScraper {
           let elementsChecked = 0;
 
           // Skip to first element after the image
-          if ($next.is('figure.wp-block-image') || $next.hasClass('wp-block-image')) {
+          const isImageBlock = $next.is('figure.wp-block-image') ||
+                               $next.hasClass('wp-block-image') ||
+                               ($next.is('div.wp-block-image') || ($next.is('div') && $next.hasClass('wp-block-image')));
+
+          if (isImageBlock) {
             $next = $next.next();
           }
 
@@ -567,8 +579,8 @@ export class MustHaveModsScraper {
                   return;
                 }
 
-                // STRICT: ONLY accept kb-button class (Kadence download buttons)
-                if ($linkEl.hasClass('kb-button')) {
+                // STRICT: ONLY accept kb-button or wp-block-button__link classes
+                if ($linkEl.hasClass('kb-button') || $linkEl.hasClass('wp-block-button__link')) {
                   downloadUrl = href;
                 }
               });
