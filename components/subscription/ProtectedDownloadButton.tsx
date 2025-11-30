@@ -8,8 +8,8 @@ import { Download } from 'lucide-react';
 
 interface Props {
   modId: string;
-  downloadUrl?: string;
-  sourceUrl?: string;
+  downloadUrl?: string | null;
+  sourceUrl?: string | null;
   children?: React.ReactNode;
   className?: string;
 }
