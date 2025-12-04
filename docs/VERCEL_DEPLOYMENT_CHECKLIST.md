@@ -30,11 +30,11 @@ Copy these variables and set them for **Production** environment:
 #### 🔴 CRITICAL (Must Set - App Won't Work Without These)
 
 ```bash
-# Database (with connection pooling)
-DATABASE_URL=postgres://c974c960e992cf9fca808f55ae9a377b12e151f72bb83cd3d7d2998bd8ba2bb6:sk_i8_oFAOXqO1nyIC_lUOzt@db.prisma.io:5432/postgres?sslmode=require&pgbouncer=true&connection_limit=1
+# Database - ⚠️ GET NEW CREDENTIALS FROM PRISMA.IO AFTER ROTATING PASSWORD
+DATABASE_URL=[YOUR_NEW_DATABASE_URL_FROM_PRISMA_IO]
 
 # Direct database URL (for migrations - no pooling)
-DIRECT_DATABASE_URL=postgres://c974c960e992cf9fca808f55ae9a377b12e151f72bb83cd3d7d2998bd8ba2bb6:sk_i8_oFAOXqO1nyIC_lUOzt@db.prisma.io:5432/postgres?sslmode=require
+DIRECT_DATABASE_URL=[YOUR_NEW_DIRECT_DATABASE_URL_FROM_PRISMA_IO]
 
 # NextAuth (Generate NEW secret!)
 NEXTAUTH_URL=https://mhm-finds-dw8l.vercel.app

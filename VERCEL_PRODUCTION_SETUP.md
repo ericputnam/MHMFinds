@@ -11,11 +11,11 @@ Go to: https://vercel.com/your-account/mhmfinds/settings/environment-variables
 ### ✅ CRITICAL - Set These First:
 
 ```bash
-# Database (copy from .env.local)
-DATABASE_URL="postgres://c974c960e992cf9fca808f55ae9a377b12e151f72bb83cd3d7d2998bd8ba2bb6:sk_fQEIGOKZIshc5UYPiu4BG@db.prisma.io:5432/postgres?sslmode=no-verify"
-POSTGRES_URL="postgres://c974c960e992cf9fca808f55ae9a377b12e151f72bb83cd3d7d2998bd8ba2bb6:sk_fQEIGOKZIshc5UYPiu4BG@db.prisma.io:5432/postgres?sslmode=no-verify"
-DIRECT_DATABASE_URL="postgres://c974c960e992cf9fca808f55ae9a377b12e151f72bb83cd3d7d2998bd8ba2bb6:sk_fQEIGOKZIshc5UYPiu4BG@db.prisma.io:5432/postgres?sslmode=no-verify"
-PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19pOF9vRkFPWHFPMW55SUNfbFVPenQiLCJhcGlfa2V5IjoiMDFLQVdFWUJLM0dQRFk0UVZRMkQ1UEQxOU0iLCJ0ZW5hbnRfaWQiOiJjOTc0Yzk2MGU5OTJjZjlmY2E4MDhmNTVhZTlhMzc3YjEyZTE1MWY3MmJiODNjZDNkN2QyOTk4YmQ4YmEyYmI2IiwiaW50ZXJuYWxfc2VjcmV0IjoiZjY1MTBlNWItOTcyMC00MjJmLWE5ODQtNThjODk2MTgyYmQzIn0.GN_WRRHZgD8WXKhIRQ9qdJMIOkSTmQ_6Anl-RdB6ZHE"
+# Database - ⚠️ COPY FROM YOUR .env.local (DO NOT USE THESE PLACEHOLDERS)
+DATABASE_URL="your-database-url-from-prisma-io"
+POSTGRES_URL="your-postgres-url-from-prisma-io"
+DIRECT_DATABASE_URL="your-direct-database-url-from-prisma-io"
+PRISMA_DATABASE_URL="your-prisma-accelerate-url"
 
 # NextAuth - PRODUCTION VALUES
 NEXTAUTH_URL="https://mhm-finds-dw5l.vercel.app"
