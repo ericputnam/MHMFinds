@@ -198,24 +198,24 @@ export default function SignInPage() {
           <div className="flex justify-center">
             {/* Auth Form - shown in signup and signin modes */}
             {mode !== 'premium' && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
-                <div className="flex gap-4 mb-6">
+              <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-10 backdrop-blur-sm">
+                <div className="flex gap-3 mb-8">
                   <button
                     onClick={() => setMode('signup')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+                    className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
                       mode === 'signup'
-                        ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white'
-                        : 'bg-white/5 text-slate-400 hover:text-white'
+                        ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white shadow-lg shadow-sims-pink/20'
+                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     Sign Up
                   </button>
                   <button
                     onClick={() => setMode('signin')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+                    className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
                       mode === 'signin'
-                        ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white'
-                        : 'bg-white/5 text-slate-400 hover:text-white'
+                        ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white shadow-lg shadow-sims-pink/20'
+                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     Sign In
@@ -223,52 +223,58 @@ export default function SignInPage() {
                 </div>
 
                 {error && (
-                  <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-sm text-red-400">
+                  <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-400 animate-fade-in">
                     {error}
                   </div>
                 )}
 
-                <form onSubmit={mode === 'signin' ? handleSignIn : handleSignUp} className="space-y-4">
+                <form onSubmit={mode === 'signin' ? handleSignIn : handleSignUp} className="space-y-6">
                   {mode === 'signup' && (
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
+                      <label className="block text-sm font-semibold text-slate-300 mb-3">Username</label>
                       <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+                        placeholder="Enter your username"
+                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all hover:bg-white/10"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                    <label className="block text-sm font-semibold text-slate-300 mb-3">Email</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+                      placeholder="your@email.com"
+                      className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all hover:bg-white/10"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                    <label className="block text-sm font-semibold text-slate-300 mb-3">Password</label>
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={6}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+                      placeholder="••••••••"
+                      className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all hover:bg-white/10"
                     />
+                    {mode === 'signup' && (
+                      <p className="mt-2 text-xs text-slate-500">Minimum 6 characters</p>
+                    )}
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:brightness-110 hover:shadow-lg hover:shadow-sims-pink/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
                   >
                     {isSubmitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Free Account'}
                   </button>
