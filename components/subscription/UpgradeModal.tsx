@@ -11,7 +11,17 @@ export function UpgradeModal({ onClose }: Props) {
   const [selectedInterval, setSelectedInterval] = useState('ANNUAL');
   const [isLoading, setIsLoading] = useState(false);
 
-  const plans = {
+  interface Plan {
+    price: string;
+    interval: string;
+    priceId: string | undefined;
+    perMonth?: string;
+    save?: string;
+    badge?: string;
+    popular?: boolean;
+  }
+
+  const plans: Record<string, Plan> = {
     MONTHLY: {
       price: '$6.49',
       interval: '/month',
@@ -87,11 +97,10 @@ export function UpgradeModal({ onClose }: Props) {
             <button
               key={key}
               onClick={() => setSelectedInterval(key)}
-              className={`relative p-4 rounded-xl border-2 transition-all ${
-                selectedInterval === key
+              className={`relative p-4 rounded-xl border-2 transition-all ${selectedInterval === key
                   ? 'border-sims-pink bg-sims-pink/10'
                   : 'border-white/10 hover:border-white/20'
-              }`}
+                }`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-sims-pink to-purple-600 text-white text-xs px-3 py-1 rounded-full font-bold">

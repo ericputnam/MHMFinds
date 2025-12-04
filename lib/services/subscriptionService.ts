@@ -90,7 +90,8 @@ export class SubscriptionService {
       if (!subscription.isPremium) {
         updated = await tx.subscription.update({
           where: { id: subscription.id },
-          data: { lifetimeClicksUsed: { increment: 1 } }
+          data: { lifetimeClicksUsed: { increment: 1 } },
+          include: { user: true }
         });
       }
 
@@ -160,7 +161,7 @@ export class SubscriptionService {
       subscriptionId: stripeSubscription.id,
       customerId: stripeSubscription.customer as string,
       priceId: stripeSubscription.items.data[0].price.id,
-      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000)
+      currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000)
     });
 
     console.log(`User ${userId} upgraded to premium`);
