@@ -189,12 +189,14 @@ export default function SignInPage() {
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
               {mode === 'premium'
                 ? 'Upgrade to Premium for unlimited downloads and ad-free browsing'
-                : 'Create a free account to get 5 downloads, or upgrade for unlimited access'}
+                : mode === 'signup'
+                ? 'Create a free account to start discovering amazing Sims mods'
+                : 'Sign in to your account or upgrade to Premium for unlimited downloads'}
             </p>
           </div>
 
-          <div className={mode === 'premium' ? 'flex justify-center' : 'grid lg:grid-cols-2 gap-8 items-start'}>
-            {/* Left: Auth Form */}
+          <div className={mode === 'premium' ? 'flex justify-center' : mode === 'signup' ? 'flex justify-center' : 'grid lg:grid-cols-2 gap-8 items-start'}>
+            {/* Auth Form - shown in signup and signin modes */}
             {mode !== 'premium' && (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
                 <div className="flex gap-4 mb-6">
@@ -283,8 +285,9 @@ export default function SignInPage() {
               </div>
             )}
 
-            {/* Right: Premium Pricing */}
-            <div className={`bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm ${mode === 'premium' ? 'w-full max-w-2xl' : ''}`}>
+            {/* Premium Pricing - hidden on signup, shown on signin and premium modes */}
+            {mode !== 'signup' && (
+              <div className={`bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm ${mode === 'premium' ? 'w-full max-w-2xl' : ''}`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Curious Simmer Premium</h2>
@@ -380,6 +383,7 @@ export default function SignInPage() {
                 </>
               )}
             </div>
+            )}
           </div>
         </div>
       </main>
