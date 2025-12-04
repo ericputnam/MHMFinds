@@ -2,6 +2,45 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🔐 CRITICAL SECURITY RULE: Never Commit Secrets
+
+**NEVER commit any of the following to git:**
+
+### Prohibited Items:
+- ❌ API keys, tokens, or secrets of any kind
+- ❌ Database connection strings with credentials
+- ❌ Passwords, auth tokens, or session secrets
+- ❌ Private keys, certificates, or encryption keys
+- ❌ OAuth client secrets
+- ❌ Webhook secrets
+- ❌ Any `.env*` files except `.env.example`
+
+### Required Actions:
+1. **Use placeholders in documentation**: Replace actual credentials with `[YOUR_KEY_HERE]` or `your-key-here`
+2. **Check `.gitignore`**: Ensure all sensitive files are ignored:
+   ```
+   .env
+   .env.local
+   .env*.local
+   .env.production
+   *.key
+   *.pem
+   secrets/
+   ```
+3. **Use `.env.example`**: Only commit example files with placeholders, never actual values
+4. **Before committing**: Always review changes for exposed credentials
+5. **If exposed**: Immediately rotate credentials and remove from git history
+
+### Safe Patterns:
+✅ `.env.example` with placeholders
+✅ Documentation with `[PLACEHOLDER]` values
+✅ Instructions to "copy from .env.local"
+✅ Links to credential providers (e.g., "Get from Stripe Dashboard")
+
+**If you accidentally commit secrets, STOP immediately and rotate the credentials before continuing.**
+
+---
+
 ## IMPORTANT: newapp_musthavemods Folder
 
 **The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
