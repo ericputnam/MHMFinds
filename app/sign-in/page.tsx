@@ -191,11 +191,11 @@ export default function SignInPage() {
                 ? 'Upgrade to Premium for unlimited downloads and ad-free browsing'
                 : mode === 'signup'
                 ? 'Create a free account to start discovering amazing Sims mods'
-                : 'Sign in to your account or upgrade to Premium for unlimited downloads'}
+                : 'Welcome back! Sign in to continue discovering amazing mods'}
             </p>
           </div>
 
-          <div className={mode === 'premium' ? 'flex justify-center' : mode === 'signup' ? 'flex justify-center' : 'grid lg:grid-cols-2 gap-8 items-start'}>
+          <div className="flex justify-center">
             {/* Auth Form - shown in signup and signin modes */}
             {mode !== 'premium' && (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
@@ -273,28 +273,19 @@ export default function SignInPage() {
                     {isSubmitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Free Account'}
                   </button>
                 </form>
-
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={() => setMode('premium')}
-                    className="text-sims-pink hover:text-sims-pink/80 text-sm font-medium"
-                  >
-                    Already have an account? Upgrade to Premium →
-                  </button>
-                </div>
               </div>
             )}
 
-            {/* Premium Pricing - hidden on signup, shown on signin and premium modes */}
-            {mode !== 'signup' && (
-              <div className={`bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm ${mode === 'premium' ? 'w-full max-w-2xl' : ''}`}>
+            {/* Premium Pricing - only shown in dedicated premium mode */}
+            {mode === 'premium' && (
+              <div className="bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm w-full max-w-2xl">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Curious Simmer Premium</h2>
                   <p className="text-slate-400">Unlimited downloads • Ad-free browsing</p>
                 </div>
                 {mode === 'premium' && (
-                  <button onClick={() => setMode('signup')} className="text-slate-400 hover:text-white">
+                  <button onClick={() => router.push('/')} className="text-slate-400 hover:text-white">
                     <X className="w-6 h-6" />
                   </button>
                 )}
@@ -361,25 +352,14 @@ export default function SignInPage() {
                   <button
                     onClick={handleUpgradeToPremium}
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50 mb-4"
+                    className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50"
                   >
                     {isSubmitting ? 'Loading...' : 'Upgrade to Premium'}
                   </button>
 
-                  <div className="text-center space-y-2">
-                    <button
-                      onClick={() => setMode('signin')}
-                      className="block w-full text-slate-400 hover:text-sims-pink text-sm transition-colors"
-                    >
-                      Already have a premium account? <span className="font-medium">Sign In</span>
-                    </button>
-                    <button
-                      onClick={() => setMode('signup')}
-                      className="block w-full text-slate-400 hover:text-sims-pink text-sm transition-colors"
-                    >
-                      Don't have an account? <span className="font-medium">Create Free Account</span>
-                    </button>
-                  </div>
+                  <p className="text-center text-xs text-slate-500 mt-4">
+                    Cancel anytime, no commitments
+                  </p>
                 </>
               )}
             </div>
