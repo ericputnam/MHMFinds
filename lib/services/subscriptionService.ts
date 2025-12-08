@@ -127,18 +127,28 @@ export class SubscriptionService {
     priceId: string;
     currentPeriodEnd: Date;
   }) {
-    return await prisma.subscription.update({
-      where: { userId },
-      data: {
-        isPremium: true,
-        clickLimit: -1, // Unlimited
-        status: 'ACTIVE',
-        stripeSubscriptionId: stripeData.subscriptionId,
-        stripeCustomerId: stripeData.customerId,
-        stripePriceId: stripeData.priceId,
-        stripeCurrentPeriodEnd: stripeData.currentPeriodEnd,
-        cancelAtPeriodEnd: false
-      }
+    // Update both Subscription AND User in a transaction
+    return await prisma.$transaction(async (tx) => {
+      // Update User.isPremium
+      await tx.user.update({
+        where: { id: userId },
+        data: { isPremium: true }
+      });
+
+      // Update Subscription record
+      return await tx.subscription.update({
+        where: { userId },
+        data: {
+          isPremium: true,
+          clickLimit: -1, // Unlimited
+          status: 'ACTIVE',
+          stripeSubscriptionId: stripeData.subscriptionId,
+          stripeCustomerId: stripeData.customerId,
+          stripePriceId: stripeData.priceId,
+          stripeCurrentPeriodEnd: stripeData.currentPeriodEnd,
+          cancelAtPeriodEnd: false
+        }
+      });
     });
   }
 
@@ -171,14 +181,34 @@ export class SubscriptionService {
    * Handle subscription cancellation
    */
   static async handleSubscriptionDeleted(subscription: any) {
-    await prisma.subscription.update({
+    // Update both Subscription AND User in a transaction
+    const sub = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscription.id },
-      data: {
-        isPremium: false,
-        clickLimit: 5,
-        status: 'CANCELED',
-        canceledAt: new Date()
-      }
+      select: { userId: true }
+    });
+
+    if (!sub) {
+      console.error(`Subscription ${subscription.id} not found in database`);
+      return;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update User.isPremium to false
+      await tx.user.update({
+        where: { id: sub.userId },
+        data: { isPremium: false }
+      });
+
+      // Update Subscription record
+      await tx.subscription.update({
+        where: { stripeSubscriptionId: subscription.id },
+        data: {
+          isPremium: false,
+          clickLimit: 5,
+          status: 'CANCELED',
+          canceledAt: new Date()
+        }
+      });
     });
 
     console.log(`Subscription ${subscription.id} canceled`);
