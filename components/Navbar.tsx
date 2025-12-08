@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Heart, Menu, Sparkles, LogOut, User } from 'lucide-react';
+import { Heart, Menu, Sparkles, LogOut, User, Settings } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { UsageIndicator } from './subscription/UsageIndicator';
 
@@ -11,6 +11,23 @@ export const Navbar: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' });
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      const response = await fetch('/api/subscription/portal', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        console.error('Failed to create portal session');
+      }
+    } catch (error) {
+      console.error('Error opening subscription portal:', error);
+    }
   };
 
   return (
@@ -66,7 +83,7 @@ export const Navbar: React.FC = () => {
 
               {/* Dropdown Menu */}
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#0F141F] border border-white/10 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 bg-[#0F141F] border border-white/10 rounded-xl shadow-lg overflow-hidden">
                   <div className="px-4 py-3 border-b border-white/5">
                     <p className="text-sm font-medium text-white truncate">
                       {session.user.username || session.user.email}
@@ -75,13 +92,24 @@ export const Navbar: React.FC = () => {
                       {session.user.email}
                     </p>
                   </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </button>
+                  <div className="py-1">
+                    {session.user.isPremium && (
+                      <button
+                        onClick={handleManageSubscription}
+                        className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Manage Subscription
+                      </button>
+                    )}
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
