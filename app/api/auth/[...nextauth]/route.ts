@@ -121,6 +121,16 @@ export const authOptions: NextAuthOptions = {
         token.isPremium = user.isPremium;
         token.isAdmin = user.isAdmin;
       }
+
+      // Refresh subscription data on every token refresh to keep it up-to-date
+      if (token.id) {
+        const subscription = await prisma.subscription.findUnique({
+          where: { userId: token.id as string },
+          select: { stripeCustomerId: true }
+        });
+        token.hasStripeSubscription = !!subscription?.stripeCustomerId;
+      }
+
       return token;
     },
     async session({ session, token }: any) {
@@ -130,6 +140,7 @@ export const authOptions: NextAuthOptions = {
         session.user.isCreator = token.isCreator as boolean;
         session.user.isPremium = token.isPremium as boolean;
         session.user.isAdmin = token.isAdmin as boolean;
+        session.user.hasStripeSubscription = token.hasStripeSubscription as boolean;
       }
       return session;
     },

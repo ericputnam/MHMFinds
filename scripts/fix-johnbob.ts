@@ -6,7 +6,7 @@ async function fixJohnbob() {
   try {
     // Find user first
     const user = await prisma.user.findUnique({
-      where: { email: 'john@gmail.com' },
+      where: { email: 'bob@gmail.com' },
       include: { subscription: true }
     });
 
