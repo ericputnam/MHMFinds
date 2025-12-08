@@ -93,7 +93,7 @@ export const Navbar: React.FC = () => {
                     </p>
                   </div>
                   <div className="py-1">
-                    {session.user.isPremium && session.user.hasStripeSubscription && (
+                    {session.user.isPremium && (
                       <button
                         onClick={handleManageSubscription}
                         className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"

@@ -44,6 +44,7 @@
     "@upstash/redis": "^1.35.6",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
+    "build": "^0.1.4",
     "cheerio": "^1.0.0-rc.12",
     "framer-motion": "^10.16.5",
     "https-proxy-agent": "^7.0.6",
