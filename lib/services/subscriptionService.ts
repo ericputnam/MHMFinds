@@ -135,10 +135,22 @@ export class SubscriptionService {
         data: { isPremium: true }
       });
 
-      // Update Subscription record
-      return await tx.subscription.update({
+      // Upsert Subscription record (create if doesn't exist, update if it does)
+      return await tx.subscription.upsert({
         where: { userId },
-        data: {
+        create: {
+          userId,
+          isPremium: true,
+          clickLimit: -1, // Unlimited
+          lifetimeClicksUsed: 0,
+          status: 'ACTIVE',
+          stripeSubscriptionId: stripeData.subscriptionId,
+          stripeCustomerId: stripeData.customerId,
+          stripePriceId: stripeData.priceId,
+          stripeCurrentPeriodEnd: stripeData.currentPeriodEnd,
+          cancelAtPeriodEnd: false
+        },
+        update: {
           isPremium: true,
           clickLimit: -1, // Unlimited
           status: 'ACTIVE',
