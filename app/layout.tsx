@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { Providers } from './providers';
 
@@ -75,6 +76,7 @@ export default function RootLayout({
       </head>
       <body className="__className_e8ce0c antialiased">
         <Providers>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
