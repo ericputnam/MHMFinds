@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 
 export class StripeService {
   private static stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-11-17.clover' as any,
+    apiVersion: '2024-11-20.acacia',
   });
 
   static async createCustomer(email: string, userId: string) {

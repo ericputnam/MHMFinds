@@ -85,13 +85,34 @@ export function UsageIndicator() {
   // Don't show anything while loading
   if (status === 'loading' || !usage) return null;
 
+  const handleManageSubscription = async () => {
+    try {
+      const response = await fetch('/api/subscription/portal', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        console.error('Failed to create portal session');
+      }
+    } catch (error) {
+      console.error('Error opening subscription portal:', error);
+    }
+  };
+
   // Show premium badge for premium users
   if (usage.isPremium) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-sims-pink/20 to-purple-600/20 border border-sims-pink/30 rounded-full text-sm">
+      <button
+        onClick={handleManageSubscription}
+        className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-sims-pink/20 to-purple-600/20 border border-sims-pink/30 rounded-full text-sm hover:from-sims-pink/30 hover:to-purple-600/30 transition-all cursor-pointer"
+        title="Manage Subscription"
+      >
         <Crown className="w-4 h-4 text-sims-pink" />
         <span className="text-white font-medium">Premium</span>
-      </div>
+      </button>
     );
   }
 
