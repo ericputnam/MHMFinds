@@ -127,16 +127,27 @@ export class SubscriptionService {
     priceId: string;
     currentPeriodEnd: Date;
   }) {
-    // Update both Subscription AND User in a transaction
-    return await prisma.$transaction(async (tx) => {
+    console.log('[SUBSCRIPTION] upgradeToPremium starting for user:', userId, stripeData);
+
+    // Update both Subscription AND User in a transaction with extended timeout
+    const result = await prisma.$transaction(async (tx) => {
+      console.log('[SUBSCRIPTION] Updating User.isPremium to true for user:', userId);
+
       // Update User.isPremium
-      await tx.user.update({
+      const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { isPremium: true }
       });
 
+      console.log('[SUBSCRIPTION] User updated successfully:', {
+        userId: updatedUser.id,
+        isPremium: updatedUser.isPremium
+      });
+
+      console.log('[SUBSCRIPTION] Upserting Subscription record');
+
       // Upsert Subscription record (create if doesn't exist, update if it does)
-      return await tx.subscription.upsert({
+      const subscription = await tx.subscription.upsert({
         where: { userId },
         create: {
           userId,
@@ -161,32 +172,67 @@ export class SubscriptionService {
           cancelAtPeriodEnd: false
         }
       });
+
+      console.log('[SUBSCRIPTION] Subscription upserted successfully:', {
+        subscriptionId: subscription.id,
+        isPremium: subscription.isPremium,
+        stripeSubscriptionId: subscription.stripeSubscriptionId
+      });
+
+      return subscription;
+    }, {
+      maxWait: 15000, // Wait up to 15s for transaction slot (critical for webhooks)
+      timeout: 30000, // Transaction can run for up to 30s
     });
+
+    console.log('[SUBSCRIPTION] ✓ Transaction completed successfully for user:', userId);
+    return result;
   }
 
   /**
    * Handle successful checkout completion
    */
   static async handleCheckoutCompleted(session: any) {
+    console.log('[SUBSCRIPTION] handleCheckoutCompleted called', {
+      sessionId: session.id,
+      clientReferenceId: session.client_reference_id,
+      subscription: session.subscription
+    });
+
     const userId = session.client_reference_id;
     if (!userId) {
-      console.error('No userId in checkout session');
+      console.error('[SUBSCRIPTION] ERROR: No userId in checkout session', {
+        sessionId: session.id,
+        sessionData: JSON.stringify(session, null, 2)
+      });
       return;
     }
+
+    console.log(`[SUBSCRIPTION] Fetching Stripe subscription for user ${userId}`);
 
     // Fetch full subscription from Stripe
     const stripeSubscription = await StripeService.retrieveSubscription(
       session.subscription
     );
 
-    await this.upgradeToPremium(userId, {
+    console.log('[SUBSCRIPTION] Stripe subscription retrieved:', {
+      subscriptionId: stripeSubscription.id,
+      customerId: stripeSubscription.customer,
+      status: stripeSubscription.status
+    });
+
+    const upgradeData = {
       subscriptionId: stripeSubscription.id,
       customerId: stripeSubscription.customer as string,
       priceId: stripeSubscription.items.data[0].price.id,
       currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000)
-    });
+    };
 
-    console.log(`User ${userId} upgraded to premium`);
+    console.log('[SUBSCRIPTION] Calling upgradeToPremium with:', upgradeData);
+
+    await this.upgradeToPremium(userId, upgradeData);
+
+    console.log(`[SUBSCRIPTION] ✓ User ${userId} successfully upgraded to premium`);
   }
 
   /**
@@ -221,6 +267,9 @@ export class SubscriptionService {
           canceledAt: new Date()
         }
       });
+    }, {
+      maxWait: 15000, // Wait up to 15s for transaction slot
+      timeout: 30000, // Transaction can run for up to 30s
     });
 
     console.log(`Subscription ${subscription.id} canceled`);

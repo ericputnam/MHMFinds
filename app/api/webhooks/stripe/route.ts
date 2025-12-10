@@ -31,27 +31,52 @@ export async function POST(request: NextRequest) {
 }
 
 async function processWebhookEvent(event: any) {
-  console.log(`Processing webhook: ${event.type}`);
+  console.log(`[WEBHOOK] Processing event: ${event.type}`, {
+    eventId: event.id,
+    created: new Date(event.created * 1000).toISOString()
+  });
 
-  switch (event.type) {
-    case 'checkout.session.completed':
-      await SubscriptionService.handleCheckoutCompleted(event.data.object);
-      break;
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        console.log('[WEBHOOK] Checkout completed:', {
+          sessionId: event.data.object.id,
+          customerId: event.data.object.customer,
+          subscriptionId: event.data.object.subscription,
+          clientReferenceId: event.data.object.client_reference_id
+        });
+        await SubscriptionService.handleCheckoutCompleted(event.data.object);
+        console.log('[WEBHOOK] Checkout processing completed successfully');
+        break;
 
-    case 'customer.subscription.updated':
-      await SubscriptionService.handleSubscriptionUpdated(event.data.object);
-      break;
+      case 'customer.subscription.updated':
+        console.log('[WEBHOOK] Subscription updated:', {
+          subscriptionId: event.data.object.id,
+          status: event.data.object.status
+        });
+        await SubscriptionService.handleSubscriptionUpdated(event.data.object);
+        break;
 
-    case 'customer.subscription.deleted':
-      await SubscriptionService.handleSubscriptionDeleted(event.data.object);
-      break;
+      case 'customer.subscription.deleted':
+        console.log('[WEBHOOK] Subscription deleted:', {
+          subscriptionId: event.data.object.id
+        });
+        await SubscriptionService.handleSubscriptionDeleted(event.data.object);
+        break;
 
-    case 'invoice.paid':
-      console.log('Invoice paid:', event.data.object.id);
-      break;
+      case 'invoice.paid':
+        console.log('[WEBHOOK] Invoice paid:', event.data.object.id);
+        break;
 
-    case 'invoice.payment_failed':
-      console.log('Payment failed:', event.data.object.id);
-      break;
+      case 'invoice.payment_failed':
+        console.log('[WEBHOOK] Payment failed:', event.data.object.id);
+        break;
+
+      default:
+        console.log(`[WEBHOOK] Unhandled event type: ${event.type}`);
+    }
+  } catch (error) {
+    console.error(`[WEBHOOK] Error processing ${event.type}:`, error);
+    throw error;
   }
 }
