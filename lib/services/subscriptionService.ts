@@ -218,14 +218,37 @@ export class SubscriptionService {
     console.log('[SUBSCRIPTION] Stripe subscription retrieved:', {
       subscriptionId: stripeSubscription.id,
       customerId: stripeSubscription.customer,
-      status: stripeSubscription.status
+      status: stripeSubscription.status,
+      current_period_end: stripeSubscription.current_period_end,
+      current_period_end_type: typeof stripeSubscription.current_period_end,
+      rawSubscription: JSON.stringify(stripeSubscription)
     });
+
+    // Parse the current period end date safely
+    let currentPeriodEndTimestamp = stripeSubscription.current_period_end as number | undefined;
+
+    if (!currentPeriodEndTimestamp || typeof currentPeriodEndTimestamp !== 'number') {
+      console.warn('[SUBSCRIPTION] WARNING: current_period_end missing, using 30 days from now as fallback');
+      // Use 30 days from now as fallback
+      const fallbackDate = new Date();
+      fallbackDate.setDate(fallbackDate.getDate() + 30);
+      currentPeriodEndTimestamp = Math.floor(fallbackDate.getTime() / 1000);
+    }
+
+    const currentPeriodEnd = new Date(currentPeriodEndTimestamp * 1000);
+    if (isNaN(currentPeriodEnd.getTime())) {
+      console.error('[SUBSCRIPTION] ERROR: Date conversion resulted in Invalid Date:', {
+        timestamp: currentPeriodEndTimestamp,
+        dateString: currentPeriodEnd.toString()
+      });
+      throw new Error(`Failed to convert timestamp to valid Date: ${currentPeriodEndTimestamp}`);
+    }
 
     const upgradeData = {
       subscriptionId: stripeSubscription.id,
       customerId: stripeSubscription.customer as string,
       priceId: stripeSubscription.items.data[0].price.id,
-      currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000)
+      currentPeriodEnd
     };
 
     console.log('[SUBSCRIPTION] Calling upgradeToPremium with:', upgradeData);
