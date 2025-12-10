@@ -1,9 +1,7 @@
 import Stripe from 'stripe';
 
 export class StripeService {
-  private static stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-11-20.acacia',
-  });
+  private static stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
   static async createCustomer(email: string, userId: string) {
     return await this.stripe.customers.create({
