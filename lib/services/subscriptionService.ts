@@ -219,13 +219,13 @@ export class SubscriptionService {
       subscriptionId: stripeSubscription.id,
       customerId: stripeSubscription.customer,
       status: stripeSubscription.status,
-      current_period_end: stripeSubscription.current_period_end,
-      current_period_end_type: typeof stripeSubscription.current_period_end,
+      current_period_end: (stripeSubscription as any).current_period_end,
+      current_period_end_type: typeof (stripeSubscription as any).current_period_end,
       rawSubscription: JSON.stringify(stripeSubscription)
     });
 
     // Parse the current period end date safely
-    let currentPeriodEndTimestamp = stripeSubscription.current_period_end as number | undefined;
+    let currentPeriodEndTimestamp = (stripeSubscription as any).current_period_end as number | undefined;
 
     if (!currentPeriodEndTimestamp || typeof currentPeriodEndTimestamp !== 'number') {
       console.warn('[SUBSCRIPTION] WARNING: current_period_end missing, using 30 days from now as fallback');
