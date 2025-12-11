@@ -74,7 +74,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           {(selectedCategories.length > 0 || selectedGameVersions.length > 0) && (
             <button
               onClick={onClearAll}
-              className="w-full px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
+              className="w-full px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-lg text-base font-medium transition-colors"
             >
               Clear All Filters
             </button>
@@ -87,7 +87,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 onClick={() => toggleSection('categories')}
                 className="w-full flex items-center justify-between text-left group"
               >
-                <span className="text-sm font-bold text-white uppercase tracking-wider">Categories</span>
+                <span className="text-base font-bold text-white uppercase tracking-wider">Categories</span>
                 {expandedSections.has('categories') ? (
                   <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
                 ) : (
@@ -125,10 +125,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                           </svg>
                         )}
                       </div>
-                      <span className="text-sm text-slate-300 group-hover:text-white transition-colors flex-1">
+                      <span className="text-base text-slate-300 group-hover:text-white transition-colors flex-1">
                         {cat.value}
                       </span>
-                      <span className="text-xs text-slate-500 font-medium">
+                      <span className="text-sm text-slate-500 font-medium">
                         {cat.count}
                       </span>
                     </label>
@@ -145,7 +145,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 onClick={() => toggleSection('gameVersions')}
                 className="w-full flex items-center justify-between text-left group"
               >
-                <span className="text-sm font-bold text-white uppercase tracking-wider">Game Version</span>
+                <span className="text-base font-bold text-white uppercase tracking-wider">Game Version</span>
                 {expandedSections.has('gameVersions') ? (
                   <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
                 ) : (
@@ -183,10 +183,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                           </svg>
                         )}
                       </div>
-                      <span className="text-sm text-slate-300 group-hover:text-white transition-colors flex-1">
+                      <span className="text-base text-slate-300 group-hover:text-white transition-colors flex-1">
                         {version.value}
                       </span>
-                      <span className="text-xs text-slate-500 font-medium">
+                      <span className="text-sm text-slate-500 font-medium">
                         {version.count}
                       </span>
                     </label>
@@ -203,7 +203,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 onClick={() => toggleSection('sources')}
                 className="w-full flex items-center justify-between text-left group"
               >
-                <span className="text-sm font-bold text-white uppercase tracking-wider">Source</span>
+                <span className="text-base font-bold text-white uppercase tracking-wider">Source</span>
                 {expandedSections.has('sources') ? (
                   <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
                 ) : (
@@ -216,10 +216,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                   {facets.sources.slice(0, 8).map((source: any) => (
                     <div
                       key={source.value}
-                      className="flex items-center justify-between text-sm"
+                      className="flex items-center justify-between text-base"
                     >
                       <span className="text-slate-400">{source.value}</span>
-                      <span className="text-xs text-slate-500 font-medium">
+                      <span className="text-sm text-slate-500 font-medium">
                         {source.count}
                       </span>
                     </div>

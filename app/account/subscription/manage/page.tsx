@@ -63,12 +63,12 @@ export default function ManageSubscriptionPage() {
       <main className="flex-grow container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-sims-pink to-purple-600 rounded-full mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-sims-pink rounded-full mb-6">
               <Settings className="w-8 h-8 text-white" />
             </div>
 
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-              Manage <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue">Subscription</span>
+              Manage <span className="text-white">Subscription</span>
             </h1>
 
             <p className="text-lg text-slate-400">
@@ -98,7 +98,7 @@ export default function ManageSubscriptionPage() {
                 <button
                   onClick={handleManageSubscription}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-3 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

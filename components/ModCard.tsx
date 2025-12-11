@@ -58,7 +58,7 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
   return (
     <article
       onClick={handleCardClick}
-      className={`group relative bg-mhm-card border border-white/5 rounded-2xl overflow-hidden hover:border-sims-purple/30 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-900/10 flex flex-col h-full hover:-translate-y-1 cursor-pointer ${className}`}
+      className={`group relative bg-mhm-card border border-white/5 rounded-2xl overflow-hidden hover:border-sims-purple/30 transition-all duration-300 hover:shadow-2xl hover:shadow-sims-pink/10 flex flex-col h-full hover:-translate-y-1 cursor-pointer ${className}`}
       style={style}
       aria-label={`${mod.title} by ${mod.creator?.handle || mod.author || 'Unknown Creator'}`}
     >
@@ -88,7 +88,7 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
             {mod.category}
           </span>
           {mod.isFeatured && (
-            <span className="bg-gradient-to-r from-sims-pink to-purple-600 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-lg flex items-center gap-1">
+            <span className="bg-sims-pink px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-lg flex items-center gap-1">
               <Sparkles size={10} />
               Featured
             </span>

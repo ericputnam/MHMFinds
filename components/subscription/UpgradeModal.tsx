@@ -103,7 +103,7 @@ export function UpgradeModal({ onClose }: Props) {
                 }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-sims-pink to-purple-600 text-white text-xs px-3 py-1 rounded-full font-bold">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-sims-pink text-white text-xs px-3 py-1 rounded-full font-bold">
                   BEST VALUE
                 </div>
               )}
@@ -147,7 +147,7 @@ export function UpgradeModal({ onClose }: Props) {
         <button
           onClick={handleUpgrade}
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+          className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-4"
         >
           {isLoading ? 'Loading...' : 'Upgrade to Premium'}
         </button>

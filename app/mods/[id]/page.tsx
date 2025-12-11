@@ -80,10 +80,10 @@ export default function ModDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-mhm-dark flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading mod details...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-sims-pink mx-auto mb-4"></div>
+          <p className="text-slate-400 text-lg">Loading mod details...</p>
         </div>
       </div>
     );
@@ -91,14 +91,14 @@ export default function ModDetailPage() {
 
   if (error || !mod) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-mhm-dark flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">😕</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{error || 'Mod not found'}</h1>
-          <p className="text-gray-600 mb-6">The mod you're looking for doesn't exist or has been removed.</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{error || 'Mod not found'}</h1>
+          <p className="text-slate-400 mb-6">The mod you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => router.push('/')}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 font-semibold"
+            className="bg-sims-pink hover:bg-sims-pink/90 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 font-semibold"
             aria-label="Return to home page"
           >
             <ArrowLeft className="inline mr-2" size={20} />
@@ -110,7 +110,7 @@ export default function ModDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-screen bg-mhm-dark">
       {/* Header with Breadcrumbs */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -185,7 +185,7 @@ export default function ModDetailPage() {
                     </div>
                   )}
                   {!mod.isFree && mod.price && (
-                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                    <div className="bg-sims-pink text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
                       ${mod.price}
                     </div>
                   )}
@@ -200,8 +200,8 @@ export default function ModDetailPage() {
                       <button
                         key={index}
                         onClick={() => setSelectedImage(image)}
-                        className={`relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-purple-500 transition-all ${
-                          selectedImage === image ? 'ring-2 ring-purple-500' : ''
+                        className={`relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-sims-pink transition-all ${
+                          selectedImage === image ? 'ring-2 ring-sims-pink' : ''
                         }`}
                       >
                         <img
@@ -235,7 +235,7 @@ export default function ModDetailPage() {
                   {mod.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors cursor-pointer"
+                      className="bg-sims-pink/20 text-sims-pink px-3 py-1 rounded-full text-sm font-medium hover:bg-sims-pink/30 transition-colors cursor-pointer border border-sims-pink/30"
                     >
                       {tag}
                     </span>
@@ -253,7 +253,7 @@ export default function ModDetailPage() {
               
               {/* Creator Info */}
               <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-12 h-12 rounded-full bg-sims-pink flex items-center justify-center text-white font-bold text-lg">
                   {(mod.creator?.handle || mod.author || 'U')[0].toUpperCase()}
                 </div>
                 <div className="flex-1">
@@ -297,7 +297,7 @@ export default function ModDetailPage() {
                   <p className="text-xs text-gray-500">{mod.ratingCount || 0} ratings</p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-1 text-purple-600 mb-1">
+                  <div className="flex items-center justify-center gap-1 text-sims-pink mb-1">
                     <Download size={18} />
                     <span className="font-bold text-lg text-gray-900">
                       {(mod._count?.downloads || mod.downloadCount || 0).toLocaleString()}
@@ -329,7 +329,7 @@ export default function ModDetailPage() {
               <div className="space-y-3">
                 <button
                   onClick={handleDownload}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
                   aria-label={mod.isFree ? 'Download this mod now' : `Download this mod for $${mod.price}`}
                 >
                   <Download size={22} />

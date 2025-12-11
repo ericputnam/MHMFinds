@@ -52,7 +52,7 @@ export function ModGrid({ mods, loading, error, onFavorite, onModClick, favorite
         <p className="text-slate-400 mb-6 max-w-md mx-auto">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="bg-gradient-to-r from-sims-pink to-purple-600 hover:brightness-110 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className="bg-sims-pink hover:bg-sims-pink/90 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg"
         >
           Try Again
         </button>

@@ -180,9 +180,9 @@ export default function SignInPage() {
 
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
               {mode === 'premium' ? (
-                <>Your Free Downloads <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue">Are Up!</span></>
+                <>Your Free Downloads <span className="text-white">Are Up!</span></>
               ) : (
-                <>Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue">Amazing</span> Sims Mods</>
+                <>Discover <span className="text-white">Amazing</span> Sims Mods</>
               )}
             </h1>
 
@@ -204,7 +204,7 @@ export default function SignInPage() {
                     onClick={() => setMode('signup')}
                     className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
                       mode === 'signup'
-                        ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white shadow-lg shadow-sims-pink/20'
+                        ? 'bg-sims-pink text-white shadow-lg shadow-sims-pink/20'
                         : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
@@ -214,7 +214,7 @@ export default function SignInPage() {
                     onClick={() => setMode('signin')}
                     className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
                       mode === 'signin'
-                        ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white shadow-lg shadow-sims-pink/20'
+                        ? 'bg-sims-pink text-white shadow-lg shadow-sims-pink/20'
                         : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
@@ -274,7 +274,7 @@ export default function SignInPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:brightness-110 hover:shadow-lg hover:shadow-sims-pink/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+                    className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-sims-pink/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
                   >
                     {isSubmitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Free Account'}
                   </button>
@@ -284,7 +284,7 @@ export default function SignInPage() {
 
             {/* Premium Pricing - only shown in dedicated premium mode */}
             {mode === 'premium' && (
-              <div className="bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm w-full max-w-2xl">
+              <div className="bg-sims-pink/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm w-full max-w-2xl">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Curious Simmer Premium</h2>
@@ -310,7 +310,7 @@ export default function SignInPage() {
                     }`}
                   >
                     {tier.badge && (
-                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-sims-pink to-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-sims-pink text-white text-xs px-2 py-0.5 rounded-full font-bold">
                         {tier.badge}
                       </div>
                     )}
@@ -358,7 +358,7 @@ export default function SignInPage() {
                   <button
                     onClick={handleUpgradeToPremium}
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50"
+                    className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-4 px-6 rounded-xl transition-all disabled:opacity-50"
                   >
                     {isSubmitting ? 'Loading...' : 'Upgrade to Premium'}
                   </button>

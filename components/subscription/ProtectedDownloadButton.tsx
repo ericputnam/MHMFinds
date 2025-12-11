@@ -156,7 +156,7 @@ function SignInModal({ onClose }: { onClose: () => void }) {
         </button>
 
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-sims-pink to-purple-600 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-sims-pink rounded-full flex items-center justify-center">
             <Download className="w-8 h-8 text-white" />
           </div>
 
@@ -171,7 +171,7 @@ function SignInModal({ onClose }: { onClose: () => void }) {
           <div className="space-y-3">
             <button
               onClick={() => router.push('/sign-in?redirect=' + encodeURIComponent(window.location.pathname))}
-              className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white py-3 px-6 rounded-xl font-bold hover:brightness-110 transition-all"
+              className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white py-3 px-6 rounded-xl font-bold transition-all"
             >
               Create Free Account
             </button>

@@ -3,12 +3,14 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { Eye } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
 import { FilterBar } from '../components/FilterBar';
 import { Footer } from '../components/Footer';
 import { ModDetailsModal } from '../components/ModDetailsModal';
+import { UpgradeModal } from '../components/subscription/UpgradeModal';
 import { Mod } from '../lib/api';
 
 interface SearchFilters {
@@ -28,10 +30,13 @@ function HomePageContent() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedGameVersion, setSelectedGameVersion] = useState('Sims 4'); // Default to Sims 4 to match Hero default
   const [sortBy, setSortBy] = useState('relevance');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
 
   // Direct state management instead of hooks
   const [mods, setMods] = useState<Mod[]>([]);
@@ -55,6 +60,11 @@ function HomePageContent() {
       // Add category filter (if not 'All')
       if (selectedCategory && selectedCategory !== 'All') {
         params.append('category', selectedCategory);
+      }
+
+      // Add game version filter if exists
+      if (selectedGameVersion) {
+        params.append('gameVersion', selectedGameVersion);
       }
 
       // Add creator filter if exists
@@ -102,55 +112,59 @@ function HomePageContent() {
   useEffect(() => {
     fetchMods();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, sortBy, searchQuery, creatorParam]);
+  }, [selectedCategory, selectedGameVersion, sortBy, searchQuery, creatorParam]);
 
-  // Check download limits and redirect if exhausted
-  useEffect(() => {
-    const checkDownloadLimit = async () => {
-      // Check anonymous users
-      if (status === 'unauthenticated') {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        const anonymousCount = stored ? parseInt(stored, 10) : 0;
+  // Discovery is always free - no redirect based on download limits
+  // Download limits are enforced at the mod detail/download level
 
-        // Redirect if anonymous user has exhausted free downloads
-        if (anonymousCount >= ANONYMOUS_DOWNLOAD_LIMIT) {
-          router.push('/sign-in?mode=premium');
+  // Handle mod card click - check download limits before showing details
+  const handleModClick = async (mod: Mod) => {
+    // Check anonymous users
+    if (status === 'unauthenticated') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const anonymousCount = stored ? parseInt(stored, 10) : 0;
+
+      if (anonymousCount >= ANONYMOUS_DOWNLOAD_LIMIT) {
+        setShowSignInModal(true);
+        return;
+      }
+    }
+
+    // Check authenticated users
+    if (status === 'authenticated') {
+      try {
+        const response = await fetch('/api/subscription/check-limit', {
+          method: 'POST',
+        });
+        const data = await response.json();
+
+        // Premium users can always view details
+        if (data.isPremium) {
+          setSelectedMod(mod);
           return;
         }
-      }
 
-      // Check authenticated users
-      if (status === 'authenticated') {
-        try {
-          const response = await fetch('/api/subscription/check-limit', {
-            method: 'POST',
-          });
-          const data = await response.json();
-
-          // Don't redirect if user is premium
-          if (data.isPremium) {
-            return;
-          }
-
-          // Redirect if user has no downloads remaining
-          if (data.clicksRemaining <= 0) {
-            router.push('/sign-in?mode=premium');
-            return;
-          }
-        } catch (error) {
-          console.error('Error checking download limit:', error);
+        // Free users with no downloads left
+        if (data.clicksRemaining <= 0) {
+          setShowUpgradeModal(true);
+          return;
         }
+      } catch (error) {
+        console.error('Error checking download limit:', error);
       }
-    };
-
-    // Only check if session status is resolved (not loading)
-    if (status !== 'loading') {
-      checkDownloadLimit();
     }
-  }, [status, router]);
 
-  const handleSearch = async (query: string) => {
+    // User has downloads available - show the modal
+    setSelectedMod(mod);
+  };
+
+  const handleSearch = async (query: string, category?: string, gameVersion?: string) => {
     setSearchQuery(query);
+    // Always update category, even if undefined (to reset to "All")
+    setSelectedCategory(category || 'All');
+    if (gameVersion) {
+      setSelectedGameVersion(gameVersion);
+    }
   };
 
   const handleCategoryChange = (category: string) => {
@@ -202,12 +216,8 @@ function HomePageContent() {
           alert('Please sign in to favorite mods');
         }
       } else {
-        // Refresh the mod data to get updated rating
-        const modsResponse = await fetch('/api/mods');
-        const data = await modsResponse.json();
-        setMods(data.mods);
-        setPagination(data.pagination);
-        setFacets(data.facets);
+        // Refresh the mod data to get updated rating, preserving current filters
+        await fetchMods();
       }
     } catch (error) {
       // Revert optimistic update on error
@@ -238,6 +248,11 @@ function HomePageContent() {
     // Add category filter (if not 'All')
     if (selectedCategory && selectedCategory !== 'All') {
       params.append('category', selectedCategory);
+    }
+
+    // Add game version filter if exists
+    if (selectedGameVersion) {
+      params.append('gameVersion', selectedGameVersion);
     }
 
     // Add creator filter if exists
@@ -288,7 +303,7 @@ function HomePageContent() {
         {/* Creator Filter Banner */}
         {creatorParam && (
           <div className="container mx-auto px-4 py-4">
-            <div className="bg-gradient-to-r from-sims-pink/10 to-purple-600/10 border border-sims-pink/20 rounded-lg px-6 py-4 flex items-center justify-between">
+            <div className="bg-sims-pink/10 border border-sims-pink/20 rounded-lg px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-sims-pink/20 rounded-full p-2">
                   <svg className="h-5 w-5 text-sims-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -320,7 +335,7 @@ function HomePageContent() {
             loading={loading}
             error={error}
             onFavorite={handleFavorite}
-            onModClick={(mod) => setSelectedMod(mod)}
+            onModClick={handleModClick}
             favorites={favorites}
             gridColumns={gridColumns}
           />
@@ -360,7 +375,7 @@ function HomePageContent() {
                       }}
                       className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                         page === pagination.page
-                          ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white'
+                          ? 'bg-sims-pink text-white'
                           : 'text-slate-400 hover:text-white bg-white/5 border border-white/5'
                       }`}
                     >
@@ -398,6 +413,64 @@ function HomePageContent() {
           onClose={() => setSelectedMod(null)}
         />
       )}
+
+      {/* Upgrade Modal - for authenticated users who hit the limit */}
+      {showUpgradeModal && (
+        <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
+      )}
+
+      {/* Sign In Modal - for anonymous users who hit the limit */}
+      {showSignInModal && (
+        <SignInModal onClose={() => setShowSignInModal(false)} />
+      )}
+    </div>
+  );
+}
+
+// Simple Sign-In Modal for anonymous users
+function SignInModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-[#0F141F] w-full max-w-md rounded-3xl border border-white/10 p-8 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+        >
+          <span className="text-2xl">×</span>
+        </button>
+
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-sims-pink rounded-full flex items-center justify-center">
+            <Eye className="w-8 h-8 text-white" />
+          </div>
+
+          <h2 className="text-2xl font-bold text-white mb-2">
+            You've Used Your Free Views!
+          </h2>
+
+          <p className="text-slate-400 mb-6">
+            Create a free account to get 5 more mod views, or upgrade to Premium for unlimited access.
+          </p>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => router.push('/sign-in?redirect=' + encodeURIComponent(window.location.pathname))}
+              className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white py-3 px-6 rounded-xl font-bold transition-all"
+            >
+              Create Free Account
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-full text-slate-400 hover:text-white transition-colors text-sm"
+            >
+              Keep Browsing
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

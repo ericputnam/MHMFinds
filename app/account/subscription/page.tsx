@@ -62,12 +62,12 @@ export default function SubscriptionPage() {
           {/* Success Message */}
           {success && (
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-sims-pink to-purple-600 rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-sims-pink rounded-full mb-6">
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </div>
 
               <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-                Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue">Premium</span>!
+                Welcome to <span className="text-white">Premium</span>!
               </h1>
 
               <p className="text-lg text-slate-400 mb-8">
@@ -98,7 +98,7 @@ export default function SubscriptionPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
                   href="/"
-                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-3 px-8 rounded-xl hover:brightness-110 transition-all"
+                  className="inline-flex items-center justify-center gap-2 bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-3 px-8 rounded-xl transition-all"
                 >
                   Start Downloading
                   <ArrowRight className="w-5 h-5" />
@@ -135,7 +135,7 @@ export default function SubscriptionPage() {
 
                 <a
                   href="/sign-in?mode=premium"
-                  className="bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-3 px-8 rounded-xl hover:brightness-110 transition-all"
+                  className="bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-3 px-8 rounded-xl transition-all"
                 >
                   Try Again
                 </a>
@@ -151,7 +151,7 @@ export default function SubscriptionPage() {
               </h1>
 
               {subscription.isPremium ? (
-                <div className="bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm">
+                <div className="bg-sims-pink/10 border-2 border-sims-pink/30 rounded-2xl p-8 backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <Crown className="w-8 h-8 text-sims-pink" />
                     <h2 className="text-3xl font-bold text-white">Premium Active</h2>
@@ -178,7 +178,7 @@ export default function SubscriptionPage() {
 
                   <a
                     href="/sign-in?mode=premium"
-                    className="inline-block bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold py-3 px-8 rounded-xl hover:brightness-110 transition-all"
+                    className="inline-block bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-3 px-8 rounded-xl transition-all"
                   >
                     Upgrade to Premium
                   </a>

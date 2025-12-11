@@ -73,7 +73,7 @@ export default function CreatorsPage() {
               </div>
               <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
                 Featured{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue animate-gradient">
+                <span className="text-white">
                   Creators
                 </span>
               </h1>
@@ -150,12 +150,12 @@ export default function CreatorsPage() {
                                 `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(creator.name)}&backgroundColor=ec4899,a855f7,8b5cf6&textColor=ffffff`
                               }
                               alt={creator.name}
-                              className="w-24 h-24 rounded-full object-cover border-4 border-white/10 bg-gradient-to-br from-sims-pink to-purple-600"
+                              className="w-24 h-24 rounded-full object-cover border-4 border-white/10 bg-sims-pink"
                               onError={(e) => {
                                 // Fallback if DiceBear fails
                                 e.currentTarget.style.display = 'none';
                                 const fallback = document.createElement('div');
-                                fallback.className = 'w-24 h-24 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/10';
+                                fallback.className = 'w-24 h-24 rounded-full bg-sims-pink flex items-center justify-center text-3xl font-bold text-white border-4 border-white/10';
                                 fallback.textContent = creator.name.charAt(0).toUpperCase();
                                 e.currentTarget.parentNode?.appendChild(fallback);
                               }}
@@ -238,7 +238,7 @@ export default function CreatorsPage() {
                           <div className="mt-4 flex gap-3">
                             <a
                               href={`/?creator=${creator.handle}`}
-                              className="bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold px-6 py-2 rounded-lg hover:scale-105 transition-transform duration-300 text-sm"
+                              className="bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 text-sm"
                             >
                               View Mods
                             </a>

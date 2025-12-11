@@ -77,7 +77,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <button
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                 className={`
-                  w-full lg:w-64 flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all duration-200
+                  w-full lg:w-80 flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all duration-200
                   ${isCategoryOpen
                     ? 'bg-white/10 border-sims-pink/50 text-white shadow-lg'
                     : 'bg-black/20 border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/20'}
@@ -87,13 +87,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                   <div className={`p-1.5 rounded-lg ${selectedCategory === 'All' ? 'bg-sims-pink' : 'bg-slate-700'}`}>
                     <LayoutGrid className="w-4 h-4 text-white" />
                   </div>
-                  <span className="font-medium text-sm">
+                  <span className="font-medium text-base">
                     {selectedCategory === 'All' ? 'All Categories' : selectedCategory}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                    {selectedCategory !== 'All' && (
-                     <span className="bg-sims-pink text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                     <span className="bg-sims-pink text-white text-xs font-bold px-2 py-0.5 rounded-md">
                        {categoryCounts[selectedCategory] || 0}
                      </span>
                    )}
@@ -103,7 +103,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
               {/* Dropdown Menu */}
               {isCategoryOpen && (
-                <div className="absolute top-full left-0 mt-2 w-full lg:w-72 bg-[#1A202C] border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-2 w-full lg:w-80 bg-[#1A202C] border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                   <div className="p-2 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
                     {categories.map((cat) => {
                       const isActive = selectedCategory === cat;
@@ -117,7 +117,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                             setIsCategoryOpen(false);
                           }}
                           className={`
-                            w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all
+                            w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-base transition-all
                             ${isActive
                               ? 'bg-sims-pink/10 text-sims-pink font-bold'
                               : 'text-slate-400 hover:bg-white/5 hover:text-white'}
@@ -125,7 +125,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                         >
                           <span>{cat}</span>
                           <div className="flex items-center gap-2">
-                            <span className={`text-xs ${isActive ? 'text-sims-pink' : 'text-slate-600'}`}>
+                            <span className={`text-sm ${isActive ? 'text-sims-pink' : 'text-slate-600'}`}>
                               {count}
                             </span>
                             {isActive && <Check className="w-3.5 h-3.5" />}
@@ -144,17 +144,17 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 {/* Active filter pills */}
                 <div className="flex items-center flex-wrap gap-2">
                   {searchQuery && (
-                    <span className="flex items-center gap-1 bg-purple-600/20 text-purple-300 px-3 py-1 rounded-full border border-purple-500/30 text-xs font-medium">
+                    <span className="flex items-center gap-1 bg-sims-blue/20 text-sims-blue px-3 py-1.5 rounded-full border border-sims-blue/30 text-sm font-medium">
                       Search: "{searchQuery.length > 20 ? searchQuery.substring(0, 20) + '...' : searchQuery}"
                     </span>
                   )}
                   {selectedCategory !== 'All' && (
-                    <span className="flex items-center gap-1 bg-sims-pink/20 text-sims-pink px-3 py-1 rounded-full border border-sims-pink/30 text-xs font-medium">
+                    <span className="flex items-center gap-1 bg-sims-pink/20 text-sims-pink px-3 py-1.5 rounded-full border border-sims-pink/30 text-sm font-medium">
                       {selectedCategory}
                     </span>
                   )}
                   {sortBy !== 'relevance' && (
-                    <span className="flex items-center gap-1 bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30 text-xs font-medium">
+                    <span className="flex items-center gap-1 bg-blue-600/20 text-blue-300 px-3 py-1.5 rounded-full border border-blue-500/30 text-sm font-medium">
                       {sortOptions.find(opt => opt.value === sortBy)?.label}
                     </span>
                   )}
@@ -164,10 +164,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 {onClearAllFilters && (
                   <button
                     onClick={onClearAllFilters}
-                    className="flex items-center gap-2 bg-red-600/20 hover:bg-red-600/30 text-red-300 hover:text-red-200 px-4 py-1.5 rounded-full border border-red-500/30 hover:border-red-500/50 transition-all text-xs font-semibold group"
+                    className="flex items-center gap-2 bg-red-600/20 hover:bg-red-600/30 text-red-300 hover:text-red-200 px-4 py-2 rounded-full border border-red-500/30 hover:border-red-500/50 transition-all text-sm font-semibold group"
                     title="Clear all filters and show all mods"
                   >
-                    <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-300" />
+                    <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
                     Clear All
                   </button>
                 )}
@@ -183,7 +183,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                   <select
                     value={sortBy}
                     onChange={(e) => onSortChange(e.target.value)}
-                    className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer w-full"
+                    className="bg-transparent text-base font-medium text-slate-300 outline-none appearance-none cursor-pointer w-full"
                   >
                     {sortOptions.map((opt) => (
                       <option key={opt.value} value={opt.value} className="bg-mhm-card text-slate-200 py-2">

@@ -22,7 +22,7 @@ export default function AboutPage() {
               </div>
               <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
                 Your Trusted Source for{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue animate-gradient">
+                <span className="text-white">
                   Game Mods
                 </span>
               </h1>
@@ -55,8 +55,8 @@ export default function AboutPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-3 gap-8">
               {/* Quality Assurance */}
-              <div className="bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border border-sims-pink/20 rounded-2xl p-8 hover:scale-105 transition-transform duration-300">
-                <div className="bg-gradient-to-br from-sims-pink to-purple-600 p-3 rounded-xl w-fit mb-4">
+              <div className="bg-sims-pink/10 border border-sims-pink/20 rounded-2xl p-8 hover:scale-105 transition-transform duration-300">
+                <div className="bg-sims-pink p-3 rounded-xl w-fit mb-4">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-3 text-white">Quality Assurance</h3>
@@ -100,7 +100,7 @@ export default function AboutPage() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 backdrop-blur-sm">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-sims-pink flex items-center justify-center">
                     <Users className="h-12 w-12 text-white" />
                   </div>
                 </div>
@@ -123,8 +123,8 @@ export default function AboutPage() {
         {/* Contact Section */}
         <div className="container mx-auto px-4 py-16 pb-24">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-sims-pink/10 to-purple-600/10 border border-sims-pink/20 rounded-2xl p-8 md:p-12 text-center">
-              <div className="bg-gradient-to-br from-sims-pink to-purple-600 p-4 rounded-xl w-fit mx-auto mb-6">
+            <div className="bg-sims-pink/10 border border-sims-pink/20 rounded-2xl p-8 md:p-12 text-center">
+              <div className="bg-sims-pink p-4 rounded-xl w-fit mx-auto mb-6">
                 <Mail className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-3xl font-bold mb-4 text-white">Get In Touch</h2>
@@ -133,7 +133,7 @@ export default function AboutPage() {
               </p>
               <a
                 href="mailto:info@musthavemods.com"
-                className="inline-block bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold px-8 py-3 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
+                className="inline-block bg-sims-pink hover:bg-sims-pink/90 text-white font-bold px-8 py-3 rounded-full transition-all duration-300 shadow-lg"
               >
                 info@musthavemods.com
               </a>

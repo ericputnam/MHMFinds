@@ -107,7 +107,7 @@ export function UsageIndicator() {
     return (
       <button
         onClick={handleManageSubscription}
-        className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-sims-pink/20 to-purple-600/20 border border-sims-pink/30 rounded-full text-sm hover:from-sims-pink/30 hover:to-purple-600/30 transition-all cursor-pointer"
+        className="flex items-center gap-2 px-3 py-1.5 bg-sims-pink/20 border border-sims-pink/30 rounded-full text-sm hover:bg-sims-pink/30 transition-all cursor-pointer"
         title="Manage Subscription"
       >
         <Crown className="w-4 h-4 text-sims-pink" />

@@ -38,13 +38,13 @@ export const Navbar: React.FC = () => {
         <a href="/" className="flex items-center gap-3 cursor-pointer group">
           <div className="relative">
             <div className="absolute inset-0 bg-sims-pink blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
-            <div className="relative bg-gradient-to-br from-sims-pink to-purple-600 p-2.5 rounded-xl transform group-hover:scale-105 transition-all duration-300 shadow-lg">
+            <div className="relative bg-sims-pink p-2.5 rounded-xl transform group-hover:scale-105 transition-all duration-300 shadow-lg">
               <Sparkles className="text-white h-5 w-5 fill-white" />
             </div>
           </div>
           <div className="flex flex-col">
             <span className="text-2xl font-extrabold tracking-tight leading-none text-white">
-              MustHave<span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink to-sims-purple">Mods</span>
+              MustHave<span className="text-sims-pink">Mods</span>
             </span>
             <span className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
               Community Finds

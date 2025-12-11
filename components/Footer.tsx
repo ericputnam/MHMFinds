@@ -11,8 +11,11 @@ export const Footer: React.FC = () => {
                 <span className="text-xl font-bold text-white tracking-tight">
                   MustHave<span className="text-sims-pink">Mods</span>
                 </span>
-                <p className="text-slate-500 text-sm mt-2 max-w-xs">
-                    The ultimate AI-powered discovery engine for Sims 4 custom content and mods.
+                <p className="text-slate-500 text-sm mt-2 max-w-md leading-relaxed">
+                    This site is not endorsed by or affiliated with Electronic Arts, or its licensors. Trademarks are the property of their respective owners. Game content and materials are copyright Electronic Arts Inc. and its licensors.
+                </p>
+                <p className="text-slate-600 text-xs mt-3">
+                    <a href="mailto:olivia@musthavemods.com" className="hover:text-sims-blue transition-colors">Contact Us</a> • MustHaveMods.com
                 </p>
             </div>
 
@@ -24,7 +27,7 @@ export const Footer: React.FC = () => {
             </div>
         </div>
         <div className="border-t border-white/5 mt-12 pt-8 text-center text-slate-600 text-xs">
-          &copy; {new Date().getFullYear()} MustHaveMods. Not affiliated with Electronic Arts or Maxis.
+          &copy; {new Date().getFullYear()} MustHaveMods. All rights reserved.
         </div>
       </div>
     </footer>

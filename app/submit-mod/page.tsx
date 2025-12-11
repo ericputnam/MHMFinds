@@ -166,7 +166,7 @@ export default function SubmitModPage() {
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
                 Submit a{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sims-pink via-purple-400 to-sims-blue animate-gradient">
+                <span className="text-white">
                   Mod
                 </span>
               </h1>
@@ -398,7 +398,7 @@ export default function SubmitModPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !captchaToken}
-                  className="w-full bg-gradient-to-r from-sims-pink to-purple-600 text-white font-bold px-8 py-4 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+                  className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white font-bold px-8 py-4 rounded-lg transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? (
                     <>

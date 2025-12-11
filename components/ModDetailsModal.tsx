@@ -92,7 +92,7 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
 
             <div className="flex items-center justify-between border-b border-white/5 pb-6 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 p-[2px]">
+                <div className="w-10 h-10 rounded-full bg-sims-pink p-[2px]">
                   <div className="w-full h-full rounded-full bg-[#151B2B] flex items-center justify-center text-white text-xs font-bold">
                     {(mod.creator?.handle || mod.author || 'C').substring(0, 2).toUpperCase()}
                   </div>
@@ -152,7 +152,7 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
                 modId={mod.id}
                 downloadUrl={mod.downloadUrl}
                 sourceUrl={mod.sourceUrl}
-                className="flex-1 bg-gradient-to-r from-[#EC4899] to-purple-600 hover:brightness-110 text-white py-3 px-5 rounded-xl font-bold text-sm shadow-lg shadow-purple-900/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                className="flex-1 bg-sims-pink hover:bg-sims-pink/90 text-white py-3 px-5 rounded-xl font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download Mod
