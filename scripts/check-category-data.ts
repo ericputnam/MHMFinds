@@ -91,10 +91,8 @@ async function checkCategoryData() {
   console.log('\n5. Looking for category mismatches:');
   const allMods = await prisma.mod.findMany({
     where: {
-      AND: [
-        { category: { not: null } },
-        { categoryId: { not: null } },
-      ],
+      category: { not: null as any },
+      categoryId: { not: null as any },
     },
     select: {
       id: true,
