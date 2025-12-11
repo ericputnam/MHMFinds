@@ -10,8 +10,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await SubscriptionService.canDownload(session.user.id);
-    return NextResponse.json(result);
+    // Always allow - no paywall (free tier for launch)
+    return NextResponse.json({
+      allowed: true,
+      clicksRemaining: -1,
+      isPremium: session.user.isPremium || false,
+      needsUpgrade: false
+    });
   } catch (error: any) {
     console.error('Check limit error:', error);
 

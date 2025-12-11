@@ -3,14 +3,12 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Eye } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
 import { FilterBar } from '../components/FilterBar';
 import { Footer } from '../components/Footer';
 import { ModDetailsModal } from '../components/ModDetailsModal';
-import { UpgradeModal } from '../components/subscription/UpgradeModal';
 import { Mod } from '../lib/api';
 
 interface SearchFilters {
@@ -18,9 +16,6 @@ interface SearchFilters {
   gameVersion?: string;
   [key: string]: any;
 }
-
-const ANONYMOUS_DOWNLOAD_LIMIT = 5;
-const STORAGE_KEY = 'mhm_anonymous_downloads';
 
 function HomePageContent() {
   const searchParams = useSearchParams();
@@ -35,8 +30,6 @@ function HomePageContent() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showSignInModal, setShowSignInModal] = useState(false);
 
   // Direct state management instead of hooks
   const [mods, setMods] = useState<Mod[]>([]);
@@ -114,47 +107,8 @@ function HomePageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedGameVersion, sortBy, searchQuery, creatorParam]);
 
-  // Discovery is always free - no redirect based on download limits
-  // Download limits are enforced at the mod detail/download level
-
-  // Handle mod card click - check download limits before showing details
-  const handleModClick = async (mod: Mod) => {
-    // Check anonymous users
-    if (status === 'unauthenticated') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const anonymousCount = stored ? parseInt(stored, 10) : 0;
-
-      if (anonymousCount >= ANONYMOUS_DOWNLOAD_LIMIT) {
-        setShowSignInModal(true);
-        return;
-      }
-    }
-
-    // Check authenticated users
-    if (status === 'authenticated') {
-      try {
-        const response = await fetch('/api/subscription/check-limit', {
-          method: 'POST',
-        });
-        const data = await response.json();
-
-        // Premium users can always view details
-        if (data.isPremium) {
-          setSelectedMod(mod);
-          return;
-        }
-
-        // Free users with no downloads left
-        if (data.clicksRemaining <= 0) {
-          setShowUpgradeModal(true);
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking download limit:', error);
-      }
-    }
-
-    // User has downloads available - show the modal
+  // Handle mod card click - show details immediately (no paywall)
+  const handleModClick = (mod: Mod) => {
     setSelectedMod(mod);
   };
 
@@ -413,64 +367,6 @@ function HomePageContent() {
           onClose={() => setSelectedMod(null)}
         />
       )}
-
-      {/* Upgrade Modal - for authenticated users who hit the limit */}
-      {showUpgradeModal && (
-        <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
-      )}
-
-      {/* Sign In Modal - for anonymous users who hit the limit */}
-      {showSignInModal && (
-        <SignInModal onClose={() => setShowSignInModal(false)} />
-      )}
-    </div>
-  );
-}
-
-// Simple Sign-In Modal for anonymous users
-function SignInModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#0F141F] w-full max-w-md rounded-3xl border border-white/10 p-8 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-        >
-          <span className="text-2xl">×</span>
-        </button>
-
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-sims-pink rounded-full flex items-center justify-center">
-            <Eye className="w-8 h-8 text-white" />
-          </div>
-
-          <h2 className="text-2xl font-bold text-white mb-2">
-            You've Used Your Free Views!
-          </h2>
-
-          <p className="text-slate-400 mb-6">
-            Create a free account to get 5 more mod views, or upgrade to Premium for unlimited access.
-          </p>
-
-          <div className="space-y-3">
-            <button
-              onClick={() => router.push('/sign-in?redirect=' + encodeURIComponent(window.location.pathname))}
-              className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white py-3 px-6 rounded-xl font-bold transition-all"
-            >
-              Create Free Account
-            </button>
-
-            <button
-              onClick={onClose}
-              className="w-full text-slate-400 hover:text-white transition-colors text-sm"
-            >
-              Keep Browsing
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
