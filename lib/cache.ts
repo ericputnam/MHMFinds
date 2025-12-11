@@ -201,6 +201,19 @@ export class CacheService {
   }
 
   /**
+   * Cache wrapper for categories by game version
+   */
+  static async getGameCategories(gameVersion: string): Promise<string[] | null> {
+    const cacheKey = `categories:game:${gameVersion}`;
+    return await this.get<string[]>(cacheKey);
+  }
+
+  static async setGameCategories(gameVersion: string, categories: string[]): Promise<void> {
+    const cacheKey = `categories:game:${gameVersion}`;
+    await this.set(cacheKey, categories, this.TTL.FACETS);
+  }
+
+  /**
    * Invalidate all caches related to a specific mod
    * Call this when a mod is created, updated, or deleted
    */
@@ -208,6 +221,7 @@ export class CacheService {
     await this.del(`mod:${modId}`);
     await this.invalidatePattern('mods:list:*');
     await this.invalidatePattern('search:*');
+    await this.invalidatePattern('categories:game:*');
     await this.del('facets:all');
   }
 
