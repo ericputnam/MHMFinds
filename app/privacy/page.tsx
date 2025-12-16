@@ -155,6 +155,31 @@ export default function PrivacyPage() {
                 </p>
               </section>
 
+              {/* Payment Processing */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">Payment Processing (Stripe)</h2>
+                <div className="bg-sims-blue/10 border border-sims-blue/20 rounded-lg p-6 space-y-3">
+                  <p className="text-slate-300 leading-relaxed">
+                    Premium subscription payments are processed by Stripe, Inc. We do not store your complete credit card information on our servers.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed">
+                    When you subscribe, Stripe collects and processes:
+                  </p>
+                  <ul className="list-disc list-inside text-slate-300 space-y-2 ml-4">
+                    <li>Payment card information</li>
+                    <li>Billing address</li>
+                    <li>Email address</li>
+                    <li>Transaction history</li>
+                  </ul>
+                  <p className="text-slate-300 leading-relaxed">
+                    Stripe's use of your personal information is governed by their Privacy Policy:{' '}
+                    <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-sims-blue hover:text-sims-pink transition-colors underline">
+                      https://stripe.com/privacy
+                    </a>
+                  </p>
+                </div>
+              </section>
+
               {/* User Rights */}
               <section>
                 <h2 className="text-2xl font-bold mb-4 text-white">User Rights</h2>

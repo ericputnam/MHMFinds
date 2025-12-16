@@ -1308,17 +1308,75 @@ export class PrivacyAggregator {
   private categorizeMod(title: string, description?: string): string {
     const text = `${title} ${description || ''}`.toLowerCase();
 
-    if (text.includes('build') || text.includes('buy') || text.includes('furniture')) {
-      return 'Build/Buy';
-    } else if (text.includes('cas') || text.includes('sim') || text.includes('clothing')) {
-      return 'CAS';
-    } else if (text.includes('gameplay') || text.includes('career') || text.includes('skill')) {
-      return 'Gameplay';
-    } else if (text.includes('script') || text.includes('mod') || text.includes('trait')) {
-      return 'Scripts';
-    } else {
-      return 'Other';
+    // Check in order of specificity (most specific first)
+
+    // Hair (very common category)
+    if (text.match(/\bhair(style)?s?\b/) || text.includes('hairstyle')) {
+      return 'Hair';
     }
+
+    // Poses & Animations
+    if (text.match(/\bpose[sd]?\b/) || text.includes('animation') || text.includes('posing')) {
+      return 'Poses';
+    }
+
+    // CAS - Makeup
+    if (text.includes('makeup') || text.includes('blush') || text.includes('lipstick') ||
+        text.includes('eyeshadow') || text.includes('eyeliner') || text.includes('cosmetic')) {
+      return 'CAS - Makeup';
+    }
+
+    // CAS - Accessories
+    if (text.includes('accessory') || text.includes('accessories') || text.includes('jewelry') ||
+        text.includes('necklace') || text.includes('earring') || text.includes('bracelet') ||
+        text.includes('glasses') || text.includes('hat ') || text.includes(' hats')) {
+      return 'CAS - Accessories';
+    }
+
+    // CAS - Clothing (check before general CAS)
+    if (text.includes('clothing') || text.includes('dress') || text.includes('outfit') ||
+        text.includes('shirt') || text.includes('pants') || text.includes('shoes') ||
+        text.includes('sweater') || text.includes('jacket') || text.includes('skirt') ||
+        text.includes('top ') || text.includes(' tops') || text.includes('jeans') ||
+        text.includes('bikini') || text.includes('swimwear')) {
+      return 'CAS - Clothing';
+    }
+
+    // Build/Buy - Clutter
+    if (text.includes('clutter') || text.includes('decor object') || text.includes('decoration')) {
+      return 'Build/Buy - Clutter';
+    }
+
+    // Build/Buy (general)
+    if (text.includes('build') || text.includes('buy') || text.includes('furniture') ||
+        text.includes('chair') || text.includes('table') || text.includes('sofa') ||
+        text.includes('bed ') || text.includes(' beds') || text.includes('kitchen') ||
+        text.includes('bathroom') || text.includes('shelf') || text.includes('shelves') ||
+        text.includes('cabinet') || text.includes('couch') || text.includes('decor') ||
+        text.includes('shed') || text.includes('coop') || text.includes('house ') ||
+        text.includes('lot ') || text.includes(' lots')) {
+      return 'Build/Buy';
+    }
+
+    // Gameplay
+    if (text.includes('gameplay') || text.includes('career') || text.includes('skill') ||
+        text.includes('aspiration') || text.includes('reward') || text.includes('interaction')) {
+      return 'Gameplay';
+    }
+
+    // Scripts/Mods
+    if (text.includes('script') || text.includes('trait') || text.includes('mod ') ||
+        text.match(/\bmods?\b/) && !text.includes('cc')) {
+      return 'Scripts';
+    }
+
+    // CAS (general Create-a-Sim - last resort for CAS items)
+    if (text.includes('cas') || text.includes('create-a-sim') || text.includes('create a sim')) {
+      return 'CAS';
+    }
+
+    // Default
+    return 'Other';
   }
 
   private extractTags(title: string, description?: string): string[] {

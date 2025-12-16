@@ -172,6 +172,77 @@ export default function TermsPage() {
                 </p>
               </section>
 
+              {/* 11A. Premium Subscription Terms */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">11A. Premium Subscription Terms</h2>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Billing</h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      Premium subscriptions are billed monthly at $6.49 USD per month. By subscribing, you authorize Must Have Mods to charge your payment method on a recurring basis until you cancel.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Automatic Renewal</h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      Your subscription will automatically renew each month unless you cancel before the renewal date. You will be charged at the then-current rate.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Premium Benefits</h3>
+                    <ul className="list-disc list-inside space-y-2 text-slate-300 ml-4">
+                      <li>Unlimited mod downloads</li>
+                      <li>Ad-free browsing experience</li>
+                      <li>Early access to new features</li>
+                      <li>Priority support</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              {/* 11B. Cancellation Policy */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">11B. Cancellation Policy</h2>
+                <div className="bg-sims-blue/10 border border-sims-blue/20 rounded-lg p-6 space-y-3">
+                  <p className="text-slate-300 leading-relaxed">
+                    You may cancel your Premium subscription at any time by clicking the "Premium" badge in your account and selecting "Cancel Subscription" in the Stripe Customer Portal.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed">
+                    Cancellations take effect at the end of your current billing period. You will retain Premium access until that date.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed font-semibold">
+                    No partial refunds will be provided for unused portions of the billing period.
+                  </p>
+                </div>
+              </section>
+
+              {/* 11C. Refund Policy */}
+              <section>
+                <h2 className="text-2xl font-bold mb-4 text-white">11C. Refund Policy</h2>
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-6 space-y-3">
+                  <p className="text-slate-300 leading-relaxed font-semibold">
+                    All sales are final. We do not offer refunds for Premium subscriptions.
+                  </p>
+                  <p className="text-slate-300 leading-relaxed">
+                    However, we may consider refund requests on a case-by-case basis for the following circumstances:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-slate-300 ml-4">
+                    <li>Accidental duplicate charges</li>
+                    <li>Billing errors on our part</li>
+                    <li>Technical issues preventing access to Premium features</li>
+                  </ul>
+                  <p className="text-slate-300 leading-relaxed">
+                    To request a refund, contact{' '}
+                    <a href="mailto:olivia@musthavemods.com" className="text-sims-blue hover:text-sims-pink transition-colors">
+                      olivia@musthavemods.com
+                    </a>{' '}
+                    within 7 days of the charge with your order details.
+                  </p>
+                </div>
+              </section>
+
               {/* 12. Arbitration & Class Action Waiver */}
               <section>
                 <h2 className="text-2xl font-bold mb-4 text-white">12. Arbitration & Class Action Waiver</h2>

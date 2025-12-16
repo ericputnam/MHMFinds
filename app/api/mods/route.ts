@@ -38,6 +38,15 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
+    // Debug logging
+    console.log('[API] Mods query params:', {
+      search,
+      category,
+      gameVersion,
+      page,
+      limit
+    });
+
     // Try to get from cache first
     const cacheParams = {
       page,
@@ -103,7 +112,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (gameVersion) {
-      where.gameVersion = gameVersion;
+      // Handle "Other" as special case - show games NOT in the main 4
+      if (gameVersion === '__other__') {
+        where.gameVersion = {
+          notIn: ['Sims 4', 'Stardew Valley', 'Animal Crossing', 'Minecraft']
+        };
+      } else {
+        where.gameVersion = gameVersion;
+      }
     }
 
     if (tags) {
@@ -113,6 +129,9 @@ export async function GET(request: NextRequest) {
     if (isFree !== null) {
       where.isFree = isFree === 'true';
     }
+
+    // Debug: log the where clause
+    console.log('[API] WHERE clause:', JSON.stringify(where, null, 2));
 
     // Build order by clause - prioritize mods with creators
     const orderBy: any = {};
@@ -342,6 +361,13 @@ export async function GET(request: NextRequest) {
       rating: mod.rating ? Number(mod.rating) : null,
       price: mod.price ? Number(mod.price) : null,
     }));
+
+    // Debug: log what mods are being returned
+    console.log('[API] Returning mods:', serializedMods.map(m => ({
+      title: m.title,
+      category: m.category,
+      gameVersion: m.gameVersion
+    })));
 
     const response = {
       mods: serializedMods,
