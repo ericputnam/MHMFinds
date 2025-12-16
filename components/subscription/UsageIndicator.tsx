@@ -68,20 +68,6 @@ export function UsageIndicator() {
     }
   };
 
-  // Show anonymous usage for unauthenticated users
-  if (status === 'unauthenticated') {
-    const remaining = ANONYMOUS_DOWNLOAD_LIMIT - anonymousCount;
-    return (
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm">
-        <Download className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-400">Free:</span>
-        <span className="text-white font-medium">
-          {remaining} / {ANONYMOUS_DOWNLOAD_LIMIT} remaining
-        </span>
-      </div>
-    );
-  }
-
   // Don't show anything while loading
   if (status === 'loading' || !usage) return null;
 
@@ -102,8 +88,8 @@ export function UsageIndicator() {
     }
   };
 
-  // Show premium badge for premium users
-  if (usage.isPremium) {
+  // Show premium badge for premium users (reserved for future advanced features)
+  if (status === 'authenticated' && usage?.isPremium) {
     return (
       <button
         onClick={handleManageSubscription}
@@ -116,13 +102,6 @@ export function UsageIndicator() {
     );
   }
 
-  // Show authenticated user usage
-  return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm">
-      <span className="text-slate-400">Downloads:</span>
-      <span className="text-white font-medium">
-        {usage.clicksRemaining} / 5 remaining
-      </span>
-    </div>
-  );
+  // All users have unlimited downloads now (paywall removed for launch)
+  return null;
 }
