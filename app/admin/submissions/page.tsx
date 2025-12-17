@@ -108,7 +108,7 @@ export default function SubmissionsPage() {
             onClick={() => setFilter(status)}
             className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
               filter === status
-                ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white'
+                ? 'bg-sims-pink hover:bg-sims-pink/90 text-white'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >

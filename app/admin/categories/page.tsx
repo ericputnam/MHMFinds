@@ -102,7 +102,7 @@ export default function CategoriesPage() {
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+          className="flex items-center gap-2 px-6 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
         >
           <Plus className="h-5 w-5" />
           Add Category
@@ -261,7 +261,7 @@ export default function CategoriesPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleCreate}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
               >
                 <Plus className="h-5 w-5" />
                 Create
@@ -355,7 +355,7 @@ export default function CategoriesPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => handleUpdate(editingCategory)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
               >
                 <Save className="h-5 w-5" />
                 Save

@@ -128,10 +128,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Waitlist */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-purple-500/30 transition-colors">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sims-pink/30 transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <div className="bg-purple-500/10 p-3 rounded-lg">
-              <Mail className="h-6 w-6 text-purple-500" />
+            <div className="bg-sims-blue/10 p-3 rounded-lg">
+              <Mail className="h-6 w-6 text-sims-blue" />
             </div>
             <span className="text-xs text-slate-500 font-medium">WAITING</span>
           </div>
@@ -144,8 +144,8 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-purple-500/10 p-3 rounded-lg">
-              <Download className="h-6 w-6 text-purple-500" />
+            <div className="bg-sims-blue/10 p-3 rounded-lg">
+              <Download className="h-6 w-6 text-sims-blue" />
             </div>
             <div>
               <h4 className="text-2xl font-bold text-white">{stats?.totalDownloads?.toLocaleString() || 0}</h4>
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <a
           href="/admin/mods/new"
-          className="bg-gradient-to-r from-sims-pink to-purple-600 rounded-xl p-6 hover:scale-105 transition-transform cursor-pointer"
+          className="bg-sims-pink hover:bg-sims-pink/90 rounded-xl p-6 transition-all cursor-pointer"
         >
           <Package className="h-8 w-8 text-white mb-3" />
           <h3 className="text-lg font-bold text-white mb-1">Add New Mod</h3>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
 
         <a
           href="/admin/submissions"
-          className="bg-gradient-to-r from-sims-blue to-cyan-600 rounded-xl p-6 hover:scale-105 transition-transform cursor-pointer"
+          className="bg-sims-blue hover:bg-sims-blue/90 rounded-xl p-6 transition-all cursor-pointer"
         >
           <Upload className="h-8 w-8 text-white mb-3" />
           <h3 className="text-lg font-bold text-white mb-1">Review Submissions</h3>
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
 
         <a
           href="/admin/creators"
-          className="bg-gradient-to-r from-sims-green to-emerald-600 rounded-xl p-6 hover:scale-105 transition-transform cursor-pointer"
+          className="bg-sims-green hover:bg-sims-green/90 rounded-xl p-6 transition-all cursor-pointer"
         >
           <Users className="h-8 w-8 text-white mb-3" />
           <h3 className="text-lg font-bold text-white mb-1">Manage Creators</h3>

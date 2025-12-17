@@ -136,7 +136,7 @@ export default function UsersPage() {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 flex items-center justify-center text-white font-bold">
+                          <div className="w-10 h-10 rounded-full bg-sims-pink flex items-center justify-center text-white font-bold">
                             {user.username.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -253,7 +253,7 @@ export default function UsersPage() {
                     className="w-12 h-12 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 rounded-full bg-sims-pink flex items-center justify-center text-white font-bold">
                     {editingUser.username.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -325,7 +325,7 @@ export default function UsersPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => handleUpdate(editingUser)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
               >
                 <Save className="h-5 w-5" />
                 Save Changes

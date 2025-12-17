@@ -45,7 +45,7 @@ export default function AdminLayout({
       <div className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-sims-pink to-purple-600 p-2 rounded-lg">
+            <div className="bg-sims-pink p-2 rounded-lg">
               <Shield className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -96,7 +96,7 @@ export default function AdminLayout({
                   href={item.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white shadow-lg'
+                      ? 'bg-sims-pink text-white shadow-lg'
                       : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >

@@ -157,7 +157,7 @@ export default function ModsManagementPage() {
         </div>
         <Link
           href="/admin/mods/new"
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+          className="flex items-center gap-2 px-6 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
         >
           <Plus className="h-5 w-5" />
           Add New Mod
@@ -538,7 +538,7 @@ function EditModModal({
         <div className="flex gap-3 mt-6 pt-6 border-t border-slate-800">
           <button
             onClick={() => onSave(editedMod)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
           >
             <Save className="h-5 w-5" />
             Save Changes

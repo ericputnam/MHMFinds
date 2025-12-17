@@ -122,7 +122,7 @@ export default function CreatorsPage() {
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sims-pink to-purple-600 flex items-center justify-center text-white font-bold">
+                    <div className="w-12 h-12 rounded-full bg-sims-pink flex items-center justify-center text-white font-bold">
                       {creator.handle.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -275,7 +275,7 @@ export default function CreatorsPage() {
             <div className="flex gap-3 mt-6 pt-6 border-t border-slate-800">
               <button
                 onClick={() => handleUpdate(editingCreator)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-sims-pink to-purple-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
               >
                 <Save className="h-5 w-5" />
                 Save Changes
