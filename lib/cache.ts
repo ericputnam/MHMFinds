@@ -52,7 +52,20 @@ export class CacheService {
     SEARCH_RESULTS: 300, // 5 minutes - search query results
     FACETS: 600, // 10 minutes - category/filter facets
     USER_SESSION: 3600, // 1 hour - user session data
+    FACETS_GLOBAL: 900, // 15 minutes - global facets (expensive to compute)
   };
+
+  /**
+   * Generate a deterministic cache key from parameters
+   * Ensures same parameters always produce same key regardless of object order
+   */
+  private static generateDeterministicKey(prefix: string, params: Record<string, any>): string {
+    const sortedKeys = Object.keys(params)
+      .filter(k => params[k] != null && params[k] !== '' && params[k] !== undefined)
+      .sort();
+    const normalized = sortedKeys.map(k => `${k}=${String(params[k])}`).join('&');
+    return `${prefix}:${normalized || 'default'}`;
+  }
 
   /**
    * Check if Redis is available
@@ -136,15 +149,15 @@ export class CacheService {
 
   /**
    * Cache wrapper for mod list queries
-   * Generates cache key from query parameters
+   * Uses deterministic key generation for consistent cache hits
    */
   static async getModsList(params: Record<string, any>): Promise<any | null> {
-    const cacheKey = `mods:list:${JSON.stringify(params)}`;
+    const cacheKey = this.generateDeterministicKey('mods:list', params);
     return await this.get(cacheKey);
   }
 
   static async setModsList(params: Record<string, any>, data: any): Promise<void> {
-    const cacheKey = `mods:list:${JSON.stringify(params)}`;
+    const cacheKey = this.generateDeterministicKey('mods:list', params);
     await this.set(cacheKey, data, this.TTL.MODS_LIST);
   }
 
@@ -176,19 +189,21 @@ export class CacheService {
 
   /**
    * Cache wrapper for search results
+   * Uses deterministic key generation for consistent cache hits
    */
   static async getSearchResults(query: string, filters: Record<string, any>): Promise<any | null> {
-    const cacheKey = `search:${query}:${JSON.stringify(filters)}`;
+    const cacheKey = this.generateDeterministicKey(`search:${query}`, filters);
     return await this.get(cacheKey);
   }
 
   static async setSearchResults(query: string, filters: Record<string, any>, data: any): Promise<void> {
-    const cacheKey = `search:${query}:${JSON.stringify(filters)}`;
+    const cacheKey = this.generateDeterministicKey(`search:${query}`, filters);
     await this.set(cacheKey, data, this.TTL.SEARCH_RESULTS);
   }
 
   /**
    * Cache wrapper for facets (categories, tags, etc.)
+   * Uses longer TTL since facets are expensive to compute
    */
   static async getFacets(): Promise<any | null> {
     const cacheKey = 'facets:all';
@@ -197,6 +212,33 @@ export class CacheService {
 
   static async setFacets(data: any): Promise<void> {
     const cacheKey = 'facets:all';
+    await this.set(cacheKey, data, this.TTL.FACETS);
+  }
+
+  /**
+   * Cache wrapper for global facets (pre-computed, expensive)
+   * Used for facets that don't change with search filters
+   */
+  static async getGlobalFacets(): Promise<any | null> {
+    const cacheKey = 'facets:global';
+    return await this.get(cacheKey);
+  }
+
+  static async setGlobalFacets(data: any): Promise<void> {
+    const cacheKey = 'facets:global';
+    await this.set(cacheKey, data, this.TTL.FACETS_GLOBAL);
+  }
+
+  /**
+   * Cache wrapper for game-specific facets
+   */
+  static async getGameFacets(gameVersion: string): Promise<any | null> {
+    const cacheKey = `facets:game:${gameVersion}`;
+    return await this.get(cacheKey);
+  }
+
+  static async setGameFacets(gameVersion: string, data: any): Promise<void> {
+    const cacheKey = `facets:game:${gameVersion}`;
     await this.set(cacheKey, data, this.TTL.FACETS);
   }
 

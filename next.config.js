@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable SWC minifier for faster builds
+  swcMinify: true,
+
+  // Optimize for Vercel serverless deployment
+  output: 'standalone',
+
   experimental: {
     // appDir: true, // Removed - this is now default in Next.js 14
   },
@@ -36,8 +42,21 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // Add caching headers for API routes
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300',
+          },
+        ],
+      },
     ];
   },
+  // Reduce bundle size by not including source maps in production
+  productionBrowserSourceMaps: false,
 };
 
 module.exports = nextConfig;
+

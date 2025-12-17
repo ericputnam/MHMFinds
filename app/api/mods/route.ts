@@ -37,15 +37,18 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     const skip = (page - 1) * limit;
+    const isProduction = process.env.NODE_ENV === 'production';
 
-    // Debug logging
-    console.log('[API] Mods query params:', {
-      search,
-      category,
-      gameVersion,
-      page,
-      limit
-    });
+    // Debug logging (reduced in production)
+    if (!isProduction) {
+      console.log('[API] Mods query params:', {
+        search,
+        category,
+        gameVersion,
+        page,
+        limit
+      });
+    }
 
     // Try to get from cache first
     const cacheParams = {
@@ -65,13 +68,22 @@ export async function GET(request: NextRequest) {
 
     const cached = await CacheService.getModsList(cacheParams);
     if (cached) {
-      console.log('[Cache] HIT - Returning cached mods list');
-      return NextResponse.json({
+      if (!isProduction) console.log('[Cache] HIT - Returning cached mods list');
+      // Return cached response with edge caching headers
+      return new NextResponse(JSON.stringify({
         ...cached,
         fromCache: true,
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          // CDN edge caching: cache for 60s, stale for 300s while revalidating
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'X-Cache': 'HIT',
+        },
       });
     }
-    console.log('[Cache] MISS - Fetching from database');
+    if (!isProduction) console.log('[Cache] MISS - Fetching from database');
 
     // Build where clause
     const where: any = {
@@ -362,12 +374,14 @@ export async function GET(request: NextRequest) {
       price: mod.price ? Number(mod.price) : null,
     }));
 
-    // Debug: log what mods are being returned
-    console.log('[API] Returning mods:', serializedMods.map(m => ({
-      title: m.title,
-      category: m.category,
-      gameVersion: m.gameVersion
-    })));
+    // Debug: log what mods are being returned (only in development)
+    if (!isProduction) {
+      console.log('[API] Returning mods:', serializedMods.map(m => ({
+        title: m.title,
+        category: m.category,
+        gameVersion: m.gameVersion
+      })));
+    }
 
     const response = {
       mods: serializedMods,
@@ -407,7 +421,16 @@ export async function GET(request: NextRequest) {
     // Cache the response for 5 minutes
     await CacheService.setModsList(cacheParams, response);
 
-    return NextResponse.json(response);
+    // Return with edge caching headers for CDN optimization
+    return new NextResponse(JSON.stringify(response), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        // CDN edge caching: cache for 60s, stale for 300s while revalidating
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'X-Cache': 'MISS',
+      },
+    });
   } catch (error) {
     console.error('Error fetching mods:', error);
     return NextResponse.json(
