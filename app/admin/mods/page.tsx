@@ -303,7 +303,7 @@ export default function ModsManagementPage() {
                         </div>
                         <div className="flex items-center gap-1 text-slate-400 text-sm">
                           <Star className="h-4 w-4" />
-                          <span>{mod.rating?.toFixed(1) || 'N/A'}</span>
+                          <span>{typeof mod.rating === 'number' ? mod.rating.toFixed(1) : 'N/A'}</span>
                         </div>
                       </div>
                     </td>
