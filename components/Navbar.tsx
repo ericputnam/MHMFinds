@@ -125,6 +125,7 @@ export const Navbar: React.FC = () => {
             <Menu className="h-6 w-6" />
           </button>
         </div>
+        </div>
       </div>
 
       {/* Click outside to close dropdown */}
