@@ -31,10 +31,17 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/admin/stats');
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Failed to fetch stats:', error);
+        setStats(null);
+        return;
+      }
       const data = await response.json();
       setStats(data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      setStats(null);
     } finally {
       setLoading(false);
     }
@@ -44,6 +51,21 @@ export default function AdminDashboard() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-slate-400">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 space-y-4">
+        <div className="text-red-400 text-lg">Failed to load dashboard statistics</div>
+        <div className="text-slate-400 text-sm">You may not have admin access or there was an error loading data.</div>
+        <button
+          onClick={fetchStats}
+          className="bg-sims-pink hover:bg-sims-pink/90 text-white px-6 py-2 rounded-lg transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -150,7 +172,9 @@ export default function AdminDashboard() {
               <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
             </div>
             <div>
-              <h4 className="text-2xl font-bold text-white">{stats?.averageRating?.toFixed(1) || 'N/A'}</h4>
+              <h4 className="text-2xl font-bold text-white">
+                {typeof stats?.averageRating === 'number' ? stats.averageRating.toFixed(1) : 'N/A'}
+              </h4>
               <p className="text-sm text-slate-400">Average Rating</p>
             </div>
           </div>

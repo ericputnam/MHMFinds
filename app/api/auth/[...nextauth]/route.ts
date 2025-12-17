@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -111,11 +111,14 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user, account }: any) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
         token.username = user.username;
         token.isCreator = user.isCreator;
         token.isPremium = user.isPremium;
@@ -126,6 +129,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }: any) {
       if (token) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
         session.user.username = token.username as string;
         session.user.isCreator = token.isCreator as boolean;
         session.user.isPremium = token.isPremium as boolean;
