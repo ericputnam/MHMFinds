@@ -62,6 +62,7 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
+
           {/* Actions */}
           <div className="flex items-center space-x-3">
           <UsageIndicator />

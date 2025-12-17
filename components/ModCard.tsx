@@ -103,6 +103,26 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
             {formatPrice(mod.price)}
           </div>
         </div>
+
+        {/* Favorite Button - Bottom Right of Image */}
+        <button
+          onClick={handleFavorite}
+          onKeyDown={(e) => handleKeyDown(e, handleFavorite)}
+          className={`absolute bottom-3 right-3 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md ${
+            isFavorited
+              ? 'bg-sims-pink text-white shadow-lg scale-110'
+              : 'bg-black/40 text-white hover:bg-sims-pink hover:scale-110'
+          }`}
+          aria-label={isFavorited ? `Remove ${mod.title} from favorites` : `Add ${mod.title} to favorites`}
+          aria-pressed={isFavorited}
+          title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <Heart
+            size={18}
+            className={`transition-all duration-300 ${isFavorited ? 'fill-current' : ''}`}
+            aria-hidden="true"
+          />
+        </button>
       </div>
 
       {/* Content */}
@@ -159,26 +179,6 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
           </ProtectedDownloadButton>
         </div>
       </div>
-
-      {/* Favorite Button - Floating */}
-      <button
-        onClick={handleFavorite}
-        onKeyDown={(e) => handleKeyDown(e, handleFavorite)}
-        className={`absolute top-3 right-3 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md ${
-          isFavorited
-            ? 'bg-sims-pink text-white shadow-lg scale-110'
-            : 'bg-black/40 text-white hover:bg-sims-pink hover:scale-110'
-        }`}
-        aria-label={isFavorited ? `Remove ${mod.title} from favorites` : `Add ${mod.title} to favorites`}
-        aria-pressed={isFavorited}
-        title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-      >
-        <Heart
-          size={18}
-          className={`transition-all duration-300 ${isFavorited ? 'fill-current' : ''}`}
-          aria-hidden="true"
-        />
-      </button>
     </article>
   );
 }
