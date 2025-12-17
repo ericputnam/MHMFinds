@@ -9,8 +9,10 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes
-  if (pathname.startsWith('/admin')) {
+  // Protect /admin routes (except login and unauthorized pages)
+  if (pathname.startsWith('/admin') &&
+      !pathname.startsWith('/admin/login') &&
+      !pathname.startsWith('/admin/unauthorized')) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -25,8 +27,8 @@ export async function middleware(request: NextRequest) {
 
     // Check if user has admin role
     if (!token.isAdmin) {
-      const homeUrl = new URL('/', request.url);
-      return NextResponse.redirect(homeUrl);
+      const unauthorizedUrl = new URL('/admin/unauthorized', request.url);
+      return NextResponse.redirect(unauthorizedUrl);
     }
   }
 
@@ -36,8 +38,7 @@ export async function middleware(request: NextRequest) {
 // Configure which routes this middleware runs on
 export const config = {
   matcher: [
-    // Protect admin routes but exclude login page
-    '/admin/((?!login).*)',
-    // Add other protected routes here
+    // Protect all admin routes - we handle exceptions in the middleware itself
+    '/admin/:path*',
   ],
 };

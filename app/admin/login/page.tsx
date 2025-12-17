@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import React, { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Shield, AlertCircle, Loader2, Lock, User } from 'lucide-react';
 
@@ -9,11 +9,23 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/admin';
+  const { data: session, status } = useSession();
 
   const [email, setEmail] = useState('adminuser45@admin.local');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // If already logged in, check admin status and redirect
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      if (session.user.isAdmin) {
+        router.push(callbackUrl);
+      } else {
+        router.push('/admin/unauthorized');
+      }
+    }
+  }, [status, session, router, callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +40,9 @@ export default function AdminLoginPage() {
       });
 
       if (result?.error) {
-        setError('Invalid credentials. Please try again.');
+        setError('Invalid credentials or insufficient permissions. Admin access required.');
       } else if (result?.ok) {
-        router.push(callbackUrl);
+        // Session will be updated, useEffect will handle redirect
         router.refresh();
       }
     } catch (err) {
