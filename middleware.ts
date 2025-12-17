@@ -20,8 +20,8 @@ export async function middleware(request: NextRequest) {
 
     // Check if user is authenticated
     if (!token) {
+      // Always redirect to login page, which will then redirect to dashboard after successful login
       const loginUrl = new URL('/admin/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }
 

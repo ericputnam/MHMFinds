@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Shield, AlertCircle, Loader2, Lock, User } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/admin';
   const { data: session, status } = useSession();
 
   const [email, setEmail] = useState('adminuser45@admin.local');
@@ -17,15 +15,16 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
 
   // If already logged in, check admin status and redirect
+  // Always redirect to dashboard (/admin) after login
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       if (session.user.isAdmin) {
-        router.push(callbackUrl);
+        router.push('/admin');
       } else {
         router.push('/admin/unauthorized');
       }
     }
-  }, [status, session, router, callbackUrl]);
+  }, [status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
