@@ -32,37 +32,38 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/5 bg-mhm-dark/80 backdrop-blur-xl">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-20 flex items-center">
+        <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
 
-        {/* Logo Section */}
-        <a href="/" className="flex items-center gap-3 cursor-pointer group">
-          <div className="relative">
-            <div className="absolute inset-0 bg-sims-pink blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
-            <div className="relative bg-sims-pink p-2.5 rounded-xl transform group-hover:scale-105 transition-all duration-300 shadow-lg">
-              <Sparkles className="text-white h-5 w-5 fill-white" />
+          {/* Logo Section */}
+          <a href="/" className="flex items-center gap-3 cursor-pointer group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-sims-pink blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
+              <div className="relative bg-sims-pink p-2.5 rounded-xl transform group-hover:scale-105 transition-all duration-300 shadow-lg">
+                <Sparkles className="text-white h-5 w-5 fill-white" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-extrabold tracking-tight leading-none text-white">
+                MustHave<span className="text-sims-pink">Mods</span>
+              </span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
+                Community Finds
+              </span>
+            </div>
+          </a>
+
+          {/* Desktop Nav - Centered */}
+          <div className="hidden md:flex items-center bg-white/5 rounded-full px-6 py-2 backdrop-blur-sm border border-white/5 absolute left-1/2 -translate-x-1/2">
+            <div className="flex space-x-8 text-sm font-semibold text-slate-300">
+              <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
+              <a href="/creators" className="hover:text-sims-green transition-colors">Creators</a>
+              <a href="https://www.musthavemods.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
             </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-extrabold tracking-tight leading-none text-white">
-              MustHave<span className="text-sims-pink">Mods</span>
-            </span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
-              Community Finds
-            </span>
-          </div>
-        </a>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center bg-white/5 rounded-full px-6 py-2 backdrop-blur-sm border border-white/5">
-          <div className="flex space-x-8 text-sm font-semibold text-slate-300">
-            <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
-            <a href="/creators" className="hover:text-sims-green transition-colors">Creators</a>
-            <a href="https://www.musthavemods.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center space-x-3">
+          {/* Actions */}
+          <div className="flex items-center space-x-3">
           <UsageIndicator />
           <button className="p-2.5 text-slate-400 hover:text-sims-pink hover:bg-white/5 rounded-full transition-all">
             <Heart className="h-5 w-5" />
