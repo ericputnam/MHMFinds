@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '../components/Navbar';
@@ -21,12 +21,20 @@ function HomePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session, status } = useSession();
-  const creatorParam = searchParams.get('creator');
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedGameVersion, setSelectedGameVersion] = useState('Sims 4'); // Default to Sims 4 to match Hero default
-  const [sortBy, setSortBy] = useState('relevance');
+  // Read initial state from URL parameters
+  const creatorParam = searchParams.get('creator');
+  const initialPage = parseInt(searchParams.get('page') || '1', 10);
+  const initialSearch = searchParams.get('search') || '';
+  const initialCategory = searchParams.get('category') || 'All';
+  const initialGameVersion = searchParams.get('gameVersion') || 'Sims 4';
+  const initialSort = searchParams.get('sort') || 'relevance';
+
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedGameVersion, setSelectedGameVersion] = useState(initialGameVersion);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
@@ -38,53 +46,94 @@ function HomePageContent() {
   const [pagination, setPagination] = useState<any>(null);
   const [facets, setFacets] = useState<any>(null);
 
-  const fetchMods = async () => {
+  /**
+   * Build URL with current filter state
+   * Used for both browser URL updates and API calls
+   */
+  const buildUrlParams = useCallback((overrides: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+
+    const page = overrides.page !== undefined ? overrides.page : currentPage;
+    const search = overrides.search !== undefined ? overrides.search : searchQuery;
+    const category = overrides.category !== undefined ? overrides.category : selectedCategory;
+    const gameVersion = overrides.gameVersion !== undefined ? overrides.gameVersion : selectedGameVersion;
+    const sort = overrides.sort !== undefined ? overrides.sort : sortBy;
+    const creator = overrides.creator !== undefined ? overrides.creator : creatorParam;
+
+    // Only add non-default values to URL
+    if (page > 1) params.set('page', page.toString());
+    if (search) params.set('search', search);
+    if (category && category !== 'All') params.set('category', category);
+    if (gameVersion && gameVersion !== 'Sims 4') params.set('gameVersion', gameVersion);
+    if (sort && sort !== 'relevance') params.set('sort', sort);
+    if (creator) params.set('creator', creator);
+
+    return params;
+  }, [currentPage, searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam]);
+
+  /**
+   * Update browser URL without navigation
+   * Uses replace to avoid cluttering browser history
+   */
+  const updateBrowserUrl = useCallback((params: URLSearchParams) => {
+    const queryString = params.toString();
+    const newUrl = queryString ? `/?${queryString}` : '/';
+    router.replace(newUrl, { scroll: false });
+  }, [router]);
+
+  /**
+   * Fetch mods from API with current filter state
+   */
+  const fetchMods = useCallback(async (pageOverride?: number) => {
     try {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
+      const page = pageOverride !== undefined ? pageOverride : currentPage;
+      const apiParams = new URLSearchParams();
+
+      // Add page
+      apiParams.set('page', page.toString());
 
       // Add search query if exists
       if (searchQuery) {
-        params.append('search', searchQuery);
+        apiParams.set('search', searchQuery);
       }
 
       // Add category filter (if not 'All')
       if (selectedCategory && selectedCategory !== 'All') {
-        params.append('category', selectedCategory);
+        apiParams.set('category', selectedCategory);
       }
 
       // Add game version filter if exists
       if (selectedGameVersion) {
-        params.append('gameVersion', selectedGameVersion);
+        apiParams.set('gameVersion', selectedGameVersion);
       }
 
       // Add creator filter if exists
       if (creatorParam) {
-        params.append('creator', creatorParam);
+        apiParams.set('creator', creatorParam);
       }
 
       // Add sort parameter
       if (sortBy && sortBy !== 'relevance') {
-        // Map our sort options to API parameters
         switch (sortBy) {
           case 'downloads':
-            params.append('sortBy', 'downloadCount');
-            params.append('sortOrder', 'desc');
+            apiParams.set('sortBy', 'downloadCount');
+            apiParams.set('sortOrder', 'desc');
             break;
           case 'rating':
-            params.append('sortBy', 'rating');
-            params.append('sortOrder', 'desc');
+            apiParams.set('sortBy', 'rating');
+            apiParams.set('sortOrder', 'desc');
             break;
           case 'newest':
-            params.append('sortBy', 'createdAt');
-            params.append('sortOrder', 'desc');
+            apiParams.set('sortBy', 'createdAt');
+            apiParams.set('sortOrder', 'desc');
             break;
         }
       }
 
-      const response = await fetch(`/api/mods?${params.toString()}`);
+      const response = await fetch(`/api/mods?${apiParams.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -99,13 +148,18 @@ function HomePageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage]);
 
   // Fetch mods on mount and when filters change
   useEffect(() => {
     fetchMods();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, selectedGameVersion, sortBy, searchQuery, creatorParam]);
+  }, [fetchMods]);
+
+  // Update URL when filter state changes (except on initial load)
+  useEffect(() => {
+    const params = buildUrlParams();
+    updateBrowserUrl(params);
+  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, currentPage, buildUrlParams, updateBrowserUrl]);
 
   // Handle mod card click - show details immediately (no paywall)
   const handleModClick = (mod: Mod) => {
@@ -113,8 +167,9 @@ function HomePageContent() {
   };
 
   const handleSearch = async (query: string, category?: string, gameVersion?: string) => {
+    // Reset to page 1 when search changes
+    setCurrentPage(1);
     setSearchQuery(query);
-    // Always update category, even if undefined (to reset to "All")
     setSelectedCategory(category || 'All');
     if (gameVersion) {
       setSelectedGameVersion(gameVersion);
@@ -122,17 +177,29 @@ function HomePageContent() {
   };
 
   const handleCategoryChange = (category: string) => {
+    setCurrentPage(1); // Reset to page 1
     setSelectedCategory(category);
   };
 
   const handleSortChange = (newSortBy: string) => {
+    setCurrentPage(1); // Reset to page 1
     setSortBy(newSortBy);
   };
 
   const handleClearAllFilters = () => {
+    setCurrentPage(1);
     setSearchQuery('');
     setSelectedCategory('All');
     setSortBy('relevance');
+  };
+
+  /**
+   * Handle page change - updates both state and URL
+   */
+  const handlePageChange = async (newPage: number) => {
+    setCurrentPage(newPage);
+    // Scroll to top of grid
+    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   const handleFavorite = async (modId: string) => {
@@ -182,57 +249,6 @@ function HomePageContent() {
       );
       console.error('Error toggling favorite:', error);
     }
-  };
-
-
-  // Helper function to build URL with current filters
-  const buildFilteredUrl = (page?: number) => {
-    const params = new URLSearchParams();
-
-    // Add page if specified
-    if (page) {
-      params.append('page', page.toString());
-    }
-
-    // Add search query if exists
-    if (searchQuery) {
-      params.append('search', searchQuery);
-    }
-
-    // Add category filter (if not 'All')
-    if (selectedCategory && selectedCategory !== 'All') {
-      params.append('category', selectedCategory);
-    }
-
-    // Add game version filter if exists
-    if (selectedGameVersion) {
-      params.append('gameVersion', selectedGameVersion);
-    }
-
-    // Add creator filter if exists
-    if (creatorParam) {
-      params.append('creator', creatorParam);
-    }
-
-    // Add sort parameter
-    if (sortBy && sortBy !== 'relevance') {
-      switch (sortBy) {
-        case 'downloads':
-          params.append('sortBy', 'downloadCount');
-          params.append('sortOrder', 'desc');
-          break;
-        case 'rating':
-          params.append('sortBy', 'rating');
-          params.append('sortOrder', 'desc');
-          break;
-        case 'newest':
-          params.append('sortBy', 'createdAt');
-          params.append('sortOrder', 'desc');
-          break;
-      }
-    }
-
-    return `/api/mods?${params.toString()}`;
   };
 
   return (
@@ -299,39 +315,27 @@ function HomePageContent() {
         {pagination && pagination.totalPages > 1 && (
           <div className="container mx-auto px-4 pb-20">
             <div className="flex justify-center mt-12">
-              <nav className="flex items-center space-x-2">
+              <nav className="flex items-center space-x-2" aria-label="Pagination">
                 <button
-                  onClick={async () => {
-                    const newPage = pagination.page - 1;
-                    const response = await fetch(buildFilteredUrl(newPage));
-                    const data = await response.json();
-                    setMods(data.mods);
-                    setPagination(data.pagination);
-                    setFacets(data.facets);
-                  }}
-                  disabled={!pagination.hasPrevPage}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
                   className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-white/5 border border-white/5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Previous
                 </button>
 
                 {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                  const page = Math.max(1, Math.min(pagination.totalPages - 4, pagination.page - 2)) + i;
+                  const page = Math.max(1, Math.min(pagination.totalPages - 4, currentPage - 2)) + i;
+                  if (page < 1 || page > pagination.totalPages) return null;
                   return (
                     <button
                       key={page}
-                      onClick={async () => {
-                        const response = await fetch(buildFilteredUrl(page));
-                        const data = await response.json();
-                        setMods(data.mods);
-                        setPagination(data.pagination);
-                        setFacets(data.facets);
-                      }}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        page === pagination.page
-                          ? 'bg-sims-pink text-white'
-                          : 'text-slate-400 hover:text-white bg-white/5 border border-white/5'
-                      }`}
+                      onClick={() => handlePageChange(page)}
+                      aria-current={page === currentPage ? 'page' : undefined}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${page === currentPage
+                        ? 'bg-sims-pink text-white'
+                        : 'text-slate-400 hover:text-white bg-white/5 border border-white/5'
+                        }`}
                     >
                       {page}
                     </button>
@@ -339,15 +343,8 @@ function HomePageContent() {
                 })}
 
                 <button
-                  onClick={async () => {
-                    const newPage = pagination.page + 1;
-                    const response = await fetch(buildFilteredUrl(newPage));
-                    const data = await response.json();
-                    setMods(data.mods);
-                    setPagination(data.pagination);
-                    setFacets(data.facets);
-                  }}
-                  disabled={!pagination.hasNextPage}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= pagination.totalPages}
                   className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-white/5 border border-white/5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Next

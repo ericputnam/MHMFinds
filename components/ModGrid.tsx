@@ -72,8 +72,8 @@ export function ModGrid({ mods, loading, error, onFavorite, onModClick, favorite
 
   return (
     <section className="py-8 container mx-auto px-4 bg-mhm-dark relative z-10">
-      {/* Dynamic Grid */}
-      <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10`}>
+      {/* Dynamic Grid - mv-ads class enables Mediavine in-content ads */}
+      <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10 mv-ads`}>
         {mods.map((mod, index) => (
           <ModCard
             key={mod.id}
