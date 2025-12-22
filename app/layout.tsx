@@ -54,13 +54,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Use test script in development, production script on Vercel
+  const mediavineScript = process.env.NODE_ENV === 'production'
+    ? '//scripts.mediavine.com/tags/must-have-mods-new-owner.js'
+    : '//scripts.mediavine.com/tags/mediavine-scripty-boi.js';
+
   return (
     <html lang="en" className="scroll-smooth">
       <head>
         <Script
           id="mediavine-script"
           strategy="beforeInteractive"
-          src="//scripts.mediavine.com/tags/mediavine-scripty-boi.js"
+          src={mediavineScript}
           data-noptimize="1"
           data-cfasync="false"
         />
