@@ -32,6 +32,7 @@
     "update:images:prod": "NODE_ENV=production tsx scripts/update-missing-images.ts",
     "ratings:recalculate": "tsx scripts/recalculate-ratings.ts",
     "categories:migrate": "tsx scripts/migrate-categories.ts",
+    "images:migrate": "tsx scripts/migrate-image-urls.ts",
     "populate:creators": "tsx scripts/populateCreators.ts",
     "admin:create": "tsx scripts/create-admin.ts",
     "type-check": "tsc --noEmit",
