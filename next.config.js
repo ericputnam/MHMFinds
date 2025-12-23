@@ -57,7 +57,16 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      // WordPress sitemaps
+      // WordPress core sitemaps (wp-sitemap.xml)
+      {
+        source: '/wp-sitemap.xml',
+        destination: 'https://blog.musthavemods.com/wp-sitemap.xml',
+      },
+      {
+        source: '/wp-sitemap-:type.xml',
+        destination: 'https://blog.musthavemods.com/wp-sitemap-:type.xml',
+      },
+      // Rank Math / Yoast sitemaps
       {
         source: '/sitemap.xml',
         destination: 'https://blog.musthavemods.com/sitemap.xml',
