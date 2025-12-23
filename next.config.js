@@ -57,32 +57,12 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      // ----------------------------
-      // 1. WordPress system routes
-      // ----------------------------
+      // Catch-all rewrite to WordPress blog
+      // Next.js will automatically prioritize its own routes (pages, API, etc.)
+      // This only applies to routes that don't exist in the Next.js app
       {
-        source: '/wp-content/:path*',
-        destination: 'https://blog.musthavemods.com/wp-content/:path*',
-      },
-      {
-        source: '/wp-json/:path*',
-        destination: 'https://blog.musthavemods.com/wp-json/:path*',
-      },
-      {
-        source: '/sitemap.xml',
-        destination: 'https://blog.musthavemods.com/sitemap.xml',
-      },
-      {
-        source: '/feed',
-        destination: 'https://blog.musthavemods.com/feed',
-      },
-
-      // ----------------------------
-      // 2. CATCH-ALL: Blog content (excludes app routes)
-      // ----------------------------
-      {
-        source: '/((?!api|mods|creators|search|sign-in|admin|_next|static|favicon.ico|robots.txt).*)',
-        destination: 'https://blog.musthavemods.com/$1',
+        source: '/:path*',
+        destination: 'https://blog.musthavemods.com/:path*',
       },
     ];
   },
