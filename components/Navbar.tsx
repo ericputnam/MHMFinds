@@ -58,7 +58,7 @@ export const Navbar: React.FC = () => {
             <div className="flex space-x-8 text-sm font-semibold text-slate-300">
               <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
               <a href="/creators" className="hover:text-sims-green transition-colors">Creators</a>
-              <a href="https://blog-origin.musthavemods.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
+              <a href="https://blog.musthavemods.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
             </div>
           </div>
 
