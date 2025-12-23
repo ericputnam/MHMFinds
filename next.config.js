@@ -20,6 +20,7 @@ const nextConfig = {
       'images.unsplash.com',
       'via.placeholder.com',
       'musthavemods.com',
+      'blog.musthavemods.com',
       'api.dicebear.com'
     ],
   },
@@ -51,6 +52,37 @@ const nextConfig = {
             value: 'public, s-maxage=60, stale-while-revalidate=300',
           },
         ],
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      // ----------------------------
+      // 1. WordPress system routes
+      // ----------------------------
+      {
+        source: '/wp-content/:path*',
+        destination: 'https://blog.musthavemods.com/wp-content/:path*',
+      },
+      {
+        source: '/wp-json/:path*',
+        destination: 'https://blog.musthavemods.com/wp-json/:path*',
+      },
+      {
+        source: '/sitemap.xml',
+        destination: 'https://blog.musthavemods.com/sitemap.xml',
+      },
+      {
+        source: '/feed',
+        destination: 'https://blog.musthavemods.com/feed',
+      },
+
+      // ----------------------------
+      // 2. CATCH-ALL: Blog content (excludes app routes)
+      // ----------------------------
+      {
+        source: '/((?!api|mods|creators|search|sign-in|admin|_next|static|favicon.ico|robots.txt).*)',
+        destination: 'https://blog.musthavemods.com/$1',
       },
     ];
   },
