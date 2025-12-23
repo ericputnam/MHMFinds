@@ -57,6 +57,41 @@ const nextConfig = {
   },
   async rewrites() {
     return [
+      // WordPress sitemaps
+      {
+        source: '/sitemap.xml',
+        destination: 'https://blog.musthavemods.com/sitemap.xml',
+      },
+      {
+        source: '/sitemap_index.xml',
+        destination: 'https://blog.musthavemods.com/sitemap_index.xml',
+      },
+      {
+        source: '/:sitemap(.*-sitemap.*\\.xml)',
+        destination: 'https://blog.musthavemods.com/:sitemap',
+      },
+      // WordPress feeds
+      {
+        source: '/feed',
+        destination: 'https://blog.musthavemods.com/feed',
+      },
+      {
+        source: '/feed/:path*',
+        destination: 'https://blog.musthavemods.com/feed/:path*',
+      },
+      // WordPress assets
+      {
+        source: '/wp-content/:path*',
+        destination: 'https://blog.musthavemods.com/wp-content/:path*',
+      },
+      {
+        source: '/wp-includes/:path*',
+        destination: 'https://blog.musthavemods.com/wp-includes/:path*',
+      },
+      {
+        source: '/wp-json/:path*',
+        destination: 'https://blog.musthavemods.com/wp-json/:path*',
+      },
       // Catch-all rewrite to WordPress blog
       // Next.js will automatically prioritize its own routes (pages, API, etc.)
       // This only applies to routes that don't exist in the Next.js app
