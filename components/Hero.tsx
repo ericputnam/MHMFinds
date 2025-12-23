@@ -86,20 +86,20 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black mb-3 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black mb-3 tracking-tight leading-tight px-2">
             <span className="text-white">Find your next favorite mod</span>
           </h1>
 
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-6 leading-relaxed font-light">
+          <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto mb-6 leading-relaxed font-light px-4">
             Stop scrolling endlessly. Describe the vibe, or search for specific Mods or CC. We find the best mods from across the community.
           </p>
 
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto px-2 sm:px-4">
             <form onSubmit={handleSubmit} className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-sims-pink to-sims-blue rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur-xl"></div>
-              <div className="relative flex items-center bg-mhm-card/90 backdrop-blur-xl rounded-2xl p-2 shadow-2xl border border-white/10 group-focus-within:border-sims-pink/50 transition-all">
+              <div className="relative flex items-center bg-mhm-card/90 backdrop-blur-xl rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/10 group-focus-within:border-sims-pink/50 transition-all">
 
-                {/* Category Dropdown */}
+                {/* Category Dropdown - Hidden on mobile */}
                 <div className="hidden md:flex items-center border-r border-white/10 px-2">
                   <Filter className="w-4 h-4 text-slate-400 ml-2 mr-1" />
                   <select
@@ -123,11 +123,11 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search 'Maxis match hair', 'Modern kitchen'..."
-                  className="flex-1 bg-transparent text-white placeholder-slate-500 px-4 py-4 outline-none text-lg font-medium"
+                  placeholder="Search mods..."
+                  className="flex-1 bg-transparent text-white placeholder-slate-500 px-2 sm:px-3 md:px-4 py-3 sm:py-4 outline-none text-sm sm:text-base md:text-lg font-medium min-w-0"
                 />
 
-                <div className="flex items-center space-x-2 pr-2">
+                <div className="flex items-center space-x-1 sm:space-x-2 pr-1 sm:pr-2">
                   {/* Clear Button - only show when there's a search query */}
                   {query && (
                     <button
@@ -136,19 +136,19 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
                         setQuery('');
                         onSearch('');
                       }}
-                      className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
+                      className="text-slate-400 hover:text-white p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
                       title="Clear search"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   )}
 
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-sims-pink hover:bg-sims-pink/90 text-white p-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                    className="bg-sims-pink hover:bg-sims-pink/90 text-white p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                   >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5 stroke-[3px]" />}
+                    {isLoading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3px]" />}
                   </button>
                 </div>
               </div>
