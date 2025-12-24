@@ -79,10 +79,6 @@
       "destination": "https://blog.musthavemods.com/wp-sitemap-:type.xml"
     },
     {
-      "source": "/sitemap.xml",
-      "destination": "https://blog.musthavemods.com/sitemap.xml"
-    },
-    {
       "source": "/wp-content/:path*",
       "destination": "https://blog.musthavemods.com/wp-content/:path*"
     },
