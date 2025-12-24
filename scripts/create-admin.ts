@@ -1,4 +1,9 @@
-import 'dotenv/config';
+// Load environment variables FIRST, before any imports that need them
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config({ path: '.env.production', override: false }); // Fallback to production if local doesn't exist
+
+// Now import modules that depend on environment variables
 import { prisma } from '../lib/prisma';
 import bcrypt from 'bcryptjs';
 

@@ -1,15 +1,24 @@
 import OpenAI from 'openai';
 import * as cheerio from 'cheerio';
 
-// Use Ollama for AI-powered HTML parsing
-const useOllama = process.env.USE_OLLAMA === 'true';
-const ollamaBaseURL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1';
-const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
+// Lazy initialization of OpenAI client to allow env vars to load first
+let _openaiClient: OpenAI | null = null;
 
-const openai = new OpenAI({
-  apiKey: useOllama ? 'ollama' : process.env.OPENAI_API_KEY,
-  baseURL: useOllama ? ollamaBaseURL : undefined,
-});
+function getOpenAIClient(): OpenAI {
+  if (!_openaiClient) {
+    const useOllama = process.env.USE_OLLAMA === 'true';
+    const ollamaBaseURL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1';
+
+    _openaiClient = new OpenAI({
+      apiKey: useOllama ? 'ollama' : process.env.OPENAI_API_KEY,
+      baseURL: useOllama ? ollamaBaseURL : undefined,
+    });
+  }
+  return _openaiClient;
+}
+
+// For backwards compatibility, keep the model name accessible
+const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
 export interface ParsedModBlock {
   title: string;
@@ -171,7 +180,8 @@ RESPOND WITH JSON ARRAY ONLY (no markdown, no explanation):
 If NO valid mods with download links exist, return: []`;
 
     try {
-      const response = await openai.chat.completions.create({
+      const useOllama = process.env.USE_OLLAMA === 'true';
+      const response = await getOpenAIClient().chat.completions.create({
         model: useOllama ? ollamaModel : 'gpt-4o-mini',
         messages: [
           {
@@ -303,7 +313,8 @@ RESPOND WITH JSON ONLY (no markdown, no explanation):
 }`;
 
     try {
-      const response = await openai.chat.completions.create({
+      const useOllama = process.env.USE_OLLAMA === 'true';
+      const response = await getOpenAIClient().chat.completions.create({
         model: useOllama ? ollamaModel : 'gpt-4o-mini',
         messages: [
           {

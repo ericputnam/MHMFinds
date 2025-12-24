@@ -1,15 +1,25 @@
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
 
-// Use Ollama (local) if available, otherwise fall back to OpenAI
-const useOllama = process.env.USE_OLLAMA === 'true';
-const ollamaBaseURL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1';
-const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
+// Lazy initialization of OpenAI client to allow env vars to load first
+let _openaiClient: OpenAI | null = null;
 
-const openai = new OpenAI({
-  apiKey: useOllama ? 'ollama' : process.env.OPENAI_API_KEY, // Ollama doesn't need real key
-  baseURL: useOllama ? ollamaBaseURL : undefined,
-});
+function getOpenAIClient(): OpenAI {
+  if (!_openaiClient) {
+    const useOllama = process.env.USE_OLLAMA === 'true';
+    const ollamaBaseURL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1';
+    const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
+
+    _openaiClient = new OpenAI({
+      apiKey: useOllama ? 'ollama' : process.env.OPENAI_API_KEY, // Ollama doesn't need real key
+      baseURL: useOllama ? ollamaBaseURL : undefined,
+    });
+  }
+  return _openaiClient;
+}
+
+// For backwards compatibility, keep the model name accessible
+const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
 interface CategoryHierarchy {
   root: string;        // Parent: "CC", "Mods", "Lots"
@@ -114,7 +124,8 @@ ${modDescription ? `Description: "${modDescription}"` : ''}
 - Avoid generic buckets unless necessary`;
 
     try {
-      const response = await openai.chat.completions.create({
+      const useOllama = process.env.USE_OLLAMA === 'true';
+      const response = await getOpenAIClient().chat.completions.create({
         model: useOllama ? ollamaModel : 'gpt-4o',
         messages: [
           {
