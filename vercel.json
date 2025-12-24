@@ -60,5 +60,11 @@
       "destination": "/",
       "permanent": true
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "https://blog.musthavemods.com/:path*"
+    }
   ]
 }
