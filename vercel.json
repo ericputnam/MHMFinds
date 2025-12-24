@@ -63,6 +63,14 @@
   ],
   "rewrites": [
     {
+      "source": "/blog",
+      "destination": "https://blog.musthavemods.com/"
+    },
+    {
+      "source": "/blog/:path*",
+      "destination": "https://blog.musthavemods.com/:path*"
+    },
+    {
       "source": "/:path*",
       "destination": "https://blog.musthavemods.com/:path*"
     }
