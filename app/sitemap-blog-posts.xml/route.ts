@@ -4,7 +4,7 @@ async function fetchWordPressSitemaps(filter: (url: string) => boolean): Promise
   try {
     // Fetch WordPress sitemap index
     const indexResponse = await fetch('https://blog.musthavemods.com/sitemap_index.xml', {
-      next: { revalidate: 3600 } // Cache for 1 hour
+      next: { revalidate: 300 } // Cache for 5 minutes
     });
 
     if (!indexResponse.ok) {
@@ -31,7 +31,7 @@ async function fetchWordPressSitemaps(filter: (url: string) => boolean): Promise
     for (const sitemapUrl of sitemapUrls) {
       try {
         const response = await fetch(sitemapUrl, {
-          next: { revalidate: 3600 }
+          next: { revalidate: 300 }
         });
 
         if (!response.ok) {
@@ -77,7 +77,7 @@ ${urls}
   return new NextResponse(sitemap, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
     },
   });
 }

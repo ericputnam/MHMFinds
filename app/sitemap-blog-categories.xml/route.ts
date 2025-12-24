@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 async function fetchWordPressSitemaps(filter: (url: string) => boolean): Promise<string> {
   try {
     const indexResponse = await fetch('https://blog.musthavemods.com/sitemap_index.xml', {
-      next: { revalidate: 3600 }
+      next: { revalidate: 300 }
     });
 
     if (!indexResponse.ok) {
@@ -26,7 +26,7 @@ async function fetchWordPressSitemaps(filter: (url: string) => boolean): Promise
     for (const sitemapUrl of sitemapUrls) {
       try {
         const response = await fetch(sitemapUrl, {
-          next: { revalidate: 3600 }
+          next: { revalidate: 300 }
         });
 
         if (!response.ok) continue;
@@ -65,7 +65,7 @@ ${urls}
   return new NextResponse(sitemap, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
     },
   });
 }
