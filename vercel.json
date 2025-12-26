@@ -93,6 +93,34 @@
     {
       "source": "/feed/:path*",
       "destination": "https://blog.musthavemods.com/feed/:path*"
+    },
+    {
+      "source": "/category/:path*",
+      "destination": "https://blog.musthavemods.com/category/:path*"
+    },
+    {
+      "source": "/tag/:path*",
+      "destination": "https://blog.musthavemods.com/tag/:path*"
+    },
+    {
+      "source": "/author/:path*",
+      "destination": "https://blog.musthavemods.com/author/:path*"
+    },
+    {
+      "source": "/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug",
+      "destination": "https://blog.musthavemods.com/:year/:month/:day/:slug"
+    },
+    {
+      "source": "/:year(\\d{4})/:month(\\d{2})/:slug",
+      "destination": "https://blog.musthavemods.com/:year/:month/:slug"
+    },
+    {
+      "source": "/:year(\\d{4})/:month(\\d{2})",
+      "destination": "https://blog.musthavemods.com/:year/:month"
+    },
+    {
+      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|_next|favicon.ico|sitemap).*)",
+      "destination": "https://blog.musthavemods.com/:slug"
     }
   ]
 }

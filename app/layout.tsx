@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import Script from 'next/script';
+import { ConditionalScripts } from './components/ConditionalScripts';
 
 export const metadata: Metadata = {
   title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
@@ -54,11 +55,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Use test script in development, production script on Vercel
-  const mediavineScript = process.env.NODE_ENV === 'production'
-    ? '//scripts.mediavine.com/tags/must-have-mods-new-owner.js'
-    : '//scripts.mediavine.com/tags/mediavine-scripty-boi.js';
-
   return (
     <html lang="en" className="scroll-smooth">
       <head>
@@ -76,13 +72,6 @@ export default function RootLayout({
           `}
         </Script>
 
-        <Script
-          id="mediavine-script"
-          strategy="beforeInteractive"
-          src={mediavineScript}
-          data-noptimize="1"
-          data-cfasync="false"
-        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -96,6 +85,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="__className_e8ce0c antialiased">
+        <ConditionalScripts />
         <Providers>{children}</Providers>
       </body>
     </html>
