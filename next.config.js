@@ -6,6 +6,9 @@ const nextConfig = {
   // Optimize for Vercel serverless deployment
   output: 'standalone',
 
+  // Use trailing slashes to match WordPress permalink structure
+  trailingSlash: true,
+
   experimental: {
     // appDir: true, // Removed - this is now default in Next.js 14
   },
