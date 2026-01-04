@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { AISearchService } from '@/lib/services/aiSearch';
 import { CacheService } from '@/lib/cache';
 
 // Force dynamic rendering for this route
@@ -66,6 +65,7 @@ export async function PATCH(
     // Update AI search embeddings if title, description, or tags changed
     if (body.title || body.description !== undefined || body.tags !== undefined) {
       try {
+        const { AISearchService } = await import('@/lib/services/aiSearch');
         const aiSearchService = new AISearchService();
         await aiSearchService.updateSearchIndex(params.id);
       } catch (searchError) {

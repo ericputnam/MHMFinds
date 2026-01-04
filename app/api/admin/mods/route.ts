@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { AISearchService } from '@/lib/services/aiSearch';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -100,6 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Generate AI search embeddings for the new mod
     try {
+      const { AISearchService } = await import('@/lib/services/aiSearch');
       const aiSearchService = new AISearchService();
       await aiSearchService.updateSearchIndex(mod.id);
     } catch (searchError) {
