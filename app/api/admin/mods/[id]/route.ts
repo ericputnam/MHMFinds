@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { AISearchService } from '@/lib/services/aiSearch';
 import { CacheService } from '@/lib/cache';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // GET - Get single mod
 export async function GET(
   request: NextRequest,
