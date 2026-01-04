@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { AISearchService } from '@/lib/services/aiSearch';
+import { CacheService } from '@/lib/cache';
 
 // GET - Get single mod
 export async function GET(
@@ -42,17 +44,35 @@ export async function PATCH(
         ...(body.images !== undefined && { images: body.images }),
         ...(body.downloadUrl !== undefined && { downloadUrl: body.downloadUrl }),
         ...(body.sourceUrl !== undefined && { sourceUrl: body.sourceUrl }),
+        ...(body.source !== undefined && { source: body.source }),
         ...(body.tags !== undefined && { tags: body.tags }),
         ...(body.isFree !== undefined && { isFree: body.isFree }),
         ...(body.price !== undefined && { price: body.price }),
         ...(body.isFeatured !== undefined && { isFeatured: body.isFeatured }),
         ...(body.isVerified !== undefined && { isVerified: body.isVerified }),
         ...(body.isNSFW !== undefined && { isNSFW: body.isNSFW }),
+        ...(body.gameVersion !== undefined && { gameVersion: body.gameVersion }),
+        ...(body.version !== undefined && { version: body.version }),
+        ...(body.currency !== undefined && { currency: body.currency }),
         ...(body.downloadCount !== undefined && { downloadCount: body.downloadCount }),
         ...(body.viewCount !== undefined && { viewCount: body.viewCount }),
         ...(body.rating !== undefined && { rating: body.rating }),
       },
     });
+
+    // Update AI search embeddings if title, description, or tags changed
+    if (body.title || body.description !== undefined || body.tags !== undefined) {
+      try {
+        const aiSearchService = new AISearchService();
+        await aiSearchService.updateSearchIndex(params.id);
+      } catch (searchError) {
+        console.error('Failed to update search index:', searchError);
+        // Don't fail the whole request if search indexing fails
+      }
+    }
+
+    // Invalidate cache when mod is updated
+    await CacheService.invalidateMod(params.id);
 
     return NextResponse.json(mod);
   } catch (error) {

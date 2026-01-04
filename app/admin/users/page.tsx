@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Crown, Shield, Mail, Calendar, X, Save } from 'lucide-react';
+import { Search, Edit, Trash2, Crown, Shield, Mail, Calendar, X, Save, Download, Users, TrendingUp, UserPlus } from 'lucide-react';
 
 interface User {
   id: string;
@@ -15,16 +15,30 @@ interface User {
   createdAt: string;
 }
 
+interface UserStats {
+  total: number;
+  creators: number;
+  premium: number;
+  admins: number;
+  newThisMonth: number;
+  newToday: number;
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
+    fetchStats();
   }, [currentPage, searchQuery]);
 
   const fetchUsers = async () => {
@@ -44,6 +58,43 @@ export default function UsersPage() {
       console.error('Failed to fetch users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/admin/users/stats');
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      const params = new URLSearchParams();
+      if (startDate) params.set('startDate', startDate);
+      if (endDate) params.set('endDate', endDate);
+
+      const response = await fetch(`/api/admin/users/export?${params}`);
+      const blob = await response.blob();
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export users');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -82,6 +133,97 @@ export default function UsersPage() {
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Users Management</h1>
         <p className="text-slate-400">Manage user accounts and permissions</p>
+      </div>
+
+      {/* Metrics Dashboard */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Users className="h-8 w-8 text-sims-pink" />
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.total.toLocaleString()}</p>
+            <p className="text-sm text-slate-400 mt-1">Total Users</p>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Edit className="h-8 w-8 text-sims-blue" />
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.creators.toLocaleString()}</p>
+            <p className="text-sm text-slate-400 mt-1">Creators</p>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Crown className="h-8 w-8 text-yellow-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.premium.toLocaleString()}</p>
+            <p className="text-sm text-slate-400 mt-1">Premium</p>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Shield className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.admins.toLocaleString()}</p>
+            <p className="text-sm text-slate-400 mt-1">Admins</p>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <TrendingUp className="h-8 w-8 text-green-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.newThisMonth.toLocaleString()}</p>
+            <p className="text-sm text-slate-400 mt-1">New This Month</p>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <UserPlus className="h-8 w-8 text-purple-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.newToday.toLocaleString()}</p>
+            <p className="text-sm text-slate-400 mt-1">New Today</p>
+          </div>
+        </div>
+      )}
+
+      {/* Export Controls */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                End Date
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="flex items-center gap-2 px-6 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            <Download className="h-5 w-5" />
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </button>
+        </div>
       </div>
 
       {/* Search */}

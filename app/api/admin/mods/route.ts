@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { AISearchService } from '@/lib/services/aiSearch';
 
 // GET - List mods with pagination and filters
 export async function GET(request: NextRequest) {
@@ -86,8 +87,22 @@ export async function POST(request: NextRequest) {
         price: body.price,
         isFeatured: body.isFeatured ?? false,
         isVerified: body.isVerified ?? false,
+        gameVersion: body.gameVersion || 'Sims 4',
+        version: body.version,
+        isNSFW: body.isNSFW ?? false,
+        currency: body.currency || 'USD',
+        publishedAt: new Date(), // Set publication date
       },
     });
+
+    // Generate AI search embeddings for the new mod
+    try {
+      const aiSearchService = new AISearchService();
+      await aiSearchService.updateSearchIndex(mod.id);
+    } catch (searchError) {
+      console.error('Failed to update search index:', searchError);
+      // Don't fail the whole request if search indexing fails
+    }
 
     return NextResponse.json(mod, { status: 201 });
   } catch (error) {

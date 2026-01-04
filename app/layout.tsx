@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from './providers';
 import Script from 'next/script';
 import { ConditionalScripts } from './components/ConditionalScripts';
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
@@ -87,6 +88,7 @@ export default function RootLayout({
       <body className="__className_e8ce0c antialiased">
         <ConditionalScripts />
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );

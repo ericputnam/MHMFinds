@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
             <div className="flex space-x-8 text-sm font-medium text-slate-400">
               <a href="/about" className="hover:text-sims-blue transition-colors">About</a>
               <a href="/terms" className="hover:text-sims-blue transition-colors">Terms</a>
-              <a href="/privacy" className="hover:text-sims-blue transition-colors">Privacy</a>
+              <a href="/privacy-policy" className="hover:text-sims-blue transition-colors">Privacy</a>
               <a href="/submit-mod" className="hover:text-sims-blue transition-colors">Submit Mod</a>
             </div>
         </div>

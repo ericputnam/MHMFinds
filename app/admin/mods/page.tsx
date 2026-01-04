@@ -15,8 +15,8 @@ import {
   Star,
   ExternalLink,
   Image as ImageIcon,
-  Save,
   X,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -42,7 +42,6 @@ export default function ModsManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filterCategory, setFilterCategory] = useState('');
-  const [editingMod, setEditingMod] = useState<Mod | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [modToDelete, setModToDelete] = useState<string | null>(null);
 
@@ -133,20 +132,6 @@ export default function ModsManagementPage() {
     }
   };
 
-  const handleUpdate = async (mod: Mod) => {
-    try {
-      await fetch(`/api/admin/mods/${mod.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mod),
-      });
-      setEditingMod(null);
-      fetchMods();
-    } catch (error) {
-      console.error('Update failed:', error);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -166,7 +151,7 @@ export default function ModsManagementPage() {
 
       {/* Filters and Search */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -196,8 +181,23 @@ export default function ModsManagementPage() {
             </select>
           </div>
 
+          {/* Clear Filters */}
+          {(searchQuery || filterCategory || currentPage > 1) && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setFilterCategory('');
+                setCurrentPage(1);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Clear Filters
+            </button>
+          )}
+
           {/* Bulk Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 md:col-start-4">
             {selectedMods.size > 0 && (
               <>
                 <button
@@ -323,13 +323,13 @@ export default function ModsManagementPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setEditingMod(mod)}
+                        <Link
+                          href={`/admin/mods/${mod.id}/edit`}
                           className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <Edit className="h-4 w-4 text-slate-400" />
-                        </button>
+                        </Link>
                         {mod.downloadUrl && (
                           <a
                             href={mod.downloadUrl}
@@ -384,15 +384,6 @@ export default function ModsManagementPage() {
         )}
       </div>
 
-      {/* Edit Modal */}
-      {editingMod && (
-        <EditModModal
-          mod={editingMod}
-          onSave={handleUpdate}
-          onClose={() => setEditingMod(null)}
-        />
-      )}
-
       {/* Delete Confirmation */}
       {showDeleteConfirm && modToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -421,136 +412,6 @@ export default function ModsManagementPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// Edit Modal Component
-function EditModModal({
-  mod,
-  onSave,
-  onClose,
-}: {
-  mod: Mod;
-  onSave: (mod: Mod) => void;
-  onClose: () => void;
-}) {
-  const [editedMod, setEditedMod] = useState<Mod>(mod);
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-2xl w-full my-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-white">Edit Mod</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5 text-slate-400" />
-          </button>
-        </div>
-
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
-            <input
-              type="text"
-              value={editedMod.title}
-              onChange={(e) => setEditedMod({ ...editedMod, title: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink"
-            />
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Category</label>
-            <select
-              value={editedMod.category}
-              onChange={(e) => setEditedMod({ ...editedMod, category: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink"
-            >
-              <option value="Gameplay">Gameplay</option>
-              <option value="Build/Buy">Build/Buy</option>
-              <option value="CAS">CAS</option>
-              <option value="UI/UX">UI/UX</option>
-              <option value="Script Mod">Script Mod</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          {/* Author */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Author</label>
-            <input
-              type="text"
-              value={editedMod.author || ''}
-              onChange={(e) => setEditedMod({ ...editedMod, author: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink"
-            />
-          </div>
-
-          {/* Thumbnail URL */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Thumbnail URL</label>
-            <input
-              type="url"
-              value={editedMod.thumbnail || ''}
-              onChange={(e) => setEditedMod({ ...editedMod, thumbnail: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink"
-            />
-          </div>
-
-          {/* Download URL */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Download URL</label>
-            <input
-              type="url"
-              value={editedMod.downloadUrl || ''}
-              onChange={(e) => setEditedMod({ ...editedMod, downloadUrl: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink"
-            />
-          </div>
-
-          {/* Toggles */}
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={editedMod.isFeatured}
-                onChange={(e) => setEditedMod({ ...editedMod, isFeatured: e.target.checked })}
-                className="w-4 h-4 text-sims-pink bg-slate-800 border-slate-700 rounded focus:ring-sims-pink"
-              />
-              <span className="text-sm text-slate-300">Featured</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={editedMod.isVerified}
-                onChange={(e) => setEditedMod({ ...editedMod, isVerified: e.target.checked })}
-                className="w-4 h-4 text-sims-pink bg-slate-800 border-slate-700 rounded focus:ring-sims-pink"
-              />
-              <span className="text-sm text-slate-300">Verified</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="flex gap-3 mt-6 pt-6 border-t border-slate-800">
-          <button
-            onClick={() => onSave(editedMod)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
-          >
-            <Save className="h-5 w-5" />
-            Save Changes
-          </button>
-          <button
-            onClick={onClose}
-            className="px-6 py-3 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
