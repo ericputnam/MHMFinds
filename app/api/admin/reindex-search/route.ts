@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { AISearchService } from '@/lib/services/aiSearch';
+
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
 
 // POST - Re-index all mods or specific mod
 export async function POST(request: NextRequest) {
@@ -8,6 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const modId = body.modId;
 
+    const { AISearchService } = await import('@/lib/services/aiSearch');
     const aiSearchService = new AISearchService();
 
     if (modId) {
