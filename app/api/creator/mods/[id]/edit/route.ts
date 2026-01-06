@@ -39,6 +39,13 @@ export async function POST(
     }
 
     // Verify ownership (unless admin)
+    if (!auth.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - User not found' },
+        { status: 401 }
+      );
+    }
+
     if (!auth.isAdmin && mod.creator?.userId !== auth.user.id) {
       return NextResponse.json(
         { error: 'Forbidden - You can only edit your own mods' },

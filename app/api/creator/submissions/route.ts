@@ -13,6 +13,13 @@ export async function POST(request: NextRequest) {
   if (!auth.authorized) return auth.response;
 
   try {
+    if (!auth.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - User not found' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     // Create submission linked to authenticated user
@@ -89,6 +96,13 @@ export async function GET(request: NextRequest) {
   if (!auth.authorized) return auth.response;
 
   try {
+    if (!auth.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - User not found' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
