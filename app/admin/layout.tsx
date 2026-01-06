@@ -17,7 +17,8 @@ import {
   Mail
 } from 'lucide-react';
 
-const navItems = [
+// Admin navigation - full access to all features
+const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/mods', label: 'Mods', icon: Package },
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },
@@ -27,6 +28,13 @@ const navItems = [
   { href: '/admin/users', label: 'Users', icon: UserCircle },
 ];
 
+// Creator navigation - limited to their own content
+const creatorNavItems = [
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/mods/submit', label: 'Submit Mod', icon: Upload },
+  { href: '/admin/submissions', label: 'My Submissions', icon: Package },
+];
+
 export default function AdminLayout({
   children,
 }: {
@@ -34,6 +42,10 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+
+  // Determine user role
+  const isAdmin = session?.user?.isAdmin || false;
+  const navItems = isAdmin ? adminNavItems : creatorNavItems;
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
@@ -59,7 +71,9 @@ export default function AdminLayout({
                 <UserCircle className="h-5 w-5 text-slate-400" />
                 <div className="text-sm">
                   <p className="font-semibold text-white">{session.user.username || session.user.email}</p>
-                  <p className="text-xs text-slate-500">Administrator</p>
+                  <p className="text-xs text-slate-500">
+                    {isAdmin ? 'Administrator' : 'Creator'}
+                  </p>
                 </div>
               </div>
             )}

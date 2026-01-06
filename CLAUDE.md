@@ -41,6 +41,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🚫 CRITICAL GIT RULE: Never Auto-Commit
+
+**NEVER create git commits unless explicitly requested by the user.**
+
+### Prohibited Actions:
+- ❌ Automatically committing changes after completing a task
+- ❌ Creating commits "to save progress" without being asked
+- ❌ Committing changes as part of a larger workflow unless specifically instructed
+- ❌ Suggesting or offering to commit changes (just wait for user request)
+
+### When You CAN Commit:
+✅ User explicitly says: "commit my changes", "create a commit", "make a git commit", etc.
+✅ User asks you to "commit and push"
+✅ User requests a commit as part of a specific workflow they describe
+
+### Rationale:
+Users want full control over what gets committed and when. Even if you complete a feature successfully, the user may:
+- Want to review changes first
+- Need to make additional modifications
+- Prefer to commit manually with their own message
+- Be working on a larger change set that includes your work
+
+**IMPORTANT: Only commit when the user explicitly asks you to commit. No exceptions.**
+
+---
+
 ## IMPORTANT: newapp_musthavemods Folder
 
 **The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**

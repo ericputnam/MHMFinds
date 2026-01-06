@@ -25,10 +25,29 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Check if user has admin role
-    if (!token.isAdmin) {
+    // Allow both admin and creator access
+    if (!token.isAdmin && !token.isCreator) {
       const unauthorizedUrl = new URL('/admin/unauthorized', request.url);
       return NextResponse.redirect(unauthorizedUrl);
+    }
+
+    // Creators (non-admins) can only access specific routes
+    if (token.isCreator && !token.isAdmin) {
+      const creatorAllowedRoutes = [
+        '/admin',                    // Dashboard
+        '/admin/submissions',         // Their submissions
+        '/admin/mods/submit',        // Submit new mod
+        '/admin/mods/edit',          // Edit their mods
+      ];
+
+      const isAllowed = creatorAllowedRoutes.some(route =>
+        pathname === route || pathname.startsWith(route + '/')
+      );
+
+      if (!isAllowed) {
+        const unauthorizedUrl = new URL('/admin/unauthorized', request.url);
+        return NextResponse.redirect(unauthorizedUrl);
+      }
     }
   }
 

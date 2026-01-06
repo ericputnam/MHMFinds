@@ -9,8 +9,6 @@ datasource db {
   provider  = "postgresql"
   // Support both local and production databases
   url       = env("DATABASE_URL")
-  // Direct connection for migrations (required by Prisma.io)
-  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // Subscription enums
@@ -54,6 +52,7 @@ model User {
   auditLogs    AdminAuditLog[]
   subscription  Subscription?
   downloadClicks DownloadClick[]
+  submissions   ModSubmission[]
 
   @@index([email], name: "email_lookup")
   @@index([isCreator, isPremium], name: "user_tiers")
@@ -143,6 +142,7 @@ model Mod {
   modFiles   ModFile[]
   searchIndex SearchIndex?
   downloadClicks DownloadClick[]
+  submissions ModSubmission[]
 
   // Performance indexes for high-traffic queries
   @@index([isVerified, isNSFW, createdAt(sort: Desc)], name: "verified_safe_newest")
@@ -356,6 +356,8 @@ model SearchIndex {
 
 model ModSubmission {
   id             String   @id @default(cuid())
+
+  // Original fields (for anonymous submissions)
   modUrl         String
   modName        String
   description    String   @db.Text
@@ -363,15 +365,44 @@ model ModSubmission {
   submitterName  String
   submitterEmail String
   submitterIp    String?
-  status         String   @default("pending") // pending, approved, rejected
+
+  // Creator submission fields (all optional for backward compatibility)
+  userId         String?
+  shortDescription String?
+  version        String?
+  gameVersion    String?
+  tags           String[]
+  thumbnail      String?
+  images         String[]
+  downloadUrl    String?
+  sourceUrl      String?
+  source         String?   @default("Creator Upload")
+  author         String?
+  isFree         Boolean   @default(true)
+  price          Decimal?  @db.Decimal(10,2)
+  currency       String?   @default("USD")
+  isNSFW         Boolean   @default(false)
+
+  // Track approved mod for edit workflow
+  approvedModId  String?
+  isEdit         Boolean   @default(false)
+
+  // Status tracking
+  status         String    @default("pending") // pending, approved, rejected
   reviewedAt     DateTime?
   reviewedBy     String?
   reviewNotes    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvedMod    Mod?      @relation(fields: [approvedModId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt(sort: Desc)], name: "pending_submissions")
   @@index([submitterEmail], name: "submission_tracking")
+  @@index([userId, status], name: "creator_submissions")
+  @@index([approvedModId], name: "mod_edits")
   @@map("mod_submissions")
 }
 

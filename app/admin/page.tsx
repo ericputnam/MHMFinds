@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Package, Users, Upload, TrendingUp, Eye, Download, Star, Clock, Mail } from 'lucide-react';
+import CreatorDashboard from '@/components/admin/CreatorDashboard';
 
 interface Stats {
   totalMods: number;
@@ -20,7 +22,30 @@ interface Stats {
   }>;
 }
 
-export default function AdminDashboard() {
+export default function DashboardPage() {
+  const { data: session, status } = useSession();
+
+  // Show creator dashboard for creators, admin dashboard for admins
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-slate-400">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  const isAdmin = session?.user?.isAdmin || false;
+
+  // Route to appropriate dashboard based on role
+  if (!isAdmin) {
+    return <CreatorDashboard />;
+  }
+
+  // Admin dashboard below
+  return <AdminDashboard />;
+}
+
+function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 

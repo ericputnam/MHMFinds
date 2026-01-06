@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   CheckCircle,
   XCircle,
@@ -11,6 +12,7 @@ import {
   Package,
   FileText,
   Loader2,
+  Edit,
 } from 'lucide-react';
 
 interface ModSubmission {
@@ -23,22 +25,36 @@ interface ModSubmission {
   submitterEmail: string;
   status: string;
   createdAt: string;
+  isEdit?: boolean;
+  thumbnail?: string | null;
+  approvedMod?: {
+    id: string;
+    title: string;
+    downloadCount: number;
+  };
 }
 
 export default function SubmissionsPage() {
+  const { data: session } = useSession();
   const [submissions, setSubmissions] = useState<ModSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [processing, setProcessing] = useState<string | null>(null);
 
+  const isAdmin = session?.user?.isAdmin || false;
+
   useEffect(() => {
     fetchSubmissions();
-  }, [filter]);
+  }, [filter, isAdmin]);
 
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/submissions?status=${filter}`);
+      // Use different endpoints based on role
+      const endpoint = isAdmin
+        ? `/api/admin/submissions?status=${filter}`
+        : `/api/creator/submissions?status=${filter}`;
+      const response = await fetch(endpoint);
       const data = await response.json();
       setSubmissions(data.submissions || []);
     } catch (error) {
@@ -96,8 +112,14 @@ export default function SubmissionsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Mod Submissions</h1>
-        <p className="text-slate-400">Review and approve user-submitted mods</p>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          {isAdmin ? 'Mod Submissions' : 'My Submissions'}
+        </h1>
+        <p className="text-slate-400">
+          {isAdmin
+            ? 'Review and approve user-submitted mods'
+            : 'Track the status of your mod submissions'}
+        </p>
       </div>
 
       {/* Filter Tabs */}
@@ -140,7 +162,15 @@ export default function SubmissionsPage() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-xl font-bold text-white">{submission.modName}</h3>
+                      <div className="flex items-center gap-2 flex-1">
+                        <h3 className="text-xl font-bold text-white">{submission.modName}</h3>
+                        {submission.isEdit && (
+                          <span className="px-3 py-1 bg-purple-500/10 text-purple-500 rounded-full text-xs font-medium flex items-center gap-1">
+                            <Edit className="h-3 w-3" />
+                            EDIT REQUEST
+                          </span>
+                        )}
+                      </div>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           submission.status === 'pending'
@@ -197,8 +227,8 @@ export default function SubmissionsPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
-                {submission.status === 'pending' && (
+                {/* Actions - Only shown for admins on pending submissions */}
+                {isAdmin && submission.status === 'pending' && (
                   <div className="flex lg:flex-col gap-3 lg:w-48">
                     <button
                       onClick={() => handleApprove(submission)}
