@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { Download } from 'lucide-react';
+import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 
 interface Props {
   modId: string;
@@ -19,6 +20,7 @@ export function ProtectedDownloadButton({
   className
 }: Props) {
   const { data: session, status } = useSession();
+  const { trackDownload } = useDownloadTracking();
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,7 +31,10 @@ export function ProtectedDownloadButton({
       window.open(targetUrl, '_blank');
     }
 
-    // Track for analytics only (non-blocking)
+    // Track download in analytics for ALL users (authenticated + anonymous)
+    trackDownload(modId);
+
+    // Track for subscription rate limiting (authenticated users only)
     if (status === 'authenticated') {
       fetch('/api/subscription/track-click', {
         method: 'POST',
