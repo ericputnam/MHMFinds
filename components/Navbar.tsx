@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Heart, Menu, Sparkles, LogOut, User, Settings } from 'lucide-react';
+import { Heart, Menu, Sparkles, LogOut, User, Settings, LayoutDashboard } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { UsageIndicator } from './subscription/UsageIndicator';
 
@@ -54,18 +54,28 @@ export const Navbar: React.FC = () => {
           </a>
 
           {/* Desktop Nav - Centered */}
-          <div className="hidden md:flex items-center bg-white/5 rounded-full px-6 py-2 backdrop-blur-sm border border-white/5 absolute left-1/2 -translate-x-1/2">
-            <div className="flex space-x-8 text-sm font-semibold text-slate-300">
-              <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
-              <a href="/creators" className="hover:text-sims-green transition-colors">Creators</a>
-              <a href="https://blog.musthavemods.com/homepage/" className="hover:text-white transition-colors">Blog</a>
-            </div>
+          <div className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-300 absolute left-1/2 -translate-x-1/2">
+            <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
+            <a href="/top-creators" className="hover:text-sims-green transition-colors">Creators</a>
+            <a href="https://blog.musthavemods.com/homepage/" className="hover:text-white transition-colors">Blog</a>
           </div>
 
 
           {/* Actions */}
           <div className="flex items-center space-x-3">
           <UsageIndicator />
+
+          {/* Creator Dashboard Button - Only show for creators */}
+          {status === 'authenticated' && session?.user?.isCreator && (
+            <a
+              href="/creators"
+              className="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2.5 rounded-full text-sm font-medium text-white transition-all"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Creator Portal
+            </a>
+          )}
+
           <button className="p-2.5 text-slate-400 hover:text-sims-pink hover:bg-white/5 rounded-full transition-all">
             <Heart className="h-5 w-5" />
           </button>
@@ -95,6 +105,15 @@ export const Navbar: React.FC = () => {
                     </p>
                   </div>
                   <div className="py-1">
+                    {session.user.isCreator && (
+                      <a
+                        href="/creators"
+                        className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        Creator Portal
+                      </a>
+                    )}
                     {session.user.isPremium && (
                       <button
                         onClick={handleManageSubscription}
