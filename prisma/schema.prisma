@@ -512,3 +512,60 @@ model Invoice {
   @@index([subscriptionId])
   @@map("invoices")
 }
+
+// Analytics Event Types
+enum AnalyticsEventType {
+  PAGE_VIEW
+  SEARCH
+  DOWNLOAD_CLICK
+  AD_VIEW
+  AD_CLICK
+  MOD_VIEW
+  FAVORITE_ADD
+  FAVORITE_REMOVE
+  COLLECTION_ADD
+}
+
+model AnalyticsEvent {
+  id             String              @id @default(cuid())
+  eventType      AnalyticsEventType
+
+  // User tracking (optional for anonymous events)
+  userId         String?
+  sessionId      String?             // Track anonymous sessions
+
+  // Event metadata
+  page           String?             // Page URL/path
+  referrer       String?
+  searchQuery    String?
+  modId          String?
+  categoryId     String?
+  adId           String?
+
+  // Engagement metrics
+  timeOnPage     Int?                // Seconds spent on page
+  scrollDepth    Int?                // Percentage scrolled (0-100)
+
+  // Technical metadata
+  ipAddress      String?
+  userAgent      String?
+  deviceType     String?             // mobile, tablet, desktop
+  browser        String?
+  os             String?
+  country        String?
+
+  // Additional data (flexible JSON for future extensions)
+  metadata       Json?
+
+  createdAt      DateTime            @default(now())
+
+  // Indexes for fast analytics queries
+  @@index([eventType, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([sessionId, createdAt(sort: Desc)])
+  @@index([modId, eventType])
+  @@index([searchQuery])
+  @@index([page, createdAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("analytics_events")
+}

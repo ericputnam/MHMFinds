@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Package, Users, Upload, TrendingUp, Eye, Download, Star, Clock, Mail } from 'lucide-react';
-import CreatorDashboard from '@/components/admin/CreatorDashboard';
+import { Package, Users, Upload, TrendingUp, Eye, Download, Star, Clock, Mail, BarChart3 } from 'lucide-react';
 
 interface Stats {
   totalMods: number;
@@ -25,7 +24,7 @@ interface Stats {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
 
-  // Show creator dashboard for creators, admin dashboard for admins
+  // Admin dashboard only (creators redirected to /creators by middleware)
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-96">
@@ -34,14 +33,6 @@ export default function DashboardPage() {
     );
   }
 
-  const isAdmin = session?.user?.isAdmin || false;
-
-  // Route to appropriate dashboard based on role
-  if (!isAdmin) {
-    return <CreatorDashboard />;
-  }
-
-  // Admin dashboard below
   return <AdminDashboard />;
 }
 
@@ -238,7 +229,16 @@ function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <a
+          href="/admin/analytics"
+          className="bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl p-6 transition-all cursor-pointer"
+        >
+          <BarChart3 className="h-8 w-8 text-white mb-3" />
+          <h3 className="text-lg font-bold text-white mb-1">View Analytics</h3>
+          <p className="text-sm text-white/80">Track user engagement metrics</p>
+        </a>
+
         <a
           href="/admin/mods/new"
           className="bg-sims-pink hover:bg-sims-pink/90 rounded-xl p-6 transition-all cursor-pointer"

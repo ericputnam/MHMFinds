@@ -7,40 +7,28 @@ import { useSession, signOut } from 'next-auth/react';
 import {
   LayoutDashboard,
   Package,
-  Users,
   Upload,
-  Folder,
   UserCircle,
-  Settings,
   LogOut,
-  Shield,
-  Mail,
-  BarChart3
+  Sparkles,
+  FileText
 } from 'lucide-react';
 
-// Admin navigation - full access to all features (admin only)
-const adminNavItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/mods', label: 'Mods', icon: Package },
-  { href: '/admin/submissions', label: 'Submissions', icon: Upload },
-  { href: '/admin/waitlist', label: 'Waitlist', icon: Mail },
-  { href: '/admin/creators', label: 'Creators', icon: Users },
-  { href: '/admin/categories', label: 'Categories', icon: Folder },
-  { href: '/admin/users', label: 'Users', icon: UserCircle },
+// Creator navigation - access to creator features only
+const creatorNavItems = [
+  { href: '/creators', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/creators/submit', label: 'Submit Mod', icon: Upload },
+  { href: '/creators/submissions', label: 'My Submissions', icon: FileText },
+  { href: '/creators/mods', label: 'My Mods', icon: Package },
 ];
 
-export default function AdminLayout({
+export default function CreatorsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
-
-  // Admin-only layout (creators use /creators instead)
-  const isAdmin = session?.user?.isAdmin || false;
-  const navItems = adminNavItems;
+  const { data: session } = useSession();
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
@@ -52,12 +40,12 @@ export default function AdminLayout({
       <div className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="bg-sims-pink p-2 rounded-lg">
-              <Shield className="h-5 w-5 text-white" />
+            <div className="bg-gradient-to-br from-sims-pink to-purple-600 p-2 rounded-lg">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">MustHaveMods Admin</h1>
-              <p className="text-xs text-slate-400">Content Management System</p>
+              <h1 className="text-lg font-bold text-white">Creator Portal</h1>
+              <p className="text-xs text-slate-400">Manage Your Mods</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -66,9 +54,7 @@ export default function AdminLayout({
                 <UserCircle className="h-5 w-5 text-slate-400" />
                 <div className="text-sm">
                   <p className="font-semibold text-white">{session.user.username || session.user.email}</p>
-                  <p className="text-xs text-slate-500">
-                    {isAdmin ? 'Administrator' : 'Creator'}
-                  </p>
+                  <p className="text-xs text-purple-400">Creator</p>
                 </div>
               </div>
             )}
@@ -94,10 +80,10 @@ export default function AdminLayout({
         {/* Sidebar */}
         <aside className="w-64 bg-slate-900 border-r border-slate-800 min-h-[calc(100vh-73px)] sticky top-[73px]">
           <nav className="p-4 space-y-2">
-            {navItems.map((item) => {
+            {creatorNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href ||
-                (item.href !== '/admin' && pathname?.startsWith(item.href));
+                (item.href !== '/creators' && pathname?.startsWith(item.href));
 
               return (
                 <Link
@@ -105,7 +91,7 @@ export default function AdminLayout({
                   href={item.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     isActive
-                      ? 'bg-sims-pink text-white shadow-lg'
+                      ? 'bg-gradient-to-r from-sims-pink to-purple-600 text-white shadow-lg'
                       : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >

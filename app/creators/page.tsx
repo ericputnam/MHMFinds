@@ -1,270 +1,296 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Navbar } from '../../components/Navbar';
-import { Footer } from '../../components/Footer';
-import { Trophy, Heart, Download, Star, TrendingUp, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import {
+  Upload,
+  Package,
+  Clock,
+  CheckCircle,
+  Download,
+  ArrowRight,
+  AlertCircle
+} from 'lucide-react';
 
-interface Creator {
-  id: string;
-  name: string;
-  handle: string;
-  bio: string | null;
-  avatar: string | null;
-  website: string | null;
-  isVerified: boolean;
-  modCount: number;
-  totalFavorites: number;
+interface DashboardStats {
+  totalSubmissions: number;
+  pendingSubmissions: number;
+  approvedMods: number;
   totalDownloads: number;
-  averageRating: number;
 }
 
-export default function CreatorsPage() {
-  const [creators, setCreators] = useState<Creator[]>([]);
+interface Submission {
+  id: string;
+  modName: string;
+  status: string;
+  createdAt: string;
+  thumbnail: string | null;
+  approvedMod?: {
+    id: string;
+    downloadCount: number;
+  };
+}
+
+export default function CreatorDashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalSubmissions: 0,
+    pendingSubmissions: 0,
+    approvedMods: 0,
+    totalDownloads: 0,
+  });
+  const [recentSubmissions, setRecentSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCreators();
+    fetchDashboardData();
   }, []);
 
-  const fetchCreators = async () => {
+  const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/creators/rankings');
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch creators');
-      }
-
+      const response = await fetch('/api/creator/submissions');
       const data = await response.json();
-      setCreators(data.creators || []);
-    } catch (err) {
-      console.error('Error fetching creators:', err);
-      setError('Failed to load creators. Please try again later.');
+
+      if (data.submissions) {
+        const submissions = data.submissions;
+
+        // Calculate stats
+        const totalDownloads = submissions
+          .filter((s: Submission) => s.approvedMod)
+          .reduce((sum: number, s: Submission) => sum + (s.approvedMod?.downloadCount || 0), 0);
+
+        setStats({
+          totalSubmissions: data.counts.total,
+          pendingSubmissions: data.counts.pending,
+          approvedMods: data.counts.approved,
+          totalDownloads,
+        });
+
+        // Get recent 5 submissions
+        setRecentSubmissions(submissions.slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getRankBadge = (index: number) => {
-    const badges = [
-      { bg: 'from-yellow-500 to-yellow-600', text: '1st' },
-      { bg: 'from-slate-400 to-slate-500', text: '2nd' },
-      { bg: 'from-orange-600 to-orange-700', text: '3rd' },
-    ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-slate-400">Loading dashboard...</div>
+      </div>
+    );
+  }
 
-    return badges[index] || { bg: 'from-slate-700 to-slate-800', text: `${index + 1}th` };
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">Creator Dashboard</h1>
+        <p className="text-slate-400">
+          Manage your mod submissions and track their performance
+        </p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Submissions"
+          value={stats.totalSubmissions}
+          icon={Package}
+          color="bg-blue-500/10 text-blue-400"
+        />
+        <StatCard
+          title="Pending Review"
+          value={stats.pendingSubmissions}
+          icon={Clock}
+          color="bg-yellow-500/10 text-yellow-400"
+        />
+        <StatCard
+          title="Live Mods"
+          value={stats.approvedMods}
+          icon={CheckCircle}
+          color="bg-green-500/10 text-green-400"
+        />
+        <StatCard
+          title="Total Downloads"
+          value={stats.totalDownloads}
+          icon={Download}
+          color="bg-purple-500/10 text-purple-400"
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link href="/creators/submit">
+          <div className="bg-gradient-to-r from-sims-pink to-pink-600 hover:from-pink-600 hover:to-sims-pink text-white p-6 rounded-xl transition-all hover:scale-[1.02] cursor-pointer group">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold mb-1">Submit New Mod</h3>
+                <p className="text-white/80 text-sm">
+                  Upload your latest creation
+                </p>
+              </div>
+              <Upload className="h-8 w-8 group-hover:scale-110 transition-transform" />
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/creators/submissions">
+          <div className="bg-slate-800/50 hover:bg-slate-800 border border-slate-700 text-white p-6 rounded-xl transition-all hover:scale-[1.02] cursor-pointer group">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold mb-1">View My Submissions</h3>
+                <p className="text-slate-400 text-sm">
+                  Track approval status
+                </p>
+              </div>
+              <Package className="h-8 w-8 text-slate-400 group-hover:scale-110 transition-transform" />
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* Recent Submissions */}
+      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+        <div className="p-6 border-b border-slate-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-white">Recent Submissions</h2>
+              <p className="text-slate-400 text-sm mt-1">Your latest mod submissions</p>
+            </div>
+            <Link
+              href="/creators/submissions"
+              className="flex items-center gap-2 text-sims-pink hover:text-pink-400 transition-colors text-sm font-medium"
+            >
+              View All
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="divide-y divide-slate-800">
+          {recentSubmissions.length === 0 ? (
+            <div className="p-8 text-center">
+              <Package className="h-12 w-12 text-slate-700 mx-auto mb-3" />
+              <p className="text-slate-500">No submissions yet</p>
+              <Link
+                href="/creators/submit"
+                className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-sims-pink hover:bg-pink-600 text-white rounded-lg transition-colors text-sm"
+              >
+                <Upload className="h-4 w-4" />
+                Submit Your First Mod
+              </Link>
+            </div>
+          ) : (
+            recentSubmissions.map((submission) => (
+              <SubmissionRow key={submission.id} submission={submission} />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Stats Card Component
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: any;
+  color: string;
+}
+
+function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
+  return (
+    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-lg ${color}`}>
+          <Icon className="h-6 w-6" />
+        </div>
+      </div>
+      <div>
+        <p className="text-slate-400 text-sm mb-1">{title}</p>
+        <p className="text-3xl font-bold text-white">{value.toLocaleString()}</p>
+      </div>
+    </div>
+  );
+}
+
+// Submission Row Component
+interface SubmissionRowProps {
+  submission: Submission;
+}
+
+function SubmissionRow({ submission }: SubmissionRowProps) {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 rounded-full text-xs font-medium flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Pending Review
+          </span>
+        );
+      case 'approved':
+        return (
+          <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-medium flex items-center gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Approved
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className="px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-xs font-medium flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            Rejected
+          </span>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-mhm-dark text-slate-200 flex flex-col font-sans">
-      <Navbar />
+    <div className="p-4 hover:bg-slate-800/50 transition-colors">
+      <div className="flex items-center gap-4">
+        {/* Thumbnail */}
+        <div className="w-16 h-16 rounded-lg bg-slate-800 overflow-hidden flex-shrink-0">
+          {submission.thumbnail ? (
+            <img
+              src={submission.thumbnail}
+              alt={submission.modName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Package className="h-6 w-6 text-slate-600" />
+            </div>
+          )}
+        </div>
 
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-mhm-dark via-[#1a1f3a] to-mhm-dark border-b border-white/5">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-          <div className="container mx-auto px-4 py-20 relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 bg-sims-green/10 border border-sims-green/20 rounded-full px-6 py-2 mb-6">
-                <Trophy className="h-4 w-4 text-sims-green" />
-                <span className="text-sm font-semibold text-sims-green">Top Creators</span>
-              </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
-                Featured{' '}
-                <span className="text-white">
-                  Creators
-                </span>
-              </h1>
-              <p className="text-xl text-slate-400 leading-relaxed max-w-3xl mx-auto">
-                Discover the most popular mod creators in our community, ranked by favorites and community love.
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-white font-medium truncate">{submission.modName}</h3>
+          <p className="text-slate-500 text-sm">
+            Submitted {new Date(submission.createdAt).toLocaleDateString()}
+          </p>
+        </div>
+
+        {/* Status & Stats */}
+        <div className="flex items-center gap-4">
+          {submission.approvedMod && (
+            <div className="text-right">
+              <p className="text-slate-400 text-xs">Downloads</p>
+              <p className="text-white font-semibold">
+                {submission.approvedMod.downloadCount.toLocaleString()}
               </p>
             </div>
-          </div>
+          )}
+          {getStatusBadge(submission.status)}
         </div>
-
-        {/* Content */}
-        <div className="container mx-auto px-4 py-16 pb-24">
-          <div className="max-w-6xl mx-auto">
-
-            {/* Loading State */}
-            {loading && (
-              <div className="flex items-center justify-center py-20">
-                <div className="text-center">
-                  <Loader2 className="h-12 w-12 text-sims-pink animate-spin mx-auto mb-4" />
-                  <p className="text-slate-400">Loading creators...</p>
-                </div>
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && !loading && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 text-center">
-                <p className="text-red-400">{error}</p>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {!loading && !error && creators.length === 0 && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-                <Trophy className="h-16 w-16 text-slate-500 mx-auto mb-4" />
-                <p className="text-slate-400 text-lg">No creators found yet. Check back soon!</p>
-              </div>
-            )}
-
-            {/* Creators Grid */}
-            {!loading && !error && creators.length > 0 && (
-              <div className="space-y-6">
-                {creators.map((creator, index) => {
-                  const rankBadge = getRankBadge(index);
-                  const isTopThree = index < 3;
-
-                  return (
-                    <div
-                      key={creator.id}
-                      className={`relative bg-white/5 border ${
-                        isTopThree ? 'border-sims-pink/30' : 'border-white/10'
-                      } rounded-2xl p-6 md:p-8 backdrop-blur-sm hover:scale-[1.02] transition-all duration-300 ${
-                        isTopThree ? 'shadow-lg shadow-sims-pink/10' : ''
-                      }`}
-                    >
-                      {/* Rank Badge */}
-                      <div className="absolute -top-3 -left-3 group">
-                        <div className={`bg-gradient-to-br ${rankBadge.bg} text-white font-bold text-lg w-12 h-12 rounded-full flex items-center justify-center shadow-lg`}>
-                          {index + 1}
-                        </div>
-                        {/* Tooltip */}
-                        <div className="absolute left-14 top-0 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                          Ranked #{index + 1} by community favorites
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col md:flex-row gap-6 items-start">
-                        {/* Avatar */}
-                        <div className="flex-shrink-0">
-                          <div className="relative">
-                            <img
-                              src={
-                                creator.avatar ||
-                                `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(creator.name)}&backgroundColor=ec4899,a855f7,8b5cf6&textColor=ffffff`
-                              }
-                              alt={creator.name}
-                              className="w-24 h-24 rounded-full object-cover border-4 border-white/10 bg-sims-pink"
-                              onError={(e) => {
-                                // Fallback if DiceBear fails
-                                e.currentTarget.style.display = 'none';
-                                const fallback = document.createElement('div');
-                                fallback.className = 'w-24 h-24 rounded-full bg-sims-pink flex items-center justify-center text-3xl font-bold text-white border-4 border-white/10';
-                                fallback.textContent = creator.name.charAt(0).toUpperCase();
-                                e.currentTarget.parentNode?.appendChild(fallback);
-                              }}
-                            />
-                            {creator.isVerified && (
-                              <div className="absolute -bottom-1 -right-1 bg-sims-blue rounded-full p-1.5">
-                                <Star className="h-4 w-4 text-white fill-white" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Creator Info */}
-                        <div className="flex-grow min-w-0">
-                          <div className="flex items-start justify-between gap-4 mb-3">
-                            <div>
-                              <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                                {creator.name}
-                                {isTopThree && <Trophy className="h-5 w-5 text-yellow-500" />}
-                              </h2>
-                              <p className="text-sims-pink font-medium">@{creator.handle}</p>
-                            </div>
-                          </div>
-
-                          {creator.bio && (
-                            <p className="text-slate-300 mb-4 line-clamp-2">{creator.bio}</p>
-                          )}
-
-                          {/* Stats Grid */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-white/5 rounded-lg p-3 border border-white/10 group relative">
-                              <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-                                <TrendingUp className="h-4 w-4" />
-                                <span>Total Mods</span>
-                              </div>
-                              <p className="text-xl font-bold text-white">{creator.modCount}</p>
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Number of mods created
-                              </div>
-                            </div>
-
-                            <div className="bg-sims-pink/10 rounded-lg p-3 border border-sims-pink/20 group relative">
-                              <div className="flex items-center gap-2 text-sims-pink text-sm mb-1">
-                                <Heart className="h-4 w-4" />
-                                <span>Favorites</span>
-                              </div>
-                              <p className="text-xl font-bold text-white">{creator.totalFavorites.toLocaleString()}</p>
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Total times their mods were favorited
-                              </div>
-                            </div>
-
-                            <div className="bg-white/5 rounded-lg p-3 border border-white/10 group relative">
-                              <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-                                <Download className="h-4 w-4" />
-                                <span>Downloads</span>
-                              </div>
-                              <p className="text-xl font-bold text-white">{creator.totalDownloads.toLocaleString()}</p>
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Total downloads across all mods
-                              </div>
-                            </div>
-
-                            <div className="bg-white/5 rounded-lg p-3 border border-white/10 group relative">
-                              <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-                                <Star className="h-4 w-4" />
-                                <span>Avg Rating</span>
-                              </div>
-                              <p className="text-xl font-bold text-white">
-                                {creator.averageRating > 0 ? creator.averageRating.toFixed(1) : 'N/A'}
-                                {creator.averageRating > 0 && <span className="text-sm text-slate-400">/5.0</span>}
-                              </p>
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                                Average rating across all mods
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="mt-4 flex gap-3">
-                            <a
-                              href={`/?creator=${creator.handle}`}
-                              className="bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 text-sm"
-                            >
-                              View Mods
-                            </a>
-                            {creator.website && (
-                              <a
-                                href={creator.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-white/5 border border-white/10 text-slate-300 font-semibold px-6 py-2 rounded-lg hover:bg-white/10 transition-colors text-sm"
-                              >
-                                Website
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }

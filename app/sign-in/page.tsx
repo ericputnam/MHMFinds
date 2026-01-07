@@ -19,6 +19,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [isCreator, setIsCreator] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [selectedTier, setSelectedTier] = useState('ANNUAL');
@@ -97,7 +98,7 @@ export default function SignInPage() {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username }),
+        body: JSON.stringify({ email, password, username, isCreator }),
       });
 
       if (!response.ok) {
@@ -270,6 +271,30 @@ export default function SignInPage() {
                       <p className="mt-2 text-xs text-slate-500">Minimum 6 characters</p>
                     )}
                   </div>
+
+                  {mode === 'signup' && (
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all">
+                      <label className="flex items-start gap-4 cursor-pointer">
+                        <div className="flex items-center h-6">
+                          <input
+                            type="checkbox"
+                            checked={isCreator}
+                            onChange={(e) => setIsCreator(e.target.checked)}
+                            className="w-5 h-5 rounded border-white/20 bg-white/5 text-sims-pink focus:ring-2 focus:ring-sims-pink focus:ring-offset-0 cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-semibold text-white">I&apos;m a creator</span>
+                            <Sparkles className="w-4 h-4 text-sims-pink" />
+                          </div>
+                          <p className="text-xs text-slate-400 leading-relaxed">
+                            Sign up as a creator to submit and manage your own mods. You&apos;ll get access to the creator dashboard and submission tools.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
 
                   <button
                     type="submit"

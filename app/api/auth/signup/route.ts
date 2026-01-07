@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, username } = body;
+    const { email, password, username, isCreator } = body;
 
     // Validate input
     if (!email || !password || !username) {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
           displayName: username,
           isAdmin: false,
           isPremium: false,
-          isCreator: false,
+          isCreator: isCreator || false,
           emailVerified: new Date(), // Auto-verify for credentials signup
         }
       });

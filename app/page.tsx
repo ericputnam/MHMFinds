@@ -10,6 +10,7 @@ import { FilterBar } from '../components/FilterBar';
 import { Footer } from '../components/Footer';
 import { ModDetailsModal } from '../components/ModDetailsModal';
 import { Mod } from '../lib/api';
+import { usePageTracking, useSearchTracking } from '../lib/hooks/useAnalytics';
 
 interface SearchFilters {
   category?: string;
@@ -45,6 +46,10 @@ function HomePageContent() {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<any>(null);
   const [facets, setFacets] = useState<any>(null);
+
+  // Analytics tracking hooks
+  usePageTracking(); // Automatically tracks page views and time on page
+  const { trackSearch } = useSearchTracking();
 
   /**
    * Build URL with current filter state
@@ -173,6 +178,11 @@ function HomePageContent() {
     setSelectedCategory(category || 'All');
     if (gameVersion) {
       setSelectedGameVersion(gameVersion);
+    }
+
+    // Track search event
+    if (query) {
+      trackSearch(query);
     }
   };
 
