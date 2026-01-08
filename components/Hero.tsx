@@ -163,6 +163,31 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
                 </button>
               ))}
             </div>
+
+            {/* Trending Searches - SEO internal linking */}
+            <div className="mt-6 flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-sm">
+              <span className="text-slate-500 font-medium">Trending:</span>
+              {[
+                { label: 'Wicked Whims', query: 'wicked whims' },
+                { label: 'MCCC', query: 'mccc' },
+                { label: 'UI Cheats', query: 'ui cheats' },
+                { label: 'Basemental', query: 'basemental' },
+                { label: 'Slice of Life', query: 'slice of life' },
+                { label: 'Poses', query: 'poses' },
+                { label: 'Build Mode', query: 'build mode' },
+              ].map(({ label, query: searchQuery }) => (
+                <button
+                  key={label}
+                  onClick={() => {
+                    setQuery(searchQuery);
+                    onSearch(searchQuery);
+                  }}
+                  className="text-slate-400 hover:text-sims-pink transition-colors underline-offset-2 hover:underline"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

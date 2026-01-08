@@ -10,7 +10,7 @@ import { FilterBar } from '../components/FilterBar';
 import { Footer } from '../components/Footer';
 import { ModDetailsModal } from '../components/ModDetailsModal';
 import { Mod } from '../lib/api';
-import { usePageTracking, useSearchTracking } from '../lib/hooks/useAnalytics';
+import { useSearchTracking } from '../lib/hooks/useAnalytics';
 
 interface SearchFilters {
   category?: string;
@@ -47,8 +47,7 @@ function HomePageContent() {
   const [pagination, setPagination] = useState<any>(null);
   const [facets, setFacets] = useState<any>(null);
 
-  // Analytics tracking hooks
-  usePageTracking(); // Automatically tracks page views and time on page
+  // Analytics tracking hooks (usePageTracking is now global in providers.tsx)
   const { trackSearch } = useSearchTracking();
 
   /**

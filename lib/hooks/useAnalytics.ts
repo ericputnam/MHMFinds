@@ -2,6 +2,15 @@ import { useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
+// Extend Window interface for Mediavine
+declare global {
+  interface Window {
+    mediavine?: {
+      newPageView: () => void;
+    };
+  }
+}
+
 // Session ID stored in sessionStorage for tracking anonymous users
 const getSessionId = (): string => {
   if (typeof window === 'undefined') return '';
@@ -83,6 +92,12 @@ export const usePageTracking = () => {
       referrer: document.referrer,
     });
     hasTrackedView.current = true;
+
+    // Notify Mediavine of new pageview for SPA navigation
+    // This ensures ads refresh and pageviews are counted correctly
+    if (typeof window !== 'undefined' && window.mediavine) {
+      window.mediavine.newPageView();
+    }
 
     // Track scroll depth
     const handleScroll = () => {

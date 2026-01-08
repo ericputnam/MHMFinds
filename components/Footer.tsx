@@ -1,33 +1,66 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   return (
     <footer className="border-t border-white/5 bg-[#05080F] py-16 mt-auto">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-8 md:mb-0 text-center md:text-left">
-                <span className="text-xl font-bold text-white tracking-tight">
-                  MustHave<span className="text-sims-pink">Mods</span>
-                </span>
-                <p className="text-slate-500 text-sm mt-2 max-w-md leading-relaxed">
-                    This site is not endorsed by or affiliated with Electronic Arts, or its licensors. Trademarks are the property of their respective owners. Game content and materials are copyright Electronic Arts Inc. and its licensors.
-                </p>
-                <p className="text-slate-600 text-xs mt-3">
-                    <a href="mailto:olivia@musthavemods.com" className="hover:text-sims-blue transition-colors">Contact Us</a> • MustHaveMods.com
-                </p>
-            </div>
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          {/* Brand */}
+          <div className="md:col-span-1">
+            <span className="text-xl font-bold text-white tracking-tight">
+              MustHave<span className="text-sims-pink">Mods</span>
+            </span>
+            <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+              The search engine for game mods and custom content.
+            </p>
+          </div>
 
-            <div className="flex space-x-8 text-sm font-medium text-slate-400">
-              <a href="/about" className="hover:text-sims-blue transition-colors">About</a>
-              <a href="/terms" className="hover:text-sims-blue transition-colors">Terms</a>
-              <a href="/privacy-policy" className="hover:text-sims-blue transition-colors">Privacy</a>
-              <a href="/submit-mod" className="hover:text-sims-blue transition-colors">Submit Mod</a>
-            </div>
+          {/* Game Mods - SEO Links */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Game Mods</h3>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li><Link href="/games/sims-4" className="hover:text-sims-pink transition-colors">Sims 4 Mods</Link></li>
+              <li><Link href="/games/stardew-valley" className="hover:text-sims-pink transition-colors">Stardew Valley Mods</Link></li>
+              <li><Link href="/games/minecraft" className="hover:text-sims-pink transition-colors">Minecraft Mods</Link></li>
+              <li><Link href="/games/animal-crossing" className="hover:text-sims-pink transition-colors">Animal Crossing Mods</Link></li>
+            </ul>
+          </div>
+
+          {/* Blog - Hybrid Connection */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Resources</h3>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li><a href="/blog" className="hover:text-sims-pink transition-colors">Blog</a></li>
+              <li><a href="/category/sims-4-mods" className="hover:text-sims-pink transition-colors">Sims 4 Guides</a></li>
+              <li><a href="/category/sims-4-cc" className="hover:text-sims-pink transition-colors">CC Roundups</a></li>
+              <li><Link href="/submit-mod" className="hover:text-sims-pink transition-colors">Submit a Mod</Link></li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Company</h3>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li><Link href="/about" className="hover:text-sims-pink transition-colors">About</Link></li>
+              <li><Link href="/terms" className="hover:text-sims-pink transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-sims-pink transition-colors">Privacy Policy</Link></li>
+              <li><a href="mailto:olivia@musthavemods.com" className="hover:text-sims-pink transition-colors">Contact</a></li>
+            </ul>
+          </div>
         </div>
-        <div className="border-t border-white/5 mt-12 pt-8 text-center text-slate-600 text-xs">
-          &copy; {new Date().getFullYear()} MustHaveMods. All rights reserved.
+
+        {/* Disclaimer */}
+        <div className="border-t border-white/5 pt-8">
+          <p className="text-slate-600 text-xs text-center max-w-3xl mx-auto leading-relaxed">
+            This site is not endorsed by or affiliated with Electronic Arts, or its licensors. Trademarks are the property of their respective owners. Game content and materials are copyright Electronic Arts Inc. and its licensors.
+          </p>
+          <p className="text-slate-600 text-xs text-center mt-4">
+            &copy; {new Date().getFullYear()} MustHaveMods. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
