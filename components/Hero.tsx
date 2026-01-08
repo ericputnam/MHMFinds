@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Sparkles, Image as ImageIcon, Loader2, Filter, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Loader2, X } from 'lucide-react';
 
 interface HeroProps {
   onSearch: (query: string, category?: string, gameVersion?: string) => void;
@@ -10,49 +10,18 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedGame, setSelectedGame] = useState<string>('Sims 4'); // Default to Sims 4
-  const [categories, setCategories] = useState<string[]>(['All']);
-  const [loadingCategories, setLoadingCategories] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch categories when the selected game changes
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setLoadingCategories(true);
-      try {
-        const response = await fetch(`/api/categories?gameVersion=${encodeURIComponent(selectedGame)}`);
-        const data = await response.json();
-
-        if (data.categories) {
-          setCategories(data.categories);
-          // Reset category to "All" when game changes
-          setSelectedCategory('All');
-        }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-        setCategories(['All']); // Fallback to just "All"
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-  }, [selectedGame]);
+  const [selectedGame, setSelectedGame] = useState<string>('Sims 4');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      onSearch(query, selectedCategory !== 'All' ? selectedCategory : undefined);
+      onSearch(query);
     }
   };
 
   const handleGameFilter = (game: string) => {
-    // Update selected game (this will trigger category fetch via useEffect)
     setSelectedGame(game);
-    // Clear search query and filter by game version instead
     setQuery('');
-    // For "Other", pass a special value that the API will interpret as NOT IN the main games
     const gameFilter = game === 'Other' ? '__other__' : game;
     onSearch('', undefined, gameFilter);
   };
@@ -95,33 +64,12 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading }) => {
             <form onSubmit={handleSubmit} className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-sims-pink to-sims-blue rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur-xl"></div>
               <div className="relative flex items-center bg-mhm-card/90 backdrop-blur-xl rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/10 group-focus-within:border-sims-pink/50 transition-all">
-
-                {/* Category Dropdown - Hidden on mobile */}
-                <div className="hidden md:flex items-center border-r border-white/10 px-2">
-                  <Filter className="w-4 h-4 text-slate-400 ml-2 mr-1" />
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => {
-                      const newCategory = e.target.value;
-                      setSelectedCategory(newCategory);
-                      // Trigger search immediately when category changes
-                      const gameFilter = selectedGame === 'Other' ? '__other__' : selectedGame;
-                      onSearch(query, newCategory !== 'All' ? newCategory : undefined, gameFilter);
-                    }}
-                    className="bg-transparent text-slate-300 text-sm font-semibold px-2 py-3 outline-none cursor-pointer hover:text-white transition-colors appearance-none min-w-[120px]"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat} className="bg-slate-900 text-white">{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search mods..."
-                  className="flex-1 bg-transparent text-white placeholder-slate-500 px-2 sm:px-3 md:px-4 py-3 sm:py-4 outline-none text-sm sm:text-base md:text-lg font-medium min-w-0"
+                  placeholder="Search mods, CC, scripts..."
+                  className="flex-1 bg-transparent text-white placeholder-slate-500 px-3 sm:px-4 md:px-5 py-3 sm:py-4 outline-none text-sm sm:text-base md:text-lg font-medium min-w-0"
                 />
 
                 <div className="flex items-center space-x-1 sm:space-x-2 pr-1 sm:pr-2">
