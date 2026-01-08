@@ -216,6 +216,18 @@ export default function ModDetailPage() {
               )}
             </div>
 
+            {/* Mediavine Video Player Container */}
+            <div className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
+              <div
+                id="mediavine-video-player"
+                className="mv-video-player"
+                data-video-type="floating"
+                style={{ minHeight: '400px' }}
+              >
+                {/* Mediavine Universal Player injects here automatically */}
+              </div>
+            </div>
+
             {/* Description Section */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Mod</h2>

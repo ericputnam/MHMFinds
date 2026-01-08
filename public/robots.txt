@@ -1,0 +1,37 @@
+# Robots.txt for MustHaveMods.com
+# Unified SEO configuration for Next.js app + WordPress blog integration
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /account/
+Disallow: /creators/
+Disallow: /sign-in/
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /wp-content/plugins/
+Disallow: /wp-content/cache/
+Disallow: /feed/
+Disallow: /comments/feed/
+Disallow: /?s=
+Disallow: /search/
+Disallow: /*?replytocom
+
+# Allow Mediavine's crawlers (for ad optimization)
+User-agent: MediavineCrawler
+Allow: /
+
+# Allow Google's ad crawlers (for better ad targeting)
+User-agent: Mediapartners-Google
+Allow: /
+
+# Allow Google's AdSense crawler
+User-agent: AdsBot-Google
+Allow: /
+
+# Sitemaps - Main sitemap index references all sub-sitemaps
+Sitemap: https://musthavemods.com/sitemap.xml
+
+# Host directive for search engines
+Host: https://musthavemods.com
