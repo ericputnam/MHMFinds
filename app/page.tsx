@@ -2,26 +2,19 @@
 
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
-import { FilterBar } from '../components/FilterBar';
 import { Footer } from '../components/Footer';
 import { ModDetailsModal } from '../components/ModDetailsModal';
+import { FacetedSidebar } from '../components/FacetedSidebar';
 import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
-
-interface SearchFilters {
-  category?: string;
-  gameVersion?: string;
-  [key: string]: any;
-}
+import { ArrowUpDown } from 'lucide-react';
 
 function HomePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
 
   // Read initial state from URL parameters
   const creatorParam = searchParams.get('creator');
@@ -40,12 +33,20 @@ function HomePageContent() {
   const [gridColumns, setGridColumns] = useState(4);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
 
+  // Faceted filter state
+  const [selectedFacets, setSelectedFacets] = useState<{
+    contentType?: string[];
+    visualStyle?: string[];
+    themes?: string[];
+    ageGroups?: string[];
+    genderOptions?: string[];
+  }>({});
+
   // Direct state management instead of hooks
   const [mods, setMods] = useState<Mod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<any>(null);
-  const [facets, setFacets] = useState<any>(null);
 
   // Analytics tracking hooks (usePageTracking is now global in providers.tsx)
   const { trackSearch } = useSearchTracking();
@@ -119,6 +120,23 @@ function HomePageContent() {
         apiParams.set('creator', creatorParam);
       }
 
+      // Add faceted filters
+      if (selectedFacets.contentType?.length) {
+        apiParams.set('contentType', selectedFacets.contentType[0]); // Single select
+      }
+      if (selectedFacets.visualStyle?.length) {
+        apiParams.set('visualStyle', selectedFacets.visualStyle[0]); // Single select
+      }
+      if (selectedFacets.themes?.length) {
+        apiParams.set('themes', selectedFacets.themes.join(','));
+      }
+      if (selectedFacets.ageGroups?.length) {
+        apiParams.set('ageGroups', selectedFacets.ageGroups.join(','));
+      }
+      if (selectedFacets.genderOptions?.length) {
+        apiParams.set('genderOptions', selectedFacets.genderOptions.join(','));
+      }
+
       // Add sort parameter
       if (sortBy && sortBy !== 'relevance') {
         switch (sortBy) {
@@ -145,14 +163,13 @@ function HomePageContent() {
       const data = await response.json();
       setMods(data.mods);
       setPagination(data.pagination);
-      setFacets(data.facets);
     } catch (err) {
       console.error('Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch mods');
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage]);
+  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage, selectedFacets]);
 
   // Fetch mods on mount and when filters change
   useEffect(() => {
@@ -185,21 +202,25 @@ function HomePageContent() {
     }
   };
 
-  const handleCategoryChange = (category: string) => {
-    setCurrentPage(1); // Reset to page 1
-    setSelectedCategory(category);
-  };
-
   const handleSortChange = (newSortBy: string) => {
     setCurrentPage(1); // Reset to page 1
     setSortBy(newSortBy);
   };
 
-  const handleClearAllFilters = () => {
-    setCurrentPage(1);
+  // Facet filter handlers
+  const handleFacetChange = (facetType: string, values: string[]) => {
+    setCurrentPage(1); // Reset to page 1
+    // Clear search when changing facets to avoid confusing combined results
     setSearchQuery('');
-    setSelectedCategory('All');
-    setSortBy('relevance');
+    setSelectedFacets(prev => ({
+      ...prev,
+      [facetType]: values.length > 0 ? values : undefined,
+    }));
+  };
+
+  const handleClearFacets = () => {
+    setCurrentPage(1);
+    setSelectedFacets({});
   };
 
   /**
@@ -265,19 +286,7 @@ function HomePageContent() {
       <Navbar />
 
       <main className="flex-grow">
-        <Hero onSearch={handleSearch} isLoading={loading} />
-
-        {/* FilterBar */}
-        <FilterBar
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-          sortBy={sortBy}
-          onSortChange={handleSortChange}
-          resultCount={mods.length}
-          facets={facets}
-          searchQuery={searchQuery}
-          onClearAllFilters={handleClearAllFilters}
-        />
+        <Hero onSearch={handleSearch} isLoading={loading} initialSearch={searchQuery} />
 
         {/* Creator Filter Banner */}
         {creatorParam && (
@@ -307,17 +316,63 @@ function HomePageContent() {
           </div>
         )}
 
-        {/* Main Content */}
+        {/* Main Content with Sidebar */}
         <div className="container mx-auto px-4">
-          <ModGrid
-            mods={mods}
-            loading={loading}
-            error={error}
-            onFavorite={handleFavorite}
-            onModClick={handleModClick}
-            favorites={favorites}
-            gridColumns={gridColumns}
-          />
+          <div className="flex gap-6">
+            {/* Faceted Sidebar */}
+            <div className="hidden lg:block flex-shrink-0">
+              <div className="sticky top-24">
+                <FacetedSidebar
+                  selectedFacets={selectedFacets}
+                  onFacetChange={handleFacetChange}
+                  onClearAll={handleClearFacets}
+                />
+              </div>
+            </div>
+
+            {/* Mod Grid */}
+            <div className="flex-1 min-w-0">
+              {/* Results Header - inline with grid */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                <div className="text-slate-400 text-sm">
+                  {loading ? (
+                    <span className="animate-pulse">Loading...</span>
+                  ) : (
+                    <span>
+                      <span className="text-white font-medium">{pagination?.totalItems?.toLocaleString() || mods.length}</span> mods
+                    </span>
+                  )}
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="relative">
+                  <div className="flex items-center space-x-2 bg-black/20 hover:bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 py-2 cursor-pointer transition-all">
+                    <ArrowUpDown className="w-4 h-4 text-sims-purple" />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => handleSortChange(e.target.value)}
+                      className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="relevance" className="bg-mhm-card text-slate-200">Relevance</option>
+                      <option value="downloads" className="bg-mhm-card text-slate-200">Most Downloads</option>
+                      <option value="rating" className="bg-mhm-card text-slate-200">Highest Rated</option>
+                      <option value="newest" className="bg-mhm-card text-slate-200">Newest Finds</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <ModGrid
+                mods={mods}
+                loading={loading}
+                error={error}
+                onFavorite={handleFavorite}
+                onModClick={handleModClick}
+                favorites={favorites}
+                gridColumns={gridColumns}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Pagination */}

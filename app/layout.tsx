@@ -95,6 +95,114 @@ export default function RootLayout({
         <meta name="application-name" content="MustHaveMods" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
+
+        {/* JSON-LD Structured Data for SEO/GEO (SEO-002) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'WebSite',
+                  '@id': 'https://musthavemods.com/#website',
+                  url: 'https://musthavemods.com',
+                  name: 'MustHaveMods',
+                  description: 'Find Sims 4 CC, mods, and custom content. Search 15,000+ verified mods for Sims 4, Stardew Valley, and Minecraft.',
+                  publisher: {
+                    '@id': 'https://musthavemods.com/#organization',
+                  },
+                  potentialAction: [
+                    {
+                      '@type': 'SearchAction',
+                      target: {
+                        '@type': 'EntryPoint',
+                        urlTemplate: 'https://musthavemods.com/?search={search_term_string}',
+                      },
+                      'query-input': 'required name=search_term_string',
+                    },
+                  ],
+                  inLanguage: 'en-US',
+                },
+                {
+                  '@type': 'Organization',
+                  '@id': 'https://musthavemods.com/#organization',
+                  name: 'MustHaveMods',
+                  url: 'https://musthavemods.com',
+                  logo: {
+                    '@type': 'ImageObject',
+                    inLanguage: 'en-US',
+                    '@id': 'https://musthavemods.com/#logo',
+                    url: 'https://musthavemods.com/logo.png',
+                    contentUrl: 'https://musthavemods.com/logo.png',
+                    width: 512,
+                    height: 512,
+                    caption: 'MustHaveMods',
+                  },
+                  image: {
+                    '@id': 'https://musthavemods.com/#logo',
+                  },
+                  sameAs: [],
+                },
+                {
+                  '@type': 'WebPage',
+                  '@id': 'https://musthavemods.com/#webpage',
+                  url: 'https://musthavemods.com',
+                  name: 'MustHaveMods - Find Sims 4 CC, Mods & Custom Content',
+                  isPartOf: {
+                    '@id': 'https://musthavemods.com/#website',
+                  },
+                  about: {
+                    '@id': 'https://musthavemods.com/#organization',
+                  },
+                  primaryImageOfPage: {
+                    '@id': 'https://musthavemods.com/#logo',
+                  },
+                  datePublished: '2024-01-01',
+                  dateModified: new Date().toISOString().split('T')[0],
+                  description: 'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
+                  inLanguage: 'en-US',
+                  potentialAction: [
+                    {
+                      '@type': 'ReadAction',
+                      target: ['https://musthavemods.com'],
+                    },
+                  ],
+                },
+                {
+                  '@type': 'FAQPage',
+                  '@id': 'https://musthavemods.com/#faq',
+                  mainEntity: [
+                    {
+                      '@type': 'Question',
+                      name: 'What is MustHaveMods?',
+                      acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'MustHaveMods is a search engine for game mods and custom content. It indexes over 15,000 verified mods for Sims 4, Stardew Valley, Minecraft, and other games.',
+                      },
+                    },
+                    {
+                      '@type': 'Question',
+                      name: 'How do I find Sims 4 CC?',
+                      acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Use the search bar to search by keyword, vibe, or style. You can filter by content type (hair, clothes, furniture), visual style (alpha, maxis-match), and more.',
+                      },
+                    },
+                    {
+                      '@type': 'Question',
+                      name: 'Are the mods verified and safe?',
+                      acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Yes, all mods indexed on MustHaveMods go through a verification process. We only index content from trusted sources and creators.',
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body className="__className_e8ce0c antialiased">
         <ConditionalScripts />

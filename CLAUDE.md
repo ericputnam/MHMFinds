@@ -93,7 +93,22 @@ npm run build              # Build for production
 npm run start              # Start production server
 npm run lint               # Run Next.js linter
 npm run type-check         # TypeScript type checking without emitting files
+npm run clean              # Clear .next and node_modules/.cache (fixes webpack errors)
+npm run dev:clean          # Clean + start dev server (use when cache is corrupted)
 ```
+
+### Webpack Cache Corruption (IMPORTANT)
+
+The Next.js webpack cache can become corrupted, causing errors like:
+- `Cannot find module './657.js'`
+- `ENOENT: no such file or directory, lstat '.next/server/vendor-chunks/...'`
+- `Can't resolve './vendor-chunks/lucide-react'`
+
+**To fix**: Run `npm run clean` or `npm run dev:clean`
+
+**Prevention**: When making significant changes to dependencies, imports, or running cleanup scripts, proactively run `npm run clean` before restarting the dev server.
+
+**AI Agents**: After completing batch operations or running scripts that modify the codebase, ALWAYS verify the app still works by checking if the dev server starts without errors. If cache corruption occurs, fix it immediately with `npm run clean`.
 
 ### Database Operations
 ```bash

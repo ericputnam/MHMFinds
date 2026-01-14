@@ -6,6 +6,51 @@ import { Mod } from '../lib/api';
 import { Download, Eye, Star, Heart, Crown, Sparkles } from 'lucide-react';
 import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
 
+// Facet tag colors for visual distinction
+const FACET_COLORS: Record<string, { bg: string; text: string }> = {
+  // Content types
+  'hair': { bg: 'bg-pink-500/20', text: 'text-pink-300' },
+  'tops': { bg: 'bg-purple-500/20', text: 'text-purple-300' },
+  'bottoms': { bg: 'bg-blue-500/20', text: 'text-blue-300' },
+  'dresses': { bg: 'bg-pink-500/20', text: 'text-pink-300' },
+  'shoes': { bg: 'bg-orange-500/20', text: 'text-orange-300' },
+  'accessories': { bg: 'bg-violet-500/20', text: 'text-violet-300' },
+  'jewelry': { bg: 'bg-cyan-500/20', text: 'text-cyan-300' },
+  'makeup': { bg: 'bg-rose-500/20', text: 'text-rose-300' },
+  'furniture': { bg: 'bg-amber-500/20', text: 'text-amber-300' },
+  'lighting': { bg: 'bg-yellow-500/20', text: 'text-yellow-300' },
+  'decor': { bg: 'bg-red-500/20', text: 'text-red-300' },
+  'poses': { bg: 'bg-orange-500/20', text: 'text-orange-300' },
+  'gameplay-mod': { bg: 'bg-indigo-500/20', text: 'text-indigo-300' },
+  'script-mod': { bg: 'bg-violet-500/20', text: 'text-violet-300' },
+  'lot': { bg: 'bg-lime-500/20', text: 'text-lime-300' },
+  // Visual styles
+  'alpha': { bg: 'bg-pink-500/20', text: 'text-pink-300' },
+  'maxis-match': { bg: 'bg-purple-500/20', text: 'text-purple-300' },
+  // Themes
+  'christmas': { bg: 'bg-red-500/20', text: 'text-red-300' },
+  'halloween': { bg: 'bg-orange-500/20', text: 'text-orange-300' },
+  'cottagecore': { bg: 'bg-green-500/20', text: 'text-green-300' },
+  'y2k': { bg: 'bg-fuchsia-500/20', text: 'text-fuchsia-300' },
+  'goth': { bg: 'bg-slate-500/20', text: 'text-slate-300' },
+  'modern': { bg: 'bg-gray-500/20', text: 'text-gray-300' },
+  'vintage': { bg: 'bg-amber-500/20', text: 'text-amber-300' },
+  'fantasy': { bg: 'bg-violet-500/20', text: 'text-violet-300' },
+  // Default
+  'default': { bg: 'bg-slate-500/20', text: 'text-slate-300' },
+};
+
+function getFacetColor(value: string): { bg: string; text: string } {
+  return FACET_COLORS[value.toLowerCase()] || FACET_COLORS['default'];
+}
+
+function formatFacetLabel(value: string): string {
+  return value
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 interface ModCardProps {
   mod: Mod;
   onFavorite: (modId: string) => void;
@@ -85,7 +130,7 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
         {/* Floating Tags */}
         <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 items-end">
           <span className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white border border-white/10">
-            {mod.category}
+            {mod.contentType ? formatFacetLabel(mod.contentType) : mod.category}
           </span>
           {mod.isFeatured && (
             <span className="bg-sims-pink px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-lg flex items-center gap-1">
@@ -157,9 +202,38 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
         )}
 
         {mod.description && (
-          <p className="text-slate-400 text-sm line-clamp-2 mb-4 flex-1 leading-relaxed">
+          <p className="text-slate-400 text-sm line-clamp-2 mb-3 flex-1 leading-relaxed">
             {mod.description}
           </p>
+        )}
+
+        {/* Facet Tags */}
+        {(mod.contentType || mod.visualStyle || (mod.themes && mod.themes.length > 0)) && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {mod.visualStyle && (
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ${getFacetColor(mod.visualStyle).bg} ${getFacetColor(mod.visualStyle).text}`}>
+                {formatFacetLabel(mod.visualStyle)}
+              </span>
+            )}
+            {mod.contentType && (
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ${getFacetColor(mod.contentType).bg} ${getFacetColor(mod.contentType).text}`}>
+                {formatFacetLabel(mod.contentType)}
+              </span>
+            )}
+            {mod.themes?.slice(0, 2).map((theme) => (
+              <span
+                key={theme}
+                className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ${getFacetColor(theme).bg} ${getFacetColor(theme).text}`}
+              >
+                {formatFacetLabel(theme)}
+              </span>
+            ))}
+            {mod.themes && mod.themes.length > 2 && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium text-slate-400 bg-white/5">
+                +{mod.themes.length - 2}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Stats & Action */}

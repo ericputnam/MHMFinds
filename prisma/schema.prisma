@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
   // Support both local and production databases
-  url       = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 // Subscription enums
@@ -42,17 +42,17 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  collections   Collection[]
-  favorites    Favorite[]
-  reviews      Review[]
-  downloads    Download[]
+  collections    Collection[]
+  favorites      Favorite[]
+  reviews        Review[]
+  downloads      Download[]
   creatorProfile CreatorProfile?
-  sessions     Session[]
-  accounts     Account[]
-  auditLogs    AdminAuditLog[]
-  subscription  Subscription?
+  sessions       Session[]
+  accounts       Account[]
+  auditLogs      AdminAuditLog[]
+  subscription   Subscription?
   downloadClicks DownloadClick[]
-  submissions   ModSubmission[]
+  submissions    ModSubmission[]
 
   @@index([email], name: "email_lookup")
   @@index([isCreator, isPremium], name: "user_tiers")
@@ -72,19 +72,19 @@ model CreatorProfile {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mods        Mod[]
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mods Mod[]
 
   @@map("creator_profiles")
 }
 
 model Category {
   id          String   @id @default(cuid())
-  name        String   // "Lamp", "House", "Build/Buy"
-  slug        String   // "lamp", "house", "build-buy" - can be same across different paths
+  name        String // "Lamp", "House", "Build/Buy"
+  slug        String // "lamp", "house", "build-buy" - can be same across different paths
   path        String   @unique // "cc/house/lamp" - materialized path for queries (unique)
-  level       Int      // 0 = root (CC), 1 = second level (House), etc.
-  parentId    String?  // Self-referential for tree structure
+  level       Int // 0 = root (CC), 1 = second level (House), etc.
+  parentId    String? // Self-referential for tree structure
   description String?
   icon        String?
   order       Int      @default(0) // For sorting categories
@@ -92,57 +92,93 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryTree")
-  mods        Mod[]
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  mods     Mod[]
 
   @@map("categories")
 }
 
 model Mod {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
+  id               String   @id @default(cuid())
+  title            String
+  description      String?
   shortDescription String?
-  version     String?
-  gameVersion String? // Sims 4, Sims 3, etc.
-  category    String  // DEPRECATED: kept for migration, use categoryId
-  categoryId  String? // New hierarchical category reference
-  tags        String[] // Array of tags for search
-  thumbnail   String?
-  images      String[] // Array of image URLs
-  downloadUrl String?
-  sourceUrl   String? // Original source URL
-  source      String  // Patreon, CurseForge, Tumblr, etc.
-  sourceId    String? // ID from source platform
-  author      String? // Author/creator name from source
-  isFree      Boolean  @default(true)
-  price       Decimal? @db.Decimal(10,2)
-  currency    String?  @default("USD")
-  isNSFW      Boolean  @default(false)
-  isVerified  Boolean  @default(false)
-  isFeatured  Boolean  @default(false)
-  downloadCount Int     @default(0)
-  viewCount   Int      @default(0)
-  rating      Decimal? @db.Decimal(3,2)
-  ratingCount Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  publishedAt DateTime?
-  lastScraped DateTime?
+  version          String?
+  gameVersion      String? // Sims 4, Sims 3, etc.
+  category         String // DEPRECATED: kept for migration, use facets
+  categoryId       String? // DEPRECATED: use facets instead
+  tags             String[] // DEPRECATED: use facets, kept for search fallback
+
+  // ============================================
+  // FACETED TAXONOMY - Multi-dimensional classification
+  // ============================================
+
+  // Content Type (single-select): What IS this mod?
+  // Values: hair, tops, bottoms, dresses, full-body, shoes, accessories, jewelry,
+  //         makeup, skin, eyes, nails, tattoos, furniture, lighting, decor, clutter,
+  //         poses, gameplay-mod, script-mod, trait, career, lot, ui-preset
+  contentType String?
+
+  // Visual Style (single-select): What's the art style?
+  // Values: alpha, maxis-match, semi-maxis, clayified, realistic
+  visualStyle String?
+
+  // Themes (multi-select): What's the vibe/aesthetic?
+  // Values: christmas, halloween, valentines, easter, summer, fall, winter, spring,
+  //         cottagecore, y2k, goth, boho, modern, vintage, fantasy, sci-fi,
+  //         romantic, minimalist, preppy, grunge, dark-academia, kawaii, streetwear
+  themes String[]
+
+  // Age Groups (multi-select): Which sim ages?
+  // Values: infant, toddler, child, teen, young-adult, adult, elder, all-ages
+  ageGroups String[]
+
+  // Gender/Frame (multi-select): Which body frames?
+  // Values: masculine, feminine, unisex
+  genderOptions String[]
+
+  // Occult Types (multi-select): Special sim types?
+  // Values: human, vampire, werewolf, mermaid, spellcaster, alien, ghost
+  occultTypes String[]
+
+  // Pack Requirements (multi-select): What packs needed?
+  // Values: base-game, seasons, cottage-living, high-school-years, etc.
+  packRequirements String[]
+  thumbnail        String?
+  images           String[] // Array of image URLs
+  downloadUrl      String?
+  sourceUrl        String? // Original source URL
+  source           String // Patreon, CurseForge, Tumblr, etc.
+  sourceId         String? // ID from source platform
+  author           String? // Author/creator name from source
+  isFree           Boolean   @default(true)
+  price            Decimal?  @db.Decimal(10, 2)
+  currency         String?   @default("USD")
+  isNSFW           Boolean   @default(false)
+  isVerified       Boolean   @default(false)
+  isFeatured       Boolean   @default(false)
+  downloadCount    Int       @default(0)
+  viewCount        Int       @default(0)
+  rating           Decimal?  @db.Decimal(3, 2)
+  ratingCount      Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  publishedAt      DateTime?
+  lastScraped      DateTime?
 
   // Relations
-  creatorId   String?
-  creator     CreatorProfile? @relation(fields: [creatorId], references: [id])
-  categoryRel Category? @relation(fields: [categoryId], references: [id])
-  reviews     Review[]
-  favorites   Favorite[]
-  downloads   Download[]
-  collections CollectionItem[]
-  modFiles   ModFile[]
-  searchIndex SearchIndex?
+  creatorId      String?
+  creator        CreatorProfile?  @relation(fields: [creatorId], references: [id])
+  categoryRel    Category?        @relation(fields: [categoryId], references: [id])
+  reviews        Review[]
+  favorites      Favorite[]
+  downloads      Download[]
+  collections    CollectionItem[]
+  modFiles       ModFile[]
+  searchIndex    SearchIndex?
   downloadClicks DownloadClick[]
-  submissions ModSubmission[]
+  submissions    ModSubmission[]
 
   // Performance indexes for high-traffic queries
   @@index([isVerified, isNSFW, createdAt(sort: Desc)], name: "verified_safe_newest")
@@ -153,21 +189,46 @@ model Mod {
   @@index([source, sourceId], name: "source_lookup")
   @@index([isFeatured, publishedAt], name: "featured_mods")
   @@index([category], name: "legacy_category")
+  // Facet indexes for filtering
+  @@index([contentType, isVerified, createdAt(sort: Desc)], name: "facet_content_type")
+  @@index([visualStyle, isVerified], name: "facet_visual_style")
   @@map("mods")
+}
+
+// ============================================
+// FACET DEFINITIONS - UI metadata for faceted navigation
+// ============================================
+
+model FacetDefinition {
+  id          String   @id @default(cuid())
+  facetType   String // "contentType", "visualStyle", "themes", etc.
+  value       String // "hair", "alpha", "christmas", etc.
+  displayName String // "Hair", "Alpha CC", "Christmas"
+  description String? // Optional help text
+  icon        String? // Emoji or icon name
+  color       String? // Hex color for UI badges
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([facetType, value])
+  @@index([facetType, isActive, sortOrder], name: "facet_lookup")
+  @@map("facet_definitions")
 }
 
 model ModFile {
   id          String   @id @default(cuid())
   modId       String
   filename    String
-  fileSize    Int      // in bytes
+  fileSize    Int // in bytes
   downloadUrl String
   version     String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
   // Relations
-  mod         Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  mod Mod @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@map("mod_files")
 }
@@ -183,8 +244,8 @@ model Collection {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items       CollectionItem[]
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
 
   @@index([userId, isPublic], name: "user_collections")
   @@index([isFeatured, updatedAt(sort: Desc)], name: "featured_collections")
@@ -192,15 +253,15 @@ model Collection {
 }
 
 model CollectionItem {
-  id           String @id @default(cuid())
+  id           String   @id @default(cuid())
   collectionId String
   modId        String
   addedAt      DateTime @default(now())
   notes        String?
 
   // Relations
-  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  mod          Mod        @relation(fields: [modId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  mod        Mod        @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@unique([collectionId, modId])
   @@map("collection_items")
@@ -213,8 +274,8 @@ model Favorite {
   createdAt DateTime @default(now())
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod  Mod  @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@unique([userId, modId])
   @@index([userId, createdAt(sort: Desc)], name: "user_favorites")
@@ -223,18 +284,18 @@ model Favorite {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  userId    String
-  modId     String
-  rating    Int      // 1-5 stars
-  comment   String?
-  isVerified Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String
+  modId      String
+  rating     Int // 1-5 stars
+  comment    String?
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod  Mod  @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@unique([userId, modId])
   @@index([modId, createdAt(sort: Desc)], name: "mod_reviews")
@@ -252,8 +313,8 @@ model Download {
   createdAt DateTime @default(now())
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod  Mod  @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)], name: "user_downloads")
   @@index([modId, createdAt(sort: Desc)], name: "mod_downloads_count")
@@ -269,7 +330,7 @@ model Session {
   createdAt    DateTime @default(now())
 
   // Relations
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -305,17 +366,17 @@ model VerificationToken {
 }
 
 model ContentSource {
-  id          String   @id @default(cuid())
-  name        String   @unique // Patreon, CurseForge, Tumblr, etc.
-  baseUrl     String
-  apiEndpoint String?
-  apiKey      String?
-  isActive    Boolean  @default(true)
-  lastScraped DateTime?
-  scrapeInterval Int    @default(3600) // seconds
-  rateLimit   Int      @default(100) // requests per hour
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(cuid())
+  name           String    @unique // Patreon, CurseForge, Tumblr, etc.
+  baseUrl        String
+  apiEndpoint    String?
+  apiKey         String?
+  isActive       Boolean   @default(true)
+  lastScraped    DateTime?
+  scrapeInterval Int       @default(3600) // seconds
+  rateLimit      Int       @default(100) // requests per hour
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   // Relations
   scrapingJobs ScrapingJob[]
@@ -324,80 +385,80 @@ model ContentSource {
 }
 
 model ScrapingJob {
-  id          String   @id @default(cuid())
-  sourceId    String
-  status      String   // pending, running, completed, failed
-  startedAt   DateTime?
-  completedAt DateTime?
-  error       String?
-  itemsFound  Int      @default(0)
-  itemsProcessed Int   @default(0)
-  createdAt   DateTime @default(now())
+  id             String    @id @default(cuid())
+  sourceId       String
+  status         String // pending, running, completed, failed
+  startedAt      DateTime?
+  completedAt    DateTime?
+  error          String?
+  itemsFound     Int       @default(0)
+  itemsProcessed Int       @default(0)
+  createdAt      DateTime  @default(now())
 
   // Relations
-  source      ContentSource @relation(fields: [sourceId], references: [id])
+  source ContentSource @relation(fields: [sourceId], references: [id])
 
   @@map("scraping_jobs")
 }
 
 model SearchIndex {
-  id          String   @id @default(cuid())
-  modId       String   @unique
-  searchVector String  @db.Text // Full-text search vector
-  embedding   Float[]  // Vector embedding for AI search
-  lastIndexed DateTime @default(now())
+  id           String   @id @default(cuid())
+  modId        String   @unique
+  searchVector String   @db.Text // Full-text search vector
+  embedding    Float[] // Vector embedding for AI search
+  lastIndexed  DateTime @default(now())
 
   // Relations
-  mod         Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  mod Mod @relation(fields: [modId], references: [id], onDelete: Cascade)
 
   @@index([lastIndexed], name: "reindex_tracking")
   @@map("search_index")
 }
 
 model ModSubmission {
-  id             String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Original fields (for anonymous submissions)
   modUrl         String
   modName        String
-  description    String   @db.Text
+  description    String  @db.Text
   category       String
   submitterName  String
   submitterEmail String
   submitterIp    String?
 
   // Creator submission fields (all optional for backward compatibility)
-  userId         String?
+  userId           String?
   shortDescription String?
-  version        String?
-  gameVersion    String?
-  tags           String[]
-  thumbnail      String?
-  images         String[]
-  downloadUrl    String?
-  sourceUrl      String?
-  source         String?   @default("Creator Upload")
-  author         String?
-  isFree         Boolean   @default(true)
-  price          Decimal?  @db.Decimal(10,2)
-  currency       String?   @default("USD")
-  isNSFW         Boolean   @default(false)
+  version          String?
+  gameVersion      String?
+  tags             String[]
+  thumbnail        String?
+  images           String[]
+  downloadUrl      String?
+  sourceUrl        String?
+  source           String?  @default("Creator Upload")
+  author           String?
+  isFree           Boolean  @default(true)
+  price            Decimal? @db.Decimal(10, 2)
+  currency         String?  @default("USD")
+  isNSFW           Boolean  @default(false)
 
   // Track approved mod for edit workflow
-  approvedModId  String?
-  isEdit         Boolean   @default(false)
+  approvedModId String?
+  isEdit        Boolean @default(false)
 
   // Status tracking
-  status         String    @default("pending") // pending, approved, rejected
-  reviewedAt     DateTime?
-  reviewedBy     String?
-  reviewNotes    String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  status      String    @default("pending") // pending, approved, rejected
+  reviewedAt  DateTime?
+  reviewedBy  String?
+  reviewNotes String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
-  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  approvedMod    Mod?      @relation(fields: [approvedModId], references: [id], onDelete: SetNull)
+  user        User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvedMod Mod?  @relation(fields: [approvedModId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt(sort: Desc)], name: "pending_submissions")
   @@index([submitterEmail], name: "submission_tracking")
@@ -407,18 +468,18 @@ model ModSubmission {
 }
 
 model AdminAuditLog {
-  id          String   @id @default(cuid())
-  userId      String
-  action      String   // create, update, delete, approve, reject, etc.
-  resource    String   // mod, user, submission, etc.
-  resourceId  String?
-  details     Json?    // Additional context about the action
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  action     String // create, update, delete, approve, reject, etc.
+  resource   String // mod, user, submission, etc.
+  resourceId String?
+  details    Json? // Additional context about the action
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)], name: "user_audit_log")
   @@index([resource, resourceId], name: "resource_audit_log")
@@ -427,13 +488,13 @@ model AdminAuditLog {
 }
 
 model Waitlist {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  source      String   @default("sign-in") // sign-in, footer, popup, etc.
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-  notified    Boolean  @default(false) // Track if we've sent launch notification
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("sign-in") // sign-in, footer, popup, etc.
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  notified  Boolean  @default(false) // Track if we've sent launch notification
 
   @@index([createdAt(sort: Desc)], name: "recent_signups")
   @@index([notified], name: "notification_status")
@@ -442,31 +503,31 @@ model Waitlist {
 
 // Subscription and Payment Models
 model Subscription {
-  id                    String              @id @default(cuid())
-  userId                String              @unique
-  isPremium             Boolean             @default(false)
-  status                SubscriptionStatus  @default(ACTIVE)
-  billingInterval       BillingInterval?
+  id              String             @id @default(cuid())
+  userId          String             @unique
+  isPremium       Boolean            @default(false)
+  status          SubscriptionStatus @default(ACTIVE)
+  billingInterval BillingInterval?
 
   // Stripe fields
-  stripeCustomerId      String?             @unique
-  stripeSubscriptionId  String?             @unique
-  stripePriceId         String?
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String?
   stripeCurrentPeriodEnd DateTime?
 
   // LIFETIME usage tracking (not monthly reset)
-  lifetimeClicksUsed    Int                 @default(0)
-  clickLimit            Int                 @default(5)
+  lifetimeClicksUsed Int @default(0)
+  clickLimit         Int @default(5)
 
-  startedAt             DateTime            @default(now())
-  canceledAt            DateTime?
-  cancelAtPeriodEnd     Boolean             @default(false)
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  startedAt         DateTime  @default(now())
+  canceledAt        DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clickHistory          DownloadClick[]
-  invoices              Invoice[]
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clickHistory DownloadClick[]
+  invoices     Invoice[]
 
   @@index([userId])
   @@index([stripeCustomerId])
@@ -475,18 +536,18 @@ model Subscription {
 }
 
 model DownloadClick {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   userId         String
   modId          String
   subscriptionId String
   ipAddress      String?
   userAgent      String?
   referrer       String?
-  clickedAt      DateTime     @default(now())
+  clickedAt      DateTime @default(now())
 
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mod            Mod          @relation(fields: [modId], references: [id], onDelete: Cascade)
-  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mod          Mod          @relation(fields: [modId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@index([userId, clickedAt])
   @@index([modId])
@@ -494,20 +555,20 @@ model DownloadClick {
 }
 
 model Invoice {
-  id                  String       @id @default(cuid())
-  subscriptionId      String
-  stripeInvoiceId     String       @unique
-  amountPaid          Decimal      @db.Decimal(10,2)
-  currency            String       @default("USD")
-  status              String
-  hostedInvoiceUrl    String?
-  invoicePdf          String?
-  periodStart         DateTime
-  periodEnd           DateTime
-  paidAt              DateTime?
-  createdAt           DateTime     @default(now())
+  id               String    @id @default(cuid())
+  subscriptionId   String
+  stripeInvoiceId  String    @unique
+  amountPaid       Decimal   @db.Decimal(10, 2)
+  currency         String    @default("USD")
+  status           String
+  hostedInvoiceUrl String?
+  invoicePdf       String?
+  periodStart      DateTime
+  periodEnd        DateTime
+  paidAt           DateTime?
+  createdAt        DateTime  @default(now())
 
-  subscription        Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@index([subscriptionId])
   @@map("invoices")
@@ -527,37 +588,37 @@ enum AnalyticsEventType {
 }
 
 model AnalyticsEvent {
-  id             String              @id @default(cuid())
-  eventType      AnalyticsEventType
+  id        String             @id @default(cuid())
+  eventType AnalyticsEventType
 
   // User tracking (optional for anonymous events)
-  userId         String?
-  sessionId      String?             // Track anonymous sessions
+  userId    String?
+  sessionId String? // Track anonymous sessions
 
   // Event metadata
-  page           String?             // Page URL/path
-  referrer       String?
-  searchQuery    String?
-  modId          String?
-  categoryId     String?
-  adId           String?
+  page        String? // Page URL/path
+  referrer    String?
+  searchQuery String?
+  modId       String?
+  categoryId  String?
+  adId        String?
 
   // Engagement metrics
-  timeOnPage     Int?                // Seconds spent on page
-  scrollDepth    Int?                // Percentage scrolled (0-100)
+  timeOnPage  Int? // Seconds spent on page
+  scrollDepth Int? // Percentage scrolled (0-100)
 
   // Technical metadata
-  ipAddress      String?
-  userAgent      String?
-  deviceType     String?             // mobile, tablet, desktop
-  browser        String?
-  os             String?
-  country        String?
+  ipAddress  String?
+  userAgent  String?
+  deviceType String? // mobile, tablet, desktop
+  browser    String?
+  os         String?
+  country    String?
 
   // Additional data (flexible JSON for future extensions)
-  metadata       Json?
+  metadata Json?
 
-  createdAt      DateTime            @default(now())
+  createdAt DateTime @default(now())
 
   // Indexes for fast analytics queries
   @@index([eventType, createdAt(sort: Desc)])

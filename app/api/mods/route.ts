@@ -36,6 +36,13 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
+    // NEW: Faceted filters
+    const contentType = searchParams.get('contentType'); // e.g., "hair", "tops", "furniture"
+    const visualStyle = searchParams.get('visualStyle'); // e.g., "alpha", "maxis-match"
+    const themes = searchParams.get('themes'); // comma-separated: "christmas,winter"
+    const ageGroups = searchParams.get('ageGroups'); // comma-separated: "teen,adult"
+    const genderOptions = searchParams.get('genderOptions'); // comma-separated: "feminine,unisex"
+
     const skip = (page - 1) * limit;
     const isProduction = process.env.NODE_ENV === 'production';
 
@@ -64,6 +71,12 @@ export async function GET(request: NextRequest) {
       creatorHandle,
       sortBy,
       sortOrder,
+      // Faceted filters - MUST be included in cache key
+      contentType,
+      visualStyle,
+      themes,
+      ageGroups,
+      genderOptions,
     };
 
     const cached = await CacheService.getModsList(cacheParams);
@@ -98,11 +111,15 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    if (search) {
+    // Search will be filtered first, then re-ranked with relevance scoring
+    const searchTerm = search?.toLowerCase().trim();
+    if (searchTerm) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         { tags: { hasSome: [search] } },
+        // Also match if search term matches contentType
+        { contentType: { equals: searchTerm, mode: 'insensitive' } },
       ];
     }
 
@@ -142,6 +159,51 @@ export async function GET(request: NextRequest) {
       where.isFree = isFree === 'true';
     }
 
+    // NEW: Faceted filters
+    if (contentType) {
+      where.contentType = contentType;
+    }
+    if (visualStyle) {
+      where.visualStyle = visualStyle;
+    }
+    if (themes) {
+      // Match mods that have ANY of the specified themes
+      where.themes = { hasSome: themes.split(',') };
+    }
+    if (ageGroups) {
+      where.ageGroups = { hasSome: ageGroups.split(',') };
+    }
+    if (genderOptions) {
+      const genders = genderOptions.split(',');
+
+      // Exclusive gender filtering:
+      // - "masculine" = masculine-only (not feminine)
+      // - "feminine" = feminine-only (not masculine)
+      // - "unisex" = has both or tagged as unisex
+      if (genders.length === 1) {
+        if (genders[0] === 'masculine') {
+          where.AND = [
+            { genderOptions: { has: 'masculine' } },
+            { NOT: { genderOptions: { has: 'feminine' } } }
+          ];
+        } else if (genders[0] === 'feminine') {
+          where.AND = [
+            { genderOptions: { has: 'feminine' } },
+            { NOT: { genderOptions: { has: 'masculine' } } }
+          ];
+        } else if (genders[0] === 'unisex') {
+          // Unisex = has both masculine AND feminine, OR has 'unisex' tag
+          where.OR = [
+            { genderOptions: { hasEvery: ['masculine', 'feminine'] } },
+            { genderOptions: { has: 'unisex' } }
+          ];
+        }
+      } else {
+        // Multiple gender filters selected - use OR logic
+        where.genderOptions = { hasSome: genders };
+      }
+    }
+
     // Debug: log the where clause
     console.log('[API] WHERE clause:', JSON.stringify(where, null, 2));
 
@@ -161,12 +223,18 @@ export async function GET(request: NextRequest) {
     // Get total count
     const total = await prisma.mod.count({ where });
 
-    // Get mods with pagination
-    const mods = await prisma.mod.findMany({
+    // For search queries, we need to fetch more results and apply relevance scoring
+    // Otherwise, use standard pagination
+    const useRelevanceScoring = searchTerm && sortBy !== 'downloadCount' && sortBy !== 'rating' && sortBy !== 'title';
+
+    // Get mods - fetch more if we need to re-rank by relevance
+    let mods = await prisma.mod.findMany({
       where,
       orderBy,
-      skip,
-      take: limit,
+      // If re-ranking, fetch more results to ensure we have enough good matches
+      // Otherwise, use normal pagination
+      skip: useRelevanceScoring ? 0 : skip,
+      take: useRelevanceScoring ? Math.min(total, 500) : limit, // Cap at 500 for performance
       include: {
         creator: {
           select: {
@@ -193,6 +261,63 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    // Apply relevance scoring for search queries
+    if (useRelevanceScoring && searchTerm) {
+      // Calculate relevance score for each mod
+      const scoredMods = mods.map(mod => {
+        let score = 0;
+        const titleLower = (mod.title || '').toLowerCase();
+        const descLower = (mod.description || '').toLowerCase();
+        const contentTypeLower = (mod.contentType || '').toLowerCase();
+        const tagsLower = (mod.tags || []).map(t => t.toLowerCase());
+
+        // Create word boundary regex for exact word matching
+        const wordBoundaryRegex = new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+
+        // Highest priority: exact contentType match (e.g., searching "glasses" matches contentType="glasses")
+        if (contentTypeLower === searchTerm) {
+          score += 100;
+        }
+
+        // High priority: exact word match in title
+        if (wordBoundaryRegex.test(titleLower)) {
+          score += 80;
+        } else if (titleLower.includes(searchTerm)) {
+          // Lower score for partial match in title (e.g., "eyelashes" when searching "lash")
+          score += 30;
+        }
+
+        // Medium priority: exact tag match
+        if (tagsLower.includes(searchTerm)) {
+          score += 50;
+        }
+
+        // Lower priority: title starts with search term
+        if (titleLower.startsWith(searchTerm)) {
+          score += 20;
+        }
+
+        // Lowest priority: description match (exact word vs partial)
+        if (wordBoundaryRegex.test(descLower)) {
+          score += 15;
+        } else if (descLower.includes(searchTerm)) {
+          score += 5;
+        }
+
+        // Small boost for popularity (downloads, favorites)
+        const popularityBoost = Math.log10((mod.downloadCount || 0) + (mod._count.favorites || 0) + 10) * 2;
+        score += popularityBoost;
+
+        return { ...mod, _relevanceScore: score };
+      });
+
+      // Sort by relevance score (descending)
+      scoredMods.sort((a, b) => b._relevanceScore - a._relevanceScore);
+
+      // Apply pagination after sorting
+      mods = scoredMods.slice(skip, skip + limit);
+    }
 
     // Build base where clause for facets (exclude current filters to show all available options)
     const facetWhere: any = {

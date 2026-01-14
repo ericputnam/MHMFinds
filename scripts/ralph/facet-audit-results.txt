@@ -1,0 +1,52 @@
+Facet Data Audit Report
+Generated: 2026-01-13T19:40:15.739Z
+============================================================
+
+Total Mods: 9989
+
+Mods with null contentType: 19 (0.2%)
+Mods with null visualStyle: 7940 (79.5%)
+Mods with empty genderOptions: 5819 (58.3%)
+Non-clothing mods with gender set: 8
+Mods with goth theme: 232
+
+--- Additional Metrics ---
+
+Mods with empty themes: 4025 (40.3%)
+Mods with empty ageGroups: 8140 (81.5%)
+
+--- Content Type Breakdown ---
+  hair: 1506
+  tops: 1378
+  accessories: 757
+  lot: 736
+  makeup: 602
+  poses: 584
+  full-body: 559
+  dresses: 554
+  furniture: 544
+  decor: 468
+  shoes: 379
+  bottoms: 379
+  gameplay-mod: 318
+  skin: 218
+  jewelry: 185
+  eyes: 120
+  loading-screen: 115
+  nails: 106
+  preset: 99
+  glasses: 95
+
+--- Visual Style Breakdown ---
+  (null): 7940
+  alpha: 1302
+  maxis-match: 747
+
+--- Gender Options for Clothing Items ---
+  Masculine only: 582
+  Feminine only: 2772
+  Both (unisex): 442
+  Empty (needs fix): 2731
+
+--- CAS Items Missing Age Groups ---
+  CAS items with empty ageGroups: 5448

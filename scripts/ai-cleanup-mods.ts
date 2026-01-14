@@ -139,6 +139,38 @@ Respond with JSON only:
       result.category = 'Poses';
     }
 
+    // Fix hair - AI often miscategorizes hair mods as Gameplay or other categories
+    const hairKeywords = ['hair', 'hairstyle', 'ponytail', 'braids', 'bun', 'bangs', 'wig', 'updo'];
+    const isHair = hairKeywords.some(kw => title.includes(kw)) ||
+                   (reasoning.includes('hair') && !reasoning.includes('chair'));
+    if (isHair && result.category !== 'Hair') {
+      result.category = 'Hair';
+    }
+
+    // Fix CAS - Clothing being miscategorized
+    const clothingKeywords = ['dress', 'top', 'bottom', 'shirt', 'pants', 'skirt', 'sweater', 'hoodie', 'jacket', 'coat', 'pajama', 'sleepwear', 'outfit', 'romper', 'jumpsuit', 'bodysuit'];
+    const isClothing = clothingKeywords.some(kw => title.includes(kw)) ||
+                       (reasoning.includes('clothing') || reasoning.includes('wearable'));
+    if (isClothing && !result.category.startsWith('CAS') && result.category !== 'Hair') {
+      result.category = 'CAS - Clothing';
+    }
+
+    // Fix CAS - Accessories being miscategorized
+    const accessoryKeywords = ['earring', 'necklace', 'bracelet', 'ring', 'glasses', 'hat', 'piercing', 'jewelry', 'jewellery'];
+    const isAccessory = accessoryKeywords.some(kw => title.includes(kw)) ||
+                        reasoning.includes('accessor');
+    if (isAccessory && result.category === 'Gameplay') {
+      result.category = 'CAS - Accessories';
+    }
+
+    // Fix CAS - Makeup being miscategorized
+    const makeupKeywords = ['lipstick', 'eyeshadow', 'makeup', 'blush', 'eyeliner', 'mascara'];
+    const isMakeup = makeupKeywords.some(kw => title.includes(kw)) ||
+                     reasoning.includes('makeup');
+    if (isMakeup && result.category === 'Gameplay') {
+      result.category = 'CAS - Makeup';
+    }
+
     // Clean tags - remove any that look like article titles
     result.tags = (result.tags || [])
       .filter((tag: string) => {

@@ -1,0 +1,139 @@
+# Age Group Cleanup Report
+Generated: 2026-01-13T22:00:30.893Z
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| Total Mods | 9989 |
+| Mods with Age Groups | 6251 |
+| Mods without Age Groups | 3736 |
+
+## Task Results
+
+### AGE-001: Toddler Age Group Audit
+- Audited: 600
+- Fixed (removed toddler): 69
+- Valid (kept): 531
+
+### AGE-002: Child Age Group Audit
+- Audited: 657
+- Fixed (removed child): 89
+- Valid (kept): 568
+
+### AGE-003: Infant Age Group Audit
+- Audited: 399
+- Fixed (removed infant): 277
+- Valid (kept): 122
+
+### AGE-004: Teen Age Group Audit
+- Audited: 6124
+- Fixed (removed teen): 0
+- Valid (kept): 6124
+
+### AGE-005: Elder Age Group Audit
+- Audited: 5926
+- Fixed (removed elder): 0
+- Valid (kept): 5926
+
+### AGE-006: Non-CAS Items Cleanup
+- Non-CAS mods with age groups cleared: 880
+- By content type:
+  - gameplay-mod: 135
+  - lot: 119
+  - furniture: 321
+  - poses: 147
+  - decor: 120
+  - plants: 3
+  - script-mod: 7
+  - loading-screen: 1
+  - pet-furniture: 1
+  - clutter: 17
+  - lighting: 8
+  - cas-background: 1
+
+## Final Age Group Distribution
+
+| Age Group | Count |
+|-----------|-------|
+| infant | 93 |
+| toddler | 378 |
+| child | 390 |
+| teen | 5529 |
+| young-adult | 4960 |
+| adult | 4999 |
+| elder | 5418 |
+
+## Detailed Changes
+
+### Toddler Removals (69 total)
+- "Halloween Makeup Genetics Collection..." - no toddler indicator found
+- "Mini Long Sleeve Leotards..." - no toddler indicator found
+- "Marcus Vitiligo Eyebrows..." - no toddler indicator found
+- "Ivanka Contacts And Eyebags..." - no toddler indicator found
+- "Heart Eyes..." - no toddler indicator found
+- "IMF Impact Eyes N.85..." - no toddler indicator found
+- "Pennywise Eyes..." - no toddler indicator found
+- "Prada Downtown Leather Sneakers..." - no toddler indicator found
+- "Santa Sweaters..." - no toddler indicator found
+- "Supernatural Eyes..." - no toddler indicator found
+- "Demonic Eyes..." - no toddler indicator found
+- "Highlighter Set..." - no toddler indicator found
+- "Browline Glasses..." - no toddler indicator found
+- "Vanilla..." - no toddler indicator found
+- "Dragon Eyes..." - no toddler indicator found
+- "Love Yourself Presets Collection..." - no toddler indicator found
+- "Lip Kit..." - no toddler indicator found
+- "Eye NB14 Maxis Match..." - no toddler indicator found
+- "Tattoo Z107..." - no toddler indicator found
+- "Eyes And Eyebrows Set..." - no toddler indicator found
+
+... and 49 more
+
+### Child Removals (89 total)
+- "Sims 4 Pregnancy Family Portraits..." - no child indicator found
+- "Halloween Makeup Genetics Collection..." - no child indicator found
+- "Mini Long Sleeve Leotards..." - no child indicator found
+- "IMF Impact Eyes N.85..." - no child indicator found
+- "Prada Downtown Leather Sneakers..." - no child indicator found
+- "Demonic Eyes..." - no child indicator found
+- "Dragon Eyes..." - no child indicator found
+- "Eye NB14 Maxis Match..." - no child indicator found
+- "Eyes And Eyebrows Set..." - no child indicator found
+- "Eyebrows Set N08..." - no child indicator found
+- "Lipstick Z520..." - no child indicator found
+- "Sims 4 Academia Nails Recolor..." - no child indicator found
+- "Halloween Haul Poses..." - false positive (childhood, childish, etc)
+- "Shine Bright Lipgloss..." - no child indicator found
+- "Dimples NO5..." - no child indicator found
+- "Tattoo Z22..." - no child indicator found
+- "Lighting Overlay 2.0..." - no child indicator found
+- "Ghost Outfit..." - no child indicator found
+- "Adidas Yeezy 500 ‘Stone’..." - no child indicator found
+- "Marcus Vitiligo Eyebrows..." - no child indicator found
+
+... and 69 more
+
+### Infant Removals (277 total)
+- "Bump and Beyond Maternity Collection..." - false positive (baby pink, etc)
+- "Maternity Glow Collection..." - false positive (baby pink, etc)
+- "Toddler in The Pumpkin..." - no infant indicator found
+- "Santa Sweaters..." - no infant indicator found
+- "Dragon Eyes..." - no infant indicator found
+- "Breanna Bob..." - no infant indicator found
+- "Love Yourself Presets Collection..." - no infant indicator found
+- "Halloween Makeup Genetics Collection..." - no infant indicator found
+- "Mini Long Sleeve Leotards..." - no infant indicator found
+- "IMF Impact Eyes N.85..." - no infant indicator found
+- "Prada Downtown Leather Sneakers..." - no infant indicator found
+- "Demonic Eyes..." - no infant indicator found
+- "Eye NB14 Maxis Match..." - no infant indicator found
+- "Marcus Vitiligo Eyebrows..." - no infant indicator found
+- "Eyes And Eyebrows Set..." - no infant indicator found
+- "Eyebrows Set N08..." - no infant indicator found
+- "Lipstick Z520..." - no infant indicator found
+- "Sims 4 Academia Nails Recolor..." - no infant indicator found
+- "Shine Bright Lipgloss..." - no infant indicator found
+- "Dimples NO5..." - no infant indicator found
+
+... and 257 more

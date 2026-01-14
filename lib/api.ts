@@ -9,6 +9,16 @@ export interface Mod {
   gameVersion: string | null;
   category: string;
   tags: string[];
+
+  // Faceted taxonomy
+  contentType: string | null;
+  visualStyle: string | null;
+  themes: string[];
+  ageGroups: string[];
+  genderOptions: string[];
+  occultTypes: string[];
+  packRequirements: string[];
+
   thumbnail: string | null;
   images: string[];
   downloadUrl: string | null;
@@ -53,13 +63,33 @@ export interface ModsResponse {
 
 export interface SearchFilters {
   search?: string;
-  category?: string;
+  category?: string; // Legacy
   gameVersion?: string;
-  tags?: string[];
+  tags?: string[]; // Legacy
+
+  // Faceted filters
+  contentType?: string[];
+  visualStyle?: string[];
+  themes?: string[];
+  ageGroups?: string[];
+  genderOptions?: string[];
+
   isFree?: boolean;
   isNSFW?: boolean;
   sortBy?: 'createdAt' | 'downloadCount' | 'rating' | 'title';
   sortOrder?: 'asc' | 'desc';
+}
+
+export interface FacetDefinition {
+  id: string;
+  facetType: string;
+  value: string;
+  displayName: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  sortOrder: number;
+  count?: number; // Number of mods with this facet
 }
 
 class ApiClient {

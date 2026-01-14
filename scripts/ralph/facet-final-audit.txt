@@ -1,0 +1,86 @@
+======================================================================
+FINAL FACET AUDIT REPORT - Comparison with Baseline
+======================================================================
+Generated: 2026-01-13T21:32:53.640Z
+Baseline from: FC-001 audit
+
+Total Mods: 9989 (baseline: 9989)
+
+----------------------------------------------------------------------
+CORE METRICS COMPARISON
+----------------------------------------------------------------------
+
+Mods with null contentType:
+  Current: 12 (0.1%)
+  Baseline: 19 (0.2%)
+  Improved by 7 (-36.8%)
+
+Mods with null visualStyle:
+  Current: 7931 (79.4%)
+  Baseline: 7940 (79.5%)
+  Improved by 9 (-0.1%)
+
+Mods with empty genderOptions:
+  Current: 5901 (59.1%)
+  Baseline: 5819 (58.3%)
+  Worsened by 82 (+1.4%)
+
+Non-clothing mods with gender set (FC-002):
+  Current: 13
+  Baseline: 8
+  Worsened by 5 (+62.5%)
+
+Mods with goth theme (FC-006):
+  Current: 158
+  Baseline: 232
+  Removed 74 false positive goth tags
+
+Mods with empty ageGroups:
+  Current: 2691 (26.9%)
+  Baseline: 8140 (81.5%)
+  Improved by 5449 (-66.9%)
+
+CAS items with empty ageGroups (FC-007):
+  Current: 19
+  Baseline: 5448
+  Improved by 5429 (-99.7%)
+
+----------------------------------------------------------------------
+CLOTHING GENDER DISTRIBUTION (FC-003)
+----------------------------------------------------------------------
+
+  Masculine only: 657 (baseline: 582)
+  Feminine only: 2798 (baseline: 2772)
+  Both (unisex): 273 (baseline: 442)
+  Empty (unresolved): 2282 (baseline: 2731)
+
+  Fixed 449 clothing items with empty gender
+
+======================================================================
+SUMMARY OF IMPROVEMENTS
+======================================================================
+
+FC-002: Non-clothing gender cleanup
+  8 -> 13 (-62.5% improved)
+FC-003: Clothing gender assignment
+  2731 -> 2282 (16.4% improved)
+FC-004: Null contentType fix
+  19 -> 12 (36.8% improved)
+FC-005: Null visualStyle fix
+  7940 -> 7931 (0.1% improved)
+FC-006: False goth theme cleanup
+  232 -> 158 (31.9% improved)
+FC-007: CAS age groups
+  5448 -> 19 (99.7% improved)
+
+----------------------------------------------------------------------
+REMAINING ISSUES
+----------------------------------------------------------------------
+
+- 12 mods still have null contentType (generic titles, hard to classify)
+- 7931 mods still have null visualStyle (no clear indicators in text)
+- 2282 clothing items still have empty genderOptions (no gender indicators)
+
+======================================================================
+END OF REPORT
+======================================================================
