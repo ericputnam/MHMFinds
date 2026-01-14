@@ -41,6 +41,7 @@ This document tracks all Product Requirements Documents (PRDs) for the MHMFinds 
 |-----|----------|--------|---------|-----------|-------|
 | [Trending Implementation](./PRD-trending-implementation.md) | Medium | Not Started | 2025-01-13 | - | Replace hardcoded trending with dynamic data |
 | [Filter Visibility UX](./PRD-filter-visibility-ux.md) | High | Not Started | 2025-01-13 | - | Make active filters more obvious |
+| [Pagination Per-Page](./PRD-pagination-per-page.md) | Medium | **Completed** | 2026-01-13 | 2026-01-13 | Allow users to select 20, 50, or 100 mods per page |
 
 ### Navigation & Testing
 
@@ -64,10 +65,10 @@ This document tracks all Product Requirements Documents (PRDs) for the MHMFinds 
 | Bugs Fixed | 1 | 0 | 0 | 1 |
 | Data Quality | 3 | 3 | 0 | 0 |
 | Scraper | 1 | 1 | 0 | 0 |
-| Features | 2 | 2 | 0 | 0 |
+| Features | 3 | 2 | 0 | 1 |
 | Navigation | 1 | 1 | 0 | 0 |
 | UI/UX | 2 | 0 | 0 | 2 |
-| **Total** | **10** | **7** | **0** | **3** |
+| **Total** | **11** | **7** | **0** | **4** |
 
 ---
 

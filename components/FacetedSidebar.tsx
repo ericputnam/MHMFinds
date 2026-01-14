@@ -176,7 +176,7 @@ export function FacetedSidebar({ selectedFacets, onFacetChange, onClearAll }: Fa
               {/* Group Values */}
               {isExpanded && (
                 <div className="mt-1 ml-2 space-y-0.5">
-                  {values.slice(0, 15).map(facet => {
+                  {values.slice(0, 20).map(facet => {
                     const isSelected = selectedValues.includes(facet.value);
                     return (
                       <button
@@ -200,10 +200,12 @@ export function FacetedSidebar({ selectedFacets, onFacetChange, onClearAll }: Fa
                       </button>
                     );
                   })}
-                  {values.length > 15 && (
-                    <button className="w-full text-xs text-slate-500 hover:text-slate-300 py-1">
-                      +{values.length - 15} more
-                    </button>
+                  {values.length > 20 && (
+                    <div className="mt-2 pt-2 border-t border-white/5">
+                      <button className="w-full flex items-center justify-center gap-1.5 text-xs text-slate-400 hover:text-sims-pink py-1.5 transition-colors">
+                        <span className="bg-white/5 px-2 py-0.5 rounded-full">+{values.length - 20} more</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

@@ -32,6 +32,7 @@ function HomePageContent() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns, setGridColumns] = useState(4);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
+  const [modsPerPage, setModsPerPage] = useState(20);
 
   // Faceted filter state
   const [selectedFacets, setSelectedFacets] = useState<{
@@ -97,8 +98,9 @@ function HomePageContent() {
       const page = pageOverride !== undefined ? pageOverride : currentPage;
       const apiParams = new URLSearchParams();
 
-      // Add page
+      // Add page and limit
       apiParams.set('page', page.toString());
+      apiParams.set('limit', modsPerPage.toString());
 
       // Add search query if exists
       if (searchQuery) {
@@ -169,7 +171,7 @@ function HomePageContent() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage, selectedFacets]);
+  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage, selectedFacets, modsPerPage]);
 
   // Fetch mods on mount and when filters change
   useEffect(() => {
@@ -205,6 +207,11 @@ function HomePageContent() {
   const handleSortChange = (newSortBy: string) => {
     setCurrentPage(1); // Reset to page 1
     setSortBy(newSortBy);
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setCurrentPage(1); // Reset to page 1
+    setModsPerPage(newPerPage);
   };
 
   // Facet filter handlers
@@ -339,25 +346,48 @@ function HomePageContent() {
                     <span className="animate-pulse">Loading...</span>
                   ) : (
                     <span>
-                      <span className="text-white font-medium">{pagination?.totalItems?.toLocaleString() || mods.length}</span> mods
+                      <span className="text-white font-medium">{pagination?.total?.toLocaleString() || mods.length}</span> mods
                     </span>
                   )}
                 </div>
 
-                {/* Sort Dropdown */}
-                <div className="relative">
-                  <div className="flex items-center space-x-2 bg-black/20 hover:bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 py-2 cursor-pointer transition-all">
-                    <ArrowUpDown className="w-4 h-4 text-sims-purple" />
-                    <select
-                      value={sortBy}
-                      onChange={(e) => handleSortChange(e.target.value)}
-                      className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer"
-                    >
-                      <option value="relevance" className="bg-mhm-card text-slate-200">Relevance</option>
-                      <option value="downloads" className="bg-mhm-card text-slate-200">Most Downloads</option>
-                      <option value="rating" className="bg-mhm-card text-slate-200">Highest Rated</option>
-                      <option value="newest" className="bg-mhm-card text-slate-200">Newest Finds</option>
-                    </select>
+                {/* Controls: Per Page + Sort */}
+                <div className="flex items-center gap-3">
+                  {/* Per Page Selector */}
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <span className="hidden sm:inline">Show</span>
+                    <div className="flex items-center bg-black/20 border border-white/10 rounded-lg overflow-hidden">
+                      {[20, 50, 100].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => handlePerPageChange(num)}
+                          className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                            modsPerPage === num
+                              ? 'bg-sims-purple text-white'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sort Dropdown */}
+                  <div className="relative">
+                    <div className="flex items-center space-x-2 bg-black/20 hover:bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 py-2 cursor-pointer transition-all">
+                      <ArrowUpDown className="w-4 h-4 text-sims-purple" />
+                      <select
+                        value={sortBy}
+                        onChange={(e) => handleSortChange(e.target.value)}
+                        className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="relevance" className="bg-mhm-card text-slate-200">Relevance</option>
+                        <option value="downloads" className="bg-mhm-card text-slate-200">Most Downloads</option>
+                        <option value="rating" className="bg-mhm-card text-slate-200">Highest Rated</option>
+                        <option value="newest" className="bg-mhm-card text-slate-200">Newest Finds</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
