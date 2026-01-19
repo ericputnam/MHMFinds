@@ -53,6 +53,8 @@ model User {
   subscription   Subscription?
   downloadClicks DownloadClick[]
   submissions    ModSubmission[]
+  notificationPreferences NotificationPreferences?
+  notificationLogs NotificationLog[]
 
   @@index([email], name: "email_lookup")
   @@index([isCreator, isPremium], name: "user_tiers")
@@ -179,6 +181,7 @@ model Mod {
   searchIndex    SearchIndex?
   downloadClicks DownloadClick[]
   submissions    ModSubmission[]
+  monetizationOpportunities MonetizationOpportunity[]
 
   // Performance indexes for high-traffic queries
   @@index([isVerified, isNSFW, createdAt(sort: Desc)], name: "verified_safe_newest")
@@ -629,4 +632,516 @@ model AnalyticsEvent {
   @@index([page, createdAt])
   @@index([createdAt(sort: Desc)])
   @@map("analytics_events")
+}
+
+// ============================================
+// MONETIZATION AGENT MODELS
+// ============================================
+
+// Enum for opportunity types
+enum OpportunityType {
+  AFFILIATE_PLACEMENT
+  AD_LAYOUT_OPTIMIZATION
+  CONTENT_EXPANSION
+  TRAFFIC_SOURCE_OPTIMIZATION
+  SEASONAL_CAMPAIGN
+}
+
+// Enum for opportunity status
+enum OpportunityStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IMPLEMENTED
+  EXPIRED
+}
+
+// Enum for action types
+enum ActionType {
+  ADD_AFFILIATE_LINK
+  UPDATE_META_DESCRIPTION
+  ADD_TO_COLLECTION
+  UPDATE_AD_PLACEMENT
+  EXPAND_CONTENT
+  OPTIMIZE_SEO
+  CREATE_COLLECTION
+  AB_TEST
+  TRAFFIC_REDIRECT
+  GENERATE_INTERNAL_LINKS
+}
+
+// Enum for action status
+enum ActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+  ROLLED_BACK
+}
+
+// Enum for agent run types
+enum AgentRunType {
+  FULL
+  GA4_SYNC
+  MEDIAVINE_SYNC
+  AFFILIATE_SCAN
+  RPM_ANALYSIS
+  FORECAST
+  CLEANUP
+}
+
+// Enum for agent run status
+enum AgentRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// Daily metrics snapshot per page
+model MonetizationMetric {
+  id         String   @id @default(cuid())
+  metricDate DateTime @db.Date
+  pageUrl    String
+  pageType   String? // mod, category, search, home, blog
+
+  // Traffic metrics
+  pageviews      Int     @default(0)
+  uniqueVisitors Int     @default(0)
+  bounceRate     Decimal @default(0) @db.Decimal(5, 2) // 0-100%
+  avgTimeOnPage  Int     @default(0) // seconds
+  scrollDepth    Decimal @default(0) @db.Decimal(5, 2) // 0-100%
+
+  // Traffic source breakdown
+  trafficGoogle   Int @default(0)
+  trafficPinterest Int @default(0)
+  trafficDirect   Int @default(0)
+  trafficSocial   Int @default(0)
+  trafficOther    Int @default(0)
+
+  // Ad revenue metrics
+  adImpressions Int     @default(0)
+  adRevenue     Decimal @default(0) @db.Decimal(10, 2)
+  rpm           Decimal @default(0) @db.Decimal(10, 4) // Revenue per mille
+
+  // Affiliate metrics
+  affiliateClicks      Int     @default(0)
+  affiliateConversions Int     @default(0)
+  affiliateRevenue     Decimal @default(0) @db.Decimal(10, 2)
+
+  // Engagement metrics
+  modDownloads  Int @default(0)
+  modFavorites  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageUrl, metricDate])
+  @@index([metricDate(sort: Desc)])
+  @@index([pageType, metricDate])
+  @@index([pageUrl])
+  @@map("monetization_metrics")
+}
+
+// Detected monetization opportunity
+model MonetizationOpportunity {
+  id              String            @id @default(cuid())
+  opportunityType OpportunityType
+  title           String
+  description     String            @db.Text
+  status          OpportunityStatus @default(PENDING)
+
+  // Classification
+  priority   Int     @default(5) // 1-10, 10 being highest
+  confidence Decimal @db.Decimal(3, 2) // 0-1
+
+  // Context
+  pageUrl  String?
+  modId    String?
+  category String?
+
+  // Impact estimation
+  estimatedRevenueImpact Decimal? @db.Decimal(10, 2)
+  estimatedRpmIncrease   Decimal? @db.Decimal(5, 2) // percentage
+
+  // Approval tracking
+  approvedAt   DateTime?
+  approvedBy   String?
+  rejectedAt   DateTime?
+  rejectedBy   String?
+  rejectionReason String?
+
+  // Execution tracking
+  implementedAt DateTime?
+  expiresAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  mod     Mod?                  @relation(fields: [modId], references: [id], onDelete: SetNull)
+  actions MonetizationAction[]
+
+  @@index([status, priority(sort: Desc)])
+  @@index([opportunityType, status])
+  @@index([modId])
+  @@index([createdAt(sort: Desc)])
+  @@map("monetization_opportunities")
+}
+
+// Specific action to take for an opportunity
+model MonetizationAction {
+  id            String       @id @default(cuid())
+  opportunityId String
+  actionType    ActionType
+  actionData    Json // Specific data for the action (e.g., affiliate URL, ad placement config)
+  status        ActionStatus @default(PENDING)
+
+  // Execution details
+  approvedAt    DateTime?
+  approvedBy    String?
+  rejectedAt    DateTime?
+  rejectedBy    String?
+  executedAt    DateTime?
+  rolledBackAt  DateTime?
+
+  // Auto-execution fields (PRD-18)
+  autoExecutable     Boolean   @default(false)
+  executionTier      Int       @default(3) // 1=auto, 2=after-approval, 3=manual
+  executionResult    Json?     // { success: boolean, output: string, error?: string }
+  executionAttempts  Int       @default(0)
+  lastAttemptAt      DateTime?
+  rateLimitKey       String?   // e.g., "mod:123" to limit per-entity
+
+  // Impact measurement
+  preExecutionMetrics  Json? // Snapshot before execution
+  postExecutionMetrics Json? // Snapshot after execution
+  measuredImpact       Decimal? @db.Decimal(10, 2)
+
+  // Learning fields (PRD-20)
+  verifiedImpact     Decimal?   @db.Decimal(10, 2)
+  verifiedAt         DateTime?
+  learningApplied    Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  opportunity        MonetizationOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  executionLogs      ExecutionLog[]
+  impactMeasurements ImpactMeasurement[]
+
+  @@index([status])
+  @@index([opportunityId])
+  @@index([executionTier, status])
+  @@map("monetization_actions")
+}
+
+// Monthly revenue forecast
+model RevenueForecast {
+  id          String   @id @default(cuid())
+  forecastMonth DateTime @db.Date // First day of the month
+
+  // Forecasted values
+  forecastedAdRevenue        Decimal @db.Decimal(10, 2)
+  forecastedAffiliateRevenue Decimal @db.Decimal(10, 2)
+  forecastedMembershipRevenue Decimal @default(0) @db.Decimal(10, 2)
+  forecastedTotalRevenue     Decimal @db.Decimal(10, 2)
+
+  // Actual values (filled in as month progresses)
+  actualAdRevenue        Decimal? @db.Decimal(10, 2)
+  actualAffiliateRevenue Decimal? @db.Decimal(10, 2)
+  actualMembershipRevenue Decimal? @db.Decimal(10, 2)
+  actualTotalRevenue     Decimal? @db.Decimal(10, 2)
+
+  // Growth metrics
+  monthOverMonthGrowth Decimal? @db.Decimal(5, 2) // percentage
+  yearOverYearGrowth   Decimal? @db.Decimal(5, 2) // percentage
+  growthRate           Decimal? @db.Decimal(5, 4) // monthly growth rate
+
+  // Model metadata
+  confidenceLevel   Decimal @db.Decimal(3, 2) // 0-1
+  modelVersion      String  @default("v1")
+  inputDataSnapshot Json? // Snapshot of input data used
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([forecastMonth])
+  @@index([forecastMonth(sort: Desc)])
+  @@map("revenue_forecasts")
+}
+
+// Agent execution log
+model AgentRun {
+  id        String         @id @default(cuid())
+  runType   AgentRunType
+  status    AgentRunStatus @default(RUNNING)
+
+  // Timing
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  durationMs  Int?
+
+  // Metrics
+  itemsProcessed      Int @default(0)
+  opportunitiesFound  Int @default(0)
+  errorsEncountered   Int @default(0)
+
+  // Logs
+  logSummary   String? @db.Text
+  errorDetails Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([runType, startedAt(sort: Desc)])
+  @@index([status])
+  @@map("agent_runs")
+}
+
+// ============================================
+// AUTO-EXECUTION ENGINE (PRD-18)
+// ============================================
+
+// Execution log for tracking action executions
+model ExecutionLog {
+  id              String   @id @default(cuid())
+  actionId        String
+  action          MonetizationAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  executedAt      DateTime @default(now())
+  executedBy      String   // "auto" | "approved" | userId
+
+  // Execution details
+  inputData       Json
+  outputData      Json?
+
+  success         Boolean
+  errorMessage    String?
+  durationMs      Int
+
+  // Rollback info
+  rollbackData    Json?    // Data needed to undo this action
+  rolledBackAt    DateTime?
+  rolledBackBy    String?
+
+  @@index([actionId])
+  @@index([executedAt(sort: Desc)])
+  @@index([success, executedAt])
+  @@map("execution_logs")
+}
+
+// ============================================
+// NOTIFICATIONS SYSTEM (PRD-19)
+// ============================================
+
+// User notification preferences
+model NotificationPreferences {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Channel settings
+  slackEnabled    Boolean  @default(true)
+  emailEnabled    Boolean  @default(true)
+  slackWebhook    String?  // User-specific webhook if different from global
+
+  // Notification types
+  criticalAlerts    Boolean @default(true)
+  opportunityAlerts Boolean @default(true)
+  executionAlerts   Boolean @default(true)
+  digestAlerts      Boolean @default(true)
+
+  // Thresholds
+  minImpactForAlert Decimal @default(10) @db.Decimal(10, 2) // Only alert if impact > $X/month
+
+  // Quiet hours (no notifications)
+  quietHoursStart Int?     // Hour of day (0-23)
+  quietHoursEnd   Int?
+  timezone        String   @default("America/New_York")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("notification_preferences")
+}
+
+// Notification log for audit trail
+model NotificationLog {
+  id              String   @id @default(cuid())
+  type            String   // critical, standard, digest
+  channel         String   // slack, email
+  event           String   // opportunity_detected, run_failed, etc.
+
+  recipientId     String?
+  recipient       User?    @relation(fields: [recipientId], references: [id], onDelete: SetNull)
+
+  subject         String
+  body            String   @db.Text
+  metadata        Json?
+
+  sentAt          DateTime @default(now())
+  success         Boolean
+  errorMessage    String?
+
+  @@index([type, sentAt(sort: Desc)])
+  @@index([recipientId, sentAt(sort: Desc)])
+  @@index([event, sentAt(sort: Desc)])
+  @@map("notification_logs")
+}
+
+// ============================================
+// IMPACT TRACKING & LEARNING (PRD-20)
+// ============================================
+
+// Impact measurement for executed actions
+model ImpactMeasurement {
+  id              String   @id @default(cuid())
+
+  // Link to action
+  actionId        String
+  action          MonetizationAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  // Measurement metadata
+  measurementType String   // revenue, traffic, rpm, conversion
+  measurementWindow Int    // Days measured
+  startDate       DateTime
+  endDate         DateTime
+
+  // Baseline data (before action)
+  baselineValue   Decimal  @db.Decimal(10, 4)
+  baselinePeriodStart DateTime
+  baselinePeriodEnd DateTime
+
+  // Measured data (after action)
+  measuredValue   Decimal  @db.Decimal(10, 4)
+
+  // Calculated impact
+  absoluteImpact  Decimal  @db.Decimal(10, 4) // measuredValue - baselineValue
+  percentImpact   Decimal  @db.Decimal(10, 4) // (absoluteImpact / baselineValue) * 100
+  revenueImpact   Decimal? @db.Decimal(10, 2) // Estimated monthly $ impact
+
+  // Comparison to prediction
+  estimatedImpact Decimal  @db.Decimal(10, 2) // Original prediction
+  predictionError Decimal  @db.Decimal(10, 4) // Percentage error
+  predictionAccuracy Decimal @db.Decimal(5, 4) // 1 - abs(error), capped at 0
+
+  // Attribution
+  attributionConfidence Decimal @db.Decimal(5, 4) // How confident are we this was due to the action
+  attributionNotes String?
+
+  // Status
+  status          String   @default("pending") // pending, measuring, complete, inconclusive
+  completedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([actionId])
+  @@index([status])
+  @@index([endDate])
+  @@map("impact_measurements")
+}
+
+// ============================================
+// AFFILIATE OFFERS SYSTEM
+// ============================================
+
+model AffiliateOffer {
+  id          String   @id @default(cuid())
+  name        String   // "Razer BlackWidow V4 Keyboard"
+  description String?  // Short promo text
+  imageUrl    String   // Product image
+  affiliateUrl String  // Impact.com tracking link
+
+  // Partner/brand info
+  partner     String   // "razer", "corsair", "green-man-gaming"
+  partnerLogo String?  // Partner brand logo URL
+
+  // Categorization
+  category    String   // "peripherals", "gaming-chairs", "games", "pc-components"
+
+  // Display settings
+  priority    Int      @default(0)  // Higher = shown first
+  isActive    Boolean  @default(true)
+
+  // Promotional info
+  promoText   String?  // "20% OFF" or "Free Shipping"
+  promoColor  String?  // Hex color for promo badge
+
+  // Scheduling
+  startDate   DateTime?
+  endDate     DateTime?
+
+  // Performance tracking
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  clickEvents AffiliateClick[]
+
+  @@index([isActive, priority(sort: Desc)])
+  @@index([category, isActive])
+  @@index([partner])
+  @@map("affiliate_offers")
+}
+
+model AffiliateClick {
+  id          String   @id @default(cuid())
+  offerId     String
+
+  // Context
+  sourceType  String   // "interstitial", "grid", "sidebar"
+  modId       String?  // Which mod page triggered this (if any)
+  pageUrl     String?
+
+  // User tracking
+  sessionId   String?
+  ipAddress   String?
+  userAgent   String?
+
+  clickedAt   DateTime @default(now())
+
+  // Relations
+  offer       AffiliateOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@index([offerId, clickedAt(sort: Desc)])
+  @@index([sourceType, clickedAt])
+  @@map("affiliate_clicks")
+}
+
+// Aggregate learning metrics for prediction accuracy tracking
+model AgentLearningMetric {
+  id              String   @id @default(cuid())
+
+  // What this metric tracks
+  metricType      String   // prediction_accuracy, execution_success, etc.
+  actionType      String?  // If specific to an action type
+  opportunityType String?  // If specific to opportunity type
+
+  // Time period
+  periodStart     DateTime
+  periodEnd       DateTime
+  periodType      String   // daily, weekly, monthly
+
+  // Values
+  sampleSize      Int
+  meanValue       Decimal  @db.Decimal(10, 4)
+  medianValue     Decimal? @db.Decimal(10, 4)
+  stdDeviation    Decimal? @db.Decimal(10, 4)
+  minValue        Decimal? @db.Decimal(10, 4)
+  maxValue        Decimal? @db.Decimal(10, 4)
+
+  // Trending
+  previousPeriodValue Decimal? @db.Decimal(10, 4)
+  trend           Decimal? @db.Decimal(10, 4) // Percentage change from previous
+
+  createdAt       DateTime @default(now())
+
+  @@unique([metricType, actionType, opportunityType, periodStart, periodType])
+  @@index([metricType, periodStart(sort: Desc)])
+  @@map("agent_learning_metrics")
 }

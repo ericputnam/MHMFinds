@@ -3,6 +3,7 @@
 import React from 'react';
 import { Mod } from '../lib/api';
 import { ModCard } from './ModCard';
+import { AffiliateCard, AffiliateOffer } from './AffiliateCard';
 import { Loader2, AlertCircle, Search, Package, Heart, TrendingUp, Sparkles, Filter } from 'lucide-react';
 
 export interface ModGridProps {
@@ -13,9 +14,21 @@ export interface ModGridProps {
   onModClick?: (mod: Mod) => void;
   favorites: string[];
   gridColumns?: number; // New prop for dynamic grid columns
+  affiliateOffers?: AffiliateOffer[]; // Affiliate offers to inject into grid
+  affiliateInterval?: number; // Show affiliate card every N mods (default: 8)
 }
 
-export function ModGrid({ mods, loading, error, onFavorite, onModClick, favorites, gridColumns = 4 }: ModGridProps) {
+export function ModGrid({
+  mods,
+  loading,
+  error,
+  onFavorite,
+  onModClick,
+  favorites,
+  gridColumns = 4,
+  affiliateOffers = [],
+  affiliateInterval = 8,
+}: ModGridProps) {
   // Dynamic grid classes based on gridColumns prop
   const getGridClasses = (cols: number) => {
     switch (cols) {
@@ -70,21 +83,52 @@ export function ModGrid({ mods, loading, error, onFavorite, onModClick, favorite
     );
   }
 
+  // Build grid items with affiliate offers injected at intervals
+  const gridItems: Array<{ type: 'mod'; data: Mod } | { type: 'affiliate'; data: AffiliateOffer }> = [];
+  let affiliateIndex = 0;
+
+  mods.forEach((mod, index) => {
+    gridItems.push({ type: 'mod', data: mod });
+
+    // Inject affiliate after every `affiliateInterval` mods
+    if (
+      affiliateOffers.length > 0 &&
+      (index + 1) % affiliateInterval === 0 &&
+      affiliateIndex < affiliateOffers.length
+    ) {
+      gridItems.push({ type: 'affiliate', data: affiliateOffers[affiliateIndex] });
+      affiliateIndex++;
+    }
+  });
+
   return (
     <section className="py-8 container mx-auto px-4 bg-mhm-dark relative z-10">
       {/* Dynamic Grid - mv-ads class enables Mediavine in-content ads */}
       <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10 mv-ads`}>
-        {mods.map((mod, index) => (
-          <ModCard
-            key={mod.id}
-            mod={mod}
-            onFavorite={onFavorite}
-            onClick={onModClick}
-            isFavorited={favorites.includes(mod.id)}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 50}ms` }}
-          />
-        ))}
+        {gridItems.map((item, index) => {
+          if (item.type === 'affiliate') {
+            return (
+              <AffiliateCard
+                key={`affiliate-${item.data.id}`}
+                offer={item.data}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              />
+            );
+          }
+
+          return (
+            <ModCard
+              key={item.data.id}
+              mod={item.data}
+              onFavorite={onFavorite}
+              onClick={onModClick}
+              isFavorited={favorites.includes(item.data.id)}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            />
+          );
+        })}
       </div>
     </section>
   );

@@ -10,6 +10,7 @@ import { ModDetailsModal } from '../components/ModDetailsModal';
 import { FacetedSidebar } from '../components/FacetedSidebar';
 import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
+import { useAffiliateOffers } from '../lib/hooks/useAffiliateOffers';
 import { ArrowUpDown } from 'lucide-react';
 
 function HomePageContent() {
@@ -51,6 +52,13 @@ function HomePageContent() {
 
   // Analytics tracking hooks (usePageTracking is now global in providers.tsx)
   const { trackSearch } = useSearchTracking();
+
+  // Affiliate offers for grid injection - refreshKey triggers refetch on page/filter changes
+  const { offers: affiliateOffers } = useAffiliateOffers({
+    limit: 4, // Enough for interval of 5 on a 20-card page
+    source: 'grid',
+    refreshKey: `${currentPage}-${searchQuery}-${selectedCategory}-${selectedGameVersion}`,
+  });
 
   /**
    * Build URL with current filter state
@@ -400,6 +408,8 @@ function HomePageContent() {
                 onModClick={handleModClick}
                 favorites={favorites}
                 gridColumns={gridColumns}
+                affiliateOffers={affiliateOffers}
+                affiliateInterval={5}
               />
             </div>
           </div>
