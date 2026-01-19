@@ -15,13 +15,15 @@ import {
   LogOut,
   Shield,
   Mail,
-  BarChart3
+  BarChart3,
+  DollarSign,
 } from 'lucide-react';
 
 // Admin navigation - full access to all features (admin only)
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/admin/monetization', label: 'Monetization', icon: DollarSign },
   { href: '/admin/mods', label: 'Mods', icon: Package },
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },
   { href: '/admin/waitlist', label: 'Waitlist', icon: Mail },
