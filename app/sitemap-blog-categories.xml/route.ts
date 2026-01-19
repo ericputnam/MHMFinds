@@ -1,65 +1,73 @@
 import { NextResponse } from 'next/server';
 
-async function fetchWordPressSitemaps(filter: (url: string) => boolean): Promise<string> {
+interface WordPressCategory {
+  id: number;
+  link: string;
+  count: number;
+}
+
+async function fetchAllWordPressCategories(): Promise<string[]> {
+  const entries: string[] = [];
+  let page = 1;
+  const perPage = 100;
+  let hasMore = true;
+
   try {
-    const indexResponse = await fetch('https://blog.musthavemods.com/sitemap_index.xml', {
-      next: { revalidate: 300 }
-    });
+    while (hasMore) {
+      const response = await fetch(
+        `https://blog.musthavemods.com/wp-json/wp/v2/categories?per_page=${perPage}&page=${page}&_fields=id,link,count`,
+        { next: { revalidate: 300 } }
+      );
 
-    if (!indexResponse.ok) {
-      return '';
-    }
-
-    const indexXml = await indexResponse.text();
-    const sitemapUrlRegex = /<loc>(.*?)<\/loc>/g;
-    const sitemapUrls: string[] = [];
-    let match;
-
-    while ((match = sitemapUrlRegex.exec(indexXml)) !== null) {
-      if (filter(match[1])) {
-        sitemapUrls.push(match[1]);
-      }
-    }
-
-    const allEntries: string[] = [];
-
-    for (const sitemapUrl of sitemapUrls) {
-      try {
-        const response = await fetch(sitemapUrl, {
-          next: { revalidate: 300 }
-        });
-
-        if (!response.ok) continue;
-
-        const xml = await response.text();
-        const urlRegex = /<url>([\s\S]*?)<\/url>/g;
-        let urlMatch;
-
-        while ((urlMatch = urlRegex.exec(xml)) !== null) {
-          const urlBlock = urlMatch[1];
-          const rewrittenBlock = urlBlock
-            .replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
-          allEntries.push(`  <url>${rewrittenBlock}</url>`);
+      if (!response.ok) {
+        if (response.status === 400) {
+          hasMore = false;
+          break;
         }
-      } catch (error) {
-        console.error(`Error fetching sitemap: ${sitemapUrl}`, error);
+        console.error(`Failed to fetch WordPress categories page ${page}: ${response.status}`);
+        break;
+      }
+
+      const categories: WordPressCategory[] = await response.json();
+
+      if (categories.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      for (const category of categories) {
+        // Skip empty categories
+        if (category.count === 0) continue;
+
+        const url = category.link.replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
+
+        entries.push(`  <url>
+    <loc>${url}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>`);
+      }
+
+      const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1', 10);
+      if (page >= totalPages) {
+        hasMore = false;
+      } else {
+        page++;
       }
     }
-
-    return allEntries.join('\n');
   } catch (error) {
-    console.error('Error fetching WordPress sitemaps:', error);
-    return '';
+    console.error('Error fetching WordPress categories:', error);
   }
+
+  return entries;
 }
 
 export async function GET() {
-  // Fetch category-sitemap.xml from WordPress
-  const urls = await fetchWordPressSitemaps((url) => url.includes('category-sitemap'));
+  const entries = await fetchAllWordPressCategories();
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
+${entries.join('\n')}
 </urlset>`;
 
   return new NextResponse(sitemap, {

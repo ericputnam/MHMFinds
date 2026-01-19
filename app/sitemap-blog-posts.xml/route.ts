@@ -1,77 +1,75 @@
 import { NextResponse } from 'next/server';
 
-async function fetchWordPressSitemaps(filter: (url: string) => boolean): Promise<string> {
+interface WordPressPost {
+  id: number;
+  link: string;
+  modified_gmt: string;
+}
+
+async function fetchAllWordPressPosts(): Promise<string[]> {
+  const entries: string[] = [];
+  let page = 1;
+  const perPage = 100;
+  let hasMore = true;
+
   try {
-    // Fetch WordPress sitemap index
-    const indexResponse = await fetch('https://blog.musthavemods.com/sitemap_index.xml', {
-      next: { revalidate: 300 } // Cache for 5 minutes
-    });
+    while (hasMore) {
+      const response = await fetch(
+        `https://blog.musthavemods.com/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}&_fields=id,link,modified_gmt`,
+        { next: { revalidate: 300 } } // Cache for 5 minutes
+      );
 
-    if (!indexResponse.ok) {
-      console.error('Failed to fetch WordPress sitemap index');
-      return '';
-    }
+      if (!response.ok) {
+        if (response.status === 400) {
+          // No more pages
+          hasMore = false;
+          break;
+        }
+        console.error(`Failed to fetch WordPress posts page ${page}: ${response.status}`);
+        break;
+      }
 
-    const indexXml = await indexResponse.text();
+      const posts: WordPressPost[] = await response.json();
 
-    // Extract sitemap URLs from index
-    const sitemapUrlRegex = /<loc>(.*?)<\/loc>/g;
-    const sitemapUrls: string[] = [];
-    let match;
+      if (posts.length === 0) {
+        hasMore = false;
+        break;
+      }
 
-    while ((match = sitemapUrlRegex.exec(indexXml)) !== null) {
-      if (filter(match[1])) {
-        sitemapUrls.push(match[1]);
+      for (const post of posts) {
+        // Rewrite blog.musthavemods.com → musthavemods.com
+        const url = post.link.replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
+        const lastmod = post.modified_gmt ? `${post.modified_gmt.split('T')[0]}` : '';
+
+        entries.push(`  <url>
+    <loc>${url}</loc>${lastmod ? `
+    <lastmod>${lastmod}</lastmod>` : ''}
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`);
+      }
+
+      // Check if there are more pages
+      const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1', 10);
+      if (page >= totalPages) {
+        hasMore = false;
+      } else {
+        page++;
       }
     }
-
-    // Fetch all matching sub-sitemaps
-    const allEntries: string[] = [];
-
-    for (const sitemapUrl of sitemapUrls) {
-      try {
-        const response = await fetch(sitemapUrl, {
-          next: { revalidate: 300 }
-        });
-
-        if (!response.ok) {
-          console.error(`Failed to fetch sub-sitemap: ${sitemapUrl}`);
-          continue;
-        }
-
-        const xml = await response.text();
-
-        // Extract <url>...</url> blocks and rewrite domains
-        // This preserves the actual lastmod dates from WordPress
-        const urlRegex = /<url>([\s\S]*?)<\/url>/g;
-        let urlMatch;
-
-        while ((urlMatch = urlRegex.exec(xml)) !== null) {
-          const urlBlock = urlMatch[1];
-          // Rewrite blog.musthavemods.com → musthavemods.com
-          const rewrittenBlock = urlBlock
-            .replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
-          allEntries.push(`  <url>${rewrittenBlock}</url>`);
-        }
-      } catch (error) {
-        console.error(`Error fetching sitemap: ${sitemapUrl}`, error);
-      }
-    }
-
-    return allEntries.join('\n');
   } catch (error) {
-    console.error('Error fetching WordPress sitemaps:', error);
-    return '';
+    console.error('Error fetching WordPress posts:', error);
   }
+
+  return entries;
 }
 
 export async function GET() {
-  // Fetch all post-sitemap*.xml files from WordPress
-  const urls = await fetchWordPressSitemaps((url) => url.includes('post-sitemap'));
+  const entries = await fetchAllWordPressPosts();
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
+${entries.join('\n')}
 </urlset>`;
 
   return new NextResponse(sitemap, {
