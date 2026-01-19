@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, cacheStrategies } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
 
 /**
@@ -17,6 +17,21 @@ export async function GET(request: NextRequest) {
   const { user } = authResult;
   const { ipAddress, userAgent } = getRequestMetadata(request);
 
+  // Default empty response structure
+  const emptyResponse = {
+    totalMods: 0,
+    totalCreators: 0,
+    pendingSubmissions: 0,
+    totalUsers: 0,
+    totalDownloads: 0,
+    totalFavorites: 0,
+    averageRating: 0,
+    recentMods: [],
+    waitlistCount: 0,
+    _warning: undefined as string | undefined,
+  };
+
+  let statsData;
   try {
     // Fetch statistics in parallel
     const [
@@ -35,26 +50,36 @@ export async function GET(request: NextRequest) {
         where: {
           isVerified: true,
         },
+        cacheStrategy: cacheStrategies.analytics,
       }),
 
       // Total creators
-      prisma.creatorProfile.count(),
+      prisma.creatorProfile.count({
+        cacheStrategy: cacheStrategies.analytics,
+      }),
 
       // Pending submissions
       prisma.modSubmission.count({
         where: {
           status: 'pending',
         },
+        cacheStrategy: cacheStrategies.short,
       }),
 
       // Total users
-      prisma.user.count(),
+      prisma.user.count({
+        cacheStrategy: cacheStrategies.analytics,
+      }),
 
       // Total downloads
-      prisma.download.count(),
+      prisma.download.count({
+        cacheStrategy: cacheStrategies.analytics,
+      }),
 
       // Total favorites
-      prisma.favorite.count(),
+      prisma.favorite.count({
+        cacheStrategy: cacheStrategies.analytics,
+      }),
 
       // Average rating
       prisma.mod.aggregate({
@@ -66,6 +91,7 @@ export async function GET(request: NextRequest) {
             not: null,
           },
         },
+        cacheStrategy: cacheStrategies.analytics,
       }),
 
       // Recent mods (last 10)
@@ -80,37 +106,53 @@ export async function GET(request: NextRequest) {
           createdAt: true,
           downloadCount: true,
         },
+        cacheStrategy: cacheStrategies.short,
       }),
 
       // Waitlist signups
-      prisma.waitlist.count(),
+      prisma.waitlist.count({
+        cacheStrategy: cacheStrategies.analytics,
+      }),
     ]);
 
-    // Log admin action
-    await logAdminAction({
-      userId: user.id,
-      action: 'view_stats',
-      resource: 'dashboard',
-      ipAddress,
-      userAgent,
-    });
-
-    return NextResponse.json({
+    statsData = {
       totalMods,
       totalCreators,
       pendingSubmissions,
       totalUsers,
       totalDownloads,
       totalFavorites,
-      averageRating: averageRating._avg.rating || 0,
+      averageRating,
       recentMods,
       waitlistCount,
-    });
+    };
   } catch (error) {
-    console.error('Failed to fetch admin stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch statistics' },
-      { status: 500 }
-    );
+    console.error('Failed to fetch admin stats, returning empty response:', error);
+    // Return empty data instead of 500 - page will show "no data" state
+    emptyResponse._warning = 'Stats data temporarily unavailable';
+    return NextResponse.json(emptyResponse);
   }
+
+  // Log admin action (fire-and-forget - don't let logging failures affect response)
+  logAdminAction({
+    userId: user.id,
+    action: 'view_stats',
+    resource: 'dashboard',
+    ipAddress,
+    userAgent,
+  }).catch((error) => {
+    console.error('Failed to log admin action:', error);
+  });
+
+  return NextResponse.json({
+    totalMods: statsData.totalMods,
+    totalCreators: statsData.totalCreators,
+    pendingSubmissions: statsData.pendingSubmissions,
+    totalUsers: statsData.totalUsers,
+    totalDownloads: statsData.totalDownloads,
+    totalFavorites: statsData.totalFavorites,
+    averageRating: statsData.averageRating._avg.rating || 0,
+    recentMods: statsData.recentMods,
+    waitlistCount: statsData.waitlistCount,
+  });
 }

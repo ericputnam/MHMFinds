@@ -41,6 +41,62 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🚨 CRITICAL: Prisma Connection Pooling in Serverless (Vercel)
+
+**NEVER modify `lib/prisma.ts` without understanding this section.**
+
+### The Problem
+On Vercel (serverless), each function invocation can create a new PrismaClient instance. If the client isn't cached globally, you will **exhaust the database connection pool** and cause a site-wide outage.
+
+### Symptoms of Connection Pool Exhaustion
+- Intermittent 500 errors (some requests work, others fail)
+- Error: `Can't reach database server at db.prisma.io:5432`
+- Simple queries succeed while complex queries fail
+- Site works briefly then crashes
+
+### The CORRECT Prisma Client Pattern
+```typescript
+// lib/prisma.ts - THIS PATTERN IS CRITICAL
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+// ⚠️ MUST cache in ALL environments including production!
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = prisma;
+}
+
+export default prisma;
+```
+
+### What NOT To Do
+```typescript
+// ❌ WRONG - This only caches in development, NOT production!
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+### Before Refactoring Auth or Database Code
+1. **Check import paths** - Adding new files that import `prisma` increases cold start frequency
+2. **Test locally first** - Run `npm run build` to catch issues
+3. **Deploy cautiously** - Watch Vercel logs for connection errors after deploy
+4. **Have rollback ready** - Know how to promote a previous deployment in Vercel
+
+### If Connection Pool Exhausts
+1. **Immediately rollback** in Vercel (Deployments → Previous working deploy → Promote to Production)
+2. Wait 2-3 minutes for connections to timeout
+3. Fix the issue in code
+4. Redeploy carefully
+
+---
+
 ## 🚫 CRITICAL GIT RULE: Never Auto-Commit
 
 **NEVER create git commits unless explicitly requested by the user.**
@@ -120,6 +176,13 @@ npm run db:seed            # Initialize database with seed data
 npm run db:reset           # Reset database (WARNING: deletes all data)
 npm run db:deploy          # Apply migrations in production
 ```
+
+### ⚠️ Vercel Build and Migrations
+The Vercel build command is: `npx prisma generate && next build`
+
+**DO NOT add `prisma migrate deploy` to the build command** unless absolutely necessary. If the database is temporarily unreachable during build, the entire deployment fails. Instead:
+- Apply migrations manually before deploying: `npm run db:deploy`
+- Or use a CI/CD step separate from the build
 
 ### Content Aggregation
 ```bash

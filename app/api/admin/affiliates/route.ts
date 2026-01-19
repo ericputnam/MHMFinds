@@ -5,12 +5,12 @@ import { authOptions } from '@/lib/authOptions';
 
 // GET /api/admin/affiliates - Get all offers including inactive (admin only)
 export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
+  try {
     const offers = await prisma.affiliateOffer.findMany({
       orderBy: [
         { priority: 'desc' },
@@ -28,9 +28,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ offers });
   } catch (error) {
     console.error('Error fetching all affiliates:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch affiliate offers' },
-      { status: 500 }
-    );
+    // Return empty offers list instead of 500 - page will show "no offers" state
+    return NextResponse.json({ offers: [], _warning: 'Affiliate data temporarily unavailable' });
   }
 }

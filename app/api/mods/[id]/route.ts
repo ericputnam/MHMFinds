@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, cacheStrategies } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
@@ -26,6 +26,8 @@ export async function GET(
           },
         },
       },
+      // Prisma Accelerate: Cache mod details for 15s, serve stale for 30s while revalidating
+      cacheStrategy: cacheStrategies.modDetail,
     });
 
     if (!mod) {
