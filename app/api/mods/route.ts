@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, cacheStrategies } from '../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { CacheService } from '../../../lib/cache';
@@ -220,11 +220,8 @@ export async function GET(request: NextRequest) {
       orderBy.createdAt = sortOrder;
     }
 
-    // Get total count (cached for 30s, stale for 60s)
-    const total = await prisma.mod.count({
-      where,
-      cacheStrategy: cacheStrategies.short,
-    });
+    // Get total count
+    const total = await prisma.mod.count({ where });
 
     // For search queries, we need to fetch more results and apply relevance scoring
     // Otherwise, use standard pagination
@@ -381,10 +378,9 @@ export async function GET(request: NextRequest) {
         },
         _count: true,
       }),
-      // Get all categories for building the tree (cached longer - rarely changes)
+      // Get all categories for building the tree
       prisma.category.findMany({
         orderBy: [{ level: 'asc' }, { order: 'asc' }, { name: 'asc' }],
-        cacheStrategy: cacheStrategies.medium,
       }),
       // Game version aggregation
       prisma.mod.groupBy({

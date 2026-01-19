@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, cacheStrategies } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
 import { AnalyticsEventType } from '@prisma/client';
 

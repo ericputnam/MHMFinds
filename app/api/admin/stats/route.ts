@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, cacheStrategies } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
 
 /**
@@ -50,36 +50,26 @@ export async function GET(request: NextRequest) {
         where: {
           isVerified: true,
         },
-        cacheStrategy: cacheStrategies.analytics,
       }),
 
       // Total creators
-      prisma.creatorProfile.count({
-        cacheStrategy: cacheStrategies.analytics,
-      }),
+      prisma.creatorProfile.count(),
 
       // Pending submissions
       prisma.modSubmission.count({
         where: {
           status: 'pending',
         },
-        cacheStrategy: cacheStrategies.short,
       }),
 
       // Total users
-      prisma.user.count({
-        cacheStrategy: cacheStrategies.analytics,
-      }),
+      prisma.user.count(),
 
       // Total downloads
-      prisma.download.count({
-        cacheStrategy: cacheStrategies.analytics,
-      }),
+      prisma.download.count(),
 
       // Total favorites
-      prisma.favorite.count({
-        cacheStrategy: cacheStrategies.analytics,
-      }),
+      prisma.favorite.count(),
 
       // Average rating
       prisma.mod.aggregate({
@@ -91,7 +81,6 @@ export async function GET(request: NextRequest) {
             not: null,
           },
         },
-        cacheStrategy: cacheStrategies.analytics,
       }),
 
       // Recent mods (last 10)
@@ -106,13 +95,10 @@ export async function GET(request: NextRequest) {
           createdAt: true,
           downloadCount: true,
         },
-        cacheStrategy: cacheStrategies.short,
       }),
 
       // Waitlist signups
-      prisma.waitlist.count({
-        cacheStrategy: cacheStrategies.analytics,
-      }),
+      prisma.waitlist.count(),
     ]);
 
     statsData = {
