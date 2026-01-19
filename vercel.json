@@ -119,11 +119,11 @@
       "destination": "https://blog.musthavemods.com/:year/:month"
     },
     {
-      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|games|_next|favicon.ico|sitemap|robots.txt|manifest).*)/",
+      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|games|go|_next|favicon.ico|sitemap|robots.txt|manifest).*)/",
       "destination": "https://blog.musthavemods.com/:slug/"
     },
     {
-      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|games|_next|favicon.ico|sitemap|robots.txt|manifest).*)",
+      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|games|go|_next|favicon.ico|sitemap|robots.txt|manifest).*)",
       "destination": "https://blog.musthavemods.com/:slug/"
     }
   ]
