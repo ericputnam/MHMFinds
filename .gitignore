@@ -120,7 +120,6 @@ temp/
 project/
 
 # Prisma
-prisma/migrations/
 *.db-journal
 
 # Scraped/Downloaded Data
