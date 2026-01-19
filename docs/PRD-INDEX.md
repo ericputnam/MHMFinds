@@ -49,6 +49,50 @@ This document tracks all Product Requirements Documents (PRDs) for the MHMFinds 
 |-----|----------|--------|---------|-----------|-------|
 | [Navigation Testing](./PRD-navigation-testing.md) | Medium | Not Started | 2025-01-13 | - | Fix broken nav + add unit tests |
 
+### Monetization Agent
+
+See [Monetization Agent PRD Index](./monetization-agent/PRD-00-overview.md) for the full system design.
+
+#### Core Backend (Completed)
+
+| PRD | Priority | Status | Created | Notes |
+|-----|----------|--------|---------|-------|
+| [PRD-01: Database Schema](./monetization-agent/PRD-01-database-schema.md) | P0 | **Completed** | 2026-01-13 | Foundation models for metrics, opportunities, actions |
+| [PRD-02: GA4 Connector](./monetization-agent/PRD-02-ga4-connector.md) | P0 | **Completed** | 2026-01-13 | Traffic and event data ingestion |
+| [PRD-04: Affiliate Detection](./monetization-agent/PRD-04-affiliate-detection.md) | P1 | **Completed** | 2026-01-13 | AI-powered opportunity detection |
+| [PRD-05: RPM Analyzer](./monetization-agent/PRD-05-rpm-analyzer.md) | P1 | **Completed** | 2026-01-13 | Ad performance optimization |
+| [PRD-06: Revenue Forecasting](./monetization-agent/PRD-06-revenue-forecasting.md) | P1 | **Completed** | 2026-01-13 | Predictive revenue models |
+| [PRD-07: Action Queue](./monetization-agent/PRD-07-action-queue.md) | P0 | **Completed** | 2026-01-13 | Human approval workflow |
+| [PRD-08: Orchestrator](./monetization-agent/PRD-08-orchestrator.md) | P0 | **Completed** | 2026-01-13 | Job scheduling and coordination |
+
+#### Admin Interface (Completed)
+
+| PRD | Priority | Status | Created | Notes |
+|-----|----------|--------|---------|-------|
+| [PRD-10: Admin Navigation](./monetization-agent/PRD-10-admin-navigation.md) | P0 | **Completed** | 2026-01-14 | Add Monetization to admin sidebar, dashboard hub |
+| [PRD-11: Agent Control](./monetization-agent/PRD-11-agent-control.md) | P0 | **Completed** | 2026-01-14 | Manual job triggering, live status display |
+| [PRD-12: API Configuration](./monetization-agent/PRD-12-api-configuration.md) | P1 | **Completed** | 2026-01-14 | Env var status, connection testing |
+| [PRD-13: Queue Management](./monetization-agent/PRD-13-queue-management.md) | P0 | **Completed** | 2026-01-14 | Individual & bulk approve/reject |
+| [PRD-14: Agent History](./monetization-agent/PRD-14-agent-history.md) | P1 | **Completed** | 2026-01-14 | Run history, filtering, stats |
+| [PRD-15: Mediavine MCP](./monetization-agent/PRD-15-mediavine-mcp.md) | P0 | **Completed** | 2026-01-14 | Browser automation with TOTP 2FA |
+| [PRD-16: Forecasts Dashboard](./monetization-agent/PRD-16-forecasts-dashboard.md) | P1 | **Completed** | 2026-01-14 | View forecasts, accuracy tracking |
+
+#### Agent Intelligence (NEW - Not Started)
+
+| PRD | Priority | Status | Created | Notes |
+|-----|----------|--------|---------|-------|
+| [PRD-17: Objectives & Strategy](./monetization-agent/PRD-17-objectives-strategy.md) | P0 | Not Started | 2026-01-14 | Mission, KPIs, opportunity rules, seasonal calendar |
+| [PRD-18: Auto-Execution Engine](./monetization-agent/PRD-18-auto-execution.md) | P1 | Not Started | 2026-01-14 | Tiered execution, safe action auto-execution |
+| [PRD-19: Notifications System](./monetization-agent/PRD-19-notifications.md) | P2 | Not Started | 2026-01-14 | Slack alerts, email digests, batching |
+| [PRD-20: Impact Tracking & Learning](./monetization-agent/PRD-20-impact-tracking.md) | P1 | Not Started | 2026-01-14 | Measure actual impact, learn from outcomes |
+
+#### Deprecated/Replaced
+
+| PRD | Priority | Status | Created | Notes |
+|-----|----------|--------|---------|-------|
+| [PRD-03: Mediavine Connector](./monetization-agent/PRD-03-mediavine-connector.md) | P0 | Replaced | 2026-01-13 | Replaced by PRD-15 (browser automation) |
+| [PRD-09: Admin Dashboard](./monetization-agent/PRD-09-admin-dashboard.md) | P2 | Replaced | 2026-01-13 | Replaced by PRD-10 through PRD-16 |
+
 ### UI/UX Polish
 
 | PRD | Priority | Status | Created | Completed | Notes |
@@ -68,7 +112,10 @@ This document tracks all Product Requirements Documents (PRDs) for the MHMFinds 
 | Features | 3 | 2 | 0 | 1 |
 | Navigation | 1 | 1 | 0 | 0 |
 | UI/UX | 2 | 0 | 0 | 2 |
-| **Total** | **11** | **7** | **0** | **4** |
+| **Monetization Backend** | **7** | **0** | **0** | **7** |
+| **Monetization Admin UI** | **7** | **0** | **0** | **7** |
+| **Monetization Intelligence** | **4** | **4** | **0** | **0** |
+| **Total** | **29** | **11** | **0** | **18** |
 
 ---
 

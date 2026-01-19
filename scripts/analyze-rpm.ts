@@ -1,0 +1,83 @@
+#!/usr/bin/env npx tsx
+/**
+ * RPM Analysis Script
+ *
+ * Analyzes page performance and identifies RPM optimization opportunities.
+ *
+ * Usage:
+ *   npm run agent:analyze-rpm
+ */
+
+// Load environment variables
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
+import { rpmAnalyzer } from '@/lib/services/rpmAnalyzer';
+import { prisma } from '@/lib/prisma';
+
+async function main() {
+  console.log('\n📈 RPM Analysis Engine');
+  console.log('═══════════════════════════════════════');
+  console.log('  Analyzing page performance...\n');
+
+  try {
+    // Show site average RPM first
+    const avgRpm = await rpmAnalyzer.calculateSiteAverageRpm();
+    console.log(`  📊 Site Average RPM: $${avgRpm.toFixed(2)}`);
+
+    const startTime = Date.now();
+    const count = await rpmAnalyzer.analyzeRpm();
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+    console.log('\n───────────────────────────────────────');
+    console.log(`  ✅ Created ${count} opportunities`);
+    console.log(`  ⏱️  Duration: ${duration}s`);
+    console.log('═══════════════════════════════════════\n');
+
+    // Show summary of opportunities created
+    if (count > 0) {
+      console.log('📋 Recently Created RPM Opportunities:');
+
+      const recent = await prisma.monetizationOpportunity.findMany({
+        where: {
+          opportunityType: {
+            in: ['AD_LAYOUT_OPTIMIZATION', 'CONTENT_EXPANSION', 'TRAFFIC_SOURCE_OPTIMIZATION'],
+          },
+          createdAt: {
+            gte: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
+          },
+        },
+        orderBy: { estimatedRevenueImpact: 'desc' },
+        take: 5,
+        select: {
+          title: true,
+          opportunityType: true,
+          priority: true,
+          estimatedRevenueImpact: true,
+          estimatedRpmIncrease: true,
+        },
+      });
+
+      for (const opp of recent) {
+        const impact = opp.estimatedRevenueImpact
+          ? `$${Number(opp.estimatedRevenueImpact).toFixed(2)}`
+          : 'Unknown';
+        const rpmIncrease = opp.estimatedRpmIncrease
+          ? `+$${Number(opp.estimatedRpmIncrease).toFixed(2)}`
+          : '';
+        console.log(`  • [P${opp.priority}] ${opp.title}`);
+        console.log(`    Type: ${opp.opportunityType} | Impact: ${impact} ${rpmIncrease}`);
+      }
+
+      console.log('\n  Run `npm run queue list` to see all pending opportunities\n');
+    }
+  } catch (error) {
+    console.error('❌ Error:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+main();

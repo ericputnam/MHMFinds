@@ -56,7 +56,7 @@ describe('API /api/creator/mods/[id]/edit', () => {
             })
 
             const response = await POST(request, { params: { id: 'mod-1' } })
-            expect(response.status).toBe(401)
+            expect(response!.status).toBe(401)
         })
 
         it('should return 404 when mod not found', async () => {
@@ -75,9 +75,9 @@ describe('API /api/creator/mods/[id]/edit', () => {
             })
 
             const response = await POST(request, { params: { id: 'nonexistent' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(404)
+            expect(response!.status).toBe(404)
             expect(json.error).toBe('Mod not found')
         })
 
@@ -108,9 +108,9 @@ describe('API /api/creator/mods/[id]/edit', () => {
             })
 
             const response = await POST(request, { params: { id: 'mod-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(403)
+            expect(response!.status).toBe(403)
             expect(json.error).toBe('Forbidden - You can only edit your own mods')
         })
 
@@ -164,9 +164,9 @@ describe('API /api/creator/mods/[id]/edit', () => {
             })
 
             const response = await POST(request, { params: { id: 'mod-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(201)
+            expect(response!.status).toBe(201)
             expect(json.success).toBe(true)
             expect(json.submission.isEdit).toBe(true)
             expect(json.submission.approvedModId).toBe('mod-1')
@@ -220,9 +220,9 @@ describe('API /api/creator/mods/[id]/edit', () => {
             })
 
             const response = await POST(request, { params: { id: 'mod-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(201)
+            expect(response!.status).toBe(201)
             expect(json.success).toBe(true)
         })
 
@@ -242,9 +242,9 @@ describe('API /api/creator/mods/[id]/edit', () => {
             })
 
             const response = await POST(request, { params: { id: 'mod-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(500)
+            expect(response!.status).toBe(500)
             expect(json.error).toBe('Failed to create edit submission')
         })
 

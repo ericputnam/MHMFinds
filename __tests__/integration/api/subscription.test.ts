@@ -71,20 +71,20 @@ describe('Subscription Logic', () => {
         })
 
         it('TRIALING status allows downloads', () => {
-            const status: SubscriptionStatus = 'TRIALING'
-            const isActive = status === 'ACTIVE' || status === 'TRIALING'
+            const status = 'TRIALING' as SubscriptionStatus
+            const isActive = ['ACTIVE', 'TRIALING'].includes(status)
             expect(isActive).toBe(true)
         })
 
         it('CANCELED status blocks new features', () => {
-            const status: SubscriptionStatus = 'CANCELED'
-            const isActive = status === 'ACTIVE' || status === 'TRIALING'
+            const status = 'CANCELED' as SubscriptionStatus
+            const isActive = ['ACTIVE', 'TRIALING'].includes(status)
             expect(isActive).toBe(false)
         })
 
         it('PAST_DUE status blocks downloads', () => {
-            const status: SubscriptionStatus = 'PAST_DUE'
-            const isActive = status === 'ACTIVE' || status === 'TRIALING'
+            const status = 'PAST_DUE' as SubscriptionStatus
+            const isActive = ['ACTIVE', 'TRIALING'].includes(status)
             expect(isActive).toBe(false)
         })
     })

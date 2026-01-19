@@ -43,7 +43,7 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'sub-1' } })
-            expect(response.status).toBe(401)
+            expect(response!.status).toBe(401)
         })
 
         it('should return 404 when submission not found', async () => {
@@ -59,9 +59,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'nonexistent' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(404)
+            expect(response!.status).toBe(404)
             expect(json.error).toBe('Submission not found')
         })
 
@@ -84,9 +84,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'sub-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(400)
+            expect(response!.status).toBe(400)
             expect(json.error).toBe('Submission already processed')
         })
 
@@ -146,9 +146,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'sub-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(200)
+            expect(response!.status).toBe(200)
             expect(json.success).toBe(true)
             expect(json.mod).toEqual(mockCreatedMod)
             expect(json.message).toBe('Submission approved and mod created successfully')
@@ -220,9 +220,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'sub-2' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(200)
+            expect(response!.status).toBe(200)
             expect(json.success).toBe(true)
             expect(json.mod).toEqual(mockUpdatedMod)
             expect(json.message).toBe('Edit approved and mod updated successfully')
@@ -269,9 +269,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'sub-3' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(200)
+            expect(response!.status).toBe(200)
             expect(json.success).toBe(true)
 
             // Verify mod was created without creatorId
@@ -297,9 +297,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
             })
 
             const response = await POST(request, { params: { id: 'sub-1' } })
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(500)
+            expect(response!.status).toBe(500)
             expect(json.error).toBe('Failed to approve submission')
         })
 

@@ -47,7 +47,7 @@ describe('API /api/creator/submissions', () => {
             })
 
             const response = await POST(request)
-            expect(response.status).toBe(401)
+            expect(response!.status).toBe(401)
         })
 
         it('should create submission for authenticated creator', async () => {
@@ -115,9 +115,9 @@ describe('API /api/creator/submissions', () => {
             })
 
             const response = await POST(request)
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(201)
+            expect(response!.status).toBe(201)
             expect(json.success).toBe(true)
             expect(json.submission).toEqual(expect.objectContaining({
                 id: mockSubmission.id,
@@ -172,9 +172,9 @@ describe('API /api/creator/submissions', () => {
             })
 
             const response = await POST(request)
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(201)
+            expect(response!.status).toBe(201)
             expect(json.success).toBe(true)
         })
 
@@ -194,9 +194,9 @@ describe('API /api/creator/submissions', () => {
             })
 
             const response = await POST(request)
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(500)
+            expect(response!.status).toBe(500)
             expect(json.error).toBe('Failed to create submission')
         })
     })
@@ -213,7 +213,7 @@ describe('API /api/creator/submissions', () => {
             const request = new NextRequest('http://localhost:3000/api/creator/submissions')
             const response = await GET(request)
 
-            expect(response.status).toBe(401)
+            expect(response!.status).toBe(401)
         })
 
         it('should list submissions for authenticated creator', async () => {
@@ -262,9 +262,9 @@ describe('API /api/creator/submissions', () => {
 
             const request = new NextRequest('http://localhost:3000/api/creator/submissions')
             const response = await GET(request)
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(200)
+            expect(response!.status).toBe(200)
             expect(json.submissions).toHaveLength(2)
             expect(json.submissions[0]).toEqual(expect.objectContaining({
                 id: 'sub-1',
@@ -320,9 +320,9 @@ describe('API /api/creator/submissions', () => {
 
             const request = new NextRequest('http://localhost:3000/api/creator/submissions')
             const response = await GET(request)
-            const json = await response.json()
+            const json = await response!.json()
 
-            expect(response.status).toBe(500)
+            expect(response!.status).toBe(500)
             expect(json.error).toBe('Failed to fetch submissions')
         })
     })
