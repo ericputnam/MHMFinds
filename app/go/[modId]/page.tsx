@@ -106,25 +106,23 @@ export default function DownloadInterstitialPage() {
     }
   }, [mod, router]);
 
-  const handleAffiliateClick = async (offer: AffiliateOffer) => {
-    // Track the click
-    try {
-      await fetch('/api/affiliates/click', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          offerId: offer.id,
-          sourceType: 'interstitial',
-          modId: params.modId,
-          pageUrl: window.location.href,
-        }),
-      });
-    } catch (error) {
-      console.error('Failed to track click:', error);
-    }
-
-    // Open affiliate link in new tab
+  const handleAffiliateClick = (offer: AffiliateOffer) => {
+    // Open affiliate link immediately (don't wait for tracking)
     window.open(offer.affiliateUrl, '_blank');
+
+    // Track the click in the background (fire and forget)
+    fetch('/api/affiliates/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offerId: offer.id,
+        sourceType: 'interstitial',
+        modId: params.modId,
+        pageUrl: window.location.href,
+      }),
+    }).catch((error) => {
+      console.error('Failed to track click:', error);
+    });
   };
 
   if (loading) {
