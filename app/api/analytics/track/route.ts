@@ -73,11 +73,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    // Fail silently - analytics tracking should never break the user experience
     console.error('Failed to track analytics event:', error);
-    return NextResponse.json(
-      { error: 'Failed to track event' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true }); // Return 200 to prevent retries
   }
 }
 
