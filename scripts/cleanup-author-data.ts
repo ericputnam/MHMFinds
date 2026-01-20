@@ -258,50 +258,72 @@ class AuthorCleanup {
 
       const $ = cheerio.load(response.data);
 
-      // Method 2: Artist profile on page
-      const artistName = $('.artist-profile-name').text().trim();
-      if (artistName && !this.isBadAuthor(artistName)) {
-        return { author: artistName, source: 'TSR', method: 'artist-profile-name' };
+      // Method 2: TSR-specific meta tag (MOST RELIABLE)
+      // <meta property="thesimsresource:by" content="SIMcredible!" />
+      const tsrByMeta = $('meta[property="thesimsresource:by"]').attr('content');
+      if (tsrByMeta && !this.isBadAuthor(tsrByMeta)) {
+        return { author: tsrByMeta, source: 'TSR', method: 'thesimsresource:by meta' };
       }
 
-      // Method 3: Look for "by Creator" pattern in title
-      const title = $('h1').first().text().trim();
-      if (title) {
-        const byMatch = title.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
-        if (byMatch && !this.isBadAuthor(byMatch[1])) {
-          return { author: byMatch[1].trim(), source: 'TSR', method: 'h1 by pattern' };
-        }
-      }
-
-      // Method 4: og:title meta tag
+      // Method 3: og:title pattern "Author's Title"
+      // <meta property="og:title" content="SIMcredible!'s Magical Place"/>
       const ogTitle = $('meta[property="og:title"]').attr('content');
       if (ogTitle) {
+        // Pattern: "Author's Title" (possessive)
+        const possessiveMatch = ogTitle.match(/^(.+?)'s\s+/);
+        if (possessiveMatch && !this.isBadAuthor(possessiveMatch[1])) {
+          return { author: possessiveMatch[1].trim(), source: 'TSR', method: 'og:title possessive' };
+        }
+        // Pattern: "Title by Author"
         const byMatch = ogTitle.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
         if (byMatch && !this.isBadAuthor(byMatch[1])) {
           return { author: byMatch[1].trim(), source: 'TSR', method: 'og:title by pattern' };
         }
       }
 
-      // Method 5: Member link on page
-      const memberLink = $('a[href*="/members/"]').first();
-      if (memberLink.length) {
-        const text = memberLink.text().trim();
-        if (text && !this.isBadAuthor(text)) {
-          return { author: text, source: 'TSR', method: 'member link text' };
-        }
-        const href = memberLink.attr('href');
-        const match = href?.match(/\/members\/([^\/]+)/);
-        if (match && !this.isBadAuthor(match[1])) {
-          const author = match[1].replace(/-/g, ' ').replace(/_/g, ' ');
-          return { author: this.titleCase(author), source: 'TSR', method: 'member link href' };
+      // Method 4: meta description often has "Category - Author - Title"
+      const metaDesc = $('meta[name="description"]').attr('content');
+      if (metaDesc) {
+        // Pattern: "The Sims Resource - Sims 4 - Category - Author - Title"
+        const parts = metaDesc.split(' - ');
+        if (parts.length >= 4) {
+          // Author is typically the 4th part (index 3)
+          const potentialAuthor = parts[3]?.trim();
+          if (potentialAuthor && !this.isBadAuthor(potentialAuthor) && potentialAuthor.length < 30) {
+            return { author: potentialAuthor, source: 'TSR', method: 'meta description' };
+          }
         }
       }
 
-      // Method 6: Look for breadcrumb or byline
-      const byline = $('.byline, .author, .creator').text().trim();
-      if (byline && !this.isBadAuthor(byline)) {
-        const cleanByline = byline.replace(/^by\s+/i, '').trim();
-        return { author: cleanByline, source: 'TSR', method: 'byline class' };
+      // Method 5: Artist profile on page
+      const artistName = $('.artist-profile-name').text().trim();
+      if (artistName && !this.isBadAuthor(artistName)) {
+        return { author: artistName, source: 'TSR', method: 'artist-profile-name' };
+      }
+
+      // Method 6: Look for "Created By" section link (be more specific)
+      // Target links near "Created By" text, not random member links
+      const createdBySection = $('*:contains("Created By")').last().parent();
+      const creatorLink = createdBySection.find('a[href*="/members/"], a[href*="/artists/"]').first();
+      if (creatorLink.length) {
+        const text = creatorLink.text().trim();
+        if (text && !this.isBadAuthor(text) && text.length < 50) {
+          return { author: text, source: 'TSR', method: 'created by section link' };
+        }
+      }
+
+      // Method 7: Fallback - Look for artist link in header area
+      const artistLink = $('a[href*="/artists/"]').first();
+      if (artistLink.length) {
+        const href = artistLink.attr('href');
+        const match = href?.match(/\/artists\/([^\/]+)/);
+        if (match && !this.isBadAuthor(match[1])) {
+          // Don't include "Creator Terms of Use" links
+          const linkText = artistLink.text().trim().toLowerCase();
+          if (!linkText.includes('terms') && !linkText.includes('use')) {
+            return { author: match[1], source: 'TSR', method: 'artist link href' };
+          }
+        }
       }
 
       return { author: null, source: 'TSR', method: 'failed' };
