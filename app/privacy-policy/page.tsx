@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Privacy Policy
           </h1>
-          <p className="text-slate-400 mb-8">Last updated: May 23, 2022</p>
+          <p className="text-slate-400 mb-8">Last updated: January 19, 2026</p>
 
           <div className="prose prose-invert prose-slate max-w-none">
             <section className="mb-8">
@@ -109,9 +109,42 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Mediavine Advertising</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Mediavine Programmatic Advertising (Ver 1.1)</h2>
               <p className="text-slate-300 leading-relaxed mb-4">
-                The site uses Mediavine for programmatic advertising, collecting IP address, operating system details, device type, language, browser type, and hashed email for personalized ads. Users can opt out via National Advertising Initiative or Digital Advertising Alliance websites.
+                The Website works with Mediavine to manage third-party interest-based advertising appearing on the Website. Mediavine serves content and advertisements when you visit the Website, which may use first and third-party cookies. A cookie is a small text file which is sent to your computer or mobile device (referred to in this policy as a "device") by the web server so that a website can remember some information about your browsing activity on the Website.
+              </p>
+              <p className="text-slate-300 leading-relaxed mb-4">
+                First party cookies are created by the website that you are visiting. A third-party cookie is frequently used in behavioral advertising and analytics and is created by a domain other than the website you are visiting. Third-party cookies, tags, pixels, beacons and other similar technologies (collectively, "Tags") may be placed on the Website to monitor interaction with advertising content and to target and optimize advertising. Each internet browser has functionality so that you can block both first and third-party cookies and clear your browser's cache. The "help" feature of the menu bar on most browsers will tell you how to stop accepting new cookies, how to receive notification of new cookies, how to disable existing cookies and how to clear your browser's cache. For more information about cookies and how to disable them, you can consult the information at{' '}
+                <a href="https://www.allaboutcookies.org/manage-cookies/" target="_blank" rel="noreferrer noopener nofollow" className="text-sims-pink hover:underline">All About Cookies</a>.
+              </p>
+              <p className="text-slate-300 leading-relaxed mb-4">
+                Without cookies you may not be able to take full advantage of the Website content and features. Please note that rejecting cookies does not mean that you will no longer see ads when you visit our Site. In the event you opt-out, you will still see non-personalized advertisements on the Website.
+              </p>
+              <p className="text-slate-300 leading-relaxed mb-4">
+                The Website collects the following data using a cookie when serving personalized ads:
+              </p>
+              <ul className="list-disc list-inside text-slate-300 space-y-2 mb-4 ml-4">
+                <li>IP Address</li>
+                <li>Operating System type</li>
+                <li>Operating System version</li>
+                <li>Device Type</li>
+                <li>Language of the website</li>
+                <li>Web browser type</li>
+                <li>Email (in hashed form)</li>
+              </ul>
+              <p className="text-slate-300 leading-relaxed mb-4">
+                Mediavine Partners (companies listed below with whom Mediavine shares data) may also use this data to link to other end user information the partner has independently collected to deliver targeted advertisements. Mediavine Partners may also separately collect data about end users from other sources, such as advertising IDs or pixels, and link that data to data collected from Mediavine publishers in order to provide interest-based advertising across your online experience, including devices, browsers and apps. This data includes usage data, cookie information, device information, information about interactions between users and advertisements and websites, geolocation data, traffic data, and information about a visitor's referral source to a particular website. Mediavine Partners may also create unique IDs to create audience segments, which are used to provide targeted advertising.
+              </p>
+              <p className="text-slate-300 leading-relaxed mb-4">
+                If you would like more information about this practice and to know your choices to opt-in or opt-out of this data collection, please visit{' '}
+                <a href="https://thenai.org/opt-out/" target="_blank" rel="noreferrer noopener nofollow" className="text-sims-pink hover:underline">National Advertising Initiative opt out page</a>. You may also visit{' '}
+                <a href="http://optout.aboutads.info/#/" target="_blank" rel="noreferrer noopener nofollow" className="text-sims-pink hover:underline">Digital Advertising Alliance website</a> and{' '}
+                <a href="http://optout.networkadvertising.org/#" target="_blank" rel="noreferrer noopener nofollow" className="text-sims-pink hover:underline">Network Advertising Initiative website</a> to learn more information about interest-based advertising. You may download the AppChoices app at{' '}
+                <a href="https://youradchoices.com/appchoices" target="_blank" rel="noreferrer noopener nofollow" className="text-sims-pink hover:underline">Digital Advertising Alliance's AppChoices app</a> to opt out in connection with mobile apps, or use the platform controls on your mobile device to opt out.
+              </p>
+              <p className="text-slate-300 leading-relaxed mb-4">
+                For specific information about Mediavine Partners, the data each collects and their data collection and privacy policies, please visit{' '}
+                <a href="https://www.mediavine.com/ad-partners/" target="_blank" rel="noreferrer noopener nofollow" className="text-sims-pink hover:underline">Mediavine Partners</a>.
               </p>
             </section>
 

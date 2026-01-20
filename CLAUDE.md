@@ -265,6 +265,16 @@ npm run content:conservative   # Run conservative aggregation (slowest, safest)
 npm run content:test           # Test privacy aggregator without database writes
 ```
 
+### Data Quality & Cleanup
+```bash
+# Author data cleanup - fixes garbage author names extracted from URLs
+npx tsx scripts/cleanup-author-data.ts              # Dry run - preview changes
+npx tsx scripts/cleanup-author-data.ts --fix        # Apply fixes
+npx tsx scripts/cleanup-author-data.ts --fix --limit=100  # Fix first 100 only
+```
+
+**Author Cleanup Details**: The original scraper extracted garbage values like "Title", "ShRef", "Id" from URL path segments. The cleanup script visits actual mod download URLs and extracts real author names. See `docs/PRD-author-data-cleanup.md` for full documentation.
+
 ## Architecture
 
 ### Directory Structure

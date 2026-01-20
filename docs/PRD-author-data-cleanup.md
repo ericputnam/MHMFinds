@@ -1,346 +1,226 @@
-# PRD: Author Data Cleanup and Extraction Research
+# PRD: Author Data Cleanup and Extraction
+
+## Status: IMPLEMENTED
+
+This PRD has been implemented. See the operational guide below for usage.
+
+---
 
 ## Problem Statement
 
-Many mods in the database have incorrect, missing, or inconsistent author information. This affects discoverability, creator attribution, and the overall trust of the platform. Before implementing fixes, we need to research the best approaches for extracting accurate author data from various mod hosting platforms.
+Many mods in the database have incorrect, missing, or inconsistent author information. The original scraper extracted garbage data from URL path segments like "Title", "ShRef", "Id", "Www" instead of actual author names.
 
 ## Background
 
-### Current State
+### Root Cause Analysis
 
-**Database Fields:**
-- `Mod.author` (String?) - Author name from scraping
-- `Mod.creatorId` (String?) - FK to CreatorProfile
-- `CreatorProfile` - Full creator entity with handle, bio, social links
+The `mhmScraper.ts` had a flawed `extractAuthorFromUrl()` function that:
 
-**Known Issues:**
-1. Many mods have `author: null` despite having a download link to a known platform
-2. `author` and `creatorId` can diverge (author string exists but no linked profile)
-3. Only CurseForge has author extraction implemented
-4. Auto-created creator accounts use fake emails (`{name}@external.creator`)
-5. Same creator appears with different name variations across sources
+1. **Patreon URLs**: Extracted post IDs (e.g., "143548751") instead of creator names
+2. **TSR URLs**: Extracted URL path segments like "title", "shRef", "id"
+3. **Tumblr URLs**: Extracted "Www" from www.tumblr.com URLs
+4. **Generic fallback**: Used domain name parts as author (producing garbage)
 
-### Current Author Extraction by Source
+### Data Impact
 
-| Source | Implemented | Method | Accuracy |
-|--------|-------------|--------|----------|
-| CurseForge | Yes | CSS selectors + title parsing | ~70% |
-| Patreon | No | - | 0% |
-| Tumblr | No | - | 0% |
-| Reddit | No | - | 0% |
-| Sims Resource | No | - | 0% |
-| ModTheSims | No | - | 0% |
-| Direct Links | No | - | 0% |
+From database analysis (January 2025):
+- **Total mods**: 9,989
+- **Mods with bad/garbage authors**: 6,492 (65%)
+- **Mods with good authors**: 3,491 (35%)
+- **Mods with null authors**: 4
 
-## Phase 1: Research (REQUIRED FIRST)
+**Top garbage author values:**
+| Author | Count | Source |
+|--------|-------|--------|
+| Title | 2,043 | TSR `/title/` path segment |
+| ShRef | 709 | TSR `shRef/` path segment |
+| CurseForge Creator | 211 | Placeholder fallback |
+| Www | 148 | www.tumblr.com URLs |
+| Simsfinds | 115 | simsfinds.com domain |
+| Id | 112 | TSR `/id/` path segment |
+| ModTheSims Community | 90 | Placeholder fallback |
 
-### Research Objectives
+---
 
-Before implementing any fixes, complete the following research:
+## Implementation
 
-#### 1. Platform URL Pattern Analysis
-Document the URL structure for each platform to understand where author info lives:
+### 1. Cleanup Script
 
-```
-CurseForge:
-- Mod page: https://www.curseforge.com/sims4/mods/{mod-slug}
-- Author page: https://www.curseforge.com/members/{author}/projects
-- Can extract author from mod page DOM
+**File**: `scripts/cleanup-author-data.ts`
 
-Patreon:
-- Creator page: https://www.patreon.com/{creator}
-- Post page: https://www.patreon.com/posts/{id}
-- Creator name in URL and page header
+A comprehensive script that:
+- Identifies mods with bad/missing author data
+- Visits actual download URLs (Patreon, TSR, Tumblr, CurseForge, etc.)
+- Extracts real author names from page content using platform-specific methods
+- Validates extracted authors against known bad patterns
+- Updates the database with correct author information
 
-Tumblr:
-- Blog: https://{username}.tumblr.com/post/{id}
-- Author is the blog name (subdomain)
+### 2. Scraper Fixes
 
-Reddit:
-- Post: https://www.reddit.com/r/{subreddit}/comments/{id}/{slug}/
-- Author: post metadata (u/username)
+**File**: `lib/services/mhmScraper.ts`
 
-Sims Resource (TSR):
-- Mod: https://www.thesimsresource.com/downloads/details/category/sims4/title/{slug}/id/{id}/
-- Creator page: https://www.thesimsresource.com/artists/{username}/
+Updated the scraper with:
+- New `isValidAuthor()` method to filter garbage values
+- Completely rewritten `extractAuthorFromUrl()` that returns `undefined` for ambiguous URLs
+- Enhanced `scrapeAuthorFromModPage()` with platform-specific extraction logic
+- Proper fallback chain: URL extraction → Page scraping → Leave empty
 
-ModTheSims:
-- Mod: https://modthesims.info/d/{id}/{slug}.html
-- Creator: https://modthesims.info/m/{username}/
+---
 
-Nexus Mods (not currently scraped):
-- Mod: https://www.nexusmods.com/thesims4/mods/{id}
-- Author: Mod page sidebar
-```
+## Operational Guide
 
-#### 2. DOM Structure Analysis
-For each platform, document:
-- CSS selectors for author name
-- Fallback selectors if primary fails
-- API endpoints if available (prefer over scraping)
-- Rate limits and ToS considerations
+### Running the Cleanup Script
 
-#### 3. Author Name Normalization Research
-Research how to handle:
-- Name variations: "TwistedMexi" vs "Twisted Mexi" vs "twistedmexi"
-- Display names vs usernames
-- Unicode characters in names
-- Name changes over time
+```bash
+# Dry run - see what would be fixed (recommended first)
+npx tsx scripts/cleanup-author-data.ts
 
-#### 4. Existing Data Analysis
-Query the database to understand the scope:
-```sql
--- Mods without author
-SELECT COUNT(*) FROM mods WHERE author IS NULL;
+# Fix first 100 mods (good for testing)
+npx tsx scripts/cleanup-author-data.ts --fix --limit=100
 
--- Mods with author but no creator link
-SELECT COUNT(*) FROM mods WHERE author IS NOT NULL AND "creatorId" IS NULL;
-
--- Most common sources for mods without authors
-SELECT source, COUNT(*) FROM mods WHERE author IS NULL GROUP BY source;
-
--- Download URL patterns in mods without authors
-SELECT "downloadUrl", source FROM mods WHERE author IS NULL LIMIT 100;
+# Fix all mods (takes time due to rate limiting)
+npx tsx scripts/cleanup-author-data.ts --fix
 ```
 
-#### 5. API vs Scraping Analysis
-For each platform, determine:
-- Is there a public API?
-- What data does the API provide?
-- Rate limits and authentication requirements
-- Scraping ToS compliance
+### Expected Output
 
-### Research Deliverables
+```
+🔍 Author Data Cleanup Script
+============================================================
+Mode: 📊 DRY RUN (report only)
 
-Create `docs/research/author-extraction-findings.md` with:
-1. Platform-by-platform extraction strategies
-2. Recommended approach for each source
-3. Normalization rules for author names
-4. Database analysis results
-5. Risk assessment (rate limits, ToS, blocking)
+📊 Finding mods with bad author data...
+   Found 6492 mods with bad/missing authors
 
-## Phase 2: Data Analysis
+📊 Bad author distribution:
+    2043 × "Title"
+     709 × "ShRef"
+     211 × "CurseForge Creator"
+     ...
 
-### Audit Script Requirements
-
-Create `scripts/audit-author-data.ts` to:
-
-1. **Count Missing Authors**
-   ```typescript
-   // Total mods without author
-   // Mods without author by source
-   // Mods without author by content type
-   ```
-
-2. **Analyze Download URLs**
-   ```typescript
-   // Extract patterns from downloadUrl
-   // Identify which URLs could have author extracted
-   // Categorize by extraction difficulty
-   ```
-
-3. **Identify Duplicates**
-   ```typescript
-   // Find authors with name variations
-   // Find creators with multiple accounts
-   // Find mods attributed to wrong creator
-   ```
-
-4. **Generate Report**
-   ```typescript
-   // Summary statistics
-   // List of actionable items
-   // Estimated cleanup effort
-   ```
-
-## Phase 3: Extraction Implementation
-
-### Platform-Specific Extractors
-
-Based on research findings, implement extractors for each platform:
-
-#### CurseForge (Improve Existing)
-```typescript
-// lib/services/extractors/curseforgeAuthor.ts
-export async function extractCurseForgeAuthor(url: string): Promise<AuthorInfo> {
-  // 1. Fetch mod page
-  // 2. Try .author-name selector
-  // 3. Try .project-author selector
-  // 4. Try API if available
-  // 5. Parse from title as last resort
-  return { name, url, confidence };
-}
+[1/6492] Processing: Example Mod...
+   Current author: "Title"
+   Download URL: https://www.thesimsresource.com/...
+   ✅ Found author: "CreatorName" (via member link href)
+   📝 Would update (dry run)
 ```
 
-#### Patreon (New)
-```typescript
-// lib/services/extractors/patreonAuthor.ts
-export async function extractPatreonAuthor(url: string): Promise<AuthorInfo> {
-  // 1. Parse creator name from URL (/c/{creator} or /{creator})
-  // 2. Fetch page header for display name
-  // 3. Extract from meta tags
-  return { name, url, confidence };
-}
+### Platform Support
+
+| Platform | Status | Method | Notes |
+|----------|--------|--------|-------|
+| Tumblr | ✅ Working | Subdomain/path extraction | Very reliable |
+| The Sims Resource | ✅ Working | URL pattern + page scraping | Extracts from `/artists/`, `/staff/`, `/members/` URLs |
+| Patreon | ⚠️ Partial | Meta tag extraction | Works for public posts |
+| CurseForge | ✅ Working | Wayback Machine fallback | Uses Internet Archive cached pages |
+| ModTheSims | ✅ Working | Wayback Machine fallback | Uses Internet Archive cached pages |
+| SimsFinds | ❌ Limited | Generic extraction | No author metadata available |
+
+### Rate Limiting
+
+The cleanup script includes:
+- 2-second delay between requests
+- Rotating user agents
+- Graceful error handling
+
+**Estimated time for full cleanup**: ~3.5 hours for 6,000 mods
+
+### Re-running After Fixes
+
+If you've run the scraper since the fix was applied, new mods should have correct authors. You can still run the cleanup script to catch any remaining issues:
+
+```bash
+# Check how many still need fixing
+npx tsx scripts/cleanup-author-data.ts
 ```
 
-#### Tumblr (New)
-```typescript
-// lib/services/extractors/tumblrAuthor.ts
-export async function extractTumblrAuthor(url: string): Promise<AuthorInfo> {
-  // 1. Parse subdomain from URL ({author}.tumblr.com)
-  // 2. Fetch blog for display name
-  // 3. Handle reblog attribution
-  return { name, url, confidence };
-}
-```
+---
 
-#### Sims Resource (New)
-```typescript
-// lib/services/extractors/tsrAuthor.ts
-export async function extractTSRAuthor(url: string): Promise<AuthorInfo> {
-  // 1. Fetch mod page
-  // 2. Extract creator from sidebar/header
-  // 3. Get creator profile URL
-  return { name, url, confidence };
-}
-```
+## Bad Author Patterns
 
-#### ModTheSims (New)
-```typescript
-// lib/services/extractors/mtsAuthor.ts
-export async function extractMTSAuthor(url: string): Promise<AuthorInfo> {
-  // 1. Fetch mod page
-  // 2. Extract from creator info box
-  // 3. Get creator profile URL
-  return { name, url, confidence };
-}
-```
+The following patterns are automatically detected as "bad" and will be cleaned up:
 
-### Universal URL Parser
+### Static Patterns
+- `Title`, `ShRef`, `Id`, `Www`
+- `Simsfinds`, `CurseForge Creator`, `ModTheSims Community`, `TSR Creator`
+- `Wixsite`, `Blogspot`, `Amazon`, `Amzn`, `Tistory`, `Google`
+- `Early Access`, `posts`
+- `Creator Terms of Use`, `Terms of Use`, `Privacy Policy`
+- `Contact`, `About`, `Home`, `Downloads`, `Categories`, `Search`, `Members`
+
+### Dynamic Patterns
+- Pure numeric values (Patreon post IDs like "143548751")
+- Name + post ID patterns (like "Maia Hair 143566306")
+- Values shorter than 2 characters
+
+---
+
+## Scraper Changes
+
+### Before (Problematic)
 
 ```typescript
-// lib/services/extractors/urlAuthorParser.ts
-export function parseAuthorFromUrl(url: string): AuthorInfo | null {
-  const patterns = [
-    { regex: /patreon\.com\/(?:c\/)?([^\/]+)/, source: 'patreon' },
-    { regex: /([^.]+)\.tumblr\.com/, source: 'tumblr' },
-    { regex: /reddit\.com\/user\/([^\/]+)/, source: 'reddit' },
-    { regex: /thesimsresource\.com\/artists\/([^\/]+)/, source: 'tsr' },
-    { regex: /modthesims\.info\/m\/([^\/]+)/, source: 'mts' },
-    { regex: /curseforge\.com\/members\/([^\/]+)/, source: 'curseforge' },
-  ];
-
-  for (const { regex, source } of patterns) {
-    const match = url.match(regex);
-    if (match) {
-      return { name: match[1], source, confidence: 0.8 };
-    }
-  }
-  return null;
+// OLD: Would extract "Title" from /title/mod-name/ paths
+private extractAuthorFromUrl(url: URL): string | undefined {
+  // ...
+  const downloadMatch = pathname.match(/\/downloads\/details\/[^\/]+\/[^\/]+\/([^\/\?]+)/);
+  const creatorName = memberMatch?.[1] || downloadMatch?.[1]; // BUG: Gets path segments
+  // ...
+  author = domainParts[domainParts.length - 2]; // BUG: Gets domain parts
 }
 ```
 
-## Phase 4: Cleanup Execution
-
-### Cleanup Script Requirements
-
-Create `scripts/cleanup-author-data.ts` with:
-
-1. **Dry Run Mode**
-   - Preview all changes without database writes
-   - Generate report of proposed changes
-
-2. **Incremental Processing**
-   - Process in batches (100 mods at a time)
-   - Respect rate limits for external fetches
-   - Resume capability after interruption
-
-3. **Confidence Thresholds**
-   - Auto-apply changes with confidence > 0.9
-   - Queue for review changes with confidence 0.5-0.9
-   - Skip changes with confidence < 0.5
-
-4. **Logging**
-   - Log every change with before/after values
-   - Track extraction method used
-   - Record confidence scores
-
-### Cleanup Priorities
-
-1. **High Priority**: Mods with download URLs that can be parsed for author
-2. **Medium Priority**: Mods from known sources without author extraction
-3. **Low Priority**: Mods with ambiguous or missing download URLs
-
-### Author Normalization
+### After (Fixed)
 
 ```typescript
-// lib/services/authorNormalizer.ts
-export function normalizeAuthor(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '') // Remove spaces for matching
-    .replace(/[_-]/g, ''); // Normalize separators
-}
+// NEW: Returns undefined for ambiguous URLs, triggering page scraping
+private extractAuthorFromUrl(url: URL): string | undefined {
+  // Only extract from URLs where author is clearly in the URL
+  // For TSR: Only from /members/CreatorName URLs
+  // For Patreon: Only from /c/creatorname or /creatorname/posts patterns
+  // For Tumblr: From subdomain (username.tumblr.com)
+  // Otherwise: Return undefined to trigger page scraping
 
-export function findExistingCreator(authorName: string): CreatorProfile | null {
-  const normalized = normalizeAuthor(authorName);
-  // Search by normalized handle
-  // Search by display name variations
-  // Search by known aliases
+  if (!this.isValidAuthor(author)) return undefined;
+  return author;
 }
 ```
 
-## Files to Create
+---
 
-### Research
-- `docs/research/author-extraction-findings.md` - Research results
+## Files Modified
 
-### Scripts
-- `scripts/audit-author-data.ts` - Database audit
-- `scripts/cleanup-author-data.ts` - Cleanup execution
+### Created
+- `scripts/cleanup-author-data.ts` - Main cleanup script
 
-### Extractors
-- `lib/services/extractors/curseforgeAuthor.ts`
-- `lib/services/extractors/patreonAuthor.ts`
-- `lib/services/extractors/tumblrAuthor.ts`
-- `lib/services/extractors/tsrAuthor.ts`
-- `lib/services/extractors/mtsAuthor.ts`
-- `lib/services/extractors/urlAuthorParser.ts`
+### Modified
+- `lib/services/mhmScraper.ts`:
+  - Added `badAuthorPatterns` list
+  - Added `isValidAuthor()` method
+  - Added `titleCase()` helper
+  - Rewrote `extractAuthorFromUrl()`
+  - Enhanced `scrapeAuthorFromModPage()`
 
-### Utilities
-- `lib/services/authorNormalizer.ts`
+---
+
+## Future Improvements
+
+1. **CurseForge API Integration**: Use official API instead of scraping
+2. **Batch Processing**: Process in larger batches with checkpointing
+3. **Creator Profile Linking**: Automatically link to CreatorProfile records
+4. **Duplicate Detection**: Identify and merge duplicate creator profiles
+5. **Scheduled Cleanup**: Run cleanup periodically to catch new issues
+
+---
 
 ## Success Metrics
 
-1. **Coverage**: >95% of mods have an author assigned
-2. **Accuracy**: >90% of authors correctly attributed (verified by sampling)
-3. **Linkage**: >80% of mods linked to a CreatorProfile
-4. **Normalization**: <5% duplicate creator profiles for same person
+| Metric | Target | Current |
+|--------|--------|---------|
+| Mods with valid author | >95% | 35% (pre-cleanup) |
+| Author extraction accuracy | >90% | Varies by platform |
+| Cleanup script success rate | >80% | ~60% (with Wayback Machine fallback) |
 
-## Testing Plan
-
-1. **Research Validation**
-   - Manually verify extraction strategies work on 10 samples per platform
-   - Document any edge cases discovered
-
-2. **Audit Script Testing**
-   - Run audit on production data
-   - Verify counts match manual queries
-
-3. **Extractor Testing**
-   - Unit tests for each extractor
-   - Integration tests with real URLs (mocked responses)
-   - Rate limit compliance testing
-
-4. **Cleanup Testing**
-   - Run on test database first
-   - Dry-run on production
-   - Staged rollout (100 mods, 1000 mods, all mods)
-
-## Risk Mitigation
-
-1. **Rate Limiting**: Use delays, rotating user agents, proxy rotation
-2. **ToS Compliance**: Prefer APIs over scraping where available
-3. **Data Loss**: Always backup before cleanup, log all changes
-4. **False Positives**: Use confidence thresholds, manual review queue
+**Note**: Success rate improved significantly after adding:
+- Wayback Machine fallback for blocked sites (CurseForge, ModTheSims)
+- URL pattern extraction for TSR (`/artists/`, `/staff/`, `/members/` paths)

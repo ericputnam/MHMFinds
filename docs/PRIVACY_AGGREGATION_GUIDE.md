@@ -250,6 +250,59 @@ const proxyConfig: ProxyConfig = {
 - [Content Creator Guidelines](https://example.com)
 - [Ethical Scraping Discussion](https://example.com)
 
+## 🧹 **Data Quality & Cleanup**
+
+### **Author Data Cleanup**
+
+The scraper may occasionally extract incorrect author information. A cleanup script is available to fix these issues.
+
+#### **Common Issues**
+- URL path segments extracted as authors (e.g., "Title", "ShRef", "Id")
+- Patreon post IDs instead of creator names
+- Domain parts used as fallback (e.g., "Www", "Blogspot")
+
+#### **Running the Cleanup Script**
+
+```bash
+# Dry run - preview changes without modifying database
+npx tsx scripts/cleanup-author-data.ts
+
+# Fix first 100 mods (recommended for testing)
+npx tsx scripts/cleanup-author-data.ts --fix --limit=100
+
+# Fix all mods with bad authors
+npx tsx scripts/cleanup-author-data.ts --fix
+```
+
+#### **What the Script Does**
+1. Identifies mods with garbage/missing author data
+2. Visits actual download URLs (Patreon, TSR, Tumblr, etc.)
+3. Extracts real author names from page metadata
+4. Updates the database with correct information
+
+#### **Platform-Specific Notes**
+| Platform | Extraction Method | Reliability |
+|----------|-------------------|-------------|
+| Tumblr | Subdomain/path | High |
+| TSR | URL pattern (`/artists/`, `/staff/`) | High |
+| Patreon | Meta tags | Medium |
+| CurseForge | Wayback Machine fallback | Medium |
+| ModTheSims | Wayback Machine fallback | Medium |
+| SimsFinds | No metadata available | Low |
+
+For detailed documentation, see: `docs/PRD-author-data-cleanup.md`
+
+### **Preventing Future Issues**
+
+The scraper has been updated to:
+- Validate extracted authors against known bad patterns
+- Return `undefined` for ambiguous URLs (triggering page scraping)
+- Use platform-specific extraction methods
+
+New content scraped will have more accurate author information.
+
+---
+
 ## 🤝 **Support & Contributing**
 
 ### **Getting Help**

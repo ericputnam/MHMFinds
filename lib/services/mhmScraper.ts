@@ -742,51 +742,142 @@ export class MustHaveModsScraper {
   }
 
   /**
+   * List of bad author patterns that indicate extraction failed
+   * These are URL path segments, not real author names
+   */
+  private badAuthorPatterns = [
+    'title', 'id', 'shref', 'www', 'posts', 'downloads', 'details',
+    'category', 'themes', 'members', 'search', 'home', 'about', 'contact',
+  ];
+
+  /**
+   * Check if an extracted author is valid (not a URL segment or garbage)
+   */
+  private isValidAuthor(author: string | undefined): boolean {
+    if (!author) return false;
+    const lower = author.toLowerCase().trim();
+
+    // Too short
+    if (lower.length < 2) return false;
+
+    // Pure numeric (Patreon post IDs)
+    if (/^\d+$/.test(lower)) return false;
+
+    // Known bad patterns
+    if (this.badAuthorPatterns.includes(lower)) return false;
+
+    // Name followed by numeric ID (e.g., "Maia Hair 143566306")
+    if (/^[a-z\s]+ \d{6,}$/i.test(author)) return false;
+
+    return true;
+  }
+
+  /**
    * Extract author/creator name from download URL
+   * Returns undefined if we can't reliably extract - will fall back to page scraping
    */
   private extractAuthorFromUrl(url: URL): string | undefined {
-    const hostname = url.hostname;
+    const hostname = url.hostname.toLowerCase();
     const pathname = url.pathname;
     let author: string | undefined;
 
+    // PATREON: Only extract from creator profile URLs, not post URLs
+    // Post URLs like /posts/143548751 have no author info
+    // Creator URLs like /c/creatorname or /creatorname/posts have the creator slug
     if (hostname.includes('patreon.com')) {
-      const match = pathname.match(/\/(?:posts\/)?([^\/\?]+)/);
-      if (match && match[1] && match[1] !== 'posts') {
-        author = match[1].replace(/-/g, ' ').replace(/_/g, ' ');
-        author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      // Pattern: /c/creatorname
+      const creatorMatch = pathname.match(/^\/c\/([^\/\?]+)/i);
+      if (creatorMatch) {
+        author = creatorMatch[1].replace(/-/g, ' ').replace(/_/g, ' ');
+        author = this.titleCase(author);
       }
-    } else if (hostname.includes('thesimsresource.com')) {
-      const memberMatch = pathname.match(/\/members\/([^\/\?]+)/);
-      const downloadMatch = pathname.match(/\/downloads\/details\/[^\/]+\/[^\/]+\/([^\/\?]+)/);
-      const creatorName = memberMatch?.[1] || downloadMatch?.[1];
-      if (creatorName) {
-        author = creatorName.replace(/-/g, ' ').replace(/_/g, ' ');
-        author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-      } else {
-        author = 'TSR Creator';
+      // Pattern: /creatorname/posts (not /posts/numeric)
+      else if (!pathname.startsWith('/posts/')) {
+        const slugMatch = pathname.match(/^\/([^\/\?]+)/);
+        if (slugMatch && !/^\d+$/.test(slugMatch[1])) {
+          author = slugMatch[1].replace(/-/g, ' ').replace(/_/g, ' ');
+          author = this.titleCase(author);
+        }
       }
-    } else if (hostname.includes('tumblr.com')) {
-      const match = hostname.match(/^([^\.]+)\.tumblr\.com/);
-      if (match) {
-        author = match[1].replace(/-/g, ' ').replace(/_/g, ' ');
-        author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      // Don't return placeholder - let page scraping handle it
+      return this.isValidAuthor(author) ? author : undefined;
+    }
+
+    // THE SIMS RESOURCE: Only extract from /members/ URLs
+    // URLs like /downloads/details/id/1234/shRef/0 have no member info
+    if (hostname.includes('thesimsresource.com')) {
+      const memberMatch = pathname.match(/\/members\/([^\/\?]+)/i);
+      if (memberMatch) {
+        author = memberMatch[1].replace(/-/g, ' ').replace(/_/g, ' ');
+        author = this.titleCase(author);
       }
-    } else if (hostname.includes('curseforge.com')) {
-      const match = pathname.match(/\/members\/([^\/\?]+)/);
-      author = match?.[1] || 'CurseForge Creator';
-    } else if (hostname.includes('simsdom.com')) {
-      author = 'SimsDom';
-    } else if (hostname.includes('modthesims.info')) {
-      author = 'ModTheSims Community';
-    } else {
-      const domainParts = hostname.split('.');
-      if (domainParts.length >= 2) {
-        author = domainParts[domainParts.length - 2];
-        author = author.charAt(0).toUpperCase() + author.slice(1);
+      // Don't return placeholder - let page scraping handle it
+      return this.isValidAuthor(author) ? author : undefined;
+    }
+
+    // TUMBLR: Extract from subdomain (this works well)
+    if (hostname.includes('tumblr.com')) {
+      // Pattern: username.tumblr.com
+      const subdomainMatch = hostname.match(/^([^\.]+)\.tumblr\.com/);
+      if (subdomainMatch && subdomainMatch[1] !== 'www') {
+        author = subdomainMatch[1].replace(/-/g, ' ').replace(/_/g, ' ');
+        author = this.titleCase(author);
+        return this.isValidAuthor(author) ? author : undefined;
+      }
+      // Pattern: www.tumblr.com/username
+      const pathMatch = pathname.match(/^\/([^\/\?]+)/);
+      if (pathMatch) {
+        author = pathMatch[1].replace(/-/g, ' ').replace(/_/g, ' ');
+        author = this.titleCase(author);
+        return this.isValidAuthor(author) ? author : undefined;
+      }
+      return undefined;
+    }
+
+    // CURSEFORGE: Can't reliably extract from URL - need to scrape page
+    if (hostname.includes('curseforge.com')) {
+      return undefined; // Let page scraping handle it
+    }
+
+    // MODTHESIMS: Can't reliably extract from URL - need to scrape page
+    if (hostname.includes('modthesims.info')) {
+      return undefined; // Let page scraping handle it
+    }
+
+    // SIMSDOM: Can't reliably extract from URL - need to scrape page
+    if (hostname.includes('simsdom.com')) {
+      return undefined; // Let page scraping handle it
+    }
+
+    // AMAZON: Set author to "Amazon" directly - these are product links, not mod creator pages
+    if (hostname.includes('amazon.com') || hostname.includes('amzn.to') || hostname.includes('amzn.com')) {
+      return 'Amazon';
+    }
+
+    // OTHER SITES: Try subdomain or path patterns but don't use domain fallback
+    // Better to return undefined and fall back to page scraping than return garbage
+
+    // Check for username subdomain pattern (common on some sites)
+    const subdomain = hostname.split('.')[0];
+    if (subdomain !== 'www' && subdomain !== 'api' && subdomain.length > 2) {
+      author = subdomain.replace(/-/g, ' ').replace(/_/g, ' ');
+      author = this.titleCase(author);
+      if (this.isValidAuthor(author)) {
+        return author;
       }
     }
 
-    return author;
+    // Return undefined - let page scraping handle it
+    return undefined;
+  }
+
+  /**
+   * Convert string to title case
+   */
+  private titleCase(str: string): string {
+    return str.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 
   /**
@@ -800,106 +891,175 @@ export class MustHaveModsScraper {
       const response = await axios.get(downloadUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         },
-        timeout: 10000, // 10 second timeout
+        timeout: 15000, // 15 second timeout
+        maxRedirects: 5,
       });
 
       const $ = cheerio.load(response.data);
       const url = new URL(downloadUrl);
-      const hostname = url.hostname;
+      const hostname = url.hostname.toLowerCase();
+
+      // Helper to validate and clean author name
+      const validateAuthor = (author: string | undefined): string | undefined => {
+        if (!author) return undefined;
+        const cleaned = author.trim();
+        if (!this.isValidAuthor(cleaned)) return undefined;
+        return cleaned;
+      };
 
       // Patreon - look for creator name
       if (hostname.includes('patreon.com')) {
-        // Try multiple selectors for Patreon creator name
-        const selectors = [
-          'a[data-tag="post-card-avatar-link"]',
-          '[data-tag="post-published-at"] a',
-          '.creator-name',
-          'h1[data-tag="creator-page-name"]',
-          'meta[property="og:title"]',
-        ];
+        // Method 1: og:site_name (most reliable for creator name)
+        const ogSiteName = $('meta[property="og:site_name"]').attr('content');
+        if (ogSiteName && ogSiteName !== 'Patreon') {
+          const author = validateAuthor(ogSiteName);
+          if (author) return author;
+        }
 
-        for (const selector of selectors) {
-          const authorEl = $(selector).first();
-          if (selector === 'meta[property="og:title"]') {
-            const content = authorEl.attr('content');
-            if (content) {
-              // Extract name from "Creator Name is creating..." or "Post Title | Creator Name"
-              const match = content.match(/^(.+?)\s+is creating|(.+?)\s*\|/) || content.match(/^(.+?)$/);
-              if (match) {
-                return (match[1] || match[2] || match[3])?.trim();
-              }
-            }
-          } else {
-            const text = authorEl.text().trim();
-            if (text && text.length > 0 && text.length < 50) {
-              return text;
-            }
+        // Method 2: og:title patterns
+        const ogTitle = $('meta[property="og:title"]').attr('content');
+        if (ogTitle) {
+          // "CreatorName is creating..."
+          let match = ogTitle.match(/^(.+?)\s+is creating/i);
+          if (match) {
+            const author = validateAuthor(match[1]);
+            if (author) return author;
+          }
+
+          // "Post Title | CreatorName on Patreon"
+          match = ogTitle.match(/\|\s*(.+?)\s+on Patreon/i);
+          if (match) {
+            const author = validateAuthor(match[1]);
+            if (author) return author;
+          }
+
+          // "Post Title by CreatorName"
+          match = ogTitle.match(/\sby\s+(.+?)(?:\s*\||$)/i);
+          if (match) {
+            const author = validateAuthor(match[1]);
+            if (author) return author;
           }
         }
+
+        // Method 3: Creator link
+        const creatorLink = $('a[href*="/c/"]').first();
+        if (creatorLink.length) {
+          const href = creatorLink.attr('href');
+          const match = href?.match(/\/c\/([^\/\?]+)/);
+          if (match) {
+            const author = validateAuthor(this.titleCase(match[1].replace(/-/g, ' ')));
+            if (author) return author;
+          }
+        }
+
+        // Method 4: Data attributes
+        const creatorName = $('[data-tag="creator-name"]').text().trim();
+        const author = validateAuthor(creatorName);
+        if (author) return author;
       }
 
       // The Sims Resource - look for creator/member name
       else if (hostname.includes('thesimsresource.com')) {
-        const selectors = [
-          '.artist-profile-name',
-          '.member-name',
-          'a[href*="/members/"]',
-          'meta[property="og:title"]',
-        ];
+        // Method 1: Artist profile name (most reliable)
+        const artistName = $('.artist-profile-name').text().trim();
+        let author = validateAuthor(artistName);
+        if (author) return author;
 
-        for (const selector of selectors) {
-          const authorEl = $(selector).first();
-          if (selector === 'meta[property="og:title"]') {
-            const content = authorEl.attr('content');
-            if (content) {
-              // Extract creator name from title like "ModName by CreatorName"
-              const match = content.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
-              if (match) {
-                return match[1].trim();
-              }
-            }
-          } else {
-            const text = authorEl.text().trim();
-            if (text && text.length > 0 && text.length < 50) {
-              return text;
-            }
+        // Method 2: Member link with class
+        const memberLink = $('a.member-name, a[href*="/members/"]').first();
+        if (memberLink.length) {
+          // First try the text content
+          const text = memberLink.text().trim();
+          author = validateAuthor(text);
+          if (author) return author;
+
+          // Then try extracting from href
+          const href = memberLink.attr('href');
+          const match = href?.match(/\/members\/([^\/\?]+)/i);
+          if (match) {
+            author = validateAuthor(this.titleCase(match[1].replace(/-/g, ' ')));
+            if (author) return author;
+          }
+        }
+
+        // Method 3: og:title "ModName by CreatorName"
+        const ogTitle = $('meta[property="og:title"]').attr('content');
+        if (ogTitle) {
+          const match = ogTitle.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
+          if (match) {
+            author = validateAuthor(match[1]);
+            if (author) return author;
+          }
+        }
+
+        // Method 4: Page title "ModName by CreatorName"
+        const pageTitle = $('title').text().trim();
+        if (pageTitle) {
+          const match = pageTitle.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
+          if (match) {
+            author = validateAuthor(match[1]);
+            if (author) return author;
           }
         }
       }
 
-      // Tumblr - extract from subdomain
+      // Tumblr - extract from subdomain or path
       else if (hostname.includes('tumblr.com')) {
-        const match = hostname.match(/^([^\.]+)\.tumblr\.com/);
-        if (match) {
-          let author = match[1].replace(/-/g, ' ').replace(/_/g, ' ');
-          author = author.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-          return author;
+        // Subdomain pattern: username.tumblr.com
+        const subdomainMatch = hostname.match(/^([^\.]+)\.tumblr\.com/);
+        if (subdomainMatch && subdomainMatch[1] !== 'www') {
+          const author = validateAuthor(this.titleCase(subdomainMatch[1].replace(/-/g, ' ')));
+          if (author) return author;
+        }
+
+        // Path pattern: www.tumblr.com/username
+        const pathMatch = url.pathname.match(/^\/([^\/\?]+)/);
+        if (pathMatch) {
+          const author = validateAuthor(this.titleCase(pathMatch[1].replace(/-/g, ' ')));
+          if (author) return author;
         }
       }
 
-      // CurseForge - look for author
+      // CurseForge - look for author (note: often blocked by Cloudflare)
       else if (hostname.includes('curseforge.com')) {
-        const selectors = [
-          '.user-tag a',
-          '.author-name',
-          'a[href*="/members/"]',
-          'meta[name="author"]',
-        ];
+        // Method 1: Author name class
+        const authorName = $('.author-name').first().text().trim();
+        if (authorName) {
+          // Clean up "By AuthorName" prefix and "Pro member" suffix
+          const cleaned = authorName
+            .replace(/^By\s+/i, '')
+            .replace(/\s*This mod author is a.*$/i, '')
+            .replace(/\s*CurseForge Pro member.*$/i, '')
+            .replace(/\s*Pro member.*$/i, '')
+            .trim();
+          const author = validateAuthor(cleaned);
+          if (author) return author;
+        }
 
-        for (const selector of selectors) {
-          const authorEl = $(selector).first();
-          if (selector === 'meta[name="author"]') {
-            const content = authorEl.attr('content');
-            if (content) {
-              return content.trim();
-            }
-          } else {
-            const text = authorEl.text().trim();
-            if (text && text.length > 0 && text.length < 50) {
-              return text;
-            }
-          }
+        // Method 2: meta author tag
+        const metaAuthor = $('meta[name="author"]').attr('content');
+        const author = validateAuthor(metaAuthor);
+        if (author) return author;
+      }
+
+      // ModTheSims
+      else if (hostname.includes('modthesims.info')) {
+        // Method 1: Member link
+        const memberLink = $('a[href*="/member/"]').first();
+        if (memberLink.length) {
+          const text = memberLink.text().trim();
+          const author = validateAuthor(text);
+          if (author) return author;
+        }
+
+        // Method 2: Byline
+        const byline = $('.byline, .author, .creator').text().trim();
+        if (byline) {
+          const cleaned = byline.replace(/^by\s+/i, '').trim();
+          const author = validateAuthor(cleaned);
+          if (author) return author;
         }
       }
 
@@ -910,21 +1070,26 @@ export class MustHaveModsScraper {
         '.author-name',
         '.creator-name',
         '[rel="author"]',
+        '.byline',
       ];
 
       for (const selector of genericSelectors) {
         const authorEl = $(selector).first();
+        let author: string | undefined;
+
         if (selector.startsWith('meta')) {
-          const content = authorEl.attr('content');
-          if (content && content.length > 0 && content.length < 50) {
-            return content.trim();
-          }
+          author = authorEl.attr('content')?.trim();
         } else {
-          const text = authorEl.text().trim();
-          if (text && text.length > 0 && text.length < 50) {
-            return text;
-          }
+          author = authorEl.text().trim();
         }
+
+        // Clean up common prefixes
+        if (author) {
+          author = author.replace(/^by\s+/i, '').trim();
+        }
+
+        author = validateAuthor(author);
+        if (author) return author;
       }
 
       return undefined;
