@@ -4,6 +4,51 @@ import { prisma } from '@/lib/prisma';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
+// Batching configuration to prevent connection pool exhaustion
+const BATCH_SIZE = 10;
+const BATCH_DELAY_MS = 100;
+
+/**
+ * Helper to process items in batches with delays
+ * Prevents connection pool exhaustion during bulk operations
+ */
+async function processBatched<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  onProgress?: (processed: number, total: number) => void
+): Promise<{ successes: number; failures: number }> {
+  let successes = 0;
+  let failures = 0;
+
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE);
+
+    // Process batch in parallel
+    const results = await Promise.allSettled(batch.map(processor));
+
+    // Count successes and failures
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        successes++;
+      } else {
+        failures++;
+      }
+    });
+
+    // Report progress
+    if (onProgress) {
+      onProgress(successes + failures, items.length);
+    }
+
+    // Small delay between batches to prevent connection spike
+    if (i + BATCH_SIZE < items.length) {
+      await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+    }
+  }
+
+  return { successes, failures };
+}
+
 // POST - Re-index all mods or specific mod
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +63,7 @@ export async function POST(request: NextRequest) {
       await aiSearchService.updateSearchIndex(modId);
       return NextResponse.json({
         success: true,
-        message: `Re-indexed mod ${modId}`
+        message: `Re-indexed mod ${modId}`,
       });
     } else {
       // Re-index all mods without search index
@@ -32,26 +77,30 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      let indexed = 0;
-      let failed = 0;
+      console.log(`[Reindex] Starting batch indexing of ${modsWithoutIndex.length} mods`);
 
-      for (const mod of modsWithoutIndex) {
-        try {
+      // Process in batches to prevent connection pool exhaustion
+      const { successes: indexed, failures: failed } = await processBatched(
+        modsWithoutIndex,
+        async (mod) => {
           await aiSearchService.updateSearchIndex(mod.id);
-          indexed++;
           console.log(`Indexed: ${mod.title}`);
-        } catch (error) {
-          failed++;
-          console.error(`Failed to index ${mod.title}:`, error);
+        },
+        (processed, total) => {
+          if (processed % 50 === 0) {
+            console.log(`[Reindex] Progress: ${processed}/${total}`);
+          }
         }
-      }
+      );
+
+      console.log(`[Reindex] Complete: ${indexed} indexed, ${failed} failed`);
 
       return NextResponse.json({
         success: true,
         indexed,
         failed,
         total: modsWithoutIndex.length,
-        message: `Re-indexed ${indexed} mods (${failed} failed)`
+        message: `Re-indexed ${indexed} mods (${failed} failed)`,
       });
     }
   } catch (error) {

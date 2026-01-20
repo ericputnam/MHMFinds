@@ -97,6 +97,78 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 ---
 
+## 🚨 CRITICAL: Prisma Accelerate - DO NOT INSTALL THE EXTENSION
+
+**This project uses Prisma Accelerate connection pooling via `db.prisma.io`. The DATABASE_URL already routes through Prisma's proxy.**
+
+### What This Means
+- The DATABASE_URL looks like: `postgres://...@db.prisma.io:5432/...`
+- This provides connection pooling automatically
+- **You do NOT need `@prisma/extension-accelerate` for connection pooling**
+
+### The Extension is for CACHING ONLY
+The `@prisma/extension-accelerate` package is ONLY needed if you want Prisma's edge caching features (cacheStrategy). It is NOT needed for connection pooling.
+
+### ⛔ NEVER Do This
+```bash
+npm install @prisma/extension-accelerate  # DO NOT INSTALL
+```
+
+```typescript
+// DO NOT add this to lib/prisma.ts
+import { withAccelerate } from '@prisma/extension-accelerate';
+prisma.$extends(withAccelerate());  // BREAKS PRODUCTION
+```
+
+### Why It Breaks Production
+When you install the extension, it changes how Prisma connects. Combined with the db.prisma.io pooler URL, it causes:
+- `Can't reach database server at db.prisma.io:5432` errors
+- Connection pool exhaustion
+- Complete site outage
+
+### If You Need Accelerate Caching
+1. **Ask the user first** - This requires infrastructure changes
+2. Need a `prisma://` URL (different from the current `postgres://` URL)
+3. Need `DIRECT_URL` for migrations
+4. Requires careful setup - don't attempt without explicit user approval
+
+### Recovery from Prisma Connection Issues
+1. **Rollback immediately**: `vercel rollback <working-deployment-url> --yes`
+2. Check Prisma Dashboard for errors
+3. May need to restart/purge connections in Prisma Cloud console
+4. Wait for connections to clear before redeploying
+
+---
+
+## ⚠️ CRITICAL: Production Deployment Safety
+
+### Before Pushing to Production
+1. **Test locally first** - `npm run build` must succeed
+2. **Don't add new packages without understanding them** - Research first
+3. **Infrastructure changes need explicit approval** - Databases, auth, caching
+4. **Have a rollback plan** - Know the last working deployment
+
+### Rollback Commands
+```bash
+# List recent deployments
+vercel ls
+
+# Rollback to a specific deployment
+vercel rollback <deployment-url> --yes
+
+# Example:
+vercel rollback mhm-finds-dw5l-abc123-ericputnams-projects.vercel.app --yes
+```
+
+### When Things Break in Production
+1. **STOP** - Don't push more fixes blindly
+2. **Rollback first** - Get the site working
+3. **Investigate** - Check Vercel logs, Prisma dashboard
+4. **Fix locally** - Test thoroughly
+5. **Deploy carefully** - Watch logs after deploy
+
+---
+
 ## 🚫 CRITICAL GIT RULE: Never Auto-Commit
 
 **NEVER create git commits unless explicitly requested by the user.**

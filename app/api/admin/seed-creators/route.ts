@@ -71,59 +71,75 @@ export async function POST(request: NextRequest) {
       errors: [] as string[],
     };
 
-    // Create creators
+    // Pre-fetch all existing creators and users in bulk (avoids N+1 queries)
+    const handles = creatorsData.map((c) => c.handle);
+
+    const [existingCreators, existingUsers] = await Promise.all([
+      prisma.creatorProfile.findMany({
+        where: { handle: { in: handles } },
+        select: { handle: true },
+      }),
+      prisma.user.findMany({
+        where: { username: { in: handles } },
+        select: { id: true, username: true },
+      }),
+    ]);
+
+    const existingCreatorHandles = new Set(existingCreators.map((c) => c.handle));
+    const existingUserMap = new Map(existingUsers.map((u) => [u.username, u.id]));
+
+    console.log(`📊 Found ${existingCreatorHandles.size} existing creators, ${existingUserMap.size} existing users`);
+
+    // Create creators that don't exist
     for (const creatorData of creatorsData) {
       try {
         console.log(`📝 Processing: ${creatorData.name} (@${creatorData.handle})...`);
 
-        // Check if creator already exists
-        const existingCreator = await prisma.creatorProfile.findUnique({
-          where: { handle: creatorData.handle },
-        });
-
-        if (existingCreator) {
+        // Check if creator already exists (O(1) lookup)
+        if (existingCreatorHandles.has(creatorData.handle)) {
           console.log(`⏭️  Creator @${creatorData.handle} already exists, skipping`);
           results.skippedCount++;
           continue;
         }
 
-        // Check if user already exists
-        let user = await prisma.user.findUnique({
-          where: { username: creatorData.handle },
-        });
+        // Use transaction to create user + profile atomically
+        await prisma.$transaction(async (tx) => {
+          let userId = existingUserMap.get(creatorData.handle);
 
-        if (!user) {
-          // Create a new user for this creator
-          user = await prisma.user.create({
+          if (!userId) {
+            // Create a new user for this creator
+            const user = await tx.user.create({
+              data: {
+                email: `${creatorData.handle}@musthavemods.generated`,
+                username: creatorData.handle,
+                displayName: creatorData.name,
+                avatar: null,
+                bio: creatorData.bio,
+                isCreator: true,
+                isPremium: false,
+                isAdmin: false,
+              },
+            });
+            userId = user.id;
+          }
+
+          // Create creator profile
+          await tx.creatorProfile.create({
             data: {
-              email: `${creatorData.handle}@musthavemods.generated`,
-              username: creatorData.handle,
-              displayName: creatorData.name,
-              avatar: null,
+              userId,
+              handle: creatorData.handle,
               bio: creatorData.bio,
-              isCreator: true,
-              isPremium: false,
-              isAdmin: false,
+              website: creatorData.profileUrl,
+              socialLinks: {
+                platform: creatorData.platform,
+                url: creatorData.profileUrl,
+                specialization: creatorData.specialization,
+                estimatedFollowers: creatorData.estimatedFollowers,
+              },
+              isVerified: creatorData.isVerified,
+              isFeatured: true,
             },
           });
-        }
-
-        // Create creator profile
-        await prisma.creatorProfile.create({
-          data: {
-            userId: user.id,
-            handle: creatorData.handle,
-            bio: creatorData.bio,
-            website: creatorData.profileUrl,
-            socialLinks: {
-              platform: creatorData.platform,
-              url: creatorData.profileUrl,
-              specialization: creatorData.specialization,
-              estimatedFollowers: creatorData.estimatedFollowers,
-            },
-            isVerified: creatorData.isVerified,
-            isFeatured: true,
-          },
         });
 
         console.log(`✅ Created creator profile for ${creatorData.name}`);
@@ -139,39 +155,45 @@ export async function POST(request: NextRequest) {
     // Associate existing mods with creators
     console.log('🔗 Attempting to associate existing mods with creators...');
 
-    const creators = await prisma.creatorProfile.findMany({
-      select: {
-        id: true,
-        handle: true,
-      },
-    });
+    // Fetch all creators and unassigned mods in bulk (avoids N+1)
+    const [creators, unassignedMods] = await Promise.all([
+      prisma.creatorProfile.findMany({
+        select: {
+          id: true,
+          handle: true,
+        },
+      }),
+      prisma.mod.findMany({
+        where: { creatorId: null, author: { not: null } },
+        select: { id: true, author: true },
+      }),
+    ]);
+
+    // Build association map in memory (O(n) instead of O(n*m) queries)
+    const modsByCreator = new Map<string, string[]>();
 
     for (const creator of creators) {
-      const mods = await prisma.mod.findMany({
-        where: {
-          author: {
-            contains: creator.handle,
-            mode: 'insensitive',
-          },
-          creatorId: null,
-        },
+      const handleLower = creator.handle.toLowerCase();
+      const matchingModIds = unassignedMods
+        .filter((mod) => mod.author?.toLowerCase().includes(handleLower))
+        .map((mod) => mod.id);
+
+      if (matchingModIds.length > 0) {
+        modsByCreator.set(creator.id, matchingModIds);
+      }
+    }
+
+    // Update all associations in batch
+    const modsByCreatorEntries = Array.from(modsByCreator.entries());
+    for (const [creatorId, modIds] of modsByCreatorEntries) {
+      const creator = creators.find((c) => c.id === creatorId);
+      await prisma.mod.updateMany({
+        where: { id: { in: modIds } },
+        data: { creatorId },
       });
 
-      if (mods.length > 0) {
-        await prisma.mod.updateMany({
-          where: {
-            id: {
-              in: mods.map((m) => m.id),
-            },
-          },
-          data: {
-            creatorId: creator.id,
-          },
-        });
-
-        console.log(`✅ Associated ${mods.length} mods with @${creator.handle}`);
-        results.modsAssociated += mods.length;
-      }
+      console.log(`✅ Associated ${modIds.length} mods with @${creator?.handle}`);
+      results.modsAssociated += modIds.length;
     }
 
     return NextResponse.json(

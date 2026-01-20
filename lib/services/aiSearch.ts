@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
 export interface SearchResult {
   modId: string;
@@ -60,12 +61,13 @@ export class AISearchService {
     limit: number = 20
   ): Promise<SearchResult[]> {
     try {
-      // Generate embedding for search query
+      // Generate embedding for search query (only 1 OpenAI call per search)
       const queryEmbedding = await this.generateEmbedding(query);
 
-      // Build base where clause
+      // Build base where clause - prioritize mods with pre-computed embeddings
       const where: any = {
         isVerified: true,
+        searchIndex: { isNot: null }, // Only get mods with pre-computed embeddings
       };
 
       if (filters.category) {
@@ -88,8 +90,9 @@ export class AISearchService {
         where.tags = { hasSome: filters.tags };
       }
 
-      // Get mods with search index
-      const mods = await prisma.mod.findMany({
+      // Get mods with pre-computed embeddings (uses Accelerate cache if enabled)
+      // This avoids generating embeddings for each mod on every search
+      const mods = await (prisma.mod.findMany as any)({
         where,
         include: {
           creator: {
@@ -97,6 +100,11 @@ export class AISearchService {
               id: true,
               handle: true,
               isVerified: true,
+            },
+          },
+          searchIndex: {
+            select: {
+              embedding: true,
             },
           },
           _count: {
@@ -108,23 +116,34 @@ export class AISearchService {
           },
         },
         take: limit * 2, // Get more for better ranking
+        ...getCacheOptions(CACHE_TIERS.HOT),
       });
 
-      // Calculate similarity scores
-      const scoredMods = await Promise.all(
-        mods.map(async (mod) => {
-          const modText = `${mod.title} ${mod.description || ''} ${mod.tags.join(' ')}`;
-          const modEmbedding = await this.generateEmbedding(modText);
-          
-          const similarity = this.cosineSimilarity(queryEmbedding, modEmbedding);
-          
+      // Type the mods with searchIndex
+      type ModWithSearchIndex = typeof mods[number] & {
+        searchIndex?: { embedding: number[] } | null;
+      };
+
+      // Calculate similarity scores using pre-computed embeddings (no OpenAI calls)
+      const scoredMods = (mods as ModWithSearchIndex[])
+        .filter((mod) => mod.searchIndex?.embedding?.length) // Only mods with valid embeddings
+        .map((mod) => {
+          // Use pre-computed embedding (no new OpenAI call!)
+          const similarity = this.cosineSimilarity(
+            queryEmbedding,
+            mod.searchIndex!.embedding
+          );
+
           // Boost score based on popularity and quality
-          const popularityBoost = Math.log10(
-            (mod._count.downloads + 1) * (mod._count.favorites + 1) * (Number(mod.rating) || 1)
-          ) * 0.1;
-          
+          const popularityBoost =
+            Math.log10(
+              (mod._count.downloads + 1) *
+                (mod._count.favorites + 1) *
+                (Number(mod.rating) || 1)
+            ) * 0.1;
+
           const finalScore = similarity + popularityBoost;
-          
+
           return {
             modId: mod.id,
             title: mod.title,
@@ -135,13 +154,10 @@ export class AISearchService {
             score: finalScore,
             reason: this.generateSearchReason(query, mod, similarity),
           };
-        })
-      );
+        });
 
       // Sort by score and return top results
-      return scoredMods
-        .sort((a, b) => b.score - a.score)
-        .slice(0, limit);
+      return scoredMods.sort((a, b) => b.score - a.score).slice(0, limit);
     } catch (error) {
       console.error('Error searching mods:', error);
       throw new Error('Failed to search mods');
@@ -190,10 +206,14 @@ export class AISearchService {
     limit: number = 8
   ): Promise<ModRecommendation[]> {
     try {
-      const mod = await prisma.mod.findUnique({
+      // Get source mod with its pre-computed embedding
+      const mod = await (prisma.mod.findUnique as any)({
         where: { id: modId },
         include: {
           creator: true,
+          searchIndex: {
+            select: { embedding: true },
+          },
           _count: {
             select: {
               reviews: true,
@@ -202,22 +222,39 @@ export class AISearchService {
             },
           },
         },
-      });
+        ...getCacheOptions(CACHE_TIERS.HOT),
+      }) as {
+        id: string;
+        title: string;
+        description: string | null;
+        category: string;
+        tags: string[];
+        thumbnail: string | null;
+        searchIndex?: { embedding: number[] } | null;
+        _count: { reviews: number; favorites: number; downloads: number };
+      } | null;
 
       if (!mod) {
         throw new Error('Mod not found');
       }
 
-      const modText = `${mod.title} ${mod.description || ''} ${mod.tags.join(' ')}`;
-      const modEmbedding = await this.generateEmbedding(modText);
+      // Use pre-computed embedding if available, otherwise generate
+      let modEmbedding: number[];
+      if (mod.searchIndex?.embedding?.length) {
+        modEmbedding = mod.searchIndex.embedding;
+      } else {
+        const modText = `${mod.title} ${mod.description || ''} ${mod.tags.join(' ')}`;
+        modEmbedding = await this.generateEmbedding(modText);
+      }
 
-      // Find mods in the same category with similar tags
-      const similarMods = await prisma.mod.findMany({
+      // Find mods in the same category with similar tags and pre-computed embeddings
+      const similarMods = await (prisma.mod.findMany as any)({
         where: {
           id: { not: modId },
           category: mod.category,
           isVerified: true,
           tags: { hasSome: mod.tags.slice(0, 3) },
+          searchIndex: { isNot: null }, // Only get mods with embeddings
         },
         include: {
           creator: {
@@ -226,6 +263,9 @@ export class AISearchService {
               handle: true,
               isVerified: true,
             },
+          },
+          searchIndex: {
+            select: { embedding: true },
           },
           _count: {
             select: {
@@ -236,16 +276,26 @@ export class AISearchService {
           },
         },
         take: limit * 2,
-      });
+        ...getCacheOptions(CACHE_TIERS.HOT),
+      }) as Array<{
+        id: string;
+        title: string;
+        description: string | null;
+        category: string;
+        tags: string[];
+        thumbnail: string | null;
+        searchIndex?: { embedding: number[] } | null;
+      }>;
 
-      // Calculate similarity scores
-      const scoredMods = await Promise.all(
-        similarMods.map(async (similarMod) => {
-          const similarModText = `${similarMod.title} ${similarMod.description || ''} ${similarMod.tags.join(' ')}`;
-          const similarModEmbedding = await this.generateEmbedding(similarModText);
-          
-          const similarity = this.cosineSimilarity(modEmbedding, similarModEmbedding);
-          
+      // Calculate similarity scores using pre-computed embeddings (no OpenAI calls)
+      const scoredMods = similarMods
+        .filter((m) => m.searchIndex?.embedding?.length)
+        .map((similarMod) => {
+          const similarity = this.cosineSimilarity(
+            modEmbedding,
+            similarMod.searchIndex!.embedding
+          );
+
           return {
             modId: similarMod.id,
             title: similarMod.title,
@@ -256,8 +306,7 @@ export class AISearchService {
             confidence: similarity,
             reason: `Similar to "${mod.title}"`,
           };
-        })
-      );
+        });
 
       return scoredMods
         .sort((a, b) => b.confidence - a.confidence)
@@ -269,7 +318,8 @@ export class AISearchService {
   }
 
   private async getPopularMods(limit: number): Promise<ModRecommendation[]> {
-    const popularMods = await prisma.mod.findMany({
+    // Get popular mods with Accelerate caching
+    const popularMods = await (prisma.mod.findMany as any)({
       where: { isVerified: true },
       include: {
         creator: {
@@ -293,7 +343,15 @@ export class AISearchService {
         { createdAt: 'desc' },
       ],
       take: limit,
-    });
+      ...getCacheOptions(CACHE_TIERS.WARM),
+    }) as Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      category: string;
+      tags: string[];
+      thumbnail: string | null;
+    }>;
 
     return popularMods.map((mod) => ({
       modId: mod.id,
@@ -327,11 +385,14 @@ export class AISearchService {
     userProfile: { categories: string[]; tags: string[]; interests: string },
     limit: number
   ): Promise<ModRecommendation[]> {
+    // Generate embedding for user profile (only 1 OpenAI call)
     const userEmbedding = await this.generateEmbedding(userProfile.interests);
-    
-    const similarMods = await prisma.mod.findMany({
+
+    // Get mods with pre-computed embeddings
+    const similarMods = await (prisma.mod.findMany as any)({
       where: {
         isVerified: true,
+        searchIndex: { isNot: null }, // Only mods with embeddings
         OR: [
           { category: { in: userProfile.categories } },
           { tags: { hasSome: userProfile.tags.slice(0, 5) } },
@@ -345,6 +406,9 @@ export class AISearchService {
             isVerified: true,
           },
         },
+        searchIndex: {
+          select: { embedding: true },
+        },
         _count: {
           select: {
             reviews: true,
@@ -354,15 +418,26 @@ export class AISearchService {
         },
       },
       take: limit * 2,
-    });
+      ...getCacheOptions(CACHE_TIERS.HOT),
+    }) as Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      category: string;
+      tags: string[];
+      thumbnail: string | null;
+      searchIndex?: { embedding: number[] } | null;
+    }>;
 
-    const scoredMods = await Promise.all(
-      similarMods.map(async (mod) => {
-        const modText = `${mod.title} ${mod.description || ''} ${mod.tags.join(' ')}`;
-        const modEmbedding = await this.generateEmbedding(modText);
-        
-        const similarity = this.cosineSimilarity(userEmbedding, modEmbedding);
-        
+    // Calculate similarity using pre-computed embeddings (no OpenAI calls)
+    const scoredMods = similarMods
+      .filter((mod) => mod.searchIndex?.embedding?.length)
+      .map((mod) => {
+        const similarity = this.cosineSimilarity(
+          userEmbedding,
+          mod.searchIndex!.embedding
+        );
+
         return {
           modId: mod.id,
           title: mod.title,
@@ -373,8 +448,7 @@ export class AISearchService {
           confidence: similarity,
           reason: 'Based on your preferences',
         };
-      })
-    );
+      });
 
     return scoredMods
       .sort((a, b) => b.confidence - a.confidence)

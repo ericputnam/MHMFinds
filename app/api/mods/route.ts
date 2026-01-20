@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { CacheService } from '../../../lib/cache';
+import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
 // Extend the session user type to include the id
 declare module "next-auth" {
@@ -333,7 +334,11 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Get facet counts
+    // Get facet counts with Accelerate caching (5 min TTL for facet aggregations)
+    // These are expensive aggregation queries that benefit from caching
+    const warmCache = getCacheOptions(CACHE_TIERS.WARM);
+    const coldCache = getCacheOptions(CACHE_TIERS.COLD);
+
     const [
       allMods,
       categoryGroups,
@@ -355,7 +360,8 @@ export async function GET(request: NextRequest) {
           price: true,
           rating: true,
         },
-      }),
+        ...warmCache,
+      } as any),
       // OLD: Flat category aggregation (for legacy support)
       prisma.mod.groupBy({
         by: ['category'],
@@ -366,7 +372,8 @@ export async function GET(request: NextRequest) {
             category: 'desc',
           },
         },
-      }),
+        ...warmCache,
+      } as any),
       // NEW: Hierarchical category aggregation
       prisma.mod.groupBy({
         by: ['categoryId'],
@@ -377,11 +384,13 @@ export async function GET(request: NextRequest) {
           },
         },
         _count: true,
-      }),
-      // Get all categories for building the tree
+        ...warmCache,
+      } as any),
+      // Get all categories for building the tree (longer cache - rarely changes)
       prisma.category.findMany({
         orderBy: [{ level: 'asc' }, { order: 'asc' }, { name: 'asc' }],
-      }),
+        ...coldCache,
+      } as any),
       // Game version aggregation
       prisma.mod.groupBy({
         by: ['gameVersion'],
@@ -392,7 +401,8 @@ export async function GET(request: NextRequest) {
             gameVersion: 'desc',
           },
         },
-      }),
+        ...warmCache,
+      } as any),
       // Source aggregation
       prisma.mod.groupBy({
         by: ['source'],
@@ -403,7 +413,8 @@ export async function GET(request: NextRequest) {
             source: 'desc',
           },
         },
-      }),
+        ...warmCache,
+      } as any),
     ]);
 
     // Calculate tag counts
@@ -443,7 +454,9 @@ export async function GET(request: NextRequest) {
     const categoryCounts = new Map<string, number>();
     hierarchicalCategoryGroups.forEach((group) => {
       if (group.categoryId) {
-        categoryCounts.set(group.categoryId, group._count);
+        // _count is the actual count number from groupBy
+        const count = typeof group._count === 'number' ? group._count : 0;
+        categoryCounts.set(group.categoryId, count);
       }
     });
 

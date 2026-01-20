@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 import { CacheService } from '../../../lib/cache';
+import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,13 +43,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch distinct categories for this game version from the database
+    // Use Accelerate caching (5 min TTL) since categories don't change often
     const categoriesData = await prisma.mod.findMany({
       where,
       select: {
         category: true,
       },
       distinct: ['category'],
-    });
+      ...getCacheOptions(CACHE_TIERS.WARM),
+    } as any);
 
     // Extract unique categories and filter out null/empty values
     const categories = categoriesData

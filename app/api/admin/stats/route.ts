@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
+import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
 /**
  * GET /api/admin/stats
@@ -33,7 +34,11 @@ export async function GET(request: NextRequest) {
 
   let statsData;
   try {
-    // Fetch statistics in parallel
+    // Fetch statistics in parallel with Accelerate caching (1 hour TTL for admin stats)
+    // cacheStrategy is only applied when Accelerate extension is enabled (prisma:// URL)
+    const longCache = getCacheOptions(CACHE_TIERS.LONG);
+    const warmCache = getCacheOptions(CACHE_TIERS.WARM);
+
     const [
       totalMods,
       totalCreators,
@@ -47,58 +52,49 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       // Total published mods
       prisma.mod.count({
-        where: {
-          isVerified: true,
-        },
-      }),
+        where: { isVerified: true },
+        ...longCache,
+      } as any),
 
       // Total creators
-      prisma.creatorProfile.count(),
+      prisma.creatorProfile.count(longCache as any),
 
-      // Pending submissions
+      // Pending submissions (no cache - needs real-time accuracy)
       prisma.modSubmission.count({
-        where: {
-          status: 'pending',
-        },
+        where: { status: 'pending' },
       }),
 
       // Total users
-      prisma.user.count(),
+      prisma.user.count(longCache as any),
 
       // Total downloads
-      prisma.download.count(),
+      prisma.download.count(longCache as any),
 
       // Total favorites
-      prisma.favorite.count(),
+      prisma.favorite.count(longCache as any),
 
       // Average rating
       prisma.mod.aggregate({
-        _avg: {
-          rating: true,
-        },
-        where: {
-          rating: {
-            not: null,
-          },
-        },
-      }),
+        _avg: { rating: true },
+        where: { rating: { not: null } },
+        ...longCache,
+      } as any),
 
-      // Recent mods (last 10)
+      // Recent mods (last 10) - shorter cache since these change more often
       prisma.mod.findMany({
         take: 10,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: 'desc' },
         select: {
           id: true,
           title: true,
           createdAt: true,
           downloadCount: true,
         },
-      }),
+        ...warmCache,
+      } as any),
 
       // Waitlist signups
-      prisma.waitlist.count(),
+      prisma.waitlist.count(longCache as any),
     ]);
 
     statsData = {
@@ -137,7 +133,7 @@ export async function GET(request: NextRequest) {
     totalUsers: statsData.totalUsers,
     totalDownloads: statsData.totalDownloads,
     totalFavorites: statsData.totalFavorites,
-    averageRating: statsData.averageRating._avg.rating || 0,
+    averageRating: statsData.averageRating?._avg?.rating || 0,
     recentMods: statsData.recentMods,
     waitlistCount: statsData.waitlistCount,
   });

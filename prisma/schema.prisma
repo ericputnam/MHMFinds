@@ -6,9 +6,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // Support both local and production databases
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL")
+  // Direct URL for migrations when using prisma:// or prisma+postgres:// URL for queries
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // Subscription enums

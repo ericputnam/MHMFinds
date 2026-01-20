@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
 export async function GET(
   request: NextRequest,
@@ -8,6 +9,8 @@ export async function GET(
   try {
     const { id } = params;
 
+    // Use Accelerate caching (60s TTL) for mod detail queries
+    // cacheStrategy is only applied when Accelerate extension is enabled
     const mod = await prisma.mod.findUnique({
       where: { id },
       include: {
@@ -26,7 +29,8 @@ export async function GET(
           },
         },
       },
-    });
+      ...getCacheOptions(CACHE_TIERS.HOT),
+    } as any);
 
     if (!mod) {
       return NextResponse.json(
