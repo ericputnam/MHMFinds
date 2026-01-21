@@ -21,7 +21,7 @@ async function testAIScraper() {
     console.log(`\n📦 Mod ${i + 1}:`);
     console.log(`   Title: ${mod.title}`);
     console.log(`   Author: ${mod.author || 'N/A'}`);
-    console.log(`   Category: ${mod.categoryPath?.join(' > ') || mod.category}`);
+    console.log(`   Category: ${mod.category || 'N/A'}`);
     console.log(`   Image: ${mod.thumbnail?.substring(0, 60)}${mod.thumbnail && mod.thumbnail.length > 60 ? '...' : ''}`);
     console.log(`   Description: ${mod.description?.substring(0, 100)}${mod.description && mod.description.length > 100 ? '...' : ''}`);
     console.log(`   Download: ${mod.downloadUrl?.substring(0, 60)}${mod.downloadUrl && mod.downloadUrl.length > 60 ? '...' : ''}`);

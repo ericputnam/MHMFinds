@@ -125,8 +125,7 @@ ANALYZE=true npm run build
 ```
 
 ### Remove Debug Logging
-- [ ] Remove `console.log('DEBUG:...')` from `aiCategorizer.ts` (line 78-81)
-- [ ] Check for other debug logs in production code
+- [ ] Check for debug logs in production code
 
 ---
 
