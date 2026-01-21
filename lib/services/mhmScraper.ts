@@ -32,7 +32,8 @@ export class MustHaveModsScraper {
   }
 
   /**
-   * Get all blog post URLs from WordPress sitemap index
+   * Get all blog post URLs from sitemap index
+   * Supports both WordPress (wp-sitemap-posts-post-*.xml) and Next.js (sitemap-blog-posts.xml) formats
    */
   async getAllBlogPostUrls(): Promise<string[]> {
     console.log('🔍 Fetching blog post URLs from sitemap index...');
@@ -51,11 +52,14 @@ export class MustHaveModsScraper {
 
       const $main = cheerio.load(mainResponse.data, { xmlMode: true });
 
-      // Step 2: Find all post sitemap URLs (wp-sitemap-posts-post-*.xml)
+      // Step 2: Find all post sitemap URLs
+      // Support both WordPress (wp-sitemap-posts-post-*) and Next.js (sitemap-blog-posts) formats
       const postSitemaps: string[] = [];
       $main('sitemap loc').each((_, el) => {
         const url = $main(el).text().trim();
-        if (url.includes('wp-sitemap-posts-post-')) {
+        // WordPress format: wp-sitemap-posts-post-*.xml
+        // Next.js format: sitemap-blog-posts.xml
+        if (url.includes('wp-sitemap-posts-post-') || url.includes('sitemap-blog-posts')) {
           postSitemaps.push(url);
         }
       });
@@ -962,12 +966,46 @@ export class MustHaveModsScraper {
 
       // The Sims Resource - look for creator/member name
       else if (hostname.includes('thesimsresource.com')) {
-        // Method 1: Artist profile name (most reliable)
-        const artistName = $('.artist-profile-name').text().trim();
-        let author = validateAuthor(artistName);
+        // Method 1: TSR-specific meta tag (MOST RELIABLE)
+        // <meta property="thesimsresource:by" content="SIMcredible!" />
+        const tsrByMeta = $('meta[property="thesimsresource:by"]').attr('content');
+        let author = validateAuthor(tsrByMeta);
         if (author) return author;
 
-        // Method 2: Member link with class
+        // Method 2: og:title possessive pattern "Author's Title"
+        // <meta property="og:title" content="SIMcredible!'s Magical Place"/>
+        const ogTitle = $('meta[property="og:title"]').attr('content');
+        if (ogTitle) {
+          const possessiveMatch = ogTitle.match(/^(.+?)'s\s+/);
+          if (possessiveMatch) {
+            author = validateAuthor(possessiveMatch[1]);
+            if (author) return author;
+          }
+          // Also try "by Author" pattern
+          const byMatch = ogTitle.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
+          if (byMatch) {
+            author = validateAuthor(byMatch[1]);
+            if (author) return author;
+          }
+        }
+
+        // Method 3: meta description "The Sims Resource - Sims 4 - Category - Author - Title"
+        const metaDesc = $('meta[name="description"]').attr('content');
+        if (metaDesc) {
+          const parts = metaDesc.split(' - ');
+          if (parts.length >= 4) {
+            const potentialAuthor = parts[3]?.trim();
+            author = validateAuthor(potentialAuthor);
+            if (author && potentialAuthor && potentialAuthor.length < 30) return author;
+          }
+        }
+
+        // Method 4: Artist profile name class
+        const artistName = $('.artist-profile-name').text().trim();
+        author = validateAuthor(artistName);
+        if (author) return author;
+
+        // Method 5: Member link with class
         const memberLink = $('a.member-name, a[href*="/members/"]').first();
         if (memberLink.length) {
           // First try the text content
@@ -984,17 +1022,7 @@ export class MustHaveModsScraper {
           }
         }
 
-        // Method 3: og:title "ModName by CreatorName"
-        const ogTitle = $('meta[property="og:title"]').attr('content');
-        if (ogTitle) {
-          const match = ogTitle.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
-          if (match) {
-            author = validateAuthor(match[1]);
-            if (author) return author;
-          }
-        }
-
-        // Method 4: Page title "ModName by CreatorName"
+        // Method 6: Page title "ModName by CreatorName"
         const pageTitle = $('title').text().trim();
         if (pageTitle) {
           const match = pageTitle.match(/\sby\s+(.+?)(?:\s*-|\s*\||$)/i);
@@ -1108,7 +1136,9 @@ export class MustHaveModsScraper {
     if (normalized.includes('hair')) return 'Hair';
     if (normalized.includes('clothes') || normalized.includes('clothing')) return 'CAS - Clothing';
     if (normalized.includes('makeup')) return 'CAS - Makeup';
-    if (normalized.includes('accessories')) return 'CAS - Accessories';
+    if (normalized.includes('accessories') || normalized.includes('nail') ||
+        normalized.includes('piercing') || normalized.includes('ring') ||
+        normalized.includes('jewelry') || normalized.includes('watch')) return 'CAS - Accessories';
     if (normalized.includes('furniture') || normalized.includes('build')) return 'Build/Buy';
     if (normalized.includes('gameplay')) return 'Gameplay';
     if (normalized.includes('food')) return 'Build/Buy - Clutter';

@@ -132,7 +132,7 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 rounded bg-white/5 text-[#06B6D4] text-[10px] font-bold uppercase tracking-wider border border-white/5">
-                  {mod.category}
+                  {mod.contentType || mod.category}
                 </span>
               </div>
               <button

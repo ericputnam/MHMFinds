@@ -1,3 +1,9 @@
+// Load environment variables FIRST, before any imports that need them
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config({ path: '.env.production', override: false });
+
+// Now import modules that depend on environment variables
 import { prisma } from '../lib/prisma';
 import { aiCategorizer } from '../lib/services/aiCategorizer';
 

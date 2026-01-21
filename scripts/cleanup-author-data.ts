@@ -157,24 +157,15 @@ class AuthorCleanup {
 
   /**
    * Extract author from Patreon page
+   * Patreon blocks automated requests, so we use Wayback Machine as fallback
    */
   async extractFromPatreon(url: string): Promise<AuthorExtractionResult> {
-    try {
-      const response = await axios.get(url, {
-        headers: {
-          'User-Agent': this.getRandomUserAgent(),
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        timeout: 15000,
-        maxRedirects: 5,
-      });
-
-      const $ = cheerio.load(response.data);
-
+    // Helper function to extract author from Patreon HTML
+    const extractFromHtml = ($: cheerio.CheerioAPI): string | null => {
       // Method 1: Look for creator name in meta tags
       const ogSiteName = $('meta[property="og:site_name"]').attr('content');
       if (ogSiteName && ogSiteName !== 'Patreon' && !this.isBadAuthor(ogSiteName)) {
-        return { author: ogSiteName, source: 'Patreon', method: 'og:site_name' };
+        return ogSiteName;
       }
 
       // Method 2: Look for "creating" pattern in og:title
@@ -183,19 +174,19 @@ class AuthorCleanup {
         // Pattern: "CreatorName is creating..."
         const creatingMatch = ogTitle.match(/^(.+?)\s+is creating/i);
         if (creatingMatch && !this.isBadAuthor(creatingMatch[1])) {
-          return { author: creatingMatch[1].trim(), source: 'Patreon', method: 'og:title creating pattern' };
+          return creatingMatch[1].trim();
         }
 
         // Pattern: "Post Title | CreatorName on Patreon"
         const pipeMatch = ogTitle.match(/\|\s*(.+?)\s+on Patreon/i);
         if (pipeMatch && !this.isBadAuthor(pipeMatch[1])) {
-          return { author: pipeMatch[1].trim(), source: 'Patreon', method: 'og:title pipe pattern' };
+          return pipeMatch[1].trim();
         }
 
         // Pattern: "Post Title by CreatorName"
         const byMatch = ogTitle.match(/\sby\s+(.+?)(?:\s*\||$)/i);
         if (byMatch && !this.isBadAuthor(byMatch[1])) {
-          return { author: byMatch[1].trim(), source: 'Patreon', method: 'og:title by pattern' };
+          return byMatch[1].trim();
         }
       }
 
@@ -206,17 +197,68 @@ class AuthorCleanup {
         const match = href?.match(/\/c\/([^\/\?]+)/);
         if (match && !this.isBadAuthor(match[1])) {
           const author = match[1].replace(/-/g, ' ').replace(/_/g, ' ');
-          return { author: this.titleCase(author), source: 'Patreon', method: 'creator link' };
+          return this.titleCase(author);
         }
       }
 
       // Method 4: Look for data attributes
       const creatorName = $('[data-tag="creator-name"]').text().trim();
       if (creatorName && !this.isBadAuthor(creatorName)) {
-        return { author: creatorName, source: 'Patreon', method: 'data-tag creator-name' };
+        return creatorName;
       }
 
-      return { author: null, source: 'Patreon', method: 'failed' };
+      return null;
+    };
+
+    // Try direct access first
+    try {
+      const response = await axios.get(url, {
+        headers: this.getBrowserHeaders('https://www.patreon.com/'),
+        timeout: 15000,
+        maxRedirects: 5,
+        validateStatus: (status) => status < 500,
+      });
+
+      if (response.status === 200) {
+        const $ = cheerio.load(response.data);
+        const author = extractFromHtml($);
+        if (author) {
+          return { author, source: 'Patreon', method: 'direct' };
+        }
+      }
+    } catch (error) {
+      // Direct access failed, try Wayback Machine
+    }
+
+    // Fallback: Use Wayback Machine
+    console.log(`      📚 Trying Wayback Machine for Patreon...`);
+    try {
+      const checkUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(url)}`;
+      const checkResponse = await axios.get(checkUrl, {
+        timeout: 10000,
+        headers: { 'User-Agent': this.getRandomUserAgent() },
+      });
+
+      const snapshot = checkResponse.data?.archived_snapshots?.closest;
+      if (!snapshot?.available || !snapshot?.url) {
+        return { author: null, source: 'Patreon', method: 'no wayback snapshot' };
+      }
+
+      const archivedResponse = await axios.get(snapshot.url, {
+        timeout: 20000,
+        headers: {
+          'User-Agent': this.getRandomUserAgent(),
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+      });
+
+      const $ = cheerio.load(archivedResponse.data);
+      const author = extractFromHtml($);
+      if (author) {
+        return { author, source: 'Patreon', method: 'wayback' };
+      }
+
+      return { author: null, source: 'Patreon', method: 'wayback failed to extract' };
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : 'Unknown error';
       console.log(`      ⚠️  Patreon fetch failed: ${errMsg}`);
