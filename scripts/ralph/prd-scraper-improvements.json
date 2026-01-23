@@ -1,0 +1,186 @@
+{
+  "projectName": "We Want Mods Scraper Content Type Improvements",
+  "branchName": "feat/scraper-content-type",
+  "description": "Improve the We Want Mods scraper to correctly detect and assign content types at scrape time. Use URL path as primary signal, enhanced title/description analysis, and auto-create FacetDefinitions for new categories.",
+  "context": {
+    "urlPathStrategy": "We Want Mods URLs contain category paths like /sims4/bathroom/, /sims4/eyebrows/ - use these as primary content type signal",
+    "contentTypeStrategy": "Granular content types (eyebrows as own type, not under makeup)",
+    "roomStrategy": "Use themes array for room tags (bathroom, kitchen) alongside contentType for object type",
+    "facetCreation": "Auto-create FacetDefinitions when encountering unknown categories"
+  },
+  "dependencies": ["Content Type Backfill PRD should complete first to establish the contentTypeDetector.ts library"],
+  "userStories": [
+    {
+      "id": "SCR-001",
+      "title": "Extract category from We Want Mods URL path",
+      "description": "Parse the We Want Mods URL to extract the category segment and use it as a content type signal",
+      "acceptanceCriteria": [
+        "Create extractCategoryFromUrl(url: string): string | undefined function in weWantModsScraper.ts",
+        "Parse URLs like https://wewantmods.com/sims4/bathroom/item-name to extract 'bathroom'",
+        "Parse URLs like https://wewantmods.com/sims4/hair/hairstyle-name to extract 'hair'",
+        "Handle nested paths like /sims4/cas/eyebrows/ correctly",
+        "Return undefined for URLs without clear category path",
+        "Add unit test cases for URL parsing",
+        "npm run type-check passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "URL structure: wewantmods.com/sims4/{category}/{item-slug}"
+    },
+    {
+      "id": "SCR-002",
+      "title": "Create URL category to contentType mapping",
+      "description": "Map We Want Mods URL categories to our internal contentType values",
+      "acceptanceCriteria": [
+        "Create URL_CATEGORY_MAP constant mapping We Want Mods paths to contentTypes",
+        "Map common categories: hair, makeup, skin, eyes, furniture, decor, poses, etc.",
+        "Map CAS categories: cas-backgrounds, presets, overlays",
+        "Map granular face categories: eyebrows, eyelashes, lashes, eyeliner, lipstick, blush, beard",
+        "Map room categories to themes: bathroom, kitchen, bedroom, living-room",
+        "Handle variations/aliases (e.g., 'hairstyles' -> 'hair', 'furnishings' -> 'furniture')",
+        "Log unmapped categories for review",
+        "npm run type-check passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-003",
+      "title": "Integrate contentTypeDetector into scraper",
+      "description": "Replace the basic detectContentType function with the improved contentTypeDetector library",
+      "acceptanceCriteria": [
+        "Import detectContentType and detectRoomThemes from lib/services/contentTypeDetector.ts",
+        "Update all scrapeExternalSource methods to use the new detector",
+        "Pass URL-extracted category as a hint to the detector",
+        "Combine URL category + title + description for best accuracy",
+        "Remove the old inline detectContentType method from weWantModsScraper.ts",
+        "npm run type-check passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Depends on CTB-003 completing first"
+    },
+    {
+      "id": "SCR-004",
+      "title": "Add room themes extraction to scraper",
+      "description": "When scraping furniture/decor mods, also extract room themes from URL and title",
+      "acceptanceCriteria": [
+        "Call detectRoomThemes for furniture, decor, clutter, lighting contentTypes",
+        "Include URL category as room hint (e.g., /bathroom/ URL adds 'bathroom' theme)",
+        "Merge detected room themes with any existing themes from title analysis",
+        "Do not duplicate themes",
+        "Update ScrapedModDetails interface to ensure themes is always an array",
+        "Update importMod to properly merge themes on upsert",
+        "npm run type-check passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-005",
+      "title": "Auto-create FacetDefinitions for new categories",
+      "description": "When the scraper encounters a category that doesn't have a FacetDefinition, auto-create one",
+      "acceptanceCriteria": [
+        "Create ensureFacetDefinitionExists(facetType: string, value: string): Promise<void> function",
+        "Check if FacetDefinition exists for the given facetType + value",
+        "If not exists, create with sensible defaults: displayName=titleCase(value), sortOrder=100, isActive=true",
+        "Call this function in importMod before inserting/updating mod",
+        "Log when new FacetDefinitions are created",
+        "Handle both contentType and themes facetTypes",
+        "npm run type-check passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-006",
+      "title": "Add scraper logging for category decisions",
+      "description": "Add detailed logging to understand why content types are assigned",
+      "acceptanceCriteria": [
+        "Log URL-extracted category for each scraped mod",
+        "Log title-based detection result",
+        "Log final contentType decision with reasoning",
+        "Log any new FacetDefinitions created",
+        "Log mismatches between URL category and title detection",
+        "Make logging configurable (verbose mode)",
+        "npm run type-check passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-007",
+      "title": "Handle We Want Mods collection/pack pages",
+      "description": "Collection pages like 'Bathroom CC Pack' should apply room theme to all items",
+      "acceptanceCriteria": [
+        "Detect when scraping a collection/pack page (multiple items)",
+        "Extract room/category from collection page title and URL",
+        "Apply the collection's room theme to all items in that collection",
+        "Don't override item-specific contentTypes, just add room themes",
+        "Log collection theme application",
+        "npm run type-check passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-008",
+      "title": "Add granular face detail detection",
+      "description": "Improve detection of specific face detail categories beyond just 'makeup'",
+      "acceptanceCriteria": [
+        "Detect 'eyebrows' and 'brows' -> contentType: 'eyebrows'",
+        "Detect 'eyelashes', 'lashes' -> contentType: 'lashes'",
+        "Detect 'eyeliner', 'liner' -> contentType: 'eyeliner' or 'makeup'",
+        "Detect 'lipstick', 'lip gloss', 'lips' -> contentType: 'lipstick' or 'makeup'",
+        "Detect 'blush', 'contour', 'highlighter' -> contentType: 'blush' or 'makeup'",
+        "Detect 'beard', 'mustache', 'facial hair', 'stubble' -> contentType: 'beard'",
+        "Prioritize specific type over generic 'makeup' when clear",
+        "npm run type-check passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-009",
+      "title": "Create scraper test suite",
+      "description": "Build tests that verify scraper correctly categorizes mods from sample URLs",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/scr-009-scraper-tests.ts",
+        "Test URL parsing for various We Want Mods URL patterns",
+        "Test category mapping for all known categories",
+        "Test that bathroom URL + 'Elegant Sink' title -> contentType:furniture, themes:[bathroom]",
+        "Test that eyebrows URL + 'Natural Brows' title -> contentType:eyebrows",
+        "Test collection page detection",
+        "Test FacetDefinition auto-creation",
+        "All tests must pass",
+        "npm run type-check passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "SCR-010",
+      "title": "Integration test with live scraping",
+      "description": "Run the improved scraper on a small batch and verify categorization accuracy",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/scr-010-integration-test.ts",
+        "Scrape 20 mods from various categories (hair, bathroom, eyebrows, furniture, etc.)",
+        "Log contentType and themes assigned to each",
+        "Verify at least 90% accuracy (contentType matches what a human would assign)",
+        "Document any edge cases or failures",
+        "npm run type-check passes",
+        "npm run build succeeds"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

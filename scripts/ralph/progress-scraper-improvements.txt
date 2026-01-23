@@ -1,0 +1,62 @@
+## Codebase Patterns
+
+### URL Category Extraction
+```typescript
+function extractCategoryFromUrl(url: string): string | undefined {
+  // URL pattern: wewantmods.com/sims4/{category}/{item-slug}
+  const match = url.match(/wewantmods\.com\/sims4\/([^\/]+)/);
+  return match ? match[1] : undefined;
+}
+```
+
+### URL Category to ContentType Map
+```typescript
+const URL_CATEGORY_MAP: Record<string, { contentType?: string; theme?: string }> = {
+  'hair': { contentType: 'hair' },
+  'hairstyles': { contentType: 'hair' },
+  'eyebrows': { contentType: 'eyebrows' },
+  'eyelashes': { contentType: 'lashes' },
+  'lashes': { contentType: 'lashes' },
+  'makeup': { contentType: 'makeup' },
+  'furniture': { contentType: 'furniture' },
+  'bathroom': { contentType: 'furniture', theme: 'bathroom' },
+  'kitchen': { contentType: 'furniture', theme: 'kitchen' },
+  'bedroom': { contentType: 'furniture', theme: 'bedroom' },
+  // ... etc
+};
+```
+
+### Import contentTypeDetector
+```typescript
+import { detectContentType, detectRoomThemes } from '@/lib/services/contentTypeDetector';
+```
+
+### Ensure FacetDefinition Exists
+```typescript
+async function ensureFacetDefinitionExists(facetType: string, value: string): Promise<void> {
+  const existing = await prisma.facetDefinition.findUnique({
+    where: { facetType_value: { facetType, value } },
+  });
+
+  if (!existing) {
+    await prisma.facetDefinition.create({
+      data: {
+        facetType,
+        value,
+        displayName: value.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        sortOrder: 100,
+        isActive: true,
+      },
+    });
+    console.log(`[FACET] Created new FacetDefinition: ${facetType}/${value}`);
+  }
+}
+```
+
+---
+
+# Progress Log
+
+(Entries will be added as stories are completed)
+
+NOTE: Complete CTB-001 through CTB-004 from the Content Type Backfill PRD before starting this PRD.

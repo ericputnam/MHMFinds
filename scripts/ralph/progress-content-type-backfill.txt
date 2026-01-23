@@ -1,0 +1,48 @@
+## Codebase Patterns
+
+### Loading Environment for Scripts
+```typescript
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+```
+
+### FacetDefinition Upsert
+```typescript
+await prisma.facetDefinition.upsert({
+  where: { facetType_value: { facetType: 'contentType', value: 'eyebrows' } },
+  update: {},
+  create: {
+    facetType: 'contentType',
+    value: 'eyebrows',
+    displayName: 'Eyebrows',
+    sortOrder: 50,
+    isActive: true,
+  },
+});
+```
+
+### Dry Run Pattern for Scripts
+```typescript
+const isDryRun = !process.argv.includes('--fix');
+if (isDryRun) {
+  console.log('[DRY RUN] Would update mod:', mod.id, mod.title);
+} else {
+  await prisma.mod.update({ where: { id: mod.id }, data: { contentType: newType } });
+}
+```
+
+### Case-Insensitive Search
+```typescript
+const mods = await prisma.mod.findMany({
+  where: { title: { contains: 'eyebrow', mode: 'insensitive' } },
+});
+```
+
+---
+
+# Progress Log
+
+(Entries will be added as stories are completed)

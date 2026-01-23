@@ -148,17 +148,38 @@ export default function AffiliatesAdminPage() {
   };
 
   const handleToggleActive = async (offer: AffiliateOffer) => {
+    const newIsActive = !offer.isActive;
+
+    // Optimistically update local state immediately
+    setOffers(prevOffers =>
+      prevOffers.map(o =>
+        o.id === offer.id ? { ...o, isActive: newIsActive } : o
+      )
+    );
+
     try {
       const response = await fetch(`/api/affiliates/${offer.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !offer.isActive }),
+        body: JSON.stringify({ isActive: newIsActive }),
       });
 
-      if (response.ok) {
-        fetchOffers();
+      if (!response.ok) {
+        // Revert on failure
+        setOffers(prevOffers =>
+          prevOffers.map(o =>
+            o.id === offer.id ? { ...o, isActive: offer.isActive } : o
+          )
+        );
+        console.error('Failed to toggle offer');
       }
     } catch (error) {
+      // Revert on error
+      setOffers(prevOffers =>
+        prevOffers.map(o =>
+          o.id === offer.id ? { ...o, isActive: offer.isActive } : o
+        )
+      );
       console.error('Failed to toggle offer:', error);
     }
   };

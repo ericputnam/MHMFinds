@@ -1,0 +1,201 @@
+{
+  "projectName": "Content Type Backfill & Recategorization",
+  "branchName": "feat/content-type-backfill",
+  "description": "Analyze and correctly categorize all existing mods in the database. Create missing FacetDefinitions, fix miscategorized mods, and validate that content types match actual mod content based on title and description analysis.",
+  "context": {
+    "contentTypeStrategy": "Granular content types (eyebrows as own type, not under makeup)",
+    "roomStrategy": "Use themes array for room tags (bathroom, kitchen, bedroom) alongside contentType for object type (furniture, decor)",
+    "facetCreation": "Auto-create FacetDefinitions with sensible defaults when new categories are needed",
+    "validationCriteria": "Title and description keywords must logically match the assigned contentType"
+  },
+  "userStories": [
+    {
+      "id": "CTB-001",
+      "title": "Audit current content type distribution",
+      "description": "Create a comprehensive audit of all content types currently in use, identify mismatches, and document patterns",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-001-audit.ts script",
+        "Query all unique contentType values and their counts",
+        "Identify mods with NULL contentType",
+        "Identify content types in use WITHOUT FacetDefinitions (pet-furniture, cas-background, loading-screen, preset)",
+        "Sample 20 mods from each contentType and log title + contentType for review",
+        "Output audit report to scripts/ralph/ctb-audit-report.txt",
+        "npm run type-check passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-002",
+      "title": "Create missing FacetDefinitions",
+      "description": "Auto-create FacetDefinition entries for content types that exist in mods but lack definitions",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-002-create-facets.ts script",
+        "Create FacetDefinitions for: pet-furniture, cas-background, loading-screen, preset",
+        "Create FacetDefinitions for new granular types: eyebrows, lashes, eyeliner, blush, lipstick, beard, facial-hair",
+        "Create FacetDefinitions for room themes: bathroom, kitchen, bedroom, living-room, dining-room, outdoor, office, kids-room, nursery",
+        "Use upsert to avoid duplicates",
+        "Set sensible displayName, sortOrder, and isActive=true",
+        "Log created definitions",
+        "npm run type-check passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Room themes go in FacetDefinition with facetType='themes', not 'contentType'"
+    },
+    {
+      "id": "CTB-003",
+      "title": "Build intelligent content type detection function",
+      "description": "Create a robust content type detection function that analyzes title and description to determine the most accurate content type",
+      "acceptanceCriteria": [
+        "Create lib/services/contentTypeDetector.ts",
+        "Export detectContentType(title: string, description?: string): string | undefined",
+        "Export detectRoomThemes(title: string, description?: string): string[]",
+        "Handle granular face categories: eyebrows, lashes, eyeliner, blush, lipstick, beard, facial-hair",
+        "Handle CAS items: cas-background, preset, loading-screen",
+        "Handle pet items: pet-furniture, pet-clothing, pet-accessories",
+        "Handle build/buy: furniture, decor, clutter, lighting, plants, rugs, curtains, wall-art",
+        "Include confidence scoring (high/medium/low based on keyword matches)",
+        "Return undefined for ambiguous cases rather than guessing",
+        "npm run type-check passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-004",
+      "title": "Create content type test suite",
+      "description": "Build comprehensive tests that verify content type detection works correctly for known examples",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-004-detection-tests.ts",
+        "Test cases for hair variations: ponytail, braids, updo, bangs, bob, pixie, afro",
+        "Test cases for face: eyebrows, eyelashes, lashes, eyeliner, lipstick, blush, beard, mustache",
+        "Test cases for clothing: tops, bottoms, dresses, full-body, shoes, accessories",
+        "Test cases for furniture with room context: 'bathroom sink' -> furniture + [bathroom]",
+        "Test cases for room packs: 'Kitchen CC Pack' -> furniture + [kitchen]",
+        "Test ambiguous cases that should return undefined",
+        "All tests must pass with at least 90% accuracy",
+        "Output test results to scripts/ralph/ctb-detection-test-results.txt",
+        "npm run type-check passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-005",
+      "title": "Fix eyebrow/lash mods miscategorized as skin/hair",
+      "description": "Identify and fix mods with 'eyebrow' or 'lash' in title that are incorrectly categorized",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-005-fix-face-details.ts",
+        "Find all mods with 'eyebrow' in title not categorized as 'eyebrows'",
+        "Find all mods with 'lash' or 'eyelash' in title not categorized as 'lashes'",
+        "Find all mods with 'eyeliner' in title not categorized as 'eyeliner' or 'makeup'",
+        "Find all mods with 'lipstick' or 'lip' in title not categorized as 'lipstick' or 'makeup'",
+        "Find all mods with 'blush' in title not categorized as 'blush' or 'makeup'",
+        "Find all mods with 'beard' or 'mustache' or 'facial hair' in title",
+        "Dry run first logging all changes",
+        "Apply fixes with --fix flag",
+        "Log all changes made",
+        "npm run type-check passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-006",
+      "title": "Fix room-based furniture/decor mods",
+      "description": "Add room themes to furniture and decor mods that have room keywords in title",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-006-fix-room-themes.ts",
+        "Find mods with 'bathroom' in title - add 'bathroom' to themes",
+        "Find mods with 'kitchen' in title - add 'kitchen' to themes",
+        "Find mods with 'bedroom' in title - add 'bedroom' to themes",
+        "Find mods with 'living room' in title - add 'living-room' to themes",
+        "Find mods with 'dining' in title - add 'dining-room' to themes",
+        "Find mods with 'office' or 'study' in title - add 'office' to themes",
+        "Find mods with 'kids' or 'child' room in title - add 'kids-room' to themes",
+        "Find mods with 'nursery' or 'baby' room in title - add 'nursery' to themes",
+        "Do NOT duplicate existing themes",
+        "Dry run first, apply with --fix flag",
+        "npm run type-check passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-007",
+      "title": "Fix NULL contentType mods",
+      "description": "Analyze and categorize the 45 mods with NULL contentType",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-007-fix-null-content.ts",
+        "Query all mods where contentType IS NULL",
+        "Run each through detectContentType function",
+        "For mods where detection returns undefined, log for manual review",
+        "For mods with confident detection, update contentType",
+        "Create report of mods that couldn't be auto-categorized",
+        "Dry run first, apply with --fix flag",
+        "npm run type-check passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-008",
+      "title": "Validate accessory vs furniture categorization",
+      "description": "Many furniture items are miscategorized as accessories - fix these",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-008-fix-accessories.ts",
+        "Find mods categorized as 'accessories' with furniture keywords: sink, toilet, shower, tub, sofa, couch, table, chair, desk, bed, shelf, cabinet",
+        "Recategorize as appropriate furniture/decor type",
+        "Find actual accessories miscategorized: bags, scarves, belts, watches, purses",
+        "Ensure jewelry stays as jewelry not accessories",
+        "Dry run first, apply with --fix flag",
+        "npm run type-check passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-009",
+      "title": "Full database validation pass",
+      "description": "Run validation across entire database to find remaining mismatches",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-009-full-validation.ts",
+        "For each mod, compare contentType vs detectContentType result",
+        "Flag mods where detection differs from stored value with high confidence",
+        "Generate report of potential mismatches for review",
+        "Report should include mod ID, title, current contentType, suggested contentType, confidence",
+        "Output to scripts/ralph/ctb-validation-report.txt",
+        "npm run type-check passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "CTB-010",
+      "title": "Final statistics and verification",
+      "description": "Generate final statistics showing improved categorization coverage",
+      "acceptanceCriteria": [
+        "Create scripts/ralph/ctb-010-final-stats.ts",
+        "Count mods per contentType (before vs after comparison)",
+        "Count mods with NULL contentType (should be 0 or near 0)",
+        "Count FacetDefinitions vs content types in use (should match)",
+        "Verify all content types have corresponding FacetDefinitions",
+        "Output summary to scripts/ralph/ctb-final-report.txt",
+        "npm run type-check passes",
+        "npm run build succeeds"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

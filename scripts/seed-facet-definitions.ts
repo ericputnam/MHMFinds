@@ -151,6 +151,28 @@ const FACET_SEEDS: FacetSeed[] = [
   { facetType: 'occultTypes', value: 'spellcaster', displayName: 'Spellcaster', icon: '🧙', color: '#7C3AED', sortOrder: 5 },
   { facetType: 'occultTypes', value: 'alien', displayName: 'Alien', icon: '👽', color: '#22C55E', sortOrder: 6 },
   { facetType: 'occultTypes', value: 'ghost', displayName: 'Ghost', icon: '👻', color: '#E5E7EB', sortOrder: 7 },
+
+  // ==========================================
+  // PACK REQUIREMENTS
+  // ==========================================
+  { facetType: 'packRequirements', value: 'base-game', displayName: 'Base Game Only', icon: '🎮', color: '#22C55E', sortOrder: 1 },
+  { facetType: 'packRequirements', value: 'get-to-work', displayName: 'Get to Work', icon: '💼', color: '#3B82F6', sortOrder: 2 },
+  { facetType: 'packRequirements', value: 'get-together', displayName: 'Get Together', icon: '🎉', color: '#EC4899', sortOrder: 3 },
+  { facetType: 'packRequirements', value: 'city-living', displayName: 'City Living', icon: '🏙️', color: '#6366F1', sortOrder: 4 },
+  { facetType: 'packRequirements', value: 'cats-and-dogs', displayName: 'Cats & Dogs', icon: '🐕', color: '#F97316', sortOrder: 5 },
+  { facetType: 'packRequirements', value: 'seasons', displayName: 'Seasons', icon: '🌦️', color: '#14B8A6', sortOrder: 6 },
+  { facetType: 'packRequirements', value: 'get-famous', displayName: 'Get Famous', icon: '⭐', color: '#FBBF24', sortOrder: 7 },
+  { facetType: 'packRequirements', value: 'island-living', displayName: 'Island Living', icon: '🏝️', color: '#06B6D4', sortOrder: 8 },
+  { facetType: 'packRequirements', value: 'discover-university', displayName: 'Discover University', icon: '🎓', color: '#8B5CF6', sortOrder: 9 },
+  { facetType: 'packRequirements', value: 'eco-lifestyle', displayName: 'Eco Lifestyle', icon: '♻️', color: '#22C55E', sortOrder: 10 },
+  { facetType: 'packRequirements', value: 'snowy-escape', displayName: 'Snowy Escape', icon: '🏔️', color: '#94A3B8', sortOrder: 11 },
+  { facetType: 'packRequirements', value: 'cottage-living', displayName: 'Cottage Living', icon: '🏡', color: '#A3E635', sortOrder: 12 },
+  { facetType: 'packRequirements', value: 'high-school-years', displayName: 'High School Years', icon: '📚', color: '#F43F5E', sortOrder: 13 },
+  { facetType: 'packRequirements', value: 'growing-together', displayName: 'Growing Together', icon: '👨‍👩‍👧', color: '#A855F7', sortOrder: 14 },
+  { facetType: 'packRequirements', value: 'horse-ranch', displayName: 'Horse Ranch', icon: '🐴', color: '#92400E', sortOrder: 15 },
+  { facetType: 'packRequirements', value: 'for-rent', displayName: 'For Rent', icon: '🔑', color: '#0EA5E9', sortOrder: 16 },
+  { facetType: 'packRequirements', value: 'lovestruck', displayName: 'Lovestruck', icon: '💘', color: '#F472B6', sortOrder: 17 },
+  { facetType: 'packRequirements', value: 'life-and-death', displayName: 'Life & Death', icon: '💀', color: '#6B7280', sortOrder: 18 },
 ];
 
 async function seedFacetDefinitions() {

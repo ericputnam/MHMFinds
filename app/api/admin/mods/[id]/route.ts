@@ -59,6 +59,14 @@ export async function PATCH(
         ...(body.downloadCount !== undefined && { downloadCount: body.downloadCount }),
         ...(body.viewCount !== undefined && { viewCount: body.viewCount }),
         ...(body.rating !== undefined && { rating: body.rating }),
+        // Facet fields
+        ...(body.contentType !== undefined && { contentType: body.contentType }),
+        ...(body.visualStyle !== undefined && { visualStyle: body.visualStyle }),
+        ...(body.themes !== undefined && { themes: body.themes }),
+        ...(body.ageGroups !== undefined && { ageGroups: body.ageGroups }),
+        ...(body.genderOptions !== undefined && { genderOptions: body.genderOptions }),
+        ...(body.occultTypes !== undefined && { occultTypes: body.occultTypes }),
+        ...(body.packRequirements !== undefined && { packRequirements: body.packRequirements }),
       },
     });
 

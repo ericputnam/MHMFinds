@@ -22,6 +22,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx scripts/init-db.ts",
     "db:seed:affiliates": "tsx prisma/seed-affiliates.ts",
+    "db:seed:facets": "tsx scripts/seed-facet-definitions.ts",
     "db:reset": "prisma migrate reset",
     "db:deploy": "prisma migrate deploy",
     "content:aggregate": "tsx -e \"import { contentAggregator } from './lib/services/contentAggregator'; contentAggregator.runAggregation();\"",

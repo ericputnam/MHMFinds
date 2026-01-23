@@ -10,6 +10,7 @@ import {
   Plus,
   X,
   Link as LinkIcon,
+  Tag,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,6 +34,24 @@ interface ModFormData {
   isNSFW: boolean;
   isFeatured: boolean;
   isVerified: boolean;
+  // Facet fields
+  contentType: string;
+  visualStyle: string;
+  themes: string[];
+  ageGroups: string[];
+  genderOptions: string[];
+  occultTypes: string[];
+  packRequirements: string[];
+}
+
+interface FacetDefinition {
+  id: string;
+  facetType: string;
+  value: string;
+  displayName: string;
+  icon: string | null;
+  color: string | null;
+  isActive: boolean;
 }
 
 const CATEGORIES = [
@@ -70,6 +89,9 @@ export default function EditModPage() {
   const [tagInput, setTagInput] = useState('');
   const [imageInput, setImageInput] = useState('');
 
+  // Facet definitions from API
+  const [facetDefinitions, setFacetDefinitions] = useState<Record<string, FacetDefinition[]>>({});
+
   const [formData, setFormData] = useState<ModFormData>({
     title: '',
     description: '',
@@ -90,7 +112,31 @@ export default function EditModPage() {
     isNSFW: false,
     isFeatured: false,
     isVerified: false,
+    // Facet defaults
+    contentType: '',
+    visualStyle: '',
+    themes: [],
+    ageGroups: [],
+    genderOptions: [],
+    occultTypes: [],
+    packRequirements: [],
   });
+
+  // Fetch facet definitions
+  useEffect(() => {
+    const fetchFacets = async () => {
+      try {
+        const response = await fetch('/api/admin/facets');
+        if (response.ok) {
+          const data = await response.json();
+          setFacetDefinitions(data.grouped || {});
+        }
+      } catch (err) {
+        console.error('Failed to fetch facet definitions:', err);
+      }
+    };
+    fetchFacets();
+  }, []);
 
   // Fetch existing mod data
   useEffect(() => {
@@ -125,6 +171,14 @@ export default function EditModPage() {
           isNSFW: mod.isNSFW || false,
           isFeatured: mod.isFeatured || false,
           isVerified: mod.isVerified || false,
+          // Facet fields
+          contentType: mod.contentType || '',
+          visualStyle: mod.visualStyle || '',
+          themes: mod.themes || [],
+          ageGroups: mod.ageGroups || [],
+          genderOptions: mod.genderOptions || [],
+          occultTypes: mod.occultTypes || [],
+          packRequirements: mod.packRequirements || [],
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load mod');
@@ -153,6 +207,8 @@ export default function EditModPage() {
       const modData = {
         ...formData,
         price: formData.isFree ? null : formData.price ? parseFloat(formData.price) : null,
+        contentType: formData.contentType || null,
+        visualStyle: formData.visualStyle || null,
       };
 
       const response = await fetch(`/api/admin/mods/${modId}`, {
@@ -207,6 +263,27 @@ export default function EditModPage() {
       ...formData,
       images: formData.images.filter((img) => img !== image),
     });
+  };
+
+  // Multi-select facet toggle
+  const toggleFacetValue = (facetType: keyof ModFormData, value: string) => {
+    const currentValues = formData[facetType] as string[];
+    if (currentValues.includes(value)) {
+      setFormData({
+        ...formData,
+        [facetType]: currentValues.filter((v) => v !== value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [facetType]: [...currentValues, value],
+      });
+    }
+  };
+
+  // Get active facets for a type
+  const getActiveFacets = (facetType: string): FacetDefinition[] => {
+    return (facetDefinitions[facetType] || []).filter((f) => f.isActive);
   };
 
   if (fetching) {
@@ -335,7 +412,7 @@ export default function EditModPage() {
             {/* Category */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Category
+                Category (Legacy)
               </label>
               <select
                 value={formData.category}
@@ -397,6 +474,217 @@ export default function EditModPage() {
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
               </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Facet Classification */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Tag className="h-5 w-5 text-sims-pink" />
+            <h2 className="text-xl font-bold text-white">Facet Classification</h2>
+          </div>
+          <p className="text-slate-400 text-sm mb-6">
+            Classify this mod using facets for better discoverability and filtering.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Content Type (single-select) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Content Type
+              </label>
+              <select
+                value={formData.contentType}
+                onChange={(e) => setFormData({ ...formData, contentType: e.target.value })}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+              >
+                <option value="">— Not Set —</option>
+                {getActiveFacets('contentType').map((facet) => (
+                  <option key={facet.id} value={facet.value}>
+                    {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500 mt-1">What IS this mod? (hair, furniture, etc.)</p>
+            </div>
+
+            {/* Visual Style (single-select) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Visual Style
+              </label>
+              <select
+                value={formData.visualStyle}
+                onChange={(e) => setFormData({ ...formData, visualStyle: e.target.value })}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+              >
+                <option value="">— Not Set —</option>
+                {getActiveFacets('visualStyle').map((facet) => (
+                  <option key={facet.id} value={facet.value}>
+                    {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500 mt-1">Art style (alpha, maxis-match, etc.)</p>
+            </div>
+
+            {/* Themes (multi-select) */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Themes
+              </label>
+              <div className="flex flex-wrap gap-2 p-4 bg-slate-800 border border-slate-700 rounded-lg min-h-[60px]">
+                {getActiveFacets('themes').length === 0 ? (
+                  <span className="text-slate-500 text-sm">No themes defined yet</span>
+                ) : (
+                  getActiveFacets('themes').map((facet) => {
+                    const isSelected = formData.themes.includes(facet.value);
+                    return (
+                      <button
+                        key={facet.id}
+                        type="button"
+                        onClick={() => toggleFacetValue('themes', facet.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'text-white'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                        style={
+                          isSelected && facet.color
+                            ? { backgroundColor: facet.color }
+                            : isSelected
+                            ? { backgroundColor: '#e91e63' }
+                            : undefined
+                        }
+                      >
+                        {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Aesthetic/vibe (cottagecore, goth, etc.)</p>
+            </div>
+
+            {/* Age Groups (multi-select) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Age Groups
+              </label>
+              <div className="flex flex-wrap gap-2 p-4 bg-slate-800 border border-slate-700 rounded-lg min-h-[60px]">
+                {getActiveFacets('ageGroups').length === 0 ? (
+                  <span className="text-slate-500 text-sm">No age groups defined</span>
+                ) : (
+                  getActiveFacets('ageGroups').map((facet) => {
+                    const isSelected = formData.ageGroups.includes(facet.value);
+                    return (
+                      <button
+                        key={facet.id}
+                        type="button"
+                        onClick={() => toggleFacetValue('ageGroups', facet.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'bg-sims-blue text-white'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                      >
+                        {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Gender Options (multi-select) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Gender/Frame Options
+              </label>
+              <div className="flex flex-wrap gap-2 p-4 bg-slate-800 border border-slate-700 rounded-lg min-h-[60px]">
+                {getActiveFacets('genderOptions').length === 0 ? (
+                  <span className="text-slate-500 text-sm">No options defined</span>
+                ) : (
+                  getActiveFacets('genderOptions').map((facet) => {
+                    const isSelected = formData.genderOptions.includes(facet.value);
+                    return (
+                      <button
+                        key={facet.id}
+                        type="button"
+                        onClick={() => toggleFacetValue('genderOptions', facet.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                      >
+                        {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Occult Types (multi-select) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Occult Types
+              </label>
+              <div className="flex flex-wrap gap-2 p-4 bg-slate-800 border border-slate-700 rounded-lg min-h-[60px]">
+                {getActiveFacets('occultTypes').length === 0 ? (
+                  <span className="text-slate-500 text-sm">No occult types defined</span>
+                ) : (
+                  getActiveFacets('occultTypes').map((facet) => {
+                    const isSelected = formData.occultTypes.includes(facet.value);
+                    return (
+                      <button
+                        key={facet.id}
+                        type="button"
+                        onClick={() => toggleFacetValue('occultTypes', facet.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                      >
+                        {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Pack Requirements (multi-select) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Pack Requirements
+              </label>
+              <div className="flex flex-wrap gap-2 p-4 bg-slate-800 border border-slate-700 rounded-lg min-h-[60px]">
+                {getActiveFacets('packRequirements').length === 0 ? (
+                  <span className="text-slate-500 text-sm">No packs defined</span>
+                ) : (
+                  getActiveFacets('packRequirements').map((facet) => {
+                    const isSelected = formData.packRequirements.includes(facet.value);
+                    return (
+                      <button
+                        key={facet.id}
+                        type="button"
+                        onClick={() => toggleFacetValue('packRequirements', facet.value)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'bg-green-500 text-white'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                      >
+                        {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -530,7 +818,7 @@ export default function EditModPage() {
             {/* Tags */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Tags
+                Tags (Legacy)
               </label>
               <div className="flex gap-2">
                 <input

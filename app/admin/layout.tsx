@@ -9,7 +9,7 @@ import {
   Package,
   Users,
   Upload,
-  Folder,
+  Tags,
   UserCircle,
   Settings,
   LogOut,
@@ -28,7 +28,7 @@ const adminNavItems = [
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },
   { href: '/admin/waitlist', label: 'Waitlist', icon: Mail },
   { href: '/admin/creators', label: 'Creators', icon: Users },
-  { href: '/admin/categories', label: 'Categories', icon: Folder },
+  { href: '/admin/categories', label: 'Taxonomy', icon: Tags },
   { href: '/admin/users', label: 'Users', icon: UserCircle },
 ];
 

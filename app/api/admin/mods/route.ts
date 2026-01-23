@@ -15,6 +15,12 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
+    // Get facet filter params
+    const contentType = searchParams.get('contentType') || '';
+    const visualStyle = searchParams.get('visualStyle') || '';
+    const theme = searchParams.get('theme') || '';
+    const missingFacets = searchParams.get('missingFacets') === 'true';
+
     // Build where clause
     const where: any = {};
 
@@ -28,6 +34,23 @@ export async function GET(request: NextRequest) {
 
     if (category) {
       where.category = category;
+    }
+
+    // Facet filters
+    if (contentType) {
+      where.contentType = contentType;
+    }
+
+    if (visualStyle) {
+      where.visualStyle = visualStyle;
+    }
+
+    if (theme) {
+      where.themes = { has: theme };
+    }
+
+    if (missingFacets) {
+      where.contentType = null;
     }
 
     // Get mods and total count
@@ -49,6 +72,10 @@ export async function GET(request: NextRequest) {
           createdAt: true,
           thumbnail: true,
           downloadUrl: true,
+          // Facet fields
+          contentType: true,
+          visualStyle: true,
+          themes: true,
         },
       }),
       prisma.mod.count({ where }),
