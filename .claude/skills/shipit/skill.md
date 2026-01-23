@@ -217,20 +217,89 @@ After user confirms:
    git push origin <current-branch>
    ```
 
-2. **Monitor Vercel deployment:**
+2. **Get the deployment URL:**
    ```bash
-   vercel ls --limit 5
+   vercel ls 2>&1 | head -10
    ```
 
-3. **Report deployment status:**
+3. **Report initial status:**
    - Deployment URL
-   - Build status
-   - Any deployment errors
+   - Current build status (Building/Ready/Error)
 
-**If deployment fails:**
-1. Check Vercel build logs: `vercel logs <deployment-url>`
-2. Fix the issue
-3. Repeat the shipit process
+### Step 12: Monitor Vercel Build (Feedback Loop)
+
+**CRITICAL: Do not consider deployment complete until Vercel build succeeds.**
+
+1. **Wait for build to complete (poll every 15-20 seconds):**
+   ```bash
+   sleep 20 && vercel ls 2>&1 | head -10
+   ```
+
+2. **Check deployment status:**
+   - Look for the most recent deployment matching your branch
+   - Status will be: `● Building`, `● Ready`, or `● Error`
+
+3. **If status is `● Building`:**
+   - Wait and poll again
+   - Continue until status changes to Ready or Error
+
+4. **If status is `● Ready`:**
+   - Deployment succeeded!
+   - Report success to user with preview URL
+   - Workflow complete
+
+5. **If status is `● Error`:**
+   - **DO NOT stop here - fix the error!**
+   - Get the deployment URL from the `vercel ls` output
+   - Fetch build logs to understand the error:
+     ```bash
+     # Get logs from Vercel dashboard or inspect output
+     vercel inspect <deployment-url> 2>&1
+     ```
+   - Common error patterns:
+     - "Failed to collect page data" → Module initialization at build time
+     - "Cannot find module" → Missing dependency or import path
+     - "Type error" → TypeScript issue
+     - Prisma errors → Database/migration issues
+
+6. **Fix the error:**
+   - Identify the failing file from the error message
+   - Read the file and understand the issue
+   - Apply the fix
+   - Run local build to verify: `npm run build`
+   - Commit and push the fix:
+     ```bash
+     git add -A
+     git commit -m "fix: <description of fix>"
+     git push origin <branch>
+     ```
+
+7. **Repeat monitoring:**
+   - After pushing fix, go back to step 1 of this section
+   - Continue until deployment succeeds
+
+**Example Vercel monitoring loop:**
+```
+🔄 Monitoring Vercel deployment...
+
+   Poll 1: ● Building (waiting 20s...)
+   Poll 2: ● Building (waiting 20s...)
+   Poll 3: ● Error - Build failed!
+
+   📋 Fetching error details...
+   Error: Failed to collect page data for /api/subscription/create-checkout
+
+   🔧 Fixing: Lazy-load Stripe client to avoid build-time initialization
+   ✅ Fix committed and pushed
+
+   Poll 4: ● Building (waiting 20s...)
+   Poll 5: ● Ready
+
+   ✅ Deployment successful!
+   📍 Preview: https://mhm-finds-xxx.vercel.app
+```
+
+**Never leave a deployment in Error state.** The workflow is only complete when Vercel shows `● Ready`.
 
 ## Error Handling
 
@@ -251,9 +320,43 @@ npm run lint -- --fix
 - Missing dependencies: Run `npm install`
 
 ### Deployment Errors
-- Check Vercel build logs
-- Common issues: Environment variables, Prisma migrations, memory limits
-- Reference `docs/VERCEL_DEPLOYMENT_CHECKLIST.md`
+
+**How to diagnose:**
+```bash
+# List recent deployments
+vercel ls 2>&1 | head -10
+
+# Inspect a specific deployment
+vercel inspect <deployment-url> 2>&1
+```
+
+**Common Vercel Build Errors:**
+
+| Error Pattern | Cause | Fix |
+|--------------|-------|-----|
+| `Failed to collect page data for /api/...` | Module initializes at build time (e.g., `new Stripe(...)` at top level) | Use lazy initialization with getter |
+| `Cannot find module '...'` | Missing dependency or wrong import path | Check imports, run `npm install` |
+| `Type error: ...` | TypeScript error not caught locally | Fix the type issue |
+| `Error: Dynamic server usage` | Using `cookies()` or `headers()` in static context | Add `export const dynamic = 'force-dynamic'` |
+| Prisma errors | Database not accessible during build | Ensure Prisma client is lazy-loaded |
+| `ENOMEM` / memory errors | Build uses too much memory | Optimize imports, check for circular deps |
+
+**Lazy initialization pattern (fixes most build-time errors):**
+```typescript
+// ❌ BAD - initializes at module load (build time)
+private static client = new SomeClient(process.env.API_KEY!);
+
+// ✅ GOOD - initializes on first use (runtime only)
+private static _client: SomeClient | null = null;
+private static get client(): SomeClient {
+  if (!this._client) {
+    this._client = new SomeClient(process.env.API_KEY!);
+  }
+  return this._client;
+}
+```
+
+**Reference:** `docs/VERCEL_DEPLOYMENT_CHECKLIST.md`
 
 ## Example Output
 
