@@ -1,7 +1,14 @@
 import Stripe from 'stripe';
 
 export class StripeService {
-  private static stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  private static _stripe: Stripe | null = null;
+
+  private static get stripe(): Stripe {
+    if (!this._stripe) {
+      this._stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    }
+    return this._stripe;
+  }
 
   static async createCustomer(email: string, userId: string) {
     return await this.stripe.customers.create({
