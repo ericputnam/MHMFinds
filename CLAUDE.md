@@ -97,45 +97,50 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 ---
 
-## 🚨 CRITICAL: Prisma Accelerate - DO NOT INSTALL THE EXTENSION
+## ✅ Prisma Accelerate - Query Caching Enabled
 
-**This project uses Prisma Accelerate connection pooling via `db.prisma.io`. The DATABASE_URL already routes through Prisma's proxy.**
+**This project uses Prisma Accelerate for query-level caching.** The `@prisma/extension-accelerate` package is installed and configured in `lib/prisma.ts`.
 
-### What This Means
-- The DATABASE_URL looks like: `postgres://...@db.prisma.io:5432/...`
-- This provides connection pooling automatically
-- **You do NOT need `@prisma/extension-accelerate` for connection pooling**
+### Environment Variable Setup (CRITICAL)
 
-### The Extension is for CACHING ONLY
-The `@prisma/extension-accelerate` package is ONLY needed if you want Prisma's edge caching features (cacheStrategy). It is NOT needed for connection pooling.
+The environment variables MUST be configured correctly for Accelerate to work:
 
-### ⛔ NEVER Do This
 ```bash
-npm install @prisma/extension-accelerate  # DO NOT INSTALL
+# .env.local (and Vercel Production)
+
+# DATABASE_URL = Prisma Accelerate URL (enables caching)
+DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+
+# DIRECT_DATABASE_URL = Direct postgres connection (for migrations)
+DIRECT_DATABASE_URL="postgres://...@db.prisma.io:5432/postgres?sslmode=require"
 ```
 
+### ⚠️ Common Mistake: Swapped URLs
+If URLs are swapped (DATABASE_URL has `postgres://` instead of `prisma+postgres://`), caching will be silently disabled. Check the dev server logs for:
+```
+[Prisma] Accelerate extension enabled (Accelerate URL detected)
+```
+If you don't see this message, the URLs are likely swapped.
+
+### How It Works
+The `lib/prisma.ts` file:
+1. Detects if `DATABASE_URL` starts with `prisma://` or `prisma+postgres://`
+2. If yes, enables the Accelerate extension with `withAccelerate()`
+3. Adds slow query logging (>2s dev, >5s prod)
+4. Caches the client globally to prevent connection pool exhaustion
+
+### Using Cache Strategy in Queries
+When Accelerate is enabled, you can use `cacheStrategy` in queries:
 ```typescript
-// DO NOT add this to lib/prisma.ts
-import { withAccelerate } from '@prisma/extension-accelerate';
-prisma.$extends(withAccelerate());  // BREAKS PRODUCTION
+const mods = await prisma.mod.findMany({
+  cacheStrategy: { ttl: 60 }, // Cache for 60 seconds
+});
 ```
-
-### Why It Breaks Production
-When you install the extension, it changes how Prisma connects. Combined with the db.prisma.io pooler URL, it causes:
-- `Can't reach database server at db.prisma.io:5432` errors
-- Connection pool exhaustion
-- Complete site outage
-
-### If You Need Accelerate Caching
-1. **Ask the user first** - This requires infrastructure changes
-2. Need a `prisma://` URL (different from the current `postgres://` URL)
-3. Need `DIRECT_URL` for migrations
-4. Requires careful setup - don't attempt without explicit user approval
 
 ### Recovery from Prisma Connection Issues
 1. **Rollback immediately**: `vercel rollback <working-deployment-url> --yes`
 2. Check Prisma Dashboard for errors
-3. May need to restart/purge connections in Prisma Cloud console
+3. Verify env vars are not swapped (DATABASE_URL should be `prisma+postgres://`)
 4. Wait for connections to clear before redeploying
 
 ---
@@ -416,13 +421,16 @@ Approved image domains in next.config.js: The Sims Resource, SimsDom, Sims4Studi
 ## Environment Variables
 
 Required for development (see env.example):
-- `DATABASE_URL` - PostgreSQL connection string
+- `DATABASE_URL` - Prisma Accelerate URL (`prisma+postgres://accelerate.prisma-data.net/...`) - enables query caching
+- `DIRECT_DATABASE_URL` - Direct PostgreSQL connection (`postgres://...@db.prisma.io/...`) - used for migrations
 - `NEXTAUTH_SECRET` - NextAuth.js secret for JWT signing
 - `NEXTAUTH_URL` - Application URL (http://localhost:3000 in dev)
 - `OPENAI_API_KEY` - Required for AI search features
 - `CURSEFORGE_API_KEY` - Required for CurseForge content aggregation
 - `GOOGLE_CLIENT_ID/SECRET` - For Google OAuth
 - `DISCORD_CLIENT_ID/SECRET` - For Discord OAuth
+
+**⚠️ DATABASE_URL vs DIRECT_DATABASE_URL**: These are often confused. `DATABASE_URL` should be the Accelerate URL (starts with `prisma+postgres://`) for caching. `DIRECT_DATABASE_URL` should be the direct postgres connection for migrations.
 
 Optional but mentioned in env.example:
 - Redis, Elasticsearch, AWS S3, SendGrid (not currently implemented)
