@@ -1,0 +1,134 @@
+================================================================================
+CTB-010: FINAL STATISTICS AND VERIFICATION REPORT
+Content Type Backfill PRD - Final Summary
+================================================================================
+Generated: 2026-01-24T13:32:25.883Z
+
+================================================================================
+SECTION 1: Before vs After Comparison
+================================================================================
+
+Metric                          Before (CTB-001)    After (CTB-010)    Change
+--------------------------------------------------------------------------------
+Total Mods                       10447               10447             +0
+NULL contentType                    45                  23             -22 (48.9% reduction)
+Unique Content Types                31                  40             +9
+Orphaned Content Types               4                   0             -4
+
+================================================================================
+SECTION 2: Content Type Coverage
+================================================================================
+
+Mods with valid contentType: 10424 / 10447 (99.78%)
+Mods with NULL contentType: 23
+
+Content Type Distribution:
+------------------------------------------------------------
+Content Type                   Count      Percentage
+------------------------------------------------------------
+hair                             1212       11.60%
+full-body                        1059       10.14%
+lot                               864        8.27%
+furniture                         766        7.33%
+tops                              765        7.32%
+accessories                       643        6.15%
+poses                             599        5.73%
+dresses                           506        4.84%
+makeup                            496        4.75%
+shoes                             455        4.36%
+bottoms                           433        4.14%
+decor                             425        4.07%
+gameplay-mod                      369        3.53%
+skin                              236        2.26%
+jewelry                           164        1.57%
+clutter                           157        1.50%
+preset                            131        1.25%
+eyebrows                          129        1.23%
+nails                             126        1.21%
+eyes                              118        1.13%
+glasses                           116        1.11%
+loading-screen                    115        1.10%
+lighting                          104        1.00%
+cas-background                     87        0.83%
+tattoos                            82        0.78%
+script-mod                         47        0.45%
+hats                               46        0.44%
+beard                              34        0.33%
+plants                             31        0.30%
+facial-hair                        23        0.22%
+(NULL)                             23        0.22%
+builds                             20        0.19%
+lashes                             18        0.17%
+pet-furniture                      16        0.15%
+bathroom                           11        0.11%
+... and 5 more content types
+
+================================================================================
+SECTION 3: FacetDefinition Coverage
+================================================================================
+
+Total FacetDefinitions: 81
+  - contentType facets: 44
+  - themes facets: 25
+
+[SUCCESS] All content types have corresponding FacetDefinitions
+
+FacetDefinitions with no mods using them (5):
+  - kitchen
+  - outdoor
+  - trait
+  - career
+  - food
+
+================================================================================
+SECTION 4: Room Theme Statistics
+================================================================================
+
+Total mods with room themes: 5754
+Furniture mods with room themes: 611
+Decor mods with room themes: 273
+
+Room Theme Distribution:
+----------------------------------------
+  bathroom                115 mods
+  kitchen                  90 mods
+  bedroom                 144 mods
+  living-room             255 mods
+  dining-room              29 mods
+  office                   52 mods
+  kids-room                20 mods
+  nursery                  28 mods
+  outdoor                  92 mods
+
+Room Theme Coverage:
+  Furniture mods with themes: 611 / 766 (79.8%)
+  Decor mods with themes: 273 / 425 (64.2%)
+
+================================================================================
+SECTION 5: Content Type Backfill PRD - Story Summary
+================================================================================
+
+CTB-001: Identified 31 unique content types, 45 NULL, 4 orphaned types
+CTB-002: Created 20 FacetDefinitions: 4 orphaned types + 7 granular face types + 9 room themes
+CTB-003: Built intelligent content type detector with confidence scoring (35+ types)
+CTB-004: Created test suite with 149 tests achieving 95.30% accuracy
+CTB-005: Fixed 221 miscategorized face detail mods (eyebrows, lashes, eyeliner, lipstick, blush, beard, facial-hair)
+CTB-006: Added room themes to 764 mods (bathroom, kitchen, bedroom, living-room, dining-room, office, kids-room, nursery, outdoor)
+CTB-007: Auto-fixed 22 of 45 NULL contentType mods (23 remain for manual review)
+CTB-008: Fixed 31 accessory/furniture/jewelry miscategorizations
+CTB-009: Full database validation pass (pending or completed)
+
+================================================================================
+SECTION 6: Final Verification Status
+================================================================================
+
+[PASS] Content type coverage > 99%: 99.78%
+[PASS] NULL contentType reduced: Reduced by 22 (from 45 to 23)
+[PASS] All content types have FacetDefinitions: Yes
+[PASS] Room themes applied to furniture/decor: 5754 mods have themes
+
+[SUCCESS] All verification checks passed!
+
+================================================================================
+END OF FINAL REPORT
+================================================================================
