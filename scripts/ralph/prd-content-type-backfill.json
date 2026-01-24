@@ -23,8 +23,8 @@
         "npm run type-check passes"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Found 31 unique content types, 45 NULL, 4 orphaned (preset, loading-screen, cas-background, pet-furniture)"
     },
     {
       "id": "CTB-002",
@@ -41,8 +41,8 @@
         "npm run type-check passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": "Room themes go in FacetDefinition with facetType='themes', not 'contentType'"
+      "passes": true,
+      "notes": "Completed 2026-01-24. Created 20 FacetDefinitions: 4 orphaned content types (preset, loading-screen, cas-background, pet-furniture), 7 granular face types (eyebrows, lashes, eyeliner, blush, lipstick, beard, facial-hair), 9 room themes (bathroom, kitchen, bedroom, living-room, dining-room, outdoor, office, kids-room, nursery). Room themes use facetType='themes'."
     },
     {
       "id": "CTB-003",
@@ -61,8 +61,8 @@
         "npm run type-check passes"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Created lib/services/contentTypeDetector.ts with priority-based keyword detection system. Features: detectContentType() and detectRoomThemes() functions, DetectionResult and RoomThemeResult types with confidence scoring (high/medium/low), negative keyword support to prevent false matches, batch processing utilities, and validation helpers. Supports 35+ content types across granular face categories, CAS items, pet items, build/buy, clothing, and mods."
     },
     {
       "id": "CTB-004",
@@ -81,8 +81,8 @@
         "npm run type-check passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Created comprehensive test suite with 149 test cases across 20 categories. Achieved 95.30% accuracy (142/149 passing), exceeding the 90% target. Categories tested: Hair Variations (10), Face - Eyebrows/Lashes/Eyeliner/Lipstick/Blush/Beard/Mustache (22), Clothing - Tops/Bottoms/Dresses/Full Body/Shoes (31), Accessories/Jewelry/Glasses/Hats (16), Furniture + Room (8), Room Packs (5), Decor (12), CAS Special (5), Pet Items (8), Skin/Tattoos (6), Eyes/Nails (4), Makeup (4), Mods (4), Ambiguous (6), Edge Cases (5). 7 edge cases failed involving uncommon patterns (island, patio, highlighter). Results output to ctb-detection-test-results.txt."
     },
     {
       "id": "CTB-005",
@@ -102,8 +102,8 @@
         "npm run type-check passes"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Created scripts/ralph/ctb-005-fix-face-details.ts with keyword-based detection and negative keyword filtering (to avoid false positives like 'splash', 'slasher', 'whiplash'). Fixed 221 miscategorized mods: 127 eyebrows (from eyes/makeup/hair/skin/full-body/lot), 18 lashes (from makeup/eyes), 7 eyeliner (from hair/full-body/dresses/tops/accessories), 7 lipstick (from tops/hair/full-body), 4 blush (from tops/skin), 35 beard (from hair/accessories/tops/full-body), 23 facial-hair (from hair/skin). Script supports dry run mode and --fix flag."
     },
     {
       "id": "CTB-006",
@@ -124,8 +124,8 @@
         "npm run type-check passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Created scripts/ralph/ctb-006-fix-room-themes.ts using detectRoomThemes() from contentTypeDetector. Processed 10,447 mods in batches of 1,000 (to avoid Prisma Accelerate 5MB response limit). Added room themes to 764 mods: bathroom (115), kitchen (90), bedroom (144), living-room (255), dining-room (29), office (52), kids-room (20), nursery (28), outdoor (92). Script does not duplicate existing themes and supports dry run mode with --fix flag to apply."
     },
     {
       "id": "CTB-007",
@@ -142,8 +142,8 @@
         "npm run type-check passes"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Found 45 mods with NULL contentType, auto-fixed 22 with confident detection (accessories: 1, eyebrows: 2, full-body: 6, gameplay-mod: 1, hair: 6, jewelry: 1, lot: 3, pet-accessories: 1, preset: 1). 23 mods remain for manual review (generic CC packs, Sim characters, and ambiguous content). Report saved to ctb-007-null-content-report.txt."
     },
     {
       "id": "CTB-008",
@@ -159,8 +159,8 @@
         "npm run type-check passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Created scripts/ralph/ctb-008-fix-accessories.ts with word-boundary matching and negative keyword filtering to prevent false positives. Fixed 31 mods: 5 furniture items in accessories (bathroom showers/toilets), 10 decor items in accessories (plants, paintings, posters, pillow), 3 jewelry items in accessories (rings, bracelets, necklaces), 8 true accessories in wrong categories (belts, tights, socks, gloves in tops/skin/glasses), 5 jewelry items in wrong categories (earrings/piercings in makeup/gameplay-mod). Uses contentTypeDetector for confident detection and skips lots/CC packs that mention furniture contextually."
     },
     {
       "id": "CTB-009",
@@ -176,8 +176,8 @@
         "npm run type-check passes"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Completed 2026-01-24. Validated 10,447 mods: 4,559 match detection (49% match rate), 444 high-confidence mismatches, 4,298 medium-confidence. 23 NULL contentTypes remain (down from 45, 49% reduction). Before/After: Fixed original 4 orphaned types (preset, loading-screen, cas-background, pet-furniture), but 2 new orphans emerged (wall-art: 2 mods, pet-accessories: 1 mod - need FacetDefinitions). High-confidence mismatches include: skin->preset (54), makeup->lipstick (48), makeup->eyeliner (40), makeup->lashes (28) - these reflect the granular face type strategy. 23 mods require manual review (CC packs, Sim characters, generic content). Report saved to ctb-validation-report.txt."
     },
     {
       "id": "CTB-010",

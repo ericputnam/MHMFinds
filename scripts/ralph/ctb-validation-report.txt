@@ -1,0 +1,2146 @@
+================================================================================
+CTB-009: FULL DATABASE VALIDATION REPORT
+================================================================================
+Generated: 2026-01-24T13:31:40.997Z
+
+Total Mods in Database: 10447
+
+================================================================================
+SECTION 1: Validation Summary
+================================================================================
+
+Total mods processed: 10447
+Mods with NULL contentType: 23
+Mods where detection was not possible: 1123
+
+Mods where contentType MATCHES detection: 4559
+Mods where contentType DIFFERS from detection: 4742
+  - High confidence mismatches: 444
+  - Medium confidence mismatches: 4298
+  - Low confidence mismatches: 0
+
+Match rate (excluding NULL and no-detection): 49.02%
+
+================================================================================
+SECTION 2: Current Content Type Distribution
+================================================================================
+
+Content Type                   Count      Percentage
+------------------------------------------------------------
+hair                             1212       11.60%
+full-body                        1059       10.14%
+lot                               864        8.27%
+furniture                         766        7.33%
+tops                              765        7.32%
+accessories                       643        6.15%
+poses                             599        5.73%
+dresses                           506        4.84%
+makeup                            496        4.75%
+shoes                             455        4.36%
+bottoms                           433        4.14%
+decor                             425        4.07%
+gameplay-mod                      369        3.53%
+skin                              236        2.26%
+jewelry                           164        1.57%
+clutter                           157        1.50%
+preset                            131        1.25%
+eyebrows                          129        1.23%
+nails                             126        1.21%
+eyes                              118        1.13%
+glasses                           116        1.11%
+loading-screen                    115        1.10%
+lighting                          104        1.00%
+cas-background                     87        0.83%
+tattoos                            82        0.78%
+script-mod                         47        0.45%
+hats                               46        0.44%
+beard                              34        0.33%
+plants                             31        0.30%
+facial-hair                        23        0.22%
+(NULL)                             23        0.22%
+builds                             20        0.19%
+lashes                             18        0.17%
+pet-furniture                      16        0.15%
+bathroom                           11        0.11%
+eyeliner                            7        0.07%
+lipstick                            7        0.07%
+blush                               4        0.04%
+wall-art                            2        0.02%
+pet-accessories                     1        0.01%
+
+================================================================================
+SECTION 3: HIGH CONFIDENCE Mismatches (Priority Review)
+================================================================================
+
+Total: 444 mods
+
+These mods have high-confidence detection suggesting a different contentType.
+Consider reviewing and updating these records.
+
+--------------------------------------------------------------------------------
+Transition: skin -> preset (54 mods)
+--------------------------------------------------------------------------------
+  ID: cmknf9xdr004foxolgidaa1mg
+  Title: TS4 Body Preset Petite Series
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9xbt004eoxolefdgc6hq
+  Title: Female Body Preset 04
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9x9s004doxoljz58p84n
+  Title: Female Body Preset N4
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9x3y004aoxolzmrrovxl
+  Title: AF Body Preset 1
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9wzw0048oxolce76s0w1
+  Title: Male Body Preset No. 1
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9wy00047oxoli15gxrx6
+  Title: Body Preset “Soft Curve Silhouette”
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9ww30046oxolqwx2r6rb
+  Title: Aninha Body Preset
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9wqb0043oxolvjm66mou
+  Title: Luna Body Preset
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf9wmf0041oxoldu50t24e
+  Title: Jessica Body Preset
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmknf8g4f000loxolb46oa5c3
+  Title: Plus Size Body Preset 02
+  Current: skin -> Suggested: preset
+  Keywords: body preset, preset
+
+  ... and 44 more
+
+--------------------------------------------------------------------------------
+Transition: makeup -> lipstick (48 mods)
+--------------------------------------------------------------------------------
+  ID: cmkq98b8f001goxvg4mfbsnqd
+  Title: Butter Gloss Collection
+  Current: makeup -> Suggested: lipstick
+  Keywords: gloss collection, butter gloss
+
+  ID: cmknfbyiu0097oxol6w6ghfcv
+  Title: Lipstick N267
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick
+
+  ID: cmk249s2c0000k205dt79ata5
+  Title: Cerise Lips
+  Current: makeup -> Suggested: lipstick
+  Keywords: cerise lips
+
+  ID: cmim9m9sg00f6oxy7bu9rxvjl
+  Title: Wolf CC Lipstick
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick
+
+  ID: cmim9loyp00aroxy7vyrhea4r
+  Title: Sims 4 Sugar Lip Gloss
+  Current: makeup -> Suggested: lipstick
+  Keywords: lip gloss
+
+  ID: cmim9f5jy003soxqwlt65bug1
+  Title: Radiant Matte Lipstickp
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick, matte lips
+
+  ID: cmim8yodm013coxy84wk76sky
+  Title: Munchie Lipstick
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick
+
+  ID: cmim8yobf013boxy8vz0go816
+  Title: Lipstick N164
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick
+
+  ID: cmim8yo9d013aoxy8dk3b6m7f
+  Title: Lipstick N167
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick
+
+  ID: cmim8yn2f012poxy8656na74c
+  Title: Lipstick Z520
+  Current: makeup -> Suggested: lipstick
+  Keywords: lipstick
+
+  ... and 38 more
+
+--------------------------------------------------------------------------------
+Transition: makeup -> eyeliner (40 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9lows00aqoxy7f6fneagj
+  Title: Colorful Bottom Lid Eyeliner for Sims 4
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim9loee00ahoxy70bp3ra46
+  Title: Sims 4 Natural Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim9lnys00a9oxy71fil0cp6
+  Title: Sims 4 Brown Delight Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim9lnup00a7oxy7wevekl6s
+  Title: Vibrant Neon Sims 4 CC Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim9lnox00a4oxy7qzuvue3q
+  Title: Sims 4 CC Lipstick & Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim9f5hb003roxqw1hy4vrjc
+  Title: Gothic Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim8ymyf012noxy851x0hkwm
+  Title: Dripping Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim8ymwc012moxy8fp6xfu1p
+  Title: Eyeliner N378
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim8v68300gjoxy8y8a3j3am
+  Title: Graphic Eyeliner 02
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ID: cmim8usj500e6oxy8oo0ned63
+  Title: Halloween Cullen Eyeliner
+  Current: makeup -> Suggested: eyeliner
+  Keywords: eyeliner, liner
+
+  ... and 30 more
+
+--------------------------------------------------------------------------------
+Transition: makeup -> lashes (28 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9ocxj00nhoxy7e2qk20jp
+  Title: 3D Eyelashes V2 for Sims 4
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocri00neoxy7ghlrtomj
+  Title: Larissa Sims 4 Eyelashes Mod
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocna00ncoxy7418z5xpx
+  Title: Sims 4 Retro Twiggy Eyelashes
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocl800nboxy7niaud8ml
+  Title: Sims 4 Chunky Eyelashes CC
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocgd00n9oxy7x9fwdruc
+  Title: Sims 4 3D Eyelashes V1
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocbl00n7oxy7eiajwtjh
+  Title: Sims 4 Male Eyelashes CC
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9oc9i00n6oxy70balk1vl
+  Title: Sims 4 Baddie Eyelashes
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9oc7a00n5oxy71f6ab9tu
+  Title: Sims 4 Maxis Match Eyelashes CC
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9oc1300n2oxy7068q6koj
+  Title: Sims 4 Kijiko Eyelashes Version 2
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9obyo00n1oxy7b3br6fc5
+  Title: Sims 4 Maxis Match 3D Eyelashes (Skin Detail Version)
+  Current: makeup -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ... and 18 more
+
+--------------------------------------------------------------------------------
+Transition: accessories -> hair (17 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9rc31002iox56bl86stop
+  Title: Sims 4 Dreads Hair CC
+  Current: accessories -> Suggested: hair
+  Keywords: hair, dreads
+
+  ID: cmim925pt01ptoxy8gk7tjia2
+  Title: Frankie Hairstyle For Children
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim91wke01oioxy8weci0bng
+  Title: Esther Hairstyle
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim90zil01iwoxy8ke477v79
+  Title: Kenny Hairstyles
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle, hairstyles
+
+  ID: cmim90xmm01i5oxy8073zp1kb
+  Title: Dalia Hairstyle
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim903qi01cvoxy88oh01b6b
+  Title: New Years Hairstyle
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim903nn01cuoxy8eve6ib4p
+  Title: Dalia Hairstyle
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim901l401c5oxy8ezt145py
+  Title: Tashi Hairstyle
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim8zbsm017ioxy8e14tlzp0
+  Title: Farrahgamo Hairstyle
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmikiyqba008foxna4szlsql8
+  Title: Mikael Hairstyle – Toddler
+  Current: accessories -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ... and 7 more
+
+--------------------------------------------------------------------------------
+Transition: makeup -> blush (14 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9lnso00a6oxy77hjd19u0
+  Title: Sunbloom Sims 4 CC Blush
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmim8yooi013hoxy8xeyttvhf
+  Title: Aria Blush With Highlight
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmim8yok7013foxy819yneghc
+  Title: Blush Z182
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmim8yog6013doxy8vlvggg2w
+  Title: Isabella Blush
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmim8utah00ejoxy8ywg9dszb
+  Title: Halloween 2023 Set N3 – Blush
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmim8usvn00ecoxy8k0y55i5d
+  Title: Nymph Blush
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmim8rign0010oxy8az7zmnr4
+  Title: Cupid Blush
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmil2l1un0011oxpz50ect02z
+  Title: Haley Blush N12
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmil0okzp001doxeeoqgmpx45
+  Title: Gold Fish Blushing Philodendron
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ID: cmikkjrzm00bsox33ncvtnth6
+  Title: Cyberskull Blush
+  Current: makeup -> Suggested: blush
+  Keywords: blush
+
+  ... and 4 more
+
+--------------------------------------------------------------------------------
+Transition: decor -> wall-art (11 mods)
+--------------------------------------------------------------------------------
+  ID: cmknfa51c005aoxol6qjyp1jn
+  Title: Random Art Posters
+  Current: decor -> Suggested: wall-art
+  Keywords: poster, posters
+
+  ID: cmim8tz4800aaoxy8zfmg2vgt
+  Title: Seasonal Posters
+  Current: decor -> Suggested: wall-art
+  Keywords: poster, posters
+
+  ID: cmil1e5ly00choxeexsv3ugaj
+  Title: Green Paintings Pt. 1
+  Current: decor -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ID: cmikk73h0005hox335getm2mp
+  Title: Evi Bohemian Paintings
+  Current: decor -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ID: cmikivk00006zoxnamp8ay3su
+  Title: Celebrity Posters
+  Current: decor -> Suggested: wall-art
+  Keywords: poster, posters
+
+  ID: cmijq79z601eooxc8n9jlldqh
+  Title: Sanrio Posters
+  Current: decor -> Suggested: wall-art
+  Keywords: poster, posters
+
+  ID: cmijpl23f013woxc8q7qvvjnc
+  Title: Decal Posters
+  Current: decor -> Suggested: wall-art
+  Keywords: poster, posters
+
+  ID: cmijnoh7r00guoxc85jswh3sr
+  Title: Halloween Poster Collection Framed
+  Current: decor -> Suggested: wall-art
+  Keywords: poster, framed
+
+  ID: cmijj0tex0021oxs3ti42insm
+  Title: Vintage Paintings Set Coffee Time
+  Current: decor -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ID: cmijj04ye001moxs36tscp89r
+  Title: A Set Of Victorian Paintings
+  Current: decor -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ... and 1 more
+
+--------------------------------------------------------------------------------
+Transition: eyes -> lashes (11 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9od1l00njoxy7n9moqejl
+  Title: Sims 4 Female Eyelashes
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9oczk00nioxy70zzfpon4
+  Title: Sims 4 Mermaid CC Eyelashes
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocvn00ngoxy74aaoj6x6
+  Title: Sims 4 Maxis Match 3D Eyelashes Set
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9ocpj00ndoxy7ym8iktb7
+  Title: Sims 4 Short Eyelashes for Male Sims
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim9oc5900n4oxy7dsjdv0l9
+  Title: Dramatic Sims 4 Eyelashes
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmim8vgi000iioxy8cuq1epd8
+  Title: 2D Eyelashes
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmil2pb470039oxpzqauty0p5
+  Title: Maxis Match 2D Eyelashes N60
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmil2p89n0037oxpzzc4ujbso
+  Title: 2D eyelashes A20
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmijno7zd00gsoxc89snd9wdv
+  Title: Halloween 3D Eyelashes
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmigonxrn000woxkz4hm0ewnn
+  Title: Sims 4 Mermaid Eyelashes
+  Current: eyes -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ... and 1 more
+
+--------------------------------------------------------------------------------
+Transition: full-body -> tops (10 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8zvt401b4oxy8w2g9no6u
+  Title: Cardigan Design Winter Jackets
+  Current: full-body -> Suggested: tops
+  Keywords: jacket, jackets, cardigan
+
+  ID: cmim8y0f700zwoxy8qvfaw1pq
+  Title: Short Down Jacket with Sweater
+  Current: full-body -> Suggested: tops
+  Keywords: sweater, jacket
+
+  ID: cmil3ew5h00dnoxpz899g5p2r
+  Title: Unbuttoned Shirt With Jacket
+  Current: full-body -> Suggested: tops
+  Keywords: shirt, jacket
+
+  ID: cmil3byhl00cyoxpzwhgj1nrp
+  Title: Giovanna Vest and Shirt
+  Current: full-body -> Suggested: tops
+  Keywords: shirt, vest
+
+  ID: cmil19rjk00ayoxeehbg7p9b4
+  Title: Hello Kitty Sweater T-shirt
+  Current: full-body -> Suggested: tops
+  Keywords: shirt, sweater, t-shirt
+
+  ID: cmijq54zt01dgoxc8pn3cks6z
+  Title: Leather Jackets
+  Current: full-body -> Suggested: tops
+  Keywords: jacket, jackets
+
+  ID: cmijp52tw00w0oxc89yf982cm
+  Title: Grunge Checkered Shirts for Male
+  Current: full-body -> Suggested: tops
+  Keywords: shirt, shirts
+
+  ID: cmijnyrbv00m2oxc88n07mnpn
+  Title: Classic Suit Jacket with Vest
+  Current: full-body -> Suggested: tops
+  Keywords: jacket, vest
+
+  ID: cmijnu7c700jkoxc8qb3pd2hi
+  Title: University Hoodies
+  Current: full-body -> Suggested: tops
+  Keywords: hoodie, hoodies
+
+  ID: cmijmvo2n007voxc8idx4mxik
+  Title: Accessory Tops
+  Current: full-body -> Suggested: tops
+  Keywords: top, tops
+
+--------------------------------------------------------------------------------
+Transition: full-body -> jewelry (8 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9f64c003zoxqwujaiq98w
+  Title: Studded Bracelet
+  Current: full-body -> Suggested: jewelry
+  Keywords: bracelet, stud
+
+  ID: cmim8v7l900h5oxy8u46pwtg0
+  Title: Spiky Hooped Earrings
+  Current: full-body -> Suggested: jewelry
+  Keywords: earring, earrings, ring, rings, hoop
+
+  ID: cmim8tinf007xoxy81rkrropq
+  Title: Gummy Bear Earrings
+  Current: full-body -> Suggested: jewelry
+  Keywords: earring, earrings, ring, rings
+
+  ID: cmim8rhqv000poxy8694pwmax
+  Title: Valentine Hoop Earrings
+  Current: full-body -> Suggested: jewelry
+  Keywords: earring, earrings, ring, rings, hoop
+
+  ID: cmil1l0p700fvoxee2ri6v3kj
+  Title: Carly Piercings
+  Current: full-body -> Suggested: jewelry
+  Keywords: piercing, piercings
+
+  ID: cmil1k1m400fioxeekb2fda31
+  Title: Saturn Earrings
+  Current: full-body -> Suggested: jewelry
+  Keywords: earring, earrings, ring, rings
+
+  ID: cmika10uj00ezoxk7ixn1splt
+  Title: Kaleidoscope Hoop Earring Collection
+  Current: full-body -> Suggested: jewelry
+  Keywords: earring, ring, hoop
+
+  ID: cmijqa75i01fhoxc8t07wgcab
+  Title: Stacked Bracelets
+  Current: full-body -> Suggested: jewelry
+  Keywords: bracelet, bracelets
+
+--------------------------------------------------------------------------------
+Transition: lot -> wall-art (8 mods)
+--------------------------------------------------------------------------------
+  ID: cmim908qt01dmoxy8gldj4ejm
+  Title: Neon Christmas Paintings
+  Current: lot -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ID: cmim9086g01deoxy8q4sltvh5
+  Title: Christmas Drips Paintings
+  Current: lot -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ID: cmil1dy0900cdoxee6p9x596c
+  Title: Canvas Wall Art
+  Current: lot -> Suggested: wall-art
+  Keywords: wall art, canvas
+
+  ID: cmil1dthh00caoxeexbfbojqe
+  Title: Arzoza Wall Paintings
+  Current: lot -> Suggested: wall-art
+  Keywords: painting, paintings
+
+  ID: cmil1dnex00c6oxeey0jdfvyu
+  Title: Ultimate Framed Poster Packs
+  Current: lot -> Suggested: wall-art
+  Keywords: poster, framed
+
+  ID: cmijpjzw40137oxc8jl3bhcie
+  Title: Metal Posters
+  Current: lot -> Suggested: wall-art
+  Keywords: poster, posters
+
+  ID: cmijknyrj0033oxc8beyi2cfc
+  Title: Wall Art Paintings Menu and Posters For Bakery and Cafe
+  Current: lot -> Suggested: wall-art
+  Keywords: wall art, painting, paintings, poster, posters
+
+  ID: cmijkmbfo002moxc8zvmwumm3
+  Title: Italia Exposed Brick Wall Murals
+  Current: lot -> Suggested: wall-art
+  Keywords: mural, murals
+
+--------------------------------------------------------------------------------
+Transition: full-body -> hair (8 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8xupb00yioxy8szeancyx
+  Title: Ahmar Braids
+  Current: full-body -> Suggested: hair
+  Keywords: braids, braid
+
+  ID: cmim8wefo00ouoxy8m57h92t8
+  Title: Liz Bun Locs
+  Current: full-body -> Suggested: hair
+  Keywords: bun, locs, loc
+
+  ID: cmil2x2jv006koxpzjhsnzo8s
+  Title: Lithunium Hairstyles For Males
+  Current: full-body -> Suggested: hair
+  Keywords: hair, hairstyle, hairstyles
+
+  ID: cmikkd71t008box33oh47jz1b
+  Title: Mario Hairstyle
+  Current: full-body -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmikj3wx300axoxna94ge1uga
+  Title: Como Las Orquídeas Locs
+  Current: full-body -> Suggested: hair
+  Keywords: locs, loc
+
+  ID: cmik8xuve0000oxk7tiov9z2h
+  Title: Sidebangs with Loop-Bun and Ponytail
+  Current: full-body -> Suggested: hair
+  Keywords: ponytail, bun, bangs
+
+  ID: cmijosacm00t7oxc89omf98ve
+  Title: Samanta Hairstyle
+  Current: full-body -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmijnyope00m0oxc8l005wtt5
+  Title: Lanre Locs
+  Current: full-body -> Suggested: hair
+  Keywords: locs, loc
+
+--------------------------------------------------------------------------------
+Transition: decor -> rugs (8 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8u8so00buoxy82jrwt76n
+  Title: Autumn Rugs
+  Current: decor -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil174k3009yoxeejpuo9onc
+  Title: Animal Print Rugs
+  Current: decor -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil0t0dj003loxee0yvq1iju
+  Title: Debka Christmas Living Rugs
+  Current: decor -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil0shqr003aoxeetu3inaq6
+  Title: Y2K Collection Rugs
+  Current: decor -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil0s4cf0033oxeefdi6nrkx
+  Title: Modern And Chic Rugs
+  Current: decor -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil0ryd5002zoxee2q52kk55
+  Title: Orbita Rugs
+  Current: decor -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil0rx5g002yoxeec860fivb
+  Title: Contemporary Carpets 20
+  Current: decor -> Suggested: rugs
+  Keywords: carpet, carpets
+
+  ID: cmijmucbr007aoxc8dgm1rx1k
+  Title: Anti-Spirit Carpets
+  Current: decor -> Suggested: rugs
+  Keywords: carpet, carpets
+
+--------------------------------------------------------------------------------
+Transition: makeup -> preset (7 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9kivf0053oxy714ojfvrs
+  Title: Sims 4 Mogan Body Preset
+  Current: makeup -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmim9fb7t004xoxqwrcc7zmqo
+  Title: Lush – Lip Presets
+  Current: makeup -> Suggested: preset
+  Keywords: preset, presets
+
+  ID: cmim91r8m01njoxy8q2l3mmi2
+  Title: Skin N14, Eye Masks, And Presets
+  Current: makeup -> Suggested: preset
+  Keywords: preset, presets
+
+  ID: cmim8ro7u0021oxy8kuqmwzo8
+  Title: David Male Body Preset
+  Current: makeup -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmil3o2f200hfoxpzmf1l3zfu
+  Title: Sweet Lip Presets
+  Current: makeup -> Suggested: preset
+  Keywords: preset, presets
+
+  ID: cmil3nmx000h4oxpzg5ffx7o5
+  Title: Lip Presets For Latest Skin
+  Current: makeup -> Suggested: preset
+  Keywords: preset, presets
+
+  ID: cmil3nejf00gyoxpz4yt5z6lv
+  Title: Love Yourself Presets Collection
+  Current: makeup -> Suggested: preset
+  Keywords: preset, presets
+
+--------------------------------------------------------------------------------
+Transition: gameplay-mod -> lighting (6 mods)
+--------------------------------------------------------------------------------
+  ID: cmijjaixo006ooxs3ryzo9h6m
+  Title: Lighting Overlay 2.0
+  Current: gameplay-mod -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijjadrw006loxs3qlki9uu1
+  Title: CAS Lighting Mod 03
+  Current: gameplay-mod -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijja983006joxs36vrezjhm
+  Title: In-game Lighting Mod
+  Current: gameplay-mod -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijja7qe006ioxs3hxhijqvi
+  Title: Milk Thistle Lighting Mod
+  Current: gameplay-mod -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijj9otk006boxs3mgp8obr4
+  Title: Sunblind Lighting Overhaul
+  Current: gameplay-mod -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijj9nnn006aoxs35tk9i2ug
+  Title: Even Better In-game Lighting Mod
+  Current: gameplay-mod -> Suggested: lighting
+  Keywords: light, lighting
+
+--------------------------------------------------------------------------------
+Transition: furniture -> lighting (6 mods)
+--------------------------------------------------------------------------------
+  ID: cmijj7qdh005doxs3zrn7asnz
+  Title: Nautilus Lightings
+  Current: furniture -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijj7p5q005coxs381ad3hm3
+  Title: Cheetah Print Lamps
+  Current: furniture -> Suggested: lighting
+  Keywords: lamp, lamps
+
+  ID: cmijj759b0050oxs32idmi2ks
+  Title: Nocturne En Velvet Floor Lamp
+  Current: furniture -> Suggested: lighting
+  Keywords: lamp, floor lamp
+
+  ID: cmijj6s89004toxs3tvfx7j8d
+  Title: Kryptonite Lamps
+  Current: furniture -> Suggested: lighting
+  Keywords: lamp, lamps
+
+  ID: cmijj6n9r004qoxs3aqaslj7i
+  Title: Berry Blossom Table Lamp
+  Current: furniture -> Suggested: lighting
+  Keywords: lamp, table lamp
+
+  ID: cmijj6ec1004loxs3cx33hm7e
+  Title: Organic Oasis Hotel Suite Table Lamp
+  Current: furniture -> Suggested: lighting
+  Keywords: lamp, table lamp
+
+--------------------------------------------------------------------------------
+Transition: lot -> lighting (5 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9oid000ntoxy71pg5l62r
+  Title: Sims 4 Hidden Lighting System
+  Current: lot -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijj7l8h005aoxs327fmks4v
+  Title: Tysons Lightings
+  Current: lot -> Suggested: lighting
+  Keywords: light, lighting
+
+  ID: cmijj7asg0053oxs3a9ftiecc
+  Title: Emblema Lamps
+  Current: lot -> Suggested: lighting
+  Keywords: lamp, lamps
+
+  ID: cmijj6xfg004voxs32ph9kdlh
+  Title: Spooky Street Lamps
+  Current: lot -> Suggested: lighting
+  Keywords: lamp, lamps
+
+  ID: cmijj6g4h004moxs3rn6cvvxk
+  Title: Victorian Lamps
+  Current: lot -> Suggested: lighting
+  Keywords: lamp, lamps
+
+--------------------------------------------------------------------------------
+Transition: bottoms -> tops (5 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9m87a00eeoxy7xyjt1pjm
+  Title: Grunge Jeans & T-Shirt CC Set
+  Current: bottoms -> Suggested: tops
+  Keywords: shirt, t-shirt
+
+  ID: cmim8w44e00mooxy80yzsu1sa
+  Title: Y2K Bubble T-shirt and Pants
+  Current: bottoms -> Suggested: tops
+  Keywords: shirt, t-shirt
+
+  ID: cmim8vhi900iyoxy81ybyv6am
+  Title: Nike Sweatshirt and Shorts
+  Current: bottoms -> Suggested: tops
+  Keywords: shirt, tshirt
+
+  ID: cmikcr1ga000qox3rcves4g0t
+  Title: Short-Sleeved Basic T-shirt, Belt, and Chain Slim-Fit Pants
+  Current: bottoms -> Suggested: tops
+  Keywords: shirt, t-shirt
+
+  ID: cmijpk53c013boxc8oebotpyj
+  Title: Punk Rebels T-Shirt and Shorts Set
+  Current: bottoms -> Suggested: tops
+  Keywords: shirt, t-shirt
+
+--------------------------------------------------------------------------------
+Transition: makeup -> eyebrows (5 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8ywpk014ooxy84fwwg5us
+  Title: MM The Brownstone Palace
+  Current: makeup -> Suggested: eyebrows
+  Keywords: brow
+
+  ID: cmim8yn8u012soxy8ml2wa11k
+  Title: MyxDoll Brownie Lip-gloss Set
+  Current: makeup -> Suggested: eyebrows
+  Keywords: brow
+
+  ID: cmim8tm3l0087oxy8vu5wtu6t
+  Title: Browline Glasses
+  Current: makeup -> Suggested: eyebrows
+  Keywords: brow
+
+  ID: cmijoavrx00qhoxc8y8cmymq2
+  Title: Brownstone Apartment Windows
+  Current: makeup -> Suggested: eyebrows
+  Keywords: brow
+
+  ID: cmijoa3eh00q6oxc8skjepl9a
+  Title: Brownyn Pillows
+  Current: makeup -> Suggested: eyebrows
+  Keywords: brow
+
+--------------------------------------------------------------------------------
+Transition: hats -> hair (4 mods)
+--------------------------------------------------------------------------------
+  ID: cmjh4kvnk0003oxyvzv2c2taa
+  Title: Coquette Hairstyle
+  Current: hats -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim91wq901oloxy8kjx9thy8
+  Title: Naomi Hairstyle
+  Current: hats -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim8wemx00oxoxy8ix1gmsow
+  Title: Braid Hairstyle
+  Current: hats -> Suggested: hair
+  Keywords: hair, hairstyle, braid
+
+  ID: cmijqjlf40027ox8o5gd3k73j
+  Title: Selena Hairstyle
+  Current: hats -> Suggested: hair
+  Keywords: hair, hairstyle
+
+--------------------------------------------------------------------------------
+Transition: full-body -> preset (4 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8t8q9006boxy89lmqihyq
+  Title: Shorty Body Preset
+  Current: full-body -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmim8roe10023oxy8fm0sb29m
+  Title: Man Bods Body Preset
+  Current: full-body -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmim8rn9n001ooxy8k8y6z14s
+  Title: Renaissance Body Preset
+  Current: full-body -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmik8zqt50016oxk7mi8cm0iv
+  Title: Plastic Body Preset
+  Current: full-body -> Suggested: preset
+  Keywords: body preset, preset
+
+--------------------------------------------------------------------------------
+Transition: tops -> tattoos (4 mods)
+--------------------------------------------------------------------------------
+  ID: cmikkm5z900d7ox33fqsvy4n1
+  Title: Full Back Tattoo
+  Current: tops -> Suggested: tattoos
+  Keywords: tattoo, back tattoo
+
+  ID: cmikklmvc00csox33psgt36wj
+  Title: Hottie Back Tattoos
+  Current: tops -> Suggested: tattoos
+  Keywords: tattoo, tattoos, back tattoo
+
+  ID: cmika5p7n00htoxk7iaj1j42d
+  Title: Random Tattoos 48
+  Current: tops -> Suggested: tattoos
+  Keywords: tattoo, tattoos
+
+  ID: cmika52gb00hgoxk7t0bizf4s
+  Title: Graphic Neck Tattoo HQ
+  Current: tops -> Suggested: tattoos
+  Keywords: tattoo, neck tattoo
+
+--------------------------------------------------------------------------------
+Transition: full-body -> dresses (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmjh4kw70000coxyv3fmsu7td
+  Title: Lyric Polka Dot Maxi Dress
+  Current: full-body -> Suggested: dresses
+  Keywords: dress, maxi
+
+  ID: cmijn0ikp009zoxc881gtayvm
+  Title: Embroidered Linen Toile Mini Dress With Shirt
+  Current: full-body -> Suggested: dresses
+  Keywords: dress, mini dress
+
+  ID: cmijkyvuy004roxc85g5do27q
+  Title: Three Medieval Dresses
+  Current: full-body -> Suggested: dresses
+  Keywords: dress, dresses
+
+--------------------------------------------------------------------------------
+Transition: skin -> lashes (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9od3n00nkoxy777hrzbog
+  Title: Sims 4 MM 3D Eyelashes
+  Current: skin -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmil2pgam003coxpzl9m98oqk
+  Title: Fleur 3D Eyelashes
+  Current: skin -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+  ID: cmigomlaq0006oxkzynq0s1cv
+  Title: Siren Eyelashes
+  Current: skin -> Suggested: lashes
+  Keywords: eyelash, eyelashes, lash, lashes
+
+--------------------------------------------------------------------------------
+Transition: decor -> preset (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9kjo4005hoxy7eiv4gqty
+  Title: Sims 4 Realistic Body Presets
+  Current: decor -> Suggested: preset
+  Keywords: body preset, preset, presets
+
+  ID: cmim8rnsl001voxy8sqp9szfr
+  Title: Summer Body Presets
+  Current: decor -> Suggested: preset
+  Keywords: body preset, preset, presets
+
+  ID: cmil30hxf008doxpzdmidpoxe
+  Title: Bad Memory Nose Presets
+  Current: decor -> Suggested: preset
+  Keywords: preset, presets
+
+--------------------------------------------------------------------------------
+Transition: accessories -> hats (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9fhl5005ooxqwr6vhjxt0
+  Title: Female Cowboy Hats
+  Current: accessories -> Suggested: hats
+  Keywords: hat, hats
+
+  ID: cmim8x6x600u7oxy8wmkp25o0
+  Title: Toddler Goofy Hats
+  Current: accessories -> Suggested: hats
+  Keywords: hat, hats
+
+  ID: cmika2vq700g9oxk7zgl1hhgg
+  Title: Colorful Hats
+  Current: accessories -> Suggested: hats
+  Keywords: hat, hats
+
+--------------------------------------------------------------------------------
+Transition: decor -> hair (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim92pr501t4oxy8xyyramvc
+  Title: Basil Braids
+  Current: decor -> Suggested: hair
+  Keywords: braids, braid
+
+  ID: cmim90ydz01igoxy8b5j43mzp
+  Title: Fernanda Hairstyle
+  Current: decor -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmijpzr9g01axoxc8bvl40cug
+  Title: H.I.G. Hairstyle
+  Current: decor -> Suggested: hair
+  Keywords: hair, hairstyle
+
+--------------------------------------------------------------------------------
+Transition: tops -> hair (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8zad9016woxy8idwf8rdl
+  Title: Maddie Hairstyle
+  Current: tops -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmim8za94016uoxy85tiz96ti
+  Title: “Reese” Hairstyle
+  Current: tops -> Suggested: hair
+  Keywords: hair, hairstyle
+
+  ID: cmil0moxx000noxeedk6t2ez2
+  Title: Amarie Locs
+  Current: tops -> Suggested: hair
+  Keywords: locs, loc
+
+--------------------------------------------------------------------------------
+Transition: tops -> full-body (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8yshr013zoxy82th5pptx
+  Title: Short Sleeve Gym Outfits
+  Current: tops -> Suggested: full-body
+  Keywords: outfit, outfits
+
+  ID: cmil105e7006zoxee8q6mum7v
+  Title: Yujin Kitsch Outfits
+  Current: tops -> Suggested: full-body
+  Keywords: outfit, outfits
+
+  ID: cmijpmiv9014woxc8yzu55opc
+  Title: Summer Outfits
+  Current: tops -> Suggested: full-body
+  Keywords: outfit, outfits
+
+--------------------------------------------------------------------------------
+Transition: eyes -> glasses (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8tmok008hoxy8981tvfpj
+  Title: Rimless Bat Sunglasses
+  Current: eyes -> Suggested: glasses
+  Keywords: glasses, sunglasses
+
+  ID: cmim8tlxe0084oxy8w35srctl
+  Title: Oversized Frameless Sunglasses
+  Current: eyes -> Suggested: glasses
+  Keywords: glasses, sunglasses
+
+  ID: cmim8tlvc0083oxy8c694xeda
+  Title: Kelly Sunglasses
+  Current: eyes -> Suggested: glasses
+  Keywords: glasses, sunglasses
+
+--------------------------------------------------------------------------------
+Transition: lot -> rugs (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0snvg003doxee4n3lbz9o
+  Title: Many Different Carpets
+  Current: lot -> Suggested: rugs
+  Keywords: carpet, carpets
+
+  ID: cmijjgsoy009doxs3l668vh80
+  Title: Witchy Rugs
+  Current: lot -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmii46185002zoxkzo1yjxmoz
+  Title: Thanksgiving Kitchen Rugs
+  Current: lot -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: jewelry -> plants (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0oryj001goxeetwora71f
+  Title: 3 Plants
+  Current: jewelry -> Suggested: plants
+  Keywords: plant, plants
+
+  ID: cmil0omw1001eoxeejj20taev
+  Title: Blooming Rooms Kit Separated Plants
+  Current: jewelry -> Suggested: plants
+  Keywords: plant, plants
+
+  ID: cmil0o6eq0016oxeesbo1dvjo
+  Title: Viridi Botany Plants
+  Current: jewelry -> Suggested: plants
+  Keywords: plant, plants
+
+--------------------------------------------------------------------------------
+Transition: furniture -> decor (3 mods)
+--------------------------------------------------------------------------------
+  ID: cmijixc2v000poxs30jy48ndn
+  Title: Basil Decorations
+  Current: furniture -> Suggested: decor
+  Keywords: decor, decoration, decorations
+
+  ID: cmijiwlvo000foxs32qjxmggm
+  Title: Festive Decorative Food
+  Current: furniture -> Suggested: decor
+  Keywords: decor, decorative
+
+  ID: cmii5lt7p0035oxkzm9pjhjui
+  Title: Aurum Bedroom Decorations
+  Current: furniture -> Suggested: decor
+  Keywords: decor, decoration, decorations
+
+--------------------------------------------------------------------------------
+Transition: lot -> furniture (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmknfb846007ooxolg5s8v0vl
+  Title: Agnes Bookshelf CC
+  Current: lot -> Suggested: furniture
+  Keywords: shelf, bookshelf
+
+  ID: cmikxi1wt000fox9e0l4l886p
+  Title: Bidet As It May Shower Tub Glass Combo
+  Current: lot -> Suggested: furniture
+  Keywords: shower, tub
+
+--------------------------------------------------------------------------------
+Transition: builds -> lot (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmknfaig5005foxolxzw5vemc
+  Title: Modern Modular Starter Home
+  Current: builds -> Suggested: lot
+  Keywords: home, starter
+
+  ID: cmknfaib1005doxoljhcwkuvp
+  Title: Starter House For Rent
+  Current: builds -> Suggested: lot
+  Keywords: house, starter
+
+--------------------------------------------------------------------------------
+Transition: dresses -> full-body (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9n1rl00hjoxy73gsumuyz
+  Title: Sims 4 Toddler Valentines Day Outfits
+  Current: dresses -> Suggested: full-body
+  Keywords: outfit, outfits
+
+  ID: cmim90hzz01f3oxy8v080pdzg
+  Title: Happy Christmas Outfit Set
+  Current: dresses -> Suggested: full-body
+  Keywords: outfit, outfit set
+
+--------------------------------------------------------------------------------
+Transition: full-body -> shoes (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8z12g015doxy8b4jt8d4m
+  Title: High Heels
+  Current: full-body -> Suggested: shoes
+  Keywords: heels, high heels
+
+  ID: cmijqghf8000gox8oznurr194
+  Title: Mon Truc En Plumes High Heels
+  Current: full-body -> Suggested: shoes
+  Keywords: heels, high heels
+
+--------------------------------------------------------------------------------
+Transition: bottoms -> full-body (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8yt7t014coxy8m23remcw
+  Title: Adidas New Style Athletic Outfits
+  Current: bottoms -> Suggested: full-body
+  Keywords: outfit, outfits
+
+  ID: cmikigsgx000aoxnawlmw7wyp
+  Title: Jumpsuit Overalls
+  Current: bottoms -> Suggested: full-body
+  Keywords: jumpsuit, overalls
+
+--------------------------------------------------------------------------------
+Transition: full-body -> hats (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8xqpr00y2oxy8mrsgks9u
+  Title: Nike Hats
+  Current: full-body -> Suggested: hats
+  Keywords: hat, hats
+
+  ID: cmim8xqhh00xyoxy8ihal6xmr
+  Title: FM & M Street Bucket Hats
+  Current: full-body -> Suggested: hats
+  Keywords: hat, hats
+
+--------------------------------------------------------------------------------
+Transition: accessories -> lashes (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8ti00007noxy876bn76js
+  Title: 2D Eyelash Ultimate Collection
+  Current: accessories -> Suggested: lashes
+  Keywords: eyelash, lash
+
+  ID: cmil0laim0001oxeeahzlu0qj
+  Title: Calm Splash Shower
+  Current: accessories -> Suggested: lashes
+  Keywords: lash
+
+--------------------------------------------------------------------------------
+Transition: shoes -> preset (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8rofz0024oxy8dshnkvg2
+  Title: Body Preset 14 HQ
+  Current: shoes -> Suggested: preset
+  Keywords: body preset, preset
+
+  ID: cmim8rmi8001doxy8l1vfqhda
+  Title: Androgynous Male Presets
+  Current: shoes -> Suggested: preset
+  Keywords: preset, presets
+
+--------------------------------------------------------------------------------
+Transition: full-body -> glasses (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8riej000zoxy8xjlf6938
+  Title: Heart Sunglasses
+  Current: full-body -> Suggested: glasses
+  Keywords: glasses, sunglasses
+
+  ID: cmim8rick000yoxy86umsbgqi
+  Title: I Heart That Sunglasses
+  Current: full-body -> Suggested: glasses
+  Keywords: glasses, sunglasses
+
+--------------------------------------------------------------------------------
+Transition: tops -> jewelry (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmil3mdgm00gkoxpzn9xjdo9a
+  Title: Midi Rings
+  Current: tops -> Suggested: jewelry
+  Keywords: ring, rings
+
+  ID: cmil3lwro00gcoxpz0ns17mz7
+  Title: Lip Piercings
+  Current: tops -> Suggested: jewelry
+  Keywords: piercing, piercings
+
+--------------------------------------------------------------------------------
+Transition: glasses -> rugs (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmil3kzp800fxoxpz8kylat7a
+  Title: Y2K Collection Rugs
+  Current: glasses -> Suggested: rugs
+  Keywords: rug, rugs
+
+  ID: cmil0t3vx003noxeed3wsgk1d
+  Title: Boho Rugs
+  Current: glasses -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: lot -> plants (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0phbs001toxeefrxgb315
+  Title: Plants Collection
+  Current: lot -> Suggested: plants
+  Keywords: plant, plants
+
+  ID: cmil0owyj001ioxeeqjf2n1rd
+  Title: Naturalis Office Wall Plants
+  Current: lot -> Suggested: plants
+  Keywords: plant, plants
+
+--------------------------------------------------------------------------------
+Transition: accessories -> lot (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmijkoqr3003joxc8843p5xk5
+  Title: Boulangerie French Bakery Build Lot
+  Current: accessories -> Suggested: lot
+  Keywords: lot, build
+
+  ID: cmigsu7uk0017oxkzz3vl25bg
+  Title: Mermaid Cave Residential Lot
+  Current: accessories -> Suggested: lot
+  Keywords: lot, residential
+
+--------------------------------------------------------------------------------
+Transition: accessories -> lighting (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmijj7nnq005boxs34ypo8c7j
+  Title: Fairy Glow Street Lamps
+  Current: accessories -> Suggested: lighting
+  Keywords: lamp, lamps
+
+  ID: cmijj6tvz004uoxs3s0sjrwtp
+  Title: Firefly Lamps
+  Current: accessories -> Suggested: lighting
+  Keywords: lamp, lamps
+
+--------------------------------------------------------------------------------
+Transition: jewelry -> lighting (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmijj7dgw0055oxs3fde7bxrg
+  Title: Industrial Lamps
+  Current: jewelry -> Suggested: lighting
+  Keywords: lamp, lamps
+
+  ID: cmijj70xy004xoxs3frqwmons
+  Title: Caged Pendant Lamps
+  Current: jewelry -> Suggested: lighting
+  Keywords: lamp, lamps
+
+--------------------------------------------------------------------------------
+Transition: decor -> poses (2 mods)
+--------------------------------------------------------------------------------
+  ID: cmijiyzzx0018oxs3xqu2qnna
+  Title: Playing With Food Pose Pack
+  Current: decor -> Suggested: poses
+  Keywords: pose, pose pack
+
+  ID: cmijiyto50014oxs36mbfr9ot
+  Title: Fast Food Pose Pack
+  Current: decor -> Suggested: poses
+  Keywords: pose, pose pack
+
+--------------------------------------------------------------------------------
+Transition: bathroom -> decor (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmkq9kitt002ioxvgzp1cnd4p
+  Title: Decorative Sims 4 Bathroom Objects
+  Current: bathroom -> Suggested: decor
+  Keywords: decor, decorative
+
+--------------------------------------------------------------------------------
+Transition: full-body -> lot (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmknfais2005joxolmmy7gqqc
+  Title: Olivia Starter Home
+  Current: full-body -> Suggested: lot
+  Keywords: home, starter
+
+--------------------------------------------------------------------------------
+Transition: decor -> lot (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmknfaiob005ioxolkhm1sbqr
+  Title: Pumpkin Starter House
+  Current: decor -> Suggested: lot
+  Keywords: house, starter
+
+--------------------------------------------------------------------------------
+Transition: full-body -> lashes (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmkao7fm1000djs04q5cgredq
+  Title: Change Eyelash Color
+  Current: full-body -> Suggested: lashes
+  Keywords: eyelash, lash
+
+--------------------------------------------------------------------------------
+Transition: poses -> nails (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9vw6r0023ox9s8gwt61xc
+  Title: Gallery Poses to Show Off Nails
+  Current: poses -> Suggested: nails
+  Keywords: nail, nails
+
+--------------------------------------------------------------------------------
+Transition: shoes -> hair (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9nq3d00l5oxy71r5gotut
+  Title: Bettie Buns Kids Sims 4 Hair Mods
+  Current: shoes -> Suggested: hair
+  Keywords: hair, bun
+
+--------------------------------------------------------------------------------
+Transition: dresses -> lipstick (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9nd6l00jaoxy766ifmhl6
+  Title: Sims 4 Barbie CC The Gloss Collection
+  Current: dresses -> Suggested: lipstick
+  Keywords: gloss collection
+
+--------------------------------------------------------------------------------
+Transition: lot -> preset (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9kiou0050oxy7fnt2l5nx
+  Title: Sims 4 Heidi Body Preset
+  Current: lot -> Suggested: preset
+  Keywords: body preset, preset
+
+--------------------------------------------------------------------------------
+Transition: skin -> furniture (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9fiap005zoxqwxyutdkuj
+  Title: Natural Horse Beds – No Border
+  Current: skin -> Suggested: furniture
+  Keywords: bed, beds
+
+--------------------------------------------------------------------------------
+Transition: furniture -> hats (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9fhn1005poxqw3wkyx086
+  Title: Suede Cowboy Hats
+  Current: furniture -> Suggested: hats
+  Keywords: hat, hats
+
+--------------------------------------------------------------------------------
+Transition: cas-background -> eyebrows (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim9di130008oxqwswuuyp5s
+  Title: Sims 4 Brown CAS Backgrounds
+  Current: cas-background -> Suggested: eyebrows
+  Keywords: brow
+
+--------------------------------------------------------------------------------
+Transition: furniture -> clutter (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim93u9b01xdoxy8hpewju5w
+  Title: Sims Throw Pillow
+  Current: furniture -> Suggested: clutter
+  Keywords: pillow, throw pillow
+
+--------------------------------------------------------------------------------
+Transition: gameplay-mod -> hair (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim92oxo01sroxy88ejcda5x
+  Title: Shauna Box Braids
+  Current: gameplay-mod -> Suggested: hair
+  Keywords: braids, braid
+
+--------------------------------------------------------------------------------
+Transition: skin -> accessories (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim92kia01s6oxy8sbqb2ukt
+  Title: Ivanka Contacts And Eyebags
+  Current: skin -> Suggested: accessories
+  Keywords: bag, bags
+
+--------------------------------------------------------------------------------
+Transition: lot -> clutter (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim908lu01dkoxy822yze04u
+  Title: Luxury Gold Christmas Pillows
+  Current: lot -> Suggested: clutter
+  Keywords: pillow, pillows
+
+--------------------------------------------------------------------------------
+Transition: lot -> decor (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim907o301d7oxy8ufgcvyfu
+  Title: Christmas 2024 Decorative
+  Current: lot -> Suggested: decor
+  Keywords: decor, decorative
+
+--------------------------------------------------------------------------------
+Transition: furniture -> tops (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8zw0a01b7oxy8hkh8mhk5
+  Title: Puffer Jackets
+  Current: furniture -> Suggested: tops
+  Keywords: jacket, jackets
+
+--------------------------------------------------------------------------------
+Transition: accessories -> eyeliner (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8zms0019poxy83k6zusxq
+  Title: Hallow Liner
+  Current: accessories -> Suggested: eyeliner
+  Keywords: liner
+
+--------------------------------------------------------------------------------
+Transition: jewelry -> hair (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8zc9c017poxy8chf4v38c
+  Title: Hermaine Hairstyle
+  Current: jewelry -> Suggested: hair
+  Keywords: hair, hairstyle
+
+--------------------------------------------------------------------------------
+Transition: eyebrows -> blush (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8yntb0132oxy8nxtczd0a
+  Title: Pink Princess Blush & Thin Arched Brows
+  Current: eyebrows -> Suggested: blush
+  Keywords: blush
+
+--------------------------------------------------------------------------------
+Transition: dresses -> hair (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8xvtr00z0oxy8oqr947r1
+  Title: Ryan Gosling Hairstyle
+  Current: dresses -> Suggested: hair
+  Keywords: hair, hairstyle
+
+--------------------------------------------------------------------------------
+Transition: furniture -> full-body (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8wylj00t0oxy8j4venrzq
+  Title: Thea Bikini Swimwear
+  Current: furniture -> Suggested: full-body
+  Keywords: bikini, swimwear
+
+--------------------------------------------------------------------------------
+Transition: poses -> accessories (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8wo7c00qxoxy8c70vxacz
+  Title: Simkea Pose Accessory Bag
+  Current: poses -> Suggested: accessories
+  Keywords: accessory, bag
+
+--------------------------------------------------------------------------------
+Transition: furniture -> accessories (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8wn6l00qfoxy8s4wurdrv
+  Title: Prada Cleo Bags V2
+  Current: furniture -> Suggested: accessories
+  Keywords: bag, bags
+
+--------------------------------------------------------------------------------
+Transition: makeup -> accessories (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8wmjc00q4oxy847wdx53i
+  Title: Vintage Coach Hb Bag Accessory
+  Current: makeup -> Suggested: accessories
+  Keywords: accessory, bag
+
+--------------------------------------------------------------------------------
+Transition: lighting -> furniture (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8vpew00juoxy8jerwnqrr
+  Title: Single Beds with Knit Comforter
+  Current: lighting -> Suggested: furniture
+  Keywords: bed, beds
+
+--------------------------------------------------------------------------------
+Transition: accessories -> decor (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8ukuc00d9oxy8tbric86z
+  Title: Halloween Decorative Set
+  Current: accessories -> Suggested: decor
+  Keywords: decor, decorative
+
+--------------------------------------------------------------------------------
+Transition: tops -> hats (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8ugtf00cqoxy8t0jfvlwm
+  Title: Remove Hats and More Indoors
+  Current: tops -> Suggested: hats
+  Keywords: hat, hats
+
+--------------------------------------------------------------------------------
+Transition: preset -> decor (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8u83q00bjoxy867s3jt77
+  Title: Halloween Decorative Set
+  Current: preset -> Suggested: decor
+  Keywords: decor, decorative
+
+--------------------------------------------------------------------------------
+Transition: decor -> clutter (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8tzjf00afoxy8xto6d1i8
+  Title: Josephine Throw Pillow
+  Current: decor -> Suggested: clutter
+  Keywords: pillow, throw pillow
+
+--------------------------------------------------------------------------------
+Transition: hair -> preset (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8rne2001poxy8mhcrbzxn
+  Title: Body Preset 20
+  Current: hair -> Suggested: preset
+  Keywords: body preset, preset
+
+--------------------------------------------------------------------------------
+Transition: jewelry -> decor (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8ri4t000voxy8jfo83xlr
+  Title: My Love Decorative Set
+  Current: jewelry -> Suggested: decor
+  Keywords: decor, decorative
+
+--------------------------------------------------------------------------------
+Transition: furniture -> lashes (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmim8reiz000koxy8tyrxy0wo
+  Title: Calm Splash
+  Current: furniture -> Suggested: lashes
+  Keywords: lash
+
+--------------------------------------------------------------------------------
+Transition: accessories -> lipstick (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil3nr9f00h7oxpzwp16s6ub
+  Title: Gloss Collection
+  Current: accessories -> Suggested: lipstick
+  Keywords: gloss collection
+
+--------------------------------------------------------------------------------
+Transition: lighting -> preset (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil304fh0086oxpzhpkwa04y
+  Title: Female Nose Presets N5 To N10
+  Current: lighting -> Suggested: preset
+  Keywords: preset, presets
+
+--------------------------------------------------------------------------------
+Transition: accessories -> preset (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil300er0083oxpzj72wm0ep
+  Title: Nose Presets N15 to N20
+  Current: accessories -> Suggested: preset
+  Keywords: preset, presets
+
+--------------------------------------------------------------------------------
+Transition: tops -> preset (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil2zusu007zoxpziab8y3bl
+  Title: Nose Presets
+  Current: tops -> Suggested: preset
+  Keywords: preset, presets
+
+--------------------------------------------------------------------------------
+Transition: facial-hair -> beard (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil2sgv5004woxpzbovtmwhc
+  Title: Heavy Stubble Facial Hair
+  Current: facial-hair -> Suggested: beard
+  Keywords: stubble
+
+--------------------------------------------------------------------------------
+Transition: full-body -> accessories (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil1nq9600h5oxeeobw4rk5h
+  Title: Willow Accessory Belt Set
+  Current: full-body -> Suggested: accessories
+  Keywords: accessory, belt
+
+--------------------------------------------------------------------------------
+Transition: gameplay-mod -> jewelry (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil1maqc00ghoxee08pi3xg3
+  Title: Exile Piercings
+  Current: gameplay-mod -> Suggested: jewelry
+  Keywords: piercing, piercings
+
+--------------------------------------------------------------------------------
+Transition: nails -> jewelry (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil1lba500g1oxeelar7nglh
+  Title: WM Rings 202001
+  Current: nails -> Suggested: jewelry
+  Keywords: ring, rings
+
+--------------------------------------------------------------------------------
+Transition: furniture -> wall-art (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil1eiaa00cpoxeexn31pmyn
+  Title: Nogo Office Wall Paintings
+  Current: furniture -> Suggested: wall-art
+  Keywords: painting, paintings
+
+--------------------------------------------------------------------------------
+Transition: poses -> wall-art (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil106oc0070oxee6xg2nrkg
+  Title: K-pop Posters
+  Current: poses -> Suggested: wall-art
+  Keywords: poster, posters
+
+--------------------------------------------------------------------------------
+Transition: decor -> lashes (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0txat003zoxeeicffhp4t
+  Title: Kitchen Backsplashes 2
+  Current: decor -> Suggested: lashes
+  Keywords: lash, lashes
+
+--------------------------------------------------------------------------------
+Transition: furniture -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0tbac003soxeel36pfeft
+  Title: Country Rugs
+  Current: furniture -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: eyes -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0t9ic003roxee3v3kzuxx
+  Title: Random Rugs V2
+  Current: eyes -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: decor -> plants (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0pfs0001soxeeyt3ojqvx
+  Title: Makena Plants
+  Current: decor -> Suggested: plants
+  Keywords: plant, plants
+
+--------------------------------------------------------------------------------
+Transition: accessories -> plants (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0p451001loxeeho1qzduj
+  Title: 10 Potted Houseplants
+  Current: accessories -> Suggested: plants
+  Keywords: plant, plants, houseplant, houseplants
+
+--------------------------------------------------------------------------------
+Transition: decor -> furniture (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmil0lixi0005oxeewo87ojyj
+  Title: Xtreme Shower Tub
+  Current: decor -> Suggested: furniture
+  Keywords: shower, tub
+
+--------------------------------------------------------------------------------
+Transition: tops -> lashes (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmikkkgdy00c3ox33lvev2j54
+  Title: Slasher T-shirt For Men
+  Current: tops -> Suggested: lashes
+  Keywords: lash
+
+--------------------------------------------------------------------------------
+Transition: script-mod -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmikk9oj9006tox331c1a2g0g
+  Title: Basemental Drugs & Gangs Mods
+  Current: script-mod -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: bottoms -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmikivec4006woxnay9tz8dlr
+  Title: Random Tufted Rugs Part 2
+  Current: bottoms -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: bottoms -> tattoos (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmika5rk800hvoxk7znvq30ul
+  Title: Random Tattoos N3
+  Current: bottoms -> Suggested: tattoos
+  Keywords: tattoo, tattoos
+
+--------------------------------------------------------------------------------
+Transition: hair -> plants (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmika1cbh00f9oxk7papzdnqo
+  Title: Cute Plants
+  Current: hair -> Suggested: plants
+  Keywords: plant, plants
+
+--------------------------------------------------------------------------------
+Transition: tops -> bottoms (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmika0k4f00eroxk7psppuxm8
+  Title: High Waist Denim Skirts
+  Current: tops -> Suggested: bottoms
+  Keywords: skirt, skirts
+
+--------------------------------------------------------------------------------
+Transition: skin -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijpwd20019moxc8wvddolso
+  Title: Freckles Sims Girl Rugs For Entryway
+  Current: skin -> Suggested: rugs
+  Keywords: rug, rugs
+
+--------------------------------------------------------------------------------
+Transition: script-mod -> jewelry (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijppz4n016doxc8zpvy2yzn
+  Title: No Strings Attached
+  Current: script-mod -> Suggested: jewelry
+  Keywords: ring, rings
+
+--------------------------------------------------------------------------------
+Transition: bottoms -> jewelry (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijpk99u013eoxc8e9k1dzsj
+  Title: Signature Rings
+  Current: bottoms -> Suggested: jewelry
+  Keywords: ring, rings
+
+--------------------------------------------------------------------------------
+Transition: eyes -> lighting (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijpb77d00z6oxc8eyly9b68
+  Title: Glimmer Catchlights Collection
+  Current: eyes -> Suggested: lighting
+  Keywords: light, lights
+
+--------------------------------------------------------------------------------
+Transition: accessories -> curtains (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijo257400nqoxc8o1hugcr4
+  Title: Showgirl Era Drapes Walls
+  Current: accessories -> Suggested: curtains
+  Keywords: drapes, drape
+
+--------------------------------------------------------------------------------
+Transition: shoes -> furniture (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijnu5zy00jjoxc8hkchqfjn
+  Title: University Life Beds
+  Current: shoes -> Suggested: furniture
+  Keywords: bed, beds
+
+--------------------------------------------------------------------------------
+Transition: accessories -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijn104400aboxc84ew2hvg1
+  Title: Matomibotaki Carpets For Every Occasion Set
+  Current: accessories -> Suggested: rugs
+  Keywords: carpet, carpets
+
+--------------------------------------------------------------------------------
+Transition: dresses -> shoes (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijkz548004xoxc89a2wsrr8
+  Title: Gata High Heels
+  Current: dresses -> Suggested: shoes
+  Keywords: heels, high heels
+
+--------------------------------------------------------------------------------
+Transition: lot -> jewelry (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijklbnn0022oxc85gfooy3p
+  Title: Bonus Challenge: MasterChef Oasis Springs Edition
+  Current: lot -> Suggested: jewelry
+  Keywords: ring, rings
+
+--------------------------------------------------------------------------------
+Transition: skin -> lighting (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijjah4e006noxs30ihhlj0d
+  Title: Gentle CAS Lighting
+  Current: skin -> Suggested: lighting
+  Keywords: light, lighting
+
+--------------------------------------------------------------------------------
+Transition: hair -> lighting (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijj9sua006eoxs3osyjovsr
+  Title: CAS Lighting Mod
+  Current: hair -> Suggested: lighting
+  Keywords: light, lighting
+
+--------------------------------------------------------------------------------
+Transition: glasses -> lighting (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijj7c7i0054oxs3odt6xxuy
+  Title: Ensley Lightings
+  Current: glasses -> Suggested: lighting
+  Keywords: light, lighting
+
+--------------------------------------------------------------------------------
+Transition: jewelry -> rugs (1 mods)
+--------------------------------------------------------------------------------
+  ID: cmijj10f30024oxs3893d9loh
+  Title: Elegant Rugs
+  Current: jewelry -> Suggested: rugs
+  Keywords: rug, rugs
+
+================================================================================
+SECTION 4: NULL contentType Mods with Detection Suggestions
+================================================================================
+
+Total mods with NULL contentType: 23
+Mods with detection suggestions: 0
+
+================================================================================
+SECTION 5: Before/After Comparison (vs CTB-001 Baseline)
+================================================================================
+
+CTB-001 Baseline (Before):
+  - NULL contentType mods: 45
+  - Orphaned content types: preset, loading-screen, cas-background, pet-furniture
+
+Current State (After CTB-001 through CTB-008):
+  - NULL contentType mods: 23
+  - Orphaned content types: wall-art, pet-accessories
+
+Improvements:
+  - Fixed 22 mods with NULL contentType (48.9% reduction)
+  - Created FacetDefinitions for: preset, loading-screen, cas-background, pet-furniture
+
+================================================================================
+SECTION 6: Edge Cases Requiring Manual Review
+================================================================================
+
+Mods with NULL contentType that cannot be auto-detected: 23
+
+These mods require manual categorization:
+------------------------------------------------------------
+  ID: cmiglig32000ooxm5eszyq1p3
+  Title: Focus
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: RELATED POST: 30 Best Sims 4 School Uniforms CC You Need To Ace The Academic Loo...
+
+  ID: cmijp9lky00y9oxc8eihxwibx
+  Title: Spice Fever
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: Spice Girls are one of the most iconic girl groups from the 2000s, and this set ...
+
+  ID: cmil16s2c009soxeexnxuqm4n
+  Title: Skims X Dolce and Gabana
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: I love this set of undergarments designed in a leopard print. The luxury items e...
+
+  ID: cmim8tq3h008roxy8gutpd6x8
+  Title: Cleaning Overrides
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: Cleaning Overrides by LargeTayterTots is a default replacement for the in-game c...
+
+  ID: cmim8vlgh00jgoxy8zngnuwfd
+  Title: Tom Holden
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: Tom Holden has a very interesting back story. Once a military man, Tom Holden ha...
+
+  ID: cmim8w8ps00nkoxy8su2eazvu
+  Title: Mike Hannigan
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: If you’re a fan of the hit series Friends, you need to get this male Sim. Mike H...
+
+  ID: cmim8w8rl00nloxy8hpl10s6o
+  Title: Ricardo Praia
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: Ricardo Praia is a Sims 4 male young adult who loves anything tropical and summe...
+
+  ID: cmim8w9ha00nwoxy8dw18vl01
+  Title: Deacon
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: If you want an Asian male Sim to add diversity to your neighborhood, get Deacon....
+
+  ID: cmim8w9jk00nxoxy8rq645s25
+  Title: DoYong NCT
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: Any K-pop fan will want to have this Sims 4 male Sim in their game. He’s inspire...
+
+  ID: cmim93y6c01xmoxy8qgjcioez
+  Title: Gamer Tie for Work
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: If your man is a gamer, but also a professional, this gift will make him smile. ...
+
+  ID: cmknfbchy007uoxoly7o6hkuv
+  Title: Getting Ready Animation Pack
+  Legacy Category: Hair
+  Source: MustHaveMods.com
+  Description: Getting Ready is a small animation of a Sim checking themselves out in the mirro...
+
+  ID: cmknfbmc9008hoxolyk4yfvky
+  Title: Willow Health Club: Evermore Save Project
+  Legacy Category: Other
+  Source: MustHaveMods.com
+  Description: The Willow Health Club from the Evermore Save Project is a beautifully layered g...
+
+  ID: cmkq8sadk0002oxvgq90ksajr
+  Title: Regency Infant & Toddler Skeleton Suit
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by Peebs. Enhance your Sims 4 experience with this commun...
+
+  ID: cmkq8sjov0003oxvg86ceimjb
+  Title: Emma Regency Collaboration
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by Vintage Simstress X Peebs X BatsFromWesteros. Enhance ...
+
+  ID: cmkq8tiis0007oxvgcwlhdtdf
+  Title: Bridgerton Collection Part 1
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by Regalia. Enhance your Sims 4 experience with this comm...
+
+  ID: cmkq8trfi0008oxvgju1piyku
+  Title: Regency Reverie Collection
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by GildedGhosts. Enhance your Sims 4 experience with this...
+
+  ID: cmkq948700013oxvgs4ede7en
+  Title: Neva Set
+  Legacy Category: Other
+  Source: Tumblr
+  Description: Custom content created by Mechtasims. Enhance your Sims 4 experience with this c...
+
+  ID: cmkq94gyn0014oxvgc11jvo3u
+  Title: 1 Soft Notes Set
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by Momo-CC. Enhance your Sims 4 experience with this comm...
+
+  ID: cmkq95u2s0017oxvg06ir1tfp
+  Title: Shearling Collection II
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by LuxySims. Enhance your Sims 4 experience with this com...
+
+  ID: cmkq9636f0018oxvgvtm4rgw1
+  Title: 1 Feronia CC Pack
+  Legacy Category: Other
+  Source: Tumblr
+  Description: Howdy everyone! I hope we all have had a good start to the year so far, in the U...
+
+  ID: cmkq96gyf0019oxvgx05l0uei
+  Title: 2 Reading Corner CC Pack
+  Legacy Category: Other
+  Source: Tumblr
+  Description: Custom content created by Sims41ife. Enhance your Sims 4 experience with this co...
+
+  ID: cmkq96rfc001aoxvgyzjl9sal
+  Title: 3 The Praline Collection
+  Legacy Category: Other
+  Source: Tumblr
+  Description: It's been super chilly here in the UK so I felt the need to remedy that by makin...
+
+  ID: cmkq978yp001coxvgmrnp0lto
+  Title: 5 Artful Notion Pack
+  Legacy Category: Other
+  Source: Patreon
+  Description: Custom content created by Atticwindowatdawn. Enhance your Sims 4 experience with...
+
+================================================================================
+FINAL SUMMARY
+================================================================================
+
+Database Health Score: 48.9% content types validated
+
+Metrics:
+  - Total mods: 10447
+  - Content types match detection: 4559
+  - High confidence mismatches: 444 (review recommended)
+  - Medium confidence mismatches: 4298
+  - Mods with NULL contentType: 23
+  - Mods where detection not possible: 1123
+
+RECOMMENDATION: Review high-confidence mismatches in Section 3.
+These may indicate:
+  1. Mods that were miscategorized and need fixing
+  2. Edge cases where the detector needs improvement
+  3. Valid categorizations that differ from keyword-based detection
+
+RECOMMENDATION: 23 mods still have NULL contentType.
+Review edge cases in Section 6 for manual categorization.
+
+================================================================================
+END OF REPORT
+================================================================================
