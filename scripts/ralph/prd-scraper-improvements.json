@@ -109,8 +109,8 @@
         "npm run type-check passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented: (1) Added verboseLogging flag to constructor, configurable via options or SCRAPER_VERBOSE env var. (2) Added setVerboseLogging() method. (3) Added categoryMismatches array to track URL vs title detection disagreements. (4) Added logCategoryDecision() method that logs: URL category, URL contentType, title detected, final decision, and reasoning. (5) Updated detectContentType to always run both URL and title detection, then log the decision. (6) Mismatches logged with [SCR-006] prefix when URL and title disagree. (7) FacetDefinition creation already logged in SCR-005 with [SCR-005] prefix. (8) getCategoryMismatches() and clearCategoryMismatches() added for analysis. Type-check passes."
     },
     {
       "id": "SCR-007",

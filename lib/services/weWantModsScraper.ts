@@ -505,6 +505,9 @@ export class WeWantModsScraper {
   private lastRequestTime = 0;
   private config: PrivacyConfig;
 
+  // SCR-006: Verbose logging mode for category decision debugging
+  private verboseLogging: boolean = false;
+
   // Stats tracking
   private stats = {
     pagesScraped: 0,
@@ -515,6 +518,15 @@ export class WeWantModsScraper {
     imagesUploaded: 0,
     errors: 0,
   };
+
+  // SCR-006: Track category mismatches for analysis
+  private categoryMismatches: Array<{
+    title: string;
+    urlCategory: string | undefined;
+    titleDetected: string | undefined;
+    finalDecision: string | undefined;
+    reason: string;
+  }> = [];
 
   // User agents for rotation
   private readonly userAgents = [
@@ -540,9 +552,66 @@ export class WeWantModsScraper {
     'en-AU,en;q=0.9',
   ];
 
-  constructor() {
+  constructor(options?: { verboseLogging?: boolean }) {
     this.config = getPrivacyConfig();
+    this.verboseLogging = options?.verboseLogging ?? (process.env.SCRAPER_VERBOSE === 'true');
     this.initializeAxiosInstances();
+  }
+
+  /**
+   * SCR-006: Enable or disable verbose logging
+   */
+  setVerboseLogging(enabled: boolean): void {
+    this.verboseLogging = enabled;
+  }
+
+  /**
+   * SCR-006: Get category mismatches detected during scraping
+   */
+  getCategoryMismatches(): typeof this.categoryMismatches {
+    return [...this.categoryMismatches];
+  }
+
+  /**
+   * SCR-006: Clear category mismatches
+   */
+  clearCategoryMismatches(): void {
+    this.categoryMismatches = [];
+  }
+
+  /**
+   * SCR-006: Log category decision details
+   */
+  private logCategoryDecision(
+    title: string,
+    urlCategory: string | undefined,
+    urlContentType: string | undefined,
+    titleDetected: string | undefined,
+    finalDecision: string | undefined,
+    reason: string
+  ): void {
+    // Track mismatches when URL and title detection disagree
+    if (urlContentType && titleDetected && urlContentType !== titleDetected) {
+      this.categoryMismatches.push({
+        title,
+        urlCategory,
+        titleDetected,
+        finalDecision,
+        reason: `URL says '${urlContentType}', title analysis says '${titleDetected}'. Using: ${reason}`,
+      });
+
+      if (this.verboseLogging) {
+        console.log(`[SCR-006] MISMATCH for "${title}":`);
+        console.log(`   URL category: ${urlCategory} -> ${urlContentType}`);
+        console.log(`   Title detected: ${titleDetected}`);
+        console.log(`   Final decision: ${finalDecision} (${reason})`);
+      }
+    } else if (this.verboseLogging) {
+      console.log(`[SCR-006] Category decision for "${title}":`);
+      if (urlCategory) console.log(`   URL category: ${urlCategory} -> ${urlContentType || 'unmapped'}`);
+      if (titleDetected) console.log(`   Title detected: ${titleDetected}`);
+      console.log(`   Final: ${finalDecision || 'undefined'} (${reason})`);
+    }
   }
 
   private initializeAxiosInstances(): void {
@@ -1718,6 +1787,7 @@ export class WeWantModsScraper {
   /**
    * Detect content type using the improved contentTypeDetector library.
    * SCR-003: Combines URL-extracted category with title/description analysis for best accuracy.
+   * SCR-006: Enhanced with detailed logging for category decisions.
    *
    * Priority:
    * 1. URL category mapping (highest - explicit categorization from source)
@@ -1737,12 +1807,13 @@ export class WeWantModsScraper {
     collectionPageUrl?: string
   ): string | undefined {
     // First, try to get a category hint from the URLs
+    let urlCategory: string | undefined;
     let urlCategoryHint: string | undefined;
     let urlThemeHint: string | undefined;
 
     // Check the collection page URL for category (usually more reliable)
     if (collectionPageUrl) {
-      const urlCategory = extractCategoryFromUrl(collectionPageUrl);
+      urlCategory = extractCategoryFromUrl(collectionPageUrl);
       if (urlCategory) {
         const mapping = mapUrlCategoryToContentType(urlCategory);
         if (mapping) {
@@ -1752,16 +1823,36 @@ export class WeWantModsScraper {
       }
     }
 
-    // If we got a confident URL category mapping, use it
-    // (URL categories are explicit and highly reliable)
+    // Also run title + description analysis for comparison/logging
+    const titleDetected = detectContentTypeFromLib(title, description);
+
+    // Determine final content type and log the decision
+    let finalContentType: string | undefined;
+    let reason: string;
+
     if (urlCategoryHint) {
-      return urlCategoryHint;
+      // URL categories are explicit and highly reliable
+      finalContentType = urlCategoryHint;
+      reason = 'URL category (high confidence)';
+    } else if (titleDetected) {
+      finalContentType = titleDetected;
+      reason = 'title/description analysis';
+    } else {
+      finalContentType = undefined;
+      reason = 'no confident detection';
     }
 
-    // Fall back to title + description analysis using the improved detector
-    const detectedType = detectContentTypeFromLib(title, description);
+    // SCR-006: Log the category decision
+    this.logCategoryDecision(
+      title,
+      urlCategory,
+      urlCategoryHint,
+      titleDetected,
+      finalContentType,
+      reason
+    );
 
-    return detectedType;
+    return finalContentType;
   }
 
   /**
