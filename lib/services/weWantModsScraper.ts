@@ -15,6 +15,7 @@ export interface DiscoveredMod {
   discoverySource: string; // Always 'WeWantMods' - for tracking where we found it
   collectionPageUrl: string; // The We Want Mods page where we found it
   externalImageUrls: string[]; // Image URLs from external CDNs (NOT wewantmods.com)
+  collectionThemes?: string[]; // SCR-007: Room themes extracted from collection page title
 }
 
 export interface ScrapedModDetails {
@@ -777,7 +778,56 @@ export class WeWantModsScraper {
   }
 
   /**
+   * SCR-007: Extract collection/pack theme from page title
+   * Detects patterns like "Best Bathroom CC", "Kitchen Pack", "Bedroom Furniture Collection"
+   */
+  private extractCollectionTheme(pageTitle: string): string[] {
+    const titleLower = pageTitle.toLowerCase();
+    const themes: string[] = [];
+
+    // Room theme patterns to look for
+    const roomPatterns: Array<{ pattern: RegExp; theme: string }> = [
+      { pattern: /\bbathroom\b/, theme: 'bathroom' },
+      { pattern: /\bkitchen\b/, theme: 'kitchen' },
+      { pattern: /\bbedroom\b/, theme: 'bedroom' },
+      { pattern: /\bliving[\s-]?room\b/, theme: 'living-room' },
+      { pattern: /\bdining[\s-]?room\b/, theme: 'dining-room' },
+      { pattern: /\boffice\b/, theme: 'office' },
+      { pattern: /\bstudy\b/, theme: 'office' },
+      { pattern: /\bnursery\b/, theme: 'nursery' },
+      { pattern: /\bkids[\s-]?room\b/, theme: 'kids-room' },
+      { pattern: /\boutdoor\b/, theme: 'outdoor' },
+      { pattern: /\bgarden\b/, theme: 'outdoor' },
+      { pattern: /\bpatio\b/, theme: 'outdoor' },
+    ];
+
+    for (const { pattern, theme } of roomPatterns) {
+      if (pattern.test(titleLower) && !themes.includes(theme)) {
+        themes.push(theme);
+      }
+    }
+
+    return themes;
+  }
+
+  /**
+   * SCR-007: Detect if a page is a collection/pack (multiple items grouped together)
+   */
+  private isCollectionPage(pageTitle: string, modCount: number): boolean {
+    const titleLower = pageTitle.toLowerCase();
+    const collectionKeywords = [
+      'collection', 'pack', 'set', 'bundle', 'best', 'top', 'must have',
+      'must-have', 'essential', 'cc list', 'cc pack', 'mod list', 'favorites',
+    ];
+
+    // Page is a collection if title has collection keywords OR has multiple mods
+    const hasCollectionKeyword = collectionKeywords.some(kw => titleLower.includes(kw));
+    return hasCollectionKeyword || modCount > 1;
+  }
+
+  /**
    * Parse a We Want Mods collection page to discover mods
+   * SCR-007: Enhanced to detect collection themes and apply to all items
    */
   async parseCollectionPage(pageUrl: string): Promise<DiscoveredMod[]> {
     console.log(`📄 Parsing collection page: ${pageUrl}`);
@@ -791,6 +841,18 @@ export class WeWantModsScraper {
 
       const $ = cheerio.load(response.data);
       const discoveredMods: DiscoveredMod[] = [];
+
+      // SCR-007: Extract page title for collection theme detection
+      const pageTitle = $('h1').first().text().trim() ||
+                       $('title').text().trim() ||
+                       $('meta[property="og:title"]').attr('content') || '';
+
+      // SCR-007: Extract collection themes from page title
+      const collectionThemes = this.extractCollectionTheme(pageTitle);
+
+      if (this.verboseLogging && collectionThemes.length > 0) {
+        console.log(`[SCR-007] Collection page "${pageTitle}" has themes: ${collectionThemes.join(', ')}`);
+      }
 
       // Find all h3 elements that contain mod listings
       // Format: "1. Mod Title by Author Name"
@@ -902,11 +964,17 @@ export class WeWantModsScraper {
               discoverySource: 'WeWantMods',
               collectionPageUrl: pageUrl,
               externalImageUrls: imageUrls,
+              collectionThemes, // SCR-007: Include collection page themes
             });
             this.stats.modsDiscovered++;
           }
         }
       });
+
+      // SCR-007: Log collection theme application
+      if (this.verboseLogging && collectionThemes.length > 0 && discoveredMods.length > 0) {
+        console.log(`[SCR-007] Applied collection themes [${collectionThemes.join(', ')}] to ${discoveredMods.length} mods`);
+      }
 
       console.log(`   Found ${discoveredMods.length} mods on this page`);
       return discoveredMods;
@@ -1039,7 +1107,7 @@ export class WeWantModsScraper {
         isNSFW: this.detectNSFW(basicInfo.title, description),
         contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
-        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType, basicInfo.collectionThemes),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping TSR: ${error?.message || error}`);
@@ -1116,7 +1184,7 @@ export class WeWantModsScraper {
         isNSFW: this.detectNSFW(basicInfo.title, description),
         contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
-        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType, basicInfo.collectionThemes),
       };
     } catch (error: any) {
       // Don't log full error for expected Cloudflare blocks
@@ -1185,7 +1253,7 @@ export class WeWantModsScraper {
         isNSFW: this.detectNSFW(basicInfo.title, description),
         contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
-        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType, basicInfo.collectionThemes),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping Tumblr: ${error?.message || error}`);
@@ -1248,7 +1316,7 @@ export class WeWantModsScraper {
         isNSFW: this.detectNSFW(basicInfo.title, description),
         contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
-        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType, basicInfo.collectionThemes),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping ModCollective: ${error?.message || error}`);
@@ -1304,7 +1372,7 @@ export class WeWantModsScraper {
         isNSFW: this.detectNSFW(basicInfo.title, description),
         contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
-        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType, basicInfo.collectionThemes),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping: ${error?.message || error}`);
@@ -1328,12 +1396,13 @@ export class WeWantModsScraper {
       discoveredMod.externalUrl,
       discoveredMod.collectionPageUrl
     );
-    // SCR-004: Pass contentType to detectThemes for enhanced room theme detection
+    // SCR-004/SCR-007: Pass contentType and collectionThemes to detectThemes
     const themes = this.detectThemes(
       discoveredMod.title,
       '',
       discoveredMod.collectionPageUrl,
-      contentType
+      contentType,
+      discoveredMod.collectionThemes
     );
     const visualStyle = this.detectVisualStyle(discoveredMod.title, '');
     const category = this.categorizeMod(discoveredMod.title, '');
@@ -1859,27 +1928,40 @@ export class WeWantModsScraper {
    * Detect room themes using the improved contentTypeDetector library.
    * SCR-003: Combines URL-extracted theme with title/description analysis.
    * SCR-004: Enhanced to always detect themes for furniture/decor/clutter/lighting content types.
+   * SCR-007: Also merges collection page themes when scraping pack/collection pages.
    *
    * @param title - The mod title
    * @param description - Optional mod description
    * @param collectionPageUrl - Optional We Want Mods collection page URL for theme hint
    * @param contentType - Optional content type to help determine if room themes should be detected
+   * @param collectionThemes - Optional themes extracted from collection page title (SCR-007)
    * @returns Array of detected room themes (always an array, never undefined)
    */
   private detectThemes(
     title: string,
     description?: string,
     collectionPageUrl?: string,
-    contentType?: string
+    contentType?: string,
+    collectionThemes?: string[]
   ): string[] {
     const themes: string[] = [];
+
+    // SCR-007: First, add any collection themes (from collection/pack page title)
+    // These don't override item-specific contentTypes, just add room context
+    if (collectionThemes && collectionThemes.length > 0) {
+      for (const theme of collectionThemes) {
+        if (!themes.includes(theme)) {
+          themes.push(theme);
+        }
+      }
+    }
 
     // Check URL for room theme hint
     if (collectionPageUrl) {
       const urlCategory = extractCategoryFromUrl(collectionPageUrl);
       if (urlCategory) {
         const mapping = mapUrlCategoryToContentType(urlCategory);
-        if (mapping?.theme) {
+        if (mapping?.theme && !themes.includes(mapping.theme)) {
           themes.push(mapping.theme);
         }
       }

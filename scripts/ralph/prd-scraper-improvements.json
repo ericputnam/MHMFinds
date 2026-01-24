@@ -125,8 +125,8 @@
         "npm run type-check passes"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented: (1) Added extractCollectionTheme() to detect room themes from page titles (patterns: bathroom, kitchen, bedroom, living-room, etc.). (2) Added isCollectionPage() to detect collection/pack pages by keywords and item count. (3) Extended DiscoveredMod interface with collectionThemes? field. (4) parseCollectionPage now extracts page title and collection themes, passes them to all discovered mods. (5) detectThemes now accepts collectionThemes parameter and merges them without duplicates (collection themes are added first but don't override contentType). (6) Updated all 5 scraper methods and createBasicModDetails to pass collectionThemes. (7) Verbose logging logs collection theme application with [SCR-007] prefix. Type-check passes."
     },
     {
       "id": "SCR-008",
