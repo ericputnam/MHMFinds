@@ -24,8 +24,8 @@
         "npm run type-check passes"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": "URL structure: wewantmods.com/sims4/{category}/{item-slug}"
+      "passes": true,
+      "notes": "URL structure: wewantmods.com/sims4/{category}/{item-slug}. Implemented in lib/services/weWantModsScraper.ts with 29 unit tests in __tests__/unit/weWantModsScraper.test.ts"
     },
     {
       "id": "SCR-002",
@@ -42,8 +42,8 @@
         "npm run type-check passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented in lib/services/weWantModsScraper.ts. Added URL_CATEGORY_MAP with 150+ mappings covering: hair (5 aliases), granular face categories (eyebrows, lashes, eyeliner, lipstick, blush, beard/facial-hair), CAS categories (cas-backgrounds, presets, overlays, loading-screens), skin, eyes, tattoos, nails, clothing (tops, bottoms, dresses, shoes, full-body), accessories (jewelry, glasses, hats), furniture and decor (rugs, curtains, plants, wall-art, clutter, lighting), room categories mapped to themes (bathroom, kitchen, bedroom, living-room, dining-room, office, kids-room, nursery, outdoor), poses, pet items, gameplay/script mods, and lots. Added mapUrlCategoryToContentType() function with unmapped category logging, getUnmappedCategories(), and clearUnmappedCategories() helper functions."
     },
     {
       "id": "SCR-003",
@@ -58,8 +58,8 @@
         "npm run type-check passes"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": "Depends on CTB-003 completing first"
+      "passes": true,
+      "notes": "Implemented by: (1) Importing detectContentType as detectContentTypeFromLib and detectRoomThemes from contentTypeDetector.ts. (2) Replaced the old inline detectContentType method with a new version that: first checks URL-extracted category using extractCategoryFromUrl + mapUrlCategoryToContentType for high-confidence detection, then falls back to the library's detectContentTypeFromLib for title/description analysis. (3) Added new detectThemes method that combines URL theme hints with library-detected room themes. (4) Updated all 5 scraper methods (scrapeTheSimsResource, scrapePatreon, scrapeTumblr, scrapeModCollective, scrapeGeneric) and createBasicModDetails to pass sourceUrl and collectionPageUrl to the detector and include detected themes in the result."
     },
     {
       "id": "SCR-004",
@@ -75,8 +75,8 @@
         "npm run type-check passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented by: (1) Changed ScrapedModDetails.themes from 'string[] | undefined' to 'string[]' to always be an array. (2) Enhanced detectThemes method to accept contentType parameter and automatically run room theme detection for furniture, decor, clutter, lighting, plants, rugs, curtains, wall-art content types. (3) Updated all 5 scraper methods (scrapeTheSimsResource, scrapePatreon, scrapeTumblr, scrapeModCollective, scrapeGeneric) and createBasicModDetails to pass contentType to detectThemes for enhanced room detection. (4) importMod already handles themes array on upsert. Type-check passes."
     },
     {
       "id": "SCR-005",

@@ -3,6 +3,10 @@ import axios, { AxiosInstance } from 'axios';
 import * as cheerio from 'cheerio';
 import { getPrivacyConfig, PrivacyConfig } from '@/lib/config/privacy';
 import { uploadImageToBlob, isValidImageUrl } from './imageUploader';
+import {
+  detectContentType as detectContentTypeFromLib,
+  detectRoomThemes,
+} from './contentTypeDetector';
 
 export interface DiscoveredMod {
   title: string;
@@ -32,13 +36,466 @@ export interface ScrapedModDetails {
   isNSFW: boolean;
   contentType?: string;
   visualStyle?: string;
-  themes?: string[];
+  themes: string[]; // SCR-004: Always an array, never undefined
   publishedAt?: Date;
 }
 
 interface SitemapEntry {
   url: string;
   lastmod?: string;
+}
+
+/**
+ * URL_CATEGORY_MAP: Maps We Want Mods URL path categories to our internal contentType values
+ * SCR-002: Create URL category to contentType mapping
+ *
+ * Categories extracted from URLs like:
+ * - https://wewantmods.com/sims4/bathroom/item-name -> 'bathroom'
+ * - https://wewantmods.com/sims4/cas/eyebrows/item-name -> 'eyebrows'
+ *
+ * Mapping strategy:
+ * - Granular face categories map to specific types (eyebrows, lashes, etc.)
+ * - Room categories map to { contentType: 'furniture' | 'decor', theme: 'room-name' }
+ * - Generic categories map directly to contentType
+ * - Aliases are normalized (e.g., 'hairstyles' -> 'hair')
+ */
+
+export interface CategoryMapping {
+  contentType: string;
+  theme?: string;  // Optional room theme for furniture/decor categories
+}
+
+/**
+ * URL_CATEGORY_MAP maps We Want Mods URL path segments to internal contentType values.
+ *
+ * Key: lowercase URL path segment (e.g., 'bathroom', 'eyebrows', 'hairstyles')
+ * Value: CategoryMapping with contentType and optional theme
+ */
+export const URL_CATEGORY_MAP: Record<string, CategoryMapping> = {
+  // ============================================
+  // HAIR (CAS - Hair)
+  // ============================================
+  'hair': { contentType: 'hair' },
+  'hairstyle': { contentType: 'hair' },
+  'hairstyles': { contentType: 'hair' },
+  'haircut': { contentType: 'hair' },
+  'haircuts': { contentType: 'hair' },
+
+  // ============================================
+  // GRANULAR FACE CATEGORIES (Specific makeup/face types)
+  // These are more specific than generic 'makeup'
+  // ============================================
+
+  // Eyebrows
+  'eyebrows': { contentType: 'eyebrows' },
+  'eyebrow': { contentType: 'eyebrows' },
+  'brows': { contentType: 'eyebrows' },
+  'brow': { contentType: 'eyebrows' },
+
+  // Eyelashes
+  'eyelashes': { contentType: 'lashes' },
+  'eyelash': { contentType: 'lashes' },
+  'lashes': { contentType: 'lashes' },
+  'lash': { contentType: 'lashes' },
+
+  // Eyeliner
+  'eyeliner': { contentType: 'eyeliner' },
+  'liner': { contentType: 'eyeliner' },
+  'eye-liner': { contentType: 'eyeliner' },
+
+  // Lipstick
+  'lipstick': { contentType: 'lipstick' },
+  'lips': { contentType: 'lipstick' },
+  'lip-gloss': { contentType: 'lipstick' },
+  'lipgloss': { contentType: 'lipstick' },
+
+  // Blush
+  'blush': { contentType: 'blush' },
+  'blusher': { contentType: 'blush' },
+  'cheeks': { contentType: 'blush' },
+  'contour': { contentType: 'blush' },
+  'highlighter': { contentType: 'blush' },
+
+  // Beard / Facial Hair
+  'beard': { contentType: 'beard' },
+  'beards': { contentType: 'beard' },
+  'mustache': { contentType: 'facial-hair' },
+  'moustache': { contentType: 'facial-hair' },
+  'facial-hair': { contentType: 'facial-hair' },
+  'stubble': { contentType: 'beard' },
+  'goatee': { contentType: 'beard' },
+
+  // ============================================
+  // CAS CATEGORIES (Create-A-Sim special items)
+  // ============================================
+  'cas-backgrounds': { contentType: 'cas-background' },
+  'cas-background': { contentType: 'cas-background' },
+  'cas-bg': { contentType: 'cas-background' },
+  'presets': { contentType: 'preset' },
+  'preset': { contentType: 'preset' },
+  'body-preset': { contentType: 'preset' },
+  'body-presets': { contentType: 'preset' },
+  'face-preset': { contentType: 'preset' },
+  'face-presets': { contentType: 'preset' },
+  'overlays': { contentType: 'skin' },
+  'overlay': { contentType: 'skin' },
+  'skin-overlay': { contentType: 'skin' },
+  'skin-overlays': { contentType: 'skin' },
+  'loading-screen': { contentType: 'loading-screen' },
+  'loading-screens': { contentType: 'loading-screen' },
+
+  // Generic Makeup (less specific than granular types)
+  'makeup': { contentType: 'makeup' },
+  'make-up': { contentType: 'makeup' },
+  'cosmetics': { contentType: 'makeup' },
+  'eyeshadow': { contentType: 'makeup' },
+  'mascara': { contentType: 'makeup' },
+  'foundation': { contentType: 'makeup' },
+
+  // Skin
+  'skin': { contentType: 'skin' },
+  'skinblend': { contentType: 'skin' },
+  'skin-blend': { contentType: 'skin' },
+  'skindetails': { contentType: 'skin' },
+  'skin-details': { contentType: 'skin' },
+  'freckles': { contentType: 'skin' },
+  'moles': { contentType: 'skin' },
+
+  // Eyes
+  'eyes': { contentType: 'eyes' },
+  'eye-colors': { contentType: 'eyes' },
+  'eye-colour': { contentType: 'eyes' },
+  'contacts': { contentType: 'eyes' },
+  'contact-lenses': { contentType: 'eyes' },
+
+  // Tattoos
+  'tattoo': { contentType: 'tattoos' },
+  'tattoos': { contentType: 'tattoos' },
+
+  // Nails
+  'nails': { contentType: 'nails' },
+  'nail': { contentType: 'nails' },
+  'manicure': { contentType: 'nails' },
+
+  // ============================================
+  // CLOTHING CATEGORIES
+  // ============================================
+  'clothing': { contentType: 'full-body' },
+  'clothes': { contentType: 'full-body' },
+  'outfit': { contentType: 'full-body' },
+  'outfits': { contentType: 'full-body' },
+  'tops': { contentType: 'tops' },
+  'top': { contentType: 'tops' },
+  'shirts': { contentType: 'tops' },
+  'shirt': { contentType: 'tops' },
+  'blouse': { contentType: 'tops' },
+  'blouses': { contentType: 'tops' },
+  'sweater': { contentType: 'tops' },
+  'sweaters': { contentType: 'tops' },
+  'bottoms': { contentType: 'bottoms' },
+  'bottom': { contentType: 'bottoms' },
+  'pants': { contentType: 'bottoms' },
+  'jeans': { contentType: 'bottoms' },
+  'skirts': { contentType: 'bottoms' },
+  'skirt': { contentType: 'bottoms' },
+  'shorts': { contentType: 'bottoms' },
+  'dresses': { contentType: 'dresses' },
+  'dress': { contentType: 'dresses' },
+  'gown': { contentType: 'dresses' },
+  'gowns': { contentType: 'dresses' },
+  'shoes': { contentType: 'shoes' },
+  'footwear': { contentType: 'shoes' },
+  'boots': { contentType: 'shoes' },
+  'heels': { contentType: 'shoes' },
+  'sneakers': { contentType: 'shoes' },
+
+  // ============================================
+  // ACCESSORIES
+  // ============================================
+  'accessories': { contentType: 'accessories' },
+  'accessory': { contentType: 'accessories' },
+  'jewelry': { contentType: 'jewelry' },
+  'jewellery': { contentType: 'jewelry' },
+  'necklace': { contentType: 'jewelry' },
+  'necklaces': { contentType: 'jewelry' },
+  'earrings': { contentType: 'jewelry' },
+  'earring': { contentType: 'jewelry' },
+  'bracelet': { contentType: 'jewelry' },
+  'bracelets': { contentType: 'jewelry' },
+  'rings': { contentType: 'jewelry' },
+  'ring': { contentType: 'jewelry' },
+  'piercings': { contentType: 'jewelry' },
+  'piercing': { contentType: 'jewelry' },
+  'glasses': { contentType: 'glasses' },
+  'sunglasses': { contentType: 'glasses' },
+  'eyewear': { contentType: 'glasses' },
+  'hats': { contentType: 'hats' },
+  'hat': { contentType: 'hats' },
+  'caps': { contentType: 'hats' },
+  'cap': { contentType: 'hats' },
+  'headwear': { contentType: 'hats' },
+
+  // ============================================
+  // BUILD/BUY - FURNITURE
+  // ============================================
+  'furniture': { contentType: 'furniture' },
+  'furnishings': { contentType: 'furniture' },
+  'furnishing': { contentType: 'furniture' },
+  'sofa': { contentType: 'furniture' },
+  'sofas': { contentType: 'furniture' },
+  'couch': { contentType: 'furniture' },
+  'couches': { contentType: 'furniture' },
+  'chair': { contentType: 'furniture' },
+  'chairs': { contentType: 'furniture' },
+  'table': { contentType: 'furniture' },
+  'tables': { contentType: 'furniture' },
+  'desk': { contentType: 'furniture' },
+  'desks': { contentType: 'furniture' },
+  'bed': { contentType: 'furniture' },
+  'beds': { contentType: 'furniture' },
+  'dresser': { contentType: 'furniture' },
+  'dressers': { contentType: 'furniture' },
+  'wardrobe': { contentType: 'furniture' },
+  'wardrobes': { contentType: 'furniture' },
+  'closet': { contentType: 'furniture' },
+  'closets': { contentType: 'furniture' },
+  'shelf': { contentType: 'furniture' },
+  'shelves': { contentType: 'furniture' },
+  'bookshelf': { contentType: 'furniture' },
+  'bookshelves': { contentType: 'furniture' },
+  'cabinet': { contentType: 'furniture' },
+  'cabinets': { contentType: 'furniture' },
+  'nightstand': { contentType: 'furniture' },
+  'nightstands': { contentType: 'furniture' },
+  'vanity': { contentType: 'furniture' },
+  'mirror': { contentType: 'furniture' },
+  'mirrors': { contentType: 'furniture' },
+
+  // ============================================
+  // BUILD/BUY - DECOR & CLUTTER
+  // ============================================
+  'decor': { contentType: 'decor' },
+  'decoration': { contentType: 'decor' },
+  'decorations': { contentType: 'decor' },
+  'decorative': { contentType: 'decor' },
+  'clutter': { contentType: 'clutter' },
+  'clutter-items': { contentType: 'clutter' },
+  'wall-art': { contentType: 'wall-art' },
+  'wallart': { contentType: 'wall-art' },
+  'paintings': { contentType: 'wall-art' },
+  'painting': { contentType: 'wall-art' },
+  'posters': { contentType: 'wall-art' },
+  'poster': { contentType: 'wall-art' },
+  'rugs': { contentType: 'rugs' },
+  'rug': { contentType: 'rugs' },
+  'carpet': { contentType: 'rugs' },
+  'carpets': { contentType: 'rugs' },
+  'curtains': { contentType: 'curtains' },
+  'curtain': { contentType: 'curtains' },
+  'drapes': { contentType: 'curtains' },
+  'blinds': { contentType: 'curtains' },
+  'plants': { contentType: 'plants' },
+  'plant': { contentType: 'plants' },
+  'houseplants': { contentType: 'plants' },
+  'succulents': { contentType: 'plants' },
+
+  // ============================================
+  // BUILD/BUY - LIGHTING
+  // ============================================
+  'lighting': { contentType: 'lighting' },
+  'lights': { contentType: 'lighting' },
+  'light': { contentType: 'lighting' },
+  'lamp': { contentType: 'lighting' },
+  'lamps': { contentType: 'lighting' },
+  'chandelier': { contentType: 'lighting' },
+  'chandeliers': { contentType: 'lighting' },
+
+  // ============================================
+  // ROOM CATEGORIES -> Map to furniture/decor with theme
+  // These URL paths indicate room-specific content
+  // ============================================
+  'bathroom': { contentType: 'furniture', theme: 'bathroom' },
+  'kitchen': { contentType: 'furniture', theme: 'kitchen' },
+  'bedroom': { contentType: 'furniture', theme: 'bedroom' },
+  'living-room': { contentType: 'furniture', theme: 'living-room' },
+  'livingroom': { contentType: 'furniture', theme: 'living-room' },
+  'living': { contentType: 'furniture', theme: 'living-room' },
+  'dining-room': { contentType: 'furniture', theme: 'dining-room' },
+  'diningroom': { contentType: 'furniture', theme: 'dining-room' },
+  'dining': { contentType: 'furniture', theme: 'dining-room' },
+  'office': { contentType: 'furniture', theme: 'office' },
+  'study': { contentType: 'furniture', theme: 'office' },
+  'kids-room': { contentType: 'furniture', theme: 'kids-room' },
+  'kidsroom': { contentType: 'furniture', theme: 'kids-room' },
+  'kids': { contentType: 'furniture', theme: 'kids-room' },
+  'nursery': { contentType: 'furniture', theme: 'nursery' },
+  'baby': { contentType: 'furniture', theme: 'nursery' },
+  'toddler': { contentType: 'furniture', theme: 'kids-room' },
+  'outdoor': { contentType: 'decor', theme: 'outdoor' },
+  'garden': { contentType: 'decor', theme: 'outdoor' },
+  'patio': { contentType: 'decor', theme: 'outdoor' },
+  'yard': { contentType: 'decor', theme: 'outdoor' },
+
+  // ============================================
+  // POSES & ANIMATIONS
+  // ============================================
+  'poses': { contentType: 'poses' },
+  'pose': { contentType: 'poses' },
+  'pose-pack': { contentType: 'poses' },
+  'posepacks': { contentType: 'poses' },
+  'animations': { contentType: 'poses' },
+  'animation': { contentType: 'poses' },
+
+  // ============================================
+  // PET ITEMS
+  // ============================================
+  'pet-furniture': { contentType: 'pet-furniture' },
+  'pet-bed': { contentType: 'pet-furniture' },
+  'pet-beds': { contentType: 'pet-furniture' },
+  'cat-bed': { contentType: 'pet-furniture' },
+  'dog-bed': { contentType: 'pet-furniture' },
+  'pet-clothing': { contentType: 'pet-clothing' },
+  'pet-clothes': { contentType: 'pet-clothing' },
+  'pet-accessories': { contentType: 'pet-accessories' },
+  'pet-accessory': { contentType: 'pet-accessories' },
+  'collar': { contentType: 'pet-accessories' },
+  'collars': { contentType: 'pet-accessories' },
+
+  // ============================================
+  // GAMEPLAY & SCRIPT MODS
+  // ============================================
+  'gameplay': { contentType: 'gameplay-mod' },
+  'gameplay-mod': { contentType: 'gameplay-mod' },
+  'gameplay-mods': { contentType: 'gameplay-mod' },
+  'mods': { contentType: 'gameplay-mod' },
+  'mod': { contentType: 'gameplay-mod' },
+  'script': { contentType: 'script-mod' },
+  'scripts': { contentType: 'script-mod' },
+  'script-mod': { contentType: 'script-mod' },
+  'script-mods': { contentType: 'script-mod' },
+
+  // ============================================
+  // LOTS & BUILDS
+  // ============================================
+  'lot': { contentType: 'lot' },
+  'lots': { contentType: 'lot' },
+  'house': { contentType: 'lot' },
+  'houses': { contentType: 'lot' },
+  'build': { contentType: 'lot' },
+  'builds': { contentType: 'lot' },
+
+  // ============================================
+  // GENERIC/PARENT CATEGORIES (catch-all)
+  // These are parent categories that may appear in URLs
+  // ============================================
+  'cas': { contentType: 'full-body' },  // Create-A-Sim generic
+  'build-buy': { contentType: 'furniture' },  // Build/Buy generic
+  'buildbuy': { contentType: 'furniture' },
+  'objects': { contentType: 'decor' },
+  'object': { contentType: 'decor' },
+};
+
+// Track unmapped categories encountered during scraping
+const unmappedCategories = new Set<string>();
+
+/**
+ * Map a URL-extracted category to our internal contentType.
+ * Logs unmapped categories for review.
+ *
+ * @param urlCategory The category extracted from a We Want Mods URL
+ * @returns CategoryMapping with contentType and optional theme, or undefined if not mapped
+ */
+export function mapUrlCategoryToContentType(urlCategory: string | undefined): CategoryMapping | undefined {
+  if (!urlCategory) {
+    return undefined;
+  }
+
+  const normalizedCategory = urlCategory.toLowerCase().trim();
+  const mapping = URL_CATEGORY_MAP[normalizedCategory];
+
+  if (!mapping) {
+    // Track and log unmapped categories for review
+    if (!unmappedCategories.has(normalizedCategory)) {
+      unmappedCategories.add(normalizedCategory);
+      console.log(`[SCR-002] Unmapped URL category encountered: "${normalizedCategory}"`);
+    }
+    return undefined;
+  }
+
+  return mapping;
+}
+
+/**
+ * Get all unmapped categories encountered during this session.
+ * Useful for identifying new categories to add to the map.
+ */
+export function getUnmappedCategories(): string[] {
+  return Array.from(unmappedCategories);
+}
+
+/**
+ * Clear the unmapped categories set (useful for testing)
+ */
+export function clearUnmappedCategories(): void {
+  unmappedCategories.clear();
+}
+
+/**
+ * Extract the category segment from a We Want Mods URL.
+ * URL structure: wewantmods.com/sims4/{category}/{item-slug}
+ *
+ * Examples:
+ * - https://wewantmods.com/sims4/bathroom/modern-sink -> 'bathroom'
+ * - https://wewantmods.com/sims4/hair/ponytail-style -> 'hair'
+ * - https://wewantmods.com/sims4/cas/eyebrows/natural-brows -> 'eyebrows' (nested path)
+ * - https://wewantmods.com/ -> undefined (no category)
+ *
+ * @param url The We Want Mods URL to parse
+ * @returns The category segment or undefined if not found
+ */
+export function extractCategoryFromUrl(url: string): string | undefined {
+  try {
+    const urlObj = new URL(url);
+
+    // Only process wewantmods.com URLs
+    if (!urlObj.hostname.includes('wewantmods.com')) {
+      return undefined;
+    }
+
+    // Get path segments, filtering out empty strings
+    const segments = urlObj.pathname.split('/').filter(Boolean);
+
+    // URL structure: /sims4/{category}/{item-slug} or /sims4/{parent-category}/{category}/{item-slug}
+    // We need at least 2 segments after 'sims4' for category + item
+    if (segments.length < 2) {
+      return undefined;
+    }
+
+    // First segment should be 'sims4'
+    if (segments[0] !== 'sims4') {
+      return undefined;
+    }
+
+    // For nested paths like /sims4/cas/eyebrows/item-name, return the most specific category
+    // For simple paths like /sims4/bathroom/item-name, return the category
+    if (segments.length >= 4) {
+      // Nested path: /sims4/{parent}/{category}/{item}
+      // Return the second-to-last segment (the more specific category)
+      return segments[segments.length - 2].toLowerCase();
+    } else if (segments.length === 3) {
+      // Simple path: /sims4/{category}/{item}
+      // Return the second segment (category)
+      return segments[1].toLowerCase();
+    } else if (segments.length === 2) {
+      // Just /sims4/{category}/ - no item slug, treat second segment as category
+      return segments[1].toLowerCase();
+    }
+
+    return undefined;
+  } catch {
+    // Invalid URL
+    return undefined;
+  }
 }
 
 export class WeWantModsScraper {
@@ -494,6 +951,7 @@ export class WeWantModsScraper {
       // Check if free or premium
       const isFree = !$('.premium-only, .vip-only, [class*="premium"], [class*="vip"]').length;
 
+      const contentType = this.detectContentType(basicInfo.title, description, url, basicInfo.collectionPageUrl);
       return {
         title: basicInfo.title,
         author: basicInfo.author,
@@ -510,8 +968,9 @@ export class WeWantModsScraper {
         tags: this.extractTags(basicInfo.title, description),
         isFree,
         isNSFW: this.detectNSFW(basicInfo.title, description),
-        contentType: this.detectContentType(basicInfo.title, description),
+        contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping TSR: ${error?.message || error}`);
@@ -569,6 +1028,7 @@ export class WeWantModsScraper {
       // Patreon posts may be locked
       const isFree = !$('.locked-post, [class*="locked"], [class*="patron-only"]').length;
 
+      const contentType = this.detectContentType(basicInfo.title, description, url, basicInfo.collectionPageUrl);
       return {
         title: basicInfo.title,
         author: basicInfo.author,
@@ -585,8 +1045,9 @@ export class WeWantModsScraper {
         tags: this.extractTags(basicInfo.title, description),
         isFree,
         isNSFW: this.detectNSFW(basicInfo.title, description),
-        contentType: this.detectContentType(basicInfo.title, description),
+        contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
       };
     } catch (error: any) {
       // Don't log full error for expected Cloudflare blocks
@@ -636,6 +1097,7 @@ export class WeWantModsScraper {
         }
       });
 
+      const contentType = this.detectContentType(basicInfo.title, description, url, basicInfo.collectionPageUrl);
       return {
         title: basicInfo.title,
         author: basicInfo.author,
@@ -652,8 +1114,9 @@ export class WeWantModsScraper {
         tags: this.extractTags(basicInfo.title, description),
         isFree: true, // Tumblr posts are generally free
         isNSFW: this.detectNSFW(basicInfo.title, description),
-        contentType: this.detectContentType(basicInfo.title, description),
+        contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping Tumblr: ${error?.message || error}`);
@@ -697,6 +1160,7 @@ export class WeWantModsScraper {
         }
       });
 
+      const contentType = this.detectContentType(basicInfo.title, description, url, basicInfo.collectionPageUrl);
       return {
         title: basicInfo.title,
         author: basicInfo.author,
@@ -713,8 +1177,9 @@ export class WeWantModsScraper {
         tags: this.extractTags(basicInfo.title, description),
         isFree: true,
         isNSFW: this.detectNSFW(basicInfo.title, description),
-        contentType: this.detectContentType(basicInfo.title, description),
+        contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping ModCollective: ${error?.message || error}`);
@@ -751,6 +1216,7 @@ export class WeWantModsScraper {
         $('meta[property="og:image"]').attr('content') ||
         $('img').first().attr('src');
 
+      const contentType = this.detectContentType(basicInfo.title, description, url, basicInfo.collectionPageUrl);
       return {
         title: basicInfo.title,
         author: basicInfo.author,
@@ -767,8 +1233,9 @@ export class WeWantModsScraper {
         tags: this.extractTags(basicInfo.title, description),
         isFree: true,
         isNSFW: this.detectNSFW(basicInfo.title, description),
-        contentType: this.detectContentType(basicInfo.title, description),
+        contentType,
         visualStyle: this.detectVisualStyle(basicInfo.title, description),
+        themes: this.detectThemes(basicInfo.title, description, basicInfo.collectionPageUrl, contentType),
       };
     } catch (error: any) {
       console.error(`   ❌ Error scraping: ${error?.message || error}`);
@@ -786,7 +1253,19 @@ export class WeWantModsScraper {
     blobImageUrls: string[]
   ): ScrapedModDetails {
     const source = this.getSourceFromUrl(discoveredMod.externalUrl);
-    const contentType = this.detectContentType(discoveredMod.title, '');
+    const contentType = this.detectContentType(
+      discoveredMod.title,
+      '',
+      discoveredMod.externalUrl,
+      discoveredMod.collectionPageUrl
+    );
+    // SCR-004: Pass contentType to detectThemes for enhanced room theme detection
+    const themes = this.detectThemes(
+      discoveredMod.title,
+      '',
+      discoveredMod.collectionPageUrl,
+      contentType
+    );
     const visualStyle = this.detectVisualStyle(discoveredMod.title, '');
     const category = this.categorizeMod(discoveredMod.title, '');
 
@@ -817,6 +1296,7 @@ export class WeWantModsScraper {
       isNSFW: this.detectNSFW(discoveredMod.title, ''),
       contentType,
       visualStyle,
+      themes,
     };
   }
 
@@ -1165,28 +1645,102 @@ export class WeWantModsScraper {
   }
 
   /**
-   * Detect content type for faceted taxonomy
+   * Detect content type using the improved contentTypeDetector library.
+   * SCR-003: Combines URL-extracted category with title/description analysis for best accuracy.
+   *
+   * Priority:
+   * 1. URL category mapping (highest - explicit categorization from source)
+   * 2. Title-based detection (high - keywords in mod name)
+   * 3. Description-based detection (medium - context from description)
+   *
+   * @param title - The mod title
+   * @param description - Optional mod description
+   * @param sourceUrl - Optional source URL for extracting category hint
+   * @param collectionPageUrl - Optional We Want Mods collection page URL for category hint
+   * @returns The detected content type, or undefined if ambiguous
    */
-  private detectContentType(title: string, description?: string): string | undefined {
-    const text = `${title} ${description || ''}`.toLowerCase();
+  private detectContentType(
+    title: string,
+    description?: string,
+    sourceUrl?: string,
+    collectionPageUrl?: string
+  ): string | undefined {
+    // First, try to get a category hint from the URLs
+    let urlCategoryHint: string | undefined;
+    let urlThemeHint: string | undefined;
 
-    if (text.includes('hair') || text.includes('hairstyle') || text.includes('ponytail')) return 'hair';
-    if (text.includes('top ') || text.includes(' tops') || text.includes('shirt') || text.includes('blouse')) return 'tops';
-    if (text.includes('bottom') || text.includes('pants') || text.includes('skirt') || text.includes('jeans')) return 'bottoms';
-    if (text.includes('dress') || text.includes('gown')) return 'dresses';
-    if (text.includes('shoes') || text.includes('boots') || text.includes('heels') || text.includes('sneakers')) return 'shoes';
-    if (text.includes('accessory') || text.includes('accessories')) return 'accessories';
-    if (text.includes('jewelry') || text.includes('necklace') || text.includes('earring') || text.includes('ring ')) return 'jewelry';
-    if (text.includes('makeup') || text.includes('lipstick') || text.includes('eyeshadow')) return 'makeup';
-    if (text.includes('skin') || text.includes('skinblend') || text.includes('overlay')) return 'skin';
-    if (text.includes('eye ') || text.includes('eyes') || text.includes('contacts')) return 'eyes';
-    if (text.includes('furniture') || text.includes('chair') || text.includes('sofa') || text.includes('table')) return 'furniture';
-    if (text.includes('decor') || text.includes('clutter')) return 'decor';
-    if (text.includes('pose') || text.includes('animation')) return 'poses';
-    if (text.includes('gameplay') || text.includes('mod ')) return 'gameplay-mod';
-    if (text.includes('script')) return 'script-mod';
+    // Check the collection page URL for category (usually more reliable)
+    if (collectionPageUrl) {
+      const urlCategory = extractCategoryFromUrl(collectionPageUrl);
+      if (urlCategory) {
+        const mapping = mapUrlCategoryToContentType(urlCategory);
+        if (mapping) {
+          urlCategoryHint = mapping.contentType;
+          urlThemeHint = mapping.theme;
+        }
+      }
+    }
 
-    return undefined;
+    // If we got a confident URL category mapping, use it
+    // (URL categories are explicit and highly reliable)
+    if (urlCategoryHint) {
+      return urlCategoryHint;
+    }
+
+    // Fall back to title + description analysis using the improved detector
+    const detectedType = detectContentTypeFromLib(title, description);
+
+    return detectedType;
+  }
+
+  /**
+   * Detect room themes using the improved contentTypeDetector library.
+   * SCR-003: Combines URL-extracted theme with title/description analysis.
+   * SCR-004: Enhanced to always detect themes for furniture/decor/clutter/lighting content types.
+   *
+   * @param title - The mod title
+   * @param description - Optional mod description
+   * @param collectionPageUrl - Optional We Want Mods collection page URL for theme hint
+   * @param contentType - Optional content type to help determine if room themes should be detected
+   * @returns Array of detected room themes (always an array, never undefined)
+   */
+  private detectThemes(
+    title: string,
+    description?: string,
+    collectionPageUrl?: string,
+    contentType?: string
+  ): string[] {
+    const themes: string[] = [];
+
+    // Check URL for room theme hint
+    if (collectionPageUrl) {
+      const urlCategory = extractCategoryFromUrl(collectionPageUrl);
+      if (urlCategory) {
+        const mapping = mapUrlCategoryToContentType(urlCategory);
+        if (mapping?.theme) {
+          themes.push(mapping.theme);
+        }
+      }
+    }
+
+    // SCR-004: For furniture, decor, clutter, lighting content types, always run room theme detection
+    // This ensures we capture room context even if URL doesn't have a theme
+    const roomRelatedContentTypes = ['furniture', 'decor', 'clutter', 'lighting', 'plants', 'rugs', 'curtains', 'wall-art'];
+    const shouldDetectRoomThemes = !contentType || roomRelatedContentTypes.includes(contentType);
+
+    if (shouldDetectRoomThemes) {
+      // Detect themes from title/description using the improved library
+      const detectedThemes = detectRoomThemes(title, description);
+
+      // Merge themes without duplicates
+      for (const theme of detectedThemes) {
+        if (!themes.includes(theme)) {
+          themes.push(theme);
+        }
+      }
+    }
+
+    return themes;
   }
 
   /**
