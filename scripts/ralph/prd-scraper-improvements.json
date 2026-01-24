@@ -92,8 +92,8 @@
         "npm run type-check passes"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented ensureFacetDefinitionExists() method that: (1) Checks if FacetDefinition exists using unique constraint facetType_value. (2) Creates new definition with displayName=titleCase(value splitting on hyphens), sortOrder=100, isActive=true. (3) Logs creation with [SCR-005] prefix. (4) Handles P2002 unique constraint errors gracefully for concurrent access. Also added ensureAllFacetDefinitions() helper that ensures contentType, visualStyle, and all themes facets exist. Called in importMod before checkDuplicate. Type-check passes."
     },
     {
       "id": "SCR-006",

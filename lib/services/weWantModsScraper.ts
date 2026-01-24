@@ -1458,10 +1458,81 @@ export class WeWantModsScraper {
   }
 
   /**
+   * SCR-005: Ensure FacetDefinition exists for a given facetType + value
+   * Auto-creates the definition with sensible defaults if it doesn't exist
+   *
+   * @param facetType - The facet type (e.g., 'contentType', 'themes', 'visualStyle')
+   * @param value - The facet value (e.g., 'furniture', 'bathroom', 'alpha')
+   */
+  private async ensureFacetDefinitionExists(facetType: string, value: string): Promise<void> {
+    if (!value) return;
+
+    try {
+      // Check if FacetDefinition already exists
+      const existing = await prisma.facetDefinition.findUnique({
+        where: {
+          facetType_value: { facetType, value },
+        },
+      });
+
+      if (!existing) {
+        // Convert value to title case for display name
+        const displayName = value
+          .split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+
+        // Create the new FacetDefinition
+        await prisma.facetDefinition.create({
+          data: {
+            facetType,
+            value,
+            displayName,
+            sortOrder: 100, // Default sort order for auto-created facets
+            isActive: true,
+          },
+        });
+
+        console.log(`[SCR-005] Auto-created FacetDefinition: ${facetType}/${value} -> "${displayName}"`);
+      }
+    } catch (error) {
+      // If there's a unique constraint error, the record was created by another process
+      // This is fine - we just ignore it
+      if ((error as any)?.code !== 'P2002') {
+        console.error(`[SCR-005] Error ensuring FacetDefinition for ${facetType}/${value}:`, error);
+      }
+    }
+  }
+
+  /**
+   * SCR-005: Ensure all facets for a mod have definitions
+   * Called before importing a mod to ensure UI can display all facets
+   */
+  private async ensureAllFacetDefinitions(mod: ScrapedModDetails): Promise<void> {
+    // Ensure contentType FacetDefinition exists
+    if (mod.contentType) {
+      await this.ensureFacetDefinitionExists('contentType', mod.contentType);
+    }
+
+    // Ensure visualStyle FacetDefinition exists
+    if (mod.visualStyle) {
+      await this.ensureFacetDefinitionExists('visualStyle', mod.visualStyle);
+    }
+
+    // Ensure all theme FacetDefinitions exist
+    for (const theme of mod.themes) {
+      await this.ensureFacetDefinitionExists('themes', theme);
+    }
+  }
+
+  /**
    * Import a scraped mod into the database
    */
   async importMod(mod: ScrapedModDetails): Promise<{ action: 'created' | 'updated' | 'skipped'; id?: string }> {
     try {
+      // SCR-005: Ensure FacetDefinitions exist before importing
+      await this.ensureAllFacetDefinitions(mod);
+
       const { exists, existingId } = await this.checkDuplicate(mod);
 
       if (exists && existingId) {
