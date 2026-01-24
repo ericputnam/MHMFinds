@@ -179,8 +179,8 @@
         "npm run build succeeds"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Created integration test at scripts/ralph/scr-010-integration-test.ts. Tests 21 sample mods across categories: hair (2), eyebrows (2), lashes (2), eyeliner (1), lipstick (2), blush (2), beard (2), bathroom furniture (1), kitchen furniture (1), bedroom furniture (1), plants (1), clutter (1), poses (1), dresses (1), tops (1). Results: 21/21 correctly categorized (100% accuracy). Test verifies URL category extraction + mapping, contentType assignment, and room theme detection. Both type-check and build pass. Run: npx tsx scripts/ralph/scr-010-integration-test.ts"
     }
   ]
 }
