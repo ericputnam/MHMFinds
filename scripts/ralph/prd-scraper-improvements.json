@@ -162,8 +162,8 @@
         "npm run type-check passes"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Created comprehensive test suite at scripts/ralph/scr-009-scraper-tests.ts with 71 tests covering: (1) URL Parsing (SCR-001) - 8 tests for extractCategoryFromUrl. (2) Category Mapping (SCR-002) - 6 tests for mapUrlCategoryToContentType including room themes and aliases. (3) Content Type Detection (SCR-008) - 12 tests for detectContentType including all granular face types. (4) Room Theme Detection (SCR-004) - 5 tests for detectRoomThemes. (5) Combined URL+Title Detection - 3 tests verifying bathroom URL -> furniture+bathroom theme, eyebrows URL -> eyebrows. (6) Confidence Scoring - 3 tests. (7) Supported Types - 2 tests. (8) URL_CATEGORY_MAP Coverage - 32 tests verifying 241 mappings. All tests pass (100% pass rate). Run with: npx tsx scripts/ralph/scr-009-scraper-tests.ts"
     },
     {
       "id": "SCR-010",
