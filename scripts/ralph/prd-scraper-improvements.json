@@ -143,8 +143,8 @@
         "npm run type-check passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Already implemented in contentTypeDetector.ts (priority 104-110 rules) and URL_CATEGORY_MAP in weWantModsScraper.ts. Verified: (1) eyebrows/brows -> 'eyebrows' at priority 110. (2) eyelashes/lashes/3d-lash -> 'lashes' at priority 109. (3) eyeliner/liner -> 'eyeliner' at priority 108. (4) lipstick/lip-gloss/glossy-lips -> 'lipstick' at priority 107. (5) blush/contour/highlighter -> 'blush' at priority 106 (added contour/highlighter keywords). (6) beard/goatee/stubble -> 'beard' at priority 105, mustache/sideburns -> 'facial-hair' at priority 104. All granular face types have higher priority than generic 'makeup' (priority 37). Type-check passes."
     },
     {
       "id": "SCR-009",
