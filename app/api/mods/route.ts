@@ -217,8 +217,9 @@ export async function GET(request: NextRequest) {
     } else if (sortBy === 'title') {
       orderBy.title = sortOrder;
     } else {
-      // Default: order by creation date (mods with creators will be mixed in)
-      orderBy.createdAt = sortOrder;
+      // Default: order by publishedAt (can be randomized for obfuscation)
+      // Admin uses createdAt for actual import order
+      orderBy.publishedAt = sortOrder;
     }
 
     // Get total count

@@ -268,16 +268,6 @@ export default function DownloadInterstitialPage() {
             </div>
           )}
         </div>
-
-        {/* Skip Link */}
-        <div className="text-center mt-6">
-          <button
-            onClick={handleProceed}
-            className="text-sm text-slate-500 hover:text-slate-400 underline"
-          >
-            Skip and go directly to download
-          </button>
-        </div>
       </div>
     </div>
   );

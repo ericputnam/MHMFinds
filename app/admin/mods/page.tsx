@@ -76,6 +76,9 @@ export default function ModsManagementPage() {
   const [quickEditType, setQuickEditType] = useState<'contentType' | 'visualStyle' | 'themes' | null>(null);
   const quickEditRef = useRef<HTMLDivElement>(null);
 
+  // Image hover preview
+  const [hoverImage, setHoverImage] = useState<{ url: string; title: string; x: number; y: number } | null>(null);
+
   // Bulk facet edit modal
   const [showBulkFacetModal, setShowBulkFacetModal] = useState(false);
   const [bulkContentType, setBulkContentType] = useState<{ mode: 'noChange' | 'set' | 'clear'; value: string }>({
@@ -522,11 +525,25 @@ export default function ModsManagementPage() {
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           {mod.thumbnail ? (
-                            <img
-                              src={mod.thumbnail}
-                              alt={mod.title}
-                              className="w-12 h-12 rounded-lg object-cover"
-                            />
+                            <div
+                              className="relative"
+                              onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setHoverImage({
+                                  url: mod.thumbnail!,
+                                  title: mod.title,
+                                  x: rect.right + 10,
+                                  y: rect.top,
+                                });
+                              }}
+                              onMouseLeave={() => setHoverImage(null)}
+                            >
+                              <img
+                                src={mod.thumbnail}
+                                alt={mod.title}
+                                className="w-12 h-12 rounded-lg object-cover cursor-zoom-in"
+                              />
+                            </div>
                           ) : (
                             <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center">
                               <ImageIcon className="h-6 w-6 text-slate-600" />
@@ -830,6 +847,31 @@ export default function ModsManagementPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Hover Preview */}
+      {hoverImage && (
+        <div
+          className="fixed z-[100] pointer-events-none"
+          style={{
+            left: Math.min(hoverImage.x, window.innerWidth - 420),
+            top: Math.max(10, Math.min(hoverImage.y, window.innerHeight - 480)),
+          }}
+        >
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl max-w-[400px]">
+            <img
+              src={hoverImage.url}
+              alt="Preview"
+              className="w-96 h-96 object-contain rounded-lg"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <p className="mt-2 text-white font-medium text-sm leading-snug">
+              {hoverImage.title}
+            </p>
           </div>
         </div>
       )}

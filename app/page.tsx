@@ -23,7 +23,7 @@ function HomePageContent() {
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'All';
   const initialGameVersion = searchParams.get('gameVersion') || 'Sims 4';
-  const initialSort = searchParams.get('sort') || 'relevance';
+  const initialSort = searchParams.get('sort') || 'downloads';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
@@ -79,7 +79,7 @@ function HomePageContent() {
     if (search) params.set('search', search);
     if (category && category !== 'All') params.set('category', category);
     if (gameVersion && gameVersion !== 'Sims 4') params.set('gameVersion', gameVersion);
-    if (sort && sort !== 'relevance') params.set('sort', sort);
+    if (sort && sort !== 'downloads') params.set('sort', sort);
     if (creator) params.set('creator', creator);
 
     return params;
@@ -148,7 +148,7 @@ function HomePageContent() {
       }
 
       // Add sort parameter
-      if (sortBy && sortBy !== 'relevance') {
+      if (sortBy) {
         switch (sortBy) {
           case 'downloads':
             apiParams.set('sortBy', 'downloadCount');
@@ -161,6 +161,9 @@ function HomePageContent() {
           case 'newest':
             apiParams.set('sortBy', 'createdAt');
             apiParams.set('sortOrder', 'desc');
+            break;
+          case 'relevance':
+            // No sort params - let API use its default
             break;
         }
       }
