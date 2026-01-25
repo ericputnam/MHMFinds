@@ -20,6 +20,105 @@ interface FacetDefinition {
 
 type FacetType = 'contentType' | 'visualStyle' | 'themes' | 'ageGroups' | 'genderOptions' | 'occultTypes' | 'packRequirements';
 
+// Emoji and color suggestions based on common facet values
+const FACET_SUGGESTIONS: Record<string, { icon: string; color: string }> = {
+  // Content Types
+  hair: { icon: '💇', color: '#8B5CF6' },
+  furniture: { icon: '🪑', color: '#F59E0B' },
+  decor: { icon: '🖼️', color: '#EC4899' },
+  clothing: { icon: '👗', color: '#EF4444' },
+  tops: { icon: '👕', color: '#3B82F6' },
+  bottoms: { icon: '👖', color: '#6366F1' },
+  shoes: { icon: '👟', color: '#10B981' },
+  accessories: { icon: '💍', color: '#F472B6' },
+  makeup: { icon: '💄', color: '#EC4899' },
+  skin: { icon: '✨', color: '#FBBF24' },
+  eyes: { icon: '👁️', color: '#06B6D4' },
+  eyebrows: { icon: '🤨', color: '#78716C' },
+  lashes: { icon: '👁️', color: '#1F2937' },
+  lipstick: { icon: '💋', color: '#DC2626' },
+  blush: { icon: '🌸', color: '#FB7185' },
+  eyeshadow: { icon: '🎨', color: '#A855F7' },
+  nails: { icon: '💅', color: '#F43F5E' },
+  poses: { icon: '🧘', color: '#8B5CF6' },
+  animations: { icon: '🎬', color: '#F97316' },
+  // Rooms
+  kitchen: { icon: '🍳', color: '#EAB308' },
+  bathroom: { icon: '🛁', color: '#0EA5E9' },
+  bedroom: { icon: '🛏️', color: '#A78BFA' },
+  'living-room': { icon: '🛋️', color: '#84CC16' },
+  dining: { icon: '🍽️', color: '#F59E0B' },
+  office: { icon: '💼', color: '#6B7280' },
+  outdoor: { icon: '🌳', color: '#22C55E' },
+  // Build
+  walls: { icon: '🧱', color: '#92400E' },
+  floors: { icon: '🟫', color: '#78716C' },
+  windows: { icon: '🪟', color: '#60A5FA' },
+  doors: { icon: '🚪', color: '#A16207' },
+  roofing: { icon: '🏠', color: '#B45309' },
+  lighting: { icon: '💡', color: '#FDE047' },
+  // Themes
+  modern: { icon: '🏢', color: '#6B7280' },
+  vintage: { icon: '📻', color: '#D97706' },
+  boho: { icon: '🌻', color: '#F59E0B' },
+  minimalist: { icon: '⬜', color: '#E5E7EB' },
+  luxury: { icon: '👑', color: '#EAB308' },
+  cottagecore: { icon: '🌿', color: '#86EFAC' },
+  goth: { icon: '🦇', color: '#1F2937' },
+  romantic: { icon: '💕', color: '#FB7185' },
+  halloween: { icon: '🎃', color: '#F97316' },
+  christmas: { icon: '🎄', color: '#16A34A' },
+  summer: { icon: '☀️', color: '#FACC15' },
+  winter: { icon: '❄️', color: '#93C5FD' },
+  holidays: { icon: '🎉', color: '#EC4899' },
+  // Visual Styles
+  'maxis-match': { icon: '🎮', color: '#10B981' },
+  alpha: { icon: '✨', color: '#8B5CF6' },
+  // Age Groups
+  toddler: { icon: '👶', color: '#FB923C' },
+  child: { icon: '🧒', color: '#34D399' },
+  teen: { icon: '🧑', color: '#60A5FA' },
+  adult: { icon: '🧑‍🦰', color: '#8B5CF6' },
+  elder: { icon: '👴', color: '#9CA3AF' },
+  // Gender
+  masculine: { icon: '♂️', color: '#3B82F6' },
+  feminine: { icon: '♀️', color: '#EC4899' },
+  unisex: { icon: '⚧️', color: '#A855F7' },
+  // Lots
+  residential: { icon: '🏡', color: '#22C55E' },
+  commercial: { icon: '🏪', color: '#3B82F6' },
+  community: { icon: '🏛️', color: '#8B5CF6' },
+  // Other
+  'full-body': { icon: '👔', color: '#6366F1' },
+  swimwear: { icon: '👙', color: '#06B6D4' },
+  sleepwear: { icon: '😴', color: '#A78BFA' },
+  athletic: { icon: '🏃', color: '#EF4444' },
+  career: { icon: '💼', color: '#475569' },
+  pet: { icon: '🐕', color: '#F59E0B' },
+  vehicle: { icon: '🚗', color: '#6366F1' },
+  plants: { icon: '🌱', color: '#22C55E' },
+};
+
+// Function to get emoji/color suggestion based on facet value
+const getSuggestion = (value: string): { icon: string; color: string } => {
+  const normalized = value.toLowerCase().replace(/\s+/g, '-');
+
+  // Direct match
+  if (FACET_SUGGESTIONS[normalized]) {
+    return FACET_SUGGESTIONS[normalized];
+  }
+
+  // Partial match
+  for (const [key, suggestion] of Object.entries(FACET_SUGGESTIONS)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return suggestion;
+    }
+  }
+
+  // Default
+  return { icon: '🏷️', color: '#6366F1' };
+};
+
 const FACET_TYPES: { value: FacetType; label: string; description: string }[] = [
   { value: 'contentType', label: 'Content Type', description: 'What IS this mod? (e.g., hair, furniture, makeup)' },
   { value: 'visualStyle', label: 'Visual Style', description: 'Art style of the mod (e.g., alpha, maxis-match)' },
@@ -111,28 +210,35 @@ export default function FacetDefinitionsPage() {
   const handleUpdate = async (facet: FacetDefinition) => {
     try {
       setError(null);
+      const payload = {
+        value: facet.value,
+        displayName: facet.displayName,
+        description: facet.description,
+        icon: facet.icon,
+        color: facet.color,
+        sortOrder: facet.sortOrder,
+        isActive: facet.isActive,
+      };
+
+      console.log('[Taxonomy] Updating facet:', facet.id, payload);
+
       const response = await fetch(`/api/admin/facets/${facet.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          value: facet.value,
-          displayName: facet.displayName,
-          description: facet.description,
-          icon: facet.icon,
-          color: facet.color,
-          sortOrder: facet.sortOrder,
-          isActive: facet.isActive,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      const data = await response.json();
+      console.log('[Taxonomy] Update response:', response.status, data);
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || 'Failed to update facet');
       }
 
       setEditingFacet(null);
       fetchFacets();
     } catch (err) {
+      console.error('[Taxonomy] Update error:', err);
       setError(err instanceof Error ? err.message : 'Failed to update facet');
     }
   };
@@ -481,14 +587,22 @@ export default function FacetDefinitionsPage() {
                 <input
                   type="text"
                   value={newFacet.value}
-                  onChange={(e) =>
-                    setNewFacet({ ...newFacet, value: e.target.value.toLowerCase().replace(/\s+/g, '-') })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value.toLowerCase().replace(/\s+/g, '-');
+                    const suggestion = getSuggestion(value);
+                    setNewFacet({
+                      ...newFacet,
+                      value,
+                      // Auto-suggest icon and color if not manually set
+                      icon: newFacet.icon || suggestion.icon,
+                      color: newFacet.color === '#6366f1' ? suggestion.color : newFacet.color,
+                    });
+                  }}
                   className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink"
                   placeholder="e.g., maxis-match"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  Internal identifier (lowercase, hyphens only)
+                  Internal identifier (lowercase, hyphens only) - emoji/color auto-suggested
                 </p>
               </div>
 

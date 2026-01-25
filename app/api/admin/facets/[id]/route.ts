@@ -72,18 +72,39 @@ export async function PATCH(
       }
     }
 
+    // Build update data - only include fields that are present in the request
+    const updateData: any = {};
+
+    if (body.value !== undefined && body.value !== '') {
+      updateData.value = body.value;
+    }
+    if (body.displayName !== undefined && body.displayName !== '') {
+      updateData.displayName = body.displayName;
+    }
+    if (body.description !== undefined) {
+      updateData.description = body.description || null;
+    }
+    if (body.icon !== undefined) {
+      updateData.icon = body.icon || null;
+    }
+    if (body.color !== undefined) {
+      updateData.color = body.color || null;
+    }
+    if (body.sortOrder !== undefined) {
+      updateData.sortOrder = body.sortOrder;
+    }
+    if (body.isActive !== undefined) {
+      updateData.isActive = body.isActive;
+    }
+
+    console.log('[PATCH /api/admin/facets] Updating facet:', id, 'with data:', updateData);
+
     const facet = await prisma.facetDefinition.update({
       where: { id },
-      data: {
-        ...(body.value && { value: body.value }),
-        ...(body.displayName && { displayName: body.displayName }),
-        ...(body.description !== undefined && { description: body.description }),
-        ...(body.icon !== undefined && { icon: body.icon }),
-        ...(body.color !== undefined && { color: body.color }),
-        ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
-        ...(body.isActive !== undefined && { isActive: body.isActive }),
-      },
+      data: updateData,
     });
+
+    console.log('[PATCH /api/admin/facets] Updated facet:', facet);
 
     return NextResponse.json(facet);
   } catch (error) {

@@ -12,7 +12,20 @@ import {
   ToggleRight,
   Search,
   X,
+  Users,
+  Link,
+  Sparkles,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from 'lucide-react';
+
+interface PersonaVote {
+  wouldBuy: boolean;
+  aestheticScore: number;
+  priceFeeling: 'too_cheap' | 'perfect' | 'too_expensive';
+  reasoning: string;
+}
 
 interface AffiliateOffer {
   id: string;
@@ -32,7 +45,21 @@ interface AffiliateOffer {
   impressions: number;
   clicks: number;
   createdAt: string;
+  // Persona validation
+  personaValidated: boolean;
+  personaScore: number | null;
+  personaVotes: Record<string, PersonaVote> | null;
+  personaFeedback: string | null;
 }
+
+// Persona display names
+const PERSONA_NAMES: Record<string, string> = {
+  emily: 'Emily',
+  sofia: 'Sofia',
+  luna: 'Luna',
+  mia: 'Mia',
+  claire: 'Claire',
+};
 
 const CATEGORIES = [
   { value: 'peripherals', label: 'Gaming Peripherals' },
@@ -67,7 +94,22 @@ export default function AffiliatesAdminPage() {
     promoColor: '#ec4899',
     startDate: '',
     endDate: '',
+    price: '',
   });
+
+  // Amazon URL parsing state
+  const [amazonUrl, setAmazonUrl] = useState('');
+  const [urlParsing, setUrlParsing] = useState(false);
+  const [urlError, setUrlError] = useState('');
+
+  // Persona validation state
+  const [personaValidating, setPersonaValidating] = useState(false);
+  const [personaResults, setPersonaResults] = useState<{
+    passed: boolean;
+    approvalCount: number;
+    votes: Record<string, { wouldBuy: boolean; reasoning: string }>;
+    summary: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchOffers();
@@ -199,6 +241,7 @@ export default function AffiliatesAdminPage() {
       promoColor: offer.promoColor || '#ec4899',
       startDate: offer.startDate ? offer.startDate.split('T')[0] : '',
       endDate: offer.endDate ? offer.endDate.split('T')[0] : '',
+      price: '',
     });
     setShowModal(true);
   };
@@ -217,6 +260,7 @@ export default function AffiliatesAdminPage() {
       promoColor: '#ec4899',
       startDate: '',
       endDate: '',
+      price: '',
     });
   };
 
@@ -232,6 +276,21 @@ export default function AffiliatesAdminPage() {
     if (offer.impressions === 0) return '0.00';
     return ((offer.clicks / offer.impressions) * 100).toFixed(2);
   };
+
+  // Get personas who would buy this product
+  const getApprovers = (offer: AffiliateOffer): { names: string[]; total: number } => {
+    if (!offer.personaVotes) {
+      return { names: [], total: 0 };
+    }
+    const approvers: string[] = [];
+    for (const [personaId, vote] of Object.entries(offer.personaVotes)) {
+      if (vote?.wouldBuy) {
+        approvers.push(PERSONA_NAMES[personaId] || personaId);
+      }
+    }
+    return { names: approvers, total: Object.keys(offer.personaVotes).length };
+  };
+
 
   if (loading) {
     return (
@@ -321,6 +380,7 @@ export default function AffiliatesAdminPage() {
               <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Offer</th>
               <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Partner</th>
               <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Category</th>
+              <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Personas</th>
               <th className="text-center px-6 py-4 text-sm font-semibold text-slate-400">Priority</th>
               <th className="text-center px-6 py-4 text-sm font-semibold text-slate-400">Impressions</th>
               <th className="text-center px-6 py-4 text-sm font-semibold text-slate-400">Clicks</th>
@@ -368,6 +428,27 @@ export default function AffiliatesAdminPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-slate-300">{offer.partner}</td>
+                <td className="px-6 py-4">
+                  {(() => {
+                    const { names, total } = getApprovers(offer);
+                    if (total === 0) {
+                      return <span className="text-slate-500 text-sm">-</span>;
+                    }
+                    return (
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-slate-400" />
+                        <div className="text-sm">
+                          <span className={`font-medium ${names.length >= 3 ? 'text-green-400' : names.length > 0 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {names.length}/{total}
+                          </span>
+                          <span className="text-slate-400 ml-1 text-xs">
+                            {names.length > 0 ? names.join(', ') : 'None'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </td>
                 <td className="px-6 py-4">
                   <span className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">
                     {CATEGORIES.find(c => c.value === offer.category)?.label || offer.category}
