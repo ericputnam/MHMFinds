@@ -3,7 +3,7 @@
 ### URL Category Extraction
 ```typescript
 function extractCategoryFromUrl(url: string): string | undefined {
-  // URL pattern: wewantmods.com/sims4/{category}/{item-slug}
+  // URL pattern: wewantmods.com (WM) /sims4/{category}/{item-slug}
   const match = url.match(/wewantmods\.com\/sims4\/([^\/]+)/);
   return match ? match[1] : undefined;
 }

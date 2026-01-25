@@ -1,0 +1,255 @@
+================================================================================
+CTB-007: Fix NULL contentType Mods - Report
+================================================================================
+Generated: 2026-01-24T13:03:32.601Z
+Mode: APPLIED
+
+SUMMARY
+----------------------------------------
+Total mods with NULL contentType: 45
+Auto-categorized: 22
+Needs manual review: 23
+
+================================================================================
+AUTO-CATEGORIZED MODS BY CONTENT TYPE
+================================================================================
+
+accessories: 1 mod(s)
+  [medium] Gabrielle Suit
+    Keywords: accessories, watch, watches
+
+eyebrows: 2 mod(s)
+  [medium] CAS Close Up – No Emotions
+    Keywords: eyebrow, eyebrows, brow, brows
+  [medium] Seira Swoop V1 and V2
+    Keywords: brow
+
+full-body: 6 mod(s)
+  [medium] 2 Dek Sol III Clothing Set
+    Keywords: clothing set
+  [medium] 4 Prestigious Highschool Uniform
+    Keywords: uniform
+  [medium] Bridgerton Gentleman’s Outfit
+    Keywords: outfit
+  [medium] Casual Male Regency Outfit
+    Keywords: outfit
+  [medium] Controlled Position – CAS Tuning Mod
+    Keywords: outfit, outfits
+  [high] Masculine Bridgerton Outfits Recolors
+    Keywords: outfit, outfits
+
+gameplay-mod: 1 mod(s)
+  [medium] Wake Up Animation
+    Keywords: interaction, realistic
+
+hair: 6 mod(s)
+  [medium] AirPods Max ver1 and ver2
+    Keywords: hair, hairstyle, hairstyles
+  [high] CAMO Liz F-Locs
+    Keywords: locs, loc
+  [high] KALIII Braided Locs
+    Keywords: braid, locs, loc
+  [high] Kamari Locs
+    Keywords: locs, loc
+  [medium] Plush Ear Muffs
+    Keywords: hair, hairstyle, hairstyles
+  [medium] Skull Earphones
+    Keywords: hair, hairstyle, hairstyles
+
+jewelry: 1 mod(s)
+  [medium] Exited About New Year
+    Keywords: ring, rings
+
+lot: 3 mod(s)
+  [medium] Elly
+    Keywords: house, home
+  [medium] Functional Treadmill
+    Keywords: home, apartment
+  [medium] Lots Of Gym Equipment
+    Keywords: lot
+
+pet-accessories: 1 mod(s)
+  [medium] Printed Collars For Large Dogs V2
+    Keywords: collar
+
+preset: 1 mod(s)
+  [medium] Stand Still in CAS
+    Keywords: body preset, preset, presets
+
+================================================================================
+MODS REQUIRING MANUAL REVIEW
+================================================================================
+
+ID: cmkq9636f0018oxvgvtm4rgw1
+Title: 1 Feronia CC Pack
+Legacy Category: Other
+Source: Tumblr
+Description: Howdy everyone! I hope we all have had a good start to the year so far, in the UK right now we've been hit with some snow so I've been enjoying lots of hot drinks and warming tasty foods. This months....
+Partial matches: lot
+Notes: Insufficient matches for confident detection. Found: "lot"
+
+ID: cmkq94gyn0014oxvgc11jvo3u
+Title: 1 Soft Notes Set
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Momo-CC. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmkq96gyf0019oxvgx05l0uei
+Title: 2 Reading Corner CC Pack
+Legacy Category: Other
+Source: Tumblr
+Description: Custom content created by Sims41ife. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmkq96rfc001aoxvgyzjl9sal
+Title: 3 The Praline Collection
+Legacy Category: Other
+Source: Tumblr
+Description: It's been super chilly here in the UK so I felt the need to remedy that by making some deliciously cosy knitwear for your sims to enjoy. The Praline Collection keeps it classic with a set of staple...
+Partial matches: hat
+Notes: Insufficient matches for confident detection. Found: "hat"
+
+ID: cmkq978yp001coxvgmrnp0lto
+Title: 5 Artful Notion Pack
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Atticwindowatdawn. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmkq8tiis0007oxvgcwlhdtdf
+Title: Bridgerton Collection Part 1
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Regalia. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmim8tq3h008roxy8gutpd6x8
+Title: Cleaning Overrides
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Cleaning Overrides by LargeTayterTots is a default replacement for the in-game cleaning spray and sponge. The creator simply recolored and retextured the mesh to make it more affluent, luxurious, and ...
+Notes: No keywords matched
+
+ID: cmim8w9ha00nwoxy8dw18vl01
+Title: Deacon
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If you want an Asian male Sim to add diversity to your neighborhood, get Deacon. This young adult Sim is good-looking, stylish, and charming. He can easily sway female Sims and make them fall in love ...
+Partial matches: hood
+Notes: Insufficient matches for confident detection. Found: "hood"
+
+ID: cmim8w9jk00nxoxy8rq645s25
+Title: DoYong NCT
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Any K-pop fan will want to have this Sims 4 male Sim in their game. He’s inspired by DoYong, a member of the South Korean boy band NCT. This allows you to play with your favorite group member and deve...
+Notes: No keywords matched
+
+ID: cmkq8sjov0003oxvg86ceimjb
+Title: Emma Regency Collaboration
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Vintage Simstress X Peebs X BatsFromWesteros. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmiglig32000ooxm5eszyq1p3
+Title: Focus
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: RELATED POST: 30 Best Sims 4 School Uniforms CC You Need To Ace The Academic Look
+Partial matches: uniform
+Notes: Insufficient matches for confident detection. Found: "uniform"
+
+ID: cmim93y6c01xmoxy8qgjcioez
+Title: Gamer Tie for Work
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If your man is a gamer, but also a professional, this gift will make him smile. He can show off his love for video games to his coworkers and he won’t be able to help but bring you up, too! When my bo...
+Partial matches: ring
+Notes: Insufficient matches for confident detection. Found: "ring"
+
+ID: cmknfbchy007uoxoly7o6hkuv
+Title: Getting Ready Animation Pack
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: Getting Ready is a small animation of a Sim checking themselves out in the mirror before heading out for the day. This Sims 4 morning routine mod makes morning prep feel more structured and meaningful...
+Partial matches: mirror
+Notes: Insufficient matches for confident detection. Found: "mirror"
+
+ID: cmim8w8ps00nkoxy8su2eazvu
+Title: Mike Hannigan
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If you’re a fan of the hit series Friends, you need to get this male Sim. Mike Hannigan is Phoebe’s husband in the series, who was portrayed by Paul Rudd. Be sure to download and install all CCs liste...
+Notes: No keywords matched
+
+ID: cmkq948700013oxvgs4ede7en
+Title: Neva Set
+Legacy Category: Other
+Source: Tumblr
+Description: Custom content created by Mechtasims. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmkq8sadk0002oxvgq90ksajr
+Title: Regency Infant & Toddler Skeleton Suit
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Peebs. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmkq8trfi0008oxvgju1piyku
+Title: Regency Reverie Collection
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by GildedGhosts. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmim8w8rl00nloxy8hpl10s6o
+Title: Ricardo Praia
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Ricardo Praia is a Sims 4 male young adult who loves anything tropical and summer-related. His favorite Season is, Vacation on the Beach, and he loves showing off his 6-pack and toned arms every chanc...
+Partial matches: ring
+Notes: Insufficient matches for confident detection. Found: "ring"
+
+ID: cmkq95u2s0017oxvg06ir1tfp
+Title: Shearling Collection II
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by LuxySims. Enhance your Sims 4 experience with this community-created content.
+Notes: No keywords matched
+
+ID: cmil16s2c009soxeexnxuqm4n
+Title: Skims X Dolce and Gabana
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: I love this set of undergarments designed in a leopard print. The luxury items exude confidence, style, and power in every way. If you have an influencer Sim, this set will look perfect on them. You c...
+Notes: No keywords matched
+
+ID: cmijp9lky00y9oxc8eihxwibx
+Title: Spice Fever
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Spice Girls are one of the most iconic girl groups from the 2000s, and this set is inspired by their style and fashion. Featuring seven pieces, this is the ultimate pack to add to your Sims 4 Y2K cc f...
+Partial matches: full-body
+Notes: Insufficient matches for confident detection. Found: "full-body"
+
+ID: cmim8vlgh00jgoxy8zngnuwfd
+Title: Tom Holden
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Tom Holden has a very interesting back story. Once a military man, Tom Holden has moved to sleepy Willow Creek to rediscover himself in the reality of a peaceful life. Still feeling a bit out of socia...
+Partial matches: loc
+Notes: Insufficient matches for confident detection. Found: "loc"
+
+ID: cmknfbmc9008hoxolyk4yfvky
+Title: Willow Health Club: Evermore Save Project
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: The Willow Health Club from the Evermore Save Project is a beautifully layered gym. As much as it functions as a fully equipped gym, with spaces for yoga, swimming, relaxation, and fitness, it can als...
+Notes: No keywords matched
+
+================================================================================
+END OF REPORT
+================================================================================

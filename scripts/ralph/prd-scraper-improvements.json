@@ -1,9 +1,9 @@
 {
-  "projectName": "We Want Mods Scraper Content Type Improvements",
+  "projectName": "WM Scraper Content Type Improvements",
   "branchName": "feat/scraper-content-type",
-  "description": "Improve the We Want Mods scraper to correctly detect and assign content types at scrape time. Use URL path as primary signal, enhanced title/description analysis, and auto-create FacetDefinitions for new categories.",
+  "description": "Improve the WM (wewantmods.com) scraper to correctly detect and assign content types at scrape time. Use URL path as primary signal, enhanced title/description analysis, and auto-create FacetDefinitions for new categories.",
   "context": {
-    "urlPathStrategy": "We Want Mods URLs contain category paths like /sims4/bathroom/, /sims4/eyebrows/ - use these as primary content type signal",
+    "urlPathStrategy": "WM URLs contain category paths like /sims4/bathroom/, /sims4/eyebrows/ - use these as primary content type signal",
     "contentTypeStrategy": "Granular content types (eyebrows as own type, not under makeup)",
     "roomStrategy": "Use themes array for room tags (bathroom, kitchen) alongside contentType for object type",
     "facetCreation": "Auto-create FacetDefinitions when encountering unknown categories"
@@ -12,8 +12,8 @@
   "userStories": [
     {
       "id": "SCR-001",
-      "title": "Extract category from We Want Mods URL path",
-      "description": "Parse the We Want Mods URL to extract the category segment and use it as a content type signal",
+      "title": "Extract category from WM URL path",
+      "description": "Parse the WM URL to extract the category segment and use it as a content type signal",
       "acceptanceCriteria": [
         "Create extractCategoryFromUrl(url: string): string | undefined function in weWantModsScraper.ts",
         "Parse URLs like https://wewantmods.com/sims4/bathroom/item-name to extract 'bathroom'",
@@ -30,9 +30,9 @@
     {
       "id": "SCR-002",
       "title": "Create URL category to contentType mapping",
-      "description": "Map We Want Mods URL categories to our internal contentType values",
+      "description": "Map WM URL categories to our internal contentType values",
       "acceptanceCriteria": [
-        "Create URL_CATEGORY_MAP constant mapping We Want Mods paths to contentTypes",
+        "Create URL_CATEGORY_MAP constant mapping WM paths to contentTypes",
         "Map common categories: hair, makeup, skin, eyes, furniture, decor, poses, etc.",
         "Map CAS categories: cas-backgrounds, presets, overlays",
         "Map granular face categories: eyebrows, eyelashes, lashes, eyeliner, lipstick, blush, beard",
@@ -114,7 +114,7 @@
     },
     {
       "id": "SCR-007",
-      "title": "Handle We Want Mods collection/pack pages",
+      "title": "Handle WM collection/pack pages",
       "description": "Collection pages like 'Bathroom CC Pack' should apply room theme to all items",
       "acceptanceCriteria": [
         "Detect when scraping a collection/pack page (multiple items)",
@@ -152,7 +152,7 @@
       "description": "Build tests that verify scraper correctly categorizes mods from sample URLs",
       "acceptanceCriteria": [
         "Create scripts/ralph/scr-009-scraper-tests.ts",
-        "Test URL parsing for various We Want Mods URL patterns",
+        "Test URL parsing for various WM URL patterns",
         "Test category mapping for all known categories",
         "Test that bathroom URL + 'Elegant Sink' title -> contentType:furniture, themes:[bathroom]",
         "Test that eyebrows URL + 'Natural Brows' title -> contentType:eyebrows",

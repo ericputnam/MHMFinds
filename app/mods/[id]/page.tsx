@@ -21,6 +21,8 @@ import {
   Home
 } from 'lucide-react';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ModDetailPage() {
   const params = useParams();
@@ -36,7 +38,7 @@ export default function ModDetailPage() {
       try {
         setLoading(true);
         const response = await fetch(`/api/mods/${params.id}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             setError('Mod not found');
@@ -64,7 +66,7 @@ export default function ModDetailPage() {
 
   const handleDownload = () => {
     if (!mod) return;
-    
+
     // TODO: Track download in database
     if (mod.downloadUrl) {
       window.open(mod.downloadUrl, '_blank');
@@ -170,7 +172,7 @@ export default function ModDetailPage() {
                     <Package size={64} className="text-gray-400" />
                   </div>
                 )}
-                
+
                 {/* Badges */}
                 <div className="absolute top-4 left-4 flex gap-2">
                   {mod.isVerified && (
@@ -200,9 +202,8 @@ export default function ModDetailPage() {
                       <button
                         key={index}
                         onClick={() => setSelectedImage(image)}
-                        className={`relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-sims-pink transition-all ${
-                          selectedImage === image ? 'ring-2 ring-sims-pink' : ''
-                        }`}
+                        className={`relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-sims-pink transition-all ${selectedImage === image ? 'ring-2 ring-sims-pink' : ''
+                          }`}
                       >
                         <img
                           src={image}
@@ -231,9 +232,11 @@ export default function ModDetailPage() {
             {/* Description Section */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Mod</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {mod.description || mod.shortDescription || 'No description available.'}
-              </p>
+              <div className="prose prose-slate max-w-none text-gray-700 leading-relaxed">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {mod.description || mod.shortDescription || 'No description available.'}
+                </ReactMarkdown>
+              </div>
             </div>
 
             {/* Tags Section */}
@@ -262,7 +265,7 @@ export default function ModDetailPage() {
             {/* Title & Creator */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{mod.title}</h1>
-              
+
               {/* Creator Info */}
               <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
                 <div className="w-12 h-12 rounded-full bg-sims-pink flex items-center justify-center text-white font-bold text-lg">
@@ -350,11 +353,10 @@ export default function ModDetailPage() {
 
                 <button
                   onClick={handleFavorite}
-                  className={`w-full ${
-                    isFavorited
+                  className={`w-full ${isFavorited
                       ? 'bg-red-500 hover:bg-red-600 text-white'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  } py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300`}
+                    } py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300`}
                 >
                   <Heart size={20} className={isFavorited ? 'fill-current' : ''} />
                   {isFavorited ? 'Favorited' : 'Add to Favorites'}

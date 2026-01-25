@@ -104,7 +104,7 @@ function getExtensionFromContentType(contentType: string): string {
 }
 
 /**
- * Check if a URL is from an allowed external source (not We Want Mods)
+ * Check if a URL is from an allowed external source (not WM/wewantmods.com)
  */
 export function isExternalImageUrl(url: string): boolean {
   if (!url) return false;

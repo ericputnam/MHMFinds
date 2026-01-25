@@ -101,7 +101,7 @@ export class AgentLearning {
       JOIN monetization_actions ma ON im."actionId" = ma.id
       WHERE im.status = 'complete'
         AND im."revenueImpact" IS NOT NULL
-        AND ma."actionType" = ${actionType}
+        AND ma."actionType"::text = ${actionType}
     `);
 
     if (measurements.length < MIN_MEASUREMENTS_FOR_ADJUSTMENT) {

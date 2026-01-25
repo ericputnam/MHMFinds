@@ -1,9 +1,18 @@
 {
   "buildCommand": "npx prisma generate && next build",
   "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/monetization-agent",
+      "schedule": "0 6 * * *"
+    }
+  ],
   "functions": {
     "app/api/**/*": {
       "maxDuration": 10
+    },
+    "app/api/cron/**/*": {
+      "maxDuration": 300
     }
   },
   "headers": [

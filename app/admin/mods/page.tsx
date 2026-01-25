@@ -66,6 +66,7 @@ export default function ModsManagementPage() {
   const [filterVisualStyle, setFilterVisualStyle] = useState('');
   const [filterTheme, setFilterTheme] = useState('');
   const [filterMissingFacets, setFilterMissingFacets] = useState(false);
+  const [missingFacetsCount, setMissingFacetsCount] = useState(0);
 
   // Facet definitions
   const [facetDefs, setFacetDefs] = useState<Record<string, FacetDefinition[]>>({});
@@ -142,6 +143,7 @@ export default function ModsManagementPage() {
       setMods(data.mods || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
+      setMissingFacetsCount(data.missingFacetsCount || 0);
     } catch (error) {
       console.error('Failed to fetch mods:', error);
     } finally {
@@ -416,6 +418,11 @@ export default function ModsManagementPage() {
             <span className="text-sm text-slate-300 flex items-center gap-1">
               <AlertCircle className="h-4 w-4 text-yellow-500" />
               Missing Facets Only
+              {missingFacetsCount > 0 && (
+                <span className="ml-1 px-2 py-0.5 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-semibold">
+                  {missingFacetsCount}
+                </span>
+              )}
             </span>
           </label>
 

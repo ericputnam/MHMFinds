@@ -44,6 +44,8 @@ export function FacetedSidebar({ selectedFacets, onFacetChange, onClearAll }: Fa
   const [loading, setLoading] = useState(true);
   // Only Content Type is expanded by default - other filters are collapsed to reduce sidebar clutter
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['contentType']));
+  // Track which facet groups are showing all values (expanded beyond 20)
+  const [showAllValues, setShowAllValues] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchFacets();
@@ -69,6 +71,16 @@ export function FacetedSidebar({ selectedFacets, onFacetChange, onClearAll }: Fa
       newExpanded.add(group);
     }
     setExpandedGroups(newExpanded);
+  };
+
+  const toggleShowAllValues = (facetType: string) => {
+    const newShowAll = new Set(showAllValues);
+    if (newShowAll.has(facetType)) {
+      newShowAll.delete(facetType);
+    } else {
+      newShowAll.add(facetType);
+    }
+    setShowAllValues(newShowAll);
   };
 
   const toggleFacet = (facetType: string, value: string) => {
@@ -176,37 +188,54 @@ export function FacetedSidebar({ selectedFacets, onFacetChange, onClearAll }: Fa
               {/* Group Values */}
               {isExpanded && (
                 <div className="mt-1 ml-2 space-y-0.5">
-                  {values.slice(0, 20).map(facet => {
-                    const isSelected = selectedValues.includes(facet.value);
+                  {(() => {
+                    const isShowingAll = showAllValues.has(facetType);
+                    const displayLimit = 20;
+                    const displayedValues = isShowingAll ? values : values.slice(0, displayLimit);
+                    const hasMoreValues = values.length > displayLimit;
+                    const remainingCount = values.length - displayLimit;
+
                     return (
-                      <button
-                        key={facet.value}
-                        onClick={() => toggleFacet(facetType, facet.value)}
-                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-left transition-all ${
-                          isSelected
-                            ? 'bg-sims-pink/20 text-white'
-                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2 text-sm">
-                          {facet.icon && <span className="text-xs">{facet.icon}</span>}
-                          <span className={isSelected ? 'font-medium' : ''}>
-                            {facet.displayName}
-                          </span>
-                        </span>
-                        <span className={`text-xs ${isSelected ? 'text-sims-pink' : 'text-slate-500'}`}>
-                          {facet.count > 0 ? facet.count : ''}
-                        </span>
-                      </button>
+                      <>
+                        {displayedValues.map(facet => {
+                          const isSelected = selectedValues.includes(facet.value);
+                          return (
+                            <button
+                              key={facet.value}
+                              onClick={() => toggleFacet(facetType, facet.value)}
+                              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-left transition-all ${
+                                isSelected
+                                  ? 'bg-sims-pink/20 text-white'
+                                  : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                              }`}
+                            >
+                              <span className="flex items-center gap-2 text-sm">
+                                {facet.icon && <span className="text-xs">{facet.icon}</span>}
+                                <span className={isSelected ? 'font-medium' : ''}>
+                                  {facet.displayName}
+                                </span>
+                              </span>
+                              <span className={`text-xs ${isSelected ? 'text-sims-pink' : 'text-slate-500'}`}>
+                                {facet.count > 0 ? facet.count : ''}
+                              </span>
+                            </button>
+                          );
+                        })}
+                        {hasMoreValues && (
+                          <div className="mt-2 pt-2 border-t border-white/5">
+                            <button
+                              onClick={() => toggleShowAllValues(facetType)}
+                              className="w-full flex items-center justify-center gap-1.5 text-xs text-slate-400 hover:text-sims-pink py-1.5 transition-colors cursor-pointer"
+                            >
+                              <span className="bg-white/5 hover:bg-sims-pink/20 px-2 py-0.5 rounded-full transition-colors">
+                                {isShowingAll ? 'Show less' : `+${remainingCount} more`}
+                              </span>
+                            </button>
+                          </div>
+                        )}
+                      </>
                     );
-                  })}
-                  {values.length > 20 && (
-                    <div className="mt-2 pt-2 border-t border-white/5">
-                      <button className="w-full flex items-center justify-center gap-1.5 text-xs text-slate-400 hover:text-sims-pink py-1.5 transition-colors">
-                        <span className="bg-white/5 px-2 py-0.5 rounded-full">+{values.length - 20} more</span>
-                      </button>
-                    </div>
-                  )}
+                  })()}
                 </div>
               )}
             </div>

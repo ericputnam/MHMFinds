@@ -76,12 +76,12 @@ claude
 
 | Agent | Purpose | Status |
 |-------|---------|--------|
-| prd-runner | Works through PRD stories autonomously | Planned |
-| db-script | Runs database scripts safely | Planned |
-| facet-curator | Manages taxonomy/facet quality | Planned |
-| scraper-monitor | Runs and monitors content aggregation | Planned |
-| build-validator | Pre-deploy verification | Planned |
-| seo-analyst | SEO health checks using GSC/GA data | Planned |
+| prd-runner | Works through PRD stories autonomously | **Ready** |
+| db-script | Runs database scripts safely with dry-run support | **Ready** |
+| db-backup | Creates table backups before destructive operations | **Ready** |
+| facet-curator | Manages taxonomy/facet quality, merges duplicates | **Ready** |
+| scraper-monitor | Runs and monitors content aggregation jobs | **Ready** |
+| seo-analyst | SEO health checks using GSC/GA data | **Ready** |
 
 ## Commit Message Format
 

@@ -1,11 +1,11 @@
 /**
- * We Want Mods Scraper
+ * WM (wewantmods.com) Scraper
  *
- * This script scrapes the We Want Mods sitemap to discover Sims 4 mods,
+ * This script scrapes the WM sitemap to discover Sims 4 mods,
  * then follows external links to get detailed mod information.
  *
- * IMPORTANT: This scraper NEVER stores We Want Mods URLs in the database.
- * It only uses We Want Mods as a discovery source, storing the actual
+ * IMPORTANT: This scraper NEVER stores WM URLs in the database.
+ * It only uses WM as a discovery source, storing the actual
  * external source URLs (TSR, Patreon, Tumblr, ModCollective, etc.)
  *
  * Usage:
@@ -36,13 +36,13 @@ import { weWantModsScraper } from '../lib/services/weWantModsScraper';
 
 async function main() {
   console.log('='.repeat(60));
-  console.log('🎮 WE WANT MODS SCRAPER');
+  console.log('🎮 WM (wewantmods.com) SCRAPER');
   console.log('='.repeat(60));
   console.log('');
-  console.log('This scraper discovers mods from We Want Mods and imports');
+  console.log('This scraper discovers mods from WM and imports');
   console.log('them by following external source links.');
   console.log('');
-  console.log('⚠️  IMPORTANT: Only external URLs are stored, never We Want Mods URLs');
+  console.log('⚠️  IMPORTANT: Only external URLs are stored, never WM URLs');
   console.log('🖼️  Images are downloaded and uploaded to Vercel Blob storage');
   console.log('');
 

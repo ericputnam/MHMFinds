@@ -217,12 +217,19 @@ After user confirms:
    git push origin <current-branch>
    ```
 
-2. **Get the deployment URL:**
+2. **Trigger production deployment with cache clear:**
+   ```bash
+   vercel --prod --force
+   ```
+
+   **Why `--force`?** Vercel caches build artifacts. Without `--force`, old cached code may be served even after a new deployment. The `--force` flag clears the build cache ensuring the latest code is deployed.
+
+3. **Get the deployment URL:**
    ```bash
    vercel ls 2>&1 | head -10
    ```
 
-3. **Report initial status:**
+4. **Report initial status:**
    - Deployment URL
    - Current build status (Building/Ready/Error)
 
@@ -245,8 +252,8 @@ After user confirms:
 
 4. **If status is `● Ready`:**
    - Deployment succeeded!
+   - Proceed to Step 13 (Domain Alias Verification)
    - Report success to user with preview URL
-   - Workflow complete
 
 5. **If status is `● Error`:**
    - **DO NOT stop here - fix the error!**
@@ -300,6 +307,48 @@ After user confirms:
 ```
 
 **Never leave a deployment in Error state.** The workflow is only complete when Vercel shows `● Ready`.
+
+### Step 13: Verify Domain Aliases
+
+**CRITICAL: Custom domains may not automatically point to the latest deployment.**
+
+After deployment shows `● Ready`:
+
+1. **Get the deployment URL from the latest deployment:**
+   ```bash
+   vercel ls 2>&1 | head -5
+   ```
+   Copy the deployment URL (e.g., `mhm-finds-xxx-ericputnams-projects.vercel.app`)
+
+2. **Update custom domain aliases to point to the new deployment:**
+   ```bash
+   # Alias the main domain
+   vercel alias <deployment-url> musthavemods.com
+
+   # Also alias the www subdomain
+   vercel alias <deployment-url> www.musthavemods.com
+   ```
+
+3. **Verify the aliases are set:**
+   ```bash
+   vercel alias ls
+   ```
+   - Confirm both `musthavemods.com` and `www.musthavemods.com` point to the new deployment
+
+4. **Test in production:**
+   - Open `https://musthavemods.com` in an incognito window
+   - Hard refresh with `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows)
+   - Verify the changes are visible
+
+**Why this matters:** Vercel deployments create new URLs each time. Custom domain aliases need to be updated to point to the latest deployment. Without this step, users may see cached/old versions of the site.
+
+**Example:**
+```
+🔗 Updating domain aliases...
+   ✅ vercel alias mhm-finds-abc123.vercel.app musthavemods.com
+   ✅ vercel alias mhm-finds-abc123.vercel.app www.musthavemods.com
+   ✅ Verified: Both domains now point to latest deployment
+```
 
 ## Error Handling
 
@@ -400,8 +449,17 @@ private static get client(): SomeClient {
 
 🚀 Step 11: Deploy
    ✅ Pushed to origin/feature/new-feature
-   ✅ Vercel deployment triggered
+   ✅ Vercel deployment triggered with --force (cache cleared)
    📍 Preview: https://mhm-finds-xxx.vercel.app
+
+⏳ Step 12: Monitor Build
+   ● Building... (polling)
+   ✅ Build succeeded!
+
+🔗 Step 13: Domain Aliases
+   ✅ musthavemods.com → mhm-finds-xxx.vercel.app
+   ✅ www.musthavemods.com → mhm-finds-xxx.vercel.app
+   ✅ Verified in incognito browser
 ```
 
 ## Notes

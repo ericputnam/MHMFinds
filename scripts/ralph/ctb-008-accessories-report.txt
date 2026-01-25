@@ -1,0 +1,198 @@
+================================================================================
+CTB-008: Validate accessory vs furniture categorization - Report
+================================================================================
+Generated: 2026-01-24T13:29:08.954Z
+Mode: APPLIED
+
+SUMMARY
+----------------------------------------
+Total mods to fix: 31
+  - Furniture in accessories: 5
+  - Decor in accessories: 10
+  - Jewelry in accessories: 3
+  - Accessories elsewhere: 8
+  - Jewelry elsewhere: 5
+
+CHANGES BY TARGET CONTENT TYPE
+----------------------------------------
+  jewelry: 8
+  accessories: 8
+  plants: 5
+  furniture: 4
+  lighting: 2
+  wall-art: 2
+  decor: 1
+  clutter: 1
+
+================================================================================
+DETAILED CHANGES
+================================================================================
+
+FURNITURE ITEMS MISCATEGORIZED AS ACCESSORIES:
+----------------------------------------
+ID: cmikxhzb8000eox9emzrlkzn7
+Title: Slate Set
+Change: accessories -> furniture
+Keywords: shower
+
+ID: cmikxhmvr0008ox9ewvgat2qk
+Title: Caroline Corner Shower
+Change: accessories -> furniture
+Keywords: toilet, shower
+
+ID: cmil15hsi009aoxee8tugdo94
+Title: Ready Or Not Bathroom CC
+Change: accessories -> lighting
+Keywords: toilet, shower
+
+ID: cmikxhwdf000cox9eupemo69x
+Title: Keep Life Simple Bathroom
+Change: accessories -> furniture
+Keywords: shower
+
+ID: cmil0lkoa0006oxeewus9em56
+Title: Naturalis Shower
+Change: accessories -> furniture
+Keywords: shower
+
+DECOR ITEMS MISCATEGORIZED AS ACCESSORIES:
+----------------------------------------
+ID: cmil0nq5o0012oxee29p3mjyu
+Title: Rooting For You Plant Set
+Change: accessories -> plants
+Keywords: plant, plants
+
+ID: cmim90p2701gwoxy81wynwvyp
+Title: Snow-Covered Trees
+Change: accessories -> plants
+Keywords: plants
+
+ID: cmijptk310187oxc8vwnli8w3
+Title: Enchanted Dreams
+Change: accessories -> lighting
+Keywords: lamp
+
+ID: cmim8wruj00raoxy83ahxmy9f
+Title: Regenerate
+Change: accessories -> plants
+Keywords: plants, mirrors
+
+ID: cmil0y7ti005zoxeefae1ozmf
+Title: Fridge
+Change: accessories -> plants
+Keywords: plant
+
+ID: cmil1eegr00cnoxee6nfum2wh
+Title: Abstract Paintings
+Change: accessories -> wall-art
+Keywords: paintings
+
+ID: cmim8uln300dnoxy89hjyq56k
+Title: Pumpkin Project
+Change: accessories -> decor
+Keywords: plant
+
+ID: cmim8ul9000dgoxy8chqcwq5q
+Title: Pumpkin Pillow
+Change: accessories -> clutter
+Keywords: pillow
+
+ID: cmim8yjkh012eoxy8jbfafkk5
+Title: Gym Posters
+Change: accessories -> wall-art
+Keywords: posters
+
+ID: cmim91mkd01mqoxy80am9ktqd
+Title: School Trips Events
+Change: accessories -> plants
+Keywords: plants
+
+JEWELRY ITEMS MISCATEGORIZED AS ACCESSORIES:
+----------------------------------------
+ID: cmil1jjsl00f4oxeelh0lq1wa
+Title: Lilith Rings
+Change: accessories -> jewelry
+Keywords: rings
+
+ID: cmikiqkia004foxnaly9ast0q
+Title: Fandom Masks
+Change: accessories -> jewelry
+Keywords: bracelets
+
+ID: cmijnn6cx00gcoxc8kqsxpm3i
+Title: Gloomy Coquette Collection
+Change: accessories -> jewelry
+Keywords: necklaces
+
+TRUE ACCESSORIES IN WRONG CATEGORIES:
+----------------------------------------
+ID: cmil1bxry00bloxeeqg3bxr0x
+Title: Stockings Mesh With A Belt
+Change: tops -> accessories
+Keywords: belt, stockings
+
+ID: cmijpt7je0180oxc8t6p5a5hh
+Title: Little Fairy
+Change: tops -> accessories
+Keywords: belt
+
+ID: cmim8v74n00gyoxy8is8sgolo
+Title: Second Tights
+Change: skin -> accessories
+Keywords: tights
+
+ID: cmim8tvi4009xoxy8mxu8jqcb
+Title: Knee-High Fox Socks
+Change: tops -> accessories
+Keywords: socks
+
+ID: cmil1bw9p00bkoxeer9bnzcei
+Title: Lulia Socks
+Change: tops -> accessories
+Keywords: socks
+
+ID: cmil1cvpm00bzoxeeug9guyps
+Title: Gothic Rose Stockings
+Change: tops -> accessories
+Keywords: tights, stockings
+
+ID: cmigonowv000soxkzd6q2r9t7
+Title: Sims 4 CC Mermaid Gloves
+Change: tops -> accessories
+Keywords: gloves
+
+ID: cmikkja3100beox33csjbhggr
+Title: Space Gloves
+Change: glasses -> accessories
+Keywords: gloves
+
+JEWELRY ITEMS IN WRONG CATEGORIES:
+----------------------------------------
+ID: cmijo5q4r00ofoxc811du5gjx
+Title: Luisa Earrings
+Change: makeup -> jewelry
+Keywords: earrings, hoop earrings
+
+ID: cmim8zlsd0199oxy80ryea11c
+Title: 444/LUV Nose Piercings
+Change: gameplay-mod -> jewelry
+Keywords: piercings
+
+ID: cmiglj2z90014oxm5by0zaefe
+Title: The Serpenti Jewelry Collection
+Change: makeup -> jewelry
+Keywords: jewelry
+
+ID: cmil1mdw200gioxeex2i3ey19
+Title: Love Septum Nose Piercing
+Change: makeup -> jewelry
+Keywords: earrings, hoop earrings, ring, piercing, nose piercing, septum
+
+ID: cmiglizzn0012oxm544c6027e
+Title: Diamond and Pearl Wing Dangle Earring
+Change: makeup -> jewelry
+Keywords: necklace, earring, earrings, jewelry
+
+================================================================================
+END OF REPORT
+================================================================================

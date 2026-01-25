@@ -38,7 +38,7 @@ of progress file as you discover them.
 This PRD depends on CTB-003 (contentTypeDetector.ts) from the Content Type Backfill PRD.
 Complete at least CTB-001 through CTB-004 before starting this PRD.
 
-### We Want Mods URL Structure
+### WM (wewantmods.com) URL Structure
 ```
 https://wewantmods.com/sims4/{category}/{item-slug}
 

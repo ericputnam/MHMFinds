@@ -1,0 +1,505 @@
+==========================================
+CTB-004: CONTENT TYPE DETECTION TEST SUITE
+==========================================
+Test Cases: 149
+Date: 2026-01-24T13:00:41.494Z
+
+------------------------------------------
+CATEGORY: Hair Variations
+------------------------------------------
+  [CT: PASS] "Elegant Ponytail Hair"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Box Braids Hair"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Messy Updo Hairstyle"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Wispy Bangs Hair"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Short Bob Cut"
+         Expected: hair | Got: hair (medium)
+  [CT: PASS] "Pixie Hair"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Natural Afro Hair"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Long Waves Hairstyle"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Curly Locs Hair"
+         Expected: hair | Got: hair (high)
+  [CT: PASS] "Sleek Bun Hair"
+         Expected: hair | Got: hair (high)
+
+------------------------------------------
+CATEGORY: Face - Eyebrows
+------------------------------------------
+  [CT: PASS] "Natural Eyebrows N45"
+         Expected: eyebrows | Got: eyebrows (high)
+  [CT: PASS] "Bushy Brows"
+         Expected: eyebrows | Got: eyebrows (high)
+  [CT: PASS] "Thin Arched Eyebrow"
+         Expected: eyebrows | Got: eyebrows (high)
+  [CT: PASS] "Fluffy Brow Set"
+         Expected: eyebrows | Got: eyebrows (high)
+
+------------------------------------------
+CATEGORY: Face - Lashes
+------------------------------------------
+  [CT: PASS] "Dramatic 3D Lashes"
+         Expected: lashes | Got: lashes (high)
+  [CT: PASS] "Natural Eyelashes"
+         Expected: lashes | Got: lashes (high)
+  [CT: PASS] "Wispy Lash Set"
+         Expected: lashes | Got: lashes (high)
+  [CT: PASS] "3D Eyelash Collection"
+         Expected: lashes | Got: lashes (high)
+
+------------------------------------------
+CATEGORY: Face - Eyeliner
+------------------------------------------
+  [CT: PASS] "Cat Eye Eyeliner"
+         Expected: eyeliner | Got: eyeliner (high)
+  [CT: PASS] "Graphic Liner Look"
+         Expected: eyeliner | Got: eyeliner (high)
+  [CT: PASS] "Smudged Eye Liner"
+         Expected: eyeliner | Got: eyeliner (high)
+
+------------------------------------------
+CATEGORY: Face - Lipstick
+------------------------------------------
+  [CT: PASS] "Matte Lipstick N12"
+         Expected: lipstick | Got: lipstick (high)
+  [CT: PASS] "Glossy Lip Gloss"
+         Expected: lipstick | Got: lipstick (high)
+  [CT: PASS] "Butter Gloss Collection"
+         Expected: lipstick | Got: lipstick (high)
+  [CT: PASS] "Cerise Lips"
+         Expected: lipstick | Got: lipstick (high)
+  [CT: PASS] "Lip Color Set"
+         Expected: lipstick | Got: lipstick (high)
+
+------------------------------------------
+CATEGORY: Face - Blush
+------------------------------------------
+  [CT: PASS] "Natural Blush N05"
+         Expected: blush | Got: blush (high)
+  [CT: PASS] "Soft Blusher Set"
+         Expected: blush | Got: blush (high)
+  [CT: PASS] "Rosy Cheek Color"
+         Expected: blush | Got: blush (high)
+
+------------------------------------------
+CATEGORY: Face - Beard
+------------------------------------------
+  [CT: PASS] "Full Beard"
+         Expected: beard | Got: beard (high)
+  [CT: PASS] "Stubble Beard Look"
+         Expected: beard | Got: beard (high)
+  [CT: PASS] "Goatee"
+         Expected: beard | Got: beard (high)
+
+------------------------------------------
+CATEGORY: Face - Mustache
+------------------------------------------
+  [CT: PASS] "Handlebar Mustache"
+         Expected: facial-hair | Got: facial-hair (high)
+  [CT: PASS] "Facial Hair Pack"
+         Expected: facial-hair | Got: facial-hair (high)
+  [CT: PASS] "Thick Sideburns"
+         Expected: facial-hair | Got: facial-hair (high)
+
+------------------------------------------
+CATEGORY: Clothing - Tops
+------------------------------------------
+  [CT: PASS] "Cropped Hoodie"
+         Expected: tops | Got: tops (medium)
+  [CT: PASS] "Casual T-Shirt"
+         Expected: tops | Got: tops (high)
+  [CT: PASS] "Winter Sweater"
+         Expected: tops | Got: tops (medium)
+  [CT: PASS] "Leather Jacket"
+         Expected: tops | Got: tops (medium)
+  [CT: PASS] "Silk Blouse"
+         Expected: tops | Got: tops (medium)
+  [CT: PASS] "Oversized Cardigan"
+         Expected: tops | Got: tops (medium)
+  [CT: PASS] "Tank Top"
+         Expected: tops | Got: tops (high)
+  [CT: PASS] "Crop Top"
+         Expected: tops | Got: tops (high)
+
+------------------------------------------
+CATEGORY: Clothing - Bottoms
+------------------------------------------
+  [CT: PASS] "High Waisted Jeans"
+         Expected: bottoms | Got: bottoms (medium)
+  [CT: PASS] "Pleated Mini Skirt"
+         Expected: bottoms | Got: bottoms (high)
+  [CT: PASS] "Denim Shorts"
+         Expected: bottoms | Got: bottoms (medium)
+  [CT: PASS] "Cozy Sweatpants"
+         Expected: bottoms | Got: bottoms (high)
+  [CT: PASS] "Leather Leggings"
+         Expected: bottoms | Got: bottoms (medium)
+  [CT: PASS] "Wide Leg Trousers"
+         Expected: bottoms | Got: bottoms (medium)
+
+------------------------------------------
+CATEGORY: Clothing - Dresses
+------------------------------------------
+  [CT: PASS] "Summer Maxi Dress"
+         Expected: dresses | Got: dresses (high)
+  [CT: PASS] "Elegant Evening Gown"
+         Expected: dresses | Got: dresses (medium)
+  [CT: PASS] "Cocktail Dress"
+         Expected: dresses | Got: dresses (high)
+  [CT: PASS] "Wedding Ball Gown"
+         Expected: dresses | Got: dresses (high)
+
+------------------------------------------
+CATEGORY: Clothing - Full Body
+------------------------------------------
+  [CT: PASS] "Casual Outfit Set"
+         Expected: full-body | Got: full-body (high)
+  [CT: PASS] "Denim Jumpsuit"
+         Expected: full-body | Got: full-body (medium)
+  [CT: PASS] "Cozy Pajamas"
+         Expected: full-body | Got: full-body (medium)
+  [CT: PASS] "Beach Bikini Set"
+         Expected: full-body | Got: full-body (medium)
+  [CT: PASS] "Halloween Costume"
+         Expected: full-body | Got: full-body (medium)
+  [CT: PASS] "Nurse Uniform"
+         Expected: full-body | Got: full-body (medium)
+  [CT: PASS] "Floral Romper"
+         Expected: full-body | Got: full-body (medium)
+
+------------------------------------------
+CATEGORY: Clothing - Shoes
+------------------------------------------
+  [CT: PASS] "Platform Sneakers"
+         Expected: shoes | Got: shoes (medium)
+  [CT: PASS] "Ankle Boots"
+         Expected: shoes | Got: shoes (high)
+  [CT: PASS] "Strappy Heels"
+         Expected: shoes | Got: shoes (medium)
+  [CT: PASS] "Summer Sandals"
+         Expected: shoes | Got: shoes (medium)
+  [CT: PASS] "Loafers"
+         Expected: shoes | Got: shoes (medium)
+  [CT: PASS] "Stilettos"
+         Expected: shoes | Got: shoes (medium)
+
+------------------------------------------
+CATEGORY: Accessories
+------------------------------------------
+  [CT: PASS] "Leather Backpack"
+         Expected: accessories | Got: accessories (medium)
+  [CT: PASS] "Silk Scarf"
+         Expected: accessories | Got: accessories (medium)
+  [CT: PASS] "Designer Belt"
+         Expected: accessories | Got: accessories (medium)
+  [CT: PASS] "Designer Bag"
+         Expected: accessories | Got: accessories (medium)
+
+------------------------------------------
+CATEGORY: Jewelry
+------------------------------------------
+  [CT: PASS] "Gold Hoop Earrings"
+         Expected: jewelry | Got: jewelry (high)
+  [CT: PASS] "Layered Necklace Set"
+         Expected: jewelry | Got: jewelry (medium)
+  [CT: PASS] "Diamond Ring"
+         Expected: jewelry | Got: jewelry (medium)
+  [CT: PASS] "Nose Piercing Pack"
+         Expected: jewelry | Got: jewelry (medium)
+  [CT: PASS] "Pearl Choker"
+         Expected: jewelry | Got: jewelry (medium)
+
+------------------------------------------
+CATEGORY: Glasses
+------------------------------------------
+  [CT: PASS] "Round Glasses"
+         Expected: glasses | Got: glasses (medium)
+  [CT: PASS] "Aviator Sunglasses"
+         Expected: glasses | Got: glasses (high)
+  [CT: PASS] "Retro Shades"
+         Expected: glasses | Got: glasses (medium)
+
+------------------------------------------
+CATEGORY: Hats
+------------------------------------------
+  [CT: PASS] "Baseball Cap"
+         Expected: hats | Got: hats (medium)
+  [CT: PASS] "Winter Beanie"
+         Expected: hats | Got: hats (medium)
+  [CT: PASS] "Tiara Crown"
+         Expected: hats | Got: hats (high)
+  [CT: PASS] "Silk Headscarf"
+         Expected: hats | Got: hats (medium)
+
+------------------------------------------
+CATEGORY: Furniture + Room
+------------------------------------------
+  [CT: PASS] [RT: PASS] "Bathroom Sink"
+         Expected: furniture | Got: furniture (medium)
+         Themes: bathroom | Got: bathroom
+  [CT: FAIL] [RT: PASS] "Kitchen Island Counter" **FAILED**
+         Expected CT: furniture | Got: undefined (low)
+         Expected RT: kitchen | Got: kitchen
+         Matched Keywords: none
+  [CT: PASS] [RT: PASS] "Bedroom Vanity Mirror"
+         Expected: furniture | Got: furniture (high)
+         Themes: bedroom | Got: bedroom
+  [CT: PASS] [RT: PASS] "Living Room Sofa"
+         Expected: furniture | Got: furniture (medium)
+         Themes: living-room | Got: living-room
+  [CT: PASS] [RT: PASS] "Office Desk"
+         Expected: furniture | Got: furniture (medium)
+         Themes: office | Got: office
+  [CT: PASS] [RT: PASS] "Modern Toilet"
+         Expected: furniture | Got: furniture (medium)
+         Themes: bathroom | Got: bathroom
+  [CT: PASS] [RT: PASS] "Walk-in Shower"
+         Expected: furniture | Got: furniture (medium)
+         Themes: bathroom | Got: bathroom
+  [CT: PASS] [RT: PASS] "Dining Table Set"
+         Expected: furniture | Got: furniture (high)
+         Themes: dining-room | Got: dining-room
+
+------------------------------------------
+CATEGORY: Room Packs
+------------------------------------------
+  [CT: FAIL] [RT: PASS] "Kitchen CC Pack" **FAILED**
+         Expected CT: furniture | Got: undefined (low)
+         Expected RT: kitchen | Got: kitchen
+         Matched Keywords: none
+  [CT: PASS] [RT: PASS] "Bathroom Decor Set"
+         Expected: decor | Got: decor (medium)
+         Themes: bathroom | Got: bathroom
+  [CT: PASS] [RT: PASS] "Nursery Furniture Bundle"
+         Expected: furniture | Got: furniture (medium)
+         Themes: nursery | Got: nursery
+  [CT: PASS] [RT: PASS] "Kids Room Decor"
+         Expected: decor | Got: decor (medium)
+         Themes: kids-room | Got: kids-room
+  [CT: FAIL] [RT: PASS] "Outdoor Patio Set" **FAILED**
+         Expected CT: furniture | Got: undefined (low)
+         Expected RT: outdoor | Got: outdoor
+         Matched Keywords: none
+
+------------------------------------------
+CATEGORY: Decor
+------------------------------------------
+  [CT: PASS] "Wall Art Collection"
+         Expected: wall-art | Got: wall-art (medium)
+  [CT: PASS] "Abstract Paintings"
+         Expected: wall-art | Got: wall-art (high)
+  [CT: PASS] "Vintage Posters"
+         Expected: wall-art | Got: wall-art (high)
+  [CT: PASS] "Persian Rug"
+         Expected: rugs | Got: rugs (medium)
+  [CT: PASS] "Sheer Curtains"
+         Expected: curtains | Got: curtains (high)
+  [CT: PASS] "Indoor Plants Pack"
+         Expected: plants | Got: plants (high)
+  [CT: PASS] "Succulents Collection"
+         Expected: plants | Got: plants (high)
+  [CT: PASS] "Floor Lamp"
+         Expected: lighting | Got: lighting (high)
+  [CT: PASS] "Crystal Chandelier"
+         Expected: lighting | Got: lighting (medium)
+  [CT: PASS] "Decorative Clutter"
+         Expected: clutter | Got: clutter (medium)
+  [CT: PASS] "Throw Pillows Set"
+         Expected: clutter | Got: clutter (high)
+  [CT: FAIL] "Shelf Decorations" **FAILED**
+         Expected CT: decor | Got: clutter (medium)
+         Matched Keywords: shelf decor
+
+------------------------------------------
+CATEGORY: CAS Special
+------------------------------------------
+  [CT: PASS] "CAS Background Replacement"
+         Expected: cas-background | Got: cas-background (medium)
+  [CT: PASS] "Create a Sim Background"
+         Expected: cas-background | Got: cas-background (medium)
+  [CT: PASS] "Custom Loading Screen"
+         Expected: loading-screen | Got: loading-screen (medium)
+  [CT: PASS] "Body Preset Pack"
+         Expected: preset | Got: preset (high)
+  [CT: PASS] "Face Presets Collection"
+         Expected: preset | Got: preset (high)
+
+------------------------------------------
+CATEGORY: Pet Items
+------------------------------------------
+  [CT: PASS] "Cat Bed"
+         Expected: pet-furniture | Got: pet-furniture (medium)
+  [CT: PASS] "Dog House"
+         Expected: pet-furniture | Got: pet-furniture (medium)
+  [CT: PASS] "Pet Food Bowl"
+         Expected: pet-furniture | Got: pet-furniture (medium)
+  [CT: PASS] "Cat Scratching Post"
+         Expected: pet-furniture | Got: pet-furniture (medium)
+  [CT: PASS] "Dog Sweater"
+         Expected: pet-clothing | Got: pet-clothing (medium)
+  [CT: PASS] "Cat Costume"
+         Expected: pet-clothing | Got: pet-clothing (medium)
+  [CT: PASS] "Dog Collar"
+         Expected: pet-accessories | Got: pet-accessories (high)
+  [CT: PASS] "Pet Bandana"
+         Expected: pet-accessories | Got: pet-accessories (medium)
+
+------------------------------------------
+CATEGORY: Skin
+------------------------------------------
+  [CT: PASS] "Realistic Skin Blend"
+         Expected: skin | Got: skin (high)
+  [CT: PASS] "Freckles Overlay"
+         Expected: skin | Got: skin (high)
+  [CT: PASS] "Body Hair Pack"
+         Expected: skin | Got: skin (medium)
+
+------------------------------------------
+CATEGORY: Tattoos
+------------------------------------------
+  [CT: PASS] "Full Body Tattoo"
+         Expected: tattoos | Got: tattoos (medium)
+  [CT: PASS] "Sleeve Tattoo Pack"
+         Expected: tattoos | Got: tattoos (high)
+  [CT: PASS] "Face Tattoo Set"
+         Expected: tattoos | Got: tattoos (high)
+
+------------------------------------------
+CATEGORY: Eyes
+------------------------------------------
+  [CT: PASS] "Heterochromia Eyes"
+         Expected: eyes | Got: eyes (high)
+  [CT: PASS] "Contact Lenses Pack"
+         Expected: eyes | Got: eyes (medium)
+
+------------------------------------------
+CATEGORY: Nails
+------------------------------------------
+  [CT: PASS] "Acrylic Nails Set"
+         Expected: nails | Got: nails (high)
+  [CT: PASS] "Nail Polish Collection"
+         Expected: nails | Got: nails (high)
+
+------------------------------------------
+CATEGORY: Makeup
+------------------------------------------
+  [CT: PASS] "Eyeshadow Palette"
+         Expected: makeup | Got: makeup (high)
+  [CT: PASS] "Full Face Makeup"
+         Expected: makeup | Got: makeup (medium)
+  [CT: PASS] "Contour Kit"
+         Expected: makeup | Got: makeup (medium)
+  [CT: FAIL] "Highlighter" **FAILED**
+         Expected CT: makeup | Got: lighting (medium)
+         Matched Keywords: light
+
+------------------------------------------
+CATEGORY: Mods
+------------------------------------------
+  [CT: PASS] "Slice of Life Mod"
+         Expected: gameplay-mod | Got: gameplay-mod (medium)
+  [CT: PASS] "MC Command Center"
+         Expected: script-mod | Got: script-mod (medium)
+  [CT: PASS] "Pose Pack Volume 5"
+         Expected: poses | Got: poses (high)
+  [CT: PASS] "Victorian Mansion Lot"
+         Expected: lot | Got: lot (high)
+
+------------------------------------------
+CATEGORY: Ambiguous
+------------------------------------------
+  [CT: PASS] "CC Pack Vol 3"
+         Expected: undefined | Got: undefined (low)
+  [CT: PASS] "New Release 2024"
+         Expected: undefined | Got: undefined (low)
+  [CT: PASS] "Random Stuff"
+         Expected: undefined | Got: undefined (low)
+  [CT: PASS] "My First Creation"
+         Expected: undefined | Got: undefined (low)
+  [CT: PASS] "Sims 4 Custom Content"
+         Expected: undefined | Got: undefined (low)
+  [CT: PASS] "Download"
+         Expected: undefined | Got: undefined (low)
+
+------------------------------------------
+CATEGORY: Edge Cases
+------------------------------------------
+  [CT: PASS] "Eyeshadow Palette Set"
+         Expected: makeup | Got: makeup (high)
+  [CT: PASS] "Full Body Tattoo Set"
+         Expected: tattoos | Got: tattoos (medium)
+  [CT: FAIL] "Lip Liner Pencil" **FAILED**
+         Expected CT: lipstick | Got: undefined (low)
+         Matched Keywords: none
+  [CT: PASS] "Christmas Lights Decoration"
+         Expected: decor | Got: decor (high)
+  [CT: FAIL] "Fairy Light String" **FAILED**
+         Expected CT: decor | Got: jewelry (medium)
+         Matched Keywords: ring
+
+==========================================
+SUMMARY
+==========================================
+Total Tests: 149
+Passed: 142
+Failed: 7
+Accuracy: 95.30%
+
+[SUCCESS] Accuracy 95.30% meets or exceeds target of 90%
+
+==========================================
+FAILED TESTS FOR REVIEW
+==========================================
+Title: "Kitchen Island Counter"
+  Category: Furniture + Room
+  Expected CT: furniture
+  Got CT: undefined (low)
+  Expected RT: kitchen
+  Got RT: kitchen
+  Matched: none
+
+Title: "Kitchen CC Pack"
+  Category: Room Packs
+  Expected CT: furniture
+  Got CT: undefined (low)
+  Expected RT: kitchen
+  Got RT: kitchen
+  Matched: none
+
+Title: "Outdoor Patio Set"
+  Category: Room Packs
+  Expected CT: furniture
+  Got CT: undefined (low)
+  Expected RT: outdoor
+  Got RT: outdoor
+  Matched: none
+
+Title: "Shelf Decorations"
+  Category: Decor
+  Expected CT: decor
+  Got CT: clutter (medium)
+  Matched: shelf decor
+
+Title: "Highlighter"
+  Category: Makeup
+  Expected CT: makeup
+  Got CT: lighting (medium)
+  Matched: light
+
+Title: "Lip Liner Pencil"
+Description: "Lip liner not to be confused with eye liner"
+  Category: Edge Cases
+  Expected CT: lipstick
+  Got CT: undefined (low)
+  Matched: none
+
+Title: "Fairy Light String"
+  Category: Edge Cases
+  Expected CT: decor
+  Got CT: jewelry (medium)
+  Matched: ring

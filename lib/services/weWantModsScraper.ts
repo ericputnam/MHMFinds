@@ -12,8 +12,8 @@ export interface DiscoveredMod {
   title: string;
   author: string;
   externalUrl: string; // The actual source URL (TSR, Patreon, Tumblr, etc.)
-  discoverySource: string; // Always 'WeWantMods' - for tracking where we found it
-  collectionPageUrl: string; // The We Want Mods page where we found it
+  discoverySource: string; // Always 'WM' - for tracking where we found it
+  collectionPageUrl: string; // The WM (wewantmods.com) page where we found it
   externalImageUrls: string[]; // Image URLs from external CDNs (NOT wewantmods.com)
   collectionThemes?: string[]; // SCR-007: Room themes extracted from collection page title
 }
@@ -26,11 +26,11 @@ export interface ScrapedModDetails {
   thumbnail?: string;
   images: string[];
   downloadUrl: string;
-  sourceUrl: string; // The external site URL (NEVER wewantmods)
+  sourceUrl: string; // The external site URL (NEVER WM/wewantmods)
   source: string; // Platform name: 'TheSimsResource', 'Patreon', 'Tumblr', 'ModCollective', etc.
   sourceId?: string;
   category?: string;
-  gameVersion: string; // Always 'Sims 4' for We Want Mods scraper
+  gameVersion: string; // Always 'Sims 4' for WM scraper
   tags: string[];
   isFree: boolean;
   price?: number;
@@ -47,7 +47,7 @@ interface SitemapEntry {
 }
 
 /**
- * URL_CATEGORY_MAP: Maps We Want Mods URL path categories to our internal contentType values
+ * URL_CATEGORY_MAP: Maps WM (wewantmods.com) URL path categories to our internal contentType values
  * SCR-002: Create URL category to contentType mapping
  *
  * Categories extracted from URLs like:
@@ -67,7 +67,7 @@ export interface CategoryMapping {
 }
 
 /**
- * URL_CATEGORY_MAP maps We Want Mods URL path segments to internal contentType values.
+ * URL_CATEGORY_MAP maps WM (wewantmods.com) URL path segments to internal contentType values.
  *
  * Key: lowercase URL path segment (e.g., 'bathroom', 'eyebrows', 'hairstyles')
  * Value: CategoryMapping with contentType and optional theme
@@ -403,7 +403,7 @@ const unmappedCategories = new Set<string>();
  * Map a URL-extracted category to our internal contentType.
  * Logs unmapped categories for review.
  *
- * @param urlCategory The category extracted from a We Want Mods URL
+ * @param urlCategory The category extracted from a WM URL
  * @returns CategoryMapping with contentType and optional theme, or undefined if not mapped
  */
 export function mapUrlCategoryToContentType(urlCategory: string | undefined): CategoryMapping | undefined {
@@ -442,7 +442,7 @@ export function clearUnmappedCategories(): void {
 }
 
 /**
- * Extract the category segment from a We Want Mods URL.
+ * Extract the category segment from a WM (wewantmods.com) URL.
  * URL structure: wewantmods.com/sims4/{category}/{item-slug}
  *
  * Examples:
@@ -451,7 +451,7 @@ export function clearUnmappedCategories(): void {
  * - https://wewantmods.com/sims4/cas/eyebrows/natural-brows -> 'eyebrows' (nested path)
  * - https://wewantmods.com/ -> undefined (no category)
  *
- * @param url The We Want Mods URL to parse
+ * @param url The WM URL to parse
  * @returns The category segment or undefined if not found
  */
 export function extractCategoryFromUrl(url: string): string | undefined {
@@ -715,10 +715,10 @@ export class WeWantModsScraper {
   }
 
   /**
-   * Fetch and parse the We Want Mods sitemap
+   * Fetch and parse the WM (wewantmods.com) sitemap
    */
   async fetchSitemap(): Promise<SitemapEntry[]> {
-    console.log('📥 Fetching We Want Mods sitemap...');
+    console.log('📥 Fetching WM sitemap...');
 
     try {
       await this.delay();
@@ -826,7 +826,7 @@ export class WeWantModsScraper {
   }
 
   /**
-   * Parse a We Want Mods collection page to discover mods
+   * Parse a WM (wewantmods.com) collection page to discover mods
    * SCR-007: Enhanced to detect collection themes and apply to all items
    */
   async parseCollectionPage(pageUrl: string): Promise<DiscoveredMod[]> {
@@ -896,7 +896,7 @@ export class WeWantModsScraper {
               }
             }
 
-            // Look for external links (not wewantmods)
+            // Look for external links (not WM/wewantmods)
             $current.find('a[href]').each((_, linkEl) => {
               const href = $(linkEl).attr('href');
               if (
@@ -1428,7 +1428,7 @@ export class WeWantModsScraper {
       source,
       sourceId: this.extractSourceId(discoveredMod.externalUrl, source),
       category,
-      gameVersion: 'Sims 4', // We Want Mods is specifically for Sims 4 mods
+      gameVersion: 'Sims 4', // WM is specifically for Sims 4 mods
       tags: this.extractTags(discoveredMod.title, ''),
       isFree: source !== 'Patreon', // Assume Patreon content may be paid
       isNSFW: this.detectNSFW(discoveredMod.title, ''),
@@ -1517,7 +1517,7 @@ export class WeWantModsScraper {
 
     // If scraping failed, use basic info with pre-uploaded blob images
     if (!result) {
-      console.log(`   📝 Using basic info from We Want Mods for: ${discoveredMod.title}`);
+      console.log(`   📝 Using basic info from WM for: ${discoveredMod.title}`);
       result = this.createBasicModDetails(discoveredMod, blobImageUrls);
     } else {
       // If scraping succeeded but we have blob images, use those instead
@@ -1866,7 +1866,7 @@ export class WeWantModsScraper {
    * @param title - The mod title
    * @param description - Optional mod description
    * @param sourceUrl - Optional source URL for extracting category hint
-   * @param collectionPageUrl - Optional We Want Mods collection page URL for category hint
+   * @param collectionPageUrl - Optional WM collection page URL for category hint
    * @returns The detected content type, or undefined if ambiguous
    */
   private detectContentType(
@@ -1932,7 +1932,7 @@ export class WeWantModsScraper {
    *
    * @param title - The mod title
    * @param description - Optional mod description
-   * @param collectionPageUrl - Optional We Want Mods collection page URL for theme hint
+   * @param collectionPageUrl - Optional WM collection page URL for theme hint
    * @param contentType - Optional content type to help determine if room themes should be detected
    * @param collectionThemes - Optional themes extracted from collection page title (SCR-007)
    * @returns Array of detected room themes (always an array, never undefined)
@@ -2228,7 +2228,7 @@ export class WeWantModsScraper {
    * Run the full scraping process
    */
   async run(options?: { limit?: number; skipExisting?: boolean }): Promise<void> {
-    console.log('🚀 Starting We Want Mods scraper...');
+    console.log('🚀 Starting WM scraper...');
     console.log(`   Privacy level: ${process.env.PRIVACY_LEVEL || 'default'}`);
     console.log(`   Min delay: ${this.config.minDelay}ms, Max delay: ${this.config.maxDelay}ms`);
 

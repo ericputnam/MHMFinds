@@ -1,0 +1,1264 @@
+================================================================================
+CONTENT TYPE AUDIT REPORT (CTB-001)
+================================================================================
+Generated: 2026-01-24T12:49:49.307Z
+
+Total Mods in Database: 10447
+
+================================================================================
+SECTION 1: Content Type Distribution
+================================================================================
+
+Content Type                   Count      Percentage
+------------------------------------------------------------
+hair                             1283       12.28%
+full-body                        1060       10.15%
+lot                               862        8.25%
+tops                              781        7.48%
+furniture                         762        7.29%
+accessories                       657        6.29%
+poses                             599        5.73%
+makeup                            575        5.50%
+dresses                           507        4.85%
+shoes                             455        4.36%
+bottoms                           433        4.14%
+decor                             424        4.06%
+gameplay-mod                      369        3.53%
+skin                              244        2.34%
+clutter                           156        1.49%
+jewelry                           155        1.48%
+eyes                              155        1.48%
+preset                            130        1.24%
+nails                             126        1.21%
+glasses                           117        1.12%
+loading-screen                    115        1.10%
+lighting                          102        0.98%
+cas-background                     87        0.83%
+tattoos                            82        0.78%
+script-mod                         47        0.45%
+hats                               46        0.44%
+(NULL)                             45        0.43%
+plants                             26        0.25%
+builds                             20        0.19%
+pet-furniture                      16        0.15%
+bathroom                           11        0.11%
+
+================================================================================
+SECTION 2: Mods with NULL contentType
+================================================================================
+
+Total mods with NULL contentType: 45
+
+Sample of mods with NULL contentType (up to 50):
+--------------------------------------------------------------------------------
+ID: cmkq978yp001coxvgmrnp0lto
+Title: 5 Artful Notion Pack
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Atticwindowatdawn. Enhance your Sims 4 experience with this community-crea...
+
+ID: cmkq96rfc001aoxvgyzjl9sal
+Title: 3 The Praline Collection
+Legacy Category: Other
+Source: Tumblr
+Description: It's been super chilly here in the UK so I felt the need to remedy that by making some deliciously c...
+
+ID: cmkq96gyf0019oxvgx05l0uei
+Title: 2 Reading Corner CC Pack
+Legacy Category: Other
+Source: Tumblr
+Description: Custom content created by Sims41ife. Enhance your Sims 4 experience with this community-created cont...
+
+ID: cmkq9636f0018oxvgvtm4rgw1
+Title: 1 Feronia CC Pack
+Legacy Category: Other
+Source: Tumblr
+Description: Howdy everyone! I hope we all have had a good start to the year so far, in the UK right now we've be...
+
+ID: cmkq95u2s0017oxvg06ir1tfp
+Title: Shearling Collection II
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by LuxySims. Enhance your Sims 4 experience with this community-created conte...
+
+ID: cmkq94gyn0014oxvgc11jvo3u
+Title: 1 Soft Notes Set
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Momo-CC. Enhance your Sims 4 experience with this community-created conten...
+
+ID: cmkq948700013oxvgs4ede7en
+Title: Neva Set
+Legacy Category: Other
+Source: Tumblr
+Description: Custom content created by Mechtasims. Enhance your Sims 4 experience with this community-created con...
+
+ID: cmkq93ls20011oxvglmhedhsl
+Title: 4 Prestigious Highschool Uniform
+Legacy Category: Other
+Source: Tumblr
+Description: The male version will be uploaded on the 18th :-) 남성버전은 18일에 업로드 될 예정입니다 :-) - FULL BODY 2 - NEW MES...
+
+ID: cmkq9339i000zoxvgl8rhfipr
+Title: 2 Dek Sol III Clothing Set
+Legacy Category: CAS - Clothing
+Source: Patreon
+Description: Create-A-Sim custom content created by Gildedghosts. Enhance your Sims' appearance with this custom ...
+
+ID: cmkq8v0n3000doxvg1blv75w4
+Title: Bridgerton Gentleman’s Outfit
+Legacy Category: CAS - Clothing
+Source: Patreon
+Description: Create-A-Sim custom content created by Peebs. Enhance your Sims' appearance with this custom content...
+
+ID: cmkq8ucf3000boxvgpatiii7s
+Title: Masculine Bridgerton Outfits Recolors
+Legacy Category: CAS - Clothing
+Source: Patreon
+Description: Create-A-Sim custom content created by AnachroSims. Enhance your Sims' appearance with this custom c...
+
+ID: cmkq8trfi0008oxvgju1piyku
+Title: Regency Reverie Collection
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by GildedGhosts. Enhance your Sims 4 experience with this community-created c...
+
+ID: cmkq8tiis0007oxvgcwlhdtdf
+Title: Bridgerton Collection Part 1
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Regalia. Enhance your Sims 4 experience with this community-created conten...
+
+ID: cmkq8stz50004oxvgudn0h0le
+Title: Casual Male Regency Outfit
+Legacy Category: CAS - Clothing
+Source: Patreon
+Description: Create-A-Sim custom content created by Peebs. Enhance your Sims' appearance with this custom content...
+
+ID: cmkq8sjov0003oxvg86ceimjb
+Title: Emma Regency Collaboration
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Vintage Simstress X Peebs X BatsFromWesteros. Enhance your Sims 4 experien...
+
+ID: cmkq8sadk0002oxvgq90ksajr
+Title: Regency Infant & Toddler Skeleton Suit
+Legacy Category: Other
+Source: Patreon
+Description: Custom content created by Peebs. Enhance your Sims 4 experience with this community-created content.
+
+ID: cmknfby0l008xoxolgjm4sbwf
+Title: Exited About New Year
+Legacy Category: Poses
+Source: MustHaveMods.com
+Description: If you’re looking for New Year poses for the entire family, get this posepack created by mdrayvv. It...
+
+ID: cmknfbmc9008hoxolyk4yfvky
+Title: Willow Health Club: Evermore Save Project
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: The Willow Health Club from the Evermore Save Project is a beautifully layered gym. As much as it fu...
+
+ID: cmknfblny0085oxolyfihcxls
+Title: Lots Of Gym Equipment
+Legacy Category: Poses
+Source: MustHaveMods.com
+Description: The Lots of Equipment CC pack expands your Sim’s workout options with a wide range of new items, fun...
+
+ID: cmknfbli20082oxol7nat5enq
+Title: Functional Treadmill
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If you’re looking for a functional treadmill to add both realism and style to your Sim’s workout rou...
+
+ID: cmknfbcnm007xoxolg3tsq2zu
+Title: Wake Up Animation
+Legacy Category: Poses
+Source: MustHaveMods.com
+Description: Wake Up is a subtle animation mod that adds a more natural transition between sleeping and starting ...
+
+ID: cmknfbchy007uoxoly7o6hkuv
+Title: Getting Ready Animation Pack
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: Getting Ready is a small animation of a Sim checking themselves out in the mirror before heading out...
+
+ID: cmknfatg7006hoxolz7ur9k5y
+Title: Plush Ear Muffs
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: Created by Dissia, the Plush Ear Muffs are a soft, round earmuff accessory designed for cozy and col...
+
+ID: cmknfasto0065oxolkjvllrht
+Title: AirPods Max ver1 and ver2
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: AirPods Max ver1 and ver2 are a must-have in your 2026 gameplay. These recreate the look of modern o...
+
+ID: cmknfasp20064oxoll1r30ms1
+Title: Skull Earphones
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: Skull Earphones are a bold, alternative take on wireless earbuds, and they’re designed for Sims with...
+
+ID: cmknfa3z3004soxolyy1vowv9
+Title: KALIII Braided Locs
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: KALIII Braided Locs are long, defined braids with a loc-inspired texture, with a subtle middle part ...
+
+ID: cmknfa3x7004roxol8thiwj0w
+Title: Kamari Locs
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: The Kamari Locs set offers you three distinct loc styles designed for realistic, modern male Sims. E...
+
+ID: cmknf9q2g0040oxolgl6yhqqp
+Title: Controlled Position – CAS Tuning Mod
+Legacy Category: Poses
+Source: MustHaveMods.com
+Description: The Controlled Position CAS Tuning Mod gives you full control over your Sim’s position in Create-A-S...
+
+ID: cmknf9pwg003zoxolxr3dlzf4
+Title: CAS Close Up – No Emotions
+Legacy Category: Poses
+Source: MustHaveMods.com
+Description: The CAS Close Up – No Emotions mod removes facial animations while you’re editing Sims in Create-A-S...
+
+ID: cmknf9psj003yoxolx9nkdgb7
+Title: Stand Still in CAS
+Legacy Category: Poses
+Source: MustHaveMods.com
+Description: The Stand Still in CAS mod is an override that stops Sims from playing idle animations while you’re ...
+
+ID: cmknf91yr0027oxoljcxq23um
+Title: Seira Swoop V1 and V2
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: Seira Swoop V1 & V2 is a sleek, side-swooped hairstyle that looks beautiful on polished, confident S...
+
+ID: cmknf8q6x001zoxolpbvz750w
+Title: Elly
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Elly is a bright, tropical home created with no CC. It comes with three bedrooms and three floors, w...
+
+ID: cmknf8nrt000voxol39eo1o22
+Title: Gabrielle Suit
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: If you’re looking for a timeless, high-fashion outfit to instantly elevate your Sim’s wardrobe, the ...
+
+ID: cmknf8nim000qoxolpepte7u5
+Title: CAMO Liz F-Locs
+Legacy Category: Hair
+Source: MustHaveMods.com
+Description: The Liz F-Locs CC is a detailed faux loc hairstyle designed for modern, styled Sims. It features nea...
+
+ID: cmim93y6c01xmoxy8qgjcioez
+Title: Gamer Tie for Work
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If your man is a gamer, but also a professional, this gift will make him smile. He can show off his ...
+
+ID: cmim8w9jk00nxoxy8rq645s25
+Title: DoYong NCT
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Any K-pop fan will want to have this Sims 4 male Sim in their game. He’s inspired by DoYong, a membe...
+
+ID: cmim8w9ha00nwoxy8dw18vl01
+Title: Deacon
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If you want an Asian male Sim to add diversity to your neighborhood, get Deacon. This young adult Si...
+
+ID: cmim8w8rl00nloxy8hpl10s6o
+Title: Ricardo Praia
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Ricardo Praia is a Sims 4 male young adult who loves anything tropical and summer-related. His favor...
+
+ID: cmim8w8ps00nkoxy8su2eazvu
+Title: Mike Hannigan
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: If you’re a fan of the hit series Friends, you need to get this male Sim. Mike Hannigan is Phoebe’s ...
+
+ID: cmim8vlgh00jgoxy8zngnuwfd
+Title: Tom Holden
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Tom Holden has a very interesting back story. Once a military man, Tom Holden has moved to sleepy Wi...
+
+ID: cmim8tq3h008roxy8gutpd6x8
+Title: Cleaning Overrides
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Cleaning Overrides by LargeTayterTots is a default replacement for the in-game cleaning spray and sp...
+
+ID: cmil16s2c009soxeexnxuqm4n
+Title: Skims X Dolce and Gabana
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: I love this set of undergarments designed in a leopard print. The luxury items exude confidence, sty...
+
+ID: cmika2os500g4oxk736khgnij
+Title: Printed Collars For Large Dogs V2
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: The Printed Collars for Large Dogs V2 is a colorful and patterned harness for large dog breeds. This...
+
+ID: cmijp9lky00y9oxc8eihxwibx
+Title: Spice Fever
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: Spice Girls are one of the most iconic girl groups from the 2000s, and this set is inspired by their...
+
+ID: cmiglig32000ooxm5eszyq1p3
+Title: Focus
+Legacy Category: Other
+Source: MustHaveMods.com
+Description: RELATED POST: 30 Best Sims 4 School Uniforms CC You Need To Ace The Academic Look
+
+================================================================================
+SECTION 3: Content Types WITHOUT FacetDefinitions
+================================================================================
+
+(Specifically looking for: pet-furniture, cas-background, loading-screen, preset)
+
+Total FacetDefinitions for contentType: 31
+
+Existing FacetDefinitions:
+------------------------------------------------------------
+  accessories               "Accessories" (active)
+  bathroom                  "Bathroom" (active)
+  bottoms                   "Bottoms" (active)
+  builds                    "builds" (active)
+  career                    "Career" (active)
+  clutter                   "Clutter" (active)
+  decor                     "Decor" (active)
+  dresses                   "Dresses" (active)
+  eyes                      "Eyes" (active)
+  food                      "Food & Recipes" (active)
+  full-body                 "Full Body" (active)
+  furniture                 "Furniture" (active)
+  gameplay-mod              "Gameplay Mod" (active)
+  glasses                   "Glasses" (active)
+  hair                      "Hair" (active)
+  hats                      "Hats" (active)
+  jewelry                   "Jewelry" (active)
+  kitchen                   "Kitchen" (active)
+  lighting                  "Lighting" (active)
+  lot                       "lot" (active)
+  makeup                    "Makeup" (active)
+  nails                     "Nails" (active)
+  outdoor                   "Outdoor" (active)
+  plants                    "Plants" (active)
+  poses                     "Poses" (active)
+  script-mod                "Script Mod" (active)
+  shoes                     "Shoes" (active)
+  skin                      "Skin" (active)
+  tattoos                   "Tattoos" (active)
+  tops                      "Tops" (active)
+  trait                     "Trait" (active)
+
+Found 4 content types WITHOUT FacetDefinitions:
+------------------------------------------------------------
+  [MISSING] preset                    (130 mods)
+  [MISSING] loading-screen            (115 mods)
+  [MISSING] cas-background            (87 mods)
+  [MISSING] pet-furniture             (16 mods)
+
+Status of specifically mentioned types:
+------------------------------------------------------------
+  pet-furniture        16 mods - MISSING FacetDefinition
+  cas-background       87 mods - MISSING FacetDefinition
+  loading-screen       115 mods - MISSING FacetDefinition
+  preset               130 mods - MISSING FacetDefinition
+
+FacetDefinitions with NO mods using them:
+------------------------------------------------------------
+  [UNUSED] career                    "Career"
+  [UNUSED] food                      "Food & Recipes"
+  [UNUSED] kitchen                   "Kitchen"
+  [UNUSED] outdoor                   "Outdoor"
+  [UNUSED] trait                     "Trait"
+
+================================================================================
+SECTION 4: Sample Mods by Content Type (20 per type)
+================================================================================
+
+(For manual review to verify correct categorization)
+
+--------------------------------------------------------------------------------
+Content Type: hair
+Total Mods: 1283
+--------------------------------------------------------------------------------
+   1. [hair] 3 Functional Press-On Nails & The Kimmy Hair
+   2. [hair] 4 Karma Hair
+   3. [hair] 3 Elina Hair
+   4. [hair] 2 Christina Hairstyle
+   5. [hair] 1 Softly Worn Hairstyles & Babyhairs
+   6. [hair] Katie Hair and Claw Accessory
+   7. [hair] 5 Meg Hair V1 & V2
+   8. [hair] 3 Alyx Updo Hairstyle
+   9. [hair] 2 Marie Duplessis Hair
+  10. [hair] Early Romantic Era Hairs
+  11. [hair] Sims 4 Regency Hairs
+  12. [hair] Lizza Updo Hair CC
+  13. [hair] Dove Hair
+  14. [hair] Anastasia Hair
+  15. [hair] Beth Hairstyle
+  16. [hair] Dieula Hairstyle V4
+  17. [hair] Darcey Long Ponytail Hair
+  18. [hair] Aga Ponytail Hair
+  19. [hair] Githa Hair
+  20. [hair] Raquel Haistyle Style 3 & 4
+
+--------------------------------------------------------------------------------
+Content Type: full-body
+Total Mods: 1060
+--------------------------------------------------------------------------------
+   1. [full-body] Matt Holiday XL- Rough
+   2. [full-body] Mr Ghost Face Christmas Set
+   3. [full-body] New Year’s Collection
+   4. [full-body] NYE
+   5. [full-body] New Year’s Bash Event
+   6. [full-body] Festive Appetizers
+   7. [full-body] New Year 2026 Blender Scene
+   8. [full-body] New Year Pyjamas
+   9. [full-body] NYE 2026 Set
+  10. [full-body] Pilates Mod
+  11. [full-body] Power Workout
+  12. [full-body] Go for a Jog Together
+  13. [full-body] Healthy Living Mod
+  14. [full-body] Numbers: Brave Eight Gym
+  15. [full-body] Movers And Shakers Gym Reno
+  16. [full-body] Town Gym
+  17. [full-body] Crossfit Gym
+  18. [full-body] The Balance Collection
+  19. [full-body] Functional Stanley Cup
+  20. [full-body] Yoga Set
+
+--------------------------------------------------------------------------------
+Content Type: lot
+Total Mods: 862
+--------------------------------------------------------------------------------
+   1. [lot] New Year Eve Dinner
+   2. [lot] New Year Part 4
+   3. [lot] Timeless New Year Walls
+   4. [lot] Firework Mural
+   5. [lot] Fitness Influencer Mod
+   6. [lot] FlowFit
+   7. [lot] Chaos Spa Gym V2
+   8. [lot] LA Fitness Gym
+   9. [lot] Simquinox 2.0: A New and Improved Gym Build
+  10. [lot] Gym/Fitness Wall Decals
+  11. [lot] Earn Your Body
+  12. [lot] February 2025 Set 1: Luxury Fitness
+  13. [lot] Skincare Mod
+  14. [lot] Shower Tweaks
+  15. [lot] Agnes Bookshelf CC
+  16. [lot] Vienna Bookshelf CC
+  17. [lot] Ukiah Office Extra Storage CC
+  18. [lot] Colrain Wall Panels and Shelves CC
+  19. [lot] Naturalis Pantry Wall Shelves CC
+  20. [lot] Pink Pilates Studio
+
+--------------------------------------------------------------------------------
+Content Type: tops
+Total Mods: 781
+--------------------------------------------------------------------------------
+   1. [tops] 5 Cozy Loungewear
+   2. [tops] 3 Shirt Dress with Sweater
+   3. [tops] 1 Glow Hour Collection
+   4. [tops] 1 Isolde Regency Set
+   5. [tops] Regency Era Portraits Set 2
+   6. [tops] Regency Era CC Collection
+   7. [tops] Spenser Walking Dress
+   8. [tops] Pajama Set Top For Female NewYear
+   9. [tops] Turtleneck Long-sleeve Accessory Sweater
+  10. [tops] SeoulSoul Hoodie & Sweatpants Set
+  11. [tops] Wrenly Polo with Denim Vest for Children
+  12. [tops] Winona Sweater with Top Underneath
+  13. [tops] Pito Top
+  14. [tops] Blaire Top
+  15. [tops] Peach Top
+  16. [tops] Christmas Sweater
+  17. [tops] Barbara Fur Coat Pack
+  18. [tops] Shirt Overalls
+  19. [tops] Holly Set
+  20. [tops] Santa Sweaters
+
+--------------------------------------------------------------------------------
+Content Type: furniture
+Total Mods: 762
+--------------------------------------------------------------------------------
+   1. [furniture] Caroline Blower Shelf CC
+   2. [furniture] Black & White Bedroom Dresser CC
+   3. [furniture] Fultondale Cabinet Storage Units CC
+   4. [furniture] ArwenK Pearlwood 6-Part Shelf CC
+   5. [furniture] Dinha Kitchen Panel CC
+   6. [furniture] Functional Kitchen Appliances
+   7. [furniture] Christmas Cuties Set
+   8. [furniture] 80’s Things Stylised Map Mural
+   9. [furniture] Country Hearth Christmas Bedroom
+  10. [furniture] Glacial Gazebo Dining Area
+  11. [furniture] Sims 4 Toddler Birthday CC Set
+  12. [furniture] Sims 4 Lock Toddler High Chair Mod
+  13. [furniture] Sims 4 CC Wedding Cake Collection
+  14. [furniture] Sims 4 Wedding Arch CC
+  15. [furniture] Do It Your Shelf Cubbies 2.0
+  16. [furniture] Dreamy Corner
+  17. [furniture] Stockton Teddy Bear
+  18. [furniture] Stockton Kids Tent
+  19. [furniture] Grandma’s Sims 4 Nursery CC
+  20. [furniture] Laurel Infant Bedroom
+
+--------------------------------------------------------------------------------
+Content Type: accessories
+Total Mods: 657
+--------------------------------------------------------------------------------
+   1. [accessories] New Year’s Socks
+   2. [accessories] Objects and Accessories for New Years
+   3. [accessories] Functional Speed Bag
+   4. [accessories] Punch Em Up! Redesigned Punching Bag
+   5. [accessories] Winter Ear Muff Accessories
+   6. [accessories] Colored Braces
+   7. [accessories] Off-Line Beary Bag
+   8. [accessories] Ellie
+   9. [accessories] Sims 4 Edible Wedding Cake & CC Wedding Toppers
+  10. [accessories] Sims 4 Leo Male Hair
+  11. [accessories] Sims 4 Dreads Hair CC
+  12. [accessories] Realm of Magic Sims 4 Spooky CC Set
+  13. [accessories] Sims 4 CC Child Hair Conversion
+  14. [accessories] Barbie Pink Bridle & Saddle
+  15. [accessories] Barbie CC Doll Box
+  16. [accessories] Cute Sims 4 Toddler Hair CC
+  17. [accessories] Sims 4 Toddler CC Hair with Texture
+  18. [accessories] Sims 4 Toddler Hair CC Set
+  19. [accessories] Archive Sims 4 CC Pack
+  20. [accessories] Sims 4 Aesthetic CC Pack for Teens
+
+--------------------------------------------------------------------------------
+Content Type: poses
+Total Mods: 599
+--------------------------------------------------------------------------------
+   1. [poses] Sims 4 Bridgerton Pose Pack
+   2. [poses] New Year Pose Pack
+   3. [poses] NYE Posepack
+   4. [poses] #139 Snuggle
+   5. [poses] #143 Let Me Kiss You – Christmas Pose Pack
+   6. [poses] #144 Bake Cookies: Christmas Pose Pack
+   7. [poses] #146 Little Fur Present: Christmas Pose Pack Release
+   8. [poses] #145 Snowball Fight: Christmas Pose Pack Release
+   9. [poses] Deck The Halls Pose Pack
+  10. [poses] MSI Christmas Pose Pack
+  11. [poses] Santa Time Pose Pack
+  12. [poses] Happy Holidays: New Pose Pack Release
+  13. [poses] Sharing A Christmassy Drink Together Pose Pack
+  14. [poses] Like It’s Christmas
+  15. [poses] #314 Pose Pack: Family Christmas
+  16. [poses] FSP Family Portrait
+  17. [poses] Merry Christmas Pose Pack
+  18. [poses] Christmas Pose Pack
+  19. [poses] First Christmas Pose Pack
+  20. [poses] Alone On Christmas Pose Pack
+
+--------------------------------------------------------------------------------
+Content Type: makeup
+Total Mods: 575
+--------------------------------------------------------------------------------
+   1. [makeup] Butter Gloss Collection
+   2. [makeup] Lipstick N267
+   3. [makeup] LKM Makeup Corner
+   4. [makeup] Complexion Set
+   5. [makeup] Growing Pains Child Teeth Set
+   6. [makeup] Stellar Eyeshadows
+   7. [makeup] Kayla Brows
+   8. [makeup] Cerise Lips
+   9. [makeup] 80’s Things: Holly Eyeshadow
+  10. [makeup] Venus Sims 4 Eyebrows
+  11. [makeup] Natural Sims 4 Eyebrows
+  12. [makeup] Sims 4 Fluffy Eyebrows
+  13. [makeup] Sims 4 90’s Eyebrows
+  14. [makeup] Pastry Strudel Eyebrows
+  15. [makeup] Eros Sims 4 Eyebrows
+  16. [makeup] Sims 4 Maxis Match Eyebrows Set
+  17. [makeup] Sims 4 Eyebrow CC Pack
+  18. [makeup] Andre Sims 4 Male Eyebrows
+  19. [makeup] Brushed & Natural Sims 4 Eyebrow Set
+  20. [makeup] Come to Mama Sims 4 Eyebrows
+
+--------------------------------------------------------------------------------
+Content Type: dresses
+Total Mods: 507
+--------------------------------------------------------------------------------
+   1. [dresses] 6 Lady Rose Regency Gown
+   2. [dresses] 4 Cressida Dress
+   3. [dresses] Nellie High-Waisted Dress
+   4. [dresses] Priscilla Long High-Waisted Dress
+   5. [dresses] Kate Riding Habit Conversion
+   6. [dresses] Edwina & Kate Sharma Gown
+   7. [dresses] New Year’s Eve Dress
+   8. [dresses] Marbella Dress
+   9. [dresses] Leslie Halter Mini Dress with Bow
+  10. [dresses] POX Dove Dress
+  11. [dresses] Jada Dress
+  12. [dresses] Dani Dress
+  13. [dresses] Animal Print Dress With Leather Pocket
+  14. [dresses] Jem Cutout Dress
+  15. [dresses] Long Sleeve Christmas Dress
+  16. [dresses] Bright Christmas
+  17. [dresses] Christmas Kollections
+  18. [dresses] Clepto x November Holiday Diamonds Collection
+  19. [dresses] Charming Christmas Coat Dress
+  20. [dresses] SnowDoll Set
+
+--------------------------------------------------------------------------------
+Content Type: shoes
+Total Mods: 455
+--------------------------------------------------------------------------------
+   1. [shoes] Harley Heels Set
+   2. [shoes] Star Detailed Party Heels S669
+   3. [shoes] Sporty Collection – Odelia Pointe Shoes & Gaiters
+   4. [shoes] Flow Motion Sneaker Set
+   5. [shoes] Sneakers Collection
+   6. [shoes] Off-line Krok Sandals
+   7. [shoes] Kio Platform Heels
+   8. [shoes] Balenciaga x Crocs Boots
+   9. [shoes] ASICS Gel-1130 Sneakers
+  10. [shoes] Melina Boots Set
+  11. [shoes] Sweet Allure Shoes
+  12. [shoes] (80’s Things) Retro Peep Toe Elegant Pumps
+  13. [shoes] 80’s Things- Duo Colour Heels
+  14. [shoes] Lumi Heel Sandals
+  15. [shoes] High Boots With Socks
+  16. [shoes] Serpentina Shoes
+  17. [shoes] Alessia
+  18. [shoes] Festive Big Bow Heels
+  19. [shoes] Essentials Boots Collection
+  20. [shoes] Sims 4 CC Party Shoes Pack
+
+--------------------------------------------------------------------------------
+Content Type: bottoms
+Total Mods: 433
+--------------------------------------------------------------------------------
+   1. [bottoms] Like Jennie CC Clothes Set
+   2. [bottoms] Dropout Jeans
+   3. [bottoms] Nadia- Sequin Skirt
+   4. [bottoms] Christmas Collection II – Family Santa Claus
+   5. [bottoms] Sexy Santa Claus – Set
+   6. [bottoms] Soloriya: Christmas 2022 Christmas Tree
+   7. [bottoms] Adult Nancy High Waist Casual Pants
+   8. [bottoms] Sandra Ribbed Skirt
+   9. [bottoms] Glitter Top and Pants
+  10. [bottoms] Magda Top and Pants
+  11. [bottoms] Sims 4 CC Boots
+  12. [bottoms] Kids Sweater & Jeans Outfit
+  13. [bottoms] Sims 4 Kids Uniform with Skirt
+  14. [bottoms] Sims 4 Kids CC Skirt Outfit
+  15. [bottoms] Sims 4 Kids Skinny Jeans
+  16. [bottoms] Sims 4 Kids CC Jeans
+  17. [bottoms] Sims 4 Kids Blazer and Skirt Outfit
+  18. [bottoms] Sims 4 Y2K Baggy Pants
+  19. [bottoms] Sims 4 Glitter Y2K CC Pack
+  20. [bottoms] Sims 4 Y2K CC Skirt
+
+--------------------------------------------------------------------------------
+Content Type: decor
+Total Mods: 424
+--------------------------------------------------------------------------------
+   1. [decor] 4 Funside Sideboard Decor Set
+   2. [decor] New Year’s Decor
+   3. [decor] Clutter Dump: Functional Clutter Items
+   4. [decor] Pumpkin Starter House
+   5. [decor] Random Art Posters
+   6. [decor] Cocktail Art
+   7. [decor] Holiday Cooking Decor 4
+   8. [decor] Festive Appetizers
+   9. [decor] Merry Christmas 2025
+  10. [decor] Advent Calendar
+  11. [decor] CAS Background Christmas Room
+  12. [decor] The Christmas Tree
+  13. [decor] Christmas Day Decor Set
+  14. [decor] Merry Collection – Tree & Decor
+  15. [decor] Dreamy Christmas — December 2022 (Part 1) Tree Elements
+  16. [decor] Simbishy: Christmas Extravaganza Tree Decorations
+  17. [decor] Sims 4 CC Wedding Suit with Boutonnière
+  18. [decor] Sims 4 CC Wedding Arches
+  19. [decor] Sims 4 Wedding CC Set
+  20. [decor] Sims 4 Wedding Bouquet CC
+
+--------------------------------------------------------------------------------
+Content Type: gameplay-mod
+Total Mods: 369
+--------------------------------------------------------------------------------
+   1. [gameplay-mod] Bridgerton Inspired Regency Romance Mod
+   2. [gameplay-mod] Personal Trainer (Active) Career
+   3. [gameplay-mod] Workout Planner Traditions Mod
+   4. [gameplay-mod] Smoothie Blender
+   5. [gameplay-mod] Stylish Appliances Coffee Maker
+   6. [gameplay-mod] N34 Teeth
+   7. [gameplay-mod] AM & PM Traditions
+   8. [gameplay-mod] Sims 4 Toddler Play Kitchen Mod
+   9. [gameplay-mod] Sims 4 Toddler Forbidden Words Mod
+  10. [gameplay-mod] Toddler First Birthday Party Sims 4 Mod
+  11. [gameplay-mod] Sims 4 Inherited Aspiration Mod
+  12. [gameplay-mod] 5 New Toddler Holiday Traditions Mod
+  13. [gameplay-mod] Sims 4 Better Babies & Toddler Mod
+  14. [gameplay-mod] Sims 4 Preschool Mod
+  15. [gameplay-mod] Sims 4 Toddler Lunchbox Mod
+  16. [gameplay-mod] Candy Covered
+  17. [gameplay-mod] Restaurant Host or Hostess Career
+  18. [gameplay-mod] Business Uniform Mod in Sims 4
+  19. [gameplay-mod] Dine Out Reloaded
+  20. [gameplay-mod] Barbie’s Closet Collection 2 CC
+
+--------------------------------------------------------------------------------
+Content Type: skin
+Total Mods: 244
+--------------------------------------------------------------------------------
+   1. [skin] Skin 9 – Fenty Beauty Set
+   2. [skin] Elegant Skin Pack
+   3. [skin] Class of Melanin (Male Version) Skin Pack
+   4. [skin] TS4 Body Preset Petite Series
+   5. [skin] Female Body Preset 04
+   6. [skin] Female Body Preset N4
+   7. [skin] AF Body Preset 1
+   8. [skin] Male Body Preset No. 1
+   9. [skin] Body Preset “Soft Curve Silhouette”
+  10. [skin] Aninha Body Preset
+  11. [skin] Luna Body Preset
+  12. [skin] Jessica Body Preset
+  13. [skin] Plus Size Body Preset 02
+  14. [skin] Plus Size Body Preset 01
+  15. [skin] Snack Body Preset
+  16. [skin] Pumped Hips & Thighs Body Preset
+  17. [skin] Female Body Preset N4
+  18. [skin] Bounce Body Preset
+  19. [skin] Plus Size Body Preset 04
+  20. [skin] Plus Size Body Preset N10
+
+--------------------------------------------------------------------------------
+Content Type: clutter
+Total Mods: 156
+--------------------------------------------------------------------------------
+   1. [clutter] Christmas Throw Pillow
+   2. [clutter] Christmas Hot Cocoa Override
+   3. [clutter] Holiday Cooking Decor 1
+   4. [clutter] Catherine Sushis Restaurant
+   5. [clutter] Random Small Mods (RSM) Restaurant Faster Cooking (Dine Out)
+   6. [clutter] Random Small Mods (RSM) Restaurant Eating Tweaks (Dine Out)
+   7. [clutter] More Restaurant Menu Options
+   8. [clutter] Cypher Sims 4 Gamer Clutter
+   9. [clutter] Pregnancy Test & Birth Control Clutter
+  10. [clutter] Dining Dishware Clutter
+  11. [clutter] Pegboard with Kitchen Clutter
+  12. [clutter] Dishes Clutter for Sims 4
+  13. [clutter] Sims 4 Beauty Shop Decor
+  14. [clutter] Back to Basics Sims 4 Kitchen Clutter CC
+  15. [clutter] Corkboard Sims 4 Clutter Set
+  16. [clutter] Sims 4 Birthday Party Clutter
+  17. [clutter] Toy Clutter for Sims 4
+  18. [clutter] Tiny Living Sims 4 Bathroom Clutter
+  19. [clutter] Sims 4 Japanese Decor
+  20. [clutter] Tea Time Sims 4 Garden Clutter Set
+
+--------------------------------------------------------------------------------
+Content Type: jewelry
+Total Mods: 155
+--------------------------------------------------------------------------------
+   1. [jewelry] Set Jetson Jewelry & Accessory Storage CC
+   2. [jewelry] Body Gems Belly Rings
+   3. [jewelry] Elisse Belly Piercing Basic Skins
+   4. [jewelry] Advent Calendar 2021 Flickering Christmas Tree
+   5. [jewelry] Eriytheia Set
+   6. [jewelry] Marquise Diamond Cascade Layered Necklace
+   7. [jewelry] Festive Big Bow Earrings
+   8. [jewelry] Sims 4 Engagement CC Pack
+   9. [jewelry] Sims 4 CC Pearl Vintage Engagement Ring
+  10. [jewelry] Trendy Sims 4 Witch CC
+  11. [jewelry] Sims 4 CC Accessories for Teens
+  12. [jewelry] Resized Sims 4 CC Piercings
+  13. [jewelry] Y2K Sims 4 CC Pack
+  14. [jewelry] Jewelry Displays for Sims 4
+  15. [jewelry] Werewolf Body Stuff
+  16. [jewelry] Sims 4 Horse CC: Countryside
+  17. [jewelry] Sims 4 Horse CC Farm Kit
+  18. [jewelry] Stephanie Choker
+  19. [jewelry] Goth Bracelets
+  20. [jewelry] Rebellious Bear
+
+--------------------------------------------------------------------------------
+Content Type: eyes
+Total Mods: 155
+--------------------------------------------------------------------------------
+   1. [eyes] No.11 Brows
+   2. [eyes] Unisex Maxis Match Eyebrows
+   3. [eyes] Eyebrows N01
+   4. [eyes] All Fluffed Up Eyebrows
+   5. [eyes] No. 10 Brows Set
+   6. [eyes] Hexed Goth/Alt Brow Collection
+   7. [eyes] Eyebrows N1
+   8. [eyes] Everyday Eyebrows
+   9. [eyes] Robyn Eyebrows N321
+  10. [eyes] Lyz Eyebrows N319
+  11. [eyes] Male Maxis Match Eyebrow Collection
+  12. [eyes] Maxis Match Sims 4 Eyebrows
+  13. [eyes] Sims 4 Thick Brows Set
+  14. [eyes] Pride-Themed Sims 4 Eyebrows
+  15. [eyes] Straight Sims 4 Brow Set
+  16. [eyes] Manly Sims 4 Eyebrows
+  17. [eyes] Gria Set of Eyebrows for Sims 4
+  18. [eyes] Thick Sims 4 Eyebrows
+  19. [eyes] Sims 4 Eyebrows Mods
+  20. [eyes] Eyebrows for Sims 4
+
+--------------------------------------------------------------------------------
+Content Type: preset
+Total Mods: 130
+--------------------------------------------------------------------------------
+   1. [preset] 2 New Male Body Presets
+   2. [preset] Soft Curvy Preset
+   3. [preset] Bodied Body Presets
+   4. [preset] Curvy Diva Preset
+   5. [preset] Presets August 2025
+   6. [preset] 2 New Female Body Presets For The Sims 4
+   7. [preset] Plus Size Preset N5
+   8. [preset] Plus Size Preset N6
+   9. [preset] Plus Size Preset N7
+  10. [preset] Plus Size Preset N9
+  11. [preset] Plus Size Preset N8
+  12. [preset] Chubby Body Presets
+  13. [preset] Day 02: Pine Christmas Tree
+  14. [preset] Fruit Basket Sims 4 Makeup Set
+  15. [preset] 100+ Sims 4 CAS Presets
+  16. [preset] Sims 4 Girlie Body Preset
+  17. [preset] Sims 4 Cute Body Preset
+  18. [preset] Sims 4 Female Body Mod
+  19. [preset] Sims 4 Fairy Body Mod
+  20. [preset] Sims 4 Body Mod
+
+--------------------------------------------------------------------------------
+Content Type: nails
+Total Mods: 126
+--------------------------------------------------------------------------------
+   1. [nails] New Year 2026 Nails
+   2. [nails] Winter Almond Nails
+   3. [nails] Christmas Nails For Toddler
+   4. [nails] Snow Almond Nails
+   5. [nails] Xmas Nails Set
+   6. [nails] Candy Cane Nails
+   7. [nails] Trillqueen Free Christmas Gift Nails Set Blender
+   8. [nails] Christmas Snowflake Nails
+   9. [nails] Viccs Its Timeeeee Nails
+  10. [nails] Xmas Nails 02 Child
+  11. [nails] Winter Nails Set
+  12. [nails] Winter Nail Collection
+  13. [nails] Snowflake Nails
+  14. [nails] Xmas Nails 01- Child
+  15. [nails] Christmas 2021 Tinsei Nails
+  16. [nails] Merry Nails
+  17. [nails] AF Nails No12
+  18. [nails] S-Club WM Nails
+  19. [nails] Christmas Nails
+  20. [nails] S-Club WM Nails New Mesh
+
+--------------------------------------------------------------------------------
+Content Type: glasses
+Total Mods: 117
+--------------------------------------------------------------------------------
+   1. [glasses] Glasses N15 + N17
+   2. [glasses] Glasses N22 + N24
+   3. [glasses] Care Glasses Set
+   4. [glasses] Money Is Supreme Glasses
+   5. [glasses] GATA Glasses
+   6. [glasses] Chain Glasses Set
+   7. [glasses] Cat Ear Glasses
+   8. [glasses] W Wire Glasses
+   9. [glasses] Alien-Metal Glasses
+  10. [glasses] OJO Glasses
+  11. [glasses] Hex-Luxe Glasses
+  12. [glasses] Miumiu Glasses
+  13. [glasses] Prysm Sunglasses
+  14. [glasses] Rosie Sunglasses
+  15. [glasses] Tortoise Shell Acetate Wrap Glasses
+  16. [glasses] Deca V2 Glasses
+  17. [glasses] S-Club Glasses
+  18. [glasses] Star Glasses
+  19. [glasses] Overview Style Pack No. 9 – Glasses
+  20. [glasses] Bape Star Glasses
+
+--------------------------------------------------------------------------------
+Content Type: loading-screen
+Total Mods: 115
+--------------------------------------------------------------------------------
+   1. [loading-screen] Cozy Christmas Overrides – Loading Screens
+   2. [loading-screen] Kawaii Xmas Main Menus
+   3. [loading-screen] Refreshed Main Menu: Homey Christmas
+   4. [loading-screen] CottageCore Holiday Collection Loading Screens
+   5. [loading-screen] Winter Temple Loading Screens
+   6. [loading-screen] Christmas Loading Screen Set
+   7. [loading-screen] Christmas Mood Board Loading Screen
+   8. [loading-screen] Winter Loading Screen Pack
+   9. [loading-screen] Aesthetic Winterfest
+  10. [loading-screen] Winter-Themed Loading Screens
+  11. [loading-screen] Winterfest Loading Screens
+  12. [loading-screen] Christmas Loading Screen
+  13. [loading-screen] Xmas Loading Screen
+  14. [loading-screen] Holiday Opening Screen Main Menu Override
+  15. [loading-screen] Winter Loading Screen and Main Menu Set and Loading Screen
+  16. [loading-screen] Cozy Christmas Loading Screen
+  17. [loading-screen] Christmas Aesthetic Set
+  18. [loading-screen] Christmas TS4 Loading Screen
+  19. [loading-screen] Snowflake Loading Screen
+  20. [loading-screen] Opening Screen Override and Loading Screen
+
+--------------------------------------------------------------------------------
+Content Type: lighting
+Total Mods: 102
+--------------------------------------------------------------------------------
+   1. [lighting] Christmas CAS Room
+   2. [lighting] Bright And Merry CAS Room
+   3. [lighting] Thomas Living Room
+   4. [lighting] Sims 4 Kitchen Custom Content Pack
+   5. [lighting] Child Sims 4 CC Clothes Pack
+   6. [lighting] Light Switches & Outlets for Sims 4
+   7. [lighting] Sims 4 Clutter Candles
+   8. [lighting] Sims 4 Art Clutter CC
+   9. [lighting] New Functional Jumps
+  10. [lighting] The Faerie Set Black Sims 4 CC
+  11. [lighting] Luxe Sims 4 CAS Room Background
+  12. [lighting] LED Strip Lights for Gaming Setup
+  13. [lighting] Video Game Lego Sets
+  14. [lighting] Vampire Study CAS Background Room
+  15. [lighting] Attic Room CAS Background
+  16. [lighting] High School Uniform
+  17. [lighting] Toys for the Christmas Tree
+  18. [lighting] Apollo Living Room
+  19. [lighting] Xyra Set Ella
+  20. [lighting] Aplysia Kidsroom
+
+--------------------------------------------------------------------------------
+Content Type: cas-background
+Total Mods: 87
+--------------------------------------------------------------------------------
+   1. [cas-background] Xmas Glam CAS Background
+   2. [cas-background] Xmas Green CAS Background
+   3. [cas-background] Cozy Christmas CAS Backgrounds
+   4. [cas-background] Xmas White CAS Background
+   5. [cas-background] Christmas Morning CAS Background
+   6. [cas-background] Winter Wonderland CAS Background
+   7. [cas-background] Winter CAS Background
+   8. [cas-background] Iced Latte CAS Background
+   9. [cas-background] Christmas CAS Background
+  10. [cas-background] Merry Christmas CAS Background
+  11. [cas-background] Sims 4 Pride Nails
+  12. [cas-background] Disney Sims 4 CAS Background Set
+  13. [cas-background] White Flowers Sims 4 CAS Background
+  14. [cas-background] Valentine’s Day Sims 4 CAS Background
+  15. [cas-background] Sunflower Series Sims 4 CAS Background
+  16. [cas-background] Amanda Sims 4 Cas Background
+  17. [cas-background] TS2 Inspired Maxis Match Sims 4 CAS Background
+  18. [cas-background] Sims 4 CAS Background Blue
+  19. [cas-background] Vintage Solid Color Sims 4 CAS Backgrounds
+  20. [cas-background] Black & White Sims 4 CAS Background
+
+--------------------------------------------------------------------------------
+Content Type: tattoos
+Total Mods: 82
+--------------------------------------------------------------------------------
+   1. [tattoos] Minimalist Rose, Butterflies “Be Free” Text Tattoo
+   2. [tattoos] Ghibli Tattoos
+   3. [tattoos] 80s Things Sleeve Tattoo
+   4. [tattoos] Better Things Tattoo Set
+   5. [tattoos] Sims 4 Male Hand Tattoos
+   6. [tattoos] Lance Chester
+   7. [tattoos] Skull Moon Left Upper Arm Tattoo
+   8. [tattoos] Simblreen 2022
+   9. [tattoos] BodyCare Kit
+  10. [tattoos] Lena Moles
+  11. [tattoos] Floral
+  12. [tattoos] Otome Tattoo
+  13. [tattoos] Hoodlem Makiage Tattoo
+  14. [tattoos] Hood Princess Tattoos
+  15. [tattoos] Hip and Leg Tattoo
+  16. [tattoos] Ornament Tattoo
+  17. [tattoos] Brenda Thigh Tattoo
+  18. [tattoos] Nao Leg Tattoo
+  19. [tattoos] Tattoo Torso N2
+  20. [tattoos] Full Body Tattoo 04
+
+--------------------------------------------------------------------------------
+Content Type: script-mod
+Total Mods: 47
+--------------------------------------------------------------------------------
+   1. [script-mod] Sunrise Alarm Clock
+   2. [script-mod] Werewolves Toggle
+   3. [script-mod] Sims 4 Arm Thickness Slider + Hip Sliders
+   4. [script-mod] Sims 4 Shoulder Height Slider
+   5. [script-mod] Sims 4 Cheek Slider
+   6. [script-mod] Woohoo Acceptance Animations Replaced
+   7. [script-mod] UI Cheats Extension
+   8. [script-mod] Quick Shower and Quick Bath
+   9. [script-mod] Denji
+  10. [script-mod] Infant Diaper Override
+  11. [script-mod] Default Baby Bottle Replacement
+  12. [script-mod] Automatic Thermostat
+  13. [script-mod] Seasons of Soup
+  14. [script-mod] Functional Phone Replacement
+  15. [script-mod] Serif Front Replacement Override
+  16. [script-mod] Cutting Board Override
+  17. [script-mod] Kekeyw Billboard Overrides
+  18. [script-mod] More Columns in CAS
+  19. [script-mod] Toddler Traits Pack
+  20. [script-mod] Wicked Whims
+
+--------------------------------------------------------------------------------
+Content Type: hats
+Total Mods: 46
+--------------------------------------------------------------------------------
+   1. [hats] Santa Hat + Christmas Lights
+   2. [hats] Coquette Hairstyle
+   3. [hats] Sims 4 Wedding Veil CC
+   4. [hats] Froggy Hat for Kids
+   5. [hats] Sims 4 Bucket Hat
+   6. [hats] Sims 4 Barbie CC Doll Hair Set
+   7. [hats] 1950s Crumplebottom Hat CC
+   8. [hats] Cookie
+   9. [hats] Dubai Oasis Hat
+  10. [hats] Trucker’s Cap
+  11. [hats] Authentic Caps 01
+  12. [hats] Naomi Hairstyle
+  13. [hats] Isla Hair-Toddler Version
+  14. [hats] Infant Christmas Hat
+  15. [hats] The Snowman in The Hat
+  16. [hats] Mahe Wool Cap and Gloves
+  17. [hats] Montrose
+  18. [hats] Martini Blue Hair
+  19. [hats] Hala Hala Hat & Mask
+  20. [hats] Daesang Cap
+
+--------------------------------------------------------------------------------
+Content Type: (NULL)
+Total Mods: 45
+--------------------------------------------------------------------------------
+   1. [(NULL)] 5 Artful Notion Pack
+   2. [(NULL)] 3 The Praline Collection
+   3. [(NULL)] 2 Reading Corner CC Pack
+   4. [(NULL)] 1 Feronia CC Pack
+   5. [(NULL)] Shearling Collection II
+   6. [(NULL)] 1 Soft Notes Set
+   7. [(NULL)] Neva Set
+   8. [(NULL)] 4 Prestigious Highschool Uniform
+   9. [(NULL)] 2 Dek Sol III Clothing Set
+  10. [(NULL)] Bridgerton Gentleman’s Outfit
+  11. [(NULL)] Masculine Bridgerton Outfits Recolors
+  12. [(NULL)] Regency Reverie Collection
+  13. [(NULL)] Bridgerton Collection Part 1
+  14. [(NULL)] Casual Male Regency Outfit
+  15. [(NULL)] Emma Regency Collaboration
+  16. [(NULL)] Regency Infant & Toddler Skeleton Suit
+  17. [(NULL)] Exited About New Year
+  18. [(NULL)] Willow Health Club: Evermore Save Project
+  19. [(NULL)] Lots Of Gym Equipment
+  20. [(NULL)] Functional Treadmill
+
+--------------------------------------------------------------------------------
+Content Type: plants
+Total Mods: 26
+--------------------------------------------------------------------------------
+   1. [plants] Plant Mom Clutter CC Pack
+   2. [plants] June N2
+   3. [plants] Gardening Foyer Decor
+   4. [plants] Botany Gardening Pot To Plant
+   5. [plants] Country Room CAS Background
+   6. [plants] Dark October Walls Part 1
+   7. [plants] Nova Walls
+   8. [plants] Naturalis Plants
+   9. [plants] Haze Aglaonema Plant
+  10. [plants] Bedroom Minimal Sim Vase Plant Deco
+  11. [plants] Terra Miniplant Set
+  12. [plants] Haze Plants
+  13. [plants] Advent Calendar 2022
+  14. [plants] Botanic Room Plants
+  15. [plants] Garrulus Outdoor Pots And Plants
+  16. [plants] My Essay Plant
+  17. [plants] Agreste Plants And Pots
+  18. [plants] Pair O’ Normal Plants
+  19. [plants] Candy Nursery Part 3
+  20. [plants] Naturalis TV Unit Curved TV
+
+--------------------------------------------------------------------------------
+Content Type: builds
+Total Mods: 20
+--------------------------------------------------------------------------------
+   1. [builds] Bridgerton Family House
+   2. [builds] Sims 4 Featherington House
+   3. [builds] Bridgerton-Inspired Estate
+   4. [builds] “Banana’s Vibes” Starter
+   5. [builds] Modern Modular Starter Home
+   6. [builds] Starter House For Rent
+   7. [builds] 95 Woodland Drive House
+   8. [builds] Efficient Eddifice
+   9. [builds] The Melanin Series Vol. I
+  10. [builds] The Tooth Gem Dump
+  11. [builds] MyxDoll Grilln’
+  12. [builds] Hollywood 3D Teeth
+  13. [builds] Bansi House
+  14. [builds] Mt. Koromebi Family Home
+  15. [builds] MM Modern House 133
+  16. [builds] MM Modern Villa 10
+  17. [builds] Paula House
+  18. [builds] Olive Axis
+  19. [builds] Winter Lodge
+  20. [builds] A Big Christmas Family Home
+
+--------------------------------------------------------------------------------
+Content Type: pet-furniture
+Total Mods: 16
+--------------------------------------------------------------------------------
+   1. [pet-furniture] Cat Ear Headphones
+   2. [pet-furniture] Christmas Pet Beds
+   3. [pet-furniture] Christmas Scratch Post
+   4. [pet-furniture] Christmas Cat
+   5. [pet-furniture] Pets Set
+   6. [pet-furniture] Meow Canteen Set
+   7. [pet-furniture] Meow Small Box of Goodies
+   8. [pet-furniture] Purr-Fect Cat Essentials Set
+   9. [pet-furniture] Fluffy Cats and Dogs CC
+  10. [pet-furniture] Meow and Woof Pets CC
+  11. [pet-furniture] Worldrium Fish Tank
+  12. [pet-furniture] Veterinary Vet Clinic CC
+  13. [pet-furniture] Ranea Petbed
+  14. [pet-furniture] Sophisticated DIY Mini Aquarium
+  15. [pet-furniture] Dogtown Mini Pack
+  16. [pet-furniture] The Late Night Snack of the Celestial Witch
+
+--------------------------------------------------------------------------------
+Content Type: bathroom
+Total Mods: 11
+--------------------------------------------------------------------------------
+   1. [bathroom] Sims 4 Bathroom Essentials
+   2. [bathroom] Sims 4 Modern Bathroom
+   3. [bathroom] Serenity Bathroom CC for Sims 4
+   4. [bathroom] Decorative Sims 4 Bathroom Objects
+   5. [bathroom] Sims 4 Washroom Set
+   6. [bathroom] Sabra Bathroom Set for Sims 4
+   7. [bathroom] Sims 4 Bathroom Accessories
+   8. [bathroom] Sims 4 Bathroom Set
+   9. [bathroom] Hamptons Sims 4 bathroom Addon
+  10. [bathroom] Serene Sims 4 Bathroom CC
+  11. [bathroom] 2 Potty + Highchair
+
+================================================================================
+SECTION 5: Pattern Analysis
+================================================================================
+
+Potential miscategorization patterns found:
+--------------------------------------------------------------------------------
+
+Pattern: "eyebrow" (suggested: eyebrows)
+  Currently in "makeup": 59 mods
+  Currently in "hair": 26 mods
+  Currently in "eyes": 24 mods
+  Currently in "skin": 3 mods
+  Currently in "full-body": 2 mods
+
+Pattern: "lash/eyelash" (suggested: lashes)
+  Currently in "makeup": 47 mods
+  Currently in "eyes": 17 mods
+  Currently in "skin": 3 mods
+  Currently in "accessories": 2 mods
+  Currently in "hair": 1 mods
+  Currently in "tops": 1 mods
+  Currently in "decor": 1 mods
+  Currently in "full-body": 1 mods
+  Currently in "furniture": 1 mods
+
+Pattern: "eyeliner" (suggested: eyeliner or makeup)
+  Currently in "makeup": 43 mods
+  Currently in "full-body": 2 mods
+  Currently in "hair": 2 mods
+  Currently in "accessories": 1 mods
+  Currently in "dresses": 1 mods
+  Currently in "tops": 1 mods
+
+Pattern: "lipstick" (suggested: lipstick or makeup)
+  Currently in "makeup": 43 mods
+  Currently in "hair": 3 mods
+  Currently in "tops": 3 mods
+  Currently in "full-body": 1 mods
+
+Pattern: "blush" (suggested: blush or makeup)
+  Currently in "makeup": 18 mods
+  Currently in "skin": 3 mods
+  Currently in "tops": 1 mods
+
+Pattern: "beard" (suggested: beard or facial-hair)
+  Currently in "hair": 23 mods
+  Currently in "tops": 5 mods
+  Currently in "accessories": 4 mods
+  Currently in "full-body": 2 mods
+
+Pattern: "bathroom" (suggested: furniture with bathroom theme)
+  Currently in "lot": 13 mods
+  Currently in "clutter": 11 mods
+  Currently in "decor": 11 mods
+  Currently in "bathroom": 9 mods
+  Currently in "furniture": 9 mods
+  Currently in "accessories": 7 mods
+  Currently in "glasses": 3 mods
+  Currently in "full-body": 3 mods
+  Currently in "makeup": 3 mods
+  Currently in "lighting": 2 mods
+  Currently in "jewelry": 1 mods
+  Currently in "tops": 1 mods
+
+Pattern: "kitchen" (suggested: furniture with kitchen theme)
+  Currently in "furniture": 17 mods
+  Currently in "clutter": 14 mods
+  Currently in "lot": 12 mods
+  Currently in "accessories": 10 mods
+  Currently in "decor": 6 mods
+  Currently in "tops": 4 mods
+  Currently in "glasses": 2 mods
+  Currently in "makeup": 2 mods
+  Currently in "poses": 2 mods
+  Currently in "lighting": 1 mods
+  Currently in "gameplay-mod": 1 mods
+
+Pattern: "bedroom" (suggested: furniture with bedroom theme)
+  Currently in "furniture": 121 mods
+  Currently in "decor": 6 mods
+  Currently in "tops": 4 mods
+  Currently in "lighting": 4 mods
+  Currently in "clutter": 3 mods
+  Currently in "dresses": 2 mods
+  Currently in "lot": 1 mods
+  Currently in "plants": 1 mods
+  Currently in "poses": 1 mods
+
+================================================================================
+SUMMARY
+================================================================================
+
+Total mods: 10447
+Unique content types (including NULL): 31
+Mods with NULL contentType: 45 (0.43%)
+Content types WITHOUT FacetDefinitions: 4
+FacetDefinitions without mods: 5
+
+Action Required - Create FacetDefinitions for:
+  - preset (130 mods)
+  - loading-screen (115 mods)
+  - cas-background (87 mods)
+  - pet-furniture (16 mods)
+
+Action Required - Categorize 45 mods with NULL contentType
+
+================================================================================
+END OF REPORT
+================================================================================
