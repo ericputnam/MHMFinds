@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Home
 } from 'lucide-react';
+import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -419,6 +420,16 @@ export default function ModDetailPage() {
                 )}
               </div>
             </div>
+
+            {/* Affiliate Product Recommendations */}
+            {mod.themes && mod.themes.length > 0 && (
+              <div className="mt-6">
+                <AffiliateRecommendations
+                  modId={mod.id}
+                  themes={mod.themes}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

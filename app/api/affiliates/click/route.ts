@@ -22,26 +22,31 @@ export async function POST(request: NextRequest) {
     // Generate a session ID from IP + user agent for anonymous tracking
     const sessionId = Buffer.from(`${ipAddress}-${userAgent}`).toString('base64').slice(0, 32);
 
-    // Record the click
-    await prisma.affiliateClick.create({
-      data: {
-        offerId,
-        sourceType, // 'interstitial', 'grid', 'sidebar'
-        modId,
-        pageUrl,
-        sessionId,
-        ipAddress,
-        userAgent,
-      },
-    });
+    // Use a transaction to create click record and increment offer clicks atomically
+    const [, offer] = await prisma.$transaction([
+      // Record the click
+      prisma.affiliateClick.create({
+        data: {
+          offerId,
+          sourceType, // 'interstitial', 'grid', 'sidebar', 'mod_page'
+          modId,
+          pageUrl,
+          sessionId,
+          ipAddress,
+          userAgent,
+        },
+      }),
+      // Increment the click counter on the offer and return the offer
+      prisma.affiliateOffer.update({
+        where: { id: offerId },
+        data: { clicks: { increment: 1 } },
+      }),
+    ]);
 
-    // Increment the click counter on the offer
-    await prisma.affiliateOffer.update({
-      where: { id: offerId },
-      data: { clicks: { increment: 1 } },
+    return NextResponse.json({
+      success: true,
+      redirectUrl: offer.affiliateUrl,
     });
-
-    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error tracking affiliate click:', error);
     // Still return success to not block the user

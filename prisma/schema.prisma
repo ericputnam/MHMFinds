@@ -1079,15 +1079,54 @@ model AffiliateOffer {
   impressions Int      @default(0)
   clicks      Int      @default(0)
 
+  // Research tracking fields
+  researchRunId   String?                  // Link to the research run that discovered this offer
+  researchRun     AffiliateResearchRun?    @relation(fields: [researchRunId], references: [id], onDelete: SetNull)
+  sourceUrl       String?                  // Original URL where offer was found
+  sourceType      String?                  // "impact", "rakuten", "cj", "manual", etc.
+  validationStatus String  @default("pending") // "pending", "validated", "invalid", "expired"
+  validatedAt     DateTime?               // When the offer was last validated
+  expiresAt       DateTime?               // When the offer/deal expires (if known)
+  commission      Decimal? @db.Decimal(5, 2) // Commission percentage (e.g., 10.00 for 10%)
+  commissionType  String?                 // "percentage", "flat", "cpa"
+  originalPrice   Decimal? @db.Decimal(10, 2) // Original price before discount
+  salePrice       Decimal? @db.Decimal(10, 2) // Sale/discounted price
+  researchNotes   String?  @db.Text       // Notes from research process
+
+  // Content-based research metadata (PRD: Affiliate Research Agent)
+  matchingThemes        String[]              // Themes this product matches (y2k, cottagecore, goth, etc.)
+  matchingContentTypes  String[]              // Content types it relates to (hair, makeup, furniture, etc.)
+  demographicScore      Decimal? @db.Decimal(5, 2) // 0-100 demographic fit score
+  aestheticScore        Decimal? @db.Decimal(5, 2) // 0-100 aesthetic match score
+  priceScore            Decimal? @db.Decimal(5, 2) // 0-100 price point score
+  trendScore            Decimal? @db.Decimal(5, 2) // 0-100 trend alignment score
+  finalScore            Decimal? @db.Decimal(5, 2) // Weighted final score
+
+  // Persona swarm validation
+  personaValidated      Boolean  @default(false) // Has this been validated by persona swarm?
+  personaScore          Int?                     // Number of personas who approved (0-5)
+  personaVotes          Json?                    // Full voting data from swarm
+  personaFeedback       String?  @db.Text        // Summary of persona feedback
+
+  // Conversion tracking
+  conversions           Int      @default(0)     // Number of conversions
+  revenue               Decimal  @default(0) @db.Decimal(10, 2) // Revenue from conversions
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   clickEvents AffiliateClick[]
 
+  @@unique([affiliateUrl])  // Prevent duplicate offers for same product
   @@index([isActive, priority(sort: Desc)])
   @@index([category, isActive])
   @@index([partner])
+  @@index([researchRunId])
+  @@index([validationStatus])
+  @@index([sourceType, isActive])
+  @@index([personaValidated, finalScore(sort: Desc)])
+  @@index([personaValidated, isActive])
   @@map("affiliate_offers")
 }
 
@@ -1113,6 +1152,64 @@ model AffiliateClick {
   @@index([offerId, clickedAt(sort: Desc)])
   @@index([sourceType, clickedAt])
   @@map("affiliate_clicks")
+}
+
+// ============================================
+// AFFILIATE RESEARCH SYSTEM
+// ============================================
+
+// Track affiliate research/discovery runs
+model AffiliateResearchRun {
+  id              String   @id @default(cuid())
+
+  // Run type and status
+  runType         String   // "discovery", "validation", "refresh", "cleanup"
+  status          String   @default("running") // "running", "completed", "failed", "cancelled"
+
+  // Research configuration
+  sourceTypes     String[] // Which sources to research: ["impact", "rakuten", "cj", etc.]
+  categories      String[] // Which categories to research: ["peripherals", "games", etc.]
+  partners        String[] // Specific partners to focus on (empty = all)
+
+  // Content-based research configuration (PRD: Affiliate Research Agent)
+  themesAnalyzed        String[] // Themes analyzed in this run (y2k, cottagecore, etc.)
+  contentTypesAnalyzed  String[] // Content types analyzed (hair, makeup, etc.)
+  productsFound         Int      @default(0) // Products discovered from research
+  productsValidated     Int      @default(0) // Products sent to persona swarm
+  personaEvaluations    Int      @default(0) // Total persona evaluations performed
+  perplexityQueries     Int      @default(0) // API calls to Perplexity
+
+  // Timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+
+  // Results metrics
+  offersDiscovered   Int     @default(0)  // New offers found
+  offersUpdated      Int     @default(0)  // Existing offers updated
+  offersDeactivated  Int     @default(0)  // Offers marked inactive/expired
+  offersValidated    Int     @default(0)  // Offers successfully validated
+  errorsEncountered  Int     @default(0)  // Number of errors during run
+
+  // Research summary
+  totalSourcesScanned Int    @default(0)  // Number of sources/pages scanned
+  totalApiCalls       Int    @default(0)  // Number of API calls made
+
+  // Logs and diagnostics
+  logSummary      String?  @db.Text      // Human-readable summary
+  errorDetails    Json?                   // Structured error information
+  configSnapshot  Json?                   // Snapshot of config used for this run
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  discoveredOffers AffiliateOffer[]
+
+  @@index([runType, startedAt(sort: Desc)])
+  @@index([status])
+  @@index([startedAt(sort: Desc)])
+  @@map("affiliate_research_runs")
 }
 
 // Aggregate learning metrics for prediction accuracy tracking
