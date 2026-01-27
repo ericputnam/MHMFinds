@@ -3,6 +3,8 @@ import { prisma } from '../../../lib/prisma';
 import { CacheService } from '../../../lib/cache';
 import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

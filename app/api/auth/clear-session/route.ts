@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Endpoint to clear the NextAuth session
  * Visit http://localhost:3000/api/auth/clear-session to clear your session
