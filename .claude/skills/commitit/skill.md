@@ -1,7 +1,7 @@
 ---
 name: commitit
 description: Commits changes to a feature branch with a descriptive message. Creates a new feature branch if on main. Use when user says "commit it", "save my work", "commit changes", or wants to checkpoint progress before running /shipit.
-allowed-tools: [Bash(git:*), Read, Glob, Grep]
+allowed-tools: [Bash(git:*), Bash(npm run security:*), Read, Glob, Grep]
 ---
 
 # Commit It - Feature Branch Commit Workflow
@@ -89,7 +89,25 @@ git diff --name-only HEAD
 - What was refactored?
 - What files were affected?
 
-### Step 4: Stage Changes
+### Step 4: Run Security Checks
+
+**If any files in `app/api/admin/` were modified**, run the security scanner:
+
+```bash
+npm run security:check-admin-auth
+```
+
+**If the scanner fails (exit code 1):**
+- STOP the commit process
+- Report the security issue to the user
+- Do NOT proceed until all admin routes have proper authentication
+
+**If the scanner passes (exit code 0):**
+- Continue with the commit workflow
+
+This ensures no unprotected admin API routes are ever committed.
+
+### Step 5: Stage Changes
 
 Stage all relevant changes:
 
@@ -106,7 +124,7 @@ git add <file1> <file2>
 git diff --staged --stat
 ```
 
-### Step 5: Generate Commit Message
+### Step 6: Generate Commit Message
 
 Based on the analysis, create a descriptive commit message:
 
@@ -142,7 +160,7 @@ Use optimistic updates instead of refetching entire list
 after each toggle to prevent UI flickering and state conflicts.
 ```
 
-### Step 6: Commit
+### Step 7: Commit
 
 ```bash
 git commit -m "<message>"
@@ -158,7 +176,7 @@ EOF
 )"
 ```
 
-### Step 7: Confirm Success
+### Step 8: Confirm Success
 
 ```bash
 git status
