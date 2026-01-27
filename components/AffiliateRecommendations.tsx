@@ -114,7 +114,8 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
   }
 
   const getPrice = (product: AffiliateProduct): number => {
-    return product.salePrice || product.originalPrice || 0;
+    const price = product.salePrice || product.originalPrice || 0;
+    return typeof price === 'number' ? price : Number(price);
   };
 
   return (
