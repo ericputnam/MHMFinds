@@ -11,10 +11,8 @@
  *   npm run queue view <id>     - View opportunity details
  */
 
-// Load environment variables
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import './lib/setup-env';
 
 import { actionQueue } from '@/lib/services/actionQueue';
 import { prisma } from '@/lib/prisma';

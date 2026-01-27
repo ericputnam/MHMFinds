@@ -7,6 +7,9 @@
  * should be cleared.
  */
 
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import '../lib/setup-env';
+
 import { prisma } from '@/lib/prisma';
 
 const NON_CLOTHING_TYPES = [

@@ -3,6 +3,9 @@
  * Confirms all CT-001 through CT-017 tasks have been completed successfully
  */
 
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import '../lib/setup-env';
+
 import { prisma } from '@/lib/prisma';
 
 // Content types that should NOT have gender

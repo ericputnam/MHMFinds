@@ -13,10 +13,8 @@
  *   GA4_SERVICE_ACCOUNT_KEY - Base64-encoded service account JSON
  */
 
-// Load environment variables
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import './lib/setup-env';
 
 import { ga4Connector } from '@/lib/services/ga4Connector';
 import { prisma } from '@/lib/prisma';

@@ -119,6 +119,9 @@ temp/
 # Project specific
 project/
 
+# Design reference app (not for development)
+newapp_musthavemods/node_modules/
+
 # Prisma
 *.db-journal
 

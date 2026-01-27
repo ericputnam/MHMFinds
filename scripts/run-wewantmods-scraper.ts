@@ -8,12 +8,16 @@
  * It only uses WM as a discovery source, storing the actual
  * external source URLs (TSR, Patreon, Tumblr, ModCollective, etc.)
  *
+ * URL Tracking: Scraped URLs are tracked in data/scraped-urls.csv
+ * Pages scraped within the last 3 months are automatically skipped.
+ *
  * Usage:
  *   npx tsx scripts/run-wewantmods-scraper.ts [options]
  *
  * Options:
  *   --limit=N       Limit to first N collection pages (default: all)
  *   --dry-run       Preview what would be scraped without importing
+ *   --force         Force rescrape all pages (ignore 3-month freshness check)
  *
  * Privacy Levels (set via PRIVACY_LEVEL env var):
  *   default:     3-8s delays, basic stealth
@@ -23,13 +27,12 @@
  * Examples:
  *   npx tsx scripts/run-wewantmods-scraper.ts
  *   npx tsx scripts/run-wewantmods-scraper.ts --limit=5
+ *   npx tsx scripts/run-wewantmods-scraper.ts --force    # Rescrape everything
  *   PRIVACY_LEVEL=stealth npx tsx scripts/run-wewantmods-scraper.ts
  */
 
-// Load environment variables FIRST, before any imports that need them
-import { config } from 'dotenv';
-config({ path: '.env.local' });
-config({ path: '.env.production', override: false }); // Fallback to production if local doesn't exist
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import './lib/setup-env';
 
 // Now import modules that depend on environment variables
 import { weWantModsScraper } from '../lib/services/weWantModsScraper';
@@ -63,6 +66,7 @@ async function main() {
   const args = process.argv.slice(2);
   let limit: number | undefined;
   let dryRun = false;
+  let forceRescrape = false;
 
   for (const arg of args) {
     if (arg.startsWith('--limit=')) {
@@ -75,12 +79,17 @@ async function main() {
     if (arg === '--dry-run') {
       dryRun = true;
     }
+    if (arg === '--force') {
+      forceRescrape = true;
+    }
   }
 
   console.log(`📋 Configuration:`);
   console.log(`   Privacy Level: ${process.env.PRIVACY_LEVEL || 'default'}`);
   console.log(`   Page Limit: ${limit || 'all pages'}`);
   console.log(`   Dry Run: ${dryRun}`);
+  console.log(`   Force Rescrape: ${forceRescrape}`);
+  console.log(`   URL Tracking: data/scraped-urls.csv (skip pages scraped within 3 months)`);
   console.log('');
 
   if (dryRun) {
@@ -108,7 +117,7 @@ async function main() {
   }
 
   // Run the full scraper
-  await weWantModsScraper.run({ limit });
+  await weWantModsScraper.run({ limit, forceRescrape });
 }
 
 main().catch((error) => {

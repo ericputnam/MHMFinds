@@ -174,6 +174,78 @@ vercel rollback mhm-finds-dw5l-abc123-ericputnams-projects.vercel.app --yes
 
 ---
 
+## 🧹 CRITICAL: Vercel Build Cleanliness
+
+**All Vercel builds MUST be clean and optimized.** Warnings and errors should be fixed, suppressed, or documented as benign.
+
+### The Standard
+- ✅ Zero build errors
+- ✅ Zero actionable warnings (all warnings either fixed or documented as benign)
+- ✅ No "Error fetching..." messages during static generation
+- ✅ No deprecated package warnings that can be fixed
+
+### Common Warnings and Fixes
+
+#### Static Generation Errors ("Error fetching..." during build)
+API routes that use `request.url`, `cookies()`, or `headers()` will fail during static generation.
+
+**Fix**: Add `export const dynamic = 'force-dynamic'` to the route file:
+```typescript
+// app/api/example/route.ts
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
+  // ... uses request.url, cookies(), or headers()
+}
+```
+
+#### Deprecated npm Package Warnings
+Use npm overrides in `package.json` to force newer versions of transitive dependencies:
+```json
+{
+  "overrides": {
+    "glob": "^10.0.0",
+    "rimraf": "^5.0.0"
+  }
+}
+```
+
+#### React useEffect Missing Dependencies
+Fix all `react-hooks/exhaustive-deps` warnings by either:
+1. Adding the missing dependency to the array
+2. Using `// eslint-disable-next-line react-hooks/exhaustive-deps` with a comment explaining why
+
+#### Next.js `<img>` vs `<Image>` Warnings
+Replace HTML `<img>` tags with Next.js `<Image>` component:
+```typescript
+import Image from 'next/image';
+// <img src="..." /> → <Image src="..." width={} height={} alt="" />
+```
+
+### Known Benign Warnings (Cannot Be Suppressed)
+
+These warnings are expected and cannot be fixed without major upgrades. Document them here so they're not repeatedly investigated:
+
+| Warning | Reason | Status |
+|---------|--------|--------|
+| `WARNING: Unable to find source file for page /_not-found` | Vercel quirk with App Router | Benign - does not affect functionality |
+| `npm warn deprecated eslint@8.x.x` | ESLint 9 requires Next.js 15 and flat config migration | Cannot fix without major upgrade |
+| `npm warn deprecated @humanwhocodes/*` | Part of ESLint 8 ecosystem | Cannot fix without ESLint 9 |
+| `npm warn deprecated node-domexception` | Transitive dependency of undici/node-fetch | Cannot fix - upstream issue |
+
+### After Every Deployment
+1. Review Vercel build logs for new warnings
+2. If fixable → create a task and fix it
+3. If benign and new → add to the table above
+4. Goal: Anyone reviewing build logs should see only documented benign warnings
+
+### When to Create Cleanup Tasks
+- New warning appears that's not in the benign list
+- Warning count increases after a dependency update
+- Build times increase significantly (investigate caching issues)
+
+---
+
 ## 🚫 CRITICAL GIT RULE: Never Auto-Commit
 
 **NEVER create git commits unless explicitly requested by the user.**

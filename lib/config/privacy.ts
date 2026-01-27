@@ -50,8 +50,8 @@ export const defaultPrivacyConfig: PrivacyConfig = {
   enableTimingRandomization: true,
 };
 
-// Advanced privacy configuration for maximum stealth
-export const stealthPrivacyConfig: PrivacyConfig = {
+// Advanced privacy configuration for maximum stealth (internal use by getPrivacyConfig)
+const stealthPrivacyConfig: PrivacyConfig = {
   ...defaultPrivacyConfig,
   minDelay: 5000, // 5 seconds minimum
   maxDelay: 15000, // 15 seconds maximum
@@ -62,8 +62,8 @@ export const stealthPrivacyConfig: PrivacyConfig = {
   enableProxyRotation: true,
 };
 
-// Conservative privacy configuration for safety
-export const conservativePrivacyConfig: PrivacyConfig = {
+// Conservative privacy configuration for safety (internal use by getPrivacyConfig)
+const conservativePrivacyConfig: PrivacyConfig = {
   ...defaultPrivacyConfig,
   minDelay: 10000, // 10 seconds minimum
   maxDelay: 30000, // 30 seconds maximum

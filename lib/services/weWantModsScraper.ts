@@ -1,12 +1,18 @@
 import { prisma } from '@/lib/prisma';
 import axios, { AxiosInstance } from 'axios';
 import * as cheerio from 'cheerio';
+import * as fs from 'fs';
+import * as path from 'path';
 import { getPrivacyConfig, PrivacyConfig } from '@/lib/config/privacy';
 import { uploadImageToBlob, isValidImageUrl } from './imageUploader';
 import {
   detectContentType as detectContentTypeFromLib,
   detectRoomThemes,
 } from './contentTypeDetector';
+
+// CSV file path for tracking scraped URLs
+const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'scraped-urls.csv');
+const SCRAPE_FRESHNESS_MONTHS = 3; // Skip URLs scraped within this many months
 
 export interface DiscoveredMod {
   title: string;
@@ -529,6 +535,9 @@ export class WeWantModsScraper {
     reason: string;
   }> = [];
 
+  // Track scraped URLs with timestamps (loaded from CSV)
+  private scrapedUrlsCache: Map<string, { lastScraped: Date; modsFound: number }> = new Map();
+
   // User agents for rotation
   private readonly userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -557,6 +566,91 @@ export class WeWantModsScraper {
     this.config = getPrivacyConfig();
     this.verboseLogging = options?.verboseLogging ?? (process.env.SCRAPER_VERBOSE === 'true');
     this.initializeAxiosInstances();
+    this.loadScrapedUrlsFromCsv();
+  }
+
+  /**
+   * Load scraped URLs from CSV file
+   * CSV format: url,lastScraped,modsFound
+   */
+  private loadScrapedUrlsFromCsv(): void {
+    try {
+      // Ensure data directory exists
+      const dataDir = path.dirname(SCRAPED_URLS_CSV_PATH);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      if (!fs.existsSync(SCRAPED_URLS_CSV_PATH)) {
+        // Create file with header if it doesn't exist
+        fs.writeFileSync(SCRAPED_URLS_CSV_PATH, 'url,lastScraped,modsFound\n');
+        console.log(`📄 Created new scraped URLs tracking file: ${SCRAPED_URLS_CSV_PATH}`);
+        return;
+      }
+
+      const content = fs.readFileSync(SCRAPED_URLS_CSV_PATH, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      // Skip header
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const [url, lastScraped, modsFound] = line.split(',');
+        if (url && lastScraped) {
+          this.scrapedUrlsCache.set(url, {
+            lastScraped: new Date(lastScraped),
+            modsFound: parseInt(modsFound) || 0,
+          });
+        }
+      }
+
+      console.log(`📄 Loaded ${this.scrapedUrlsCache.size} previously scraped URLs from CSV`);
+    } catch (error) {
+      console.error('⚠️ Error loading scraped URLs CSV:', error);
+    }
+  }
+
+  /**
+   * Save a scraped URL to the CSV file
+   */
+  private saveScrapedUrlToCsv(url: string, modsFound: number): void {
+    try {
+      const now = new Date();
+
+      // Update cache
+      this.scrapedUrlsCache.set(url, { lastScraped: now, modsFound });
+
+      // Rewrite entire CSV (simple approach for reliability)
+      let csvContent = 'url,lastScraped,modsFound\n';
+      this.scrapedUrlsCache.forEach((data, cachedUrl) => {
+        csvContent += `${cachedUrl},${data.lastScraped.toISOString()},${data.modsFound}\n`;
+      });
+
+      fs.writeFileSync(SCRAPED_URLS_CSV_PATH, csvContent);
+    } catch (error) {
+      console.error('⚠️ Error saving to scraped URLs CSV:', error);
+    }
+  }
+
+  /**
+   * Check if a URL was scraped recently (within SCRAPE_FRESHNESS_MONTHS)
+   */
+  private wasRecentlyScraped(url: string): boolean {
+    const cached = this.scrapedUrlsCache.get(url);
+    if (!cached) return false;
+
+    const monthsAgo = new Date();
+    monthsAgo.setMonth(monthsAgo.getMonth() - SCRAPE_FRESHNESS_MONTHS);
+
+    return cached.lastScraped > monthsAgo;
+  }
+
+  /**
+   * Get the last scraped date for a URL (for logging)
+   */
+  private getLastScrapedDate(url: string): Date | null {
+    return this.scrapedUrlsCache.get(url)?.lastScraped || null;
   }
 
   /**
@@ -2227,10 +2321,14 @@ export class WeWantModsScraper {
   /**
    * Run the full scraping process
    */
-  async run(options?: { limit?: number; skipExisting?: boolean }): Promise<void> {
+  async run(options?: { limit?: number; skipExisting?: boolean; forceRescrape?: boolean }): Promise<void> {
     console.log('🚀 Starting WM scraper...');
     console.log(`   Privacy level: ${process.env.PRIVACY_LEVEL || 'default'}`);
     console.log(`   Min delay: ${this.config.minDelay}ms, Max delay: ${this.config.maxDelay}ms`);
+    console.log(`   URL freshness: ${SCRAPE_FRESHNESS_MONTHS} months (skip recently scraped)`);
+    if (options?.forceRescrape) {
+      console.log(`   ⚠️  Force rescrape enabled - will ignore freshness check`);
+    }
 
     // Reset stats
     this.stats = {
@@ -2242,6 +2340,7 @@ export class WeWantModsScraper {
       imagesUploaded: 0,
       errors: 0,
     };
+    let pagesSkippedRecent = 0;
 
     // Step 1: Fetch sitemap
     const sitemapEntries = await this.fetchSitemap();
@@ -2253,11 +2352,21 @@ export class WeWantModsScraper {
 
     // Apply limit if specified
     const pagesToScrape = options?.limit ? sitemapEntries.slice(0, options.limit) : sitemapEntries;
-    console.log(`\n📋 Will scrape ${pagesToScrape.length} collection pages\n`);
+    console.log(`\n📋 Will process ${pagesToScrape.length} collection pages\n`);
 
     // Step 2: Scrape each collection page
     for (let i = 0; i < pagesToScrape.length; i++) {
       const entry = pagesToScrape[i];
+
+      // Check if this URL was recently scraped (unless force rescrape is enabled)
+      if (!options?.forceRescrape && this.wasRecentlyScraped(entry.url)) {
+        const lastScraped = this.getLastScrapedDate(entry.url);
+        const daysAgo = lastScraped ? Math.floor((Date.now() - lastScraped.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+        console.log(`\n[${i + 1}/${pagesToScrape.length}] ⏭️  SKIP (scraped ${daysAgo} days ago): ${entry.url}`);
+        pagesSkippedRecent++;
+        continue;
+      }
+
       console.log(`\n[${i + 1}/${pagesToScrape.length}] Processing: ${entry.url}`);
 
       const discoveredMods = await this.parseCollectionPage(entry.url);
@@ -2302,10 +2411,14 @@ export class WeWantModsScraper {
         }
       }
 
+      // Save this URL to CSV as successfully scraped
+      this.saveScrapedUrlToCsv(entry.url, discoveredMods.length);
+
       // Progress update
       if ((i + 1) % 5 === 0) {
         console.log(`\n📊 Progress: ${i + 1}/${pagesToScrape.length} pages`);
         console.log(`   Discovered: ${this.stats.modsDiscovered}, Imported: ${this.stats.modsImported}, Updated: ${this.stats.modsUpdated}, Skipped: ${this.stats.modsSkipped}`);
+        console.log(`   Pages skipped (recently scraped): ${pagesSkippedRecent}`);
       }
     }
 
@@ -2314,6 +2427,7 @@ export class WeWantModsScraper {
     console.log('📊 FINAL STATISTICS');
     console.log('='.repeat(60));
     console.log(`   Pages scraped: ${this.stats.pagesScraped}`);
+    console.log(`   Pages skipped (scraped within ${SCRAPE_FRESHNESS_MONTHS} months): ${pagesSkippedRecent}`);
     console.log(`   Mods discovered: ${this.stats.modsDiscovered}`);
     console.log(`   Mods imported: ${this.stats.modsImported}`);
     console.log(`   Mods updated: ${this.stats.modsUpdated}`);
@@ -2321,6 +2435,7 @@ export class WeWantModsScraper {
     console.log(`   Images uploaded to Vercel Blob: ${this.stats.imagesUploaded}`);
     console.log(`   Errors: ${this.stats.errors}`);
     console.log('='.repeat(60));
+    console.log(`📄 Scraped URLs tracking file: ${SCRAPED_URLS_CSV_PATH}`);
     console.log('✅ Scraping complete!');
   }
 }
