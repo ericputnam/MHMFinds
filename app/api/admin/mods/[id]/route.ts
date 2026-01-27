@@ -102,6 +102,9 @@ export async function DELETE(
       where: { id: params.id },
     });
 
+    // Invalidate cache when mod is deleted
+    await CacheService.invalidateMod(params.id);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting mod:', error);

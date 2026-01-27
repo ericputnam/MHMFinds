@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { CacheService } from '@/lib/cache';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -128,7 +129,7 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       mods,
       total,
       page,
@@ -136,6 +137,11 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / limit),
       missingFacetsCount,
     });
+
+    // Prevent caching of admin data
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+
+    return response;
   } catch (error) {
     console.error('Error fetching mods:', error);
     return NextResponse.json({ error: 'Failed to fetch mods' }, { status: 500 });
@@ -181,6 +187,9 @@ export async function POST(request: NextRequest) {
       console.error('Failed to update search index:', searchError);
       // Don't fail the whole request if search indexing fails
     }
+
+    // Invalidate mods list cache after creating new mod
+    await CacheService.invalidateMod(mod.id);
 
     return NextResponse.json(mod, { status: 201 });
   } catch (error) {

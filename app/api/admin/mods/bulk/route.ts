@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { CacheService } from '@/lib/cache';
+
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
 
 // DELETE - Bulk delete mods
 export async function DELETE(request: NextRequest) {
@@ -17,6 +21,9 @@ export async function DELETE(request: NextRequest) {
         },
       },
     });
+
+    // Invalidate cache for all deleted mods
+    await Promise.all(ids.map((id: string) => CacheService.invalidateMod(id)));
 
     return NextResponse.json({ success: true, count: ids.length });
   } catch (error) {
@@ -46,6 +53,9 @@ export async function PATCH(request: NextRequest) {
       },
       data: updates,
     });
+
+    // Invalidate cache for all updated mods
+    await Promise.all(ids.map((id: string) => CacheService.invalidateMod(id)));
 
     return NextResponse.json({ success: true, count: ids.length });
   } catch (error) {

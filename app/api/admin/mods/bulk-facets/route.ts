@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import { CacheService } from '@/lib/cache';
+
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
 
 // PATCH - Bulk update facets on multiple mods
 export async function PATCH(request: NextRequest) {
@@ -65,6 +69,9 @@ export async function PATCH(request: NextRequest) {
 
         const updatedCount = results.filter(Boolean).length;
 
+        // Invalidate cache for all updated mods
+        await Promise.all(modIds.map((id: string) => CacheService.invalidateMod(id)));
+
         // Log bulk operation
         console.log(`[BULK FACETS] Admin ${session.user.email} added themes to ${updatedCount} mods`);
 
@@ -86,6 +93,9 @@ export async function PATCH(request: NextRequest) {
       where: { id: { in: modIds } },
       data: updateData,
     });
+
+    // Invalidate cache for all updated mods
+    await Promise.all(modIds.map((id: string) => CacheService.invalidateMod(id)));
 
     // Log bulk operation for audit trail
     console.log(
