@@ -41,6 +41,90 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🔐 CRITICAL SECURITY RULE: Admin API Route Authentication
+
+**EVERY admin API route MUST have authentication. No exceptions.**
+
+### Defense-in-Depth Architecture
+
+Admin routes are protected by TWO layers:
+
+1. **Middleware (First Line of Defense)** - `middleware.ts` blocks ALL requests to `/api/admin/*` that lack admin authentication at the request level
+2. **Route-Level Auth (Second Line of Defense)** - Each route handler MUST also check auth for defense-in-depth
+
+### Required Pattern for Admin API Routes
+
+Every file in `app/api/admin/` MUST:
+
+```typescript
+// 1. Import auth utilities
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+
+// 2. Export dynamic to prevent static rendering issues
+export const dynamic = 'force-dynamic';
+
+// 3. Check auth at the START of each handler
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // ... rest of handler
+  } catch (error) {
+    // ... error handling
+  }
+}
+```
+
+### Security Scanner
+
+Run the security scanner to verify all admin routes have auth:
+
+```bash
+npm run security:check-admin-auth
+```
+
+This should be run:
+- Before committing changes to admin routes
+- In CI/CD pipelines
+- Periodically as a security audit
+
+### Why Both Middleware AND Route-Level Auth?
+
+- **Middleware** catches requests before they reach route handlers (network-level protection)
+- **Route-level** provides defense-in-depth if middleware is misconfigured or bypassed
+- **Never rely on just one layer** - security requires redundancy
+
+### NEVER Create Admin Routes Without Auth
+
+❌ **WRONG** - Missing auth check:
+```typescript
+export async function DELETE(request: NextRequest) {
+  const { id } = await request.json();
+  await prisma.mod.delete({ where: { id } });  // DANGEROUS!
+  return NextResponse.json({ success: true });
+}
+```
+
+✅ **CORRECT** - Auth check first:
+```typescript
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await request.json();
+  await prisma.mod.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}
+```
+
+---
+
 ## 🚨 CRITICAL: Prisma Connection Pooling in Serverless (Vercel)
 
 **NEVER modify `lib/prisma.ts` without understanding this section.**
