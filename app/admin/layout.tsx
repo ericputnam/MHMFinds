@@ -1,6 +1,9 @@
 'use client';
 
-// Force cache bust: 2026-01-27
+// Auto cache-bust: Build timestamp ensures fresh bundles on each deployment
+// This value is evaluated at build time, so each deployment gets a unique hash
+const BUILD_TIMESTAMP = process.env.NEXT_PUBLIC_BUILD_TIMESTAMP || Date.now().toString();
+
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';

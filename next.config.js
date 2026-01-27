@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Generate unique build ID for cache busting on each deployment
+  // This ensures all users get fresh JS bundles after each deploy
+  env: {
+    NEXT_PUBLIC_BUILD_TIMESTAMP: Date.now().toString(),
+  },
   // Enable SWC minifier for faster builds
   swcMinify: true,
 
