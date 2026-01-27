@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { X, Download, Heart, ExternalLink, CheckCircle2, Star, Eye, Layers, Sparkles } from 'lucide-react';
 import { Mod } from '../lib/api';
 import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
@@ -103,10 +104,12 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
 
         {/* Left: Visuals */}
         <div className="md:w-5/12 lg:w-5/12 bg-black relative flex-shrink-0 min-h-[300px] md:min-h-0">
-          <img
+          <Image
             src={mod.thumbnail || '/placeholder.jpg'}
             alt={mod.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-80"
+            fill
+            className="object-cover opacity-80"
+            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F141F] via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#0F141F]" />
 

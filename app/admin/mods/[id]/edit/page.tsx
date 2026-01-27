@@ -13,6 +13,7 @@ import {
   Tag,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface ModFormData {
   title: string;
@@ -747,10 +748,13 @@ export default function EditModPage() {
               </div>
               {formData.thumbnail && (
                 <div className="mt-3">
-                  <img
+                  <Image
                     src={formData.thumbnail}
                     alt="Thumbnail preview"
+                    width={128}
+                    height={128}
                     className="w-32 h-32 object-cover rounded-lg border border-slate-700"
+                    unoptimized
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
@@ -788,10 +792,13 @@ export default function EditModPage() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {formData.images.map((img, idx) => (
                     <div key={idx} className="relative group">
-                      <img
+                      <Image
                         src={img}
                         alt={`Image ${idx + 1}`}
+                        width={96}
+                        height={96}
                         className="w-24 h-24 object-cover rounded-lg border border-slate-700"
+                        unoptimized
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}

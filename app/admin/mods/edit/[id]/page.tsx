@@ -43,33 +43,36 @@ export default function EditModPage() {
 
   const modId = params.id as string;
   const isAdmin = session?.user?.isAdmin || false;
+  const userId = session?.user?.id;
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchMod();
+    if (status !== 'authenticated') {
+      return;
     }
-  }, [modId, status]);
 
-  const fetchMod = async () => {
-    try {
-      const response = await fetch(`/api/admin/mods/${modId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch mod');
-      }
-      const data = await response.json();
-      setMod(data);
+    const fetchMod = async () => {
+      try {
+        const response = await fetch(`/api/admin/mods/${modId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch mod');
+        }
+        const data = await response.json();
+        setMod(data);
 
-      // Verify creator ownership (if not admin)
-      if (!isAdmin && data.creator?.userId !== session?.user?.id) {
-        setError('You can only edit your own mods');
+        // Verify creator ownership (if not admin)
+        if (!isAdmin && data.creator?.userId !== userId) {
+          setError('You can only edit your own mods');
+        }
+      } catch (err) {
+        console.error('Error fetching mod:', err);
+        setError('Failed to load mod');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching mod:', err);
-      setError('Failed to load mod');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchMod();
+  }, [modId, status, isAdmin, userId]);
 
   const handleSubmit = async (formData: ModFormData) => {
     try {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   CheckCircle,
@@ -43,11 +43,7 @@ export default function SubmissionsPage() {
 
   const isAdmin = session?.user?.isAdmin || false;
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, [filter, isAdmin]);
-
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = useCallback(async () => {
     try {
       setLoading(true);
       // Use different endpoints based on role
@@ -62,7 +58,11 @@ export default function SubmissionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, isAdmin]);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
 
   const handleApprove = async (submission: ModSubmission) => {
     if (!confirm(`Convert "${submission.modName}" to a mod?`)) return;

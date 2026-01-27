@@ -95,6 +95,7 @@ const FACET_SUGGESTIONS: Record<string, { icon: string; color: string }> = {
   athletic: { icon: '🏃', color: '#EF4444' },
   career: { icon: '💼', color: '#475569' },
   pet: { icon: '🐕', color: '#F59E0B' },
+  'pet-clothing': { icon: '🦮', color: '#F59E0B' },
   vehicle: { icon: '🚗', color: '#6366F1' },
   plants: { icon: '🌱', color: '#22C55E' },
 };

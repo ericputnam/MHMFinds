@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   TrendingUp,
   Eye,
@@ -59,10 +60,6 @@ export default function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'24h' | '7d' | '30d' | '90d'>('7d');
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [period]);
-
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
@@ -78,6 +75,11 @@ export default function AnalyticsDashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
 
   if (loading) {
     return (
@@ -346,10 +348,13 @@ export default function AnalyticsDashboard() {
                 className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
               >
                 {mod.thumbnail && (
-                  <img
+                  <Image
                     src={mod.thumbnail}
                     alt={mod.title}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 object-cover rounded-lg"
+                    unoptimized
                   />
                 )}
                 <div className="flex-1 min-w-0">

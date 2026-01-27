@@ -1,10 +1,18 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
+import { Poppins } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import Script from 'next/script';
 import { ConditionalScripts } from './components/ConditionalScripts';
 import { Analytics } from "@vercel/analytics/next";
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-poppins',
+});
 
 export const metadata: Metadata = {
   title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
@@ -84,9 +92,6 @@ export default function RootLayout({
           `}
         </Script>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#1e1b4b" />
         <meta name="msapplication-TileColor" content="#1e1b4b" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -204,7 +209,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="__className_e8ce0c antialiased">
+      <body className={`${poppins.variable} ${poppins.className} antialiased`}>
         <ConditionalScripts />
         <Providers>{children}</Providers>
         <Analytics />

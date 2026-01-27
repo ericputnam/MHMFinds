@@ -8,7 +8,7 @@
     "dev:clean": "npm run clean && next dev",
     "build": "next build",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate $([ \"$NODE_ENV\" = 'production' ] && echo '--no-engine' || echo '')",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest",
@@ -68,7 +68,14 @@
     "agent:forecast": "tsx scripts/run-agent.ts forecast",
     "agent:cleanup": "tsx scripts/run-agent.ts cleanup",
     "agent:report": "tsx scripts/run-agent.ts report",
-    "agent:mediavine-csv": "tsx scripts/sync-mediavine-metrics.ts csv"
+    "agent:mediavine-csv": "tsx scripts/sync-mediavine-metrics.ts csv",
+    "affiliate": "tsx scripts/affiliate-research.ts",
+    "affiliate:research": "tsx scripts/affiliate-research.ts research",
+    "affiliate:validate": "tsx scripts/affiliate-research.ts validate",
+    "affiliate:chat": "tsx scripts/affiliate-research.ts chat",
+    "affiliate:personas": "tsx scripts/affiliate-research.ts personas",
+    "affiliate:performance": "tsx scripts/affiliate-research.ts performance",
+    "affiliate:history": "tsx scripts/affiliate-research.ts history"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^1.0.12",

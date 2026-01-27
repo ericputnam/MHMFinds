@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Mod } from '../lib/api';
 import { Download, Eye, Star, Heart, Crown, Sparkles } from 'lucide-react';
@@ -111,10 +112,13 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-gradient-to-t from-mhm-card via-transparent to-transparent z-10 opacity-80" />
         {mod.thumbnail ? (
-          <img
+          <Image
             src={mod.thumbnail}
             alt={mod.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">

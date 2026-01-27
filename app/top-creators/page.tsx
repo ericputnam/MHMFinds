@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Trophy, Heart, Download, Star, TrendingUp, Loader2 } from 'lucide-react';
@@ -144,13 +145,16 @@ export default function CreatorsPage() {
                         {/* Avatar */}
                         <div className="flex-shrink-0">
                           <div className="relative">
-                            <img
+                            <Image
                               src={
                                 creator.avatar ||
                                 `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(creator.name)}&backgroundColor=ec4899,a855f7,8b5cf6&textColor=ffffff`
                               }
                               alt={creator.name}
+                              width={96}
+                              height={96}
                               className="w-24 h-24 rounded-full object-cover border-4 border-white/10 bg-sims-pink"
+                              unoptimized
                               onError={(e) => {
                                 // Fallback if DiceBear fails
                                 e.currentTarget.style.display = 'none';
