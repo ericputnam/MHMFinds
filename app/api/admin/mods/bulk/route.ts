@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CacheService } from '@/lib/cache';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -8,6 +10,11 @@ export const dynamic = 'force-dynamic';
 // DELETE - Bulk delete mods
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { ids } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -35,6 +42,11 @@ export async function DELETE(request: NextRequest) {
 // PATCH - Bulk update mods
 export async function PATCH(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { ids, updates } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {

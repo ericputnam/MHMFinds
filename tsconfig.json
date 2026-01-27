@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "newapp_musthavemods"
+    "newapp_musthavemods",
+    "scripts/archive"
   ]
 }
