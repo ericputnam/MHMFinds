@@ -238,7 +238,7 @@ function inferFromContextClues(
 
   // Category-based fallback (lower confidence)
   if (categoryLower) {
-    const categoryMappings: Record<string, string> = {
+    const categoryMappings: Record<string, string | null> = {
       'hair': 'hair',
       'cas - hair': 'hair',
       'cas - clothing': 'full-body',

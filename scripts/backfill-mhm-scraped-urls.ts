@@ -106,7 +106,7 @@ async function main() {
   let newCount = 0;
   let updatedCount = 0;
 
-  for (const [url, data] of urlCounts) {
+  for (const [url, data] of Array.from(urlCounts)) {
     const existing = existingEntries.get(url);
 
     if (!existing) {
@@ -158,7 +158,7 @@ async function main() {
     if (newCount > 0) {
       console.log('Sample of new entries that would be added:');
       let shown = 0;
-      for (const [url, data] of urlCounts) {
+      for (const [url, data] of Array.from(urlCounts)) {
         if (!existingEntries.has(url) || shown >= 5) continue;
         console.log(`   ${url} (${data.count} mods)`);
         shown++;
