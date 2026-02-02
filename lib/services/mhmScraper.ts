@@ -1,7 +1,17 @@
 import { prisma } from '@/lib/prisma';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import * as fs from 'fs';
+import * as path from 'path';
 import { modBlockParser } from './modBlockParser';
+import {
+  detectContentType,
+  detectRoomThemes,
+} from './contentTypeDetector';
+
+// CSV file path for tracking scraped URLs
+const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'mhm-scraped-urls.csv');
+const SCRAPE_FRESHNESS_MONTHS = 3; // Skip URLs scraped within this many months
 
 export interface ScrapedMod {
   title: string;
@@ -24,8 +34,130 @@ export class MustHaveModsScraper {
   private baseUrl = 'https://musthavemods.com';
   private delay = 2000; // 2 seconds between requests to be respectful
 
+  // Track scraped URLs with timestamps (loaded from CSV)
+  private scrapedUrlsCache: Map<string, { lastScraped: Date; modsFound: number }> = new Map();
+
+  // Stats tracking
+  private stats = {
+    pagesScraped: 0,
+    modsDiscovered: 0,
+    modsImported: 0,
+    modsSkipped: 0,
+    modsUpdated: 0,
+    errors: 0,
+  };
+
+  constructor() {
+    this.loadScrapedUrlsFromCsv();
+  }
+
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Load scraped URLs from CSV file
+   * CSV format: url,lastScraped,modsFound
+   */
+  private loadScrapedUrlsFromCsv(): void {
+    try {
+      // Ensure data directory exists
+      const dataDir = path.dirname(SCRAPED_URLS_CSV_PATH);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      if (!fs.existsSync(SCRAPED_URLS_CSV_PATH)) {
+        // Create file with header if it doesn't exist
+        fs.writeFileSync(SCRAPED_URLS_CSV_PATH, 'url,lastScraped,modsFound\n');
+        console.log(`📄 Created new scraped URLs tracking file: ${SCRAPED_URLS_CSV_PATH}`);
+        return;
+      }
+
+      const content = fs.readFileSync(SCRAPED_URLS_CSV_PATH, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      // Skip header
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const [url, lastScraped, modsFound] = line.split(',');
+        if (url && lastScraped) {
+          this.scrapedUrlsCache.set(url, {
+            lastScraped: new Date(lastScraped),
+            modsFound: parseInt(modsFound) || 0,
+          });
+        }
+      }
+
+      console.log(`📄 Loaded ${this.scrapedUrlsCache.size} previously scraped URLs from CSV`);
+    } catch (error) {
+      console.error('⚠️ Error loading scraped URLs CSV:', error);
+    }
+  }
+
+  /**
+   * Save a scraped URL to the CSV file
+   */
+  private saveScrapedUrlToCsv(url: string, modsFound: number): void {
+    try {
+      const now = new Date();
+
+      // Update cache
+      this.scrapedUrlsCache.set(url, { lastScraped: now, modsFound });
+
+      // Rewrite entire CSV (simple approach for reliability)
+      let csvContent = 'url,lastScraped,modsFound\n';
+      this.scrapedUrlsCache.forEach((data, cachedUrl) => {
+        csvContent += `${cachedUrl},${data.lastScraped.toISOString()},${data.modsFound}\n`;
+      });
+
+      fs.writeFileSync(SCRAPED_URLS_CSV_PATH, csvContent);
+    } catch (error) {
+      console.error('⚠️ Error saving to scraped URLs CSV:', error);
+    }
+  }
+
+  /**
+   * Check if a URL was scraped recently (within SCRAPE_FRESHNESS_MONTHS)
+   */
+  private wasRecentlyScraped(url: string): boolean {
+    const cached = this.scrapedUrlsCache.get(url);
+    if (!cached) return false;
+
+    const monthsAgo = new Date();
+    monthsAgo.setMonth(monthsAgo.getMonth() - SCRAPE_FRESHNESS_MONTHS);
+
+    return cached.lastScraped > monthsAgo;
+  }
+
+  /**
+   * Get the last scraped date for a URL (for logging)
+   */
+  private getLastScrapedDate(url: string): Date | null {
+    return this.scrapedUrlsCache.get(url)?.lastScraped || null;
+  }
+
+  /**
+   * Get current scraping stats
+   */
+  getStats(): typeof this.stats {
+    return { ...this.stats };
+  }
+
+  /**
+   * Reset stats
+   */
+  resetStats(): void {
+    this.stats = {
+      pagesScraped: 0,
+      modsDiscovered: 0,
+      modsImported: 0,
+      modsSkipped: 0,
+      modsUpdated: 0,
+      errors: 0,
+    };
   }
 
   /**
@@ -616,11 +748,18 @@ export class MustHaveModsScraper {
               // Invalid URL
             }
           }
-          // If still no author, scrape the actual mod page as a last resort
+          // If still no author, try to scrape the actual mod page as a last resort
+          // Skip for protected sites (Patreon, CurseForge) since they block scraping
           if (!author && downloadUrl) {
-            author = await this.scrapeAuthorFromModPage(downloadUrl);
-            if (author) {
-              console.log(`      ✅ Found author from mod page: ${author}`);
+            const hostname = new URL(downloadUrl).hostname.toLowerCase();
+            const isProtectedSite = hostname.includes('patreon.com') || hostname.includes('curseforge.com');
+
+            if (!isProtectedSite) {
+              console.log(`      🔍 Scraping author from mod page...`);
+              author = await this.scrapeAuthorFromModPage(downloadUrl);
+              if (author) {
+                console.log(`      ✅ Found author from mod page: ${author}`);
+              }
             }
           }
 
@@ -847,25 +986,57 @@ export class MustHaveModsScraper {
   }
 
   /**
+   * Sites known to have Cloudflare/bot protection - don't log warnings for 403s
+   */
+  private readonly protectedSites = ['patreon.com', 'curseforge.com'];
+
+  /**
    * Scrape author from the actual mod page by following the download link
    * This is a fallback when we can't determine the author from title or URL pattern
    */
   private async scrapeAuthorFromModPage(downloadUrl: string): Promise<string | undefined> {
     try {
-      console.log(`      🔍 Scraping author from mod page: ${downloadUrl}`);
-
-      const response = await axios.get(downloadUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        timeout: 15000, // 15 second timeout
-        maxRedirects: 5,
-      });
-
-      const $ = cheerio.load(response.data);
       const url = new URL(downloadUrl);
       const hostname = url.hostname.toLowerCase();
+
+      // Check if this is a known protected site
+      const isProtectedSite = this.protectedSites.some(site => hostname.includes(site));
+
+      // Use more browser-like headers
+      const response = await axios.get(downloadUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+        timeout: 15000,
+        maxRedirects: 5,
+        // Accept 403s so we can handle them gracefully
+        validateStatus: (status) => status < 500,
+      });
+
+      // Handle 403 (Cloudflare/bot protection)
+      if (response.status === 403) {
+        // Only log for non-protected sites (unexpected 403s)
+        if (!isProtectedSite) {
+          console.log(`      ⚠️  403 blocked: ${hostname}`);
+        }
+        // For protected sites, silently return undefined
+        return undefined;
+      }
+
+      // Check for Cloudflare challenge page
+      if (response.data?.includes?.('Just a moment') ||
+          response.data?.includes?.('cf-chl-opt') ||
+          response.data?.includes?.('Checking your browser')) {
+        // Cloudflare challenge - can't proceed
+        return undefined;
+      }
+
+      const $ = cheerio.load(response.data);
 
       // Helper to validate and clean author name
       const validateAuthor = (author: string | undefined): string | undefined => {
@@ -1083,8 +1254,22 @@ export class MustHaveModsScraper {
       }
 
       return undefined;
-    } catch (error) {
-      console.log(`      ⚠️  Could not scrape author from mod page: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (error: any) {
+      // Only log unexpected errors, not expected 403s from protected sites
+      const is403 = error?.response?.status === 403;
+      const hostname = new URL(downloadUrl).hostname.toLowerCase();
+      const isProtectedSite = this.protectedSites.some(site => hostname.includes(site));
+
+      if (is403 && isProtectedSite) {
+        // Expected - protected site blocked us, silently continue
+        return undefined;
+      }
+
+      // Log unexpected errors
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      if (!message.includes('403') && !message.includes('timeout')) {
+        console.log(`      ⚠️  Could not scrape author: ${message}`);
+      }
       return undefined;
     }
   }
@@ -1138,13 +1323,17 @@ export class MustHaveModsScraper {
   }
 
   /**
-   * Save mods to database
+   * Save mods to database with intelligent content type detection
    */
   async saveModsToDatabase(mods: ScrapedMod[]): Promise<number> {
     let savedCount = 0;
 
     for (const mod of mods) {
       try {
+        // Detect content type using the intelligent detector
+        const detectedContentType = detectContentType(mod.title, mod.description);
+        const detectedThemes = detectRoomThemes(mod.title, mod.description);
+
         // Check if mod already exists by download URL (most reliable)
         // or by title + source URL combination
         const whereConditions = [];
@@ -1175,7 +1364,9 @@ export class MustHaveModsScraper {
             (!existing.author && mod.author) ||
             (existing.author === 'posts' && mod.author) || // Fix "posts" placeholder
             (existing.title.match(/^\d+\./) && !mod.title.match(/^\d+\./)) || // Fix numbered titles
-            (existing.downloadUrl && existing.downloadUrl.includes('musthavemods.com') && mod.downloadUrl && !mod.downloadUrl.includes('musthavemods.com')); // Fix internal download links
+            (existing.downloadUrl && existing.downloadUrl.includes('musthavemods.com') && mod.downloadUrl && !mod.downloadUrl.includes('musthavemods.com')) || // Fix internal download links
+            (!existing.contentType && detectedContentType) || // Add missing content type
+            (existing.themes.length === 0 && detectedThemes.length > 0); // Add missing themes
 
           if (needsUpdate) {
             await prisma.mod.update({
@@ -1189,23 +1380,31 @@ export class MustHaveModsScraper {
                 shortDescription: mod.shortDescription || existing.shortDescription,
                 author: mod.author || existing.author,
                 tags: mod.tags.length > existing.tags.length ? mod.tags : existing.tags,
+                // Add content type and themes if detected and missing
+                contentType: existing.contentType || detectedContentType,
+                themes: existing.themes.length > 0 ? existing.themes : detectedThemes,
               },
             });
             savedCount++;
-            console.log(`   🔄 Updated: ${mod.title} (added missing data)`);
+            this.stats.modsUpdated++;
+            const contentTypeInfo = detectedContentType ? ` [${detectedContentType}]` : '';
+            console.log(`   🔄 Updated: ${mod.title}${contentTypeInfo} (added missing data)`);
           } else {
             console.log(`   ⏭️  Skipping: ${mod.title} (already complete)`);
+            this.stats.modsSkipped++;
           }
           continue;
         }
 
-        // Create new mod
+        // Create new mod with detected content type
         await prisma.mod.create({
           data: {
             title: mod.title,
             description: mod.description,
             shortDescription: mod.shortDescription,
             category: mod.category || 'Other',
+            contentType: detectedContentType, // Use intelligent detection
+            themes: detectedThemes, // Use intelligent theme detection
             tags: mod.tags,
             thumbnail: mod.thumbnail,
             images: mod.images,
@@ -1222,9 +1421,12 @@ export class MustHaveModsScraper {
         });
 
         savedCount++;
-        console.log(`   ✅ Created: ${mod.title}`);
+        this.stats.modsImported++;
+        const contentTypeInfo = detectedContentType ? ` [${detectedContentType}]` : ' [unknown type]';
+        console.log(`   ✅ Created: ${mod.title}${contentTypeInfo}`);
       } catch (error) {
         console.error(`   ❌ Error saving mod "${mod.title}":`, error);
+        this.stats.errors++;
       }
     }
 
@@ -1233,9 +1435,19 @@ export class MustHaveModsScraper {
 
   /**
    * Run the full scraping process
+   * @param options.startUrl - Resume from a specific URL
+   * @param options.startIndex - Resume from a specific index (1-based)
+   * @param options.forceRescrape - Ignore freshness tracking and rescrape all URLs
+   * @param options.limit - Maximum number of posts to scrape
    */
-  async runFullScrape(options?: { startUrl?: string; startIndex?: number }): Promise<void> {
+  async runFullScrape(options?: {
+    startUrl?: string;
+    startIndex?: number;
+    forceRescrape?: boolean;
+    limit?: number;
+  }): Promise<void> {
     console.log('🚀 Starting MustHaveMods.com scraper...\n');
+    this.resetStats();
 
     // Step 1: Get all blog post URLs
     const postUrls = await this.getAllBlogPostUrls();
@@ -1268,18 +1480,45 @@ export class MustHaveModsScraper {
       console.log(`📍 Resuming from URL (position ${startPosition + 1}/${postUrls.length})`);
     }
 
-    // Step 3: Scrape mods from each post (starting from startPosition)
+    // Step 3: Calculate posts to scrape
+    let endPosition = postUrls.length;
+    if (options?.limit) {
+      endPosition = Math.min(startPosition + options.limit, postUrls.length);
+      console.log(`📏 Limiting to ${options.limit} posts`);
+    }
+
+    const remainingPosts = endPosition - startPosition;
+    console.log(`📊 Total posts to process: ${remainingPosts} (${startPosition} skipped)\n`);
+
+    if (!options?.forceRescrape) {
+      console.log(`📅 Freshness tracking enabled: Skipping URLs scraped within ${SCRAPE_FRESHNESS_MONTHS} months`);
+      console.log(`   Use --force to rescrape all URLs\n`);
+    } else {
+      console.log(`⚠️  Force rescrape enabled: Ignoring freshness tracking\n`);
+    }
+
+    // Step 4: Scrape mods from each post
     let totalMods = 0;
     let totalSaved = 0;
-    const remainingPosts = postUrls.length - startPosition;
+    let skippedFreshness = 0;
 
-    console.log(`📊 Total posts to scrape: ${remainingPosts} (${startPosition} skipped)\n`);
-
-    for (let i = startPosition; i < postUrls.length; i++) {
+    for (let i = startPosition; i < endPosition; i++) {
       const postUrl = postUrls[i];
+
+      // Check freshness tracking (unless force rescrape)
+      if (!options?.forceRescrape && this.wasRecentlyScraped(postUrl)) {
+        const lastScraped = this.getLastScrapedDate(postUrl);
+        const lastScrapedStr = lastScraped ? lastScraped.toLocaleDateString() : 'unknown';
+        console.log(`\n[${i + 1}/${postUrls.length}] ⏭️  Skipping (scraped ${lastScrapedStr}): ${postUrl}`);
+        skippedFreshness++;
+        continue;
+      }
+
       console.log(`\n[${i + 1}/${postUrls.length}] Scraping: ${postUrl}`);
 
       const mods = await this.scrapeModsFromPost(postUrl);
+      this.stats.pagesScraped++;
+      this.stats.modsDiscovered += mods.length;
       console.log(`   Found ${mods.length} mods in this post`);
 
       if (mods.length > 0) {
@@ -1288,16 +1527,29 @@ export class MustHaveModsScraper {
         totalSaved += saved;
       }
 
-      // Be respectful - wait between requests
-      if (i < postUrls.length - 1) {
+      // Save this URL to freshness tracking
+      this.saveScrapedUrlToCsv(postUrl, mods.length);
+
+      // Wait between requests (even though it's our site, be gentle)
+      if (i < endPosition - 1) {
         await this.sleep(this.delay);
       }
     }
 
-    console.log('\n✅ Scraping complete!');
-    console.log(`📊 Total mods found: ${totalMods}`);
-    console.log(`💾 Total mods created/updated: ${totalSaved}`);
-    console.log(`⏭️  Already complete: ${totalMods - totalSaved}`);
+    // Print summary
+    console.log('\n' + '='.repeat(60));
+    console.log('✅ Scraping complete!');
+    console.log('='.repeat(60));
+    console.log(`📄 Pages scraped: ${this.stats.pagesScraped}`);
+    console.log(`⏭️  Skipped (recently scraped): ${skippedFreshness}`);
+    console.log(`🔍 Mods discovered: ${this.stats.modsDiscovered}`);
+    console.log(`✅ Mods imported (new): ${this.stats.modsImported}`);
+    console.log(`🔄 Mods updated: ${this.stats.modsUpdated}`);
+    console.log(`⏭️  Mods skipped (complete): ${this.stats.modsSkipped}`);
+    if (this.stats.errors > 0) {
+      console.log(`❌ Errors: ${this.stats.errors}`);
+    }
+    console.log('='.repeat(60));
   }
 }
 

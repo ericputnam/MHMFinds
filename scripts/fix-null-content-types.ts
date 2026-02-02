@@ -1,195 +1,532 @@
 #!/usr/bin/env npx tsx
 /**
- * Fix mods with null contentType by inferring from title keywords
+ * Fix mods with null contentType using intelligent content detection
+ *
+ * This script uses the contentTypeDetector library to analyze mod titles
+ * and descriptions, applying content types only when confidence is sufficient.
+ *
+ * Usage:
+ *   npx tsx scripts/fix-null-content-types.ts              # Dry run (preview)
+ *   npx tsx scripts/fix-null-content-types.ts --apply      # Apply fixes
+ *   npx tsx scripts/fix-null-content-types.ts --apply --verbose  # With details
  */
 
-import 'dotenv/config';
-import { config } from 'dotenv';
-config({ path: '.env.local' });
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import './lib/setup-env';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import {
+  detectContentTypeWithConfidence,
+  detectRoomThemes,
+  ConfidenceLevel,
+} from '../lib/services/contentTypeDetector';
 
-const prisma = new PrismaClient();
+interface FixResult {
+  id: string;
+  title: string;
+  contentType: string;
+  confidence: ConfidenceLevel;
+  themes: string[];
+  matchedKeywords: string[];
+  reasoning?: string;
+}
 
-// Content type inference rules - order matters (first match wins)
-const CONTENT_TYPE_RULES: { patterns: RegExp[]; contentType: string }[] = [
-  // Dresses first (before generic clothing)
-  { patterns: [/\bdress(es)?\b/i, /\bgown\b/i], contentType: 'dresses' },
+interface UnfixedMod {
+  id: string;
+  title: string;
+  category: string | null;
+  source: string | null;
+  reasoning?: string;
+}
 
-  // Hair
-  { patterns: [/\bhair\b/i, /\bwig\b/i, /\bhairstyle\b/i], contentType: 'hair' },
+interface InferenceResult {
+  contentType: string;
+  confidence: ConfidenceLevel;
+  matchedKeywords: string[];
+  reasoning: string;
+}
 
-  // Tops
-  { patterns: [/\btop\b/i, /\btops\b/i, /\bshirt\b/i, /\bblouse\b/i, /\bsweater\b/i, /\bhoodie\b/i, /\bcardigan\b/i, /\bjacket\b/i, /\bcoat\b/i, /\bblazer\b/i, /\btank\b/i, /\bcrop\b/i, /\btee\b/i, /\bt-shirt\b/i, /\bvest\b/i, /\bapron\b/i, /\bcorset\b/i, /\bbustier\b/i], contentType: 'tops' },
+/**
+ * Additional inference for mods the main detector couldn't classify.
+ * Uses category, tags, and additional title patterns.
+ */
+function inferFromContextClues(
+  title: string,
+  category: string | null,
+  tags: string[]
+): InferenceResult | null {
+  const titleLower = title.toLowerCase();
+  const categoryLower = (category || '').toLowerCase();
+  const tagsLower = tags.map(t => t.toLowerCase());
 
-  // Bottoms
-  { patterns: [/\bjeans\b/i, /\bpants\b/i, /\bshorts\b/i, /\bleggings\b/i, /\bskirt\b/i, /\btrousers\b/i], contentType: 'bottoms' },
+  // Pattern-based inference with medium confidence
+  const patterns: { test: () => boolean; contentType: string; keywords: string[] }[] = [
+    // Lipstick/Lips patterns (before generic makeup)
+    {
+      test: () => /\b(lippi|lippy|lips|gloss|lippiez)\b/i.test(title),
+      contentType: 'lipstick',
+      keywords: ['lipstick', 'lips', 'gloss'],
+    },
+    // Shoe store/Shoes in title
+    {
+      test: () => /\bshoe\b/i.test(title),
+      contentType: 'shoes',
+      keywords: ['shoe'],
+    },
+    // Tees/T-shirts
+    {
+      test: () => /\b(tees?|t-shirts?|tshirts?)\b/i.test(title),
+      contentType: 'tops',
+      keywords: ['tees', 't-shirt'],
+    },
+    // Dungarees/Overalls
+    {
+      test: () => /\b(dungarees|overalls|romper|jumpsuit)\b/i.test(title),
+      contentType: 'full-body',
+      keywords: ['dungarees', 'overalls'],
+    },
+    // Body parts (horns, tail, ears, wings) are accessories
+    {
+      test: () => /\b(horns?|tail|ears|wings|hooves|fangs|demon\s*parts?)\b/i.test(title),
+      contentType: 'accessories',
+      keywords: ['horns', 'tail', 'ears', 'wings'],
+    },
+    // Head/Face items are accessories
+    {
+      test: () => /\b(head|face)\b/i.test(title) && !titleLower.includes('hair') && !titleLower.includes('makeup'),
+      contentType: 'accessories',
+      keywords: ['head', 'face'],
+    },
+    // Wedding themed (usually full-body)
+    {
+      test: () => /\bwedding\b/i.test(title),
+      contentType: 'full-body',
+      keywords: ['wedding'],
+    },
+    // CC Sets/Packs are usually full-body clothing
+    {
+      test: () => /\b(cc\s*set|cc\s*pack|clothing\s*set|clothes\s*set)\b/i.test(title),
+      contentType: 'full-body',
+      keywords: ['cc set', 'cc pack'],
+    },
+    // Collections are usually full-body
+    {
+      test: () => /\bcollection\b/i.test(title) && !titleLower.includes('furniture') && !titleLower.includes('decor'),
+      contentType: 'full-body',
+      keywords: ['collection'],
+    },
+    // Fashion sets are full-body
+    {
+      test: () => /\b(fashion|street\s*fashion|outfit)\s*(set|pack)?\b/i.test(title),
+      contentType: 'full-body',
+      keywords: ['fashion', 'outfit'],
+    },
+    // Toddler/Child/Teen sets are usually full-body
+    {
+      test: () => /\b(toddler|child|teen|kid)\s*(set|pack|cc)\b/i.test(title),
+      contentType: 'full-body',
+      keywords: ['toddler set', 'child set', 'teen set'],
+    },
+    // Generic "Set" at end (likely clothing) - but be careful
+    {
+      test: () => /\bset\s*$/i.test(title) && !titleLower.includes('kitchen') && !titleLower.includes('bathroom') && !titleLower.includes('living') && !titleLower.includes('bedroom') && !titleLower.includes('furniture'),
+      contentType: 'full-body',
+      keywords: ['set'],
+    },
+    // Plush/Plushie items are decor
+    {
+      test: () => /\b(plush|plushie|stuffed)\b/i.test(title),
+      contentType: 'decor',
+      keywords: ['plush', 'plushie'],
+    },
+    // TV/Electronics are decor
+    {
+      test: () => /\b(tv|television|monitor|computer|laptop|phone)\b/i.test(title),
+      contentType: 'decor',
+      keywords: ['tv', 'electronics'],
+    },
+    // Party themed items (without other context) likely decor or full-body
+    {
+      test: () => /\bparty\b/i.test(title) && !titleLower.includes('dress'),
+      contentType: 'decor',
+      keywords: ['party'],
+    },
+    // Shoe sets
+    {
+      test: () => /\bshoe\s*(set|pack|collection)\b/i.test(title),
+      contentType: 'shoes',
+      keywords: ['shoe set'],
+    },
+    // Hair sets
+    {
+      test: () => /\bhair\s*(set|pack|collection)\b/i.test(title),
+      contentType: 'hair',
+      keywords: ['hair set'],
+    },
+    // Makeup sets
+    {
+      test: () => /\b(makeup|make-up|cosmetic)\s*(set|pack|collection)\b/i.test(title),
+      contentType: 'makeup',
+      keywords: ['makeup set'],
+    },
+    // Mods (gameplay/script)
+    {
+      test: () => /\bmod\b/i.test(title) && !titleLower.includes('remod'),
+      contentType: 'gameplay-mod',
+      keywords: ['mod'],
+    },
+    // Override/Replacement usually script mods
+    {
+      test: () => /\b(override|replacement|recolor)\b/i.test(title),
+      contentType: 'script-mod',
+      keywords: ['override', 'replacement'],
+    },
+    // Living room sets
+    {
+      test: () => /\bliving\s*room\b/i.test(title),
+      contentType: 'furniture',
+      keywords: ['living room'],
+    },
+    // Bedroom sets
+    {
+      test: () => /\bbedroom\b/i.test(title) && !titleLower.includes('hair'),
+      contentType: 'furniture',
+      keywords: ['bedroom'],
+    },
+    // Selfie/Photo spots are decor
+    {
+      test: () => /\b(selfie|photo)\s*(spot|booth)\b/i.test(title),
+      contentType: 'decor',
+      keywords: ['selfie spot', 'photo booth'],
+    },
+    // Functional items are usually decor or furniture
+    {
+      test: () => /\bfunctional\b/i.test(title),
+      contentType: 'decor',
+      keywords: ['functional'],
+    },
+    // Pack CC or just Pack (likely clothing)
+    {
+      test: () => /\bpack\s*(cc)?\s*$/i.test(title) && !titleLower.includes('furniture') && !titleLower.includes('decor'),
+      contentType: 'full-body',
+      keywords: ['pack'],
+    },
+    // "Living Pack" when not furniture-related
+    {
+      test: () => /\bliving\s*pack\b/i.test(title),
+      contentType: 'full-body',
+      keywords: ['living pack'],
+    },
+    // Hair style names (twists, braids, locs)
+    {
+      test: () => /\b(twists?|braids?|locs?|dreads?|cornrows?|afro)\b/i.test(title) && !titleLower.includes('furniture'),
+      contentType: 'hair',
+      keywords: ['twists', 'braids', 'locs'],
+    },
+  ];
 
-  // Full body
-  { patterns: [/\bjumpsuit\b/i, /\boveralls\b/i, /\bbodysuit\b/i, /\buniform\b/i, /\boutfit\b/i, /\bcc set\b/i, /\bcc pack\b/i, /\bloungewear\b/i, /\bpj\b/i, /\bpajama/i, /\bathleticwear\b/i, /\bswimsuit\b/i, /\bbikini\b/i, /\bdungarees\b/i, /\boverall\b/i, /\bunderwear\b/i, /\btracksuit\b/i, /\bgym set\b/i], contentType: 'full-body' },
+  for (const pattern of patterns) {
+    if (pattern.test()) {
+      return {
+        contentType: pattern.contentType,
+        confidence: 'medium',
+        matchedKeywords: pattern.keywords,
+        reasoning: `Inferred from pattern: ${pattern.keywords.join(', ')}`,
+      };
+    }
+  }
 
-  // Shoes
-  { patterns: [/\bshoe(s)?\b/i, /\bboot(s)?\b/i, /\bsneaker(s)?\b/i, /\bheel(s)?\b/i, /\bsandal(s)?\b/i, /\bslipper(s)?\b/i, /\bflat(s)?\b/i, /\bplatform(s)?\b/i, /\bwedges\b/i, /\bbirkenstocks\b/i, /\bflip-flops\b/i, /\bflipflops\b/i], contentType: 'shoes' },
+  // Category-based fallback (lower confidence)
+  if (categoryLower) {
+    const categoryMappings: Record<string, string> = {
+      'hair': 'hair',
+      'cas - hair': 'hair',
+      'cas - clothing': 'full-body',
+      'cas - makeup': 'makeup',
+      'cas - accessories': 'accessories',
+      'cas - skin': 'skin',
+      'cas': 'full-body',
+      'build/buy': 'furniture',
+      'build/buy - clutter': 'clutter',
+      'gameplay': 'gameplay-mod',
+      'poses': 'poses',
+      'other': null, // Don't infer from "Other"
+    };
 
-  // Makeup
-  { patterns: [/\bmakeup\b/i, /\blipstick\b/i, /\beyeshadow\b/i, /\bliner\b/i, /\bblush\b/i, /\bcontour\b/i, /\bfoundation\b/i, /\bmascara\b/i, /\bbrow(s)?\b/i, /\bcosmetic/i, /\bface\s*paint\b/i], contentType: 'makeup' },
-
-  // Skin
-  { patterns: [/\bskin\b/i, /\bskinblend\b/i, /\boverlay\b/i, /\bfreckles\b/i, /\bwrinkles\b/i, /\bbody preset\b/i], contentType: 'skin' },
-
-  // Eyes
-  { patterns: [/\beyes?\b/i, /\bcontact(s)?\b/i, /\biris\b/i], contentType: 'eyes' },
-
-  // Nails
-  { patterns: [/\bnails?\b/i, /\bmanicure\b/i], contentType: 'nails' },
-
-  // Tattoos
-  { patterns: [/\btattoo(s)?\b/i], contentType: 'tattoos' },
-
-  // Glasses
-  { patterns: [/\bglasses\b/i, /\bsunglasses\b/i, /\bspecs\b/i, /\beyewear\b/i], contentType: 'glasses' },
-
-  // Jewelry
-  { patterns: [/\bjewelry\b/i, /\bearring(s)?\b/i, /\bnecklace\b/i, /\bbracelet\b/i, /\bring(s)?\b/i, /\bpiercing(s)?\b/i], contentType: 'jewelry' },
-
-  // Accessories (after jewelry)
-  { patterns: [/\bhat\b/i, /\bcap\b/i, /\bscarf\b/i, /\bbag\b/i, /\bpurse\b/i, /\bgloves\b/i, /\bbelt\b/i, /\bwatch\b/i, /\bheadband\b/i, /\bheadwear\b/i, /\baccessor/i, /\bbow\b/i, /\bhairpin\b/i, /\bhair clip\b/i, /\btail\b/i, /\bears\b.*\b(cc|elf|mermaid)\b/i, /\bmermaid ears\b/i, /\bbraces\b/i, /\bgills\b/i, /\bwings\b/i, /\bhorns\b/i, /\bchalk bowl\b/i, /\bsocks\b/i], contentType: 'accessories' },
-
-  // Poses
-  { patterns: [/\bpose(s)?\b/i, /\bposepack\b/i], contentType: 'poses' },
-
-  // Furniture
-  { patterns: [/\bfurniture\b/i, /\bsofa\b/i, /\bbed\b/i, /\bchair\b/i, /\btable\b/i, /\bdesk\b/i, /\bshelf\b/i, /\bcoffin\b/i, /\bfireplace\b/i, /\bkitchen\b/i, /\bcounter\b/i, /\bcabinet\b/i, /\bnursery\s*set\b/i, /\broom\s*set\b/i, /\bliving\s*room\b/i, /\bvanity\b/i, /\bteens?\s*room\b/i, /\bkids?\s*room\b/i, /\bbedroom\b/i], contentType: 'furniture' },
-
-  // Decor
-  { patterns: [/\bdecor\b/i, /\bclutter\b/i, /\bplant(s)?\b/i, /\brug\b/i, /\bart\b/i, /\bpainting\b/i, /\bposter\b/i, /\blight(s)?\b/i, /\blamp\b/i, /\bcandle\b/i, /\bvase\b/i, /\bmirror\b/i, /\bneon\s*sign\b/i, /\bcontroller\b/i, /\bcake\s*set\b/i, /\bpotpourri\b/i, /\bpumpkin\b/i, /\bpatch\b/i, /\bportions?\s*set\b/i], contentType: 'decor' },
-
-  // Lot (walls, floors, builds)
-  { patterns: [/\bwall(paper)?(s)?\b/i, /\bfloor(s)?\b/i, /\bbuild\b/i, /\bhouse\b/i, /\blot\b/i, /\bbrick(s)?\b/i, /\btile(s)?\b/i, /\bterrain\b/i, /\bcarpet\b/i, /\bcastle\b/i, /\bdynasty\b/i, /\bshower\b/i, /\bpool\b/i, /\bdoor(s)?\b/i, /\bwindow(s)?\b/i], contentType: 'lot' },
-
-  // Loading screens and CAS backgrounds
-  { patterns: [/\bloading\s*screen\b/i], contentType: 'loading-screen' },
-  { patterns: [/\bcas\s*background\b/i, /\bcas\s*room\b/i], contentType: 'cas-background' },
-
-  // Gameplay mods
-  { patterns: [/\bmod\b.*\b(gameplay|overhaul|tweak)\b/i, /\boverhaul\b/i, /\btrait\b/i, /\bcareer\b/i, /\baspiration\b/i, /\bwerewolf\b/i, /\bmermaid(s)?\s*mod\b/i, /\bevent\s*mod\b/i, /\btweak\b/i, /\bnanny\b/i, /\bstories\b/i, /\breunion\b/i, /\bget together\b/i, /\brelationship(s)?\s*mod\b/i, /\bmagic school\b/i, /\btry for baby\b/i, /\bchallenge\b/i, /\bsuccess\b/i, /\badd-ons\b/i, /\baddons\b/i], contentType: 'gameplay-mod' },
-
-  // Script mods
-  { patterns: [/\bscript\b/i, /\boverride\b/i, /\brecolor(s)?\b/i, /\bretexture\b/i, /\breplacement\b/i, /\bslider\b/i], contentType: 'script-mod' },
-
-  // Preset
-  { patterns: [/\bpreset(s)?\b/i, /\bsim download\b/i, /\bnose\s*presets\b/i], contentType: 'preset' },
-
-  // Lot - additional patterns
-  { patterns: [/\branch\b/i, /\bracecourse\b/i, /\bschool\b/i, /\bcompany\b/i, /\brestaurant\b/i, /\bcafe\b/i, /\bshop\b/i, /\bstore\b/i, /\binn\b/i, /\btavern\b/i], contentType: 'lot' },
-
-  // Full body - additional patterns
-  { patterns: [/\bclothes\s*cc\b/i, /\bcc\s*clothes\b/i, /\buniforms\b/i, /\bcollection\b/i, /\bjogger\s*set\b/i, /\bmini\s*pack\b/i, /\bstockings\b/i, /\bformal\s*set\b/i, /\barmor\b/i, /\bfemale\s*cc\b/i, /\bfitness\s*set\b/i], contentType: 'full-body' },
-
-  // Decor - additional patterns
-  { patterns: [/\bgaming\b.*\b(set|pad|mouse)\b/i, /\bmouse pad\b/i, /\bcorn\b/i, /\bfood\b/i, /\brecycler\b/i, /\bmonitor\b/i, /\bnautical\b/i], contentType: 'decor' },
-
-  // Furniture - additional patterns
-  { patterns: [/\bstudy\b/i], contentType: 'furniture' },
-
-  // Gameplay mods - additional patterns
-  { patterns: [/\bviolence\b/i, /\bfurious\b/i, /\blegend\b/i, /\bjump\b/i, /\bdiscover\s*university\b/i, /\buniversity\b/i], contentType: 'gameplay-mod' },
-
-  // Pet accessories
-  { patterns: [/\bdog\b/i, /\bcat\b/i, /\bpet\b/i, /\bcollar\b/i], contentType: 'pet-furniture' },
-
-  // Accessories - additional
-  { patterns: [/\bcyberware\b/i, /\bcyberpunk\b/i], contentType: 'accessories' },
-];
-
-function inferContentType(title: string, category?: string | null): string | null {
-  // First try title patterns
-  for (const rule of CONTENT_TYPE_RULES) {
-    for (const pattern of rule.patterns) {
-      if (pattern.test(title)) {
-        return rule.contentType;
+    for (const [cat, contentType] of Object.entries(categoryMappings)) {
+      if (categoryLower.includes(cat) && contentType) {
+        return {
+          contentType,
+          confidence: 'medium',
+          matchedKeywords: [cat],
+          reasoning: `Inferred from category: ${category}`,
+        };
       }
     }
   }
 
-  // Fall back to category-based inference
-  if (category) {
-    const cat = category.toLowerCase();
-    if (cat.includes('build') || cat.includes('buy')) return 'lot';
-    if (cat.includes('gameplay')) return 'gameplay-mod';
-    if (cat.includes('script')) return 'script-mod';
-    if (cat.includes('cas - hair')) return 'hair';
-    if (cat.includes('cas - clothing')) return 'full-body';
-    if (cat.includes('cas - makeup')) return 'makeup';
-    if (cat.includes('cas - skin')) return 'skin';
-    if (cat.includes('cas')) return 'full-body'; // generic CAS
+  // Tag-based inference
+  const tagMappings: Record<string, string> = {
+    'hair': 'hair',
+    'clothing': 'full-body',
+    'outfit': 'full-body',
+    'dress': 'dresses',
+    'top': 'tops',
+    'bottom': 'bottoms',
+    'shoes': 'shoes',
+    'makeup': 'makeup',
+    'furniture': 'furniture',
+    'decor': 'decor',
+    'build': 'lot',
+    'gameplay': 'gameplay-mod',
+  };
+
+  for (const tag of tagsLower) {
+    for (const [keyword, contentType] of Object.entries(tagMappings)) {
+      if (tag.includes(keyword)) {
+        return {
+          contentType,
+          confidence: 'medium',
+          matchedKeywords: [tag],
+          reasoning: `Inferred from tag: ${tag}`,
+        };
+      }
+    }
   }
 
   return null;
 }
 
 async function main() {
-  console.log('🔍 Finding mods with null contentType...\n');
+  const args = process.argv.slice(2);
+  const shouldApply = args.includes('--apply');
+  const verbose = args.includes('--verbose');
+
+  console.log('='.repeat(70));
+  console.log('🔧 Fix Null Content Types - Intelligent Detection');
+  console.log('='.repeat(70));
+  console.log('');
+
+  if (!shouldApply) {
+    console.log('🔍 DRY RUN MODE - Use --apply to make changes\n');
+  } else {
+    console.log('⚠️  APPLY MODE - Changes will be written to database\n');
+  }
+
+  // Step 1: Find all mods with null contentType
+  console.log('📊 Querying mods with null contentType...\n');
 
   const mods = await prisma.mod.findMany({
     where: { contentType: null },
-    select: { id: true, title: true, category: true },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      shortDescription: true,
+      category: true,
+      source: true,
+      tags: true,
+    },
+    orderBy: { title: 'asc' },
   });
 
-  console.log(`Found ${mods.length} mods with null contentType\n`);
+  console.log(`   Found ${mods.length} mods with null contentType\n`);
 
-  const fixes: { mod: typeof mods[0]; newType: string }[] = [];
-  const unfixed: typeof mods = [];
+  if (mods.length === 0) {
+    console.log('✅ No mods need fixing!');
+    return;
+  }
+
+  // Step 2: Analyze each mod
+  console.log('🔬 Analyzing mods with content type detector...\n');
+
+  const fixes: FixResult[] = [];
+  const unfixed: UnfixedMod[] = [];
+  const byConfidence: Record<ConfidenceLevel, number> = {
+    high: 0,
+    medium: 0,
+    low: 0,
+  };
+  const byContentType: Record<string, number> = {};
 
   for (const mod of mods) {
-    const inferred = inferContentType(mod.title, mod.category);
-    if (inferred) {
-      fixes.push({ mod, newType: inferred });
+    // Clean up title - remove leading numbers from listicle scraping
+    const cleanTitle = mod.title.replace(/^\d+\s+/, '').trim();
+
+    // Combine description sources for better detection
+    const description = mod.description || mod.shortDescription || '';
+
+    // Also check tags for hints
+    const tagsText = mod.tags?.join(' ') || '';
+
+    // Run the intelligent detector on clean title
+    let result = detectContentTypeWithConfidence(cleanTitle, description + ' ' + tagsText);
+    let themes = detectRoomThemes(cleanTitle, description);
+
+    // If low confidence, try additional inference strategies
+    if (result.confidence === 'low' || !result.contentType) {
+      const inferred = inferFromContextClues(cleanTitle, mod.category, mod.tags || []);
+      if (inferred) {
+        result = {
+          contentType: inferred.contentType,
+          confidence: inferred.confidence,
+          matchedKeywords: inferred.matchedKeywords,
+          reasoning: inferred.reasoning,
+        };
+      }
+    }
+
+    byConfidence[result.confidence]++;
+
+    if (result.contentType && result.confidence !== 'low') {
+      // We can fix this one
+      fixes.push({
+        id: mod.id,
+        title: mod.title,
+        contentType: result.contentType,
+        confidence: result.confidence,
+        themes,
+        matchedKeywords: result.matchedKeywords,
+        reasoning: result.reasoning,
+      });
+
+      byContentType[result.contentType] = (byContentType[result.contentType] || 0) + 1;
     } else {
-      unfixed.push(mod);
+      // Cannot confidently determine content type
+      unfixed.push({
+        id: mod.id,
+        title: mod.title,
+        category: mod.category,
+        source: mod.source,
+        reasoning: result.reasoning,
+      });
     }
   }
 
-  console.log(`Can infer contentType for ${fixes.length} mods`);
-  console.log(`Cannot infer for ${unfixed.length} mods\n`);
+  // Step 3: Show analysis summary
+  console.log('📈 Analysis Summary:');
+  console.log('─'.repeat(50));
+  console.log(`   High confidence:   ${byConfidence.high} mods`);
+  console.log(`   Medium confidence: ${byConfidence.medium} mods`);
+  console.log(`   Low confidence:    ${byConfidence.low} mods (will not fix)`);
+  console.log('');
+  console.log(`   ✅ Can fix: ${fixes.length} mods`);
+  console.log(`   ❓ Cannot determine: ${unfixed.length} mods`);
+  console.log('');
 
-  // Show what we'll fix
-  console.log('Preview of fixes (first 30):');
-  for (const { mod, newType } of fixes.slice(0, 30)) {
-    console.log(`  [${newType.padEnd(15)}] ${mod.title.slice(0, 60)}`);
+  // Step 4: Show content type breakdown
+  console.log('📊 Content Types to Assign:');
+  console.log('─'.repeat(50));
+
+  const sortedTypes = Object.entries(byContentType)
+    .sort((a, b) => b[1] - a[1]);
+
+  for (const [type, count] of sortedTypes) {
+    const bar = '█'.repeat(Math.min(count, 40));
+    console.log(`   ${type.padEnd(18)} ${String(count).padStart(4)} ${bar}`);
   }
-  if (fixes.length > 30) console.log(`  ... and ${fixes.length - 30} more\n`);
+  console.log('');
 
-  // Show what we can't fix
-  console.log('\nCould not infer (first 20):');
-  for (const mod of unfixed.slice(0, 20)) {
-    console.log(`  [${(mod.category || '?').padEnd(15)}] ${mod.title.slice(0, 60)}`);
+  // Step 5: Show sample fixes
+  if (verbose || !shouldApply) {
+    console.log('📝 Sample Fixes (by confidence):');
+    console.log('─'.repeat(70));
+
+    // Show high confidence samples
+    const highConf = fixes.filter(f => f.confidence === 'high').slice(0, 10);
+    if (highConf.length > 0) {
+      console.log('\n🟢 HIGH CONFIDENCE:');
+      for (const fix of highConf) {
+        const themesStr = fix.themes.length > 0 ? ` [themes: ${fix.themes.join(', ')}]` : '';
+        console.log(`   [${fix.contentType.padEnd(15)}] ${fix.title.slice(0, 50)}${themesStr}`);
+        if (verbose) {
+          console.log(`      Keywords: ${fix.matchedKeywords.join(', ')}`);
+        }
+      }
+    }
+
+    // Show medium confidence samples
+    const medConf = fixes.filter(f => f.confidence === 'medium').slice(0, 10);
+    if (medConf.length > 0) {
+      console.log('\n🟡 MEDIUM CONFIDENCE:');
+      for (const fix of medConf) {
+        const themesStr = fix.themes.length > 0 ? ` [themes: ${fix.themes.join(', ')}]` : '';
+        console.log(`   [${fix.contentType.padEnd(15)}] ${fix.title.slice(0, 50)}${themesStr}`);
+        if (verbose) {
+          console.log(`      Keywords: ${fix.matchedKeywords.join(', ')}`);
+        }
+      }
+    }
+    console.log('');
   }
-  if (unfixed.length > 20) console.log(`  ... and ${unfixed.length - 20} more\n`);
 
-  // Apply fixes
-  console.log('\n🔧 Applying fixes...');
-  let fixed = 0;
-  for (const { mod, newType } of fixes) {
-    await prisma.mod.update({
-      where: { id: mod.id },
-      data: { contentType: newType },
-    });
-    fixed++;
-    if (fixed % 50 === 0) console.log(`  Fixed ${fixed}/${fixes.length}...`);
+  // Step 6: Show unfixed mods
+  if (unfixed.length > 0 && (verbose || !shouldApply)) {
+    console.log('❓ Cannot Determine (sample of 15):');
+    console.log('─'.repeat(70));
+
+    for (const mod of unfixed.slice(0, 15)) {
+      const source = mod.source ? ` (${mod.source})` : '';
+      console.log(`   ${mod.title.slice(0, 60)}${source}`);
+      if (verbose && mod.reasoning) {
+        console.log(`      Reason: ${mod.reasoning}`);
+      }
+    }
+
+    if (unfixed.length > 15) {
+      console.log(`   ... and ${unfixed.length - 15} more`);
+    }
+    console.log('');
   }
 
-  console.log(`\n✅ Fixed ${fixed} mods`);
+  // Step 7: Apply fixes if requested
+  if (shouldApply && fixes.length > 0) {
+    console.log('🔧 Applying fixes...');
+    console.log('─'.repeat(50));
+
+    let applied = 0;
+    let errors = 0;
+
+    for (const fix of fixes) {
+      try {
+        await prisma.mod.update({
+          where: { id: fix.id },
+          data: {
+            contentType: fix.contentType,
+            themes: fix.themes.length > 0 ? fix.themes : undefined,
+          },
+        });
+
+        applied++;
+
+        // Progress indicator
+        if (applied % 50 === 0) {
+          console.log(`   ✅ Applied ${applied}/${fixes.length} fixes...`);
+        }
+      } catch (error) {
+        errors++;
+        console.error(`   ❌ Error fixing "${fix.title}": ${error}`);
+      }
+    }
+
+    console.log('');
+    console.log('='.repeat(50));
+    console.log(`✅ Applied ${applied} fixes`);
+    if (errors > 0) {
+      console.log(`❌ ${errors} errors`);
+    }
+  } else if (!shouldApply && fixes.length > 0) {
+    console.log('💡 To apply these fixes, run with --apply flag:');
+    console.log('   npx tsx scripts/fix-null-content-types.ts --apply');
+    console.log('');
+  }
 
   // Final stats
   const remaining = await prisma.mod.count({ where: { contentType: null } });
-  console.log(`Remaining mods with null contentType: ${remaining}`);
-
-  await prisma.$disconnect();
+  console.log(`\n📊 Remaining mods with null contentType: ${remaining}`);
 }
 
-main().catch(async (e) => {
-  console.error(e);
-  await prisma.$disconnect();
+main().catch((e) => {
+  console.error('Fatal error:', e);
   process.exit(1);
 });
