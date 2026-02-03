@@ -443,3 +443,126 @@ Multiple test pages exist in `/app` for rapid UI prototyping. These should be co
 When adding new mods via aggregation, call `aiSearchService.updateSearchIndex(modId)` to generate embeddings for AI search functionality.
 
 Database can be reset with `npm run db:reset` - this will delete all data and re-run migrations and seeds.
+
+---
+
+## 🧠 Compound Learnings (Jan 2026)
+
+This section captures patterns, gotchas, and best practices discovered during recent development.
+
+### Build-Time Initialization Errors
+
+**Problem**: Static class properties that access environment variables fail at build time because env vars aren't available during `next build`.
+
+**Example - Stripe Service** (fixed in 92da480):
+```typescript
+// ❌ WRONG - Fails at build time
+export class StripeService {
+  private static stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+}
+
+// ✅ CORRECT - Lazy initialization
+export class StripeService {
+  private static _stripe: Stripe | null = null;
+
+  private static get stripe(): Stripe {
+    if (!this._stripe) {
+      this._stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    }
+    return this._stripe;
+  }
+}
+```
+
+**Rule**: Always use lazy initialization for third-party SDK clients that require API keys.
+
+### Regex Compatibility Issues
+
+**Problem**: ES2018+ regex features (like the `s` flag for dotAll) cause build failures when targeting older Node versions.
+
+**Example** (fixed in 526b1e9):
+```typescript
+// ❌ May fail in some environments
+const pattern = /some.pattern/s;
+
+// ✅ Use [\s\S] instead of . with s flag
+const pattern = /some[\s\S]pattern/;
+```
+
+**Rule**: Avoid ES2018+ regex flags. Use character class alternatives for cross-platform compatibility.
+
+### PostgreSQL Enum Casting in Raw SQL
+
+**Problem**: When using Prisma raw SQL (`$queryRaw`), PostgreSQL enum values require explicit `::text` casting for string comparisons.
+
+**Example** (fixed in cef3fdb):
+```typescript
+// ❌ WRONG - Fails with type mismatch
+AND ma."actionType" = ${actionType}
+
+// ✅ CORRECT - Cast enum to text
+AND ma."actionType"::text = ${actionType}
+```
+
+**Rule**: When comparing enum columns in raw SQL, always cast to `::text`.
+
+### ESLint React Entity Escaping
+
+**Problem**: The `react/no-unescaped-entities` rule causes build failures for apostrophes in JSX text (e.g., "don't", "it's").
+
+**Solution** (fixed in 7be238c): Disable the rule in `.eslintrc.json`:
+```json
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "react/no-unescaped-entities": "off"
+  }
+}
+```
+
+**Alternative**: Use `&apos;` for apostrophes, but this reduces readability.
+
+### Web Scraping Rate Limits
+
+**Problem**: Amazon and other sites block aggressive scraping. Initial 1-3 second delays caused blocking.
+
+**Solution** (from 526b1e9):
+- Increased base delays to 3-6 seconds
+- Add user agent rotation
+- Implement retry logic with exponential backoff
+- Clean and truncate scraped titles (Amazon keyword spam)
+
+**Rule**: Start with conservative delays (3-6s minimum) and increase if blocked.
+
+### Agent Workflow Pattern
+
+A new development workflow was established for autonomous agents (cef3fdb):
+
+```
+/commitit → /reviewit → /shipit
+    │           │           │
+    ▼           ▼           ▼
+ Feature    PR Summary   Production
+ Branch     + Checks     Deployment
+```
+
+**Key files**:
+- `.claude/agents/<name>/plan.md` - Implementation plan (review before running)
+- `.claude/agents/<name>/prompt.md` - Agent system prompt
+- `.claude/skills/reviewit/skill.md` - PR review skill
+
+**Rule**: Agents work on feature branches, never directly on main. Use /reviewit before /shipit.
+
+### FacetDefinition Best Practices
+
+When creating new facets for content categorization:
+
+1. **Deactivate don't delete**: Set `isActive=false` on old facets rather than deleting
+2. **Use atomic operations**: Wrap bulk updates in transactions
+3. **Test with dry run**: Scripts should have `--fix` flag, default to preview mode
+4. **Log progress**: Write progress files for long-running operations
+
+**Example facet split** (from cef3fdb):
+- Original: `lot` facet (636 mods)
+- Split into: `residential` (592), `commercial` (31), `entertainment` (6), `community` (7)
+- Old `lot` facet deactivated but preserved for reference
