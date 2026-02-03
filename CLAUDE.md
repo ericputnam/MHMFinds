@@ -436,6 +436,43 @@ npx tsx scripts/cleanup-author-data.ts --fix --limit=100  # Fix first 100 only
 
 **Author Cleanup Details**: The original scraper extracted garbage values like "Title", "ShRef", "Id" from URL path segments. The cleanup script visits actual mod download URLs and extracts real author names. See `docs/PRD-author-data-cleanup.md` for full documentation.
 
+### MustHaveMods Scraper
+```bash
+# Scrape MustHaveMods.com posts (skips recently scraped URLs)
+npm run scrape:mhm
+
+# Force rescrape all posts (ignores freshness tracking)
+npm run scrape:mhm -- --force
+
+# Resume from specific post number or URL
+npm run scrape:mhm -- --start-index 131
+npm run scrape:mhm -- --start-url "https://musthavemods.com/sims-4-cc-finds/"
+
+# Limit number of posts to scrape
+npm run scrape:mhm -- --limit 50
+
+# Backfill scraped URLs CSV from existing database entries
+npx tsx scripts/backfill-mhm-scraped-urls.ts
+npx tsx scripts/backfill-mhm-scraped-urls.ts --dry-run
+
+# Fix mods with null contentType using intelligent detection
+npx tsx scripts/fix-null-content-types.ts              # Dry run
+npx tsx scripts/fix-null-content-types.ts --apply      # Apply fixes
+npx tsx scripts/fix-null-content-types.ts --apply --verbose
+```
+
+**MHM Scraper Features:**
+- **Content Type Detection**: Automatically detects mod types (hair, furniture, makeup, etc.) using `contentTypeDetector` library
+- **Room Theme Detection**: Identifies room themes (bathroom, kitchen, etc.) for furniture/decor mods
+- **URL Freshness Tracking**: Skips URLs scraped within the last 3 months (stored in `data/mhm-scraped-urls.csv`)
+- **Protected Sites Handling**: Quietly skips Patreon/CurseForge links that return 403 errors
+
+**When to Use:**
+- Run `npm run scrape:mhm` for regular scraping (respects freshness)
+- Run with `--force` after updating the content detector to re-analyze existing pages
+- Run `backfill-mhm-scraped-urls.ts` after manual database imports to prevent re-scraping
+- Run `fix-null-content-types.ts` to retroactively fix mods missing contentType facets
+
 ## Architecture
 
 ### Directory Structure
@@ -451,6 +488,8 @@ npx tsx scripts/cleanup-author-data.ts --fix --limit=100  # Fix first 100 only
 - `/services` - Service layer containing business logic
   - `contentAggregator.ts` - Standard web scraping service for CurseForge, Patreon
   - `privacyAggregator.ts` - Privacy-enhanced scraping with proxy support, user agent rotation, and anti-detection features
+  - `mhmScraper.ts` - MustHaveMods.com scraper with content detection and URL freshness tracking
+  - `contentTypeDetector.ts` - Intelligent content type detection (hair, furniture, makeup, etc.) with confidence levels
   - `aiSearch.ts` - OpenAI-powered semantic search, recommendations, and mod similarity
 - `/config` - Configuration files
   - `privacy.ts` - Privacy settings for content aggregation (default/stealth/conservative modes)
@@ -599,3 +638,29 @@ Multiple test pages exist in `/app` for rapid UI prototyping. These should be co
 When adding new mods via aggregation, call `aiSearchService.updateSearchIndex(modId)` to generate embeddings for AI search functionality.
 
 Database can be reset with `npm run db:reset` - this will delete all data and re-run migrations and seeds.
+
+---
+
+## 🧠 Compound Learnings
+
+This section is automatically updated by the nightly compound automation system. Each night, Claude Code reviews the day's work and extracts patterns, gotchas, and learnings discovered during development.
+
+### Patterns That Work Well
+
+<!-- Nightly automation adds successful patterns here -->
+
+### Gotchas and Pitfalls
+
+<!-- Nightly automation adds discovered issues here -->
+
+### Performance Insights
+
+<!-- Nightly automation adds performance-related learnings here -->
+
+### Code Quality Notes
+
+<!-- Nightly automation adds code quality observations here -->
+
+---
+
+*Last compound review: Never (run `./scripts/compound/setup.sh` to enable nightly automation)*
