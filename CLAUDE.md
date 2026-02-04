@@ -566,3 +566,125 @@ When creating new facets for content categorization:
 - Original: `lot` facet (636 mods)
 - Split into: `residential` (592), `commercial` (31), `entertainment` (6), `community` (7)
 - Old `lot` facet deactivated but preserved for reference
+
+---
+
+## 🧠 Compound Learnings (Feb 2026)
+
+### OAuth2 Token Caching Pattern
+
+**Problem**: Third-party APIs using OAuth2 (like Amazon Creators API) require token management with proper expiration handling.
+
+**Pattern** (from `amazonCreatorsApiService.ts`):
+```typescript
+// Module-level cache
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
+async function getAccessToken(): Promise<string> {
+  // Check cache with buffer time (60s before expiry)
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 60000) {
+    return cachedToken.token;
+  }
+
+  // Fetch new token...
+  const data = await fetchToken();
+
+  // Cache with 30-second safety buffer
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: Date.now() + ((data.expires_in || 3600) - 30) * 1000,
+  };
+
+  return data.access_token;
+}
+```
+
+**Key points**:
+1. Use module-level variable (not class property) for token cache
+2. Check expiry with buffer time (60s recommended)
+3. Set expiry with safety buffer when caching (30s from actual expiry)
+4. For Cognito/OAuth2, use `application/x-www-form-urlencoded` not JSON
+
+### API Response Case Handling
+
+**Problem**: External APIs may return responses in different casing (camelCase vs PascalCase) depending on version or endpoint.
+
+**Pattern** (from Amazon Creators API):
+```typescript
+// Handle both camelCase and PascalCase responses
+const searchResult = data.searchResult || data.SearchResult;
+const items = searchResult?.items || searchResult?.Items;
+const itemInfo = item.itemInfo || item.ItemInfo;
+```
+
+**Rule**: When integrating with external APIs, always handle both casing conventions using fallback patterns.
+
+### Amazon Associates API Access Requirements
+
+**Important**: The Amazon Creators API (replacement for PA-API 5.0) requires **3 qualifying sales within 180 days** before API access is granted.
+
+**Error signature**:
+```
+reason: 'AssociateNotEligible'
+```
+
+**Mitigation**: Implement fallback scraping when API access is pending. The `amazonScraperService.ts` provides a web scraping fallback.
+
+### PRD-Based Cleanup Tasks
+
+**Pattern**: For code cleanup initiatives, create a PRD in `tasks/prd-compound/` with:
+
+1. **Clear acceptance criteria** - Checkboxes for each change
+2. **Phase breakdown** - Group related changes
+3. **Files to modify table** - Explicit list with change descriptions
+4. **Testing plan** - Pre/post verification commands
+5. **Risks and rollback** - Document potential issues
+
+**Example structure** (from `clean-up-dead-code-...md`):
+```markdown
+# PRD: [Task Name]
+
+## 1. Overview
+- What we're building
+- Why (motivation)
+
+## 2. Requirements
+- [ ] Acceptance criteria with checkboxes
+
+## 3. Technical Approach
+- Phase 1, 2, 3...
+
+## 4. Files to Modify
+| File | Changes |
+|------|---------|
+
+## 5. Testing Plan
+## 6. Risks
+## 7. Out of Scope
+## 8. Definition of Done
+```
+
+### AI-Powered Product Curation Pattern
+
+**Pattern** (from `personaSwarmService.ts`): Use multiple AI personas with distinct characteristics to validate product recommendations:
+
+```typescript
+interface Persona {
+  id: string;
+  name: string;
+  age: number;
+  location: string;
+  aesthetic: string;
+  priceRange: { min: number; max: number };
+  evaluationCriteria: string;
+}
+
+// Require 3/8 (37.5%) approval for validation
+const APPROVAL_THRESHOLD = 3;
+```
+
+**Key insights**:
+1. Base personas on real analytics data (demographics, top content types)
+2. Give each persona distinct price sensitivity and aesthetic preferences
+3. Include diverse geographic representation (affects purchasing power)
+4. Use threshold-based consensus (not unanimous approval)
