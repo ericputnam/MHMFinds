@@ -41,6 +41,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🎨 Design Rule: No Gradients
+
+**NEVER use CSS gradients in this project.**
+
+Gradients are considered an "AI tell" and should be avoided entirely. Use solid colors instead.
+
+### Prohibited:
+- ❌ `linear-gradient()`
+- ❌ `radial-gradient()`
+- ❌ `conic-gradient()`
+- ❌ Gradient backgrounds, borders, or text effects
+
+### Use Instead:
+- ✅ Solid background colors (e.g., `background: #ec4899`)
+- ✅ Solid border colors (e.g., `border: 1px solid rgba(236,72,153,0.3)`)
+- ✅ Box shadows for depth (e.g., `box-shadow: 0 4px 6px rgba(0,0,0,0.1)`)
+
+---
+
 ## 🚨 CRITICAL: Prisma Connection Pooling in Serverless (Vercel)
 
 **NEVER modify `lib/prisma.ts` without understanding this section.**
@@ -688,3 +707,85 @@ const APPROVAL_THRESHOLD = 3;
 2. Give each persona distinct price sensitivity and aesthetic preferences
 3. Include diverse geographic representation (affects purchasing power)
 4. Use threshold-based consensus (not unanimous approval)
+
+### Automated Compound System
+
+**Pattern**: A nightly automation system that reviews codebase changes and autonomously implements improvements.
+
+**Architecture** (`scripts/compound/`):
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Daily Schedule (launchd)                                       │
+├─────────────────────────────────────────────────────────────────┤
+│  10:00 PM  →  daily-compound-review.sh                          │
+│              - Reviews git log from past 24 hours               │
+│              - Updates CLAUDE.md with learnings                 │
+│              - Commits and pushes to main                       │
+│                                                                 │
+│  11:00 PM  →  auto-compound.sh                                  │
+│              - Reads priority report from reports/              │
+│              - Creates feature branch                           │
+│              - Generates PRD in tasks/prd-compound/             │
+│              - Runs loop.sh to execute tasks                    │
+│              - Creates draft PR                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key files**:
+- `scripts/compound/auto-compound.sh` - Main pipeline orchestrator
+- `scripts/compound/loop.sh` - Task execution loop (max 25 iterations)
+- `scripts/compound/analyze-report.sh` - Extracts top priority from reports
+- `scripts/compound/launchd/*.plist` - macOS scheduler configurations
+
+**Setup** (for new machines):
+```bash
+# Load launchd jobs
+launchctl load ~/Library/LaunchAgents/com.mhmfinds.daily-compound-review.plist
+launchctl load ~/Library/LaunchAgents/com.mhmfinds.auto-compound.plist
+
+# Test manually
+./scripts/compound/test-manual.sh
+```
+
+**Task JSON format** (`scripts/compound/prd.json`):
+```json
+{
+  "tasks": [
+    { "id": 1, "title": "Task name", "description": "What to do", "status": "pending" }
+  ]
+}
+```
+Status values: `pending` → `completed` or `blocked`
+
+**Rules**:
+1. Compound system always works on feature branches, never main
+2. Draft PRs require human review before merge
+3. If a task fails, it's marked `blocked` and loop continues to next task
+4. Max 25 iterations per run to prevent runaway execution
+
+### Amazon Creators API Integration
+
+**New environment variables** (add to `.env.local`):
+```bash
+AMAZON_CREATORS_CREDENTIAL_ID=your-credential-id
+AMAZON_CREATORS_CREDENTIAL_SECRET=your-credential-secret
+AMAZON_CREATORS_APPLICATION_ID=your-app-id
+AMAZON_PARTNER_TAG=musthavemod04-20
+```
+
+**Important**: API access requires **3 qualifying sales within 180 days**. Until then, `AssociateNotEligible` errors will occur. The `amazonCreatorsApiService.ts` handles this gracefully.
+
+**Authorization header format** (Creators API specific):
+```typescript
+'Authorization': `Bearer ${token}, Version ${CREDENTIAL_VERSION}`
+```
+Note the comma-separated Bearer token AND Version - this is unique to the Creators API.
+
+### Cognito OAuth2 Token Endpoint
+
+**Important**: The Amazon Creators API uses AWS Cognito for authentication. The token endpoint URL varies by region:
+- NA (North America): `https://creatorsapi.auth.us-east-1.amazoncognito.com/oauth2/token`
+- EU: Different endpoint (check docs)
+- FE (Far East): Different endpoint (check docs)
+
+**Content-Type**: Must be `application/x-www-form-urlencoded`, not `application/json`
