@@ -789,3 +789,106 @@ Note the comma-separated Bearer token AND Version - this is unique to the Creato
 - FE (Far East): Different endpoint (check docs)
 
 **Content-Type**: Must be `application/x-www-form-urlencoded`, not `application/json`
+
+### Prisma Script Environment Setup
+
+**Problem**: Standalone scripts (in `scripts/`) cannot use Prisma Accelerate URLs (`prisma+postgres://`). They need direct database connections.
+
+**Solution** (`scripts/lib/setup-env.ts`): Import at the very top of any script, before other imports:
+```typescript
+// MUST be the first import in any script that uses Prisma
+import '../lib/setup-env';
+// or: import './lib/setup-env';
+```
+
+This module automatically detects Accelerate URLs and swaps `DATABASE_URL` with `DIRECT_DATABASE_URL`. It also loads `.env.local` for you.
+
+**Rule**: Every new script that touches the database must import `setup-env.ts` first, or it will fail with cryptic Accelerate connection errors.
+
+### Admin API Route Security (Defense-in-Depth)
+
+**Problem**: Admin API routes (`app/api/admin/*`) were discovered to be missing authentication checks, allowing unauthenticated access to destructive operations.
+
+**Solution**: Two-layer defense:
+1. **Middleware** (`middleware.ts`): Blocks ALL `/api/admin/*` requests without admin auth at the request level
+2. **Route-level auth**: Each handler also checks `getServerSession(authOptions)` independently
+
+**Required pattern for ALL admin API routes**:
+```typescript
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  // ... handler logic
+}
+```
+
+**Security scanner**: Run `npm run security:check-admin-auth` to verify all admin routes have auth. Run before committing changes to admin routes.
+
+**Rule**: NEVER create an admin API route without both middleware protection AND route-level auth checks. Never rely on just one layer.
+
+### Prisma Decimal Type Handling in React Components
+
+**Problem**: Prisma `Decimal(10,2)` fields (like `price`) may arrive as strings, not numbers, depending on serialization path. Calling `.toFixed()` on a string throws an error.
+
+**Pattern**:
+```typescript
+// ❌ WRONG - May fail if price is a Decimal string
+const display = product.price.toFixed(2);
+
+// ✅ CORRECT - Coerce to Number first
+const price = typeof product.price === 'number' ? product.price : Number(product.price);
+const display = price.toFixed(2);
+```
+
+**Rule**: Always coerce Prisma Decimal values to `Number()` before arithmetic or formatting operations, especially in client components that receive data from API routes.
+
+### Cache Invalidation After Admin Mutations
+
+**Problem**: Admin CRUD operations (create, update, delete mods) had a ~30 second delay before taking effect because cached data was being served.
+
+**Pattern**: Call `CacheService.invalidateMod(id)` after every mutation:
+```typescript
+await prisma.mod.delete({ where: { id } });
+await CacheService.invalidateMod(id); // Clear cached data immediately
+```
+
+For bulk operations, invalidate all affected IDs:
+```typescript
+await Promise.all(modIds.map((id: string) => CacheService.invalidateMod(id)));
+```
+
+**Rule**: Every admin mutation (create/update/delete) must be followed by cache invalidation.
+
+### Next.js `force-dynamic` for Auth-Dependent Routes
+
+**Problem**: API routes using `getServerSession()`, `cookies()`, `headers()`, or `request.url` fail during Next.js static generation at build time.
+
+**Fix**: Add `export const dynamic = 'force-dynamic'` to the route file:
+```typescript
+export const dynamic = 'force-dynamic';
+```
+
+**Rule**: Any API route that reads auth state or request-specific data must export `dynamic = 'force-dynamic'`.
+
+### Script Archival Pattern
+
+**Pattern**: Move completed/obsolete scripts to `scripts/archive/` instead of deleting them. This preserves reference material while keeping the active scripts directory clean.
+
+```
+scripts/
+├── archive/           # Completed one-time scripts and references
+│   ├── README.md      # Index of archived scripts
+│   └── ralph/         # Agent-generated scripts from ralph pipeline
+├── compound/          # Automated compound system
+├── lib/               # Shared script utilities (setup-env.ts)
+└── *.ts               # Active, currently-used scripts
+```
+
+**Rule**: Archive old scripts rather than deleting. Add a README.md to `scripts/archive/` explaining what each script was for.
