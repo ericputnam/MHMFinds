@@ -892,3 +892,39 @@ scripts/
 ```
 
 **Rule**: Archive old scripts rather than deleting. Add a README.md to `scripts/archive/` explaining what each script was for.
+
+### Multi-Game Navigation: `<a>` vs `<Link>` for WordPress Routes
+
+**Problem**: Blog/WordPress pages are served from a separate WordPress instance (via Vercel rewrites), not from the Next.js app. Using Next.js `<Link>` for these routes causes client-side navigation failures.
+
+**Pattern** (from `Navbar.tsx` and `Footer.tsx`):
+```tsx
+// ❌ WRONG - Next.js client-side navigation won't work for WordPress routes
+<Link href="/blog">Blog</Link>
+<Link href="/sims-4/">Sims 4</Link>
+
+// ✅ CORRECT - Standard anchor tags trigger full page load through Vercel rewrite
+<a href="/blog">Blog</a>
+<a href="/sims-4/">Sims 4</a>
+```
+
+**Rule**: Use `<a href>` (not `<Link>`) for any route that's proxied to WordPress via Vercel rewrites (`/blog`, `/sims-4/`, `/stardew-valley/`, `/minecraft/`). Use `<Link>` only for routes handled by the Next.js app.
+
+### Multi-Game Footer Disclaimer
+
+**Pattern**: When expanding to support multiple games, update legal disclaimers to mention all relevant publishers:
+- **Sims 4**: Electronic Arts
+- **Stardew Valley**: ConcernedApe
+- **Minecraft**: Mojang Studios
+
+Use generic phrasing like "copyright their respective publishers" rather than listing every publisher individually (more maintainable as games are added).
+
+### Compound System: PRD Iteration Without Execution
+
+**Observation** (Feb 6-8, 2026): The automated compound system generates increasingly refined PRDs for the same task (dead code cleanup) on successive nights, but the corresponding feature branches don't diverge from main. This suggests the execution loop (`loop.sh`) may be failing silently or the branch isn't being pushed.
+
+**Debugging checklist**:
+1. Check `~/Library/LaunchAgents/com.mhmfinds.auto-compound.plist` is loaded: `launchctl list | grep mhmfinds`
+2. Check compound logs for errors: look at stdout/stderr from plist configuration
+3. Verify `loop.sh` can execute Claude Code in non-interactive mode
+4. Check if PRD generation succeeds but task execution fails (look for `prd.json` with all tasks still `pending`)
