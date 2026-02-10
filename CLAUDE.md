@@ -2,6 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🔍 CRITICAL: Always Verify Changes with Browser-Use
+
+**After making any frontend/UI changes, you MUST use browser-use to verify them before reporting completion.**
+
+### Required Steps:
+1. Ensure the dev server is running (`npm run dev`)
+2. Use browser-use to navigate to the affected page(s)
+3. Visually confirm the changes are rendering correctly
+4. Check for any rendering artifacts, broken layouts, or unexpected text
+5. Only report the task as complete after visual verification passes
+
+### Why:
+- CSS changes may not take effect due to caching, specificity conflicts, or build issues
+- Component changes may look correct in code but render incorrectly
+- WordPress proxied content may inject unexpected elements
+- The user should never be the first person to discover a visual regression
+
+**If you cannot run browser-use, explicitly tell the user you were unable to verify visually and recommend they check manually.**
+
+---
+
 ## 🔐 CRITICAL SECURITY RULE: Never Commit Secrets
 
 **NEVER commit any of the following to git:**
@@ -928,3 +949,107 @@ Use generic phrasing like "copyright their respective publishers" rather than li
 2. Check compound logs for errors: look at stdout/stderr from plist configuration
 3. Verify `loop.sh` can execute Claude Code in non-interactive mode
 4. Check if PRD generation succeeds but task execution fails (look for `prd.json` with all tasks still `pending`)
+
+### Game Pages: Full Browse Experience vs Redirect (Feb 9, 2026)
+
+**Problem**: Game pages (`/games/[game]`) originally just redirected to `/?gameVersion=GameName`. This was poor UX (users see a loading screen then a redirect) and poor SEO (no unique content on game URLs).
+
+**Solution**: Converted `GamePageClient.tsx` from a redirect component into a full-featured browse page with:
+- `FacetedSidebar` for content filtering
+- `ModGrid` with pagination, sorting, per-page controls
+- `Hero` component reused with `defaultGame` prop
+- URL state synced via `useSearchParams` + `router.replace`
+
+**Key pattern**: Reuse existing page components (Hero, ModGrid, FacetedSidebar) rather than building new ones. Pass game context via props like `defaultGame` to customize behavior.
+
+### Suspense Boundary Required for `useSearchParams()`
+
+**Problem**: Next.js 14 requires components that call `useSearchParams()` to be wrapped in a `<Suspense>` boundary, otherwise the entire page fails to render with a build error.
+
+**Pattern** (from `app/games/[game]/page.tsx`):
+```tsx
+// ✅ Server component wraps client component in Suspense
+import { Suspense } from 'react';
+
+export default async function GamePage({ params }) {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <GamePageClient gameName={gameName} gameSlug={game} />
+    </Suspense>
+  );
+}
+```
+
+**Rule**: Any client component using `useSearchParams()` must be wrapped in `<Suspense>` by its parent server component. This is a Next.js 14 App Router requirement.
+
+### Removing Single-Game Bias from Homepage
+
+**Problem**: The homepage defaulted to `gameVersion='Sims 4'`, making the site feel single-game despite supporting multiple games.
+
+**Changes made**:
+1. `app/page.tsx`: Changed default `gameVersion` from `'Sims 4'` to `''` (show all games)
+2. `components/Hero.tsx`: Added `defaultGame` prop, generic heading ("Find Your Next Favorite Mod" instead of "Find Sims 4 CC")
+3. `components/Hero.tsx`: Added `trendingGeneral` searches shown when no game is selected
+4. URL param handling: Now only adds `gameVersion` to URL when a game IS selected (not when it matches the old default)
+
+**Rule**: When expanding to multi-game, audit all hardcoded game references. Default state should be "all games" unless on a game-specific page.
+
+### Navbar Hover Dropdown with Timeout Debounce
+
+**Problem**: Simple `onMouseEnter`/`onMouseLeave` on dropdowns causes flickering when users move between the trigger and the dropdown content (brief gap between elements).
+
+**Pattern** (from `Navbar.tsx`):
+```tsx
+const gamesMenuTimeout = useRef<NodeJS.Timeout | null>(null);
+
+const handleGamesMouseEnter = () => {
+  if (gamesMenuTimeout.current) clearTimeout(gamesMenuTimeout.current);
+  setShowGamesMenu(true);
+};
+
+const handleGamesMouseLeave = () => {
+  gamesMenuTimeout.current = setTimeout(() => setShowGamesMenu(false), 150);
+};
+
+// Cleanup on unmount
+useEffect(() => {
+  return () => {
+    if (gamesMenuTimeout.current) clearTimeout(gamesMenuTimeout.current);
+  };
+}, []);
+```
+
+**Key**: The 150ms delay on close prevents flickering. The `clearTimeout` on enter cancels any pending close, so moving from trigger to dropdown keeps it open.
+
+### Shared Game Config: Centralize Color/Metadata
+
+**Pattern**: Created `lib/gameColors.ts` as a single source of truth for game-specific visual config:
+```typescript
+export const GAME_COLORS: Record<string, string> = {
+  'Sims 4': '#ec4899',
+  'Stardew Valley': '#22c55e',
+  'Minecraft': '#8b5cf6',
+};
+
+export const GAME_TAGLINES: Record<string, string> = {
+  'Sims 4': 'CC, mods & custom content',
+  // ...
+};
+```
+
+**Rule**: When adding a new game, update `lib/gameColors.ts` (colors/taglines), `lib/gameRoutes.ts` (slug mapping/metadata), and `components/Hero.tsx` (trending searches).
+
+### Gradient Replacement: Search Bar Glow Effect
+
+**Problem**: The Hero search bar used `bg-gradient-to-r from-sims-pink to-sims-blue` for its glow effect, violating the no-gradients rule.
+
+**Fix**: Replaced with a solid color glow:
+```css
+/* ❌ Old - gradient glow */
+bg-gradient-to-r from-sims-pink to-sims-blue
+
+/* ✅ New - solid pink glow */
+bg-sims-pink/30
+```
+
+**Rule**: Even glow/blur effects should use solid colors. `bg-sims-pink/30` with `blur-xl` produces a nice glow without gradients.
