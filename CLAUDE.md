@@ -940,6 +940,34 @@ scripts/
 
 Use generic phrasing like "copyright their respective publishers" rather than listing every publisher individually (more maintainable as games are added).
 
+### Gutenberg `<!-- wp:shortcode -->` Rendering as Visible Text (Feb 9, 2026)
+
+**Problem**: On the WordPress staging site, the game landing pages (`/sims-4/`, `/stardew-valley/`, `/minecraft/`) displayed raw Gutenberg block comments (`<!-- wp:shortcode -->`) as visible text at the top of the page.
+
+**Root cause**: When WordPress pages use Gutenberg's shortcode block, it wraps the shortcode in HTML comments like:
+```
+<!-- wp:shortcode -->[mhm_game_hub game="sims-4"]<!-- /wp:shortcode -->
+```
+If the theme or shortcode handler doesn't properly process these through `the_content` filter, or if the output escaping converts `<!--` into visible text, the block comments show up to users.
+
+**Fix**: Strip the Gutenberg wrappers via WP-CLI, keeping only the raw shortcode:
+```bash
+ssh -i ~/.ssh/bigscoots_staging nginx@74.121.204.122 -p 2222 \
+  "cd /home/nginx/domains/blogmusthavemodscom.bigscoots-staging.com/public && \
+   wp post update 36977 --post_content='[mhm_game_hub game=\"sims-4\"]' && \
+   wp post update 36979 --post_content='[mhm_game_hub game=\"stardew-valley\"]' && \
+   wp post update 36981 --post_content='[mhm_game_hub game=\"minecraft\"]'"
+```
+
+**Affected pages** (staging only, production was clean):
+- Page 36977: Sims 4 (`/sims-4/`)
+- Page 36979: Stardew Valley (`/stardew-valley/`)
+- Page 36981: Minecraft (`/minecraft/`)
+
+**Rule**: When creating WordPress pages that contain only a shortcode, use `wp post update` with raw shortcode text (no Gutenberg block wrappers). If editing via the WordPress admin Gutenberg editor, the wrappers will be re-added automatically — so prefer WP-CLI for shortcode-only pages.
+
+**Prevention**: After creating or editing shortcode-only pages in the WordPress admin, always check the frontend for stray `<!-- wp:shortcode -->` text. If present, fix via WP-CLI as shown above.
+
 ### Compound System: PRD Iteration Without Execution
 
 **Observation** (Feb 6-8, 2026): The automated compound system generates increasingly refined PRDs for the same task (dead code cleanup) on successive nights, but the corresponding feature branches don't diverge from main. This suggests the execution loop (`loop.sh`) may be failing silently or the branch isn't being pushed.
