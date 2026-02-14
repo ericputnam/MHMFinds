@@ -1081,3 +1081,52 @@ bg-sims-pink/30
 ```
 
 **Rule**: Even glow/blur effects should use solid colors. `bg-sims-pink/30` with `blur-xl` produces a nice glow without gradients.
+
+### URL State Sync Without Scroll Jump
+
+**Problem**: When updating filter/sort/page state on browse pages, `router.replace` scrolls to the top of the page by default, creating a jarring UX when users are mid-scroll.
+
+**Pattern** (from `GamePageClient.tsx`):
+```tsx
+// Update URL without scrolling to top
+router.replace(newUrl, { scroll: false });
+```
+
+**Key**: Always pass `{ scroll: false }` to `router.replace` when syncing filter state to the URL. This keeps the user's scroll position intact while updating the URL for shareable links and browser back/forward.
+
+**Rule**: Use `router.replace` (not `router.push`) for filter/sort/pagination URL updates — it replaces the history entry instead of creating a new one, preventing a confusing back-button experience.
+
+### Optimistic UI for Favorite Toggling
+
+**Pattern** (from `GamePageClient.tsx`): Toggle the UI state immediately on click, then rollback if the API call fails.
+
+```tsx
+const handleFavorite = async (modId: string) => {
+  const isFavorited = favorites.includes(modId);
+  // Optimistic update
+  setFavorites(prev => isFavorited ? prev.filter(id => id !== modId) : [...prev, modId]);
+
+  const response = await fetch(`/api/mods/${modId}/favorite`, {
+    method: isFavorited ? 'DELETE' : 'POST',
+  });
+
+  if (!response.ok) {
+    // Rollback on failure
+    setFavorites(prev => isFavorited ? [...prev, modId] : prev.filter(id => id !== modId));
+    if (response.status === 401) alert('Please sign in to favorite mods');
+  }
+};
+```
+
+**Rule**: For interactive toggles (favorites, likes, bookmarks), always use optimistic UI with rollback. The API latency would otherwise make the UI feel sluggish.
+
+### Pre-Configuring Future Games in Config Files
+
+**Observation**: `lib/gameColors.ts` already includes `'Animal Crossing'` with color (#06b6d4) and tagline, even though the game isn't live yet. This is intentional — having config entries ready means adding a new game only requires creating the game page and adding content.
+
+**Checklist for adding a new game**:
+1. `lib/gameColors.ts` - Add color and tagline (may already be pre-configured)
+2. `lib/gameRoutes.ts` - Add slug mapping and SEO metadata
+3. `components/Hero.tsx` - Add game-specific trending searches to `trendingByGame`
+4. WordPress - Create game landing page and category
+5. Verify Navbar dropdown auto-populates from `GAME_COLORS`
