@@ -132,6 +132,7 @@ mods-cache/
 # API Keys and Secrets
 secrets/
 credentials/
+docs/affiliates/*credentials*.csv
 *.key
 *.pem
 *.p12

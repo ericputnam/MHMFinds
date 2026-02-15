@@ -1,13 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Heart, Menu, Sparkles, LogOut, User, Settings, LayoutDashboard } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+import { Heart, Menu, Sparkles, LogOut, User, Settings, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { UsageIndicator } from './subscription/UsageIndicator';
+import { GAME_COLORS, GAME_TAGLINES } from '../lib/gameColors';
+import { GAME_TO_SLUG } from '../lib/gameRoutes';
 
 export const Navbar: React.FC = () => {
   const { data: session, status } = useSession();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showGamesMenu, setShowGamesMenu] = useState(false);
+  const gamesMenuTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (gamesMenuTimeout.current) clearTimeout(gamesMenuTimeout.current);
+    };
+  }, []);
+
+  const handleGamesMouseEnter = () => {
+    if (gamesMenuTimeout.current) clearTimeout(gamesMenuTimeout.current);
+    setShowGamesMenu(true);
+  };
+
+  const handleGamesMouseLeave = () => {
+    gamesMenuTimeout.current = setTimeout(() => setShowGamesMenu(false), 150);
+  };
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' });
@@ -56,8 +77,65 @@ export const Navbar: React.FC = () => {
           {/* Desktop Nav - Centered */}
           <div className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-300 absolute left-1/2 -translate-x-1/2">
             <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
+
+            {/* Games Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={handleGamesMouseEnter}
+              onMouseLeave={handleGamesMouseLeave}
+            >
+              <button
+                onClick={() => setShowGamesMenu(!showGamesMenu)}
+                className={`flex items-center gap-1 transition-colors ${showGamesMenu ? 'text-white' : 'hover:text-white'}`}
+              >
+                Games
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${showGamesMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showGamesMenu && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-[#0F141F] border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden p-2">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold px-3 pt-2 pb-2">
+                    Browse by Game
+                  </p>
+                  {Object.entries(GAME_COLORS).map(([game, color]) => {
+                    const slug = GAME_TO_SLUG[game];
+                    if (!slug) return null;
+                    return (
+                      <Link
+                        key={game}
+                        href={`/games/${slug}`}
+                        className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-white/5 transition-all duration-200 group"
+                        onClick={() => setShowGamesMenu(false)}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: `${color}15`, border: `1px solid ${color}30` }}
+                        >
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}60` }}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-bold text-white block leading-tight">
+                            {game}
+                          </span>
+                          <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors leading-tight">
+                            {GAME_TAGLINES[game]}
+                          </span>
+                        </div>
+                        <svg className="w-4 h-4 text-slate-700 group-hover:text-slate-400 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <a href="/top-creators" className="hover:text-sims-green transition-colors">Creators</a>
-            <a href="https://blog.musthavemods.com/homepage/" className="hover:text-white transition-colors">Blog</a>
+            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
           </div>
 
 

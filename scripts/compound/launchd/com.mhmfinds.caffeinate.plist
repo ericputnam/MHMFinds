@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mhmfinds.caffeinate</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/caffeinate</string>
+        <string>-i</string>
+        <string>-t</string>
+        <string>32400</string>
+    </array>
+
+    <!-- Start at 5 PM, keep awake for 9 hours (until 2 AM) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>17</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/caffeinate.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/caffeinate.log</string>
+</dict>
+</plist>

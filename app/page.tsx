@@ -22,7 +22,7 @@ function HomePageContent() {
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'All';
-  const initialGameVersion = searchParams.get('gameVersion') || 'Sims 4';
+  const initialGameVersion = searchParams.get('gameVersion') || '';
   const initialSort = searchParams.get('sort') || 'downloads';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
@@ -78,7 +78,7 @@ function HomePageContent() {
     if (page > 1) params.set('page', page.toString());
     if (search) params.set('search', search);
     if (category && category !== 'All') params.set('category', category);
-    if (gameVersion && gameVersion !== 'Sims 4') params.set('gameVersion', gameVersion);
+    if (gameVersion) params.set('gameVersion', gameVersion);
     if (sort && sort !== 'downloads') params.set('sort', sort);
     if (creator) params.set('creator', creator);
 

@@ -30,13 +30,14 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Blog - Hybrid Connection */}
+          {/* Blog - Game Landing Pages */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Resources</h3>
+            <h3 className="text-white font-semibold mb-4">Blog</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href="/blog" className="hover:text-sims-pink transition-colors">Blog</a></li>
-              <li><a href="/category/sims-4-mods" className="hover:text-sims-pink transition-colors">Sims 4 Guides</a></li>
-              <li><a href="/category/sims-4-cc" className="hover:text-sims-pink transition-colors">CC Roundups</a></li>
+              <li><a href="/blog" className="hover:text-sims-pink transition-colors">All Posts</a></li>
+              <li><a href="/sims-4/" className="hover:text-sims-pink transition-colors">Sims 4</a></li>
+              <li><a href="/stardew-valley/" className="hover:text-sims-pink transition-colors">Stardew Valley</a></li>
+              <li><a href="/minecraft/" className="hover:text-sims-pink transition-colors">Minecraft</a></li>
               <li><Link href="/submit-mod" className="hover:text-sims-pink transition-colors">Submit a Mod</Link></li>
             </ul>
           </div>
@@ -56,7 +57,7 @@ export const Footer: React.FC = () => {
         {/* Disclaimer */}
         <div className="border-t border-white/5 pt-8">
           <p className="text-slate-600 text-xs text-center max-w-3xl mx-auto leading-relaxed">
-            This site is not endorsed by or affiliated with Electronic Arts, or its licensors. Trademarks are the property of their respective owners. Game content and materials are copyright Electronic Arts Inc. and its licensors.
+            This site is not endorsed by or affiliated with Electronic Arts, ConcernedApe, Mojang Studios, or their licensors. Trademarks are the property of their respective owners. Game content and materials are copyright their respective publishers.
           </p>
           <p className="text-slate-600 text-xs text-center mt-4">
             &copy; {new Date().getFullYear()} MustHaveMods. All rights reserved.

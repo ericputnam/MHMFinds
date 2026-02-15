@@ -7,6 +7,7 @@ interface HeroProps {
   onSearch: (query: string, category?: string, gameVersion?: string) => void;
   isLoading: boolean;
   initialSearch?: string;
+  defaultGame?: string;
 }
 
 // Game-specific trending searches (SEO-003)
@@ -54,13 +55,24 @@ const trendingByGame: Record<string, Array<{ label: string; query: string }>> = 
   ],
 };
 
+// General trending searches shown when no game is selected
+const trendingGeneral: Array<{ label: string; query: string }> = [
+  { label: 'Wicked Whims', query: 'wicked whims' },
+  { label: 'Shaders', query: 'shaders' },
+  { label: 'MCCC', query: 'mccc' },
+  { label: 'SVE', query: 'stardew valley expanded' },
+  { label: 'Aesthetic', query: 'aesthetic' },
+  { label: 'Texture Packs', query: 'texture pack' },
+];
+
 function getTrendingForGame(game: string): Array<{ label: string; query: string }> {
-  return trendingByGame[game] || trendingByGame['Sims 4'];
+  if (!game) return trendingGeneral;
+  return trendingByGame[game] || trendingGeneral;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading, initialSearch = '' }) => {
+export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading, initialSearch = '', defaultGame = '' }) => {
   const [query, setQuery] = useState(initialSearch);
-  const [selectedGame, setSelectedGame] = useState<string>('Sims 4');
+  const [selectedGame, setSelectedGame] = useState<string>(defaultGame);
 
   // Sync query with parent's search state (e.g., when facets clear the search)
   useEffect(() => {
@@ -92,9 +104,8 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading, initialSearch =
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center mb-6">
           {/* SEO-optimized H1 with primary keywords */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight px-2">
-            <span className="text-white">Find </span>
-            <span className="text-sims-pink">Sims 4 CC</span>
-            <span className="text-white">, Mods & Custom Content</span>
+            <span className="text-white">Find Your Next </span>
+            <span className="text-sims-pink">Favorite Mod</span>
           </h1>
 
           {/* Verified mods badge - prominent for trust */}
@@ -110,7 +121,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading, initialSearch =
 
           {/* Single concise tagline - SEO-004 */}
           <p className="text-base sm:text-lg text-slate-400 font-light">
-            Search by vibe, style, or keyword across Sims 4, Stardew Valley, and Minecraft.
+            Search by vibe, style, or keyword across all your favorite games.
           </p>
         </div>
 
@@ -118,7 +129,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading, initialSearch =
         <div className="w-full">
           <div className="max-w-3xl mx-auto px-2 sm:px-4">
             <form onSubmit={handleSubmit} className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-sims-pink to-sims-blue rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur-xl"></div>
+              <div className="absolute -inset-1 bg-sims-pink/30 rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur-xl"></div>
               <div className="relative flex items-center bg-mhm-card/90 backdrop-blur-xl rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/10 group-focus-within:border-sims-pink/50 transition-all">
                 <input
                   type="text"
