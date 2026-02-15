@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Plus,
   Edit2,
@@ -395,17 +396,23 @@ export default function AffiliatesAdminPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="relative group">
-                      <img
+                      <Image
                         src={offer.imageUrl}
                         alt={offer.name}
+                        width={48}
+                        height={48}
+                        unoptimized
                         className="w-12 h-12 rounded-lg object-cover bg-slate-700 cursor-zoom-in"
                       />
                       {/* Magnified image on hover */}
                       <div className="absolute left-14 top-1/2 -translate-y-1/2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
                         <div className="bg-slate-900 border border-slate-600 rounded-xl p-2 shadow-2xl">
-                          <img
+                          <Image
                             src={offer.imageUrl}
                             alt={offer.name}
+                            width={256}
+                            height={256}
+                            unoptimized
                             className="w-64 h-64 rounded-lg object-contain bg-slate-800"
                           />
                           <div className="mt-2 text-xs text-slate-400 text-center truncate max-w-64">

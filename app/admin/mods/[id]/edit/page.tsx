@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import {
   ArrowLeft,
   Save,
@@ -747,9 +748,12 @@ export default function EditModPage() {
               </div>
               {formData.thumbnail && (
                 <div className="mt-3">
-                  <img
+                  <Image
                     src={formData.thumbnail}
                     alt="Thumbnail preview"
+                    width={128}
+                    height={128}
+                    unoptimized
                     className="w-32 h-32 object-cover rounded-lg border border-slate-700"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
@@ -788,9 +792,12 @@ export default function EditModPage() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {formData.images.map((img, idx) => (
                     <div key={idx} className="relative group">
-                      <img
+                      <Image
                         src={img}
                         alt={`Image ${idx + 1}`}
+                        width={96}
+                        height={96}
+                        unoptimized
                         className="w-24 h-24 object-cover rounded-lg border border-slate-700"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';

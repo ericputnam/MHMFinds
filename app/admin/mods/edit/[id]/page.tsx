@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
@@ -44,13 +44,7 @@ export default function EditModPage() {
   const modId = params.id as string;
   const isAdmin = session?.user?.isAdmin || false;
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchMod();
-    }
-  }, [modId, status]);
-
-  const fetchMod = async () => {
+  const fetchMod = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/mods/${modId}`);
       if (!response.ok) {
@@ -69,7 +63,13 @@ export default function EditModPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin, modId, session?.user?.id]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchMod();
+    }
+  }, [fetchMod, status]);
 
   const handleSubmit = async (formData: ModFormData) => {
     try {

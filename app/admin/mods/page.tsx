@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import {
   Search,
   Filter,
@@ -123,11 +124,7 @@ export default function ModsManagementPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    fetchMods();
-  }, [currentPage, searchQuery, filterCategory, filterContentType, filterVisualStyle, filterTheme, filterMissingFacets]);
-
-  const fetchMods = async () => {
+  const fetchMods = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -152,7 +149,11 @@ export default function ModsManagementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchQuery, filterCategory, filterContentType, filterVisualStyle, filterTheme, filterMissingFacets]);
+
+  useEffect(() => {
+    fetchMods();
+  }, [fetchMods]);
 
   const toggleSelectAll = () => {
     if (selectedMods.size === mods.length) {
@@ -538,9 +539,12 @@ export default function ModsManagementPage() {
                               }}
                               onMouseLeave={() => setHoverImage(null)}
                             >
-                              <img
+                              <Image
                                 src={mod.thumbnail}
                                 alt={mod.title}
+                                width={48}
+                                height={48}
+                                unoptimized
                                 className="w-12 h-12 rounded-lg object-cover cursor-zoom-in"
                               />
                             </div>
@@ -861,9 +865,12 @@ export default function ModsManagementPage() {
           }}
         >
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl max-w-[400px]">
-            <img
+            <Image
               src={hoverImage.url}
               alt="Preview"
+              width={384}
+              height={384}
+              unoptimized
               className="w-96 h-96 object-contain rounded-lg"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';

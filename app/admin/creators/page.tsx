@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Search, Edit, Trash2, Star, Package, Users as UsersIcon, Save, X } from 'lucide-react';
 
 interface Creator {
@@ -26,11 +27,7 @@ export default function CreatorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
 
-  useEffect(() => {
-    fetchCreators();
-  }, [searchQuery]);
-
-  const fetchCreators = async () => {
+  const fetchCreators = useCallback(async () => {
     try {
       setLoading(true);
       const params = searchQuery ? `?search=${searchQuery}` : '';
@@ -42,7 +39,11 @@ export default function CreatorsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery]);
+
+  useEffect(() => {
+    fetchCreators();
+  }, [fetchCreators]);
 
   const handleUpdate = async (creator: Creator) => {
     try {
@@ -116,9 +117,12 @@ export default function CreatorsPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   {creator.user.avatar ? (
-                    <img
+                    <Image
                       src={creator.user.avatar}
                       alt={creator.handle}
+                      width={48}
+                      height={48}
+                      unoptimized
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (

@@ -30,6 +30,8 @@ export const mockPrismaClient = {
         findFirst: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
+        delete: vi.fn(),
+        count: vi.fn(),
     },
     subscription: {
         findUnique: vi.fn(),
@@ -62,6 +64,15 @@ export const mockPrismaClient = {
         delete: vi.fn(),
         count: vi.fn(),
         groupBy: vi.fn(),
+    },
+    affiliateOffer: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        updateMany: vi.fn(),
+    },
+    affiliateClick: {
+        create: vi.fn(),
     },
     $connect: vi.fn(),
     $disconnect: vi.fn(),

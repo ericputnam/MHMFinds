@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { ExternalLink, Sparkles } from 'lucide-react';
 
 export interface AffiliateOffer {
@@ -69,9 +70,12 @@ export function AffiliateCard({ offer, className = '', style }: AffiliateCardPro
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-80" />
-        <img
+        <Image
           src={offer.imageUrl}
           alt={offer.name}
+          fill
+          unoptimized
+          sizes="(max-width: 768px) 100vw, 33vw"
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
         />
       </div>
@@ -81,9 +85,12 @@ export function AffiliateCard({ offer, className = '', style }: AffiliateCardPro
         {/* Partner/Brand */}
         <div className="flex items-center gap-2 mb-2">
           {offer.partnerLogo && (
-            <img
+            <Image
               src={offer.partnerLogo}
               alt={offer.partner}
+              width={64}
+              height={16}
+              unoptimized
               className="h-4 w-auto"
             />
           )}

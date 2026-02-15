@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -52,11 +52,7 @@ export default function HistoryPage() {
   const [filterDays, setFilterDays] = useState<number>(7);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchHistory();
-  }, [page, filterType, filterStatus, filterDays]);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -78,7 +74,11 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filterDays, filterStatus, filterType]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const formatDuration = (ms: number | null) => {
     if (!ms) return '--';

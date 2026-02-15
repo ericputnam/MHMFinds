@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Mod } from '../lib/api';
 import { Download, Eye, Star, Heart, Crown, Sparkles } from 'lucide-react';
 import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
@@ -111,9 +112,12 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-gradient-to-t from-mhm-card via-transparent to-transparent z-10 opacity-80" />
         {mod.thumbnail ? (
-          <img
+          <Image
             src={mod.thumbnail}
             alt={mod.title}
+            fill
+            unoptimized
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
         ) : (

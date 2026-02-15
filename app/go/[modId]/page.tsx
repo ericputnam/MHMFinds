@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Download,
   ExternalLink,
@@ -169,9 +170,12 @@ export default function DownloadInterstitialPage() {
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
           <div className="flex items-center gap-6">
             {mod.thumbnail && (
-              <img
+              <Image
                 src={mod.thumbnail}
                 alt={mod.title}
+                width={96}
+                height={96}
+                unoptimized
                 className="w-24 h-24 rounded-lg object-cover"
               />
             )}
@@ -210,9 +214,12 @@ export default function DownloadInterstitialPage() {
                   className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-4 text-left transition-all hover:shadow-lg"
                 >
                   <div className="relative mb-3">
-                    <img
+                    <Image
                       src={offer.imageUrl}
                       alt={offer.name}
+                      width={300}
+                      height={300}
+                      unoptimized
                       className="w-full aspect-square object-cover rounded-lg bg-slate-700"
                     />
                     {offer.promoText && (

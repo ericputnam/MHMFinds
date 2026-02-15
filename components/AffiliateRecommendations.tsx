@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { ExternalLink, ShoppingBag } from 'lucide-react';
 
 interface AffiliateProduct {
@@ -141,9 +142,12 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
             {/* Product Image */}
             <div className="relative aspect-square bg-white overflow-hidden">
               {product.imageUrl ? (
-                <img
+                <Image
                   src={product.imageUrl}
                   alt={product.name}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (

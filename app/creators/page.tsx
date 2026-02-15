@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Upload,
   Package,
@@ -258,9 +259,12 @@ function SubmissionRow({ submission }: SubmissionRowProps) {
         {/* Thumbnail */}
         <div className="w-16 h-16 rounded-lg bg-slate-800 overflow-hidden flex-shrink-0">
           {submission.thumbnail ? (
-            <img
+            <Image
               src={submission.thumbnail}
               alt={submission.modName}
+              width={64}
+              height={64}
+              unoptimized
               className="w-full h-full object-cover"
             />
           ) : (

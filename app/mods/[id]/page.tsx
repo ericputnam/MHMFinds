@@ -163,9 +163,12 @@ export default function ModDetailPage() {
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
               <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200">
                 {selectedImage ? (
-                  <img
+                  <Image
                     src={selectedImage}
                     alt={mod.title}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 1024px) 100vw, 66vw"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -206,9 +209,12 @@ export default function ModDetailPage() {
                         className={`relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-sims-pink transition-all ${selectedImage === image ? 'ring-2 ring-sims-pink' : ''
                           }`}
                       >
-                        <img
+                        <Image
                           src={image}
                           alt={`${mod.title} - Image ${index + 1}`}
+                          fill
+                          unoptimized
+                          sizes="(max-width: 1024px) 25vw, 12vw"
                           className="w-full h-full object-cover"
                         />
                       </button>
@@ -436,4 +442,3 @@ export default function ModDetailPage() {
     </div>
   );
 }
-

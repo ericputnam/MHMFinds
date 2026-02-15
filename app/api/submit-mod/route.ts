@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { ModSubmissionSchema, formatZodError } from '@/lib/validation/schemas';
 import { ZodError } from 'zod';
 import { verifyTurnstileToken } from '@/lib/services/turnstile';
+import { emailNotifier } from '@/lib/services/emailNotifier';
 
 // Rate limiting map (in-memory - for production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -137,8 +138,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send email notification to admin
-    // This would be implemented with SendGrid or similar service
+    const adminEmail = process.env.SUBMISSIONS_ALERT_EMAIL || process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      const subject = `New mod submission: ${submission.modName}`;
+      const html = `
+        <p>A new mod submission is waiting for review.</p>
+        <ul>
+          <li><strong>Name:</strong> ${submission.modName}</li>
+          <li><strong>Category:</strong> ${submission.category}</li>
+          <li><strong>URL:</strong> ${submission.modUrl}</li>
+          <li><strong>Submitter:</strong> ${submission.submitterName} (${submission.submitterEmail})</li>
+        </ul>
+      `;
+
+      void Promise.resolve(emailNotifier.send(adminEmail, subject, html)).catch((notifyError) => {
+        console.error('Failed to send submission notification email:', notifyError);
+      });
+    }
 
     return NextResponse.json(
       {

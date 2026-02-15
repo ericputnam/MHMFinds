@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Search, Edit, Trash2, Crown, Shield, Mail, Calendar, X, Save, Download, Users, TrendingUp, UserPlus } from 'lucide-react';
 
 interface User {
@@ -36,12 +37,7 @@ export default function UsersPage() {
   const [endDate, setEndDate] = useState('');
   const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-    fetchStats();
-  }, [currentPage, searchQuery]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -59,9 +55,9 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchQuery]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/users/stats');
       const data = await response.json();
@@ -69,7 +65,12 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchStats();
+  }, [fetchUsers, fetchStats]);
 
   const handleExportCSV = async () => {
     try {
@@ -272,9 +273,12 @@ export default function UsersPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {user.avatar ? (
-                          <img
+                          <Image
                             src={user.avatar}
                             alt={user.username}
+                            width={40}
+                            height={40}
+                            unoptimized
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
@@ -389,9 +393,12 @@ export default function UsersPage() {
             <div className="space-y-4 mb-6">
               <div className="flex items-center gap-3">
                 {editingUser.avatar ? (
-                  <img
+                  <Image
                     src={editingUser.avatar}
                     alt={editingUser.username}
+                    width={48}
+                    height={48}
+                    unoptimized
                     className="w-12 h-12 rounded-full object-cover"
                   />
                 ) : (
