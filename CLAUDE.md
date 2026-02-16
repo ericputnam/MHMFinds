@@ -1130,3 +1130,175 @@ const handleFavorite = async (modId: string) => {
 3. `components/Hero.tsx` - Add game-specific trending searches to `trendingByGame`
 4. WordPress - Create game landing page and category
 5. Verify Navbar dropdown auto-populates from `GAME_COLORS`
+
+### Dead Code Cleanup: Dependency-Aware Removal (Feb 15, 2026)
+
+**Problem**: Legacy components (`Features.tsx`, `Stats.tsx`, `FilterBar.tsx`, `hooks/useMods.ts`) were unused but kept around, pulling in heavy dependencies like `framer-motion`.
+
+**Pattern**: When removing dead code, also check for orphaned dependencies:
+1. Delete the unused files
+2. Run `grep -r "from 'package-name'" --include='*.ts' --include='*.tsx'` to check if any remaining code uses the dependency
+3. Remove orphaned packages from `package.json`
+4. Run `npm install` to update the lockfile
+5. Verify with `npm run build`
+
+**Packages removed in this cleanup**: `framer-motion`, `@headlessui/react`, `@heroicons/react`, `@stripe/stripe-js`, `jsonwebtoken`, `msw` (and their `@types/*` counterparts). These were only used by deleted components.
+
+**Rule**: Dead code that imports heavy libraries is especially wasteful — it bloats the bundle even though nothing renders. Always check dependency usage after deleting files.
+
+### Migrating `<img>` to `next/image` for External URLs
+
+**Problem**: Next.js `@next/next/no-img-element` lint warnings throughout admin pages, cards, and modals.
+
+**Pattern**: Use `next/image` with `unoptimized` for external/user-provided URLs that aren't on approved `next.config.js` domains:
+```tsx
+// ❌ Lint warning
+<img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full" />
+
+// ✅ Fixed - with explicit dimensions
+<Image
+  src={user.avatar}
+  alt={user.name}
+  width={48}
+  height={48}
+  unoptimized
+  className="w-12 h-12 rounded-full object-cover"
+/>
+
+// ✅ Fixed - fill mode for aspect-ratio containers
+<Image
+  src={mod.thumbnail}
+  alt={mod.title}
+  fill
+  unoptimized
+  sizes="(max-width: 768px) 100vw, 33vw"
+  className="w-full h-full object-cover"
+/>
+```
+
+**Key**: `unoptimized` bypasses Next.js Image Optimization (which would fail for unapproved domains). Use `fill` for responsive containers, explicit `width`/`height` for fixed-size elements.
+
+### React `useCallback` for `useEffect` Dependencies
+
+**Problem**: `react-hooks/exhaustive-deps` warnings across admin pages where `fetchData` functions were defined inside components but not listed as `useEffect` dependencies.
+
+**Pattern**: Wrap fetch functions in `useCallback` and list them in the dependency array:
+```tsx
+// ❌ Lint warning: missing dependency 'fetchUsers'
+const fetchUsers = async () => { ... };
+useEffect(() => { fetchUsers(); }, [searchQuery]);
+
+// ✅ Fixed
+const fetchUsers = useCallback(async () => { ... }, [searchQuery]);
+useEffect(() => { fetchUsers(); }, [fetchUsers]);
+```
+
+**Rule**: Any function called inside `useEffect` that references state/props must be wrapped in `useCallback` with appropriate dependencies. This applies broadly across admin pages.
+
+### Fire-and-Forget Email Notifications
+
+**Problem**: Email notifications (submission alerts, rejection notices) should not block API responses or cause failures if the email service is down.
+
+**Pattern** (from `submit-mod/route.ts` and `reject/route.ts`):
+```typescript
+// Fire-and-forget: don't await, don't let failures propagate
+void Promise.resolve(emailNotifier.send(to, subject, html)).catch((err) => {
+  console.error('Failed to send email:', err);
+});
+```
+
+**Key points**:
+1. Use `void` to explicitly discard the promise (satisfies `no-floating-promises` lint rule)
+2. Wrap in `Promise.resolve()` for safety if `send()` might throw synchronously
+3. Always `.catch()` to prevent unhandled rejections
+4. Log failures but don't fail the API response
+
+**Environment variables**: `SUBMISSIONS_ALERT_EMAIL` or `ADMIN_EMAIL` for admin notifications. If neither is set, email is silently skipped.
+
+### Admin Route Auth Hardening (Feb 15, 2026)
+
+**Problem**: Several admin API routes (`/api/admin/categories`, `/api/admin/users`, `/api/admin/users/stats`) were missing `requireAdmin` checks, relying solely on middleware-level protection.
+
+**Fix applied**: Added `requireAdmin` guard to every handler in:
+- `app/api/admin/categories/route.ts` (GET, POST)
+- `app/api/admin/categories/[id]/route.ts` (PATCH, DELETE)
+- `app/api/admin/users/route.ts` (GET)
+- `app/api/admin/users/stats/route.ts` (GET)
+
+**Pattern**:
+```typescript
+export async function GET(request: NextRequest) {
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) {
+    return auth.response;
+  }
+  // ... handler logic
+}
+```
+
+**Rule**: Run `npm run security:check-admin-auth` after every change to admin routes. Every admin handler needs BOTH middleware protection AND route-level `requireAdmin` — defense-in-depth, no exceptions.
+
+### Zod Validation on API Input (Feb 15, 2026)
+
+**Problem**: The `reject submission` route accepted arbitrary JSON body without validation.
+
+**Fix**: Added Zod schema validation with structured error responses:
+```typescript
+import { SubmissionRejectSchema, formatZodError } from '@/lib/validation/schemas';
+
+try {
+  const body = await request.json();
+  const parsed = SubmissionRejectSchema.parse(body);
+  reason = parsed.reason;
+} catch (error) {
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: formatZodError(error) },
+      { status: 400 }
+    );
+  }
+  throw error;
+}
+```
+
+**Rule**: All API routes that accept user input should validate with Zod schemas from `lib/validation/schemas.ts`. Return structured `{ error, details }` responses on validation failure.
+
+### Smoke Test Pattern for API Routes (Feb 15, 2026)
+
+**Pattern**: Lightweight integration tests that verify API route handlers work correctly with mocked Prisma:
+
+```typescript
+// 1. Mock dependencies BEFORE importing the route
+vi.mock('@/lib/services/turnstile', () => ({
+  verifyTurnstileToken: vi.fn(),
+}));
+
+// 2. Import mocks and route handler
+import { mockPrismaClient, resetPrismaMocks } from '../../setup/mocks/prisma';
+import { POST } from '@/app/api/submit-mod/route';
+
+// 3. Reset between tests
+beforeEach(() => {
+  resetPrismaMocks();
+  vi.clearAllMocks();
+});
+
+// 4. Create NextRequest, call handler, assert response
+const request = new NextRequest('http://localhost:3000/api/submit-mod', {
+  method: 'POST',
+  headers: { 'x-forwarded-for': '10.0.0.1' },
+  body: JSON.stringify(payload),
+});
+const response = await POST(request);
+expect(response.status).toBe(201);
+```
+
+**Key**: Mock external services (Turnstile, email) BEFORE importing the route handler. The Prisma mock at `__tests__/setup/mocks/prisma.ts` provides a centralized mock client.
+
+**Coverage added** (Feb 15): submit-mod, reject-submission, admin-users, admin-categories, auth-clear-session, affiliates-routes, ModDetailPage component.
+
+### Stale npm Scripts
+
+**Problem**: `package.json` contained scripts pointing to non-existent files (e.g., `categories:migrate` referenced a deleted script).
+
+**Rule**: After deleting scripts from `scripts/`, always check `package.json` for stale npm script entries that reference them. Remove any that point to deleted files.
