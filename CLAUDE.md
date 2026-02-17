@@ -341,7 +341,7 @@ npx tsx scripts/cleanup-author-data.ts --fix --limit=100  # Fix first 100 only
 - `prisma.ts` - Prisma client singleton instance
 - `api.ts` - API client utilities
 
-**`/components`** - React components (landing page components: Hero, Features, ModCard, SearchBar, etc.)
+**`/components`** - React components (landing page components: Hero, ModCard, SearchBar, Navbar, Footer, etc.)
 
 **`/prisma`** - Database schema and migrations
 - `schema.prisma` - Prisma schema defining all models
@@ -387,13 +387,13 @@ The main search page (`app/page.tsx`) has been completely redesigned with enterp
 - Visual filter counts showing number of mods per category
 - Custom-styled checkboxes with smooth transitions
 - Individual "Clear" buttons for each filter section
-- Gradient backgrounds for active filters
+- Highlighted backgrounds for active filters
 - Sticky positioning for persistent access during scroll
 - Collapsible on mobile devices
 
 **Quick Filter Tags:**
 - One-click filters: Trending (most downloads), Newest, Top Rated, Free Mods
-- Visual active states with gradients and animations
+- Visual active states with solid color highlights and animations
 - "Clear All" button when filters are active
 - Pulse animations on active tags
 
@@ -412,14 +412,14 @@ The main search page (`app/page.tsx`) has been completely redesigned with enterp
 **UI Polish:**
 - Sticky header that stays visible during scroll
 - Smooth fade-in animations for cards
-- Gradient text effects on headings
+- Accent color text effects on headings
 - Hover states with scale transforms
 - Loading skeletons for better perceived performance
 - Enhanced typography and spacing
 
 **Custom Animations (globals.css):**
 - `animate-fade-in` - Cards fade in on load
-- `animate-gradient` - Animated gradient text
+- `animate-gradient` - Animated text effect (name is legacy; uses solid colors per no-gradients rule)
 - `animate-pulse` - Subtle pulse on indicators
 - Hover scale effects on interactive elements
 
@@ -828,23 +828,20 @@ This module automatically detects Accelerate URLs and swaps `DATABASE_URL` with 
 
 ### Admin API Route Security (Defense-in-Depth)
 
-**Problem**: Admin API routes (`app/api/admin/*`) were discovered to be missing authentication checks, allowing unauthenticated access to destructive operations.
+**Problem**: Admin API routes (`app/api/admin/*`) were discovered to be missing authentication checks, allowing unauthenticated access to destructive operations. Hardened in Feb 2026 — all routes now use `requireAdmin`.
 
 **Solution**: Two-layer defense:
 1. **Middleware** (`middleware.ts`): Blocks ALL `/api/admin/*` requests without admin auth at the request level
-2. **Route-level auth**: Each handler also checks `getServerSession(authOptions)` independently
+2. **Route-level auth**: Each handler calls `requireAdmin(request)` independently
 
 **Required pattern for ALL admin API routes**:
 ```typescript
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.isAdmin) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await requireAdmin(request);
+  if (!auth.authorized) {
+    return auth.response;
   }
   // ... handler logic
 }
@@ -852,7 +849,7 @@ export async function GET(request: NextRequest) {
 
 **Security scanner**: Run `npm run security:check-admin-auth` to verify all admin routes have auth. Run before committing changes to admin routes.
 
-**Rule**: NEVER create an admin API route without both middleware protection AND route-level auth checks. Never rely on just one layer.
+**Rule**: NEVER create an admin API route without both middleware protection AND route-level `requireAdmin` checks. Never rely on just one layer.
 
 ### Prisma Decimal Type Handling in React Components
 
@@ -1215,28 +1212,6 @@ void Promise.resolve(emailNotifier.send(to, subject, html)).catch((err) => {
 
 **Environment variables**: `SUBMISSIONS_ALERT_EMAIL` or `ADMIN_EMAIL` for admin notifications. If neither is set, email is silently skipped.
 
-### Admin Route Auth Hardening (Feb 15, 2026)
-
-**Problem**: Several admin API routes (`/api/admin/categories`, `/api/admin/users`, `/api/admin/users/stats`) were missing `requireAdmin` checks, relying solely on middleware-level protection.
-
-**Fix applied**: Added `requireAdmin` guard to every handler in:
-- `app/api/admin/categories/route.ts` (GET, POST)
-- `app/api/admin/categories/[id]/route.ts` (PATCH, DELETE)
-- `app/api/admin/users/route.ts` (GET)
-- `app/api/admin/users/stats/route.ts` (GET)
-
-**Pattern**:
-```typescript
-export async function GET(request: NextRequest) {
-  const auth = await requireAdmin(request);
-  if (!auth.authorized) {
-    return auth.response;
-  }
-  // ... handler logic
-}
-```
-
-**Rule**: Run `npm run security:check-admin-auth` after every change to admin routes. Every admin handler needs BOTH middleware protection AND route-level `requireAdmin` — defense-in-depth, no exceptions.
 
 ### Zod Validation on API Input (Feb 15, 2026)
 
