@@ -51,21 +51,37 @@ function getWordPressUrl(pathname: string): string | null {
 }
 
 /**
- * Rewrite blog.musthavemods.com → musthavemods.com ONLY inside <head>.
- * Body content (internal links, images, etc.) is left untouched.
+ * Regex to match blog origin in href attributes only (not src for images/assets).
+ * This rewrites navigation links while preserving wp-content/wp-includes asset URLs.
  */
-function rewriteHtmlHead(html: string): string {
+const BLOG_HREF_REGEX = /href=["']https:\/\/blog\.musthavemods\.com(\/(?!wp-content\/|wp-includes\/|wp-admin\/)[^"']*)["']/g;
+
+/**
+ * Rewrite blog.musthavemods.com references in proxied WordPress HTML:
+ * - <head>: Full rewrite of all blog.musthavemods.com references (canonical, og:url, etc.)
+ * - <head>: Strip any noindex meta tags (safety net for caching layer issues)
+ * - <body>: Rewrite href links to keep users on musthavemods.com (but NOT asset src URLs)
+ */
+function rewriteHtml(html: string): string {
   const headEndIndex = html.indexOf('</head>');
   if (headEndIndex === -1) return html;
 
   const head = html.substring(0, headEndIndex);
   const rest = html.substring(headEndIndex);
 
-  const rewritten = head
+  // Head: rewrite all blog.musthavemods.com references + strip noindex
+  const rewrittenHead = head
     .replace(BLOG_ORIGIN_REGEX, CANONICAL_ORIGIN)
-    .replace(BLOG_ORIGIN_ENCODED_REGEX, 'https%3A%2F%2Fmusthavemods.com');
+    .replace(BLOG_ORIGIN_ENCODED_REGEX, 'https%3A%2F%2Fmusthavemods.com')
+    .replace(/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex[^"']*["']\s*\/?>/gi, '');
 
-  return rewritten + rest;
+  // Body: rewrite href links (navigation) but NOT src links (images, scripts, styles)
+  // This keeps users on musthavemods.com when clicking article links
+  const rewrittenBody = rest.replace(BLOG_HREF_REGEX, (match, path) => {
+    return `href="${CANONICAL_ORIGIN}${path}"`;
+  });
+
+  return rewrittenHead + rewrittenBody;
 }
 
 /**
@@ -86,6 +102,9 @@ async function proxyAndRewriteWordPress(
     'User-Agent': request.headers.get('user-agent') || '',
     'Accept': request.headers.get('accept') || '',
     'Accept-Language': request.headers.get('accept-language') || '',
+    // Tell WordPress this request comes via the apex domain proxy
+    // (required for is_from_apex_rewrite() to return true and avoid noindex)
+    'X-Forwarded-Host': 'musthavemods.com',
   };
   const cookie = request.headers.get('cookie');
   if (cookie) forwardHeaders['Cookie'] = cookie;
@@ -113,14 +132,15 @@ async function proxyAndRewriteWordPress(
   const responseHeaders = new Headers();
   wpResponse.headers.forEach((value, key) => {
     const lower = key.toLowerCase();
-    if (['content-length', 'content-encoding', 'transfer-encoding'].includes(lower)) return;
+    // Drop headers invalidated by body rewriting or that could harm SEO
+    if (['content-length', 'content-encoding', 'transfer-encoding', 'x-robots-tag'].includes(lower)) return;
     responseHeaders.append(key, value);
   });
 
-  // HTML responses — rewrite <head> only
+  // HTML responses — rewrite head (SEO) + body links (navigation)
   if (contentType.includes('text/html')) {
     const html = await wpResponse.text();
-    const rewritten = rewriteHtmlHead(html);
+    const rewritten = rewriteHtml(html);
     return new Response(rewritten, {
       status: wpResponse.status,
       headers: responseHeaders,
