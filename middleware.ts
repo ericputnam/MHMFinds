@@ -12,6 +12,7 @@ const NEXTJS_PREFIXES = new Set([
 const WP_ORIGIN = 'https://blog.musthavemods.com';
 const CANONICAL_ORIGIN = 'https://musthavemods.com';
 const BLOG_ORIGIN_REGEX = /https:\/\/blog\.musthavemods\.com/g;
+const BLOG_ORIGIN_ENCODED_REGEX = /https%3A%2F%2Fblog\.musthavemods\.com/g;
 
 /**
  * Determine if a pathname should be proxied to WordPress.
@@ -60,7 +61,11 @@ function rewriteHtmlHead(html: string): string {
   const head = html.substring(0, headEndIndex);
   const rest = html.substring(headEndIndex);
 
-  return head.replace(BLOG_ORIGIN_REGEX, CANONICAL_ORIGIN) + rest;
+  const rewritten = head
+    .replace(BLOG_ORIGIN_REGEX, CANONICAL_ORIGIN)
+    .replace(BLOG_ORIGIN_ENCODED_REGEX, 'https%3A%2F%2Fmusthavemods.com');
+
+  return rewritten + rest;
 }
 
 /**
