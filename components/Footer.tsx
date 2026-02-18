@@ -34,7 +34,7 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Blog</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href="/blog" className="hover:text-sims-pink transition-colors">All Posts</a></li>
+              <li><a href="/homepage/" className="hover:text-sims-pink transition-colors">All Posts</a></li>
               <li><a href="/sims-4/" className="hover:text-sims-pink transition-colors">Sims 4</a></li>
               <li><a href="/stardew-valley/" className="hover:text-sims-pink transition-colors">Stardew Valley</a></li>
               <li><a href="/minecraft/" className="hover:text-sims-pink transition-colors">Minecraft</a></li>
