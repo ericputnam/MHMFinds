@@ -135,7 +135,7 @@ export const Navbar: React.FC = () => {
             </div>
 
             <a href="/top-creators" className="hover:text-sims-green transition-colors">Creators</a>
-            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
+            <a href="/homepage/" className="hover:text-white transition-colors">Blog</a>
           </div>
 
 
