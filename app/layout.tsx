@@ -7,16 +7,16 @@ import { ConditionalScripts } from './components/ConditionalScripts';
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
-  description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players. Curated collections, exclusive mods, and intelligent discovery.',
+  title: 'MustHaveMods - Find Sims 4 CC, Mods & Custom Content',
+  description: 'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
   authors: [{ name: 'MustHaveMods Team' }],
-  keywords: 'sims 4 mods, custom content, sims mods, premium mods, ai recommendations, sims 4 custom content, mod discovery, musthavemods',
+  keywords: 'sims 4 mods, custom content, sims mods, sims 4 cc, stardew valley mods, minecraft mods, mod discovery, musthavemods',
   creator: 'MustHaveMods',
   publisher: 'MustHaveMods',
   robots: 'index, follow',
   openGraph: {
-    title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
-    description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players.',
+    title: 'MustHaveMods - Find Sims 4 CC, Mods & Custom Content',
+    description: 'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
     url: 'https://musthavemods.com',
     siteName: 'MustHaveMods',
     locale: 'en_US',
@@ -26,14 +26,14 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'MustHaveMods - Premium Sims 4 Mods Discovery Platform',
+        alt: 'MustHaveMods - Find Sims 4 CC, Mods & Custom Content',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
-    description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players.',
+    title: 'MustHaveMods - Find Sims 4 CC, Mods & Custom Content',
+    description: 'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
     images: ['/og-image.jpg'],
   },
   metadataBase: new URL('https://musthavemods.com'),
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   category: 'Gaming',
-  classification: 'Sims 4 Mods Platform',
+  classification: 'Game Mods Platform',
 };
 
 export const viewport: Viewport = {
@@ -108,7 +108,7 @@ export default function RootLayout({
                   '@id': 'https://musthavemods.com/#website',
                   url: 'https://musthavemods.com',
                   name: 'MustHaveMods',
-                  description: 'Find Sims 4 CC, mods, and custom content. Search 15,000+ verified mods for Sims 4, Stardew Valley, and Minecraft.',
+                  description: 'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
                   publisher: {
                     '@id': 'https://musthavemods.com/#organization',
                   },

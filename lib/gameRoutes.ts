@@ -17,20 +17,20 @@ export const GAME_TO_SLUG: Record<string, string> = {
 // SEO metadata for each game
 export const GAME_METADATA: Record<string, { title: string; description: string }> = {
   'sims-4': {
-    title: 'Best Sims 4 Mods & CC | MustHaveMods',
-    description: 'Discover the best Sims 4 mods and custom content. From gameplay mods like MCCC and Wicked Whims to CAS items, build mode objects, and more.',
+    title: 'Sims 4 Mods & CC - Browse 10,000+ Custom Content | MustHaveMods',
+    description: 'Browse Sims 4 mods and custom content. Filter by hair, clothes, furniture, gameplay mods, and more. Free CC from top creators.',
   },
   'stardew-valley': {
-    title: 'Best Stardew Valley Mods | MustHaveMods',
-    description: 'Find the best Stardew Valley mods to enhance your farming experience. Quality of life improvements, visual mods, new content, and more.',
+    title: 'Stardew Valley Mods - Browse Custom Content | MustHaveMods',
+    description: 'Discover Stardew Valley mods and custom content. Gameplay mods, visual enhancements, new items, and quality-of-life improvements.',
   },
   'animal-crossing': {
     title: 'Best Animal Crossing Mods & Custom Designs | MustHaveMods',
     description: 'Explore Animal Crossing custom designs, patterns, and mods. Transform your island with community-created content.',
   },
   'minecraft': {
-    title: 'Best Minecraft Mods & Resource Packs | MustHaveMods',
-    description: 'Discover top Minecraft mods, texture packs, and shaders. From Optifine to modpacks, find everything to enhance your Minecraft experience.',
+    title: 'Minecraft Mods - Browse Mods & Resource Packs | MustHaveMods',
+    description: 'Find Minecraft mods, resource packs, and custom content. Gameplay mods, visual overhauls, and adventure maps from top creators.',
   },
 };
 

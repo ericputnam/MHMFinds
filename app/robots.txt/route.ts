@@ -22,7 +22,15 @@ export async function GET() {
       );
     }
 
-    const robotsContent = await response.text();
+    let robotsContent = await response.text();
+
+    // Rewrite blog.musthavemods.com → musthavemods.com so search engines see canonical domain
+    robotsContent = robotsContent.replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
+
+    // Ensure our main sitemap is referenced (replace any WordPress sitemap references)
+    if (!robotsContent.includes('musthavemods.com/sitemap.xml')) {
+      robotsContent += '\nSitemap: https://musthavemods.com/sitemap.xml\n';
+    }
 
     return new NextResponse(robotsContent, {
       status: 200,
