@@ -1277,3 +1277,121 @@ expect(response.status).toBe(201);
 **Problem**: `package.json` contained scripts pointing to non-existent files (e.g., `categories:migrate` referenced a deleted script).
 
 **Rule**: After deleting scripts from `scripts/`, always check `package.json` for stale npm script entries that reference them. Remove any that point to deleted files.
+
+### WordPress Proxy Middleware: Edge vs Middleware Execution Order (Feb 19, 2026)
+
+**Problem**: WordPress blog content was proxied via `vercel.json` rewrites (edge layer), which bypasses Next.js middleware entirely. This meant canonical URL rewriting, noindex stripping, and SEO fixes in middleware never ran on WordPress pages.
+
+**Root cause**: Vercel processes rewrites in this order:
+1. `vercel.json` rewrites (edge layer) — runs FIRST
+2. Next.js middleware — runs SECOND, only for requests NOT already handled by edge rewrites
+
+If a `vercel.json` rewrite matches, the request goes directly to the destination URL and **never reaches middleware**.
+
+**Fix** (commit 40e2171): Removed all HTML-serving rewrites from `vercel.json`. Only static asset rewrites (`/wp-content/*`, `/wp-includes/*`) remain at edge level. All HTML routes (blog posts, categories, tags, feeds, sitemaps) are now handled by middleware's `getWordPressUrl()` function.
+
+```
+// vercel.json — ONLY keep static asset rewrites
+{ "source": "/wp-content/:path*", "destination": "https://blog.musthavemods.com/wp-content/:path*" },
+{ "source": "/wp-includes/:path*", "destination": "https://blog.musthavemods.com/wp-includes/:path*" }
+
+// Everything else → middleware handles WordPress detection + proxy + rewriting
+```
+
+**Rule**: On Vercel, never put HTML-serving rewrites in `vercel.json` if you need middleware to process the response (SEO tags, auth, analytics). Edge rewrites are only safe for static assets that don't need transformation.
+
+### WordPress Proxy Middleware Architecture (Feb 19, 2026)
+
+**Pattern** (from `middleware.ts` on `feature/gsc-seo-cleanup` branch):
+
+The middleware detects WordPress vs Next.js routes using a `NEXTJS_PREFIXES` set and proxies WordPress requests with canonical URL rewriting:
+
+```typescript
+const NEXTJS_PREFIXES = new Set([
+  'api', 'admin', 'creators', 'mods', 'account', 'sign-in',
+  'submit-mod', 'about', 'privacy', 'terms', 'games', 'go',
+  '_next', 'sitemap', 'manifest',
+]);
+
+function getWordPressUrl(pathname: string): string | null {
+  if (pathname === '/' || pathname === '') return null; // Root = Next.js
+  // Explicit patterns: /blog/*, /category/*, /tag/*, /author/*, /feed/*
+  // Date permalinks: /2026/02/some-post/
+  // Catch-all: first segment not in NEXTJS_PREFIXES and not a file
+  const firstSegment = pathname.split('/').filter(Boolean)[0];
+  if (firstSegment && !NEXTJS_PREFIXES.has(firstSegment) && !firstSegment.includes('.')) {
+    return `${WP_ORIGIN}${pathname}`;
+  }
+  return null;
+}
+```
+
+**HTML rewriting strategy** — different rules for `<head>` vs `<body>`:
+- **`<head>`**: Rewrite ALL `blog.musthavemods.com` references (canonical, og:url, oEmbed). Also strip noindex meta tags.
+- **`<body>`**: Only rewrite `href=` links (navigation), NOT `src=` links (images, scripts, CSS stay on blog CDN).
+- **XML** (sitemaps, RSS): Rewrite all domain references throughout.
+
+**Key details**:
+1. Send `X-Forwarded-Host: musthavemods.com` header to WordPress so it knows the request came via the proxy
+2. Drop `content-length`, `content-encoding`, `transfer-encoding` headers from WordPress response (body is rewritten, so these are invalid)
+3. Drop `x-robots-tag` header to prevent noindex leaking through response headers
+4. URL-encoded references (`https%3A%2F%2Fblog.musthavemods.com`) also need rewriting (oEmbed discovery links use encoded URLs)
+
+**Branch status**: This proxy implementation lives on `feature/gsc-seo-cleanup`, not yet merged to main. Current main branch middleware only handles auth for `/admin` and `/creators`.
+
+### SEO Meta Title Optimization Patterns (Feb 19, 2026)
+
+**Problem**: Homepage and game pages had suboptimal meta titles/descriptions. Homepage title was too long ("Premium Sims 4 Mods & Custom Content Discovery" — 58 chars) and game pages used vague "Best" prefix.
+
+**Changes** (commit b0b69fb):
+- **Homepage**: Changed from aspirational branding to search-intent targeting: `"MustHaveMods - Find Sims 4 CC, Mods & Custom Content"`
+- **Game pages**: Removed "Best" prefix, added content quantity signals: `"Sims 4 Mods & CC - Browse 10,000+ Custom Content | MustHaveMods"`
+- **Descriptions**: Action-oriented with specific filter mentions: `"Filter by hair, clothes, furniture, gameplay mods, and more. Free CC from top creators."`
+- **Keywords**: Expanded from Sims-4-only to multi-game: added `stardew valley mods`, `minecraft mods`
+- **Classification**: Changed from `"Sims 4 Mods Platform"` to `"Game Mods Platform"`
+
+**Rules for SEO meta titles**:
+1. Primary keyword near the front (e.g., "Sims 4 Mods" not "MustHaveMods - Premium...")
+2. Under 60 characters to avoid truncation in SERPs
+3. Include quantity signals when available ("10,000+", "15,000+")
+4. Match user search intent — "Find", "Browse", "Search" > "Discover", "Premium"
+5. Descriptions should mention specific filterable content types and include a CTA
+
+### GSC-Driven SEO Optimization Workflow (Feb 19, 2026)
+
+**Pattern**: Use Google Search Console data to systematically identify and fix SEO issues. Created `tasks/prd-gsc-seo-cleanup/README.md` with six prioritized PRDs.
+
+**Workflow**:
+1. Pull GSC performance data (queries, pages, impressions, clicks, CTR, position)
+2. Identify quick wins: high impressions + low CTR = title/description problem
+3. Identify structural issues: duplicate URLs competing for same queries, fragment URLs indexed
+4. Prioritize by estimated click gain (impressions × expected CTR improvement)
+5. Group into PRDs by effort type (code changes, WordPress changes, manual GSC actions)
+
+**Key metrics for prioritization**:
+- **0-CTR pages with high impressions**: Title/description optimization (biggest quick win)
+- **Duplicate URLs for same queries**: Canonical consolidation (prevents signal dilution)
+- **blog.musthavemods.com still indexed**: Domain migration incomplete (needs reindexing requests)
+- **Fragment URLs indexed** (e.g., `/page/#section`): Noindex or canonical fix
+
+**Sitemap improvements** (commit b0b69fb):
+- Added `<changefreq>` and `<priority>` to Next.js sitemap entries
+- Added game pages (`/games/sims-4`, `/games/stardew-valley`, `/games/minecraft`) to sitemap
+- robots.txt now rewrites `blog.musthavemods.com` references to canonical domain
+
+### robots.txt Canonical Domain Rewriting (Feb 19, 2026)
+
+**Problem**: WordPress generates `robots.txt` with `blog.musthavemods.com` sitemap references, which tells search engines to crawl the old subdomain.
+
+**Fix** (from `app/robots.txt/route.ts`):
+```typescript
+let robotsContent = await response.text();
+// Rewrite blog domain to canonical
+robotsContent = robotsContent.replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
+// Ensure main sitemap is referenced
+if (!robotsContent.includes('musthavemods.com/sitemap.xml')) {
+  robotsContent += '\nSitemap: https://musthavemods.com/sitemap.xml\n';
+}
+```
+
+**Rule**: When proxying WordPress through a different domain, always rewrite `robots.txt` and `sitemap.xml` to use the canonical domain. Search engines use these files to discover and crawl URLs.
