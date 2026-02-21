@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "newapp_musthavemods"
+    "newapp_musthavemods",
+    "musthavemods---sims-4-cc-&-mods-blog"
   ]
 }
