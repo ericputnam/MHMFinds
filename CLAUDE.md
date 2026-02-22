@@ -1395,3 +1395,96 @@ if (!robotsContent.includes('musthavemods.com/sitemap.xml')) {
 ```
 
 **Rule**: When proxying WordPress through a different domain, always rewrite `robots.txt` and `sitemap.xml` to use the canonical domain. Search engines use these files to discover and crawl URLs.
+
+### Staging WordPress Theme: Git-Tracked Workflow (Feb 21, 2026)
+
+**Problem**: WordPress theme changes on the BigScoots staging server were untracked — no version history, no code review, no rollback capability. Changes could be lost or accidentally overwritten.
+
+**Solution**: Added a pull/push workflow that keeps a local snapshot of `functions.php` in the repo:
+
+```
+staging/wordpress/kadence-child/functions.php  ← Git-tracked snapshot
+scripts/staging/pull-blog-functions.sh         ← Pull from server
+scripts/staging/push-blog-functions.sh         ← Push to server (with backup + lint + cache flush)
+```
+
+**Push script safety features**:
+1. Creates timestamped backup on server before overwriting (`functions.php.bak.<epoch>`)
+2. Runs `php -l` syntax check after upload — catches fatal errors before they take down the site
+3. Flushes WP object cache + transients automatically
+
+**Workflow**:
+```bash
+# Pull current state from staging server
+./scripts/staging/pull-blog-functions.sh
+
+# Edit locally (with full IDE support, git diff, etc.)
+vim staging/wordpress/kadence-child/functions.php
+
+# Push back (auto-backup, lint, cache flush)
+./scripts/staging/push-blog-functions.sh
+```
+
+**Rule**: Always use the staging scripts for WordPress theme changes — never edit directly on the server via SSH. The Git-tracked snapshot enables code review via PRs and provides rollback history.
+
+### tsconfig.json: Excluding Non-Next.js Directories (Feb 21, 2026)
+
+**Problem**: Cloned or downloaded WordPress/Vite project directories in the repo root cause TypeScript compilation errors because their `tsconfig.json` and source files conflict with the main Next.js project's TypeScript configuration.
+
+**Fix**: Add non-Next.js directories to `tsconfig.json` `exclude` array:
+```json
+{
+  "exclude": [
+    "node_modules",
+    "newapp_musthavemods",
+    "musthavemods---sims-4-cc-&-mods-blog"
+  ]
+}
+```
+
+**Rule**: When adding reference projects, design mockups, or WordPress exports to the repo, always add them to `tsconfig.json` `exclude` to prevent TypeScript conflicts.
+
+### WordPress Content Cannibalization via `-2` Suffixes (Feb 20, 2026)
+
+**Problem**: WordPress auto-appends `-2` to slugs when a new post/page has the same slug as an existing one. Both pages self-canonicalize, causing Google to split ranking signals between them.
+
+**Identified pattern**: 6 duplicate groups found via GSC data where `/sims-4-<topic>/` and `/sims-4-<topic>-2/` (or `-2025` variants) compete for the same search queries.
+
+**Fix**: Set Rank Math canonical on the secondary page pointing to the primary:
+```bash
+# Find the post ID
+wp post list --post_type=post --fields=ID,post_name | grep "sims-4-body-presets$"
+
+# Set canonical to the preferred URL
+wp post meta update <ID> rank_math_canonical_url "https://musthavemods.com/<primary-slug>/"
+```
+
+**How to choose the primary URL**: Pick the one with better position and more clicks in GSC data — the `-2` version often performs better because it's the newer, more complete content.
+
+**Rule**: When creating new WordPress posts, always check if a similar slug already exists. If WordPress appends `-2`, investigate whether the old post should be updated instead of creating a duplicate. For existing duplicates, use `rank_math_canonical_url` meta to consolidate.
+
+### WordPress `/homepage/` Signal Dilution (Feb 20, 2026)
+
+**Problem**: The WordPress front page at `/homepage/` (page-id-25) was indexed separately from the Next.js homepage at `/`, creating two competing homepage entries in Google search results.
+
+**Root cause**: Before Next.js took over the root `/` URL, WordPress used `/homepage/` as its front page. After the migration, both URLs remain accessible — `/` serves the Next.js app, `/homepage/` serves the old WordPress page through the middleware proxy.
+
+**Recommended fix**: Add a 301 redirect in `middleware.ts`:
+```typescript
+if (pathname === '/homepage' || pathname === '/homepage/') {
+  return NextResponse.redirect(new URL('/', request.url), 301);
+}
+```
+
+**Rule**: When migrating from WordPress to Next.js, audit for legacy WordPress pages that duplicate Next.js routes. Common candidates: `/homepage/`, `/home/`, `/front-page/`. These should 301 redirect to the Next.js equivalent.
+
+### PHP Lint Validation After Remote Deployments (Feb 21, 2026)
+
+**Pattern**: Always run `php -l` on PHP files after uploading to a server. A syntax error in `functions.php` can take down the entire WordPress site (white screen of death).
+
+```bash
+# After uploading functions.php
+ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" "php -l '$REMOTE_FILE'"
+```
+
+**Rule**: Never push PHP changes to a WordPress server without running `php -l` immediately after. Include this step in any deployment script. The push script at `scripts/staging/push-blog-functions.sh` does this automatically.
