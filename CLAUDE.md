@@ -240,18 +240,19 @@ Users want full control over what gets committed and when. Even if you complete 
 
 ---
 
-## IMPORTANT: newapp_musthavemods Folder
+## IMPORTANT: newapp Folder (Design Reference)
 
-**The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
+**The `/newapp` folder is a DESIGN REFERENCE ONLY.**
 
-- This folder contains a Vite/React proof-of-concept app showing the desired look and feel for UI components
+- This folder contains a Google AI Studio generated Vite/React app (uses Gemini API, Tailwind CSS v4, `motion` library) showing the desired look and feel for UI components
 - **DO NOT** migrate the main Next.js app to use this Vite app
-- **DO NOT** try to run or start the newapp_musthavemods dev server
-- **INSTEAD**: Look at the component designs (ModDetailsModal, ModCard, etc.) in newapp_musthavemods as inspiration and apply the same visual design to the main Next.js app components
+- **DO NOT** try to run or start the newapp dev server
+- **INSTEAD**: Look at the component designs and layout patterns in `newapp/src/App.tsx` as inspiration and apply the same visual design to the main Next.js app components
 - Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes)
-- Only adopt the UI/UX patterns, styling, and layout from newapp_musthavemods
+- Only adopt the UI/UX patterns, styling, and layout from newapp
+- Note: `newapp` uses `motion` (successor to `framer-motion`) — do NOT add this to the main project
 
-**Main development should ALWAYS happen in the root Next.js project, not in newapp_musthavemods.**
+**Main development should ALWAYS happen in the root Next.js project, not in newapp.**
 
 ## Project Overview
 
@@ -1436,13 +1437,15 @@ vim staging/wordpress/kadence-child/functions.php
 {
   "exclude": [
     "node_modules",
+    "newapp",
     "newapp_musthavemods",
+    "staging",
     "musthavemods---sims-4-cc-&-mods-blog"
   ]
 }
 ```
 
-**Rule**: When adding reference projects, design mockups, or WordPress exports to the repo, always add them to `tsconfig.json` `exclude` to prevent TypeScript conflicts.
+**Rule**: When adding reference projects, design mockups, WordPress exports, or staging snapshots to the repo, always add them to `tsconfig.json` `exclude` to prevent TypeScript conflicts.
 
 ### WordPress Content Cannibalization via `-2` Suffixes (Feb 20, 2026)
 
@@ -1488,3 +1491,18 @@ ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" "php -l '$RE
 ```
 
 **Rule**: Never push PHP changes to a WordPress server without running `php -l` immediately after. Include this step in any deployment script. The push script at `scripts/staging/push-blog-functions.sh` does this automatically.
+
+### Design Reference App Migration: newapp_musthavemods → newapp (Feb 22, 2026)
+
+**Change**: The old `newapp_musthavemods/` Vite/React proof-of-concept has been replaced by `newapp/`, a Google AI Studio generated app.
+
+**Key differences**:
+- Old: Pure Vite + React 18 + Tailwind CSS v3 + `framer-motion` + Gemini service via custom `geminiService.ts`
+- New: Vite + React 19 + Tailwind CSS v4 + `motion` (framer-motion successor) + `@google/genai` SDK + `better-sqlite3`
+
+**Important**: The `newapp/` app uses `motion` (the framer-motion v12+ rebrand). This library was previously removed from the main project during dead code cleanup. Do NOT re-add it — it's only for the design reference.
+
+**Rule**: When the design reference app changes, update three things:
+1. CLAUDE.md section about the reference folder
+2. `tsconfig.json` exclude array (add the new directory name)
+3. `.gitignore` if the new app has its own `node_modules` or build output

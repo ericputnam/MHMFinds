@@ -37,7 +37,9 @@
   ],
   "exclude": [
     "node_modules",
+    "newapp",
     "newapp_musthavemods",
+    "staging",
     "musthavemods---sims-4-cc-&-mods-blog"
   ]
 }
