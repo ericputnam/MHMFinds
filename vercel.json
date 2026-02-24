@@ -86,6 +86,10 @@
       "destination": "https://blog.musthavemods.com/homepage/"
     },
     {
+      "source": "/blog/",
+      "destination": "https://blog.musthavemods.com/homepage/"
+    },
+    {
       "source": "/blog/:path*",
       "destination": "https://blog.musthavemods.com/:path*"
     },
