@@ -165,14 +165,15 @@ describe('1.3 - sitemap-nextjs.xml includes game pages', () => {
     expect(content).toContain('https://musthavemods.com/mods')
   })
 
-  it('should still include the original pages (/, /creators, /blog)', async () => {
+  it('should still include the original pages (/, /creators) but NOT /blog (moved to blog-pages sitemap)', async () => {
     const { GET } = await import('@/app/sitemap-nextjs.xml/route')
     const response = await GET()
     const content = await response.text()
 
     expect(content).toContain('https://musthavemods.com/')
     expect(content).toContain('https://musthavemods.com/creators')
-    expect(content).toContain('https://musthavemods.com/blog')
+    // /blog is in sitemap-blog-pages.xml to avoid cross-sitemap duplicates
+    expect(content).not.toContain('https://musthavemods.com/blog')
   })
 
   it('should return valid XML with urlset namespace', async () => {
@@ -376,5 +377,71 @@ describe('3.0 - robots.txt blocks parameter URL indexing', () => {
 
     expect(content).toContain('Disallow: /*?p=')
     expect(content).toContain('Disallow: /*?page_id=')
+  })
+})
+
+// ============================================================
+// 4.0 - Phase 4: Sitemap Hygiene
+// ============================================================
+describe('4.0 - Sitemap hygiene', () => {
+  it('should NOT include categories sitemap in sitemap index', async () => {
+    const { GET } = await import('@/app/sitemap.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).not.toContain('sitemap-blog-categories.xml')
+    expect(content).toContain('sitemap-nextjs.xml')
+    expect(content).toContain('sitemap-blog-posts.xml')
+    expect(content).toContain('sitemap-blog-pages.xml')
+  })
+
+  it('categories sitemap should return empty urlset', async () => {
+    const { GET } = await import('@/app/sitemap-blog-categories.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).toContain('<urlset')
+    expect(content).not.toContain('<loc>')
+  })
+
+  it('sitemap-nextjs.xml should NOT contain /blog (lives in blog-pages sitemap)', async () => {
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).not.toContain('musthavemods.com/blog')
+  })
+
+  it('sitemap-nextjs.xml should use stable lastmod dates (not dynamic)', async () => {
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    // Should contain a date-only format (YYYY-MM-DD), not a full ISO timestamp
+    expect(content).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/)
+    // Should NOT contain a dynamic ISO timestamp with time component
+    expect(content).not.toMatch(/<lastmod>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)
+  })
+
+  it('sitemap-nextjs.xml should have priority on all URLs', async () => {
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    // Count <url> entries and <priority> entries — should match
+    const urlCount = (content.match(/<url>/g) || []).length
+    const priorityCount = (content.match(/<priority>/g) || []).length
+    expect(priorityCount).toBe(urlCount)
+  })
+
+  it('homepage should have priority 1.0', async () => {
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    // Extract the homepage URL block
+    const homepageBlock = content.match(/<url>\s*<loc>https:\/\/musthavemods\.com\/<\/loc>[\s\S]*?<\/url>/)
+    expect(homepageBlock).not.toBeNull()
+    expect(homepageBlock![0]).toContain('<priority>1.0</priority>')
   })
 })
