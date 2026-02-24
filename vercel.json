@@ -90,8 +90,8 @@
       "destination": "https://blog.musthavemods.com/homepage/"
     },
     {
-      "source": "/blog/:path*",
-      "destination": "https://blog.musthavemods.com/:path*"
+      "source": "/blog/:path+",
+      "destination": "https://blog.musthavemods.com/:path+"
     },
     {
       "source": "/wp-content/:path*",
