@@ -37,6 +37,10 @@ async function fetchAllWordPressPages(): Promise<string[]> {
 
       for (const wpPage of pages) {
         const url = wpPage.link.replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
+
+        // Skip /homepage/ — it 301-redirects to / (PRD 8)
+        if (url.includes('/homepage')) continue;
+
         const lastmod = wpPage.modified_gmt ? `${wpPage.modified_gmt.split('T')[0]}` : '';
 
         entries.push(`  <url>

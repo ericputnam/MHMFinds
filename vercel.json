@@ -68,6 +68,16 @@
       "source": "/home",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/homepage",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/homepage/",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -78,14 +88,6 @@
     {
       "source": "/blog/:path*",
       "destination": "https://blog.musthavemods.com/:path*"
-    },
-    {
-      "source": "/wp-sitemap.xml",
-      "destination": "https://blog.musthavemods.com/wp-sitemap.xml"
-    },
-    {
-      "source": "/wp-sitemap-:type.xml",
-      "destination": "https://blog.musthavemods.com/wp-sitemap-:type.xml"
     },
     {
       "source": "/wp-content/:path*",

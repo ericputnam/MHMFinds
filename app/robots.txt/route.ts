@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 
 const WORDPRESS_ROBOTS_URL = 'https://blog.musthavemods.com/robots.txt';
+const SITEMAP_DIRECTIVE = 'Sitemap: https://musthavemods.com/sitemap.xml';
+
+function appendSitemapDirective(content: string): string {
+  // Don't duplicate if already present
+  if (content.includes('Sitemap: https://musthavemods.com/sitemap.xml')) {
+    return content;
+  }
+  return `${content.trimEnd()}\n\n${SITEMAP_DIRECTIVE}\n`;
+}
 
 export async function GET() {
   try {
@@ -11,7 +20,7 @@ export async function GET() {
     if (!response.ok) {
       // Fallback to a basic robots.txt if WordPress is unavailable
       return new NextResponse(
-        `User-agent: *\nAllow: /\nSitemap: https://musthavemods.com/sitemap.xml`,
+        `User-agent: *\nAllow: /\n\n${SITEMAP_DIRECTIVE}\n`,
         {
           status: 200,
           headers: {
@@ -23,8 +32,9 @@ export async function GET() {
     }
 
     const robotsContent = await response.text();
+    const finalContent = appendSitemapDirective(robotsContent);
 
-    return new NextResponse(robotsContent, {
+    return new NextResponse(finalContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/plain',
@@ -36,7 +46,7 @@ export async function GET() {
 
     // Fallback robots.txt
     return new NextResponse(
-      `User-agent: *\nAllow: /\nSitemap: https://musthavemods.com/sitemap.xml`,
+      `User-agent: *\nAllow: /\n\n${SITEMAP_DIRECTIVE}\n`,
       {
         status: 200,
         headers: {
