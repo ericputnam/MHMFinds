@@ -1506,3 +1506,50 @@ ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" "php -l '$RE
 1. CLAUDE.md section about the reference folder
 2. `tsconfig.json` exclude array (add the new directory name)
 3. `.gitignore` if the new app has its own `node_modules` or build output
+
+### Production WordPress Deployment Scripts (Feb 23, 2026)
+
+**Change**: Added production equivalents of the staging pull/push scripts:
+- `scripts/staging/pull-blog-functions-prod.sh` — pulls from `blog.musthavemods.com` to `staging/wordpress/kadence-child-prod/`
+- `scripts/staging/push-blog-functions-prod.sh` — pushes to `blog.musthavemods.com` with safety checks
+
+**Key safety difference from staging scripts**: The production push script includes an interactive confirmation prompt (`Continue? y/N`) before uploading. The staging script does not — it pushes immediately. Both scripts still create backups and run `php -l`.
+
+**Rollback display**: After a successful production push, the script prints the exact `scp` command needed to restore from the backup. This is critical for quick rollback if something goes wrong post-deploy.
+
+**Workflow for promoting staging changes to production**:
+```bash
+# 1. Pull latest from both environments
+./scripts/staging/pull-blog-functions.sh       # staging → kadence-child/
+./scripts/staging/pull-blog-functions-prod.sh   # prod → kadence-child-prod/
+
+# 2. Compare differences
+diff staging/wordpress/kadence-child/functions.php staging/wordpress/kadence-child-prod/functions.php
+
+# 3. When ready, push staging version to prod
+# (Copy staging file to prod location first, or push staging directly)
+./scripts/staging/push-blog-functions-prod.sh
+
+# 4. Verify at https://blog.musthavemods.com
+```
+
+**Rule**: Always pull both staging and production snapshots before making changes. The file size difference (staging: ~4300 lines vs production: ~200 lines as of Feb 23) indicates significant unreleased work. Never push staging to production without reviewing the diff.
+
+### Staging/Production Environment Snapshots Pattern (Feb 23, 2026)
+
+**Pattern**: Keep separate local snapshots of server files per environment:
+```
+staging/wordpress/
+├── kadence-child/           # Staging server snapshot
+│   └── functions.php        # 4374 lines (all custom dark theme + multi-game features)
+└── kadence-child-prod/      # Production server snapshot
+    └── functions.php        # 204 lines (minimal: parent styles, ad blocking, Patreon)
+```
+
+**Benefits**:
+1. Local `diff` between environments shows exactly what's unreleased
+2. Git history tracks when each environment was last pulled
+3. Changes can be code-reviewed before pushing to either environment
+4. Both files can be searched/referenced without SSH
+
+**Rule**: After making changes to staging and verifying they work, always pull the latest production snapshot too. This prevents accidentally overwriting production changes that were made outside the git workflow (e.g., directly in WordPress admin).
