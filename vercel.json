@@ -90,6 +90,14 @@
       "destination": "https://blog.musthavemods.com/homepage/"
     },
     {
+      "source": "/blog/all",
+      "destination": "https://blog.musthavemods.com/"
+    },
+    {
+      "source": "/blog/all/",
+      "destination": "https://blog.musthavemods.com/"
+    },
+    {
       "source": "/blog/:path+",
       "destination": "https://blog.musthavemods.com/:path+"
     },
