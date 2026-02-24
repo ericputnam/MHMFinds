@@ -284,3 +284,97 @@ describe('1.5 - No dead wp-sitemap rewrites in vercel.json', () => {
     expect(wpIncludesRewrite).toBeDefined()
   })
 })
+
+// ============================================================
+// 2.0 - Phase 2: Content Cannibalization 301 Redirects
+// ============================================================
+describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
+  let vercelConfig: any
+
+  beforeEach(() => {
+    const configPath = path.resolve(__dirname, '../../vercel.json')
+    vercelConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+  })
+
+  const duplicatePairs = [
+    { from: '/sims-4-cc-clothes-packs-2025/', to: '/sims-4-cc-clothes-packs/' },
+    { from: '/sims-4-body-presets-2/', to: '/sims-4-body-presets/' },
+    { from: '/sims-4-goth-cc-2/', to: '/sims-4-goth-cc/' },
+    { from: '/sims-4-cc-2/', to: '/sims-4-cc/' },
+    { from: '/sims-4-eyelashes-cc-2/', to: '/sims-4-eyelashes-cc/' },
+    { from: '/15-must-have-sims-4-woohoo-mods-for-2025/', to: '/best-woohoo-mods-sims-4-ultimate-guide/' },
+  ]
+
+  for (const pair of duplicatePairs) {
+    it(`should permanently redirect ${pair.from} to ${pair.to}`, () => {
+      const redirects = vercelConfig.redirects || []
+      const redirect = redirects.find(
+        (r: any) => r.source === pair.from && r.destination === pair.to
+      )
+      expect(redirect).toBeDefined()
+      expect(redirect.permanent).toBe(true)
+    })
+  }
+
+  it('should have redirects for both trailing-slash and non-trailing-slash variants', () => {
+    const redirects = vercelConfig.redirects || []
+    for (const pair of duplicatePairs) {
+      const withoutSlash = pair.from.replace(/\/$/, '')
+      const withSlash = pair.from.endsWith('/') ? pair.from : pair.from + '/'
+      expect(redirects.find((r: any) => r.source === withoutSlash)).toBeDefined()
+      expect(redirects.find((r: any) => r.source === withSlash)).toBeDefined()
+    }
+  })
+})
+
+// ============================================================
+// 3.0 - Phase 3: robots.txt blocks parameter URLs
+// ============================================================
+describe('3.0 - robots.txt blocks parameter URL indexing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should disallow ?creator= parameter URLs', async () => {
+    const wpRobots = `User-agent: *\nDisallow: /feed/`
+
+    vi.mocked(global.fetch).mockResolvedValueOnce(
+      new Response(wpRobots, { status: 200 })
+    )
+
+    const { GET } = await import('@/app/robots.txt/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).toContain('Disallow: /*?creator=')
+  })
+
+  it('should disallow ?cat= parameter URLs', async () => {
+    const wpRobots = `User-agent: *\nDisallow: /feed/`
+
+    vi.mocked(global.fetch).mockResolvedValueOnce(
+      new Response(wpRobots, { status: 200 })
+    )
+
+    const { GET } = await import('@/app/robots.txt/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).toContain('Disallow: /*?cat=')
+  })
+
+  it('should disallow ?p= and ?page_id= parameter URLs', async () => {
+    const wpRobots = `User-agent: *\nDisallow: /feed/`
+
+    vi.mocked(global.fetch).mockResolvedValueOnce(
+      new Response(wpRobots, { status: 200 })
+    )
+
+    const { GET } = await import('@/app/robots.txt/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).toContain('Disallow: /*?p=')
+    expect(content).toContain('Disallow: /*?page_id=')
+  })
+})

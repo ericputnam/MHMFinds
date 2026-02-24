@@ -78,6 +78,66 @@
       "source": "/homepage/",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/sims-4-cc-clothes-packs-2025",
+      "destination": "/sims-4-cc-clothes-packs/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cc-clothes-packs-2025/",
+      "destination": "/sims-4-cc-clothes-packs/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-body-presets-2",
+      "destination": "/sims-4-body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-body-presets-2/",
+      "destination": "/sims-4-body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-goth-cc-2",
+      "destination": "/sims-4-goth-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-goth-cc-2/",
+      "destination": "/sims-4-goth-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cc-2",
+      "destination": "/sims-4-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cc-2/",
+      "destination": "/sims-4-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-eyelashes-cc-2",
+      "destination": "/sims-4-eyelashes-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-eyelashes-cc-2/",
+      "destination": "/sims-4-eyelashes-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/15-must-have-sims-4-woohoo-mods-for-2025",
+      "destination": "/best-woohoo-mods-sims-4-ultimate-guide/",
+      "permanent": true
+    },
+    {
+      "source": "/15-must-have-sims-4-woohoo-mods-for-2025/",
+      "destination": "/best-woohoo-mods-sims-4-ultimate-guide/",
+      "permanent": true
     }
   ],
   "rewrites": [

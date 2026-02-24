@@ -3,12 +3,30 @@ import { NextResponse } from 'next/server';
 const WORDPRESS_ROBOTS_URL = 'https://blog.musthavemods.com/robots.txt';
 const SITEMAP_DIRECTIVE = 'Sitemap: https://musthavemods.com/sitemap.xml';
 
-function appendSitemapDirective(content: string): string {
-  // Don't duplicate if already present
-  if (content.includes('Sitemap: https://musthavemods.com/sitemap.xml')) {
-    return content;
+// Additional disallow rules not present in WordPress robots.txt
+const ADDITIONAL_DISALLOWS = [
+  'Disallow: /*?creator=',
+  'Disallow: /*?cat=',
+  'Disallow: /*?p=',
+  'Disallow: /*?page_id=',
+];
+
+function appendDirectives(content: string): string {
+  let result = content.trimEnd();
+
+  // Add additional disallow rules (after the existing ones, before sitemap)
+  for (const rule of ADDITIONAL_DISALLOWS) {
+    if (!result.includes(rule)) {
+      result += `\n${rule}`;
+    }
   }
-  return `${content.trimEnd()}\n\n${SITEMAP_DIRECTIVE}\n`;
+
+  // Add sitemap directive
+  if (!result.includes('Sitemap: https://musthavemods.com/sitemap.xml')) {
+    result += `\n\n${SITEMAP_DIRECTIVE}`;
+  }
+
+  return result + '\n';
 }
 
 export async function GET() {
@@ -32,7 +50,7 @@ export async function GET() {
     }
 
     const robotsContent = await response.text();
-    const finalContent = appendSitemapDirective(robotsContent);
+    const finalContent = appendDirectives(robotsContent);
 
     return new NextResponse(finalContent, {
       status: 200,
