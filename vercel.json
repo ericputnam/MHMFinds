@@ -83,7 +83,7 @@
   "rewrites": [
     {
       "source": "/blog",
-      "destination": "https://blog.musthavemods.com/"
+      "destination": "https://blog.musthavemods.com/homepage/"
     },
     {
       "source": "/blog/:path*",
