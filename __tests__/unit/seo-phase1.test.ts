@@ -445,3 +445,56 @@ describe('4.0 - Sitemap hygiene', () => {
     expect(homepageBlock![0]).toContain('<priority>1.0</priority>')
   })
 })
+
+// ============================================================
+// 5.0 - Phase 5: Middleware WordPress proxy
+// ============================================================
+describe('5.0 - Middleware WordPress proxy', () => {
+  let vercelConfig: any
+
+  beforeEach(() => {
+    const configPath = path.resolve(__dirname, '../../vercel.json')
+    vercelConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+  })
+
+  it('vercel.json should only have static asset rewrites (no HTML proxying)', () => {
+    const rewrites = vercelConfig.rewrites || []
+    // Only wp-content and wp-includes rewrites should exist
+    expect(rewrites.length).toBe(2)
+    expect(rewrites[0].source).toBe('/wp-content/:path*')
+    expect(rewrites[1].source).toBe('/wp-includes/:path*')
+  })
+
+  it('vercel.json should NOT have catch-all slug rewrites', () => {
+    const rewrites = vercelConfig.rewrites || []
+    const catchAll = rewrites.find((r: any) => r.source.includes(':slug'))
+    expect(catchAll).toBeUndefined()
+  })
+
+  it('vercel.json should NOT have /blog, /category, /tag, /author, /feed rewrites', () => {
+    const rewrites = vercelConfig.rewrites || []
+    const htmlRewrites = rewrites.filter((r: any) =>
+      r.source.startsWith('/blog') ||
+      r.source.startsWith('/category') ||
+      r.source.startsWith('/tag') ||
+      r.source.startsWith('/author') ||
+      r.source.startsWith('/feed')
+    )
+    expect(htmlRewrites.length).toBe(0)
+  })
+
+  it('vercel.json should still have all Phase 2 redirects', () => {
+    const redirects = vercelConfig.redirects || []
+    const phase2Slugs = [
+      '/sims-4-cc-clothes-packs-2025/',
+      '/sims-4-body-presets-2/',
+      '/sims-4-goth-cc-2/',
+      '/sims-4-cc-2/',
+      '/sims-4-eyelashes-cc-2/',
+      '/15-must-have-sims-4-woohoo-mods-for-2025/',
+    ]
+    for (const slug of phase2Slugs) {
+      expect(redirects.find((r: any) => r.source === slug)).toBeDefined()
+    }
+  })
+})

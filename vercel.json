@@ -142,72 +142,12 @@
   ],
   "rewrites": [
     {
-      "source": "/blog",
-      "destination": "https://blog.musthavemods.com/homepage/"
-    },
-    {
-      "source": "/blog/",
-      "destination": "https://blog.musthavemods.com/homepage/"
-    },
-    {
-      "source": "/blog/all",
-      "destination": "https://blog.musthavemods.com/"
-    },
-    {
-      "source": "/blog/all/",
-      "destination": "https://blog.musthavemods.com/"
-    },
-    {
-      "source": "/blog/:path+",
-      "destination": "https://blog.musthavemods.com/:path+"
-    },
-    {
       "source": "/wp-content/:path*",
       "destination": "https://blog.musthavemods.com/wp-content/:path*"
     },
     {
       "source": "/wp-includes/:path*",
       "destination": "https://blog.musthavemods.com/wp-includes/:path*"
-    },
-    {
-      "source": "/feed",
-      "destination": "https://blog.musthavemods.com/feed"
-    },
-    {
-      "source": "/feed/:path*",
-      "destination": "https://blog.musthavemods.com/feed/:path*"
-    },
-    {
-      "source": "/category/:path*",
-      "destination": "https://blog.musthavemods.com/category/:path*"
-    },
-    {
-      "source": "/tag/:path*",
-      "destination": "https://blog.musthavemods.com/tag/:path*"
-    },
-    {
-      "source": "/author/:path*",
-      "destination": "https://blog.musthavemods.com/author/:path*"
-    },
-    {
-      "source": "/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug",
-      "destination": "https://blog.musthavemods.com/:year/:month/:day/:slug"
-    },
-    {
-      "source": "/:year(\\d{4})/:month(\\d{2})/:slug",
-      "destination": "https://blog.musthavemods.com/:year/:month/:slug"
-    },
-    {
-      "source": "/:year(\\d{4})/:month(\\d{2})",
-      "destination": "https://blog.musthavemods.com/:year/:month"
-    },
-    {
-      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|games|go|blog|_next|favicon.ico|sitemap|robots.txt|manifest).*)/",
-      "destination": "https://blog.musthavemods.com/:slug/"
-    },
-    {
-      "source": "/:slug((?!api|admin|creators|mods|account|sign-in|submit-mod|about|privacy|terms|games|go|blog|_next|favicon.ico|sitemap|robots.txt|manifest).*)",
-      "destination": "https://blog.musthavemods.com/:slug/"
     }
   ]
 }
