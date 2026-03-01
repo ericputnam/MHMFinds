@@ -142,6 +142,10 @@
   ],
   "rewrites": [
     {
+      "source": "/ads.txt",
+      "destination": "https://blog.musthavemods.com/ads.txt"
+    },
+    {
       "source": "/wp-content/:path*",
       "destination": "https://blog.musthavemods.com/wp-content/:path*"
     },

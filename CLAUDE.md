@@ -53,6 +53,7 @@ npm run security:check-admin-auth  # Verify admin route auth
 - **vercel.json slug exclusion list**: The catch-all `/:slug((?!api|admin|...).*)/` pattern must explicitly exclude every Next.js route prefix. Add new prefixes when creating new top-level routes.
 - **Trailing slash + catch-all**: With `trailingSlash: true`, `/path` redirects to `/path/` which can match catch-all patterns. Define explicit rules for both `/path` and `/path/` BEFORE catch-alls.
 - **Sitemap lastmod dates**: Use stable date strings (`'2026-02-24'`), NOT `Date.now()` or `new Date().toISOString()`. Dynamic timestamps make lastmod meaningless to Google.
+- **ads.txt proxy**: Ad networks (Mediavine) verify domain ownership via `/ads.txt`. Since WordPress manages this file, add a Vercel rewrite to proxy it from the blog origin. Must appear before catch-all patterns in `vercel.json`.
 
 ## Important Directories
 

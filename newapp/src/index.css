@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-pink: #FF4E8D;
+  --color-brand-purple: #7C3AED;
+  --color-bg-dark: #09090B;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-dark text-slate-200 font-sans antialiased;
+  }
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-pink to-brand-purple;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(255, 78, 141, 0.3);
+}
