@@ -49,6 +49,8 @@ npm run security:check-admin-auth  # Verify admin route auth
 - **Prisma Decimal**: Always coerce to `Number()` before `.toFixed()` or arithmetic.
 - **Cache invalidation**: Call `CacheService.invalidateMod(id)` after every admin mutation.
 - **Webpack cache corruption**: Fix with `npm run clean`. Common after dependency/import changes.
+- **Scraper multi-game detection**: Game detection hierarchy is URL slug > categories > title, defaulting to Sims 4. Pure detection functions live in `lib/services/mhmScraperUtils.ts` with tests in `__tests__/unit/mhmScraperUtils.test.ts`. When adding a new game, update both files plus `scripts/seed-facet-definitions.ts`.
+- **`ensureAuthor()` never-null guarantee**: Always use `ensureAuthor()` from `mhmScraperUtils.ts` for author fields — it guarantees a non-empty string via a priority chain with domain-based fallback. Never save a mod with `author: undefined`.
 - **vercel.json `:path*` vs `:path+`**: Use `:path+` (one-or-more) for catch-alls, NOT `:path*` (zero-or-more). `:path*` shadows explicit rules for the base path (e.g., `/blog/` matches `/blog/:path*`).
 - **vercel.json slug exclusion list**: The catch-all `/:slug((?!api|admin|...).*)/` pattern must explicitly exclude every Next.js route prefix. Add new prefixes when creating new top-level routes.
 - **Trailing slash + catch-all**: With `trailingSlash: true`, `/path` redirects to `/path/` which can match catch-all patterns. Define explicit rules for both `/path` and `/path/` BEFORE catch-alls.

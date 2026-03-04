@@ -402,6 +402,86 @@ Three privacy levels for content aggregation:
 
 **Rule**: Start with conservative delays (3-6s minimum) and increase if blocked.
 
+### Multi-Game Scraper Detection Hierarchy (Mar 2026)
+
+Game detection uses a tiered signal system. URL slugs are the strongest signal (SEO-optimized, manually curated), followed by WordPress categories and post title:
+
+```
+1. URL slug keywords (strongest) → detectGameFromUrl()
+2. WordPress categories + title → detectGameFromHtml()
+3. Default: "Sims 4" (backward compatibility)
+```
+
+Key files:
+- `lib/services/mhmScraperUtils.ts` — Pure utility functions (game detection, content type detection, author guarantee)
+- `lib/services/mhmScraper.ts` — Orchestrator that calls utils
+- `__tests__/unit/mhmScraperUtils.test.ts` — Comprehensive unit tests
+
+**Rule**: When URL detection returns the default ("Sims 4"), always fall through to HTML-based detection — the URL may be generic while the categories/title are specific.
+
+### Extract Pure Functions for Testability
+
+Complex scraper logic was refactored: pure utility functions (no I/O, no side effects) were extracted into a separate `*Utils.ts` file. This enables:
+- Unit testing without mocking HTTP, Cheerio, or Prisma
+- Reuse across different scraping entry points (AI-parsed vs manual)
+- Clear separation of concerns (detection logic vs scraping I/O)
+
+**Rule**: When a class method does pure computation (string matching, normalization, validation), extract it into a standalone exported function in a `*Utils.ts` companion file. Keep I/O in the class.
+
+### Parenthesized Author False Positives
+
+Title patterns like `"Mod Name (HQ)"` or `"Shader Pack (Forge)"` trick the author extractor into thinking the parenthesized content is an author name. Filter with:
+
+```typescript
+const isDescriptor =
+  /^\d/.test(content) ||                    // "(10 pack)", "(2024)"
+  /^(small|medium|large|xl|set|pack|v\d)/i.test(content) ||
+  /\b(edition|version|recolor|skins?|mod|cc|hq|lq)\b/i.test(content) ||
+  /^[A-Z]{2,5}$/.test(content) ||           // "(JEI)", "(HQ)"
+  /\+/.test(content) ||                     // "(Skins + Sims)"
+  /\b(forge|fabric|java|bedrock|smapi)\b/i.test(content);
+```
+
+**Rule**: When parsing structured text for author names, maintain an exclusion list for common descriptors, abbreviations, and platform names. Multi-game support multiplies the false positive surface area.
+
+### Author Guarantee Pattern (`ensureAuthor`)
+
+The `ensureAuthor()` function guarantees a non-null, non-empty author string. It uses a priority chain with domain-based fallback:
+
+```
+1. authorFromTitle (parsed from mod title)
+2. authorFromUrl (from download URL patterns — Patreon /c/, TSR /members/)
+3. authorFromModPage (scraped from actual mod page)
+4. Domain-based hint (download URL domain → generic "CurseForge Creator" etc.)
+5. blogPostAuthor (WordPress post author — often the blog writer, not mod creator)
+6. Ultimate fallback: "MustHaveMods Community"
+```
+
+Minimum length: 2 characters (rejects single-char noise). Always trims whitespace.
+
+**Rule**: For any field that must never be null in the database, create a dedicated `ensure*()` function with a clear priority chain and an ultimate fallback. Document the priority order.
+
+### Game-Specific Category Normalization and Tags
+
+Category normalization (`normalizeCategory`) and tag extraction (`extractTagsFromTitle`) now accept an optional `game` parameter. Each game has its own vocabulary:
+
+| Game | Content Types | Tag Keywords |
+|------|--------------|--------------|
+| Sims 4 | Hair, CAS - Clothing, Makeup, Furniture, Poses... | toddler, child, maxis-match, alpha-cc... |
+| Minecraft | Shaders, Resource Packs, Texture Packs, Maps, Data Packs | forge, fabric, optifine, java-edition, bedrock... |
+| Stardew Valley | Portraits, Farm Maps, Visual Mods, Content Mods | smapi, content-patcher, portraits, retexture... |
+
+**Rule**: When extending a single-game system to multi-game, parameterize normalization functions with the game context rather than adding game-specific keywords to the existing lists. This prevents cross-contamination (e.g., "shader" being treated as a Sims 4 tag).
+
+### Facet Definitions for New Games
+
+New content types in `scripts/seed-facet-definitions.ts` use sort order ranges to keep games grouped:
+- Sims 4: sortOrder 1-60
+- Minecraft: sortOrder 70-79
+- Stardew Valley: sortOrder 80-89
+
+**Rule**: Reserve sortOrder ranges per game when adding facet definitions. Leave gaps between ranges for future additions.
+
 ### Amazon-Specific
 
 - Initial 1-3s delays caused blocking. Increased base delays to 3-6s.
