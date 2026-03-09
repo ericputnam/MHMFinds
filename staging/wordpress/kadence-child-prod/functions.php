@@ -48,6 +48,17 @@
   add_action( 'template_redirect', 'mhm_seo_301_redirects', 1 );
 
   /**
+   * Mediavine CDN preconnect hints — speeds up ad loading for higher viewability/CPM
+   */
+  function mhm_mediavine_preconnect() {
+      echo '<link rel="preconnect" href="https://scripts.mediavine.com" />' . "\n";
+      echo '<link rel="dns-prefetch" href="https://scripts.mediavine.com" />' . "\n";
+      echo '<link rel="preconnect" href="https://cdn.mediavine.com" />' . "\n";
+      echo '<link rel="dns-prefetch" href="https://cdn.mediavine.com" />' . "\n";
+  }
+  add_action( 'wp_head', 'mhm_mediavine_preconnect', 1 );
+
+  /**
    * Disable Mediavine ads for patrons or admin
    */
   function disable_mediavine_ads_for_patrons() {
