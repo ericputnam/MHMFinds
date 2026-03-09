@@ -79,6 +79,28 @@ npm run security:check-admin-auth  # Verify admin route auth
 - **WordPress staging**: `./scripts/staging/push-blog-functions.sh`
 - **WordPress production**: `./scripts/staging/push-blog-functions-prod.sh` (requires confirmation)
 
+## RPM / Monetization Optimization Rules
+
+1. **Blog and Mod Finder are separate optimization targets.** The blog (WordPress) is reading-focused long-form content generating ~80% of Mediavine revenue. The mod finder (Next.js) is a browse/grid UI focused on discovery and pages/session. Never apply one surface's optimization patterns to the other without verifying it makes sense for that surface's UX.
+2. **Data before code.** Before any RPM-related change, check Mediavine dashboard (via `browser-use --browser real`) and/or Google Analytics (property `437117335`) to identify the specific metric you're targeting. Cite the baseline number and expected impact. Don't guess — measure.
+3. **Know your surface.** Blog changes go through `staging/wordpress/kadence-child/functions.php` → push scripts → SSH. Mod finder changes go through Next.js files → Vercel deploy. Never confuse the two deployment paths.
+4. **Viewability is the #1 RPM lever.** Site-wide viewability is 56.3% (target 70%+). Prioritize changes that improve ad viewability over traffic volume. Every 1% viewability increase ≈ 1-2% RPM increase.
+5. **Mediavine dashboard access**: `browser-use --browser real` can open `https://publishers.mediavine.com/sites/SW50ZXJuYWxTaXRlOjE0MzE4/analytics` with the user's Chrome session. Use this to verify RPM, viewability, CPM, and revenue impact after changes.
+6. **RPM audit log**: `scripts/agents/rpm-audit-log.json` tracks all optimizations with before/after Mediavine metrics. Update it for every RPM-related change.
+7. **RPM agent prompt**: `scripts/agents/mediavine-rpm-expert.md` contains the full Mediavine playbook and autonomous loop instructions.
+
+### Blog vs Mod Finder Optimization Cheat Sheet
+
+| | Blog (WordPress) | Mod Finder (Next.js) |
+|---|---|---|
+| **User behavior** | Reading, scrolling long content | Browsing grids, clicking cards |
+| **Revenue share** | ~80% of Mediavine revenue | ~20% |
+| **Font/typography** | Already 18px / 1.8 line-height (good) | Keep default — grid UI needs compact text |
+| **RPM levers** | Scroll depth, viewability, content density, internal linking between posts | Pages/session, related mods, session duration |
+| **Ad units** | Content ($2,276), Adhesion ($1,038), Sidebar Sticky ($936) | Shares same Mediavine script |
+| **Deploy path** | `functions.php` → `push-blog-functions.sh` | Next.js files → Vercel |
+| **Key files** | `staging/wordpress/kadence-child/functions.php` | `app/page.tsx`, `app/mods/[id]/page.tsx`, `components/` |
+
 ## Agent Workflow
 
 ```

@@ -21,6 +21,7 @@ import {
   Home
 } from 'lucide-react';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { RelatedMods } from '@/components/RelatedMods';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -167,7 +168,7 @@ export default function ModDetailPage() {
                     src={selectedImage}
                     alt={mod.title}
                     fill
-                    unoptimized
+
                     sizes="(max-width: 1024px) 100vw, 66vw"
                     className="w-full h-full object-cover"
                   />
@@ -213,7 +214,7 @@ export default function ModDetailPage() {
                           src={image}
                           alt={`${mod.title} - Image ${index + 1}`}
                           fill
-                          unoptimized
+      
                           sizes="(max-width: 1024px) 25vw, 12vw"
                           className="w-full h-full object-cover"
                         />
@@ -265,6 +266,9 @@ export default function ModDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Related Mods */}
+            <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
           </div>
 
           {/* Right Column - Mod Info & Actions */}
