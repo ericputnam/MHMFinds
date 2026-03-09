@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { RelatedMods } from '@/components/RelatedMods';
+import { ModContentSections } from '@/components/ModContentSections';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -266,6 +267,16 @@ export default function ModDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Installation, Compatibility & FAQ — adds scroll depth + H2 ad insertion points */}
+            <ModContentSections
+              gameVersion={mod.gameVersion}
+              category={mod.category}
+              title={mod.title}
+              author={mod.author}
+              isFree={mod.isFree}
+              source={mod.source}
+            />
 
             {/* Related Mods */}
             <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
