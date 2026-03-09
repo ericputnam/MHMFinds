@@ -167,7 +167,7 @@ export default function ModDetailPage() {
                     src={selectedImage}
                     alt={mod.title}
                     fill
-                    unoptimized
+
                     sizes="(max-width: 1024px) 100vw, 66vw"
                     className="w-full h-full object-cover"
                   />
@@ -213,7 +213,7 @@ export default function ModDetailPage() {
                           src={image}
                           alt={`${mod.title} - Image ${index + 1}`}
                           fill
-                          unoptimized
+      
                           sizes="(max-width: 1024px) 25vw, 12vw"
                           className="w-full h-full object-cover"
                         />
