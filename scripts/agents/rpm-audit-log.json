@@ -35,6 +35,43 @@
     "other": 206.71,
     "direct": 193.48
   },
+  "latest_measurement": {
+    "date": "2026-03-09",
+    "period": "Mar 2-9, 2026 (8 days)",
+    "mediavine": {
+      "revenue_8d": 697.32,
+      "rpm": 8.81,
+      "cpm": 0.98,
+      "viewability_pct": 53.9,
+      "impressions": 709387,
+      "pageviews": 116500,
+      "sessions": 79074,
+      "desktop_pct": 92,
+      "mobile_pct": 7,
+      "ad_units": {
+        "content": 403.78,
+        "adhesion": 178.80,
+        "universal_player": 114.66,
+        "sidebar_sticky": 0.05
+      },
+      "revenue_by_source": {
+        "pinterest": 384.23,
+        "bing": 205.63,
+        "yahoo": 36.99,
+        "other": 31.33,
+        "direct": 27.15
+      }
+    },
+    "google_analytics": {
+      "sessions_7d": 82727,
+      "pageviews_7d": 120925,
+      "pagesPerSession": 1.46,
+      "avgSessionDuration": 307.6,
+      "engagementRate": 0.650,
+      "bounceRate": 0.350
+    },
+    "notes": "RPM dropped from $13.29 baseline to $8.81 — likely Q1 seasonal ad market softness plus viewability decline (56.3% → 53.9%). GA engagement metrics stable. Sidebar Sticky revenue collapsed to $0.05 — investigate if it stopped serving."
+  },
   "completed_optimizations": [
     {
       "id": 1,
@@ -61,8 +98,8 @@
       "surface": "blog",
       "files_modified": ["staging/wordpress/kadence-child/functions.php"],
       "metric_target": "ad viewability / ad load speed on blog pages (80% of revenue)",
-      "status": "pending_deploy",
-      "notes": "Needs push to staging via push-blog-functions.sh, then verify, then push to prod."
+      "status": "deployed_to_prod",
+      "notes": "Pushed to both staging and prod via push scripts. Verified preconnect tags present in HTML source. BigScoots cache purged."
     },
     {
       "id": 2,
@@ -92,25 +129,48 @@
       },
       "status": "pending_verification",
       "notes": "Enables Next.js image optimization pipeline. Faster image loading = ads render in viewport sooner = higher viewability."
+    },
+    {
+      "id": "4a",
+      "name": "related_mods_section",
+      "description": "Added Related Mods section to mod detail pages (6 mods, same category + gameVersion)",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/RelatedMods.tsx", "app/api/mods/[id]/related/route.ts", "app/mods/[id]/page.tsx"],
+      "metric_target": "pages/session (currently 1.46, target 1.8+)",
+      "baseline": {
+        "sessions_7d": 82727,
+        "pageviews_7d": 120925,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 307.6,
+        "engagementRate": 0.650
+      },
+      "status": "pending_verification",
+      "notes": "Displays 6 related mods in 3-column grid with thumbnails, ratings, price badges. API uses Prisma with HOT cache tier (60s TTL)."
+    },
+    {
+      "id": 7,
+      "name": "expand_mod_detail_content",
+      "description": "Added installation guide, compatibility info, and FAQ sections to mod detail pages",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/ModContentSections.tsx", "app/mods/[id]/page.tsx"],
+      "metric_target": "scroll depth → viewability (53.9% → 60%+) and RPM ($8.81 → $10+)",
+      "baseline": {
+        "rpm_8d": 8.81,
+        "viewability_pct": 53.9,
+        "sessions_7d": 82727,
+        "pageviews_7d": 120925,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 307.6,
+        "engagementRate": 0.650
+      },
+      "status": "pending_verification",
+      "hypothesis": "Adding 3 H2 sections (Install, Compatibility, FAQ) creates 3 additional Mediavine Script Wrapper ad insertion points per mod detail page. ~40% more scroll depth. Game-specific content for Sims 4, Minecraft, Stardew Valley.",
+      "notes": "New component ModContentSections.tsx. Collapsible FAQ items. Game-aware content (different install steps per game). No gradients. Build passes clean."
     }
   ],
   "pending_optimizations": [
-    {
-      "id": 2,
-      "name": "base_font_size_18px",
-      "description": "Increase base font-size from 16px to 18px in globals.css",
-      "status": "not_started",
-      "impact": "better readability = longer sessions = more ad views",
-      "effort": "5 min"
-    },
-    {
-      "id": 3,
-      "name": "remove_image_unoptimized",
-      "description": "Remove unoptimized flag from Image components on mod detail page",
-      "status": "not_started",
-      "impact": "faster image loading = better page speed = higher ad viewability",
-      "effort": "10 min"
-    },
     {
       "id": 4,
       "name": "mod_page_jsonld_schema",
@@ -120,28 +180,12 @@
       "effort": "30 min"
     },
     {
-      "id": 5,
-      "name": "related_mods_section",
-      "description": "Add Related Mods carousel to mod detail pages (same category)",
-      "status": "not_started",
-      "impact": "increase pages/session from 1.35 to 1.8+ = ~165K more pageviews/month",
-      "effort": "2 hours"
-    },
-    {
       "id": 6,
       "name": "desktop_right_sidebar_ad",
       "description": "Add sticky right sidebar ad container on desktop homepage",
       "status": "not_started",
       "impact": "new high-value ad slot on desktop (85% of search traffic)",
       "effort": "30 min"
-    },
-    {
-      "id": 7,
-      "name": "expand_mod_detail_content",
-      "description": "Add installation guide, FAQ, and compatibility sections to mod detail pages",
-      "status": "not_started",
-      "impact": "more scroll depth = more ad slots per page = higher RPM",
-      "effort": "2 hours"
     },
     {
       "id": 8,
@@ -166,7 +210,24 @@
       "status": "not_started",
       "impact": "increase pages/session + discovery",
       "effort": "1 hour"
+    },
+    {
+      "id": 11,
+      "name": "investigate_sidebar_sticky_collapse",
+      "description": "Sidebar Sticky revenue collapsed from $936/month to $0.05/week — investigate if ad unit stopped serving",
+      "status": "not_started",
+      "impact": "recovering ~$900/month revenue if sidebar sticky is broken",
+      "effort": "30 min",
+      "priority": "HIGH"
     }
   ],
-  "verification_history": []
+  "verification_history": [],
+  "mediavine_settings_audit": {
+    "date": "2026-03-09",
+    "video_settings": "ALL OPTIMAL — Universal Player ON (desktop+mobile), Mid-Roll ON, Optimize placement ON",
+    "ad_settings": "ALL OPTIMAL — CWV optimization ON, PageSpeed ON (mobile+desktop), CLS optimization ON",
+    "ad_units": "MOSTLY OPTIMAL — Adhesion ON all devices, Sidebar ON, Leaderboard ON, GumGum ON. OPPORTUNITIES: Interstitial Ads OFF (mobile+desktop), Ad Block Recovery OFF",
+    "opt_outs": "NONE — all categories enabled (maximum competition)",
+    "recommendations": "Enable Ad Block Recovery (zero risk, +2-5% revenue), consider enabling Interstitial Ads (+5-10% RPM but slightly worse UX)"
+  }
 }
