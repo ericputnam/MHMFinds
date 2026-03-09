@@ -21,6 +21,7 @@ import {
   Home
 } from 'lucide-react';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { RelatedMods } from '@/components/RelatedMods';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -265,6 +266,9 @@ export default function ModDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Related Mods */}
+            <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
           </div>
 
           {/* Right Column - Mod Info & Actions */}
