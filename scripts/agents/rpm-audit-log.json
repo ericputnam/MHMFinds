@@ -52,6 +52,46 @@
       },
       "status": "pending_verification",
       "notes": "Added 4 link tags: preconnect + dns-prefetch for both scripts.mediavine.com and cdn.mediavine.com. Placed before Google Fonts preconnect for priority. Build verified clean."
+    },
+    {
+      "id": "1b",
+      "name": "mediavine_cdn_preconnect_wordpress",
+      "description": "Added same Mediavine CDN preconnect hints to WordPress blog via functions.php wp_head hook (priority 1)",
+      "date": "2026-03-09",
+      "surface": "blog",
+      "files_modified": ["staging/wordpress/kadence-child/functions.php"],
+      "metric_target": "ad viewability / ad load speed on blog pages (80% of revenue)",
+      "status": "pending_deploy",
+      "notes": "Needs push to staging via push-blog-functions.sh, then verify, then push to prod."
+    },
+    {
+      "id": 2,
+      "name": "revert_font_size_modfinder",
+      "description": "Reverted 18px font-size on mod finder — wrong optimization for a grid/browse UI. Blog already had 18px.",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["app/globals.css"],
+      "metric_target": "n/a — corrective revert",
+      "status": "completed",
+      "notes": "Font size optimization is a blog pattern (long reading), not a mod finder pattern (grid scanning). Blog already has 18px via functions.php CSS."
+    },
+    {
+      "id": 3,
+      "name": "remove_image_unoptimized",
+      "description": "Removed unoptimized flag from Image components on mod detail page",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["app/mods/[id]/page.tsx"],
+      "metric_target": "page load speed → ad viewability on mod detail pages",
+      "baseline": {
+        "sessions_7d": 79869,
+        "pageviews_7d": 116500,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 306.9,
+        "engagementRate": 0.651
+      },
+      "status": "pending_verification",
+      "notes": "Enables Next.js image optimization pipeline. Faster image loading = ads render in viewport sooner = higher viewability."
     }
   ],
   "pending_optimizations": [
