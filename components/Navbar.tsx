@@ -12,6 +12,7 @@ export const Navbar: React.FC = () => {
   const { data: session, status } = useSession();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showGamesMenu, setShowGamesMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const gamesMenuTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Clear timeout on unmount
@@ -219,12 +220,111 @@ export const Navbar: React.FC = () => {
             </a>
           )}
 
-          <button className="md:hidden p-2 text-slate-300">
+          <button
+            className="md:hidden p-2 text-slate-300 hover:text-white transition-colors"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            aria-label="Toggle mobile menu"
+          >
             <Menu className="h-6 w-6" />
           </button>
         </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="md:hidden border-t border-white/5 bg-mhm-dark/95 backdrop-blur-xl">
+          <div className="container mx-auto px-4 py-4 space-y-1">
+            <a
+              href="/"
+              className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+              onClick={() => setShowMobileMenu(false)}
+            >
+              Discover
+            </a>
+
+            {/* Games Section */}
+            <div className="px-4 py-2">
+              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">
+                Browse by Game
+              </p>
+              <div className="space-y-1 pl-2">
+                {Object.entries(GAME_COLORS).map(([game, color]) => {
+                  const slug = GAME_TO_SLUG[game];
+                  if (!slug) return null;
+                  return (
+                    <Link
+                      key={game}
+                      href={`/games/${slug}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      <div
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}60` }}
+                      />
+                      <span className="text-sm font-medium text-slate-300">{game}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <a
+              href="/top-creators"
+              className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+              onClick={() => setShowMobileMenu(false)}
+            >
+              Creators
+            </a>
+            <a
+              href="/blog"
+              className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+              onClick={() => setShowMobileMenu(false)}
+            >
+              Blog
+            </a>
+
+            {/* Auth Section */}
+            <div className="pt-2 border-t border-white/5">
+              {status === 'authenticated' && session?.user ? (
+                <div className="space-y-1">
+                  <div className="px-4 py-2">
+                    <p className="text-sm font-medium text-white truncate">
+                      {session.user.username || session.user.email}
+                    </p>
+                  </div>
+                  {session.user.isCreator && (
+                    <a
+                      href="/creators"
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      <LayoutDashboard className="h-4 w-4" />
+                      Creator Portal
+                    </a>
+                  )}
+                  <button
+                    onClick={() => { handleSignOut(); setShowMobileMenu(false); }}
+                    className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <a
+                  href="/sign-in"
+                  className="block mx-4 mt-2 text-center bg-white text-mhm-dark hover:bg-slate-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Sign In
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Click outside to close dropdown */}
       {showUserMenu && (
