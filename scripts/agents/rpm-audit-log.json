@@ -1,0 +1,132 @@
+{
+  "site": "musthavemods.com",
+  "ga_property": "437117335",
+  "gsc_property": "sc-domain:musthavemods.com",
+  "target_rpm": 17,
+  "target_monthly_revenue": 7000,
+  "baseline_rpm": 13.29,
+  "baseline_cpm": 0.97,
+  "baseline_viewability": 56.3,
+  "baseline_date": "2026-03-09",
+  "mediavine_dashboard_url": "https://publishers.mediavine.com/sites/SW50ZXJuYWxTaXRlOjE0MzE4/analytics",
+  "baseline_metrics": {
+    "monthly_revenue": 5017.33,
+    "monthly_pageviews": 527003,
+    "monthly_sessions": 377270,
+    "monthly_impressions": 5124946,
+    "pages_per_session": 1.39,
+    "avg_session_duration_seconds": 308,
+    "rpm": 13.29,
+    "cpm": 0.97,
+    "viewability_pct": 56.3,
+    "desktop_pct": 94,
+    "mobile_pct": 5
+  },
+  "baseline_ad_units": {
+    "content": 2275.64,
+    "adhesion": 1038.00,
+    "sidebar_sticky": 935.96,
+    "universal_player": 767.70
+  },
+  "baseline_revenue_by_source": {
+    "pinterest": 2525.98,
+    "bing": 1777.99,
+    "yahoo": 313.21,
+    "other": 206.71,
+    "direct": 193.48
+  },
+  "completed_optimizations": [
+    {
+      "id": 1,
+      "name": "mediavine_cdn_preconnect",
+      "description": "Added preconnect and dns-prefetch hints for scripts.mediavine.com and cdn.mediavine.com to app/layout.tsx <head>",
+      "date": "2026-03-09",
+      "files_modified": ["app/layout.tsx"],
+      "metric_target": "ad viewability / ad load speed (CPM improvement)",
+      "baseline": {
+        "sessions_7d": 79869,
+        "pageviews_7d": 116500,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 306.9,
+        "engagementRate": 0.651
+      },
+      "status": "pending_verification",
+      "notes": "Added 4 link tags: preconnect + dns-prefetch for both scripts.mediavine.com and cdn.mediavine.com. Placed before Google Fonts preconnect for priority. Build verified clean."
+    }
+  ],
+  "pending_optimizations": [
+    {
+      "id": 2,
+      "name": "base_font_size_18px",
+      "description": "Increase base font-size from 16px to 18px in globals.css",
+      "status": "not_started",
+      "impact": "better readability = longer sessions = more ad views",
+      "effort": "5 min"
+    },
+    {
+      "id": 3,
+      "name": "remove_image_unoptimized",
+      "description": "Remove unoptimized flag from Image components on mod detail page",
+      "status": "not_started",
+      "impact": "faster image loading = better page speed = higher ad viewability",
+      "effort": "10 min"
+    },
+    {
+      "id": 4,
+      "name": "mod_page_jsonld_schema",
+      "description": "Add Article JSON-LD schema to individual mod detail pages",
+      "status": "not_started",
+      "impact": "richer search results = higher CTR = more traffic",
+      "effort": "30 min"
+    },
+    {
+      "id": 5,
+      "name": "related_mods_section",
+      "description": "Add Related Mods carousel to mod detail pages (same category)",
+      "status": "not_started",
+      "impact": "increase pages/session from 1.35 to 1.8+ = ~165K more pageviews/month",
+      "effort": "2 hours"
+    },
+    {
+      "id": 6,
+      "name": "desktop_right_sidebar_ad",
+      "description": "Add sticky right sidebar ad container on desktop homepage",
+      "status": "not_started",
+      "impact": "new high-value ad slot on desktop (85% of search traffic)",
+      "effort": "30 min"
+    },
+    {
+      "id": 7,
+      "name": "expand_mod_detail_content",
+      "description": "Add installation guide, FAQ, and compatibility sections to mod detail pages",
+      "status": "not_started",
+      "impact": "more scroll depth = more ad slots per page = higher RPM",
+      "effort": "2 hours"
+    },
+    {
+      "id": 8,
+      "name": "more_from_creator_section",
+      "description": "Add More from Creator carousel to mod detail pages",
+      "status": "not_started",
+      "impact": "increase pages/session + session duration",
+      "effort": "1 hour"
+    },
+    {
+      "id": 9,
+      "name": "breadcrumb_schema",
+      "description": "Add BreadcrumbList JSON-LD to mod pages",
+      "status": "not_started",
+      "impact": "better search appearance = higher CTR",
+      "effort": "30 min"
+    },
+    {
+      "id": 10,
+      "name": "trending_mods_carousel",
+      "description": "Add Trending Mods section to homepage and detail pages",
+      "status": "not_started",
+      "impact": "increase pages/session + discovery",
+      "effort": "1 hour"
+    }
+  ],
+  "verification_history": []
+}
