@@ -60,6 +60,10 @@ npm run security:check-admin-auth  # Verify admin route auth
 - **Trailing slash + catch-all**: With `trailingSlash: true`, `/path` redirects to `/path/` which can match catch-all patterns. Define explicit rules for both `/path` and `/path/` BEFORE catch-alls.
 - **Sitemap lastmod dates**: Use stable date strings (`'2026-02-24'`), NOT `Date.now()` or `new Date().toISOString()`. Dynamic timestamps make lastmod meaningless to Google.
 - **ads.txt proxy**: Ad networks (Mediavine) verify domain ownership via `/ads.txt`. Since WordPress manages this file, add a Vercel rewrite to proxy it from the blog origin. Must appear before catch-all patterns in `vercel.json`.
+- **Mediavine preconnect hints**: Both Next.js (`app/layout.tsx`) and WordPress (`functions.php`) need `<link rel="preconnect">` and `<link rel="dns-prefetch">` for `scripts.mediavine.com` and `cdn.mediavine.com`. WordPress uses `wp_head` priority 1.
+- **Related Mods pattern**: `RelatedMods.tsx` fetches from `/api/mods/[id]/related` (same category + gameVersion, excludes self, 6 results). Returns `null` on empty — parent doesn't need conditional rendering.
+- **Navbar dropdown debounce**: Desktop hover menus use 150ms `setTimeout` on `onMouseLeave` to prevent flicker when cursor moves between trigger and dropdown. Must clear timeout in `useEffect` cleanup to avoid React warnings on unmount.
+- **Mobile menu was non-functional**: The hamburger menu button had no `onClick` handler until commit 5e55fdf. When adding mobile UI, always test the actual tap interaction — visual presence doesn't mean functional.
 
 ## Important Directories
 
@@ -88,6 +92,7 @@ npm run security:check-admin-auth  # Verify admin route auth
 5. **Mediavine dashboard access**: `browser-use --browser real` can open `https://publishers.mediavine.com/sites/SW50ZXJuYWxTaXRlOjE0MzE4/analytics` with the user's Chrome session. Use this to verify RPM, viewability, CPM, and revenue impact after changes.
 6. **RPM audit log**: `scripts/agents/rpm-audit-log.json` tracks all optimizations with before/after Mediavine metrics. Update it for every RPM-related change.
 7. **RPM agent prompt**: `scripts/agents/mediavine-rpm-expert.md` contains the full Mediavine playbook and autonomous loop instructions.
+8. **Don't blindly apply blog patterns to mod finder.** 18px font was right for blog (long-form reading) but wrong for mod finder (compact grid). This was reverted in commit 8965e1b. Always ask: "does this pattern make sense for THIS surface's UX?"
 
 ### Blog vs Mod Finder Optimization Cheat Sheet
 
