@@ -2595,6 +2595,130 @@ add_action('wp_head', 'mhm_single_post_content_column_wider_css', 100005);
 
 
 /**
+ * Restore sidebar on desktop single posts for Mediavine Sidebar Sticky ad unit.
+ *
+ * ROOT CAUSE: Dark theme redesign (Feb 2026) hid sidebar on ALL WordPress page types
+ * with display:none!important. This killed Mediavine Sidebar Sticky revenue from
+ * ~$936/month to $0.05/week. The Mediavine dashboard setting is ON, but the HTML
+ * container was invisible so ads couldn't serve.
+ *
+ * FIX: Override all sidebar-hiding CSS on single posts (desktop only, >=1025px).
+ * Uses priority 100010 to override all previous hooks (highest was 100005).
+ * Mobile/tablet keeps sidebar hidden (94% of traffic is desktop anyway).
+ *
+ * Mediavine requirements for Sidebar Sticky:
+ * - Sidebar must be visible
+ * - No overflow:hidden on parent elements (breaks position:sticky)
+ * - Short sidebar = sticky ad activates sooner = more refreshes = more revenue
+ *
+ * After deploying, email publishers@mediavine.com to retarget sidebar ads.
+ */
+function mhm_restore_sidebar_sticky_ads_css() {
+    if (is_admin() || !is_single()) {
+        return;
+    }
+
+    echo <<<'CSS'
+<style id="mhm-restore-sidebar-sticky-ads">
+/* === Desktop: show sidebar for Mediavine Sticky Sidebar ads === */
+@media (min-width: 1025px) {
+  /* Override ALL previous display:none rules for sidebar */
+  body.single-post #secondary,
+  body.single #secondary,
+  body.single-post .primary-sidebar,
+  body.single .primary-sidebar,
+  body.single-post aside.widget-area,
+  body.single aside.widget-area,
+  body.single-post .sidebar,
+  body.single .sidebar {
+    display: block !important;
+    width: 300px !important;
+    flex-shrink: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    position: relative !important;
+  }
+
+  /* Content wrap = flex row: main content + sidebar */
+  body.single-post .content-wrap,
+  body.single .content-wrap {
+    display: flex !important;
+    gap: 2rem !important;
+    overflow: visible !important;
+    align-items: flex-start !important;
+  }
+
+  /* Main content takes remaining space */
+  body.single-post #primary,
+  body.single #primary,
+  body.single-post .site-main,
+  body.single .site-main,
+  body.single-post .content-area,
+  body.single .content-area {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+
+  /* Ensure no overflow:hidden on ancestors — required for position:sticky */
+  body.single-post .content-container,
+  body.single .content-container,
+  body.single-post .site-content,
+  body.single .site-content {
+    overflow: visible !important;
+  }
+
+  /* Dark-theme styling for sidebar widgets (matches existing dark theme) */
+  body.single-post #secondary .widget,
+  body.single #secondary .widget {
+    background: #151B2B !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  body.single-post #secondary .widget-title,
+  body.single #secondary .widget-title {
+    color: #f1f5f9 !important;
+    border-bottom: 2px solid #ec4899 !important;
+    padding-bottom: 0.75rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  body.single-post #secondary .widget a,
+  body.single #secondary .widget a,
+  body.single-post #secondary .widget li,
+  body.single #secondary .widget li,
+  body.single-post #secondary .widget p,
+  body.single #secondary .widget p {
+    color: #94a3b8 !important;
+  }
+
+  body.single-post #secondary .widget a:hover,
+  body.single #secondary .widget a:hover {
+    color: #ec4899 !important;
+  }
+}
+
+/* === Mobile/Tablet: keep sidebar hidden === */
+@media (max-width: 1024px) {
+  body.single-post #secondary,
+  body.single #secondary,
+  body.single-post .primary-sidebar,
+  body.single .primary-sidebar,
+  body.single-post aside.widget-area,
+  body.single aside.widget-area {
+    display: none !important;
+  }
+}
+</style>
+CSS;
+}
+add_action('wp_head', 'mhm_restore_sidebar_sticky_ads_css', 100010);
+
+/**
  * ============================================================
  *  HEADER / NAV — Clean build matching reference React app
  *  Glassmorphic floating bar, uppercase menu, glass dropdowns,
