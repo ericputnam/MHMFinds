@@ -37,7 +37,7 @@
   },
   "latest_measurement": {
     "date": "2026-03-09",
-    "period": "Mar 2-9, 2026 (8 days)",
+    "period": "Mar 3-9, 2026 (7 days)",
     "mediavine": {
       "revenue_8d": 697.32,
       "rpm": 8.81,
@@ -63,15 +63,22 @@
       }
     },
     "google_analytics": {
-      "sessions_8d": 85443,
-      "pageviews_8d": 124659,
-      "pagesPerSession": 1.459,
-      "avgSessionDuration": 307.1,
-      "engagementRate": 0.646,
-      "bounceRate": 0.354,
-      "note": "Updated Mar 9 second measurement — GA data fresh, MV dashboard was down"
+      "sessions_7d": 74954,
+      "pageviews_7d": 110504,
+      "pagesPerSession": 1.474,
+      "avgSessionDuration": 312.5,
+      "engagementRate": 0.655,
+      "bounceRate": 0.345,
+      "top_sources": {
+        "pinterest": {"sessions": 48636, "pagesPerSession": 1.39, "engagementRate": 0.68},
+        "bing": {"sessions": 15818, "pagesPerSession": 1.60, "engagementRate": 0.70},
+        "direct": {"sessions": 2924, "pagesPerSession": 1.47, "engagementRate": 0.29},
+        "yahoo": {"sessions": 1529, "pagesPerSession": 1.36, "engagementRate": 0.65},
+        "google": {"sessions": 1429, "pagesPerSession": 1.49, "engagementRate": 0.63}
+      },
+      "note": "Updated Mar 9 — all engagement metrics trending up vs previous period. MV dashboard down, using last MV measurement."
     },
-    "notes": "RPM dropped from $13.29 baseline to $8.81 — likely Q1 seasonal ad market softness plus viewability decline (56.3% → 53.9%). GA engagement metrics stable. Sidebar Sticky revenue collapsed to $0.05 — investigate if it stopped serving."
+    "notes": "RPM $8.81 (Q1 seasonal). GA engagement improving: pages/session 1.459→1.474, duration 307→312.5s, engagement 64.6%→65.5%. Sidebar Sticky deployed and serving Mediavine ads. MV dashboard intermittently down."
   },
   "completed_optimizations": [
     {
@@ -207,17 +214,38 @@
         "pageviews_8d": 124659,
         "pagesPerSession": 1.459
       },
-      "status": "pending_deployment",
+      "status": "deployed_to_prod",
+      "deployed_date": "2026-03-09",
       "hypothesis": "The dark theme CSS hid sidebar on all page types, killing Sidebar Sticky ad unit. Re-enabling sidebar on desktop single posts (where users read long content) will restore the sticky ad that auto-refreshes every 30s. Expected recovery: ~$900/month. May also improve overall viewability since sidebar sticky typically has highest viewability of any ad unit.",
-      "deployment_steps": [
-        "1. Run: ./scripts/staging/push-blog-functions.sh (staging)",
-        "2. Verify sidebar appears on staging blog post",
-        "3. Run: ./scripts/staging/push-blog-functions-prod.sh (production)",
-        "4. Verify sidebar appears on production blog post",
-        "5. Email publishers@mediavine.com to retarget sidebar ads",
-        "6. Wait 7 days, check Mediavine dashboard for Sidebar Sticky revenue"
-      ],
-      "notes": "New function mhm_restore_sidebar_sticky_ads_css at priority 100010 overrides all previous sidebar-hiding. Desktop only (>=1025px). Flex layout with 300px sidebar. overflow:visible on parents for position:sticky. Dark theme widget styling included. PHP syntax verified structurally. Build passes clean."
+      "implementation": {
+        "approach": "PHP server-side injection via get_sidebar WordPress action hook. Outputs bare <aside id='secondary' class='widget-area primary-sidebar'> element. CSS at priority 100010 overrides all display:none rules with html body.single specificity. Flex layout: main content + 300px sticky sidebar.",
+        "key_learnings": [
+          "Perfmatters plugin rewrites inline <script> tags to type='pmdelayedscript', preventing execution. Solution: use PHP HTML output instead of JS injection.",
+          "BigScoots purge_all() is async/incomplete — use purge_urls() for specific URLs or purge_all() + purge_opcache() + purge_object_cache() together.",
+          "Mediavine Script Wrapper auto-detects <aside id='secondary'> with class='widget-area' — no need to email Mediavine for retargeting.",
+          "Three cache layers on BigScoots: WP object cache (wp cache flush), Perfmatters HTML cache (rm -rf wp-content/cache/perfmatters/), BigScoots edge cache (purge_all/purge_urls)."
+        ]
+      },
+      "verification": "Confirmed via browser-use: #secondary element visible (display:block, width:300px, position:sticky), Mediavine Grow.me 'Recommended' widget + display ads auto-injected. Sidebar sticks on scroll."
+    },
+    {
+      "id": 8,
+      "name": "more_from_creator_section",
+      "description": "Added More from Creator section to mod detail pages (up to 6 mods by same author)",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/MoreFromCreator.tsx", "app/api/mods/[id]/creator/route.ts", "app/mods/[id]/page.tsx"],
+      "metric_target": "pages/session (1.474 → 1.6+) via creator discovery loop",
+      "baseline": {
+        "sessions_7d": 74954,
+        "pageviews_7d": 110504,
+        "pagesPerSession": 1.474,
+        "avgSessionDuration": 312.5,
+        "engagementRate": 0.655
+      },
+      "status": "pending_verification",
+      "hypothesis": "Users who find one mod from a creator will browse more by the same creator. Adds another internal linking surface + H2 section for Mediavine ad insertion. Placed between ModContentSections and RelatedMods for optimal scroll depth.",
+      "notes": "New component MoreFromCreator.tsx with same card design as RelatedMods. API uses Prisma HOT cache (60s TTL). Hidden when creator has no other mods. Build passes clean."
     }
   ],
   "pending_optimizations": [
@@ -230,14 +258,6 @@
       "effort": "30 min"
     },
     {
-      "id": 8,
-      "name": "more_from_creator_section",
-      "description": "Add More from Creator carousel to mod detail pages",
-      "status": "not_started",
-      "impact": "increase pages/session + session duration",
-      "effort": "1 hour"
-    },
-    {
       "id": 10,
       "name": "trending_mods_carousel",
       "description": "Add Trending Mods section to homepage and detail pages",
@@ -248,12 +268,8 @@
     {
       "id": 12,
       "name": "email_mediavine_retarget_sidebar",
-      "description": "After deploying sidebar fix (#11), email publishers@mediavine.com to retarget sidebar ads on single posts",
-      "status": "blocked_on_deployment",
-      "impact": "required step to activate Sidebar Sticky after HTML changes",
-      "effort": "5 min",
-      "priority": "HIGH",
-      "notes": "Mediavine docs say: after sidebar changes, email publishers@mediavine.com so they can retarget ads. Do this AFTER confirming sidebar is visible in production."
+      "status": "not_needed",
+      "notes": "Mediavine Script Wrapper auto-detected <aside id='secondary'> and immediately started serving Sidebar Sticky + Grow.me Recommended widget. No manual retargeting email needed."
     }
   ],
   "verification_history": [],
