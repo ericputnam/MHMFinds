@@ -421,6 +421,16 @@ function HomePageContent() {
                 affiliateInterval={5}
               />
             </div>
+
+            {/* Right Ad Sidebar — Mediavine Sidebar Sticky auto-detects <aside id="secondary"> */}
+            <aside
+              id="secondary"
+              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] sticky top-24 self-start min-h-[250px]"
+              role="complementary"
+              aria-label="Sidebar"
+            >
+              {/* Mediavine Script Wrapper will auto-inject Sidebar Sticky ads here */}
+            </aside>
           </div>
         </div>
 
