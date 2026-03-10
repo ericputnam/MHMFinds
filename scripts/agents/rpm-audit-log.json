@@ -168,17 +168,30 @@
       "status": "pending_verification",
       "hypothesis": "Adding 3 H2 sections (Install, Compatibility, FAQ) creates 3 additional Mediavine Script Wrapper ad insertion points per mod detail page. ~40% more scroll depth. Game-specific content for Sims 4, Minecraft, Stardew Valley.",
       "notes": "New component ModContentSections.tsx. Collapsible FAQ items. Game-aware content (different install steps per game). No gradients. Build passes clean."
+    },
+    {
+      "id": "4+9",
+      "name": "mod_page_jsonld_and_breadcrumb_schema",
+      "description": "Added SoftwareApplication + BreadcrumbList JSON-LD structured data to mod detail pages",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/ModJsonLd.tsx", "app/mods/[id]/page.tsx"],
+      "metric_target": "search CTR improvement → more organic traffic → more pageviews → more ad revenue",
+      "baseline": {
+        "rpm_8d": 8.81,
+        "viewability_pct": 53.9,
+        "sessions_7d": 82727,
+        "pageviews_7d": 120925,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 307.6,
+        "engagementRate": 0.650
+      },
+      "status": "pending_verification",
+      "hypothesis": "SoftwareApplication schema enables rich snippets (ratings, price, author) in Google SERPs. BreadcrumbList shows navigation path. Both improve CTR from search results, driving more organic traffic. Effect takes 2-4 weeks as Google re-crawls pages.",
+      "notes": "New component ModJsonLd.tsx renders two JSON-LD script tags. Uses SoftwareApplication (not Article) since mods are software. Includes aggregateRating when ratings exist. BreadcrumbList covers Home > Category > Mod. Build passes clean."
     }
   ],
   "pending_optimizations": [
-    {
-      "id": 4,
-      "name": "mod_page_jsonld_schema",
-      "description": "Add Article JSON-LD schema to individual mod detail pages",
-      "status": "not_started",
-      "impact": "richer search results = higher CTR = more traffic",
-      "effort": "30 min"
-    },
     {
       "id": 6,
       "name": "desktop_right_sidebar_ad",
@@ -196,14 +209,6 @@
       "effort": "1 hour"
     },
     {
-      "id": 9,
-      "name": "breadcrumb_schema",
-      "description": "Add BreadcrumbList JSON-LD to mod pages",
-      "status": "not_started",
-      "impact": "better search appearance = higher CTR",
-      "effort": "30 min"
-    },
-    {
       "id": 10,
       "name": "trending_mods_carousel",
       "description": "Add Trending Mods section to homepage and detail pages",
@@ -213,12 +218,15 @@
     },
     {
       "id": 11,
-      "name": "investigate_sidebar_sticky_collapse",
-      "description": "Sidebar Sticky revenue collapsed from $936/month to $0.05/week — investigate if ad unit stopped serving",
-      "status": "not_started",
-      "impact": "recovering ~$900/month revenue if sidebar sticky is broken",
-      "effort": "30 min",
-      "priority": "HIGH"
+      "name": "fix_sidebar_sticky_collapse",
+      "description": "ROOT CAUSE FOUND: WordPress CSS hides sidebar on ALL page types with display:none!important. Re-enable sidebar on single posts to recover Sidebar Sticky ad revenue.",
+      "status": "root_cause_identified",
+      "impact": "recovering ~$900/month revenue — sidebar sticky was hidden by dark theme redesign CSS",
+      "effort": "1 hour (CSS changes + WordPress deployment + visual verification)",
+      "priority": "CRITICAL",
+      "root_cause": "Dark theme redesign in Feb 2026 added display:none!important to sidebar (#secondary, .sidebar, aside.widget-area) on body.single, body.blog, body.archive, body.search, body.category, body.page — effectively ALL WordPress page types. Lines 640, 664-665, 2301-2307, 2360-2372, 2524-2530, 4261-4265 in staging/wordpress/kadence-child/functions.php.",
+      "fix_plan": "Remove display:none for sidebar on body.single-post pages. Keep sidebar hidden on blog/archive (4-column grid layout). Ensure sidebar has dark theme styling. Requires WordPress push-blog-functions.sh deployment.",
+      "notes": "Mediavine dashboard confirms Sidebar Sticky is enabled. The ad unit simply cannot serve because the HTML container is hidden. Sidebar HTML exists in the WordPress template (54 elements found), but CSS hides it before Mediavine can inject ads."
     }
   ],
   "verification_history": [],
