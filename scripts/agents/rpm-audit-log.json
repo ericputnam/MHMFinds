@@ -292,6 +292,27 @@
         "source": "https://help.mediavine.com/sticky-sidebar-ad-mediavine-help-center",
         "commit": "rpm: fix sidebar ad container — remove sticky CSS that breaks Mediavine"
       }
+    },
+    {
+      "id": "6b",
+      "name": "mod_detail_sidebar_ad",
+      "description": "Added Mediavine Sidebar Sticky ad container to mod detail page right column (last element per Mediavine docs)",
+      "date": "2026-03-10",
+      "surface": "modfinder",
+      "files_modified": ["app/mods/[id]/page.tsx"],
+      "metric_target": "viewability + Sidebar Sticky revenue on highest-scroll-depth pages",
+      "baseline": {
+        "sessions_7d": 69692,
+        "pageviews_7d": 99991,
+        "pagesPerSession": 1.435,
+        "avgSessionDuration": 304.1,
+        "engagementRate": 0.653,
+        "rpm_last_known": 8.81,
+        "viewability_last_known": 53.9
+      },
+      "status": "pending_verification",
+      "hypothesis": "Mod detail pages have the longest scroll depth (images + video + description + install/compat/FAQ + more from creator + related mods). Mediavine says 'short sidebar + long content = sticky ad visible longest = most impressions'. The sidebar sticky auto-refreshes every 30s, so longer page engagement = more refreshes = more revenue. This page type generates the most ad revenue per visit.",
+      "notes": "Added <aside id='secondary' class='widget-area primary-sidebar'> as last element in right sidebar column. Visible on lg screens (1024px+). No position:sticky (Mediavine handles it). overflow:visible. ATF + BTF placeholder divs with min-h-250px. Build passes clean."
     }
   ],
   "pending_optimizations": [
