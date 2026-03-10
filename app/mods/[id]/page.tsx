@@ -23,6 +23,7 @@ import {
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
+import { ModJsonLd } from '@/components/ModJsonLd';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -116,6 +117,9 @@ export default function ModDetailPage() {
 
   return (
     <div className="min-h-screen bg-mhm-dark">
+      {/* JSON-LD Structured Data for search engines */}
+      <ModJsonLd mod={mod} />
+
       {/* Header with Breadcrumbs */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
