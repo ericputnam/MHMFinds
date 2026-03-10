@@ -285,7 +285,13 @@
       },
       "status": "pending_verification",
       "hypothesis": "Mediavine Script Wrapper auto-detects <aside id='secondary' class='widget-area primary-sidebar'> and injects Sidebar Sticky ads that auto-refresh every 30s. Desktop is 94% of traffic. Adding this to Next.js pages (which currently have NO sidebar ad) creates a new high-viewability ad slot. WordPress blog already has this restored (#11) generating ~$900/month. Mod finder should add ~$150-250/month.",
-      "notes": "300px sticky sidebar, visible only on xl screens (1280px+). Uses same HTML structure as WordPress sidebar (id='secondary', class='widget-area primary-sidebar'). Positioned after the grid flex container. Self-start + sticky top-24 for scroll-following behavior. No gradients. Build passes clean."
+      "notes": "300px sidebar, visible only on xl screens (1280px+). Uses same HTML structure as WordPress sidebar (id='secondary', class='widget-area primary-sidebar'). CRITICAL FIX (Mar 10): Removed position:sticky — Mediavine Script Wrapper handles stickiness itself and adding CSS sticky breaks the ad's auto-refresh behavior. Added overflow-visible explicitly. Added ATF + BTF placeholder divs with min-h-250px for CLS optimization. Per Mediavine docs: sidebar container must NOT have position:sticky or position:fixed.",
+      "fix_applied": {
+        "date": "2026-03-10",
+        "issue": "Initial implementation had sticky/top-24/self-start CSS which would break Mediavine's ad refresh",
+        "source": "https://help.mediavine.com/sticky-sidebar-ad-mediavine-help-center",
+        "commit": "rpm: fix sidebar ad container — remove sticky CSS that breaks Mediavine"
+      }
     }
   ],
   "pending_optimizations": [
