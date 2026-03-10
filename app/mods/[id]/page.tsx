@@ -459,6 +459,21 @@ export default function ModDetailPage() {
                 />
               </div>
             )}
+
+            {/* Mediavine Sidebar Sticky Ad — MUST be last element in sidebar.
+                Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
+                stickiness itself. overflow must be visible. */}
+            <aside
+              id="secondary"
+              className="widget-area primary-sidebar hidden lg:block mt-6 overflow-visible"
+              role="complementary"
+              aria-label="Sidebar ads"
+            >
+              {/* ATF ad placeholder */}
+              <div className="min-h-[250px]" />
+              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
+              <div className="min-h-[250px]" />
+            </aside>
           </div>
         </div>
       </div>
