@@ -422,14 +422,20 @@ function HomePageContent() {
               />
             </div>
 
-            {/* Right Ad Sidebar — Mediavine Sidebar Sticky auto-detects <aside id="secondary"> */}
+            {/* Right Ad Sidebar — Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
+                IMPORTANT: Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
+                stickiness itself. Adding sticky CSS breaks Mediavine's ad refresh behavior.
+                overflow must be visible on this element and all ancestors. */}
             <aside
               id="secondary"
-              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] sticky top-24 self-start min-h-[250px]"
+              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] overflow-visible"
               role="complementary"
               aria-label="Sidebar"
             >
-              {/* Mediavine Script Wrapper will auto-inject Sidebar Sticky ads here */}
+              {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
+              <div className="min-h-[250px]" />
+              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
+              <div className="min-h-[250px]" />
             </aside>
           </div>
         </div>
