@@ -246,6 +246,25 @@
       "status": "pending_verification",
       "hypothesis": "Users who find one mod from a creator will browse more by the same creator. Adds another internal linking surface + H2 section for Mediavine ad insertion. Placed between ModContentSections and RelatedMods for optimal scroll depth.",
       "notes": "New component MoreFromCreator.tsx with same card design as RelatedMods. API uses Prisma HOT cache (60s TTL). Hidden when creator has no other mods. Build passes clean."
+    },
+    {
+      "id": 10,
+      "name": "trending_mods_carousel",
+      "description": "Added Trending Mods horizontal carousel to homepage showing top 12 mods by download count",
+      "date": "2026-03-10",
+      "surface": "modfinder",
+      "files_modified": ["components/TrendingMods.tsx", "app/page.tsx"],
+      "metric_target": "pages/session (1.474 → 1.6+) via discovery on homepage",
+      "baseline": {
+        "sessions_7d": 74954,
+        "pageviews_7d": 110504,
+        "pagesPerSession": 1.474,
+        "avgSessionDuration": 312.5,
+        "engagementRate": 0.655
+      },
+      "status": "pending_verification",
+      "hypothesis": "Trending Mods carousel on homepage gives users immediate discovery paths, increasing click-through to mod detail pages. Each additional pageview = more ad impressions. Only shows on default homepage (no active filters/search). Drives pages/session and session duration.",
+      "notes": "New component TrendingMods.tsx. Horizontal scroll with chevron nav buttons. Fetches from existing /api/mods endpoint (sortBy=downloadCount, limit=12). Dark theme cards with thumbnail, price badge, game badge, rating, author. Loading skeleton state. No gradients. Build passes clean."
     }
   ],
   "pending_optimizations": [
@@ -256,14 +275,6 @@
       "status": "not_started",
       "impact": "new high-value ad slot on desktop (85% of search traffic)",
       "effort": "30 min"
-    },
-    {
-      "id": 10,
-      "name": "trending_mods_carousel",
-      "description": "Add Trending Mods section to homepage and detail pages",
-      "status": "not_started",
-      "impact": "increase pages/session + discovery",
-      "effort": "1 hour"
     },
     {
       "id": 12,
