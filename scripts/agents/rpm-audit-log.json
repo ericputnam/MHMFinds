@@ -63,12 +63,13 @@
       }
     },
     "google_analytics": {
-      "sessions_7d": 82727,
-      "pageviews_7d": 120925,
-      "pagesPerSession": 1.46,
-      "avgSessionDuration": 307.6,
-      "engagementRate": 0.650,
-      "bounceRate": 0.350
+      "sessions_8d": 85443,
+      "pageviews_8d": 124659,
+      "pagesPerSession": 1.459,
+      "avgSessionDuration": 307.1,
+      "engagementRate": 0.646,
+      "bounceRate": 0.354,
+      "note": "Updated Mar 9 second measurement — GA data fresh, MV dashboard was down"
     },
     "notes": "RPM dropped from $13.29 baseline to $8.81 — likely Q1 seasonal ad market softness plus viewability decline (56.3% → 53.9%). GA engagement metrics stable. Sidebar Sticky revenue collapsed to $0.05 — investigate if it stopped serving."
   },
@@ -189,6 +190,34 @@
       "status": "pending_verification",
       "hypothesis": "SoftwareApplication schema enables rich snippets (ratings, price, author) in Google SERPs. BreadcrumbList shows navigation path. Both improve CTR from search results, driving more organic traffic. Effect takes 2-4 weeks as Google re-crawls pages.",
       "notes": "New component ModJsonLd.tsx renders two JSON-LD script tags. Uses SoftwareApplication (not Article) since mods are software. Includes aggregateRating when ratings exist. BreadcrumbList covers Home > Category > Mod. Build passes clean."
+    },
+    {
+      "id": 11,
+      "name": "restore_sidebar_sticky_ads",
+      "description": "Restored sidebar visibility on single blog posts (desktop) for Mediavine Sidebar Sticky ad unit",
+      "date": "2026-03-09",
+      "surface": "blog",
+      "files_modified": ["staging/wordpress/kadence-child/functions.php"],
+      "metric_target": "Sidebar Sticky revenue recovery: $0.05/week → ~$230/week ($936/month)",
+      "baseline": {
+        "sidebar_sticky_revenue_8d": 0.05,
+        "rpm_8d": 8.81,
+        "viewability_pct": 53.9,
+        "sessions_8d": 85443,
+        "pageviews_8d": 124659,
+        "pagesPerSession": 1.459
+      },
+      "status": "pending_deployment",
+      "hypothesis": "The dark theme CSS hid sidebar on all page types, killing Sidebar Sticky ad unit. Re-enabling sidebar on desktop single posts (where users read long content) will restore the sticky ad that auto-refreshes every 30s. Expected recovery: ~$900/month. May also improve overall viewability since sidebar sticky typically has highest viewability of any ad unit.",
+      "deployment_steps": [
+        "1. Run: ./scripts/staging/push-blog-functions.sh (staging)",
+        "2. Verify sidebar appears on staging blog post",
+        "3. Run: ./scripts/staging/push-blog-functions-prod.sh (production)",
+        "4. Verify sidebar appears on production blog post",
+        "5. Email publishers@mediavine.com to retarget sidebar ads",
+        "6. Wait 7 days, check Mediavine dashboard for Sidebar Sticky revenue"
+      ],
+      "notes": "New function mhm_restore_sidebar_sticky_ads_css at priority 100010 overrides all previous sidebar-hiding. Desktop only (>=1025px). Flex layout with 300px sidebar. overflow:visible on parents for position:sticky. Dark theme widget styling included. PHP syntax verified structurally. Build passes clean."
     }
   ],
   "pending_optimizations": [
@@ -217,16 +246,14 @@
       "effort": "1 hour"
     },
     {
-      "id": 11,
-      "name": "fix_sidebar_sticky_collapse",
-      "description": "ROOT CAUSE FOUND: WordPress CSS hides sidebar on ALL page types with display:none!important. Re-enable sidebar on single posts to recover Sidebar Sticky ad revenue.",
-      "status": "root_cause_identified",
-      "impact": "recovering ~$900/month revenue — sidebar sticky was hidden by dark theme redesign CSS",
-      "effort": "1 hour (CSS changes + WordPress deployment + visual verification)",
-      "priority": "CRITICAL",
-      "root_cause": "Dark theme redesign in Feb 2026 added display:none!important to sidebar (#secondary, .sidebar, aside.widget-area) on body.single, body.blog, body.archive, body.search, body.category, body.page — effectively ALL WordPress page types. Lines 640, 664-665, 2301-2307, 2360-2372, 2524-2530, 4261-4265 in staging/wordpress/kadence-child/functions.php.",
-      "fix_plan": "Remove display:none for sidebar on body.single-post pages. Keep sidebar hidden on blog/archive (4-column grid layout). Ensure sidebar has dark theme styling. Requires WordPress push-blog-functions.sh deployment.",
-      "notes": "Mediavine dashboard confirms Sidebar Sticky is enabled. The ad unit simply cannot serve because the HTML container is hidden. Sidebar HTML exists in the WordPress template (54 elements found), but CSS hides it before Mediavine can inject ads."
+      "id": 12,
+      "name": "email_mediavine_retarget_sidebar",
+      "description": "After deploying sidebar fix (#11), email publishers@mediavine.com to retarget sidebar ads on single posts",
+      "status": "blocked_on_deployment",
+      "impact": "required step to activate Sidebar Sticky after HTML changes",
+      "effort": "5 min",
+      "priority": "HIGH",
+      "notes": "Mediavine docs say: after sidebar changes, email publishers@mediavine.com so they can retarget ads. Do this AFTER confirming sidebar is visible in production."
     }
   ],
   "verification_history": [],
