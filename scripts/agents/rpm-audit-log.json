@@ -63,22 +63,22 @@
       }
     },
     "google_analytics": {
-      "sessions_7d": 74954,
-      "pageviews_7d": 110504,
-      "pagesPerSession": 1.474,
-      "avgSessionDuration": 312.5,
+      "sessions_7d": 78824,
+      "pageviews_7d": 113637,
+      "pagesPerSession": 1.441,
+      "avgSessionDuration": 306.3,
       "engagementRate": 0.655,
       "bounceRate": 0.345,
       "top_sources": {
-        "pinterest": {"sessions": 48636, "pagesPerSession": 1.39, "engagementRate": 0.68},
-        "bing": {"sessions": 15818, "pagesPerSession": 1.60, "engagementRate": 0.70},
-        "direct": {"sessions": 2924, "pagesPerSession": 1.47, "engagementRate": 0.29},
-        "yahoo": {"sessions": 1529, "pagesPerSession": 1.36, "engagementRate": 0.65},
-        "google": {"sessions": 1429, "pagesPerSession": 1.49, "engagementRate": 0.63}
+        "pinterest": {"sessions": 49773, "pagesPerSession": 1.40, "engagementRate": 0.68},
+        "bing": {"sessions": 16296, "pagesPerSession": 1.60, "engagementRate": 0.70},
+        "direct": {"sessions": 2975, "pagesPerSession": 1.47, "engagementRate": 0.29},
+        "yahoo": {"sessions": 1577, "pagesPerSession": 1.36, "engagementRate": 0.65},
+        "google": {"sessions": 1455, "pagesPerSession": 1.49, "engagementRate": 0.63}
       },
-      "note": "Updated Mar 9 — all engagement metrics trending up vs previous period. MV dashboard down, using last MV measurement."
+      "note": "Updated Mar 10. Pages/session dipped from 1.474 to 1.441 (rpm-optimization branch not yet deployed). Engagement rate stable at 65.5%. MV dashboard still down."
     },
-    "notes": "RPM $8.81 (Q1 seasonal). GA engagement improving: pages/session 1.459→1.474, duration 307→312.5s, engagement 64.6%→65.5%. Sidebar Sticky deployed and serving Mediavine ads. MV dashboard intermittently down."
+    "notes": "RPM $8.81 (Q1 seasonal, last known). GA: pages/session 1.441, duration 306.3s, engagement 65.5%. Sessions up 5% WoW (78,824 vs 74,954). MV dashboard still returning errors — using last known metrics. rpm-optimization branch has 10 optimizations pending merge+deploy."
   },
   "completed_optimizations": [
     {
@@ -265,17 +265,30 @@
       "status": "pending_verification",
       "hypothesis": "Trending Mods carousel on homepage gives users immediate discovery paths, increasing click-through to mod detail pages. Each additional pageview = more ad impressions. Only shows on default homepage (no active filters/search). Drives pages/session and session duration.",
       "notes": "New component TrendingMods.tsx. Horizontal scroll with chevron nav buttons. Fetches from existing /api/mods endpoint (sortBy=downloadCount, limit=12). Dark theme cards with thumbnail, price badge, game badge, rating, author. Loading skeleton state. No gradients. Build passes clean."
-    }
-  ],
-  "pending_optimizations": [
+    },
     {
       "id": 6,
       "name": "desktop_right_sidebar_ad",
-      "description": "Add sticky right sidebar ad container on desktop homepage",
-      "status": "not_started",
-      "impact": "new high-value ad slot on desktop (85% of search traffic)",
-      "effort": "30 min"
-    },
+      "description": "Added Mediavine Sidebar Sticky ad container (<aside id='secondary'>) on homepage desktop layout (xl: 1280px+)",
+      "date": "2026-03-10",
+      "surface": "modfinder",
+      "files_modified": ["app/page.tsx"],
+      "metric_target": "viewability (53.9% → 56%+) + new Sidebar Sticky revenue on mod finder pages",
+      "baseline": {
+        "sessions_7d": 78824,
+        "pageviews_7d": 113637,
+        "pagesPerSession": 1.441,
+        "avgSessionDuration": 306.3,
+        "engagementRate": 0.655,
+        "rpm_last_known": 8.81,
+        "viewability_last_known": 53.9
+      },
+      "status": "pending_verification",
+      "hypothesis": "Mediavine Script Wrapper auto-detects <aside id='secondary' class='widget-area primary-sidebar'> and injects Sidebar Sticky ads that auto-refresh every 30s. Desktop is 94% of traffic. Adding this to Next.js pages (which currently have NO sidebar ad) creates a new high-viewability ad slot. WordPress blog already has this restored (#11) generating ~$900/month. Mod finder should add ~$150-250/month.",
+      "notes": "300px sticky sidebar, visible only on xl screens (1280px+). Uses same HTML structure as WordPress sidebar (id='secondary', class='widget-area primary-sidebar'). Positioned after the grid flex container. Self-start + sticky top-24 for scroll-following behavior. No gradients. Build passes clean."
+    }
+  ],
+  "pending_optimizations": [
     {
       "id": 12,
       "name": "email_mediavine_retarget_sidebar",
