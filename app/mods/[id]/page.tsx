@@ -24,6 +24,7 @@ import { AffiliateRecommendations } from '@/components/AffiliateRecommendations'
 import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { ModJsonLd } from '@/components/ModJsonLd';
+import { MoreFromCreator } from '@/components/MoreFromCreator';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -281,6 +282,9 @@ export default function ModDetailPage() {
               isFree={mod.isFree}
               source={mod.source}
             />
+
+            {/* More from Creator — drives pages/session via creator discovery loop */}
+            <MoreFromCreator modId={mod.id} author={mod.creator?.handle || mod.author} />
 
             {/* Related Mods */}
             <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
