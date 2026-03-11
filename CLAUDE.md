@@ -64,6 +64,11 @@ npm run security:check-admin-auth  # Verify admin route auth
 - **Related Mods pattern**: `RelatedMods.tsx` fetches from `/api/mods/[id]/related` (same category + gameVersion, excludes self, 6 results). Returns `null` on empty — parent doesn't need conditional rendering.
 - **Navbar dropdown debounce**: Desktop hover menus use 150ms `setTimeout` on `onMouseLeave` to prevent flicker when cursor moves between trigger and dropdown. Must clear timeout in `useEffect` cleanup to avoid React warnings on unmount.
 - **Mobile menu was non-functional**: The hamburger menu button had no `onClick` handler until commit 5e55fdf. When adding mobile UI, always test the actual tap interaction — visual presence doesn't mean functional.
+- **Mediavine Sidebar Sticky — no CSS sticky**: Do NOT add `position: sticky` or `position: fixed` to sidebar ad containers. Mediavine Script Wrapper handles stickiness itself. Adding CSS sticky breaks ad auto-refresh. Use `<aside id="secondary" class="widget-area primary-sidebar">` with `overflow: visible`, two placeholder `<div>` with `min-h-[250px]` (ATF + BTF). Mediavine auto-detects the `id="secondary"` container.
+- **H2 headings = Mediavine ad insertion points**: Mediavine Script Wrapper automatically inserts in-content ads before H2 headings. `ModContentSections.tsx` uses this by having Installation Guide, Compatibility, and FAQ as separate H2 sections (~400px each) to maximize scroll depth and ad slots.
+- **MoreFromCreator pattern**: `MoreFromCreator.tsx` fetches from `/api/mods/[id]/creator` (same author, excludes self, 6 results). Returns `null` if author is null or no results. Same skeleton/grid pattern as `RelatedMods.tsx`.
+- **Grow.me widget dark theming**: Grow.me (Mediavine's engagement widget) injects outside sidebar DOM as floating widget. Target with `#growme-root`, `[id^="growme"]`, `.growme-widget` selectors. Styled in WordPress `functions.php` via `mhm_single_post_sidebar_and_growme_css()`.
+- **Gradient violations in mod detail badges**: `app/mods/[id]/page.tsx` has `bg-gradient-to-r` on Verified/Free badges. These violate the no-gradients rule and need replacement with solid colors + box-shadows.
 
 ## Important Directories
 
@@ -93,6 +98,8 @@ npm run security:check-admin-auth  # Verify admin route auth
 6. **RPM audit log**: `scripts/agents/rpm-audit-log.json` tracks all optimizations with before/after Mediavine metrics. Update it for every RPM-related change.
 7. **RPM agent prompt**: `scripts/agents/mediavine-rpm-expert.md` contains the full Mediavine playbook and autonomous loop instructions.
 8. **Don't blindly apply blog patterns to mod finder.** 18px font was right for blog (long-form reading) but wrong for mod finder (compact grid). This was reverted in commit 8965e1b. Always ask: "does this pattern make sense for THIS surface's UX?"
+9. **Perfmatters rewrites `<script>` tags**: WordPress Perfmatters plugin rewrites `<script>` to `type="pmdelayedscript"`. Use PHP HTML output (not JS injection) for WordPress customizations that need to run immediately.
+10. **BigScoots has 3 cache layers**: WP object cache (`wp cache flush`), Perfmatters HTML cache (`rm -rf wp-content/cache/perfmatters/`), and BigScoots edge cache (`purge_all` + `purge_opcache` + `purge_object_cache`). Must clear all three when testing WordPress changes.
 
 ### Blog vs Mod Finder Optimization Cheat Sheet
 
