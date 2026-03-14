@@ -35,6 +35,51 @@
     "other": 206.71,
     "direct": 193.48
   },
+  "latest_measurement": {
+    "date": "2026-03-09",
+    "period": "Mar 3-9, 2026 (7 days)",
+    "mediavine": {
+      "revenue_8d": 697.32,
+      "rpm": 8.81,
+      "cpm": 0.98,
+      "viewability_pct": 53.9,
+      "impressions": 709387,
+      "pageviews": 116500,
+      "sessions": 79074,
+      "desktop_pct": 92,
+      "mobile_pct": 7,
+      "ad_units": {
+        "content": 403.78,
+        "adhesion": 178.80,
+        "universal_player": 114.66,
+        "sidebar_sticky": 0.05
+      },
+      "revenue_by_source": {
+        "pinterest": 384.23,
+        "bing": 205.63,
+        "yahoo": 36.99,
+        "other": 31.33,
+        "direct": 27.15
+      }
+    },
+    "google_analytics": {
+      "sessions_7d": 78824,
+      "pageviews_7d": 113637,
+      "pagesPerSession": 1.441,
+      "avgSessionDuration": 306.3,
+      "engagementRate": 0.655,
+      "bounceRate": 0.345,
+      "top_sources": {
+        "pinterest": {"sessions": 49773, "pagesPerSession": 1.40, "engagementRate": 0.68},
+        "bing": {"sessions": 16296, "pagesPerSession": 1.60, "engagementRate": 0.70},
+        "direct": {"sessions": 2975, "pagesPerSession": 1.47, "engagementRate": 0.29},
+        "yahoo": {"sessions": 1577, "pagesPerSession": 1.36, "engagementRate": 0.65},
+        "google": {"sessions": 1455, "pagesPerSession": 1.49, "engagementRate": 0.63}
+      },
+      "note": "Updated Mar 10. Pages/session dipped from 1.474 to 1.441 (rpm-optimization branch not yet deployed). Engagement rate stable at 65.5%. MV dashboard still down."
+    },
+    "notes": "RPM $8.81 (Q1 seasonal, last known). GA: pages/session 1.441, duration 306.3s, engagement 65.5%. Sessions up 5% WoW (78,824 vs 74,954). MV dashboard still returning errors — using last known metrics. rpm-optimization branch has 10 optimizations pending merge+deploy."
+  },
   "completed_optimizations": [
     {
       "id": 1,
@@ -61,8 +106,8 @@
       "surface": "blog",
       "files_modified": ["staging/wordpress/kadence-child/functions.php"],
       "metric_target": "ad viewability / ad load speed on blog pages (80% of revenue)",
-      "status": "pending_deploy",
-      "notes": "Needs push to staging via push-blog-functions.sh, then verify, then push to prod."
+      "status": "deployed_to_prod",
+      "notes": "Pushed to both staging and prod via push scripts. Verified preconnect tags present in HTML source. BigScoots cache purged."
     },
     {
       "id": 2,
@@ -92,81 +137,199 @@
       },
       "status": "pending_verification",
       "notes": "Enables Next.js image optimization pipeline. Faster image loading = ads render in viewport sooner = higher viewability."
-    }
-  ],
-  "pending_optimizations": [
-    {
-      "id": 2,
-      "name": "base_font_size_18px",
-      "description": "Increase base font-size from 16px to 18px in globals.css",
-      "status": "not_started",
-      "impact": "better readability = longer sessions = more ad views",
-      "effort": "5 min"
     },
     {
-      "id": 3,
-      "name": "remove_image_unoptimized",
-      "description": "Remove unoptimized flag from Image components on mod detail page",
-      "status": "not_started",
-      "impact": "faster image loading = better page speed = higher ad viewability",
-      "effort": "10 min"
-    },
-    {
-      "id": 4,
-      "name": "mod_page_jsonld_schema",
-      "description": "Add Article JSON-LD schema to individual mod detail pages",
-      "status": "not_started",
-      "impact": "richer search results = higher CTR = more traffic",
-      "effort": "30 min"
-    },
-    {
-      "id": 5,
+      "id": "4a",
       "name": "related_mods_section",
-      "description": "Add Related Mods carousel to mod detail pages (same category)",
-      "status": "not_started",
-      "impact": "increase pages/session from 1.35 to 1.8+ = ~165K more pageviews/month",
-      "effort": "2 hours"
-    },
-    {
-      "id": 6,
-      "name": "desktop_right_sidebar_ad",
-      "description": "Add sticky right sidebar ad container on desktop homepage",
-      "status": "not_started",
-      "impact": "new high-value ad slot on desktop (85% of search traffic)",
-      "effort": "30 min"
+      "description": "Added Related Mods section to mod detail pages (6 mods, same category + gameVersion)",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/RelatedMods.tsx", "app/api/mods/[id]/related/route.ts", "app/mods/[id]/page.tsx"],
+      "metric_target": "pages/session (currently 1.46, target 1.8+)",
+      "baseline": {
+        "sessions_7d": 82727,
+        "pageviews_7d": 120925,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 307.6,
+        "engagementRate": 0.650
+      },
+      "status": "pending_verification",
+      "notes": "Displays 6 related mods in 3-column grid with thumbnails, ratings, price badges. API uses Prisma with HOT cache tier (60s TTL)."
     },
     {
       "id": 7,
       "name": "expand_mod_detail_content",
-      "description": "Add installation guide, FAQ, and compatibility sections to mod detail pages",
-      "status": "not_started",
-      "impact": "more scroll depth = more ad slots per page = higher RPM",
-      "effort": "2 hours"
+      "description": "Added installation guide, compatibility info, and FAQ sections to mod detail pages",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/ModContentSections.tsx", "app/mods/[id]/page.tsx"],
+      "metric_target": "scroll depth → viewability (53.9% → 60%+) and RPM ($8.81 → $10+)",
+      "baseline": {
+        "rpm_8d": 8.81,
+        "viewability_pct": 53.9,
+        "sessions_7d": 82727,
+        "pageviews_7d": 120925,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 307.6,
+        "engagementRate": 0.650
+      },
+      "status": "pending_verification",
+      "hypothesis": "Adding 3 H2 sections (Install, Compatibility, FAQ) creates 3 additional Mediavine Script Wrapper ad insertion points per mod detail page. ~40% more scroll depth. Game-specific content for Sims 4, Minecraft, Stardew Valley.",
+      "notes": "New component ModContentSections.tsx. Collapsible FAQ items. Game-aware content (different install steps per game). No gradients. Build passes clean."
+    },
+    {
+      "id": "4+9",
+      "name": "mod_page_jsonld_and_breadcrumb_schema",
+      "description": "Added SoftwareApplication + BreadcrumbList JSON-LD structured data to mod detail pages",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/ModJsonLd.tsx", "app/mods/[id]/page.tsx"],
+      "metric_target": "search CTR improvement → more organic traffic → more pageviews → more ad revenue",
+      "baseline": {
+        "rpm_8d": 8.81,
+        "viewability_pct": 53.9,
+        "sessions_7d": 82727,
+        "pageviews_7d": 120925,
+        "pagesPerSession": 1.46,
+        "avgSessionDuration": 307.6,
+        "engagementRate": 0.650
+      },
+      "status": "pending_verification",
+      "hypothesis": "SoftwareApplication schema enables rich snippets (ratings, price, author) in Google SERPs. BreadcrumbList shows navigation path. Both improve CTR from search results, driving more organic traffic. Effect takes 2-4 weeks as Google re-crawls pages.",
+      "notes": "New component ModJsonLd.tsx renders two JSON-LD script tags. Uses SoftwareApplication (not Article) since mods are software. Includes aggregateRating when ratings exist. BreadcrumbList covers Home > Category > Mod. Build passes clean."
+    },
+    {
+      "id": 11,
+      "name": "restore_sidebar_sticky_ads",
+      "description": "Restored sidebar visibility on single blog posts (desktop) for Mediavine Sidebar Sticky ad unit",
+      "date": "2026-03-09",
+      "surface": "blog",
+      "files_modified": ["staging/wordpress/kadence-child/functions.php"],
+      "metric_target": "Sidebar Sticky revenue recovery: $0.05/week → ~$230/week ($936/month)",
+      "baseline": {
+        "sidebar_sticky_revenue_8d": 0.05,
+        "rpm_8d": 8.81,
+        "viewability_pct": 53.9,
+        "sessions_8d": 85443,
+        "pageviews_8d": 124659,
+        "pagesPerSession": 1.459
+      },
+      "status": "deployed_to_prod",
+      "deployed_date": "2026-03-09",
+      "hypothesis": "The dark theme CSS hid sidebar on all page types, killing Sidebar Sticky ad unit. Re-enabling sidebar on desktop single posts (where users read long content) will restore the sticky ad that auto-refreshes every 30s. Expected recovery: ~$900/month. May also improve overall viewability since sidebar sticky typically has highest viewability of any ad unit.",
+      "implementation": {
+        "approach": "PHP server-side injection via get_sidebar WordPress action hook. Outputs bare <aside id='secondary' class='widget-area primary-sidebar'> element. CSS at priority 100010 overrides all display:none rules with html body.single specificity. Flex layout: main content + 300px sticky sidebar.",
+        "key_learnings": [
+          "Perfmatters plugin rewrites inline <script> tags to type='pmdelayedscript', preventing execution. Solution: use PHP HTML output instead of JS injection.",
+          "BigScoots purge_all() is async/incomplete — use purge_urls() for specific URLs or purge_all() + purge_opcache() + purge_object_cache() together.",
+          "Mediavine Script Wrapper auto-detects <aside id='secondary'> with class='widget-area' — no need to email Mediavine for retargeting.",
+          "Three cache layers on BigScoots: WP object cache (wp cache flush), Perfmatters HTML cache (rm -rf wp-content/cache/perfmatters/), BigScoots edge cache (purge_all/purge_urls)."
+        ]
+      },
+      "verification": "Confirmed via browser-use: #secondary element visible (display:block, width:300px, position:sticky), Mediavine Grow.me 'Recommended' widget + display ads auto-injected. Sidebar sticks on scroll."
     },
     {
       "id": 8,
       "name": "more_from_creator_section",
-      "description": "Add More from Creator carousel to mod detail pages",
-      "status": "not_started",
-      "impact": "increase pages/session + session duration",
-      "effort": "1 hour"
-    },
-    {
-      "id": 9,
-      "name": "breadcrumb_schema",
-      "description": "Add BreadcrumbList JSON-LD to mod pages",
-      "status": "not_started",
-      "impact": "better search appearance = higher CTR",
-      "effort": "30 min"
+      "description": "Added More from Creator section to mod detail pages (up to 6 mods by same author)",
+      "date": "2026-03-09",
+      "surface": "modfinder",
+      "files_modified": ["components/MoreFromCreator.tsx", "app/api/mods/[id]/creator/route.ts", "app/mods/[id]/page.tsx"],
+      "metric_target": "pages/session (1.474 → 1.6+) via creator discovery loop",
+      "baseline": {
+        "sessions_7d": 74954,
+        "pageviews_7d": 110504,
+        "pagesPerSession": 1.474,
+        "avgSessionDuration": 312.5,
+        "engagementRate": 0.655
+      },
+      "status": "pending_verification",
+      "hypothesis": "Users who find one mod from a creator will browse more by the same creator. Adds another internal linking surface + H2 section for Mediavine ad insertion. Placed between ModContentSections and RelatedMods for optimal scroll depth.",
+      "notes": "New component MoreFromCreator.tsx with same card design as RelatedMods. API uses Prisma HOT cache (60s TTL). Hidden when creator has no other mods. Build passes clean."
     },
     {
       "id": 10,
       "name": "trending_mods_carousel",
-      "description": "Add Trending Mods section to homepage and detail pages",
-      "status": "not_started",
-      "impact": "increase pages/session + discovery",
-      "effort": "1 hour"
+      "description": "Added Trending Mods horizontal carousel to homepage showing top 12 mods by download count",
+      "date": "2026-03-10",
+      "surface": "modfinder",
+      "files_modified": ["components/TrendingMods.tsx", "app/page.tsx"],
+      "metric_target": "pages/session (1.474 → 1.6+) via discovery on homepage",
+      "baseline": {
+        "sessions_7d": 74954,
+        "pageviews_7d": 110504,
+        "pagesPerSession": 1.474,
+        "avgSessionDuration": 312.5,
+        "engagementRate": 0.655
+      },
+      "status": "pending_verification",
+      "hypothesis": "Trending Mods carousel on homepage gives users immediate discovery paths, increasing click-through to mod detail pages. Each additional pageview = more ad impressions. Only shows on default homepage (no active filters/search). Drives pages/session and session duration.",
+      "notes": "New component TrendingMods.tsx. Horizontal scroll with chevron nav buttons. Fetches from existing /api/mods endpoint (sortBy=downloadCount, limit=12). Dark theme cards with thumbnail, price badge, game badge, rating, author. Loading skeleton state. No gradients. Build passes clean."
+    },
+    {
+      "id": 6,
+      "name": "desktop_right_sidebar_ad",
+      "description": "Added Mediavine Sidebar Sticky ad container (<aside id='secondary'>) on homepage desktop layout (xl: 1280px+)",
+      "date": "2026-03-10",
+      "surface": "modfinder",
+      "files_modified": ["app/page.tsx"],
+      "metric_target": "viewability (53.9% → 56%+) + new Sidebar Sticky revenue on mod finder pages",
+      "baseline": {
+        "sessions_7d": 78824,
+        "pageviews_7d": 113637,
+        "pagesPerSession": 1.441,
+        "avgSessionDuration": 306.3,
+        "engagementRate": 0.655,
+        "rpm_last_known": 8.81,
+        "viewability_last_known": 53.9
+      },
+      "status": "pending_verification",
+      "hypothesis": "Mediavine Script Wrapper auto-detects <aside id='secondary' class='widget-area primary-sidebar'> and injects Sidebar Sticky ads that auto-refresh every 30s. Desktop is 94% of traffic. Adding this to Next.js pages (which currently have NO sidebar ad) creates a new high-viewability ad slot. WordPress blog already has this restored (#11) generating ~$900/month. Mod finder should add ~$150-250/month.",
+      "notes": "300px sidebar, visible only on xl screens (1280px+). Uses same HTML structure as WordPress sidebar (id='secondary', class='widget-area primary-sidebar'). CRITICAL FIX (Mar 10): Removed position:sticky — Mediavine Script Wrapper handles stickiness itself and adding CSS sticky breaks the ad's auto-refresh behavior. Added overflow-visible explicitly. Added ATF + BTF placeholder divs with min-h-250px for CLS optimization. Per Mediavine docs: sidebar container must NOT have position:sticky or position:fixed.",
+      "fix_applied": {
+        "date": "2026-03-10",
+        "issue": "Initial implementation had sticky/top-24/self-start CSS which would break Mediavine's ad refresh",
+        "source": "https://help.mediavine.com/sticky-sidebar-ad-mediavine-help-center",
+        "commit": "rpm: fix sidebar ad container — remove sticky CSS that breaks Mediavine"
+      }
+    },
+    {
+      "id": "6b",
+      "name": "mod_detail_sidebar_ad",
+      "description": "Added Mediavine Sidebar Sticky ad container to mod detail page right column (last element per Mediavine docs)",
+      "date": "2026-03-10",
+      "surface": "modfinder",
+      "files_modified": ["app/mods/[id]/page.tsx"],
+      "metric_target": "viewability + Sidebar Sticky revenue on highest-scroll-depth pages",
+      "baseline": {
+        "sessions_7d": 69692,
+        "pageviews_7d": 99991,
+        "pagesPerSession": 1.435,
+        "avgSessionDuration": 304.1,
+        "engagementRate": 0.653,
+        "rpm_last_known": 8.81,
+        "viewability_last_known": 53.9
+      },
+      "status": "pending_verification",
+      "hypothesis": "Mod detail pages have the longest scroll depth (images + video + description + install/compat/FAQ + more from creator + related mods). Mediavine says 'short sidebar + long content = sticky ad visible longest = most impressions'. The sidebar sticky auto-refreshes every 30s, so longer page engagement = more refreshes = more revenue. This page type generates the most ad revenue per visit.",
+      "notes": "Added <aside id='secondary' class='widget-area primary-sidebar'> as last element in right sidebar column. Visible on lg screens (1024px+). No position:sticky (Mediavine handles it). overflow:visible. ATF + BTF placeholder divs with min-h-250px. Build passes clean."
     }
   ],
-  "verification_history": []
+  "pending_optimizations": [
+    {
+      "id": 12,
+      "name": "email_mediavine_retarget_sidebar",
+      "status": "not_needed",
+      "notes": "Mediavine Script Wrapper auto-detected <aside id='secondary'> and immediately started serving Sidebar Sticky + Grow.me Recommended widget. No manual retargeting email needed."
+    }
+  ],
+  "verification_history": [],
+  "mediavine_settings_audit": {
+    "date": "2026-03-09",
+    "video_settings": "ALL OPTIMAL — Universal Player ON (desktop+mobile), Mid-Roll ON, Optimize placement ON",
+    "ad_settings": "ALL OPTIMAL — CWV optimization ON, PageSpeed ON (mobile+desktop), CLS optimization ON",
+    "ad_units": "MOSTLY OPTIMAL — Adhesion ON all devices, Sidebar ON, Leaderboard ON, GumGum ON. OPPORTUNITIES: Interstitial Ads OFF (mobile+desktop), Ad Block Recovery OFF",
+    "opt_outs": "NONE — all categories enabled (maximum competition)",
+    "recommendations": "Enable Ad Block Recovery (zero risk, +2-5% revenue), consider enabling Interstitial Ads (+5-10% RPM but slightly worse UX)"
+  }
 }

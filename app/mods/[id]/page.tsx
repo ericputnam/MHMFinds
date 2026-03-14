@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { RelatedMods } from '@/components/RelatedMods';
+import { ModContentSections } from '@/components/ModContentSections';
+import { ModJsonLd } from '@/components/ModJsonLd';
+import { MoreFromCreator } from '@/components/MoreFromCreator';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -115,6 +118,9 @@ export default function ModDetailPage() {
 
   return (
     <div className="min-h-screen bg-mhm-dark">
+      {/* JSON-LD Structured Data for search engines */}
+      <ModJsonLd mod={mod} />
+
       {/* Header with Breadcrumbs */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -266,6 +272,19 @@ export default function ModDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Installation, Compatibility & FAQ — adds scroll depth + H2 ad insertion points */}
+            <ModContentSections
+              gameVersion={mod.gameVersion}
+              category={mod.category}
+              title={mod.title}
+              author={mod.author}
+              isFree={mod.isFree}
+              source={mod.source}
+            />
+
+            {/* More from Creator — drives pages/session via creator discovery loop */}
+            <MoreFromCreator modId={mod.id} author={mod.creator?.handle || mod.author} />
 
             {/* Related Mods */}
             <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
@@ -440,6 +459,21 @@ export default function ModDetailPage() {
                 />
               </div>
             )}
+
+            {/* Mediavine Sidebar Sticky Ad — MUST be last element in sidebar.
+                Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
+                stickiness itself. overflow must be visible. */}
+            <aside
+              id="secondary"
+              className="widget-area primary-sidebar hidden lg:block mt-6 overflow-visible"
+              role="complementary"
+              aria-label="Sidebar ads"
+            >
+              {/* ATF ad placeholder */}
+              <div className="min-h-[250px]" />
+              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
+              <div className="min-h-[250px]" />
+            </aside>
           </div>
         </div>
       </div>

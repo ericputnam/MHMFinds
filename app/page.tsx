@@ -12,6 +12,7 @@ import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
 import { useAffiliateOffers } from '../lib/hooks/useAffiliateOffers';
 import { ArrowUpDown } from 'lucide-react';
+import { TrendingMods } from '../components/TrendingMods';
 
 function HomePageContent() {
   const searchParams = useSearchParams();
@@ -306,6 +307,11 @@ function HomePageContent() {
       <main className="flex-grow">
         <Hero onSearch={handleSearch} isLoading={loading} initialSearch={searchQuery} />
 
+        {/* Trending Mods — drives discovery + pages/session */}
+        {!creatorParam && !searchQuery && selectedCategory === 'All' && !selectedGameVersion && (
+          <TrendingMods />
+        )}
+
         {/* Creator Filter Banner */}
         {creatorParam && (
           <div className="container mx-auto px-4 py-4">
@@ -415,6 +421,22 @@ function HomePageContent() {
                 affiliateInterval={5}
               />
             </div>
+
+            {/* Right Ad Sidebar — Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
+                IMPORTANT: Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
+                stickiness itself. Adding sticky CSS breaks Mediavine's ad refresh behavior.
+                overflow must be visible on this element and all ancestors. */}
+            <aside
+              id="secondary"
+              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] overflow-visible"
+              role="complementary"
+              aria-label="Sidebar"
+            >
+              {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
+              <div className="min-h-[250px]" />
+              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
+              <div className="min-h-[250px]" />
+            </aside>
           </div>
         </div>
 
