@@ -10,7 +10,7 @@
       "id": 2,
       "title": "Remove unused import from visionFacetExtractor.ts",
       "description": "Remove unused `prisma` import from lib/services/visionFacetExtractor.ts (line 11)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 3,

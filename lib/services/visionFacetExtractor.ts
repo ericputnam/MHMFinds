@@ -8,8 +8,6 @@
  * not just guessing from keywords.
  */
 
-import { prisma } from '@/lib/prisma';
-
 // ============================================
 // FACET DEFINITIONS
 // ============================================
