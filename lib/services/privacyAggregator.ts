@@ -1,8 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import axios, { AxiosInstance } from 'axios';
 import * as cheerio from 'cheerio';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { SocksProxyAgent } from 'socks-proxy-agent';
 
 export interface ScrapedMod {
   title: string;
