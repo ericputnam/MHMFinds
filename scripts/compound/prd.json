@@ -46,7 +46,7 @@
       "id": 8,
       "title": "Delete orphaned UpgradeModal.tsx",
       "description": "Delete components/subscription/UpgradeModal.tsx — orphaned component with zero .ts/.tsx imports (only referenced in .md planning docs)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 9,
