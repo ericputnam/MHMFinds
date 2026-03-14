@@ -4,7 +4,7 @@ import React from 'react';
 import { Mod } from '../lib/api';
 import { ModCard } from './ModCard';
 import { AffiliateCard, AffiliateOffer } from './AffiliateCard';
-import { Loader2, AlertCircle, Search, Package, Heart, TrendingUp, Sparkles, Filter } from 'lucide-react';
+import { Loader2, AlertCircle, Package } from 'lucide-react';
 
 export interface ModGridProps {
   mods: Mod[];
