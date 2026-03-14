@@ -16,7 +16,7 @@
       "id": 3,
       "title": "Remove unused import from check-limit route",
       "description": "Remove unused `SubscriptionService` import from app/api/subscription/check-limit/route.ts (line 4)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 4,
