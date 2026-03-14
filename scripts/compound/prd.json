@@ -34,7 +34,7 @@
       "id": 6,
       "title": "Remove unused Download icon from UsageIndicator.tsx",
       "description": "Remove `Download` from the lucide-react import in components/subscription/UsageIndicator.tsx (line 5). Only `Crown` should remain.",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 7,
