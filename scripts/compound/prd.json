@@ -22,7 +22,7 @@
       "id": 4,
       "title": "Remove unused Eye icon from ModCard.tsx",
       "description": "Remove `Eye` from the lucide-react import in components/ModCard.tsx (line 7)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 5,

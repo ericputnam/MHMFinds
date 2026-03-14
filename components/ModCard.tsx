@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Mod } from '../lib/api';
-import { Download, Eye, Star, Heart, Crown, Sparkles } from 'lucide-react';
+import { Download, Star, Heart, Crown, Sparkles } from 'lucide-react';
 import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
 
 // Facet tag colors for visual distinction
