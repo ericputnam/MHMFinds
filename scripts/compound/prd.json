@@ -70,7 +70,7 @@
       "id": 12,
       "title": "Update ModDetailsModal.tsx to import shared FACET_COLORS",
       "description": "Replace the inline FACET_COLORS definition in components/ModDetailsModal.tsx (lines 10-54) with an import from lib/facetColors.ts",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 13,
