@@ -63,10 +63,6 @@ export const actionHandlers: Partial<Record<ActionType, ActionHandler>> = {
   ADD_AFFILIATE_LINK: new AddAffiliateLinkHandler(),
   UPDATE_META_DESCRIPTION: new UpdateMetaDescriptionHandler(),
   ADD_TO_COLLECTION: new AddToCollectionHandler(),
-  // Future handlers:
-  // GENERATE_INTERNAL_LINKS: new GenerateInternalLinksHandler(),
-  // EXPAND_CONTENT: new ExpandContentHandler(),
-  // UPDATE_AD_PLACEMENT: new UpdateAdPlacementHandler(),
 };
 
 /**

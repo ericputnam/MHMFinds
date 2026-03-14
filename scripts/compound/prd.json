@@ -52,7 +52,7 @@
       "id": 9,
       "title": "Remove commented-out handler registrations",
       "description": "Remove commented-out handler registrations (GENERATE_INTERNAL_LINKS, EXPAND_CONTENT, UPDATE_AD_PLACEMENT) from lib/services/actionHandlers/index.ts (lines 66-69)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 10,
