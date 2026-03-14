@@ -15,8 +15,6 @@ import {
   Package,
   Tag,
   TrendingUp,
-  Users,
-  MessageSquare,
   ChevronRight,
   Home
 } from 'lucide-react';

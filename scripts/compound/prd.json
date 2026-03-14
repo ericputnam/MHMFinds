@@ -40,7 +40,7 @@
       "id": 7,
       "title": "Remove unused icons from mod detail page",
       "description": "Remove `MessageSquare` (line 19) and `Users` (line 21) from lucide-react imports in app/mods/[id]/page.tsx",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 8,
