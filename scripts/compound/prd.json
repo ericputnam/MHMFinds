@@ -58,7 +58,7 @@
       "id": 10,
       "title": "Extract FACET_COLORS to shared module",
       "description": "Create lib/facetColors.ts with the shared FACET_COLORS constant (27 facet entries, ~42 lines). Extract from components/ModCard.tsx (lines 11-42).",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 11,
