@@ -254,6 +254,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Debug: temporary endpoint to test middleware routing
+  if (pathname === '/_debug-middleware') {
+    return new Response(JSON.stringify({ ok: true, pathname }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
   // ── WordPress proxy with canonical URL rewriting ────────────
   const wpUrl = getWordPressUrl(pathname);
 
