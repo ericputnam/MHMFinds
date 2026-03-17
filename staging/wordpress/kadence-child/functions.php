@@ -990,42 +990,56 @@ html body .wp-block-search__button {
 .kadence-search-modal input::placeholder {
     color: #64748b !important;
 }
-/* Search button in header popup */
+/* Search submit input — hide it, let the icon wrap be the visual button */
 .kadence-search-modal .search-submit,
-.kadence-search-modal button[type="submit"],
+.kadence-search-modal input[type="submit"],
 .header-search-modal .search-submit,
 #search-drawer .search-submit,
 .search-toggle-open-container .search-submit {
     background: #ec4899 !important;
     border: none !important;
     border-radius: 9999px !important;
-    color: #fff !important;
+    color: transparent !important;
     padding: 0 !important;
     margin: 0.35rem !important;
     cursor: pointer !important;
     font-size: 0 !important;
-    line-height: 0 !important;
     width: 44px !important;
     height: 44px !important;
     flex-shrink: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     transition: background 0.2s ease !important;
     box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.4) !important;
+    position: relative !important;
+    z-index: 1 !important;
 }
-.kadence-search-modal .search-submit svg,
-#search-drawer .search-submit svg,
-.search-toggle-open-container .search-submit svg {
+.kadence-search-modal .search-submit:hover,
+#search-drawer .search-submit:hover {
+    background: #db2777 !important;
+}
+/* Kadence search icon overlay — center white magnifying glass on the pink button */
+.kadence-search-modal .kadence-search-icon-wrap,
+#search-drawer .kadence-search-icon-wrap,
+.search-toggle-open-container .kadence-search-icon-wrap {
+    position: absolute !important;
+    right: 0.35rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+}
+.kadence-search-modal .kadence-search-icon-wrap svg,
+#search-drawer .kadence-search-icon-wrap svg,
+.search-toggle-open-container .kadence-search-icon-wrap svg {
     width: 20px !important;
     height: 20px !important;
     stroke: #ffffff !important;
     fill: none !important;
     stroke-width: 2.5 !important;
-}
-.kadence-search-modal .search-submit:hover,
-#search-drawer .search-submit:hover {
-    background: #db2777 !important;
 }
 /* Also fix 404 page search button */
 .error404 .wp-block-search__button,
