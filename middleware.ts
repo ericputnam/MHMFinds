@@ -109,7 +109,8 @@ async function proxyAndRewriteWordPress(
   request: NextRequest
 ): Promise<Response> {
   const url = new URL(wpUrl);
-  request.nextUrl.searchParams.forEach((value, key) => {
+  const incomingUrl = new URL(request.url);
+  incomingUrl.searchParams.forEach((value, key) => {
     url.searchParams.set(key, value);
   });
 
@@ -255,7 +256,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── WordPress proxy with canonical URL rewriting ────────────
-  const hasSearchParam = request.nextUrl.searchParams.has('s');
+  const requestUrl = new URL(request.url);
+  const hasSearchParam = requestUrl.searchParams.has('s');
   const wpUrl = getWordPressUrl(pathname, hasSearchParam);
   if (wpUrl) {
     try {
