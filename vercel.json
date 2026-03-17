@@ -143,13 +143,13 @@
   "rewrites": [
     {
       "source": "/blog/",
-      "has": [{ "type": "query", "key": "s" }],
-      "destination": "https://blog.musthavemods.com/?s=:s"
+      "has": [{ "type": "query", "key": "s", "value": "(?<search>.*)" }],
+      "destination": "https://blog.musthavemods.com/?s=:search"
     },
     {
       "source": "/blog",
-      "has": [{ "type": "query", "key": "s" }],
-      "destination": "https://blog.musthavemods.com/?s=:s"
+      "has": [{ "type": "query", "key": "s", "value": "(?<search>.*)" }],
+      "destination": "https://blog.musthavemods.com/?s=:search"
     },
     {
       "source": "/ads.txt",
