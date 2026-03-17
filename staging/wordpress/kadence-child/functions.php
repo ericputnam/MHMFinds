@@ -4509,13 +4509,14 @@ function mhm_search_form_rewrite_js() {
             var form = e.target;
             if (form.tagName !== 'FORM') return;
             var action = form.getAttribute('action') || '';
-            // Catch forms submitting to root "/" or the full apex domain root
-            if (action === '/' || action === 'https://musthavemods.com/' || action === 'https://musthavemods.com') {
+            // Catch forms submitting to root "/" or the full apex/blog domain root
+            if (action === '/' || action === 'https://musthavemods.com/' || action === 'https://musthavemods.com'
+                || action === 'https://blog.musthavemods.com/' || action === 'https://blog.musthavemods.com') {
                 // Check if this is a search form (has an input named "s")
                 if (form.querySelector('input[name="s"]')) {
                     e.preventDefault();
                     var searchVal = form.querySelector('input[name="s"]').value;
-                    window.location.href = '/blog/?s=' + encodeURIComponent(searchVal);
+                    window.location.href = 'https://blog.musthavemods.com/?s=' + encodeURIComponent(searchVal);
                 }
             }
         }, true);

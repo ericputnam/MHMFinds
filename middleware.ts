@@ -152,8 +152,6 @@ async function proxyAndRewriteWordPress(
   if (contentType.includes('text/html')) {
     const html = await wpResponse.text();
     const rewritten = rewriteHtml(html);
-    responseHeaders.set('x-wp-fetch-url', url.toString());
-    responseHeaders.set('x-wp-fetch-status', String(wpResponse.status));
     return new Response(rewritten, {
       status: wpResponse.status,
       headers: responseHeaders,
