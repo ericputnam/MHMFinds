@@ -24,9 +24,9 @@ function getWordPressUrl(pathname: string): string | null {
   // Root is the Next.js homepage
   if (pathname === '/' || pathname === '') return null;
 
-  // /blog and /blog/ → WordPress root (supports both homepage and search)
-  // NOTE: /blog/?s=term search is handled by vercel.json edge rewrite
-  if (pathname === '/blog' || pathname === '/blog/') return `${WP_ORIGIN}/`;
+  // /blog and /blog/ → WordPress landing page (homepage)
+  // NOTE: /blog/?s=term is intercepted in middleware before reaching here
+  if (pathname === '/blog' || pathname === '/blog/') return `${WP_ORIGIN}/homepage/`;
   // /blog/all → WordPress posts archive (root)
   if (pathname === '/blog/all' || pathname === '/blog/all/') return `${WP_ORIGIN}/`;
   // /blog/:path → WordPress subpages
@@ -256,13 +256,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Debug: temporary endpoint to test middleware routing
-  if (pathname === '/_debug-middleware' || pathname === '/_debug-middleware/') {
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    return new Response(JSON.stringify({ ok: true, pathname, searchParams, url: request.url }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
-    });
+  // ── Blog search: rewrite /blog/?s=term to API route ────────
+  if (
+    (pathname === '/blog' || pathname === '/blog/') &&
+    request.nextUrl.searchParams.has('s')
+  ) {
+    const searchUrl = new URL('/api/blog/search/', request.url);
+    searchUrl.searchParams.set('s', request.nextUrl.searchParams.get('s')!);
+    return NextResponse.rewrite(searchUrl);
   }
 
   // ── WordPress proxy with canonical URL rewriting ────────────

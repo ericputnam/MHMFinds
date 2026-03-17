@@ -4516,7 +4516,7 @@ function mhm_search_form_rewrite_js() {
                 if (form.querySelector('input[name="s"]')) {
                     e.preventDefault();
                     var searchVal = form.querySelector('input[name="s"]').value;
-                    window.location.href = 'https://blog.musthavemods.com/?s=' + encodeURIComponent(searchVal);
+                    window.location.href = '/blog/?s=' + encodeURIComponent(searchVal);
                 }
             }
         }, true);
