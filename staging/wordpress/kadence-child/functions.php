@@ -1000,27 +1000,30 @@ html body .wp-block-search__button {
     border: none !important;
     border-radius: 9999px !important;
     color: #fff !important;
-    padding: 0.875rem !important;
-    margin: 0.25rem !important;
+    padding: 0 !important;
+    margin: 0.35rem !important;
     cursor: pointer !important;
-    font-weight: 600 !important;
     font-size: 0 !important;
     line-height: 0 !important;
-    width: 48px !important;
-    height: 48px !important;
+    width: 44px !important;
+    height: 44px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    flex-shrink: 0 !important;
+    transition: background 0.2s ease !important;
 }
 .kadence-search-modal .search-submit svg,
 #search-drawer .search-submit svg,
 .search-toggle-open-container .search-submit svg {
-    width: 20px !important;
-    height: 20px !important;
-    fill: currentColor !important;
-    font-size: 20px !important;
+    width: 22px !important;
+    height: 22px !important;
+    fill: none !important;
+    stroke: #fff !important;
+    stroke-width: 2.5 !important;
 }
-.kadence-search-modal .search-submit:hover {
+.kadence-search-modal .search-submit:hover,
+#search-drawer .search-submit:hover {
     background: #db2777 !important;
 }
 /* Also fix 404 page search button */
@@ -2988,19 +2991,20 @@ function mhm_header_nav_clean_css() {
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
-  width: 40px !important;
-  height: 40px !important;
+  width: 42px !important;
+  height: 42px !important;
   opacity: 1 !important;
   cursor: pointer !important;
-  border: 0 !important;
-  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
   padding: 0 !important;
   margin: 0 !important;
-  border-radius: 8px !important;
-  transition: background 0.2s ease !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
 }
 #masthead .site-header-item[data-section="kadence_customizer_header_search"] .search-toggle-open:hover {
-  background: rgba(255,255,255,0.08) !important;
+  background: rgba(255,255,255,0.12) !important;
+  border-color: rgba(236,72,153,0.3) !important;
 }
 
 /* Show Kadence's native SVG magnifying glass */
@@ -3014,7 +3018,7 @@ function mhm_header_nav_clean_css() {
   width: 18px !important;
   height: 18px !important;
   fill: none !important;
-  stroke: #94a3b8 !important;
+  stroke: #e2e8f0 !important;
   stroke-width: 2 !important;
 }
 #masthead .site-header-item[data-section="kadence_customizer_header_search"] .kadence-svg-iconset {
