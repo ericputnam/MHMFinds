@@ -4460,3 +4460,35 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>';
 }
 add_action( 'wp_footer', 'mhm_static_pages_title_js', 10 );
+
+/**
+ * Rewrite search form actions to /blog/ when accessed via apex domain proxy.
+ * Kadence renders its search drawer dynamically, so we use JS to intercept
+ * form submissions and rewrite the action URL from "/" to "/blog/".
+ * This ensures blog search goes through the middleware proxy to WordPress
+ * instead of hitting the Next.js homepage.
+ */
+function mhm_search_form_rewrite_js() {
+    if ( ! function_exists('is_from_apex_rewrite') || ! is_from_apex_rewrite() ) return;
+    ?>
+    <script>
+    (function() {
+        document.addEventListener('submit', function(e) {
+            var form = e.target;
+            if (form.tagName !== 'FORM') return;
+            var action = form.getAttribute('action') || '';
+            // Catch forms submitting to root "/" or the full apex domain root
+            if (action === '/' || action === 'https://musthavemods.com/' || action === 'https://musthavemods.com') {
+                // Check if this is a search form (has an input named "s")
+                if (form.querySelector('input[name="s"]')) {
+                    e.preventDefault();
+                    var searchVal = form.querySelector('input[name="s"]').value;
+                    window.location.href = '/blog/?s=' + encodeURIComponent(searchVal);
+                }
+            }
+        }, true);
+    })();
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'mhm_search_form_rewrite_js', 20 );
