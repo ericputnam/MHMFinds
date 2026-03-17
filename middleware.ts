@@ -106,8 +106,10 @@ async function proxyAndRewriteWordPress(
   request: NextRequest
 ): Promise<Response> {
   const url = new URL(wpUrl);
-  const incomingUrl = new URL(request.url);
-  incomingUrl.searchParams.forEach((value, key) => {
+  // Forward query params from the incoming request to WordPress
+  // Try both request.nextUrl and request.url to handle all Vercel edge cases
+  const searchParams = request.nextUrl?.searchParams || new URL(request.url).searchParams;
+  searchParams.forEach((value, key) => {
     url.searchParams.set(key, value);
   });
 
