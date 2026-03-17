@@ -2985,26 +2985,27 @@ function mhm_header_nav_clean_css() {
   height: auto !important;
 }
 
-/* Search button — show as icon */
+/* Search button — match Patreon CTA pill style */
 #masthead .site-header-item[data-section="kadence_customizer_header_search"] .search-toggle-open {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
-  width: 42px !important;
-  height: 42px !important;
+  width: 44px !important;
+  height: 44px !important;
   opacity: 1 !important;
   cursor: pointer !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  background: rgba(255,255,255,0.05) !important;
+  border: 0 !important;
+  background: #ec4899 !important;
   padding: 0 !important;
   margin: 0 !important;
-  border-radius: 50% !important;
-  transition: all 0.2s ease !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.4) !important;
+  transition: background 0.2s ease, transform 0.15s ease !important;
 }
 #masthead .site-header-item[data-section="kadence_customizer_header_search"] .search-toggle-open:hover {
-  background: rgba(255,255,255,0.12) !important;
-  border-color: rgba(236,72,153,0.3) !important;
+  background: #db2777 !important;
+  transform: scale(1.05) !important;
 }
 
 /* Show Kadence's native SVG magnifying glass */
@@ -3018,8 +3019,8 @@ function mhm_header_nav_clean_css() {
   width: 18px !important;
   height: 18px !important;
   fill: none !important;
-  stroke: #e2e8f0 !important;
-  stroke-width: 2 !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.5 !important;
 }
 #masthead .site-header-item[data-section="kadence_customizer_header_search"] .kadence-svg-iconset {
   display: flex !important;
