@@ -259,6 +259,11 @@ export async function middleware(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const hasSearchParam = requestUrl.searchParams.has('s');
   const wpUrl = getWordPressUrl(pathname, hasSearchParam);
+
+  // Debug: log blog search routing
+  if (pathname.startsWith('/blog')) {
+    console.log(`[MW DEBUG] pathname="${pathname}" hasSearch=${hasSearchParam} wpUrl="${wpUrl}" fullUrl="${request.url}"`);
+  }
   if (wpUrl) {
     try {
       return await proxyAndRewriteWordPress(wpUrl, request);
