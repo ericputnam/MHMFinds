@@ -255,8 +255,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Debug: temporary endpoint to test middleware routing
-  if (pathname === '/_debug-middleware') {
-    return new Response(JSON.stringify({ ok: true, pathname }), {
+  if (pathname === '/_debug-middleware' || pathname === '/_debug-middleware/') {
+    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
+    return new Response(JSON.stringify({ ok: true, pathname, searchParams, url: request.url }), {
       status: 200,
       headers: { 'content-type': 'application/json' },
     });
