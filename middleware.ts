@@ -128,7 +128,7 @@ async function proxyAndRewriteWordPress(
   const fetchOptions: RequestInit = {
     method: request.method,
     headers: forwardHeaders,
-    redirect: 'manual',
+    redirect: 'follow',
   };
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -152,6 +152,8 @@ async function proxyAndRewriteWordPress(
   if (contentType.includes('text/html')) {
     const html = await wpResponse.text();
     const rewritten = rewriteHtml(html);
+    responseHeaders.set('x-wp-fetch-url', url.toString());
+    responseHeaders.set('x-wp-fetch-status', String(wpResponse.status));
     return new Response(rewritten, {
       status: wpResponse.status,
       headers: responseHeaders,
