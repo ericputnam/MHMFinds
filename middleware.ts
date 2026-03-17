@@ -191,6 +191,11 @@ async function proxyAndRewriteWordPress(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ── TEMPORARY DEBUG ──
+  if (pathname.includes('_debug')) {
+    return new Response(`MW OK pathname=${pathname} url=${request.url}`, { status: 200 });
+  }
+
   // ── Auth: protect /api/admin/* API routes (CRITICAL SECURITY) ──
   if (pathname.startsWith('/api/admin')) {
     const token = await getToken({
