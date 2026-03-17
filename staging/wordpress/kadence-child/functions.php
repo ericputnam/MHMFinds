@@ -990,16 +990,16 @@ html body .wp-block-search__button {
 .kadence-search-modal input::placeholder {
     color: #64748b !important;
 }
-/* Search button in header popup */
+/* Search button in header popup — use background SVG for reliable white centered icon */
 .kadence-search-modal .search-submit,
 .kadence-search-modal button[type="submit"],
 .header-search-modal .search-submit,
 #search-drawer .search-submit,
 .search-toggle-open-container .search-submit {
-    background: #ec4899 !important;
+    background: #ec4899 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2720%27 height=%2720%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23ffffff%27 stroke-width=%272.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%278%27/%3E%3Cline x1=%2721%27 y1=%2721%27 x2=%2716.65%27 y2=%2716.65%27/%3E%3C/svg%3E") center center / 20px 20px no-repeat !important;
     border: none !important;
     border-radius: 9999px !important;
-    color: #fff !important;
+    color: transparent !important;
     padding: 0 !important;
     margin: 0.35rem !important;
     cursor: pointer !important;
@@ -1007,36 +1007,19 @@ html body .wp-block-search__button {
     line-height: 0 !important;
     width: 44px !important;
     height: 44px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     flex-shrink: 0 !important;
-    transition: background 0.2s ease !important;
+    transition: background-color 0.2s ease !important;
+    box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.4) !important;
 }
-.kadence-search-modal .search-submit svg,
-#search-drawer .search-submit svg,
-.search-toggle-open-container .search-submit svg {
-    width: 20px !important;
-    height: 20px !important;
-    fill: none !important;
-    stroke: #ffffff !important;
-    stroke-width: 2.5 !important;
-    display: block !important;
-    margin: 0 auto !important;
-}
-/* Override Kadence icon wrapper inside submit button */
-.kadence-search-modal .search-submit .kadence-svg-iconset,
-#search-drawer .search-submit .kadence-svg-iconset,
-.search-toggle-open-container .search-submit .kadence-svg-iconset {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 0 !important;
-    font-size: 0 !important;
+/* Hide any inner content (SVG, text, icon wrappers) */
+.kadence-search-modal .search-submit *,
+#search-drawer .search-submit *,
+.search-toggle-open-container .search-submit * {
+    display: none !important;
 }
 .kadence-search-modal .search-submit:hover,
 #search-drawer .search-submit:hover {
-    background: #db2777 !important;
+    background-color: #db2777 !important;
 }
 /* Also fix 404 page search button */
 .error404 .wp-block-search__button,
