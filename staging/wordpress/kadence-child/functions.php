@@ -1000,13 +1000,45 @@ html body .wp-block-search__button {
     border: none !important;
     border-radius: 9999px !important;
     color: #fff !important;
-    padding: 0.875rem 1.5rem !important;
+    padding: 0.875rem !important;
     margin: 0.25rem !important;
     cursor: pointer !important;
     font-weight: 600 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    width: 48px !important;
+    height: 48px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.kadence-search-modal .search-submit svg,
+#search-drawer .search-submit svg,
+.search-toggle-open-container .search-submit svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: currentColor !important;
+    font-size: 20px !important;
 }
 .kadence-search-modal .search-submit:hover {
     background: #db2777 !important;
+}
+/* Also fix 404 page search button */
+.error404 .wp-block-search__button,
+.search-no-results .wp-block-search__button {
+    font-size: 0 !important;
+    width: 48px !important;
+    height: 48px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 0 9999px 9999px 0 !important;
+}
+.error404 .wp-block-search__button svg,
+.search-no-results .wp-block-search__button svg {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
 }
 
     /* HERO IMAGE GLOW EFFECT */
