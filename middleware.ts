@@ -20,15 +20,12 @@ const BLOG_ORIGIN_ENCODED_REGEX = /https%3A%2F%2Fblog\.musthavemods\.com/g;
  * Determine if a pathname should be proxied to WordPress.
  * Returns the full WordPress URL, or null for Next.js routes.
  */
-function getWordPressUrl(pathname: string, hasSearchParam: boolean = false): string | null {
+function getWordPressUrl(pathname: string): string | null {
   // Root is the Next.js homepage
   if (pathname === '/' || pathname === '') return null;
 
-  // /blog and /blog/ → WordPress landing page, UNLESS searching
-  // Search needs WP root /?s=term, not /homepage/?s=term (which 404s)
-  if (pathname === '/blog' || pathname === '/blog/') {
-    return hasSearchParam ? `${WP_ORIGIN}/` : `${WP_ORIGIN}/homepage/`;
-  }
+  // /blog and /blog/ → WordPress root (supports both homepage and search)
+  if (pathname === '/blog' || pathname === '/blog/') return `${WP_ORIGIN}/`;
   // /blog/all → WordPress posts archive (root)
   if (pathname === '/blog/all' || pathname === '/blog/all/') return `${WP_ORIGIN}/`;
   // /blog/:path → WordPress subpages
@@ -256,14 +253,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── WordPress proxy with canonical URL rewriting ────────────
-  const requestUrl = new URL(request.url);
-  const hasSearchParam = requestUrl.searchParams.has('s');
-  const wpUrl = getWordPressUrl(pathname, hasSearchParam);
+  const wpUrl = getWordPressUrl(pathname);
 
-  // Debug: log blog search routing
-  if (pathname.startsWith('/blog')) {
-    console.log(`[MW DEBUG] pathname="${pathname}" hasSearch=${hasSearchParam} wpUrl="${wpUrl}" fullUrl="${request.url}"`);
-  }
   if (wpUrl) {
     try {
       return await proxyAndRewriteWordPress(wpUrl, request);
