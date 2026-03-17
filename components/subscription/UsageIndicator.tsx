@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Crown, Download } from 'lucide-react';
+import { Crown } from 'lucide-react';
 
 const ANONYMOUS_DOWNLOAD_LIMIT = 5;
 const STORAGE_KEY = 'mhm_anonymous_downloads';

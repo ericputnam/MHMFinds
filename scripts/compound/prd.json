@@ -1,0 +1,88 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Remove unused imports from privacyAggregator.ts",
+      "description": "Remove unused `HttpsProxyAgent` and `SocksProxyAgent` import lines from lib/services/privacyAggregator.ts (lines 4-5)",
+      "status": "completed"
+    },
+    {
+      "id": 2,
+      "title": "Remove unused import from visionFacetExtractor.ts",
+      "description": "Remove unused `prisma` import from lib/services/visionFacetExtractor.ts (line 11)",
+      "status": "completed"
+    },
+    {
+      "id": 3,
+      "title": "Remove unused import from check-limit route",
+      "description": "Remove unused `SubscriptionService` import from app/api/subscription/check-limit/route.ts (line 4)",
+      "status": "completed"
+    },
+    {
+      "id": 4,
+      "title": "Remove unused Eye icon from ModCard.tsx",
+      "description": "Remove `Eye` from the lucide-react import in components/ModCard.tsx (line 7)",
+      "status": "completed"
+    },
+    {
+      "id": 5,
+      "title": "Remove 5 unused icons from ModGrid.tsx",
+      "description": "Remove `Search`, `Heart`, `TrendingUp`, `Sparkles`, `Filter` from the lucide-react import in components/ModGrid.tsx (line 7). Only `Loader2`, `AlertCircle`, `Package` should remain.",
+      "status": "completed"
+    },
+    {
+      "id": 6,
+      "title": "Remove unused Download icon from UsageIndicator.tsx",
+      "description": "Remove `Download` from the lucide-react import in components/subscription/UsageIndicator.tsx (line 5). Only `Crown` should remain.",
+      "status": "completed"
+    },
+    {
+      "id": 7,
+      "title": "Remove unused icons from mod detail page",
+      "description": "Remove `MessageSquare` (line 19) and `Users` (line 21) from lucide-react imports in app/mods/[id]/page.tsx",
+      "status": "completed"
+    },
+    {
+      "id": 8,
+      "title": "Delete orphaned UpgradeModal.tsx",
+      "description": "Delete components/subscription/UpgradeModal.tsx — orphaned component with zero .ts/.tsx imports (only referenced in .md planning docs)",
+      "status": "completed"
+    },
+    {
+      "id": 9,
+      "title": "Remove commented-out handler registrations",
+      "description": "Remove commented-out handler registrations (GENERATE_INTERNAL_LINKS, EXPAND_CONTENT, UPDATE_AD_PLACEMENT) from lib/services/actionHandlers/index.ts (lines 66-69)",
+      "status": "completed"
+    },
+    {
+      "id": 10,
+      "title": "Extract FACET_COLORS to shared module",
+      "description": "Create lib/facetColors.ts with the shared FACET_COLORS constant (27 facet entries, ~42 lines). Extract from components/ModCard.tsx (lines 11-42).",
+      "status": "completed"
+    },
+    {
+      "id": 11,
+      "title": "Update ModCard.tsx to import shared FACET_COLORS",
+      "description": "Replace the inline FACET_COLORS definition in components/ModCard.tsx with an import from lib/facetColors.ts",
+      "status": "completed"
+    },
+    {
+      "id": 12,
+      "title": "Update ModDetailsModal.tsx to import shared FACET_COLORS",
+      "description": "Replace the inline FACET_COLORS definition in components/ModDetailsModal.tsx (lines 10-54) with an import from lib/facetColors.ts",
+      "status": "completed"
+    },
+    {
+      "id": 13,
+      "title": "Verify no dangling references",
+      "description": "Run grep to confirm UpgradeModal has zero source-file references and FACET_COLORS only exists in lib/facetColors.ts (definition) plus 2 imports",
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "title": "Run build and type checks",
+      "description": "Run `npx tsc --noEmit` (errors must be ≤ 19), `npm run build` (must succeed), and `npm run test` (unit tests pass) to verify no regressions",
+      "status": "pending"
+    }
+  ]
+}
