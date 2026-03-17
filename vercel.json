@@ -142,6 +142,11 @@
   ],
   "rewrites": [
     {
+      "source": "/blog/",
+      "has": [{ "type": "query", "key": "s", "value": "(?<term>.*)" }],
+      "destination": "https://blog.musthavemods.com/?s=:term"
+    },
+    {
       "source": "/ads.txt",
       "destination": "https://blog.musthavemods.com/ads.txt"
     },

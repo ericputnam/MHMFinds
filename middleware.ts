@@ -25,6 +25,7 @@ function getWordPressUrl(pathname: string): string | null {
   if (pathname === '/' || pathname === '') return null;
 
   // /blog and /blog/ → WordPress root (supports both homepage and search)
+  // NOTE: /blog/?s=term search is handled by vercel.json edge rewrite
   if (pathname === '/blog' || pathname === '/blog/') return `${WP_ORIGIN}/`;
   // /blog/all → WordPress posts archive (root)
   if (pathname === '/blog/all' || pathname === '/blog/all/') return `${WP_ORIGIN}/`;
