@@ -179,11 +179,38 @@ async function proxyAndRewriteWordPress(
 /**
  * Next.js Middleware
  *
- * 1. Protects /admin and /creators routes (auth)
+ * 1. Protects /api/admin, /admin, and /creators routes (auth)
  * 2. Proxies WordPress routes with canonical URL rewriting
+ *
+ * SECURITY: This middleware provides the FIRST line of defense for admin routes.
+ * Individual route handlers should ALSO check auth as defense-in-depth.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // ── Auth: protect /api/admin/* API routes (CRITICAL SECURITY) ──
+  if (pathname.startsWith('/api/admin')) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (!token.isAdmin) {
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
+    // Admin authenticated — allow request to proceed
+    // Individual route handlers should still verify auth for defense-in-depth
+  }
 
   // ── Auth: protect /creators routes ──────────────────────────
   if (pathname.startsWith('/creators')) {

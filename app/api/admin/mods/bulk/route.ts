@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { CacheService } from '@/lib/cache';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
 
 // DELETE - Bulk delete mods
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { ids } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -18,6 +29,9 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
+    // Invalidate cache for all deleted mods
+    await Promise.all(ids.map((id: string) => CacheService.invalidateMod(id)));
+
     return NextResponse.json({ success: true, count: ids.length });
   } catch (error) {
     console.error('Error bulk deleting mods:', error);
@@ -28,6 +42,11 @@ export async function DELETE(request: NextRequest) {
 // PATCH - Bulk update mods
 export async function PATCH(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { ids, updates } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -46,6 +65,9 @@ export async function PATCH(request: NextRequest) {
       },
       data: updates,
     });
+
+    // Invalidate cache for all updated mods
+    await Promise.all(ids.map((id: string) => CacheService.invalidateMod(id)));
 
     return NextResponse.json({ success: true, count: ids.length });
   } catch (error) {

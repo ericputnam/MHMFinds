@@ -3,6 +3,9 @@
  * Per CT-002: Items with 'dress' in title should have contentType='dresses'
  */
 
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import '../lib/setup-env';
+
 import { prisma } from '@/lib/prisma';
 
 async function fixTopsWithDress() {

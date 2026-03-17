@@ -1,5 +1,8 @@
 #!/usr/bin/env tsx
 
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import './lib/setup-env';
+
 import { privacyAggregator } from '../lib/services/privacyAggregator';
 import { getPrivacyConfig } from '../lib/config/privacy';
 

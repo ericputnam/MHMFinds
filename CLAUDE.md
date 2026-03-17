@@ -2,138 +2,600 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Critical Rules
+## 🔐 CRITICAL SECURITY RULE: Never Commit Secrets
 
-1. **No Gradients** - Never use `linear-gradient()`, `radial-gradient()`, or `conic-gradient()`. Use solid colors and box-shadows instead. Gradients are an "AI tell".
-2. **No Auto-Commits** - Never create git commits unless the user explicitly requests it.
-3. **No Secrets in Git** - Never commit API keys, tokens, `.env` files, or credentials. Use `.env.example` with placeholders.
-4. **Verify with Browser-Use** - After any frontend/UI change, use browser-use to visually verify before reporting completion. If unavailable, tell the user to check manually.
-5. **No Gradients in WordPress Either** - The Kadence child theme `custom.css` must also follow the no-gradients rule.
+**NEVER commit any of the following to git:**
+
+### Prohibited Items:
+- ❌ API keys, tokens, or secrets of any kind
+- ❌ Database connection strings with credentials
+- ❌ Passwords, auth tokens, or session secrets
+- ❌ Private keys, certificates, or encryption keys
+- ❌ OAuth client secrets
+- ❌ Webhook secrets
+- ❌ Any `.env*` files except `.env.example`
+
+### Required Actions:
+1. **Use placeholders in documentation**: Replace actual credentials with `[YOUR_KEY_HERE]` or `your-key-here`
+2. **Check `.gitignore`**: Ensure all sensitive files are ignored:
+   ```
+   .env
+   .env.local
+   .env*.local
+   .env.production
+   *.key
+   *.pem
+   secrets/
+   ```
+3. **Use `.env.example`**: Only commit example files with placeholders, never actual values
+4. **Before committing**: Always review changes for exposed credentials
+5. **If exposed**: Immediately rotate credentials and remove from git history
+
+### Safe Patterns:
+✅ `.env.example` with placeholders
+✅ Documentation with `[PLACEHOLDER]` values
+✅ Instructions to "copy from .env.local"
+✅ Links to credential providers (e.g., "Get from Stripe Dashboard")
+
+**If you accidentally commit secrets, STOP immediately and rotate the credentials before continuing.**
+
+---
+
+## 🔐 CRITICAL SECURITY RULE: Admin API Route Authentication
+
+**EVERY admin API route MUST have authentication. No exceptions.**
+
+### Defense-in-Depth Architecture
+
+Admin routes are protected by TWO layers:
+
+1. **Middleware (First Line of Defense)** - `middleware.ts` blocks ALL requests to `/api/admin/*` that lack admin authentication at the request level
+2. **Route-Level Auth (Second Line of Defense)** - Each route handler MUST also check auth for defense-in-depth
+
+### Required Pattern for Admin API Routes
+
+Every file in `app/api/admin/` MUST:
+
+```typescript
+// 1. Import auth utilities
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+
+// 2. Export dynamic to prevent static rendering issues
+export const dynamic = 'force-dynamic';
+
+// 3. Check auth at the START of each handler
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // ... rest of handler
+  } catch (error) {
+    // ... error handling
+  }
+}
+```
+
+### Security Scanner
+
+Run the security scanner to verify all admin routes have auth:
+
+```bash
+npm run security:check-admin-auth
+```
+
+This should be run:
+- Before committing changes to admin routes
+- In CI/CD pipelines
+- Periodically as a security audit
+
+### Why Both Middleware AND Route-Level Auth?
+
+- **Middleware** catches requests before they reach route handlers (network-level protection)
+- **Route-level** provides defense-in-depth if middleware is misconfigured or bypassed
+- **Never rely on just one layer** - security requires redundancy
+
+### NEVER Create Admin Routes Without Auth
+
+❌ **WRONG** - Missing auth check:
+```typescript
+export async function DELETE(request: NextRequest) {
+  const { id } = await request.json();
+  await prisma.mod.delete({ where: { id } });  // DANGEROUS!
+  return NextResponse.json({ success: true });
+}
+```
+
+✅ **CORRECT** - Auth check first:
+```typescript
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await request.json();
+  await prisma.mod.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}
+```
+
+---
+
+## 🚨 CRITICAL: Prisma Connection Pooling in Serverless (Vercel)
+
+**NEVER modify `lib/prisma.ts` without understanding this section.**
+
+### The Problem
+On Vercel (serverless), each function invocation can create a new PrismaClient instance. If the client isn't cached globally, you will **exhaust the database connection pool** and cause a site-wide outage.
+
+### Symptoms of Connection Pool Exhaustion
+- Intermittent 500 errors (some requests work, others fail)
+- Error: `Can't reach database server at db.prisma.io:5432`
+- Simple queries succeed while complex queries fail
+- Site works briefly then crashes
+
+### The CORRECT Prisma Client Pattern
+```typescript
+// lib/prisma.ts - THIS PATTERN IS CRITICAL
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+// ⚠️ MUST cache in ALL environments including production!
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = prisma;
+}
+
+export default prisma;
+```
+
+### What NOT To Do
+```typescript
+// ❌ WRONG - This only caches in development, NOT production!
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+### Before Refactoring Auth or Database Code
+1. **Check import paths** - Adding new files that import `prisma` increases cold start frequency
+2. **Test locally first** - Run `npm run build` to catch issues
+3. **Deploy cautiously** - Watch Vercel logs for connection errors after deploy
+4. **Have rollback ready** - Know how to promote a previous deployment in Vercel
+
+### If Connection Pool Exhausts
+1. **Immediately rollback** in Vercel (Deployments → Previous working deploy → Promote to Production)
+2. Wait 2-3 minutes for connections to timeout
+3. Fix the issue in code
+4. Redeploy carefully
+
+---
+
+## ✅ Prisma Accelerate - Query Caching Enabled
+
+**This project uses Prisma Accelerate for query-level caching.** The `@prisma/extension-accelerate` package is installed and configured in `lib/prisma.ts`.
+
+### Environment Variable Setup (CRITICAL)
+
+The environment variables MUST be configured correctly for Accelerate to work:
+
+```bash
+# .env.local (and Vercel Production)
+
+# DATABASE_URL = Prisma Accelerate URL (enables caching)
+DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+
+# DIRECT_DATABASE_URL = Direct postgres connection (for migrations)
+DIRECT_DATABASE_URL="postgres://...@db.prisma.io:5432/postgres?sslmode=require"
+```
+
+### ⚠️ Common Mistake: Swapped URLs
+If URLs are swapped (DATABASE_URL has `postgres://` instead of `prisma+postgres://`), caching will be silently disabled. Check the dev server logs for:
+```
+[Prisma] Accelerate extension enabled (Accelerate URL detected)
+```
+If you don't see this message, the URLs are likely swapped.
+
+### How It Works
+The `lib/prisma.ts` file:
+1. Detects if `DATABASE_URL` starts with `prisma://` or `prisma+postgres://`
+2. If yes, enables the Accelerate extension with `withAccelerate()`
+3. Adds slow query logging (>2s dev, >5s prod)
+4. Caches the client globally to prevent connection pool exhaustion
+
+### Using Cache Strategy in Queries
+When Accelerate is enabled, you can use `cacheStrategy` in queries:
+```typescript
+const mods = await prisma.mod.findMany({
+  cacheStrategy: { ttl: 60 }, // Cache for 60 seconds
+});
+```
+
+### Recovery from Prisma Connection Issues
+1. **Rollback immediately**: `vercel rollback <working-deployment-url> --yes`
+2. Check Prisma Dashboard for errors
+3. Verify env vars are not swapped (DATABASE_URL should be `prisma+postgres://`)
+4. Wait for connections to clear before redeploying
+
+---
+
+## ⚠️ CRITICAL: Production Deployment Safety
+
+### Before Pushing to Production
+1. **Test locally first** - `npm run build` must succeed
+2. **Don't add new packages without understanding them** - Research first
+3. **Infrastructure changes need explicit approval** - Databases, auth, caching
+4. **Have a rollback plan** - Know the last working deployment
+
+### Rollback Commands
+```bash
+# List recent deployments
+vercel ls
+
+# Rollback to a specific deployment
+vercel rollback <deployment-url> --yes
+
+# Example:
+vercel rollback mhm-finds-dw5l-abc123-ericputnams-projects.vercel.app --yes
+```
+
+### When Things Break in Production
+1. **STOP** - Don't push more fixes blindly
+2. **Rollback first** - Get the site working
+3. **Investigate** - Check Vercel logs, Prisma dashboard
+4. **Fix locally** - Test thoroughly
+5. **Deploy carefully** - Watch logs after deploy
+
+---
+
+## 🧹 CRITICAL: Vercel Build Cleanliness
+
+**All Vercel builds MUST be clean and optimized.** Warnings and errors should be fixed, suppressed, or documented as benign.
+
+### The Standard
+- ✅ Zero build errors
+- ✅ Zero actionable warnings (all warnings either fixed or documented as benign)
+- ✅ No "Error fetching..." messages during static generation
+- ✅ No deprecated package warnings that can be fixed
+
+### Common Warnings and Fixes
+
+#### Static Generation Errors ("Error fetching..." during build)
+API routes that use `request.url`, `cookies()`, or `headers()` will fail during static generation.
+
+**Fix**: Add `export const dynamic = 'force-dynamic'` to the route file:
+```typescript
+// app/api/example/route.ts
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
+  // ... uses request.url, cookies(), or headers()
+}
+```
+
+#### Deprecated npm Package Warnings
+Use npm overrides in `package.json` to force newer versions of transitive dependencies:
+```json
+{
+  "overrides": {
+    "glob": "^10.0.0",
+    "rimraf": "^5.0.0"
+  }
+}
+```
+
+#### React useEffect Missing Dependencies
+Fix all `react-hooks/exhaustive-deps` warnings by either:
+1. Adding the missing dependency to the array
+2. Using `// eslint-disable-next-line react-hooks/exhaustive-deps` with a comment explaining why
+
+#### Next.js `<img>` vs `<Image>` Warnings
+Replace HTML `<img>` tags with Next.js `<Image>` component:
+```typescript
+import Image from 'next/image';
+// <img src="..." /> → <Image src="..." width={} height={} alt="" />
+```
+
+### Known Benign Warnings (Cannot Be Suppressed)
+
+These warnings are expected and cannot be fixed without major upgrades. Document them here so they're not repeatedly investigated:
+
+| Warning | Reason | Status |
+|---------|--------|--------|
+| `WARNING: Unable to find source file for page /_not-found` | Vercel quirk with App Router | Benign - does not affect functionality |
+| `npm warn deprecated eslint@8.x.x` | ESLint 9 requires Next.js 15 and flat config migration | Cannot fix without major upgrade |
+| `npm warn deprecated @humanwhocodes/*` | Part of ESLint 8 ecosystem | Cannot fix without ESLint 9 |
+| `npm warn deprecated node-domexception` | Transitive dependency of undici/node-fetch | Cannot fix - upstream issue |
+
+### After Every Deployment
+1. Review Vercel build logs for new warnings
+2. If fixable → create a task and fix it
+3. If benign and new → add to the table above
+4. Goal: Anyone reviewing build logs should see only documented benign warnings
+
+### When to Create Cleanup Tasks
+- New warning appears that's not in the benign list
+- Warning count increases after a dependency update
+- Build times increase significantly (investigate caching issues)
+
+---
+
+## 🚫 CRITICAL GIT RULE: Never Auto-Commit
+
+**NEVER create git commits unless explicitly requested by the user.**
+
+### Prohibited Actions:
+- ❌ Automatically committing changes after completing a task
+- ❌ Creating commits "to save progress" without being asked
+- ❌ Committing changes as part of a larger workflow unless specifically instructed
+- ❌ Suggesting or offering to commit changes (just wait for user request)
+
+### When You CAN Commit:
+✅ User explicitly says: "commit my changes", "create a commit", "make a git commit", etc.
+✅ User asks you to "commit and push"
+✅ User requests a commit as part of a specific workflow they describe
+
+### Rationale:
+Users want full control over what gets committed and when. Even if you complete a feature successfully, the user may:
+- Want to review changes first
+- Need to make additional modifications
+- Prefer to commit manually with their own message
+- Be working on a larger change set that includes your work
+
+**IMPORTANT: Only commit when the user explicitly asks you to commit. No exceptions.**
+
+---
+
+## IMPORTANT: newapp_musthavemods Folder
+
+**The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
+
+- This folder contains a Vite/React proof-of-concept app showing the desired look and feel for UI components
+- **DO NOT** migrate the main Next.js app to use this Vite app
+- **DO NOT** try to run or start the newapp_musthavemods dev server
+- **INSTEAD**: Look at the component designs (ModDetailsModal, ModCard, etc.) in newapp_musthavemods as inspiration and apply the same visual design to the main Next.js app components
+- Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes)
+- Only adopt the UI/UX patterns, styling, and layout from newapp_musthavemods
+
+**Main development should ALWAYS happen in the root Next.js project, not in newapp_musthavemods.**
 
 ## Project Overview
 
-ModVault (MHMFinds) - Multi-game mod discovery platform. Next.js 14 + TypeScript + Prisma + PostgreSQL + OpenAI embeddings. Aggregates mods from CurseForge, Patreon, Tumblr. Supports Sims 4, Stardew Valley, Minecraft.
+ModVault (MHMFinds) is a Sims mod discovery platform built with Next.js 14, TypeScript, Prisma, and PostgreSQL. The platform aggregates content from multiple sources (CurseForge, Patreon, Tumblr, etc.) and uses AI-powered search with OpenAI embeddings for semantic mod discovery.
 
-## Quick Reference
+## Development Commands
 
+### Core Development
 ```bash
-# Development
-npm run dev                # Start dev server (localhost:3000)
-npm run build              # Production build
-npm run clean              # Fix webpack cache corruption
-npm run dev:clean          # Clean + dev server
+npm run dev                 # Start Next.js development server (localhost:3000)
+npm run build              # Build for production
+npm run start              # Start production server
+npm run lint               # Run Next.js linter
+npm run type-check         # TypeScript type checking without emitting files
+npm run clean              # Clear .next and node_modules/.cache (fixes webpack errors)
+npm run dev:clean          # Clean + start dev server (use when cache is corrupted)
+```
 
-# Database
-npm run db:generate        # Generate Prisma client
-npm run db:migrate         # Create/apply migration
-npm run db:studio          # Prisma Studio GUI
+### Webpack Cache Corruption (IMPORTANT)
+
+The Next.js webpack cache can become corrupted, causing errors like:
+- `Cannot find module './657.js'`
+- `ENOENT: no such file or directory, lstat '.next/server/vendor-chunks/...'`
+- `Can't resolve './vendor-chunks/lucide-react'`
+
+**To fix**: Run `npm run clean` or `npm run dev:clean`
+
+**Prevention**: When making significant changes to dependencies, imports, or running cleanup scripts, proactively run `npm run clean` before restarting the dev server.
+
+**AI Agents**: After completing batch operations or running scripts that modify the codebase, ALWAYS verify the app still works by checking if the dev server starts without errors. If cache corruption occurs, fix it immediately with `npm run clean`.
+
+### Database Operations
+```bash
+npm run db:generate        # Generate Prisma client from schema
+npm run db:push            # Push schema changes to database (no migration)
+npm run db:migrate         # Create and apply migration
+npm run db:studio          # Open Prisma Studio GUI
+npm run db:seed            # Initialize database with seed data
+npm run db:reset           # Reset database (WARNING: deletes all data)
 npm run db:deploy          # Apply migrations in production
-
-# Content
-npm run content:privacy    # Privacy-enhanced aggregation
-npm run content:stealth    # Max privacy mode
-
-# Security
-npm run security:check-admin-auth  # Verify admin route auth
 ```
 
-## Key Gotchas (read docs for details)
+### ⚠️ Vercel Build and Migrations
+The Vercel build command is: `npx prisma generate && next build`
 
-- **Prisma `lib/prisma.ts`**: Never modify without reading `docs/PRISMA_GUIDE.md`. Must cache globally in ALL environments including production.
-- **`DATABASE_URL` vs `DIRECT_DATABASE_URL`**: First is Accelerate (`prisma+postgres://`), second is direct postgres. If swapped, caching silently breaks.
-- **`force-dynamic`**: Required on any API route using `getServerSession()`, `cookies()`, or `headers()`.
-- **`useSearchParams()`**: Client components using this must be wrapped in `<Suspense>` by parent.
-- **Admin API routes**: Must have BOTH middleware protection AND route-level `requireAdmin()`. Defense-in-depth.
-- **WordPress routes**: Use `<a href>` not `<Link>` for `/blog`, `/sims-4/`, `/stardew-valley/`, `/minecraft/`.
-- **Scripts**: Must import `scripts/lib/setup-env.ts` FIRST before any other imports.
-- **Prisma Decimal**: Always coerce to `Number()` before `.toFixed()` or arithmetic.
-- **Cache invalidation**: Call `CacheService.invalidateMod(id)` after every admin mutation.
-- **Webpack cache corruption**: Fix with `npm run clean`. Common after dependency/import changes.
-- **Scraper multi-game detection**: Game detection hierarchy is URL slug > categories > title, defaulting to Sims 4. Pure detection functions live in `lib/services/mhmScraperUtils.ts` with tests in `__tests__/unit/mhmScraperUtils.test.ts`. When adding a new game, update both files plus `scripts/seed-facet-definitions.ts`. In `mhmScraper.ts`, `normalizeCategory(category, game)` and `extractTagsFromTitle(title, game)` are game-aware — add game-specific branches when expanding.
-- **`ensureAuthor()` never-null guarantee**: Always use `ensureAuthor()` from `mhmScraperUtils.ts` for author fields — it guarantees a non-empty string via a priority chain with domain-based fallback. Never save a mod with `author: undefined`.
-- **Parenthesized author filter**: `extractAuthorFromTitle` Pattern 3 skips descriptors like "(JEI)", "(Window Light)", "(Forge & Fabric)", "(Large)", "(Skins + Sims)" — checks for numbers, sizes, all-caps abbreviations, `+` signs, mod loaders, and common descriptor words.
-- **`ScrapedMod.gameVersion`**: The scraper sets `gameVersion` per mod via `detectGame()`. The save method uses `mod.gameVersion || 'Sims 4'` as fallback. Always pass `detectedGame` to `normalizeCategory()` and `extractTagsFromTitle()`.
-- **NexusMods returns 403**: `scrapeAuthorFromModPage` always fails for NexusMods URLs. Falls back to domain hint "Nexus Mods Creator" via `ensureAuthor()`. Affects Stardew Valley mods primarily.
-- **Facet sortOrder ranges**: Sims 4 = 1-60, Minecraft = 70-79, Stardew Valley = 80-89 (in `seed-facet-definitions.ts`). Keep ranges separated when adding new games.
-- **vercel.json `:path*` vs `:path+`**: Use `:path+` (one-or-more) for catch-alls, NOT `:path*` (zero-or-more). `:path*` shadows explicit rules for the base path (e.g., `/blog/` matches `/blog/:path*`).
-- **vercel.json slug exclusion list**: The catch-all `/:slug((?!api|admin|...).*)/` pattern must explicitly exclude every Next.js route prefix. Add new prefixes when creating new top-level routes.
-- **Trailing slash + catch-all**: With `trailingSlash: true`, `/path` redirects to `/path/` which can match catch-all patterns. Define explicit rules for both `/path` and `/path/` BEFORE catch-alls.
-- **Sitemap lastmod dates**: Use stable date strings (`'2026-02-24'`), NOT `Date.now()` or `new Date().toISOString()`. Dynamic timestamps make lastmod meaningless to Google.
-- **ads.txt proxy**: Ad networks (Mediavine) verify domain ownership via `/ads.txt`. Since WordPress manages this file, add a Vercel rewrite to proxy it from the blog origin. Must appear before catch-all patterns in `vercel.json`.
-- **Mediavine preconnect hints**: Both Next.js (`app/layout.tsx`) and WordPress (`functions.php`) need `<link rel="preconnect">` and `<link rel="dns-prefetch">` for `scripts.mediavine.com` and `cdn.mediavine.com`. WordPress uses `wp_head` priority 1.
-- **Related Mods pattern**: `RelatedMods.tsx` fetches from `/api/mods/[id]/related` (same category + gameVersion, excludes self, 6 results). Returns `null` on empty — parent doesn't need conditional rendering.
-- **Navbar dropdown debounce**: Desktop hover menus use 150ms `setTimeout` on `onMouseLeave` to prevent flicker when cursor moves between trigger and dropdown. Must clear timeout in `useEffect` cleanup to avoid React warnings on unmount.
-- **Mobile menu was non-functional**: The hamburger menu button had no `onClick` handler until commit 5e55fdf. When adding mobile UI, always test the actual tap interaction — visual presence doesn't mean functional.
-- **Mediavine Sidebar Sticky — no CSS sticky**: Do NOT add `position: sticky` or `position: fixed` to sidebar ad containers. Mediavine Script Wrapper handles stickiness itself. Adding CSS sticky breaks ad auto-refresh. Use `<aside id="secondary" class="widget-area primary-sidebar">` with `overflow: visible`, two placeholder `<div>` with `min-h-[250px]` (ATF + BTF). Mediavine auto-detects the `id="secondary"` container.
-- **H2 headings = Mediavine ad insertion points**: Mediavine Script Wrapper automatically inserts in-content ads before H2 headings. `ModContentSections.tsx` uses this by having Installation Guide, Compatibility, and FAQ as separate H2 sections (~400px each) to maximize scroll depth and ad slots.
-- **MoreFromCreator pattern**: `MoreFromCreator.tsx` fetches from `/api/mods/[id]/creator` (same author, excludes self, 6 results). Returns `null` if author is null or no results. Same skeleton/grid pattern as `RelatedMods.tsx`.
-- **Grow.me widget dark theming**: Grow.me (Mediavine's engagement widget) injects outside sidebar DOM as floating widget. Target with `#growme-root`, `[id^="growme"]`, `.growme-widget` selectors. Styled in WordPress `functions.php` via `mhm_single_post_sidebar_and_growme_css()`. Actual IDs use `grow-me-` prefix (hyphenated), not `growme`.
-- **Grow.me Shadow DOM**: Grow.me's sidebar recommendations widget uses Shadow DOM — external CSS only styles the host element. Must use JS `MutationObserver` + `setInterval` polling to inject a `<style>` into the shadow root. See `mhm_growme_shadow_dom_theme()` in `functions.php`. The observer checks for 30 seconds (Grow.me loads async and attaches shadow DOM late).
-- **Kadence sidebar injection via `get_sidebar` hook**: Use the `get_sidebar` action hook to inject sidebar HTML (`<aside id="secondary">`) — do NOT use `kadence_post_layout` filter, which triggers Kadence's full sidebar pipeline and crashes due to widget conflicts.
-- **Perfmatters exclusion for new scripts**: When adding new `<script id="...">` blocks, add the ID to BOTH `perfmatters_delay_js_exclusions` AND `perfmatters_delayed_scripts_exclusions` filters. Both filters exist because Perfmatters has used different names across versions.
-- **Gradient violations in mod detail badges**: `app/mods/[id]/page.tsx` has `bg-gradient-to-r` on Verified/Free badges. These violate the no-gradients rule and need replacement with solid colors + box-shadows.
+**DO NOT add `prisma migrate deploy` to the build command** unless absolutely necessary. If the database is temporarily unreachable during build, the entire deployment fails. Instead:
+- Apply migrations manually before deploying: `npm run db:deploy`
+- Or use a CI/CD step separate from the build
 
-## Important Directories
-
-| Directory | Purpose |
-|-----------|---------|
-| `/newapp` | Design reference ONLY. Do NOT run or migrate. Visual inspiration only. Uses `motion` library - do NOT add to main project. |
-| `/staging/wordpress/` | Git-tracked WordPress theme snapshots (kadence-child = staging, kadence-child-prod = production) |
-| `/scripts/compound/` | Automated nightly compound system |
-| `/scripts/staging/` | WordPress pull/push deployment scripts |
-| `/tasks/prd-gsc-seo-cleanup/` | SEO cleanup PRDs |
-
-## Deployment
-
-- **Vercel project**: `mhm-finds-dw5l` | Primary domain: `musthavemods.com` (non-www)
-- **Build command**: `npx prisma generate && next build` (do NOT add `prisma migrate deploy`)
-- **Rollback**: `vercel rollback <deployment-url> --yes`
-- **WordPress staging**: `./scripts/staging/push-blog-functions.sh`
-- **WordPress production**: `./scripts/staging/push-blog-functions-prod.sh` (requires confirmation)
-
-## RPM / Monetization Optimization Rules
-
-1. **Blog and Mod Finder are separate optimization targets.** The blog (WordPress) is reading-focused long-form content generating ~80% of Mediavine revenue. The mod finder (Next.js) is a browse/grid UI focused on discovery and pages/session. Never apply one surface's optimization patterns to the other without verifying it makes sense for that surface's UX.
-2. **Data before code.** Before any RPM-related change, check Mediavine dashboard (via `browser-use --browser real`) and/or Google Analytics (property `437117335`) to identify the specific metric you're targeting. Cite the baseline number and expected impact. Don't guess — measure.
-3. **Know your surface.** Blog changes go through `staging/wordpress/kadence-child/functions.php` → push scripts → SSH. Mod finder changes go through Next.js files → Vercel deploy. Never confuse the two deployment paths.
-4. **Viewability is the #1 RPM lever.** Site-wide viewability is 56.3% (target 70%+). Prioritize changes that improve ad viewability over traffic volume. Every 1% viewability increase ≈ 1-2% RPM increase.
-5. **Mediavine dashboard access**: `browser-use --browser real` can open `https://publishers.mediavine.com/sites/SW50ZXJuYWxTaXRlOjE0MzE4/analytics` with the user's Chrome session. Use this to verify RPM, viewability, CPM, and revenue impact after changes.
-6. **RPM audit log**: `scripts/agents/rpm-audit-log.json` tracks all optimizations with before/after Mediavine metrics. Update it for every RPM-related change.
-7. **RPM agent prompt**: `scripts/agents/mediavine-rpm-expert.md` contains the full Mediavine playbook and autonomous loop instructions.
-8. **Don't blindly apply blog patterns to mod finder.** 18px font was right for blog (long-form reading) but wrong for mod finder (compact grid). This was reverted in commit 8965e1b. Always ask: "does this pattern make sense for THIS surface's UX?"
-9. **Perfmatters rewrites `<script>` tags**: WordPress Perfmatters plugin rewrites `<script>` to `type="pmdelayedscript"`. Use PHP HTML output (not JS injection) for WordPress customizations that need to run immediately.
-10. **BigScoots has 3 cache layers**: WP object cache (`wp cache flush`), Perfmatters HTML cache (`rm -rf wp-content/cache/perfmatters/`), and BigScoots edge cache (`purge_all` + `purge_opcache` + `purge_object_cache`). Must clear all three when testing WordPress changes.
-
-### Blog vs Mod Finder Optimization Cheat Sheet
-
-| | Blog (WordPress) | Mod Finder (Next.js) |
-|---|---|---|
-| **User behavior** | Reading, scrolling long content | Browsing grids, clicking cards |
-| **Revenue share** | ~80% of Mediavine revenue | ~20% |
-| **Font/typography** | Already 18px / 1.8 line-height (good) | Keep default — grid UI needs compact text |
-| **RPM levers** | Scroll depth, viewability, content density, internal linking between posts | Pages/session, related mods, session duration |
-| **Ad units** | Content ($2,276), Adhesion ($1,038), Sidebar Sticky ($936) | Shares same Mediavine script |
-| **Deploy path** | `functions.php` → `push-blog-functions.sh` | Next.js files → Vercel |
-| **Key files** | `staging/wordpress/kadence-child/functions.php` | `app/page.tsx`, `app/mods/[id]/page.tsx`, `components/` |
-
-## Agent Workflow
-
-```
-/commitit → /reviewit → /shipit
+### Content Aggregation
+```bash
+npm run content:aggregate      # Run standard content aggregation
+npm run content:privacy        # Run privacy-enhanced aggregation (default settings)
+npm run content:stealth        # Run stealth mode aggregation (max privacy)
+npm run content:conservative   # Run conservative aggregation (slowest, safest)
+npm run content:test           # Test privacy aggregator without database writes
 ```
 
-Agents work on feature branches, never main. Use `/reviewit` before `/shipit`.
+### Data Quality & Cleanup
+```bash
+# Author data cleanup - fixes garbage author names extracted from URLs
+npx tsx scripts/cleanup-author-data.ts              # Dry run - preview changes
+npx tsx scripts/cleanup-author-data.ts --fix        # Apply fixes
+npx tsx scripts/cleanup-author-data.ts --fix --limit=100  # Fix first 100 only
+```
 
-## Documentation Index
+**Author Cleanup Details**: The original scraper extracted garbage values like "Title", "ShRef", "Id" from URL path segments. The cleanup script visits actual mod download URLs and extracts real author names. See `docs/PRD-author-data-cleanup.md` for full documentation.
 
-Detailed knowledge has been extracted into dedicated docs. Read these before making changes in their domain:
+## Architecture
 
-| Document | Contents |
-|----------|----------|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Project structure, directory layout, key patterns, auth, multi-game architecture |
-| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | All commands, env vars, webpack cache, testing, compound system setup |
-| [`docs/PRISMA_GUIDE.md`](docs/PRISMA_GUIDE.md) | Connection pooling, Accelerate, Decimal handling, raw SQL, script setup |
-| [`docs/WORDPRESS_GUIDE.md`](docs/WORDPRESS_GUIDE.md) | Proxy architecture, staging/prod workflows, Kadence gotchas, multi-game WP setup |
-| [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md) | All accumulated patterns & gotchas: build, Next.js, API, UI, scraping, security |
-| [`docs/SEO_GUIDE.md`](docs/SEO_GUIDE.md) | Meta titles, GSC workflow, canonical consolidation, robots.txt, domain migration |
-| [`docs/PRD-INDEX.md`](docs/PRD-INDEX.md) | Index of all product requirement documents |
+### Directory Structure
+
+**`/app`** - Next.js 14 App Router structure
+- `/api` - API routes (REST endpoints)
+  - `/api/auth/[...nextauth]` - NextAuth.js authentication handler
+  - `/api/mods` - Mod CRUD endpoints
+- `/mods/[id]` - Dynamic mod detail pages
+- Multiple test pages for development (test/, working-test/, simple-main/, etc.)
+
+**`/lib`** - Core business logic and utilities
+- `/services` - Service layer containing business logic
+  - `contentAggregator.ts` - Standard web scraping service for CurseForge, Patreon
+  - `privacyAggregator.ts` - Privacy-enhanced scraping with proxy support, user agent rotation, and anti-detection features
+  - `aiSearch.ts` - OpenAI-powered semantic search, recommendations, and mod similarity
+- `/config` - Configuration files
+  - `privacy.ts` - Privacy settings for content aggregation (default/stealth/conservative modes)
+- `prisma.ts` - Prisma client singleton instance
+- `api.ts` - API client utilities
+
+**`/components`** - React components (landing page components: Hero, Features, ModCard, SearchBar, etc.)
+
+**`/prisma`** - Database schema and migrations
+- `schema.prisma` - Prisma schema defining all models
+
+**`/scripts`** - Standalone utility scripts for database initialization and content aggregation
+
+### Key Architecture Patterns
+
+**Authentication**: NextAuth.js with JWT strategy, Google and Discord OAuth providers. User sessions stored in PostgreSQL via Prisma adapter.
+
+**Database**: PostgreSQL accessed through Prisma ORM. All models use `cuid()` IDs. Key models:
+- `User` - User accounts with creator/premium/admin flags
+- `Mod` - Central mod entity with rich metadata, creator relations, and search index
+- `CreatorProfile` - Creator profiles linked to users
+- `SearchIndex` - Stores OpenAI embeddings (Float[]) and full-text vectors for AI search
+- `ContentSource` and `ScrapingJob` - Track content aggregation sources and jobs
+
+**Content Aggregation**: Two aggregator implementations:
+1. `contentAggregator.ts` - Basic scraping with cheerio/axios
+2. `privacyAggregator.ts` - Advanced scraping with proxy rotation, user agent spoofing, request timing randomization, and session management
+
+**AI Search**: OpenAI embeddings (text-embedding-3-small) stored in SearchIndex.embedding field. AISearchService provides:
+- Semantic search with cosine similarity
+- User-personalized recommendations based on favorites/downloads
+- Similar mod discovery
+- Popularity boosting in ranking algorithm
+
+**Path Aliases**: TypeScript configured with `@/*` pointing to project root (see tsconfig.json)
+
+## Recent UI/UX Enhancements
+
+### Modern Search Experience (Latest Update)
+The main search page (`app/page.tsx`) has been completely redesigned with enterprise-grade UX:
+
+**Enhanced Search Bar:**
+- Autocomplete dropdown with recent searches (localStorage persistence)
+- Trending search suggestions with categorization
+- Keyboard shortcuts (⌘K to focus search)
+- Escape key to close suggestions
+- Smart suggestions based on user input
+
+**Smart Filter Sidebar:**
+- Visual filter counts showing number of mods per category
+- Custom-styled checkboxes with smooth transitions
+- Individual "Clear" buttons for each filter section
+- Gradient backgrounds for active filters
+- Sticky positioning for persistent access during scroll
+- Collapsible on mobile devices
+
+**Quick Filter Tags:**
+- One-click filters: Trending (most downloads), Newest, Top Rated, Free Mods
+- Visual active states with gradients and animations
+- "Clear All" button when filters are active
+- Pulse animations on active tags
+
+**Flexible View Options:**
+- Grid view with 3, 4, or 5 column density options
+- List view mode (UI ready, display logic pending)
+- View mode toggle buttons with visual feedback
+- Responsive grid that adapts to screen size
+
+**Active Filter Pills:**
+- Visual chips showing currently applied filters
+- Individual remove buttons on each pill
+- Color-coded by filter type (category, version, price)
+- Displayed in results header for quick reference
+
+**UI Polish:**
+- Sticky header that stays visible during scroll
+- Smooth fade-in animations for cards
+- Gradient text effects on headings
+- Hover states with scale transforms
+- Loading skeletons for better perceived performance
+- Enhanced typography and spacing
+
+**Custom Animations (globals.css):**
+- `animate-fade-in` - Cards fade in on load
+- `animate-gradient` - Animated gradient text
+- `animate-pulse` - Subtle pulse on indicators
+- Hover scale effects on interactive elements
+
+### Implementation Files Modified
+- `app/page.tsx` - Complete redesign of search page
+- `app/globals.css` - Added custom animations and utility classes
+- `components/ModCard.tsx` - Already well-designed, no changes needed
+- `components/ModGrid.tsx` - Already supports dynamic grid columns
+
+## Important Implementation Notes
+
+### Content Scraping Privacy Levels
+When scraping content, choose the appropriate privacy level:
+- **Default** (`content:privacy`): 3-8s delays, user agent rotation
+- **Stealth** (`content:stealth`): 5-15s delays, proxy rotation enabled, geographic rotation
+- **Conservative** (`content:conservative`): 10-30s delays, strictest rate limiting
+
+The privacy aggregator includes anti-detection features like randomized headers, rotating user agents, and session management to avoid blocking.
+
+### Database Schema Considerations
+- Mod prices use `Decimal(10,2)` - handle with Prisma's Decimal type
+- SearchIndex.embedding is `Float[]` - store OpenAI embeddings here
+- All cascade deletes are configured (User deletion cascades to all related entities)
+- Unique constraints on favorites, reviews, and collection items prevent duplicates
+
+### AI Search Implementation
+The AISearchService generates embeddings on-demand (no pre-computed cache). For performance:
+- Embeddings are generated for each search query
+- Results are filtered before embedding calculation (limit * 2)
+- Cosine similarity is calculated in-memory
+- Popularity boost formula: `log10((downloads + 1) * (favorites + 1) * (rating || 1)) * 0.1`
+
+### NextAuth Configuration
+NextAuth uses JWT strategy (not database sessions). Custom callbacks populate JWT with user metadata (isCreator, isPremium, isAdmin). On user creation, a default "Favorites" collection is automatically created via event handler.
+
+### Image Domains
+Approved image domains in next.config.js: The Sims Resource, SimsDom, Sims4Studio, Patreon CDN, CurseForge, Tumblr, Unsplash, Placeholder. Add new domains to `images.domains` array before using them.
+
+## Environment Variables
+
+Required for development (see env.example):
+- `DATABASE_URL` - Prisma Accelerate URL (`prisma+postgres://accelerate.prisma-data.net/...`) - enables query caching
+- `DIRECT_DATABASE_URL` - Direct PostgreSQL connection (`postgres://...@db.prisma.io/...`) - used for migrations
+- `NEXTAUTH_SECRET` - NextAuth.js secret for JWT signing
+- `NEXTAUTH_URL` - Application URL (http://localhost:3000 in dev)
+- `OPENAI_API_KEY` - Required for AI search features
+- `CURSEFORGE_API_KEY` - Required for CurseForge content aggregation
+- `GOOGLE_CLIENT_ID/SECRET` - For Google OAuth
+- `DISCORD_CLIENT_ID/SECRET` - For Discord OAuth
+
+**⚠️ DATABASE_URL vs DIRECT_DATABASE_URL**: These are often confused. `DATABASE_URL` should be the Accelerate URL (starts with `prisma+postgres://`) for caching. `DIRECT_DATABASE_URL` should be the direct postgres connection for migrations.
+
+Optional but mentioned in env.example:
+- Redis, Elasticsearch, AWS S3, SendGrid (not currently implemented)
+- `PRIVACY_LEVEL` - Set to "stealth" or "conservative" for content aggregation
+
+## Testing and Development
+
+Multiple test pages exist in `/app` for rapid UI prototyping. These should be consolidated or removed before production deployment.
+
+When adding new mods via aggregation, call `aiSearchService.updateSearchIndex(modId)` to generate embeddings for AI search functionality.
+
+Database can be reset with `npm run db:reset` - this will delete all data and re-run migrations and seeds.

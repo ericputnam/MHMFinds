@@ -1,9 +1,6 @@
-// Load environment variables FIRST, before any imports that need them
-import { config } from 'dotenv';
-config({ path: '.env.local' });
-config({ path: '.env.production', override: false });
+// CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
+import './lib/setup-env';
 
-// Now import modules that depend on environment variables
 import { prisma } from '../lib/prisma';
 
 async function migrateImageUrls() {

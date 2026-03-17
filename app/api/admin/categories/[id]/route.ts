@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/middleware/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+
+export const dynamic = 'force-dynamic';
 
 export async function PATCH(
   request: NextRequest,
@@ -12,6 +16,11 @@ export async function PATCH(
   }
 
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
 
     const category = await prisma.category.update({
@@ -41,6 +50,11 @@ export async function DELETE(
   }
 
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Check if category has children
     const children = await prisma.category.count({
       where: { parentId: params.id },
