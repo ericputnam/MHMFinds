@@ -20,12 +20,15 @@ const BLOG_ORIGIN_ENCODED_REGEX = /https%3A%2F%2Fblog\.musthavemods\.com/g;
  * Determine if a pathname should be proxied to WordPress.
  * Returns the full WordPress URL, or null for Next.js routes.
  */
-function getWordPressUrl(pathname: string): string | null {
+function getWordPressUrl(pathname: string, hasSearchParam: boolean = false): string | null {
   // Root is the Next.js homepage
   if (pathname === '/' || pathname === '') return null;
 
-  // /blog and /blog/ → WordPress landing page (homepage)
-  if (pathname === '/blog' || pathname === '/blog/') return `${WP_ORIGIN}/homepage/`;
+  // /blog and /blog/ → WordPress landing page, UNLESS searching
+  // Search needs WP root /?s=term, not /homepage/?s=term (which 404s)
+  if (pathname === '/blog' || pathname === '/blog/') {
+    return hasSearchParam ? `${WP_ORIGIN}/` : `${WP_ORIGIN}/homepage/`;
+  }
   // /blog/all → WordPress posts archive (root)
   if (pathname === '/blog/all' || pathname === '/blog/all/') return `${WP_ORIGIN}/`;
   // /blog/:path → WordPress subpages
@@ -251,21 +254,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── WordPress search: /blog/?s=term → WordPress /?s=term ───
-  if (
-    (pathname === '/blog' || pathname === '/blog/') &&
-    request.nextUrl.searchParams.has('s')
-  ) {
-    try {
-      return await proxyAndRewriteWordPress(`${WP_ORIGIN}/`, request);
-    } catch (error) {
-      console.error('[WordPress proxy] search fetch failed:', error);
-      return new Response('Service temporarily unavailable', { status: 502 });
-    }
-  }
-
   // ── WordPress proxy with canonical URL rewriting ────────────
-  const wpUrl = getWordPressUrl(pathname);
+  const hasSearchParam = request.nextUrl.searchParams.has('s');
+  const wpUrl = getWordPressUrl(pathname, hasSearchParam);
   if (wpUrl) {
     try {
       return await proxyAndRewriteWordPress(wpUrl, request);
