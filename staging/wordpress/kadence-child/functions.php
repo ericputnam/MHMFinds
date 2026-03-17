@@ -1016,11 +1016,23 @@ html body .wp-block-search__button {
 .kadence-search-modal .search-submit svg,
 #search-drawer .search-submit svg,
 .search-toggle-open-container .search-submit svg {
-    width: 22px !important;
-    height: 22px !important;
+    width: 20px !important;
+    height: 20px !important;
     fill: none !important;
-    stroke: #fff !important;
+    stroke: #ffffff !important;
     stroke-width: 2.5 !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+/* Override Kadence icon wrapper inside submit button */
+.kadence-search-modal .search-submit .kadence-svg-iconset,
+#search-drawer .search-submit .kadence-svg-iconset,
+.search-toggle-open-container .search-submit .kadence-svg-iconset {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
 }
 .kadence-search-modal .search-submit:hover,
 #search-drawer .search-submit:hover {
