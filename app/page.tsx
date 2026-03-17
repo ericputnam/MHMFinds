@@ -12,7 +12,6 @@ import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
 import { useAffiliateOffers } from '../lib/hooks/useAffiliateOffers';
 import { ArrowUpDown } from 'lucide-react';
-import { TrendingMods } from '../components/TrendingMods';
 
 function HomePageContent() {
   const searchParams = useSearchParams();
@@ -306,11 +305,6 @@ function HomePageContent() {
 
       <main className="flex-grow">
         <Hero onSearch={handleSearch} isLoading={loading} initialSearch={searchQuery} />
-
-        {/* Trending Mods — drives discovery + pages/session */}
-        {!creatorParam && !searchQuery && selectedCategory === 'All' && !selectedGameVersion && (
-          <TrendingMods />
-        )}
 
         {/* Creator Filter Banner */}
         {creatorParam && (
