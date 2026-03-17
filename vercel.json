@@ -142,6 +142,16 @@
   ],
   "rewrites": [
     {
+      "source": "/blog/",
+      "has": [{ "type": "query", "key": "s" }],
+      "destination": "https://blog.musthavemods.com/?s=:s"
+    },
+    {
+      "source": "/blog",
+      "has": [{ "type": "query", "key": "s" }],
+      "destination": "https://blog.musthavemods.com/?s=:s"
+    },
+    {
       "source": "/ads.txt",
       "destination": "https://blog.musthavemods.com/ads.txt"
     },
