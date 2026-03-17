@@ -127,7 +127,7 @@ async function proxyAndRewriteWordPress(
   const fetchOptions: RequestInit = {
     method: request.method,
     headers: forwardHeaders,
-    redirect: 'follow',
+    redirect: 'manual',
   };
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -191,14 +191,6 @@ async function proxyAndRewriteWordPress(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── TEMPORARY DEBUG: intercept /api/mw-debug to test middleware ──
-  if (pathname === '/api/mw-debug' || pathname === '/api/mw-debug/') {
-    return new Response(JSON.stringify({
-      pathname,
-      url: request.url,
-      searchParams: Object.fromEntries(request.nextUrl.searchParams),
-    }), { status: 200, headers: { 'content-type': 'application/json' } });
-  }
 
   // ── Auth: protect /api/admin/* API routes (CRITICAL SECURITY) ──
   if (pathname.startsWith('/api/admin')) {
