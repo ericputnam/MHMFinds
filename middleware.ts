@@ -191,9 +191,13 @@ async function proxyAndRewriteWordPress(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── TEMPORARY DEBUG ──
-  if (pathname.includes('_debug')) {
-    return new Response(`MW OK pathname=${pathname} url=${request.url}`, { status: 200 });
+  // ── TEMPORARY DEBUG: intercept /api/mw-debug to test middleware ──
+  if (pathname === '/api/mw-debug' || pathname === '/api/mw-debug/') {
+    return new Response(JSON.stringify({
+      pathname,
+      url: request.url,
+      searchParams: Object.fromEntries(request.nextUrl.searchParams),
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
 
   // ── Auth: protect /api/admin/* API routes (CRITICAL SECURITY) ──
