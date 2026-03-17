@@ -58,7 +58,7 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
 
           {/* Logo Section */}
-          <a href="/" className="flex items-center gap-3 cursor-pointer group">
+          <a href="/" className="flex items-center gap-3 cursor-pointer group flex-shrink-0">
             <div className="relative">
               <div className="absolute inset-0 bg-sims-pink blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
               <div className="relative bg-sims-pink p-2.5 rounded-xl transform group-hover:scale-105 transition-all duration-300 shadow-lg">
@@ -76,7 +76,7 @@ export const Navbar: React.FC = () => {
           </a>
 
           {/* Desktop Nav - Centered */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-300 absolute left-1/2 -translate-x-1/2">
+          <div className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-300 mx-auto">
             <a href="/" className="hover:text-sims-pink transition-colors">Discover</a>
 
             {/* Games Dropdown */}
@@ -141,7 +141,7 @@ export const Navbar: React.FC = () => {
 
 
           {/* Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-shrink-0">
           <UsageIndicator />
 
           {/* Creator Dashboard Button - Only show for creators */}

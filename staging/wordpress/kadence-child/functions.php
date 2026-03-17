@@ -132,6 +132,19 @@
       return $url;
   });
 
+  // Rewrite search form action to /blog/ so search goes through
+  // Next.js middleware proxy instead of hitting the Next.js homepage
+  add_filter('get_search_form', function($form) {
+      if (is_from_apex_rewrite()) {
+          $form = str_replace(
+              'action="https://musthavemods.com/"',
+              'action="https://musthavemods.com/blog/"',
+              $form
+          );
+      }
+      return $form;
+  });
+
   // REMOVED Feb 2026: noindex on direct blog access was unsafe because BigScoots caching
   // cannot distinguish proxied vs direct requests, causing noindex to leak to musthavemods.com.
   // The canonical URL override (below) is the correct approach for domain consolidation.

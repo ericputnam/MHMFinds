@@ -61,6 +61,12 @@ function getWordPressUrl(pathname: string): string | null {
 const BLOG_HREF_REGEX = /href=["']https:\/\/blog\.musthavemods\.com(\/(?!wp-content\/|wp-includes\/|wp-admin\/)[^"']*)["']/g;
 
 /**
+ * Regex to match blog origin in form action attributes.
+ * Rewrites search form actions so they route through /blog/ on the proxy.
+ */
+const BLOG_ACTION_REGEX = /action=["']https:\/\/blog\.musthavemods\.com\/?["']/g;
+
+/**
  * Rewrite blog.musthavemods.com references in proxied WordPress HTML:
  * - <head>: Full rewrite of all blog.musthavemods.com references (canonical, og:url, etc.)
  * - <head>: Strip any noindex meta tags (safety net for caching layer issues)
@@ -80,9 +86,14 @@ function rewriteHtml(html: string): string {
     .replace(/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex[^"']*["']\s*\/?>/gi, '');
 
   // Body: rewrite href links (navigation) but NOT src links (images, scripts, styles)
-  const rewrittenBody = rest.replace(BLOG_HREF_REGEX, (_match, path) => {
-    return `href="${CANONICAL_ORIGIN}${path}"`;
-  });
+  // Also rewrite form action URLs so search forms point to /blog/ (not root /)
+  const rewrittenBody = rest
+    .replace(BLOG_HREF_REGEX, (_match, path) => {
+      // Root "/" links should go to /blog/ (not the Next.js mod finder)
+      if (path === '/') return `href="${CANONICAL_ORIGIN}/blog/"`;
+      return `href="${CANONICAL_ORIGIN}${path}"`;
+    })
+    .replace(BLOG_ACTION_REGEX, `action="${CANONICAL_ORIGIN}/blog/"`);
 
   return rewrittenHead + rewrittenBody;
 }
@@ -211,6 +222,19 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/unauthorized', request.url));
     }
     return NextResponse.next();
+  }
+
+  // ── WordPress search: /blog/?s=term → WordPress /?s=term ───
+  if (
+    (pathname === '/blog' || pathname === '/blog/') &&
+    request.nextUrl.searchParams.has('s')
+  ) {
+    try {
+      return await proxyAndRewriteWordPress(`${WP_ORIGIN}/`, request);
+    } catch (error) {
+      console.error('[WordPress proxy] search fetch failed:', error);
+      return new Response('Service temporarily unavailable', { status: 502 });
+    }
   }
 
   // ── WordPress proxy with canonical URL rewriting ────────────
