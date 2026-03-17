@@ -343,3 +343,10 @@ body {
     color: #f1f5f9;
   }
 }
+
+/* Hide Grow.me recommended posts widget on Next.js app (keep on WordPress blog) */
+#growme-root,
+[id^="grow-me"],
+.growme-widget {
+  display: none !important;
+}
