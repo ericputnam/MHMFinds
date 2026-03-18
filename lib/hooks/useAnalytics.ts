@@ -26,13 +26,7 @@ const getSessionId = (): string => {
 export type AnalyticsEventType =
   | 'PAGE_VIEW'
   | 'SEARCH'
-  | 'DOWNLOAD_CLICK'
-  | 'AD_VIEW'
-  | 'AD_CLICK'
-  | 'MOD_VIEW'
-  | 'FAVORITE_ADD'
-  | 'FAVORITE_REMOVE'
-  | 'COLLECTION_ADD';
+  | 'DOWNLOAD_CLICK';
 
 interface TrackEventParams {
   eventType: AnalyticsEventType;
@@ -40,8 +34,6 @@ interface TrackEventParams {
   referrer?: string;
   searchQuery?: string;
   modId?: string;
-  categoryId?: string;
-  adId?: string;
   timeOnPage?: number;
   scrollDepth?: number;
   metadata?: Record<string, any>;
@@ -50,7 +42,7 @@ interface TrackEventParams {
 /**
  * Track analytics event
  */
-export const trackEvent = async (params: TrackEventParams): Promise<void> => {
+const trackEvent = async (params: TrackEventParams): Promise<void> => {
   try {
     const sessionId = getSessionId();
 
@@ -175,63 +167,3 @@ export const useDownloadTracking = () => {
   return { trackDownload };
 };
 
-/**
- * Hook to track ad impressions and clicks
- */
-export const useAdTracking = () => {
-  const trackAdView = useCallback((adId: string) => {
-    trackEvent({
-      eventType: 'AD_VIEW',
-      adId,
-      page: window.location.pathname,
-    });
-  }, []);
-
-  const trackAdClick = useCallback((adId: string) => {
-    trackEvent({
-      eventType: 'AD_CLICK',
-      adId,
-      page: window.location.pathname,
-    });
-  }, []);
-
-  return { trackAdView, trackAdClick };
-};
-
-/**
- * Hook to track mod views
- */
-export const useModTracking = () => {
-  const trackModView = useCallback((modId: string) => {
-    trackEvent({
-      eventType: 'MOD_VIEW',
-      modId,
-      page: window.location.pathname,
-    });
-  }, []);
-
-  return { trackModView };
-};
-
-/**
- * Hook to track favorite actions
- */
-export const useFavoriteTracking = () => {
-  const trackFavoriteAdd = useCallback((modId: string) => {
-    trackEvent({
-      eventType: 'FAVORITE_ADD',
-      modId,
-      page: window.location.pathname,
-    });
-  }, []);
-
-  const trackFavoriteRemove = useCallback((modId: string) => {
-    trackEvent({
-      eventType: 'FAVORITE_REMOVE',
-      modId,
-      page: window.location.pathname,
-    });
-  }, []);
-
-  return { trackFavoriteAdd, trackFavoriteRemove };
-};

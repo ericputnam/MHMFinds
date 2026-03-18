@@ -58,7 +58,7 @@
       "id": 10,
       "title": "Remove unused analytics hook exports",
       "description": "Remove `useAdTracking`, `useModTracking`, `useFavoriteTracking`, `trackEvent` from lib/hooks/useAnalytics.ts. Keep `useSearchTracking`, `usePageTracking`, `useDownloadTracking` which ARE used.",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 11,
