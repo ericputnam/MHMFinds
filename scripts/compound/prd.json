@@ -76,7 +76,7 @@
       "id": 13,
       "title": "Delete amazonCreatorsApiService.ts",
       "description": "Delete lib/services/amazonCreatorsApiService.ts — only imported in scripts/archive/ which is also being deleted",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 14,
