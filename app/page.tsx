@@ -419,7 +419,7 @@ function HomePageContent() {
                   favorites={favorites}
                   gridColumns={gridColumns}
                   affiliateOffers={affiliateOffers}
-                  affiliateInterval={10}
+                  affiliateInterval={8}
                 />
               </div>
 

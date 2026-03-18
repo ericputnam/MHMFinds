@@ -108,15 +108,12 @@ export function ModGrid({
         {gridItems.map((item, index) => {
           if (item.type === 'affiliate') {
             return (
-              <div key={`affiliate-${item.data.id}`} className="col-span-full flex justify-center">
-                <div className="w-full max-w-sm">
-                  <AffiliateCard
-                    offer={item.data}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  />
-                </div>
-              </div>
+              <AffiliateCard
+                key={`affiliate-${item.data.id}`}
+                offer={item.data}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              />
             );
           }
 
