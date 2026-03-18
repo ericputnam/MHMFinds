@@ -334,12 +334,17 @@ function HomePageContent() {
           </div>
         )}
 
-        {/* Main Content — filters + grid centered, ad sidebar positioned independently */}
-        <div className="relative overflow-visible">
-          {/* Centered filters + grid */}
-          <div className="container mx-auto px-4">
-            <div className="flex gap-6">
-              {/* Faceted Sidebar */}
+        {/* Main Content with balanced layout for centering.
+            On xl+: left spacer (300px) + filters + grid + ad sidebar (300px)
+            The left spacer balances the right ad sidebar so filters+grid appear centered.
+            On < xl: no spacer, no ad sidebar — filters+grid use full width. */}
+        <div className="max-w-[1800px] mx-auto px-4 xl:px-6 overflow-visible">
+          <div className="flex gap-6">
+            {/* Left spacer — matches ad sidebar width to center the filters+grid.
+                Hidden below xl (when ad sidebar is also hidden). */}
+            <div className="hidden xl:block flex-shrink-0 w-[300px]" aria-hidden="true" />
+
+            {/* Faceted Sidebar */}
               <div className="hidden lg:block flex-shrink-0">
                 <div className="sticky top-24">
                   <FacetedSidebar
@@ -417,26 +422,24 @@ function HomePageContent() {
                   affiliateInterval={10}
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Right Ad Sidebar — absolutely positioned so it doesn't affect centering.
-              Sits just outside the centered container on the right.
-              Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
-              IMPORTANT: Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
-              stickiness itself. Adding sticky CSS breaks Mediavine's ad refresh behavior.
-              overflow must be visible on this element and all ancestors. */}
-          <aside
-            id="secondary"
-            className="widget-area primary-sidebar hidden xl:block absolute top-0 right-4 w-[300px] overflow-visible"
-            role="complementary"
-            aria-label="Sidebar"
-          >
-            {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
-            <div className="min-h-[250px]" />
-            {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
-            <div className="min-h-[250px]" />
-          </aside>
+            {/* Right Ad Sidebar — in normal document flow so Mediavine Script Wrapper
+                can apply sticky scroll behavior and auto-refresh ads as user scrolls.
+                Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
+                IMPORTANT: Do NOT add position:sticky/fixed — Mediavine handles stickiness.
+                overflow must be visible on this element and all ancestors. */}
+            <aside
+              id="secondary"
+              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] overflow-visible"
+              role="complementary"
+              aria-label="Sidebar"
+            >
+              {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
+              <div className="min-h-[250px]" />
+              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
+              <div className="min-h-[250px]" />
+            </aside>
+          </div>
         </div>
 
         {/* Pagination */}
