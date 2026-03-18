@@ -52,7 +52,7 @@
       "id": 9,
       "title": "Delete personaSwarmService.ts",
       "description": "Delete lib/services/personaSwarmService.ts — exported singleton never imported anywhere in the codebase",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 10,
