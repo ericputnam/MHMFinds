@@ -27,61 +27,97 @@
     {
       "id": 5,
       "title": "Remove 5 unused icons from ModGrid.tsx",
-      "description": "Remove `Search`, `Heart`, `TrendingUp`, `Sparkles`, `Filter` from the lucide-react import in components/ModGrid.tsx (line 7). Only `Loader2`, `AlertCircle`, `Package` should remain.",
+      "description": "Remove `Search`, `Heart`, `TrendingUp`, `Sparkles`, `Filter` from the lucide-react import in components/ModGrid.tsx (line 7)",
       "status": "completed"
     },
     {
       "id": 6,
       "title": "Remove unused Download icon from UsageIndicator.tsx",
-      "description": "Remove `Download` from the lucide-react import in components/subscription/UsageIndicator.tsx (line 5). Only `Crown` should remain.",
+      "description": "Remove `Download` from the lucide-react import in components/subscription/UsageIndicator.tsx (line 5)",
       "status": "completed"
     },
     {
       "id": 7,
       "title": "Remove unused icons from mod detail page",
-      "description": "Remove `MessageSquare` (line 19) and `Users` (line 21) from lucide-react imports in app/mods/[id]/page.tsx",
+      "description": "Remove `MessageSquare`, `Users`, `TrendingUp`, `Calendar` from lucide-react imports in app/mods/[id]/page.tsx",
       "status": "completed"
     },
     {
       "id": 8,
-      "title": "Delete orphaned UpgradeModal.tsx",
-      "description": "Delete components/subscription/UpgradeModal.tsx — orphaned component with zero .ts/.tsx imports (only referenced in .md planning docs)",
+      "title": "Remove unused apiClient export from lib/api.ts",
+      "description": "Remove the `apiClient` instance export from lib/api.ts — never imported anywhere, app uses direct fetch(). Delete entire file if nothing else is used.",
       "status": "completed"
     },
     {
       "id": 9,
+      "title": "Delete personaSwarmService.ts",
+      "description": "Delete lib/services/personaSwarmService.ts — exported singleton never imported anywhere in the codebase",
+      "status": "pending"
+    },
+    {
+      "id": 10,
+      "title": "Remove unused analytics hook exports",
+      "description": "Remove `useAdTracking`, `useModTracking`, `useFavoriteTracking`, `trackEvent` from lib/hooks/useAnalytics.ts. Keep `useSearchTracking`, `usePageTracking`, `useDownloadTracking` which ARE used.",
+      "status": "pending"
+    },
+    {
+      "id": 11,
+      "title": "Delete orphaned UpgradeModal.tsx",
+      "description": "Delete components/subscription/UpgradeModal.tsx — orphaned component with zero .ts/.tsx imports (only referenced in .md docs)",
+      "status": "completed"
+    },
+    {
+      "id": 12,
+      "title": "Delete amazonScraperService.ts",
+      "description": "Delete lib/services/amazonScraperService.ts — only imported in scripts/archive/ which is also being deleted",
+      "status": "pending"
+    },
+    {
+      "id": 13,
+      "title": "Delete amazonCreatorsApiService.ts",
+      "description": "Delete lib/services/amazonCreatorsApiService.ts — only imported in scripts/archive/ which is also being deleted",
+      "status": "pending"
+    },
+    {
+      "id": 14,
       "title": "Remove commented-out handler registrations",
       "description": "Remove commented-out handler registrations (GENERATE_INTERNAL_LINKS, EXPAND_CONTENT, UPDATE_AD_PLACEMENT) from lib/services/actionHandlers/index.ts (lines 66-69)",
       "status": "completed"
     },
     {
-      "id": 10,
+      "id": 15,
       "title": "Extract FACET_COLORS to shared module",
-      "description": "Create lib/facetColors.ts with the shared FACET_COLORS constant (27 facet entries, ~42 lines). Extract from components/ModCard.tsx (lines 11-42).",
+      "description": "Create lib/facetColors.ts with the shared FACET_COLORS constant (~42 lines). Extract from components/ModCard.tsx.",
       "status": "completed"
     },
     {
-      "id": 11,
+      "id": 16,
       "title": "Update ModCard.tsx to import shared FACET_COLORS",
       "description": "Replace the inline FACET_COLORS definition in components/ModCard.tsx with an import from lib/facetColors.ts",
       "status": "completed"
     },
     {
-      "id": 12,
+      "id": 17,
       "title": "Update ModDetailsModal.tsx to import shared FACET_COLORS",
-      "description": "Replace the inline FACET_COLORS definition in components/ModDetailsModal.tsx (lines 10-54) with an import from lib/facetColors.ts",
+      "description": "Replace the inline FACET_COLORS definition in components/ModDetailsModal.tsx with an import from lib/facetColors.ts",
       "status": "completed"
     },
     {
-      "id": 13,
-      "title": "Verify no dangling references",
-      "description": "Run grep to confirm UpgradeModal has zero source-file references and FACET_COLORS only exists in lib/facetColors.ts (definition) plus 2 imports",
+      "id": 18,
+      "title": "Delete scripts/archive/ directory",
+      "description": "Delete the entire scripts/archive/ directory (62 files: 21 root + 41 in /ralph). These are old scripts with no production purpose.",
       "status": "pending"
     },
     {
-      "id": 14,
+      "id": 19,
+      "title": "Verify no dangling references to deleted files",
+      "description": "Run grep to confirm zero source-file references to: UpgradeModal, personaSwarmService, amazonScraperService, amazonCreatorsApiService, apiClient. Confirm FACET_COLORS only exists in lib/facetColors.ts + 2 import sites.",
+      "status": "pending"
+    },
+    {
+      "id": 20,
       "title": "Run build and type checks",
-      "description": "Run `npx tsc --noEmit` (errors must be ≤ 19), `npm run build` (must succeed), and `npm run test` (unit tests pass) to verify no regressions",
+      "description": "Run `npx tsc --noEmit` (error count must not increase from baseline), `npm run build` (must succeed), and `npm run test` (all tests pass) to verify no regressions",
       "status": "pending"
     }
   ]
