@@ -70,7 +70,7 @@
       "id": 12,
       "title": "Delete amazonScraperService.ts",
       "description": "Delete lib/services/amazonScraperService.ts — only imported in scripts/archive/ which is also being deleted",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 13,
