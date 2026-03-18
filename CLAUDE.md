@@ -647,20 +647,31 @@ This section is automatically updated by the nightly compound automation system.
 
 ### Patterns That Work Well
 
-<!-- Nightly automation adds successful patterns here -->
+- **Dedicated API routes for proxy edge cases**: When middleware rewrites can't handle query params reliably (e.g., `/blog/?s=term`), creating a dedicated API route (`/api/blog/search`) as a proxy is more reliable than trying to fix middleware param forwarding across Vercel edge + Next.js layers.
+- **Left spacer div to balance ad sidebar**: When a right-side ad sidebar breaks visual centering of the main content, add a matching-width hidden `<div>` on the left (same width as sidebar, `aria-hidden="true"`, hidden below breakpoint). This keeps filters+grid visually centered without flexbox hacks.
+- **Incremental search icon styling**: Kadence search uses `<input type="submit">` with a sibling SVG, not a `<button>`. Style the native SVG directly rather than injecting new elements to avoid duplicates.
 
 ### Gotchas and Pitfalls
 
-<!-- Nightly automation adds discovered issues here -->
+- **WordPress search `?s=` query params get lost in middleware proxy**: `request.nextUrl.searchParams` can be empty on Vercel edge even when the URL has params. Always check both `request.nextUrl.searchParams` and `new URL(request.url).searchParams` as fallback. Ultimately, a dedicated `/api/blog/search` route was more reliable than middleware param forwarding.
+- **vercel.json rewrites strip query params**: Named capture groups in vercel.json regex rewrites (e.g., `?s=(?<query>.*)`) don't reliably forward to the destination. Don't rely on vercel.json for query param forwarding — use middleware or API routes instead.
+- **Mediavine in-content ads require `mv-ads` class**: ModGrid cells that should receive Mediavine in-content ad injection must have class `mv-ads`. Removing or renaming this class silently breaks ad injection with no errors. Always preserve ad-related CSS classes when refactoring grid components.
+- **Mediavine sidebar needs normal document flow**: The ad sidebar must NOT be `position: absolute` or use CSS Grid tricks that take it out of flow. Mediavine Script Wrapper handles its own stickiness. Keep sidebar as a normal flex child with `overflow: visible`.
+- **Kadence search form `action` URL rewriting**: When proxying WordPress through middleware, search forms have `action="https://blog.musthavemods.com/"`. Must rewrite these with `BLOG_ACTION_REGEX` to point to `/blog/` so searches route through the proxy instead of hitting the subdomain directly.
+- **Dead code removal can cascade**: Removing a service file (e.g., newsletter service) can break API routes that import from it. Always search for imports before deleting files: `grep -r "from.*deleted-file" --include="*.ts"`.
+- **Affiliate card grid items need standard grid treatment**: AffiliateRecommendations cards inserted into ModGrid should be regular grid cells, not spanning multiple columns or using special positioning — otherwise they break the grid flow and push mod cards out of alignment.
 
 ### Performance Insights
 
-<!-- Nightly automation adds performance-related learnings here -->
+- **Default grid columns reduced from 5 to 4**: 5-column grid made cards too narrow on most screens. 4 columns provides better card readability while still showing plenty of content.
+- **`max-w-[1800px]` with `xl:px-6`**: Slightly reduced horizontal padding at xl breakpoint prevents content from looking smushed when the ad sidebar is present.
 
 ### Code Quality Notes
 
-<!-- Nightly automation adds code quality observations here -->
+- **Debug commits in production**: The blog search routing fix required 10+ iterative commits including debug headers and test endpoints. Consider using a feature branch for exploratory debugging to keep main history cleaner.
+- **Middleware growing in complexity**: `middleware.ts` now handles admin auth, creator auth, WordPress proxying, HTML rewriting, search form action rewriting, and query param forwarding. Consider extracting WordPress proxy logic into a separate utility if it grows further.
+- **Security improvement**: Admin API middleware auth (`/api/admin/*`) added as first line of defense, checking `getToken()` for both authentication and `isAdmin` flag before requests reach route handlers. This complements existing route-level auth checks.
 
 ---
 
-*Last compound review: Never (run `./scripts/compound/setup.sh` to enable nightly automation)*
+*Last compound review: 2026-03-17*
