@@ -106,7 +106,7 @@
       "id": 18,
       "title": "Delete scripts/archive/ directory",
       "description": "Delete the entire scripts/archive/ directory (62 files: 21 root + 41 in /ralph). These are old scripts with no production purpose.",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 19,
