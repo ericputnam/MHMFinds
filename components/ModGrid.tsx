@@ -104,7 +104,7 @@ export function ModGrid({
   return (
     <section className="py-8 bg-mhm-dark relative z-10">
       {/* Dynamic Grid - mv-ads class enables Mediavine in-content ads */}
-      <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10`}>
+      <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10 mv-ads`}>
         {gridItems.map((item, index) => {
           if (item.type === 'affiliate') {
             return (
