@@ -8,6 +8,7 @@ import {
   detectContentType,
   detectRoomThemes,
 } from './contentTypeDetector';
+import { detectGame, detectContentTypeFromUrl } from './mhmScraperUtils';
 
 // CSV file path for tracking scraped URLs
 const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'mhm-scraped-urls.csv');
@@ -28,6 +29,7 @@ export interface ScrapedMod {
   isFree: boolean;
   isNSFW: boolean;
   publishedAt?: Date;
+  game?: string; // Detected game: 'Sims 4', 'Stardew Valley', 'Minecraft'
 }
 
 export class MustHaveModsScraper {
@@ -379,6 +381,10 @@ export class MustHaveModsScraper {
       const postCategories = $('span.category-links a').map((_, el) => $(el).text().trim()).get();
       const postTags = $('span.tag-links a').map((_, el) => $(el).text().trim()).get();
 
+      // Detect game from post URL + categories + title
+      const detectedGame = detectGame(postUrl, postCategories, postTitle);
+      console.log(`   🎮 Detected game: ${detectedGame}`);
+
       // FILTER: Skip non-listicle posts (guides, news, tutorials, etc.)
       if (!this.isModListiclePost($, postUrl, postTitle)) {
         console.log(`   ⏭️  Skipping non-listicle post: ${postTitle}`);
@@ -423,6 +429,7 @@ export class MustHaveModsScraper {
                 !aiMod.description?.toLowerCase().includes('patreon exclusive'),
               isNSFW: false,
               publishedAt: postDate ? new Date(postDate) : new Date(),
+              game: detectedGame,
             });
           }
 
@@ -801,6 +808,7 @@ export class MustHaveModsScraper {
               isFree,
               isNSFW: false, // Assume SFW for now
               publishedAt: postDate ? new Date(postDate) : new Date(),
+              game: detectedGame,
             });
           }
         }
@@ -1330,8 +1338,11 @@ export class MustHaveModsScraper {
 
     for (const mod of mods) {
       try {
-        // Detect content type using the intelligent detector
-        const detectedContentType = detectContentType(mod.title, mod.description);
+        // Detect content type: URL-based (from blog post category) is the strongest signal,
+        // title-based detection is a fallback for generic/mixed-category posts
+        const urlContentType = detectContentTypeFromUrl(mod.sourceUrl);
+        const titleContentType = detectContentType(mod.title, mod.description);
+        const detectedContentType = urlContentType || titleContentType;
         const detectedThemes = detectRoomThemes(mod.title, mod.description);
 
         // Check if mod already exists by download URL (most reliable)
@@ -1357,6 +1368,10 @@ export class MustHaveModsScraper {
 
         if (existing) {
           // Update existing record if we have new data
+          // Fix gameVersion for mods incorrectly saved as 'Sims 4'
+          const detectedGame = mod.game || 'Sims 4';
+          const gameNeedsUpdate = detectedGame !== 'Sims 4' && existing.gameVersion === 'Sims 4';
+
           const needsUpdate =
             (!existing.thumbnail && mod.thumbnail) ||
             (!existing.description && mod.description) ||
@@ -1366,7 +1381,8 @@ export class MustHaveModsScraper {
             (existing.title.match(/^\d+\./) && !mod.title.match(/^\d+\./)) || // Fix numbered titles
             (existing.downloadUrl && existing.downloadUrl.includes('musthavemods.com') && mod.downloadUrl && !mod.downloadUrl.includes('musthavemods.com')) || // Fix internal download links
             (!existing.contentType && detectedContentType) || // Add missing content type
-            (existing.themes.length === 0 && detectedThemes.length > 0); // Add missing themes
+            (existing.themes.length === 0 && detectedThemes.length > 0) || // Add missing themes
+            gameNeedsUpdate; // Fix incorrectly tagged game
 
           if (needsUpdate) {
             await prisma.mod.update({
@@ -1383,6 +1399,8 @@ export class MustHaveModsScraper {
                 // Add content type and themes if detected and missing
                 contentType: existing.contentType || detectedContentType,
                 themes: existing.themes.length > 0 ? existing.themes : detectedThemes,
+                // Fix game version if incorrectly tagged
+                gameVersion: gameNeedsUpdate ? detectedGame : existing.gameVersion,
               },
             });
             savedCount++;
@@ -1414,7 +1432,7 @@ export class MustHaveModsScraper {
             author: mod.author,
             isFree: mod.isFree,
             isNSFW: mod.isNSFW,
-            gameVersion: 'Sims 4',
+            gameVersion: mod.game || 'Sims 4',
             publishedAt: mod.publishedAt,
             isVerified: true, // Trust our own site
           },
