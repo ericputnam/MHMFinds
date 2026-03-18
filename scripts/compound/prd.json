@@ -112,7 +112,7 @@
       "id": 19,
       "title": "Verify no dangling references to deleted files",
       "description": "Run grep to confirm zero source-file references to: UpgradeModal, personaSwarmService, amazonScraperService, amazonCreatorsApiService, apiClient. Confirm FACET_COLORS only exists in lib/facetColors.ts + 2 import sites.",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 20,
