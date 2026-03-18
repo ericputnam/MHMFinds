@@ -31,7 +31,7 @@ function HomePageContent() {
   const [sortBy, setSortBy] = useState(initialSort);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [gridColumns, setGridColumns] = useState(4);
+  const [gridColumns, setGridColumns] = useState(5);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
   const [modsPerPage, setModsPerPage] = useState(20);
 
@@ -335,7 +335,7 @@ function HomePageContent() {
         )}
 
         {/* Main Content with Sidebar */}
-        <div className="container mx-auto px-4">
+        <div className="max-w-[1800px] mx-auto px-4 xl:px-8">
           <div className="flex gap-6">
             {/* Faceted Sidebar */}
             <div className="hidden lg:block flex-shrink-0">
