@@ -37,7 +37,7 @@ export function ModGrid({
       case 4:
         return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
       case 5:
-        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5';
+        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5';
       default:
         return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
     }
@@ -102,18 +102,21 @@ export function ModGrid({
   });
 
   return (
-    <section className="py-8 container mx-auto px-4 bg-mhm-dark relative z-10">
+    <section className="py-8 bg-mhm-dark relative z-10">
       {/* Dynamic Grid - mv-ads class enables Mediavine in-content ads */}
-      <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10 mv-ads`}>
+      <div className={`grid ${getGridClasses(gridColumns)} gap-x-6 gap-y-10`}>
         {gridItems.map((item, index) => {
           if (item.type === 'affiliate') {
             return (
-              <AffiliateCard
-                key={`affiliate-${item.data.id}`}
-                offer={item.data}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              />
+              <div key={`affiliate-${item.data.id}`} className="col-span-full flex justify-center">
+                <div className="w-full max-w-sm">
+                  <AffiliateCard
+                    offer={item.data}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  />
+                </div>
+              </div>
             );
           }
 

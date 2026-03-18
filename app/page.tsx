@@ -31,7 +31,7 @@ function HomePageContent() {
   const [sortBy, setSortBy] = useState(initialSort);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [gridColumns, setGridColumns] = useState(5);
+  const [gridColumns, setGridColumns] = useState(4);
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
   const [modsPerPage, setModsPerPage] = useState(20);
 
@@ -334,104 +334,109 @@ function HomePageContent() {
           </div>
         )}
 
-        {/* Main Content with Sidebar */}
-        <div className="max-w-[1800px] mx-auto px-4 xl:px-8">
-          <div className="flex gap-6">
-            {/* Faceted Sidebar */}
-            <div className="hidden lg:block flex-shrink-0">
-              <div className="sticky top-24">
-                <FacetedSidebar
-                  selectedFacets={selectedFacets}
-                  onFacetChange={handleFacetChange}
-                  onClearAll={handleClearFacets}
+        {/* Main Content — filters + grid centered, ad sidebar positioned independently */}
+        <div className="relative overflow-visible">
+          {/* Centered filters + grid */}
+          <div className="container mx-auto px-4">
+            <div className="flex gap-6">
+              {/* Faceted Sidebar */}
+              <div className="hidden lg:block flex-shrink-0">
+                <div className="sticky top-24">
+                  <FacetedSidebar
+                    selectedFacets={selectedFacets}
+                    onFacetChange={handleFacetChange}
+                    onClearAll={handleClearFacets}
+                  />
+                </div>
+              </div>
+
+              {/* Mod Grid */}
+              <div className="flex-1 min-w-0">
+                {/* Results Header - inline with grid */}
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                  <div className="text-slate-400 text-sm">
+                    {loading ? (
+                      <span className="animate-pulse">Loading...</span>
+                    ) : (
+                      <span>
+                        <span className="text-white font-medium">{pagination?.total?.toLocaleString() || mods.length}</span> mods
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Controls: Per Page + Sort */}
+                  <div className="flex items-center gap-3">
+                    {/* Per Page Selector */}
+                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                      <span className="hidden sm:inline">Show</span>
+                      <div className="flex items-center bg-black/20 border border-white/10 rounded-lg overflow-hidden">
+                        {[20, 50, 100].map((num) => (
+                          <button
+                            key={num}
+                            onClick={() => handlePerPageChange(num)}
+                            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                              modsPerPage === num
+                                ? 'bg-sims-purple text-white'
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                          >
+                            {num}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sort Dropdown */}
+                    <div className="relative">
+                      <div className="flex items-center space-x-2 bg-black/20 hover:bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 py-2 cursor-pointer transition-all">
+                        <ArrowUpDown className="w-4 h-4 text-sims-purple" />
+                        <select
+                          value={sortBy}
+                          onChange={(e) => handleSortChange(e.target.value)}
+                          className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer"
+                        >
+                          <option value="relevance" className="bg-mhm-card text-slate-200">Relevance</option>
+                          <option value="downloads" className="bg-mhm-card text-slate-200">Most Downloads</option>
+                          <option value="rating" className="bg-mhm-card text-slate-200">Highest Rated</option>
+                          <option value="newest" className="bg-mhm-card text-slate-200">Newest Finds</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <ModGrid
+                  mods={mods}
+                  loading={loading}
+                  error={error}
+                  onFavorite={handleFavorite}
+                  onModClick={handleModClick}
+                  favorites={favorites}
+                  gridColumns={gridColumns}
+                  affiliateOffers={affiliateOffers}
+                  affiliateInterval={10}
                 />
               </div>
             </div>
-
-            {/* Mod Grid */}
-            <div className="flex-1 min-w-0">
-              {/* Results Header - inline with grid */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-                <div className="text-slate-400 text-sm">
-                  {loading ? (
-                    <span className="animate-pulse">Loading...</span>
-                  ) : (
-                    <span>
-                      <span className="text-white font-medium">{pagination?.total?.toLocaleString() || mods.length}</span> mods
-                    </span>
-                  )}
-                </div>
-
-                {/* Controls: Per Page + Sort */}
-                <div className="flex items-center gap-3">
-                  {/* Per Page Selector */}
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <span className="hidden sm:inline">Show</span>
-                    <div className="flex items-center bg-black/20 border border-white/10 rounded-lg overflow-hidden">
-                      {[20, 50, 100].map((num) => (
-                        <button
-                          key={num}
-                          onClick={() => handlePerPageChange(num)}
-                          className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                            modsPerPage === num
-                              ? 'bg-sims-purple text-white'
-                              : 'text-slate-400 hover:text-white hover:bg-white/5'
-                          }`}
-                        >
-                          {num}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sort Dropdown */}
-                  <div className="relative">
-                    <div className="flex items-center space-x-2 bg-black/20 hover:bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 py-2 cursor-pointer transition-all">
-                      <ArrowUpDown className="w-4 h-4 text-sims-purple" />
-                      <select
-                        value={sortBy}
-                        onChange={(e) => handleSortChange(e.target.value)}
-                        className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="relevance" className="bg-mhm-card text-slate-200">Relevance</option>
-                        <option value="downloads" className="bg-mhm-card text-slate-200">Most Downloads</option>
-                        <option value="rating" className="bg-mhm-card text-slate-200">Highest Rated</option>
-                        <option value="newest" className="bg-mhm-card text-slate-200">Newest Finds</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <ModGrid
-                mods={mods}
-                loading={loading}
-                error={error}
-                onFavorite={handleFavorite}
-                onModClick={handleModClick}
-                favorites={favorites}
-                gridColumns={gridColumns}
-                affiliateOffers={affiliateOffers}
-                affiliateInterval={5}
-              />
-            </div>
-
-            {/* Right Ad Sidebar — Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
-                IMPORTANT: Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
-                stickiness itself. Adding sticky CSS breaks Mediavine's ad refresh behavior.
-                overflow must be visible on this element and all ancestors. */}
-            <aside
-              id="secondary"
-              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] overflow-visible"
-              role="complementary"
-              aria-label="Sidebar"
-            >
-              {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
-              <div className="min-h-[250px]" />
-              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
-              <div className="min-h-[250px]" />
-            </aside>
           </div>
+
+          {/* Right Ad Sidebar — absolutely positioned so it doesn't affect centering.
+              Sits just outside the centered container on the right.
+              Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
+              IMPORTANT: Do NOT add position:sticky/fixed — Mediavine Script Wrapper handles
+              stickiness itself. Adding sticky CSS breaks Mediavine's ad refresh behavior.
+              overflow must be visible on this element and all ancestors. */}
+          <aside
+            id="secondary"
+            className="widget-area primary-sidebar hidden xl:block absolute top-0 right-4 w-[300px] overflow-visible"
+            role="complementary"
+            aria-label="Sidebar"
+          >
+            {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
+            <div className="min-h-[250px]" />
+            {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
+            <div className="min-h-[250px]" />
+          </aside>
         </div>
 
         {/* Pagination */}
