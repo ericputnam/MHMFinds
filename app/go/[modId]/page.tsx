@@ -231,14 +231,32 @@ export default function DownloadInterstitialPage() {
       </div>
 
       {/*
-        2-column layout on desktop: main content (col-span-2) + sticky sidebar
-        (col-span-1, hidden on mobile). Matches the pattern used by
-        app/mods/[id]/page.tsx so Mediavine treats the aside consistently.
+        3-column desktop layout: invisible left spacer | centered main | sticky sidebar.
+
+        Why the left spacer:
+        We want the main content visually centered on the page (like blog
+        posts and mod detail pages), but Mediavine's sticky sidebar needs
+        to anchor to the right side of the main column. Without a matching
+        left spacer, a 2-column grid pushes the main content to the left
+        edge so it "hugs" the sidebar. The left spacer is the same width
+        as the sidebar and is aria-hidden — so the visual center of the
+        main column lines up with the visual center of the page, while
+        Mediavine still gets its right-anchored aside.
+
+        Same pattern used by the blog/archive layout after the sidebar
+        rollout (see compound learnings: "Left spacer div to balance ad
+        sidebar").
       */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-[1400px] mx-auto px-6 py-12">
+        <div className="flex flex-col lg:flex-row lg:justify-center gap-8">
+          {/* Left spacer — invisible, matches sidebar width for centering */}
+          <div
+            className="hidden lg:block lg:w-[300px] lg:flex-shrink-0"
+            aria-hidden="true"
+          />
+
           {/* Main content column */}
-          <div className="lg:col-span-2">
+          <div className="w-full lg:max-w-[760px] lg:flex-shrink-0">
             {/* Mod Preview — skeleton while mod loads */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
               <div className="flex items-center gap-6">
@@ -418,7 +436,7 @@ export default function DownloadInterstitialPage() {
           */}
           <aside
             id="secondary"
-            className="widget-area primary-sidebar hidden lg:block overflow-visible"
+            className="widget-area primary-sidebar hidden lg:block lg:w-[300px] lg:flex-shrink-0 overflow-visible"
             role="complementary"
             aria-label="Sidebar ads"
           >
