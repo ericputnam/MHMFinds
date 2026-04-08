@@ -4,15 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Download,
-  ExternalLink,
-  ArrowLeft,
-  Loader2,
-  Clock,
-  Sparkles,
-  ShoppingBag,
-} from 'lucide-react';
+import { Download, ArrowLeft, Loader2, Clock, Info } from 'lucide-react';
 
 interface Mod {
   id: string;
@@ -26,48 +18,25 @@ interface Mod {
   };
 }
 
-interface AffiliateOffer {
-  id: string;
-  name: string;
-  description: string | null;
-  imageUrl: string;
-  affiliateUrl: string;
-  partner: string;
-  partnerLogo: string | null;
-  category: string;
-  promoText: string | null;
-  promoColor: string | null;
-}
-
 export default function DownloadInterstitialPage() {
   const params = useParams();
   const router = useRouter();
   const [mod, setMod] = useState<Mod | null>(null);
-  const [offers, setOffers] = useState<AffiliateOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [canProceed, setCanProceed] = useState(false);
 
-  // Fetch mod and affiliate offers
+  // Fetch mod details
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [modResponse, offersResponse] = await Promise.all([
-          fetch(`/api/mods/${params.modId}`),
-          fetch('/api/affiliates?limit=3&source=interstitial'),
-        ]);
-
+        const modResponse = await fetch(`/api/mods/${params.modId}`);
         if (modResponse.ok) {
           const modData = await modResponse.json();
           setMod(modData);
         }
-
-        if (offersResponse.ok) {
-          const offersData = await offersResponse.json();
-          setOffers(offersData.offers || []);
-        }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching mod:', error);
       } finally {
         setLoading(false);
       }
@@ -106,25 +75,6 @@ export default function DownloadInterstitialPage() {
       router.push(`/mods/${mod.id}`);
     }
   }, [mod, router]);
-
-  const handleAffiliateClick = (offer: AffiliateOffer) => {
-    // Open affiliate link immediately (don't wait for tracking)
-    window.open(offer.affiliateUrl, '_blank');
-
-    // Track the click in the background (fire and forget)
-    fetch('/api/affiliates/click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: offer.id,
-        sourceType: 'interstitial',
-        modId: params.modId,
-        pageUrl: window.location.href,
-      }),
-    }).catch((error) => {
-      console.error('Failed to track click:', error);
-    });
-  };
 
   if (loading) {
     return (
@@ -196,62 +146,49 @@ export default function DownloadInterstitialPage() {
           </div>
         </div>
 
-        {/* Affiliate Offers */}
-        {offers.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="h-5 w-5 text-sims-pink" />
-              <h2 className="text-lg font-semibold text-white">
-                While you wait, check out these deals
-              </h2>
-            </div>
+        {/*
+          Mediavine Universal Video Player
+          The wrapper script in app/components/ConditionalScripts.tsx auto-detects
+          #mediavine-video-player on every page and injects the floating player.
+          Same pattern as app/mods/[id]/page.tsx. No Mediavine dashboard setup needed.
+        */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden mb-8">
+          <div
+            id="mediavine-video-player"
+            className="mv-video-player"
+            data-video-type="floating"
+            style={{ minHeight: '400px' }}
+          >
+            {/* Mediavine Universal Player injects here automatically */}
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {offers.map((offer) => (
-                <button
-                  key={offer.id}
-                  onClick={() => handleAffiliateClick(offer)}
-                  className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-4 text-left transition-all hover:shadow-lg"
-                >
-                  <div className="relative mb-3">
-                    <Image
-                      src={offer.imageUrl}
-                      alt={offer.name}
-                      width={300}
-                      height={300}
-                      unoptimized
-                      className="w-full aspect-square object-cover rounded-lg bg-slate-700"
-                    />
-                    {offer.promoText && (
-                      <span
-                        className="absolute top-2 right-2 px-2 py-1 text-xs font-bold text-white rounded-full"
-                        style={{ backgroundColor: offer.promoColor || '#ec4899' }}
-                      >
-                        {offer.promoText}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-slate-500 uppercase tracking-wide mb-1">
-                    {offer.partner}
-                  </div>
-                  <h3 className="font-semibold text-white group-hover:text-sims-pink transition-colors line-clamp-2 mb-2">
-                    {offer.name}
-                  </h3>
-                  {offer.description && (
-                    <p className="text-sm text-slate-400 line-clamp-2 mb-3">
-                      {offer.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-1 text-sm text-sims-pink">
-                    <ShoppingBag className="h-4 w-4" />
-                    <span>View Deal</span>
-                    <ExternalLink className="h-3 w-3 ml-auto" />
-                  </div>
-                </button>
-              ))}
+        {/*
+          Mediavine in-content display slot.
+          Mediavine Script Wrapper injects display ads into elements with the
+          `mv-ads` class (same mechanism used by components/ModGrid.tsx).
+          Wrapping a small "what's next" content block so the ad has real
+          content context to sit inside of — higher fill rate than an empty div.
+        */}
+        <div className="mv-ads bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-sims-pink flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-white mb-2">
+                How to install this mod
+              </h2>
+              <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
+                <li>Extract the downloaded .zip file</li>
+                <li>
+                  Copy the <code className="text-sims-pink">.package</code> files to{' '}
+                  <code className="text-sims-pink">Documents/Electronic Arts/The Sims 4/Mods</code>
+                </li>
+                <li>Enable custom content in Game Options → Other</li>
+                <li>Restart The Sims 4 and enjoy!</li>
+              </ol>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Continue Button (always visible at bottom) */}
         <div className="text-center">
