@@ -649,8 +649,11 @@ function mhm_dark_theme_inline_css() {
     /* Fix white bar below header */
     html body .site-content,html body .content-bg,html body .entry-hero-container-inner{background:#0B0F19!important}
     html body hr,html body .wp-block-separator{border-color:rgba(255,255,255,0.1)!important;background:transparent!important}
-    /* Single post layout - full width */
-    body.single #secondary,body.single .sidebar,body.single aside.widget-area{display:none!important}
+    /* Single post layout - full width
+       NOTE: Sidebar hide rule REMOVED here so the Mediavine sidebar
+       (injected via mhm_inject_mediavine_sidebar) can render. The
+       blog/archive listing pages still hide the sidebar via the
+       mhm_global_blog_width_parity_css() rules below. */
     body.single #primary,body.single .content-container,body.single .site-main{width:100%!important;max-width:900px!important;margin:0 auto!important;float:none!important}
     body.single .content-wrap{display:block!important}
     body.single .entry-content{max-width:min(1120px,100%)!important;margin:0 auto!important;font-size:1.125rem!important;line-height:1.8!important}
@@ -2584,14 +2587,10 @@ body.single .content-area {
   float: none !important;
 }
 
-body.single-post #secondary,
-body.single #secondary,
-body.single-post .primary-sidebar,
-body.single .primary-sidebar,
-body.single-post aside.widget-area,
-body.single aside.widget-area {
-  display: none !important;
-}
+/* Sidebar hide rule REMOVED here so the Mediavine sidebar (injected
+   via mhm_inject_mediavine_sidebar) can render. The blog/archive
+   listing pages still hide the sidebar via mhm_global_blog_width_parity_css()
+   above. See mhm_inject_mediavine_sidebar() for the sidebar markup. */
 
 body.single-post article.entry,
 body.single article.entry,
@@ -4545,3 +4544,164 @@ function mhm_search_form_rewrite_js() {
     <?php
 }
 add_action( 'wp_footer', 'mhm_search_form_rewrite_js', 20 );
+
+/* ============================================================================
+ * MEDIAVINE SIDEBAR — CRITICAL REVENUE FEATURE
+ * ============================================================================
+ *
+ * Injects <aside id="secondary" class="widget-area primary-sidebar"> into
+ * single blog post content so Mediavine Script Wrapper can place sticky
+ * sidebar ads. This is worth roughly $5-7 RPM (~$2,000/month).
+ *
+ * RULES — DO NOT VIOLATE:
+ *   1. NEVER delete or comment out either function below without
+ *      explicit user approval. Removal = immediate ~24% RPM loss.
+ *   2. NEVER add position:sticky/fixed to .mhm-mv-sidebar — Mediavine's
+ *      Script Wrapper handles stickiness on its own ad slots. Adding CSS
+ *      sticky breaks ad auto-refresh.
+ *   3. NEVER use add_filter('kadence_post_layout', ...) to enable the
+ *      sidebar — it triggers Kadence's full sidebar pipeline and crashes
+ *      PHP-FPM silently. The_content filter approach below is safe.
+ *   4. NEVER re-add `body.single #secondary { display:none }` rules.
+ *      They were removed for a reason. Check git blame before "cleaning up".
+ *   5. The Mediavine target ID MUST be `secondary` and class MUST contain
+ *      `widget-area primary-sidebar` — Mediavine auto-detects these markers.
+ *   6. overflow MUST be visible on the sidebar and all ancestors.
+ *
+ * If this code is missing, run scripts/agents/check-blog-sidebar.sh — it
+ * will fail loudly. The push script also blocks pushes that would remove it.
+ *
+ * History:
+ *   - Mar 11 2026: Sidebar first added directly via SSH (not committed)
+ *   - Mar 17 2026: Wiped accidentally by push-blog-functions-prod.sh
+ *                  overwriting prod with local file that lacked sidebar code
+ *   - Apr 8 2026: Restored properly with this approach + push script hardening
+ * ============================================================================
+ */
+
+/**
+ * Inject Mediavine sidebar container into single post layout via Kadence's
+ * `kadence_after_main_content` action hook. This fires inside #main.site-main
+ * AFTER .content-wrap closes, making the aside a SIBLING of .content-wrap
+ * (not a child of .entry-content).
+ *
+ * Why this matters: Mediavine Script Wrapper auto-detects asides with
+ * `widget-area primary-sidebar` and fills them with ~40 stacked BTF ads
+ * (~175,000px total). If the aside lives inside .entry-content, that
+ * vertical expansion pushes all article content down by 175k pixels,
+ * making the article appear empty. By making it a sibling of .content-wrap
+ * inside a flex container, the sidebar grows vertically in its own column
+ * without displacing article content.
+ */
+function mhm_inject_mediavine_sidebar() {
+    if ( is_admin() || ! is_single() ) {
+        return;
+    }
+
+    // Empty aside — Mediavine Script Wrapper auto-injects its own
+    // sidebarBtfStacked ad containers. Custom ATF/BTF placeholder divs
+    // were removed Apr 8 2026 because Mediavine ignored them and left
+    // 850px of blank space at the top of the sidebar column.
+    echo '<aside id="secondary" class="widget-area primary-sidebar mhm-mv-sidebar" '
+       . 'role="complementary" aria-label="Sidebar ads"></aside>';
+}
+add_action( 'kadence_after_main_content', 'mhm_inject_mediavine_sidebar' );
+
+/**
+ * CSS to position the Mediavine sidebar as a flex sibling of .content-wrap
+ * inside #main.site-main on desktop (>=1200px), hidden below.
+ *
+ * IMPORTANT: Do NOT add position:sticky/fixed. Do NOT change overflow to
+ * hidden on any ancestor. Mediavine handles stickiness on its own ad slots.
+ */
+function mhm_mediavine_sidebar_css() {
+    if ( is_admin() || ! is_single() ) {
+        return;
+    }
+    echo <<<'CSS'
+<style id=mhm-mediavine-sidebar-css>
+/* Hide on mobile / tablet — Mediavine has separate mobile placements */
+@media (max-width: 1199px) {
+    .mhm-mv-sidebar { display: none !important; }
+}
+
+/* Desktop: flex layout on #main so .content-wrap and sidebar sit side-by-side */
+@media (min-width: 1200px) {
+    body.single #main.site-main,
+    body.single-post #main.site-main {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 2rem !important;
+        align-items: flex-start !important;
+        overflow: visible !important;
+    }
+
+    body.single #main.site-main > .content-wrap,
+    body.single-post #main.site-main > .content-wrap {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+    }
+
+    body.single .mhm-mv-sidebar,
+    body.single-post .mhm-mv-sidebar {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 0 0 300px !important;
+        width: 300px !important;
+        max-width: 300px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: transparent !important;
+        align-self: stretch !important;
+    }
+
+    /* Push Grow.me recommendations widget to the BOTTOM of the sidebar
+       column via flex order. This lets Mediavine's highest-RPM stacked
+       ad take the ATF (above-the-fold) slot at the top of the column,
+       which materially improves viewability and CPM. Mediavine's
+       sidebarBtfStacked divs keep the default order: 0, so they render
+       in DOM order above the Grow.me widget. */
+    body.single .mhm-mv-sidebar > #grow-me-sidebar-recs-root,
+    body.single-post .mhm-mv-sidebar > #grow-me-sidebar-recs-root {
+        order: 999 !important;
+        margin-top: 2em !important;
+    }
+}
+</style>
+CSS;
+}
+add_action( 'wp_head', 'mhm_mediavine_sidebar_css', 100200 );
+
+/**
+ * Extra preconnect / preload hints for Mediavine + Grow.me to shave
+ * ~100-300ms off first-ad render time. Fires early in wp_head (priority 1)
+ * so the browser sees these hints before any scripts are parsed.
+ *
+ * Revenue justification: faster first-ad render → ads fully load before
+ * user scrolls past them → higher viewability → higher CPM. Mediavine's
+ * Script Wrapper makes calls to exchange/keywords during the auction
+ * phase; preconnecting saves DNS + TLS handshake on the critical path.
+ */
+function mhm_mediavine_preconnect_hints() {
+    if ( is_admin() ) {
+        return;
+    }
+    // Only on article pages where the sidebar + ad pipeline loads.
+    if ( ! is_single() && ! is_home() && ! is_front_page() ) {
+        return;
+    }
+    echo "\n<!-- mhm mediavine preconnect hints -->\n";
+    echo '<link rel="preconnect" href="https://exchange.mediavine.com" crossorigin>' . "\n";
+    echo '<link rel="preconnect" href="https://keywords.mediavine.com" crossorigin>' . "\n";
+    echo '<link rel="preconnect" href="https://video.mediavine.com" crossorigin>' . "\n";
+    echo '<link rel="preconnect" href="https://faves.grow.me" crossorigin>' . "\n";
+    echo '<link rel="preconnect" href="https://cdn.grow.me" crossorigin>' . "\n";
+    echo '<link rel="dns-prefetch" href="https://metrics.rapidedge.io">' . "\n";
+    echo '<link rel="dns-prefetch" href="https://ads.rapidedge.io">' . "\n";
+    // Preload the site-specific Mediavine loader so the browser begins
+    // fetching it before Mediavine's injector runs.
+    echo '<link rel="preload" href="https://scripts.mediavine.com/tags/must-have-mods-new-owner.js" as="script" fetchpriority="high" crossorigin>' . "\n";
+}
+add_action( 'wp_head', 'mhm_mediavine_preconnect_hints', 1 );

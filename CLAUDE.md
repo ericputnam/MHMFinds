@@ -356,6 +356,64 @@ Users want full control over what gets committed and when. Even if you complete 
 
 ---
 
+## 🚨 CRITICAL: WordPress functions.php Push Script Safety
+
+**The `scripts/staging/push-blog-functions*.sh` scripts do an `scp` overwrite. Anything edited on the server but not in the local git-tracked file gets WIPED silently.** This caused the Mar 17 → Apr 8 2026 Mediavine sidebar regression — ~24% RPM loss (~$2,000/month) for ~3 weeks.
+
+### The Regression Pattern (DO NOT REPEAT)
+1. Mar 11 2026: Mediavine sidebar code added directly on prod server via SSH (never committed to git)
+2. Mar 17 2026: A series of unrelated search-button styling commits ran `push-blog-functions-prod.sh`. Each push overwrote prod with the local file, which lacked the sidebar code, silently wiping it.
+3. Apr 5 2026: Mediavine sidebar health score crashed to 0.1, RPM dropped from $13.16 → $9.97
+4. Apr 8 2026: Restored. Push scripts hardened with marker checks. Monitor added.
+
+### Mandatory Rules
+
+**NEVER edit `functions.php` directly on the server via SSH.** The push script's `scp` will eventually wipe it. If you absolutely must SSH-edit, immediately pull with `pull-blog-functions-prod.sh` and commit the changes to git **before** running anything else.
+
+**ALWAYS use the push scripts** (`push-blog-functions.sh` for staging, `push-blog-functions-prod.sh` for prod). They:
+- Lint PHP locally before pushing
+- Verify `CRITICAL_MARKERS` exist in the local file (refuses to push if any are missing)
+- Pull current server state, diff against local, and warn if the server has features the local file doesn't (catches "you forgot to pull recent SSH edits")
+- Show added/removed line counts before confirming
+
+**ALWAYS add new critical features to `CRITICAL_MARKERS`** in BOTH push scripts. If you ship a revenue feature (sidebar, ad container, schema, etc.) or a routing feature (search proxy, blog pagination, redirect rule), add a grep pattern to the `CRITICAL_MARKERS` array. The format is `"<grep-pattern>|<human-name>"`.
+
+Current critical markers (Apr 8 2026):
+- `mhm_inject_mediavine_sidebar` — Mediavine sidebar (~$2K/month)
+- `mhm_mediavine_sidebar_css` — Mediavine sidebar CSS
+- `mhm_search_form_rewrite_js` — Blog search form rewrite (PRD: blog search)
+- `is_from_apex_rewrite` — Apex domain rewrite helper
+
+### After Every Push to Prod
+
+Run `./scripts/agents/check-blog-sidebar.sh` immediately. It curls a real article and fails loudly if any critical marker is missing from the live HTML. Also run this:
+- Daily as part of compound automation
+- Whenever RPM drops unexpectedly
+- Before declaring "the fix is in"
+
+### Known Forbidden Patterns in WordPress functions.php
+
+| Pattern | Why It's Forbidden |
+|---|---|
+| `add_filter('kadence_post_layout', ...)` | Triggers Kadence's full sidebar pipeline and crashes PHP-FPM silently |
+| `position: sticky` / `position: fixed` on Mediavine ad containers | Mediavine Script Wrapper handles stickiness itself; CSS sticky breaks ad auto-refresh |
+| `overflow: hidden` on `.entry-content` or any sidebar ancestor | Breaks Mediavine sticky sidebar |
+| `body.single #secondary { display: none }` | Hides the Mediavine sidebar. Removed Apr 8 2026 — DO NOT re-add. |
+| Direct SSH edits to functions.php | Will be wiped by the next push script run |
+
+### Same Risk Applies to Other "Critical" Server-Side Code
+
+This isn't just about the sidebar. The same pattern can wipe:
+- Blog pagination middleware (`/blog/page/2` routing) — currently in `middleware.ts` (committed, safe)
+- Search form action rewrites (`mhm_search_form_rewrite_js`) — in functions.php, **protected by CRITICAL_MARKERS**
+- WordPress proxy logic — in `middleware.ts` (committed, safe)
+- noindex stripping — in `middleware.ts` (committed, safe)
+- Vercel rewrites — in `vercel.json` (committed, safe)
+
+If you add a new server-side feature anywhere that has a "push from local overwrites server" deployment pattern, **you must add a marker check to the push script and a curl-based check to `check-blog-sidebar.sh`**. No exceptions.
+
+---
+
 ## IMPORTANT: newapp_musthavemods Folder
 
 **The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
