@@ -113,39 +113,22 @@ export default function DownloadInterstitialPage() {
         return true;
       }
 
-      // Reset Mediavine's floating positioning so it fills the slot inline.
+      // Reset Mediavine's floating positioning so it renders inline inside
+      // our slot. Deliberately DO NOT force width: 100% — we want the video
+      // to keep its natural (small) size and be centered by the flex parent,
+      // so the "Advertisement" box can hug the video tightly.
       const resetStyles: Partial<CSSStyleDeclaration> = {
         position: 'relative',
         top: 'auto',
         left: 'auto',
         right: 'auto',
         bottom: 'auto',
-        width: '100%',
         maxWidth: '100%',
-        height: 'auto',
-        minHeight: '360px',
         transform: 'none',
-        margin: '0',
+        margin: '0 auto',
         zIndex: 'auto',
       };
       Object.assign(outstream.style, resetStyles);
-
-      // Also reset any absolutely-positioned children that Mediavine uses for
-      // the floating viewport — these are sized against the viewport and
-      // would render tiny inside our 740px-wide slot otherwise.
-      outstream.querySelectorAll<HTMLElement>('[style*="position: absolute"]').forEach((el) => {
-        el.style.position = 'relative';
-        el.style.width = '100%';
-        el.style.height = 'auto';
-      });
-
-      // Make the <video> element actually fill the slot.
-      const video = outstream.querySelector<HTMLVideoElement>('video');
-      if (video) {
-        video.style.width = '100%';
-        video.style.height = 'auto';
-        video.style.maxWidth = '100%';
-      }
 
       slot.appendChild(outstream);
       moved = true;
@@ -218,7 +201,7 @@ export default function DownloadInterstitialPage() {
     <div className="min-h-screen bg-mhm-dark">
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <Link
             href={`/mods/${mod.id}`}
             className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
@@ -229,110 +212,178 @@ export default function DownloadInterstitialPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Mod Preview */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
-          <div className="flex items-center gap-6">
-            {mod.thumbnail && (
-              <Image
-                src={mod.thumbnail}
-                alt={mod.title}
-                width={96}
-                height={96}
-                unoptimized
-                className="w-24 h-24 rounded-lg object-cover"
-              />
-            )}
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white mb-2">{mod.title}</h1>
-              <p className="text-slate-400">
-                Your download from {mod.source} will begin shortly
-              </p>
+      {/*
+        2-column layout on desktop: main content (col-span-2) + sticky sidebar
+        (col-span-1, hidden on mobile). Matches the pattern used by
+        app/mods/[id]/page.tsx so Mediavine treats the aside consistently.
+      */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content column */}
+          <div className="lg:col-span-2">
+            {/* Mod Preview */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
+              <div className="flex items-center gap-6">
+                {mod.thumbnail && (
+                  <Image
+                    src={mod.thumbnail}
+                    alt={mod.title}
+                    width={96}
+                    height={96}
+                    unoptimized
+                    className="w-24 h-24 rounded-lg object-cover"
+                  />
+                )}
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-white mb-2">{mod.title}</h1>
+                  <p className="text-slate-400">
+                    Your download from {mod.source} will begin shortly
+                  </p>
+                </div>
+                {!canProceed && (
+                  <div className="text-center">
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <Clock className="h-5 w-5" />
+                      <span className="text-2xl font-bold tabular-nums">{countdown}s</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            {!canProceed && (
-              <div className="text-center">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Clock className="h-5 w-5" />
-                  <span className="text-2xl font-bold tabular-nums">{countdown}s</span>
+
+            {/*
+              Video advertisement box.
+              The outer flex container centers the box horizontally in the
+              main column. The box itself uses `inline-flex` + `w-fit` so it
+              shrinks to hug Mediavine's Universal Player at its natural size
+              (~300-400px wide, 16:9) instead of stretching to a huge empty
+              container. min-height/min-width reserve a reasonable footprint
+              so there's no CLS before the player is moved in.
+            */}
+            <div className="flex justify-center mb-8">
+              <div
+                ref={videoSlotRef}
+                id="mhm-inline-video-slot"
+                className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 inline-flex flex-col items-center"
+                style={{ minHeight: '240px', minWidth: '340px', maxWidth: '100%' }}
+              >
+                <div className="text-center mb-3">
+                  <p className="text-sm text-slate-400 uppercase tracking-wider">Advertisement</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Thanks for supporting free mods — this ad keeps MustHaveMods running
+                  </p>
+                </div>
+                {/* Mediavine's .mv-outstream-container is appended here by useEffect */}
+              </div>
+            </div>
+
+            {/*
+              Content-hub wrapper with `mv-ads` class.
+
+              Mediavine's Script Wrapper injects in-content display ads
+              BETWEEN the children of an `.mv-ads` element (same mechanism as
+              components/ModGrid.tsx). A single-child mv-ads does not fill.
+
+              With two sibling content blocks (install guide + Pinterest CTA),
+              Mediavine has exactly one legitimate injection anchor between
+              them — which is under the install guide, exactly where the
+              user wants a content ad. The Pinterest CTA is a content block
+              that gives the ad context and also funnels traffic back to our
+              #1 referral source.
+            */}
+            <div className="mv-ads space-y-8 mb-8">
+              {/* Install guide */}
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-sims-pink flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold text-white mb-2">
+                      How to install this mod
+                    </h2>
+                    <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
+                      <li>Extract the downloaded .zip file</li>
+                      <li>
+                        Copy the <code className="text-sims-pink">.package</code> files to{' '}
+                        <code className="text-sims-pink">Documents/Electronic Arts/The Sims 4/Mods</code>
+                      </li>
+                      <li>Enable custom content in Game Options → Other</li>
+                      <li>Restart The Sims 4 and enjoy!</li>
+                    </ol>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/*
-          Target slot for Mediavine's Universal Video Player.
-          The videoSlotRef useEffect (above) relocates Mediavine's
-          `.mv-outstream-container` into this div at runtime, resetting its
-          floating styles so the <video> element renders inline here instead
-          of floating in the bottom-right corner.
+              {/* Mediavine injects a display ad in this gap */}
 
-          min-height reserves ~360px of layout so there's no CLS between page
-          mount and the video being moved in.
-        */}
-        <div
-          ref={videoSlotRef}
-          id="mhm-inline-video-slot"
-          className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-8 flex flex-col"
-          style={{ minHeight: '360px' }}
-        >
-          <div className="text-center mb-3">
-            <p className="text-sm text-slate-400 uppercase tracking-wider">Advertisement</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Thanks for supporting free mods — this ad keeps MustHaveMods running
-            </p>
-          </div>
-          {/* Mediavine's .mv-outstream-container will be appended here by useEffect */}
-        </div>
-
-        {/*
-          Mediavine in-content display slot.
-          Mediavine Script Wrapper injects display ads into elements with the
-          `mv-ads` class (same mechanism used by components/ModGrid.tsx).
-          Wrapping a small "what's next" content block so the ad has real
-          content context to sit inside of — higher fill rate than an empty div.
-        */}
-        <div className="mv-ads bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
-          <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-sims-pink flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold text-white mb-2">
-                How to install this mod
-              </h2>
-              <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
-                <li>Extract the downloaded .zip file</li>
-                <li>
-                  Copy the <code className="text-sims-pink">.package</code> files to{' '}
-                  <code className="text-sims-pink">Documents/Electronic Arts/The Sims 4/Mods</code>
-                </li>
-                <li>Enable custom content in Game Options → Other</li>
-                <li>Restart The Sims 4 and enjoy!</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-
-        {/* Continue Button (always visible at bottom) */}
-        <div className="text-center">
-          {canProceed ? (
-            <button
-              onClick={handleProceed}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-sims-pink hover:bg-sims-pink/80 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl"
-            >
-              <Download className="h-6 w-6" />
-              Continue to Download
-            </button>
-          ) : (
-            <div className="text-slate-400">
-              <p className="mb-2">Your download will be ready in {countdown} seconds</p>
-              <div className="w-64 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden">
-                <div
-                  className="h-full bg-sims-pink transition-all duration-1000 ease-linear"
-                  style={{ width: `${((10 - countdown) / 10) * 100}%` }}
-                />
+              {/* Pinterest CTA — Pinterest is the #1 traffic source */}
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="text-white font-semibold mb-0.5">Never miss a mod drop</p>
+                    <p className="text-sm text-slate-400">
+                      Follow us on Pinterest for daily Sims 4 CC finds
+                    </p>
+                  </div>
+                  <a
+                    href="https://www.pinterest.com/musthavemods/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 bg-sims-pink hover:bg-sims-pink/80 text-white font-semibold rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    Follow on Pinterest
+                  </a>
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Continue Button */}
+            <div className="text-center">
+              {canProceed ? (
+                <button
+                  onClick={handleProceed}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-sims-pink hover:bg-sims-pink/80 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl"
+                >
+                  <Download className="h-6 w-6" />
+                  Continue to Download
+                </button>
+              ) : (
+                <div className="text-slate-400">
+                  <p className="mb-2">Your download will be ready in {countdown} seconds</p>
+                  <div className="w-64 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden">
+                    <div
+                      className="h-full bg-sims-pink transition-all duration-1000 ease-linear"
+                      style={{ width: `${((10 - countdown) / 10) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/*
+            Mediavine sticky sidebar (desktop only, lg+).
+            Matches the exact pattern used by app/mods/[id]/page.tsx — which
+            is in turn the pattern Mediavine Script Wrapper auto-detects for
+            sticky sidebar ad placement.
+
+            Rules (per CLAUDE.md / MEMORY.md):
+            - <aside id="secondary" class="widget-area primary-sidebar">
+            - overflow must be visible (no overflow:hidden on ancestors)
+            - Do NOT add position:sticky/fixed — Mediavine handles stickiness
+            - Sticky ad MUST be the last element in the sidebar
+            - Include ATF + BTF placeholder divs with min-h for CLS reservation
+          */}
+          <aside
+            id="secondary"
+            className="widget-area primary-sidebar hidden lg:block overflow-visible"
+            role="complementary"
+            aria-label="Sidebar ads"
+          >
+            {/* ATF placeholder */}
+            <div className="min-h-[250px] mb-6" />
+            {/* BTF sticky placeholder — Mediavine makes this sticky automatically */}
+            <div className="min-h-[600px]" />
+          </aside>
         </div>
       </div>
     </div>
