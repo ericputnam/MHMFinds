@@ -147,17 +147,27 @@ export default function DownloadInterstitialPage() {
         </div>
 
         {/*
-          Mediavine in-content display ad slot (primary).
-          Uses the same `mv-ads` class pattern as components/ModGrid.tsx, which
-          Mediavine Script Wrapper reliably targets for display ad injection.
-          This is a guaranteed-fill slot — unlike #mediavine-video-player, which
-          requires Universal Video Player to be configured in the Mediavine
-          dashboard.
-          The min-height reserves layout space so ad injection doesn't cause CLS.
-          The "Watch & wait" copy gives users context while the ad loads,
-          increasing dwell time (better RPM + viewability).
+          Mediavine Universal Video Player — inline anchor.
+
+          Mediavine IS serving video inventory on this site (confirmed via the
+          mv-outstream-container in DOM), but without an explicit inline anchor
+          the player defaults to outstream-floating in the bottom-right corner.
+
+          The `mv-video-player` class + `data-video-type="inline"` combination
+          tells the Mediavine wrapper to anchor the Universal Player inside this
+          container instead of floating it. The `mv-ads` class is kept as a
+          display-ad fallback — if video is unavailable, Mediavine fills with a
+          display ad through the same slot.
+
+          min-height reserves ~360px so ad injection doesn't cause CLS, and the
+          "Advertisement" label sets user expectation before the creative loads.
         */}
-        <div className="mv-ads bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8" style={{ minHeight: '320px' }}>
+        <div
+          id="mv-universal-player-anchor"
+          className="mv-ads mv-video-player bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8"
+          data-video-type="inline"
+          style={{ minHeight: '360px' }}
+        >
           <div className="text-center mb-4">
             <p className="text-sm text-slate-400 uppercase tracking-wider">Advertisement</p>
             <p className="text-xs text-slate-500 mt-1">
