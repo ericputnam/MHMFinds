@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info } from 'lucide-react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
-// `window.mediavine` is declared globally in lib/hooks/useAnalytics.ts
 
 interface Mod {
   id: string;
@@ -51,23 +50,14 @@ export default function DownloadInterstitialPage() {
     }
   }, [params.modId]);
 
-  // After the mod data resolves, ping Mediavine so it re-scans the DOM and
-  // fills the in-content + sidebar ad slots. Without this, Mediavine's
-  // initial scan happens before React hydration paints the real content,
-  // and the slots stay empty for the entire pageview.
-  useEffect(() => {
-    if (loading) return;
-    if (typeof window === 'undefined') return;
-    // Defer to next tick so the slots are definitely in the DOM.
-    const id = window.setTimeout(() => {
-      try {
-        window.mediavine?.newPageView();
-      } catch (e) {
-        // Mediavine may not be loaded yet (ad blocker, etc) — fail silently.
-      }
-    }, 0);
-    return () => window.clearTimeout(id);
-  }, [loading]);
+  // NOTE: Do NOT call window.mediavine.newPageView() here.
+  // `usePageTracking` is already mounted globally in app/providers.tsx and
+  // fires newPageView() on every route change (including this page's
+  // initial mount). Calling it a second time from this component races
+  // Mediavine's initial ad setup and tears down every ad slot on the page
+  // — including the bottom sticky. The layout-shell fix above is enough:
+  // by the time Mediavine runs its first DOM scan, the mv-ads wrapper,
+  // the video slot, and the sticky <aside> are already in the DOM.
 
   // Countdown timer
   useEffect(() => {
