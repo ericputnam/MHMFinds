@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -25,6 +25,7 @@ export default function DownloadInterstitialPage() {
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(10);
   const [canProceed, setCanProceed] = useState(false);
+  const videoSlotRef = useRef<HTMLDivElement>(null);
 
   // Fetch mod details
   useEffect(() => {
@@ -63,6 +64,119 @@ export default function DownloadInterstitialPage() {
     }, 1000);
 
     return () => clearInterval(timer);
+  }, [loading]);
+
+  /*
+    Relocate Mediavine's Universal Video Player into our in-content ad slot.
+
+    Why this is needed:
+    Mediavine serves a Universal Player on this site, but the Script Wrapper
+    auto-places it as a floating outstream container in the bottom-right
+    corner of the viewport. None of the documented anchor attributes
+    (`#mediavine-video-player`, `.mv-video-player`, `data-video-type="inline"`)
+    reliably override that on our setup — the player keeps floating.
+
+    How this works:
+    1. Mount a target `videoSlotRef` div inside the "Advertisement" box.
+    2. Watch the DOM with a MutationObserver for Mediavine to add its
+       `.mv-outstream-container` (which wraps the <video> element and the
+       `#universalPlayer` adunit).
+    3. When it appears, reset Mediavine's floating styles (position, offsets,
+       width, transform) and physically move the container into our slot.
+    4. Disconnect the observer once moved, or after a 15s safety timeout.
+
+    Risks / mitigations:
+    - Moving Mediavine's DOM can disrupt viewability tracking. Mitigated by
+      only moving once, and placing the slot in a naturally-visible area
+      above the fold so IntersectionObserver still measures it correctly.
+    - Mediavine may re-create the container on ad refresh. The observer keeps
+      running for 15s to catch re-creations during initial ad-load settle.
+  */
+  useEffect(() => {
+    if (loading) return;
+    if (typeof window === 'undefined') return;
+
+    let moved = false;
+
+    const relocateVideo = () => {
+      if (moved) return true;
+      const slot = videoSlotRef.current;
+      if (!slot) return false;
+
+      // Mediavine wraps the outstream video + universalPlayer adunit in this container.
+      const outstream = document.querySelector<HTMLElement>('.mv-outstream-container');
+      if (!outstream) return false;
+
+      // Already in our slot — nothing to do.
+      if (slot.contains(outstream)) {
+        moved = true;
+        return true;
+      }
+
+      // Reset Mediavine's floating positioning so it fills the slot inline.
+      const resetStyles: Partial<CSSStyleDeclaration> = {
+        position: 'relative',
+        top: 'auto',
+        left: 'auto',
+        right: 'auto',
+        bottom: 'auto',
+        width: '100%',
+        maxWidth: '100%',
+        height: 'auto',
+        minHeight: '360px',
+        transform: 'none',
+        margin: '0',
+        zIndex: 'auto',
+      };
+      Object.assign(outstream.style, resetStyles);
+
+      // Also reset any absolutely-positioned children that Mediavine uses for
+      // the floating viewport — these are sized against the viewport and
+      // would render tiny inside our 740px-wide slot otherwise.
+      outstream.querySelectorAll<HTMLElement>('[style*="position: absolute"]').forEach((el) => {
+        el.style.position = 'relative';
+        el.style.width = '100%';
+        el.style.height = 'auto';
+      });
+
+      // Make the <video> element actually fill the slot.
+      const video = outstream.querySelector<HTMLVideoElement>('video');
+      if (video) {
+        video.style.width = '100%';
+        video.style.height = 'auto';
+        video.style.maxWidth = '100%';
+      }
+
+      slot.appendChild(outstream);
+      moved = true;
+      return true;
+    };
+
+    // Try immediately in case Mediavine already injected the player.
+    if (relocateVideo()) return;
+
+    // Otherwise watch for it to be added to the DOM.
+    const observer = new MutationObserver(() => {
+      relocateVideo();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Fallback: also poll every 500ms for the first 10s (belt-and-suspenders
+    // in case Mediavine mutates inside an existing node rather than adding new).
+    const pollInterval = setInterval(() => {
+      if (relocateVideo()) clearInterval(pollInterval);
+    }, 500);
+
+    const cleanupTimer = setTimeout(() => {
+      observer.disconnect();
+      clearInterval(pollInterval);
+    }, 15000);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(pollInterval);
+      clearTimeout(cleanupTimer);
+    };
   }, [loading]);
 
   const handleProceed = useCallback(() => {
@@ -147,33 +261,28 @@ export default function DownloadInterstitialPage() {
         </div>
 
         {/*
-          Mediavine Universal Video Player — inline anchor.
+          Target slot for Mediavine's Universal Video Player.
+          The videoSlotRef useEffect (above) relocates Mediavine's
+          `.mv-outstream-container` into this div at runtime, resetting its
+          floating styles so the <video> element renders inline here instead
+          of floating in the bottom-right corner.
 
-          Mediavine IS serving video inventory on this site (confirmed via the
-          mv-outstream-container in DOM), but without an explicit inline anchor
-          the player defaults to outstream-floating in the bottom-right corner.
-
-          The `mv-video-player` class + `data-video-type="inline"` combination
-          tells the Mediavine wrapper to anchor the Universal Player inside this
-          container instead of floating it. The `mv-ads` class is kept as a
-          display-ad fallback — if video is unavailable, Mediavine fills with a
-          display ad through the same slot.
-
-          min-height reserves ~360px so ad injection doesn't cause CLS, and the
-          "Advertisement" label sets user expectation before the creative loads.
+          min-height reserves ~360px of layout so there's no CLS between page
+          mount and the video being moved in.
         */}
         <div
-          id="mv-universal-player-anchor"
-          className="mv-ads mv-video-player bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8"
-          data-video-type="inline"
+          ref={videoSlotRef}
+          id="mhm-inline-video-slot"
+          className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-8 flex flex-col"
           style={{ minHeight: '360px' }}
         >
-          <div className="text-center mb-4">
+          <div className="text-center mb-3">
             <p className="text-sm text-slate-400 uppercase tracking-wider">Advertisement</p>
             <p className="text-xs text-slate-500 mt-1">
               Thanks for supporting free mods — this ad keeps MustHaveMods running
             </p>
           </div>
+          {/* Mediavine's .mv-outstream-container will be appended here by useEffect */}
         </div>
 
         {/*
