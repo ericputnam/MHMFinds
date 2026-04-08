@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info } from 'lucide-react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
+// `window.mediavine` is declared globally in lib/hooks/useAnalytics.ts
 
 interface Mod {
   id: string;
@@ -49,6 +50,24 @@ export default function DownloadInterstitialPage() {
       fetchData();
     }
   }, [params.modId]);
+
+  // After the mod data resolves, ping Mediavine so it re-scans the DOM and
+  // fills the in-content + sidebar ad slots. Without this, Mediavine's
+  // initial scan happens before React hydration paints the real content,
+  // and the slots stay empty for the entire pageview.
+  useEffect(() => {
+    if (loading) return;
+    if (typeof window === 'undefined') return;
+    // Defer to next tick so the slots are definitely in the DOM.
+    const id = window.setTimeout(() => {
+      try {
+        window.mediavine?.newPageView();
+      } catch (e) {
+        // Mediavine may not be loaded yet (ad blocker, etc) — fail silently.
+      }
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [loading]);
 
   // Countdown timer
   useEffect(() => {
@@ -177,18 +196,10 @@ export default function DownloadInterstitialPage() {
     }
   }, [mod, router, trackDownload]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-mhm-dark flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-sims-pink mx-auto mb-4" />
-          <p className="text-slate-400">Preparing your download...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!mod) {
+  // Hard error: mod fetch finished but no mod returned. This is a real
+  // not-found state, so it's fine to bail out of the layout entirely —
+  // there's no download to monetize.
+  if (!loading && !mod) {
     return (
       <div className="min-h-screen bg-mhm-dark flex items-center justify-center">
         <div className="text-center">
@@ -201,13 +212,26 @@ export default function DownloadInterstitialPage() {
     );
   }
 
+  /*
+    CRITICAL: Render the full layout shell (including the video slot,
+    `mv-ads` wrapper, and `<aside id="secondary">` sidebar) on the FIRST
+    paint, regardless of `loading` state. Mediavine's Script Wrapper
+    scans the DOM for ad anchors when the page first hydrates. If the
+    layout is gated behind a loading skeleton, Mediavine sees no anchors,
+    fills nothing, and the entire pageview shows zero ads even after
+    the data resolves.
+
+    Data-dependent parts (mod thumbnail, title, source) fall back to
+    skeleton placeholders while `loading === true`. The Continue button
+    is disabled until both `mod` and `canProceed` are ready.
+  */
   return (
     <div className="min-h-screen bg-mhm-dark">
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <Link
-            href={`/mods/${mod.id}`}
+            href={mod ? `/mods/${mod.id}` : '/'}
             className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -225,32 +249,45 @@ export default function DownloadInterstitialPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content column */}
           <div className="lg:col-span-2">
-            {/* Mod Preview */}
+            {/* Mod Preview — skeleton while mod loads */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
               <div className="flex items-center gap-6">
-                {mod.thumbnail && (
-                  <Image
-                    src={mod.thumbnail}
-                    alt={mod.title}
-                    width={96}
-                    height={96}
-                    unoptimized
-                    className="w-24 h-24 rounded-lg object-cover"
-                  />
-                )}
-                <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-white mb-2">{mod.title}</h1>
-                  <p className="text-slate-400">
-                    Your download from {mod.source} will begin shortly
-                  </p>
-                </div>
-                {!canProceed && (
-                  <div className="text-center">
-                    <div className="flex items-center gap-2 text-slate-400">
-                      <Clock className="h-5 w-5" />
-                      <span className="text-2xl font-bold tabular-nums">{countdown}s</span>
+                {loading || !mod ? (
+                  <>
+                    <div className="w-24 h-24 rounded-lg bg-slate-700/60 animate-pulse flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-6 w-3/4 bg-slate-700/60 rounded animate-pulse" />
+                      <div className="h-4 w-1/2 bg-slate-700/40 rounded animate-pulse" />
                     </div>
-                  </div>
+                    <Loader2 className="h-6 w-6 animate-spin text-sims-pink" />
+                  </>
+                ) : (
+                  <>
+                    {mod.thumbnail && (
+                      <Image
+                        src={mod.thumbnail}
+                        alt={mod.title}
+                        width={96}
+                        height={96}
+                        unoptimized
+                        className="w-24 h-24 rounded-lg object-cover"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h1 className="text-2xl font-bold text-white mb-2">{mod.title}</h1>
+                      <p className="text-slate-400">
+                        Your download from {mod.source} will begin shortly
+                      </p>
+                    </div>
+                    {!canProceed && (
+                      <div className="text-center">
+                        <div className="flex items-center gap-2 text-slate-400">
+                          <Clock className="h-5 w-5" />
+                          <span className="text-2xl font-bold tabular-nums">{countdown}s</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -342,7 +379,7 @@ export default function DownloadInterstitialPage() {
 
             {/* Continue Button */}
             <div className="text-center">
-              {canProceed ? (
+              {canProceed && mod ? (
                 <button
                   onClick={handleProceed}
                   className="inline-flex items-center gap-2 px-8 py-4 bg-sims-pink hover:bg-sims-pink/80 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl"
@@ -352,11 +389,15 @@ export default function DownloadInterstitialPage() {
                 </button>
               ) : (
                 <div className="text-slate-400">
-                  <p className="mb-2">Your download will be ready in {countdown} seconds</p>
+                  <p className="mb-2">
+                    {loading
+                      ? 'Preparing your download...'
+                      : `Your download will be ready in ${countdown} seconds`}
+                  </p>
                   <div className="w-64 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden">
                     <div
                       className="h-full bg-sims-pink transition-all duration-1000 ease-linear"
-                      style={{ width: `${((10 - countdown) / 10) * 100}%` }}
+                      style={{ width: `${loading ? 0 : ((10 - countdown) / 10) * 100}%` }}
                     />
                   </div>
                 </div>
