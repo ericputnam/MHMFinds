@@ -397,16 +397,24 @@ export default function DownloadInterstitialPage() {
 
           {/*
             Mediavine sticky sidebar (desktop only, lg+).
-            Matches the exact pattern used by app/mods/[id]/page.tsx — which
-            is in turn the pattern Mediavine Script Wrapper auto-detects for
-            sticky sidebar ad placement.
+
+            Why only ONE placeholder here (unlike /mods/[id] which has two):
+            This is a short interstitial page — no scrolling, everything
+            fits in one viewport. A classic ATF + BTF sidebar puts the BTF
+            sticky ad at its natural flow position AFTER the ATF, which on
+            a short page lands halfway down the viewport. The ad then
+            appears "at the bottom" because the user never scrolls.
+
+            With a single placeholder as the one-and-only child of the
+            aside, Mediavine's sticky sidebar ad renders at flow position
+            y=0 inside the aside — top-right of the grid row, right next
+            to the mod preview card. This is the position the user wants.
 
             Rules (per CLAUDE.md / MEMORY.md):
             - <aside id="secondary" class="widget-area primary-sidebar">
             - overflow must be visible (no overflow:hidden on ancestors)
             - Do NOT add position:sticky/fixed — Mediavine handles stickiness
-            - Sticky ad MUST be the last element in the sidebar
-            - Include ATF + BTF placeholder divs with min-h for CLS reservation
+            - Sticky ad MUST be the last (here: only) element in the sidebar
           */}
           <aside
             id="secondary"
@@ -414,9 +422,10 @@ export default function DownloadInterstitialPage() {
             role="complementary"
             aria-label="Sidebar ads"
           >
-            {/* ATF placeholder */}
-            <div className="min-h-[250px] mb-6" />
-            {/* BTF sticky placeholder — Mediavine makes this sticky automatically */}
+            {/* Single sticky placeholder — Mediavine places its sidebar ad
+                at the top of this div and makes it sticky. min-h-[600px]
+                reserves enough vertical space for a 300x600 half-page unit
+                without causing CLS as Mediavine mounts the iframe. */}
             <div className="min-h-[600px]" />
           </aside>
         </div>
