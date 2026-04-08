@@ -4657,16 +4657,16 @@ function mhm_mediavine_sidebar_css() {
         align-self: stretch !important;
     }
 
-    /* Push Grow.me recommendations widget to the BOTTOM of the sidebar
-       column via flex order. This lets Mediavine's highest-RPM stacked
-       ad take the ATF (above-the-fold) slot at the top of the column,
-       which materially improves viewability and CPM. Mediavine's
-       sidebarBtfStacked divs keep the default order: 0, so they render
-       in DOM order above the Grow.me widget. */
-    body.single .mhm-mv-sidebar > #grow-me-sidebar-recs-root,
-    body.single-post .mhm-mv-sidebar > #grow-me-sidebar-recs-root {
-        order: 999 !important;
-        margin-top: 2em !important;
+    /* Hide Grow.me recommended-articles widget in the sidebar entirely.
+       We already surface related content in the in-article "More From
+       Creator" / "Related Mods" sections near the footer, so the sidebar
+       rec widget is redundant. Removing it lets Mediavine's stacked ads
+       own the full sidebar column (higher viewability + more impressions
+       per session → higher RPM). Grow.me's script still loads (it also
+       powers other site-wide widgets), but this instance is suppressed. */
+    body.single .mhm-mv-sidebar #grow-me-sidebar-recs-root,
+    body.single-post .mhm-mv-sidebar #grow-me-sidebar-recs-root {
+        display: none !important;
     }
 }
 </style>
