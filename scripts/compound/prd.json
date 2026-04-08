@@ -118,7 +118,7 @@
       "id": 20,
       "title": "Run build and type checks",
       "description": "Run `npx tsc --noEmit` (error count must not increase from baseline), `npm run build` (must succeed), and `npm run test` (all tests pass) to verify no regressions",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }

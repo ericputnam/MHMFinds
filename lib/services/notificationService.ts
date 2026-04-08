@@ -23,7 +23,9 @@ export type NotificationEvent =
   | 'critical_error'
   | 'circuit_breaker_tripped'
   | 'daily_digest'
-  | 'weekly_report';
+  | 'weekly_report'
+  | 'experiment_decided'
+  | 'experiment_alert';
 
 // Notification data types
 interface OpportunityNotification {

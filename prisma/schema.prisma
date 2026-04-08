@@ -691,6 +691,7 @@ enum AgentRunType {
   RPM_ANALYSIS
   FORECAST
   CLEANUP
+  EXPERIMENT_EVAL
 }
 
 // Enum for agent run status
@@ -698,6 +699,17 @@ enum AgentRunStatus {
   RUNNING
   COMPLETED
   FAILED
+}
+
+enum ExperimentStatus {
+  PROPOSED
+  BASELINE_CAPTURE
+  RUNNING
+  EVALUATING
+  KEPT
+  REVERTED
+  EXTENDED
+  CANCELLED
 }
 
 // Daily metrics snapshot per page
@@ -783,6 +795,7 @@ model MonetizationOpportunity {
   // Relations
   mod     Mod?                  @relation(fields: [modId], references: [id], onDelete: SetNull)
   actions MonetizationAction[]
+  experiments Experiment[]
 
   @@index([status, priority(sort: Desc)])
   @@index([opportunityType, status])
@@ -832,6 +845,7 @@ model MonetizationAction {
   opportunity        MonetizationOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
   executionLogs      ExecutionLog[]
   impactMeasurements ImpactMeasurement[]
+  experiments        Experiment[]
 
   @@index([status])
   @@index([opportunityId])
@@ -899,6 +913,71 @@ model AgentRun {
   @@index([runType, startedAt(sort: Desc)])
   @@index([status])
   @@map("agent_runs")
+}
+
+// RPM Optimization Experiment (autoresearch loop)
+model Experiment {
+  id          String           @id @default(cuid())
+  name        String
+  description String           @db.Text
+  status      ExperimentStatus @default(PROPOSED)
+
+  // What optimization is being tested
+  catalogKey    String        // Key from optimization catalog
+  scope         String        // "site_wide" | "next_app" | "wordpress" | "page_specific"
+  targetPages   String[]      // Empty = all pages
+
+  // Linked to existing monetization infrastructure
+  opportunityId String?
+  actionId      String?
+
+  // Timing
+  baselineStartDate DateTime?
+  baselineEndDate   DateTime?
+  experimentStartDate DateTime?
+  experimentEndDate   DateTime?
+  maxDurationDays     Int       @default(14)
+
+  // Baseline metrics (7-day snapshot before change)
+  baselineRpm        Decimal?  @db.Decimal(10, 4)
+  baselineViewability Decimal? @db.Decimal(5, 2)
+  baselineRevenue    Decimal?  @db.Decimal(10, 2)
+  baselinePageviews  Int?
+  baselinePagesPerSession Decimal? @db.Decimal(5, 2)
+
+  // Treatment metrics (measured during experiment)
+  treatmentRpm        Decimal?  @db.Decimal(10, 4)
+  treatmentViewability Decimal? @db.Decimal(5, 2)
+  treatmentRevenue    Decimal?  @db.Decimal(10, 2)
+  treatmentPageviews  Int?
+  treatmentPagesPerSession Decimal? @db.Decimal(5, 2)
+
+  // Statistical analysis
+  rpmLiftPercent     Decimal?  @db.Decimal(5, 2)
+  bayesianProbability Decimal? @db.Decimal(5, 4)  // P(treatment > baseline)
+  daysOfData         Int       @default(0)
+
+  // Decision
+  decision           String?   // "keep" | "revert" | "extend"
+  decisionReason     String?   @db.Text
+  decidedAt          DateTime?
+  decidedBy          String?   // "auto" | "manual"
+
+  // Rollback info
+  rollbackData       Json?
+  rolledBackAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  opportunity MonetizationOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  action      MonetizationAction?      @relation(fields: [actionId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([catalogKey])
+  @@index([createdAt(sort: Desc)])
+  @@map("experiments")
 }
 
 // ============================================

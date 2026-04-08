@@ -22,7 +22,8 @@ export type JobType =
   | 'forecast'
   | 'cleanup'
   | 'auto_execute'
-  | 'report';
+  | 'report'
+  | 'experiment_eval';
 
 // Job result
 export interface JobResult {
@@ -93,6 +94,9 @@ export class AgentOrchestrator {
         case 'report':
           return this.runReport();
 
+        case 'experiment_eval':
+          return this.runExperimentEval();
+
         default:
           throw new Error(`Unknown job type: ${jobType}`);
       }
@@ -119,6 +123,7 @@ export class AgentOrchestrator {
       'mediavine_sync',
       'affiliate_scan',
       'rpm_analysis',
+      'experiment_eval',
       'auto_execute',
       'cleanup',
     ];
@@ -419,6 +424,58 @@ export class AgentOrchestrator {
     } catch (error) {
       return {
         job: 'cleanup',
+        success: false,
+        duration: Date.now() - startTime,
+        error: String(error),
+      };
+    }
+  }
+
+  /**
+   * Run experiment evaluation job
+   */
+  private async runExperimentEval(): Promise<JobResult> {
+    const startTime = Date.now();
+
+    try {
+      const { experimentManager } = await import('@/lib/services/experimentManager');
+      const activeExperiments = await experimentManager.getActiveExperiments();
+      const running = activeExperiments.filter(
+        e => e.status === 'RUNNING' || e.status === 'EXTENDED'
+      );
+
+      let evaluated = 0;
+      let decided = 0;
+
+      for (const experiment of running) {
+        try {
+          const result = await experimentManager.evaluateExperiment(experiment.id);
+          evaluated++;
+
+          if (result.decision === 'keep') {
+            await experimentManager.concludeExperiment(experiment.id, 'keep', result.reason, 'auto');
+            decided++;
+          } else if (result.decision === 'revert') {
+            await experimentManager.concludeExperiment(experiment.id, 'revert', result.reason, 'auto');
+            decided++;
+          } else {
+            await experimentManager.extendExperiment(experiment.id);
+          }
+        } catch (error) {
+          console.error(`Failed to evaluate experiment ${experiment.name}:`, error);
+        }
+      }
+
+      return {
+        job: 'experiment_eval',
+        success: true,
+        duration: Date.now() - startTime,
+        itemsProcessed: evaluated,
+        opportunitiesFound: decided,
+      };
+    } catch (error) {
+      return {
+        job: 'experiment_eval',
         success: false,
         duration: Date.now() - startTime,
         error: String(error),

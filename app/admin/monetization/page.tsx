@@ -222,6 +222,19 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
+          href="/admin/monetization/experiments"
+          className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
+        >
+          <div className="p-3 bg-pink-500/20 rounded-lg w-fit mb-4">
+            <TrendingUp className="h-6 w-6 text-pink-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">RPM Experiments</h3>
+          <p className="text-sm text-slate-400">
+            Autoresearch-inspired optimization loop — propose, test, evaluate, keep/revert
+          </p>
+        </Link>
+
+        <Link
           href="/admin/monetization/affiliates"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
