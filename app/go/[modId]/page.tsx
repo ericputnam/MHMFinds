@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info } from 'lucide-react';
+import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 
 interface Mod {
   id: string;
@@ -26,6 +27,7 @@ export default function DownloadInterstitialPage() {
   const [countdown, setCountdown] = useState(10);
   const [canProceed, setCanProceed] = useState(false);
   const videoSlotRef = useRef<HTMLDivElement>(null);
+  const { trackDownload } = useDownloadTracking();
 
   // Fetch mod details
   useEffect(() => {
@@ -167,11 +169,13 @@ export default function DownloadInterstitialPage() {
 
     const targetUrl = mod.downloadUrl || mod.sourceUrl;
     if (targetUrl) {
+      // Track the download click before navigating away (fire-and-forget)
+      trackDownload(mod.id);
       window.open(targetUrl, '_blank');
       // Redirect back to mod page or home
       router.push(`/mods/${mod.id}`);
     }
-  }, [mod, router]);
+  }, [mod, router, trackDownload]);
 
   if (loading) {
     return (
@@ -328,7 +332,7 @@ export default function DownloadInterstitialPage() {
                     href="https://www.pinterest.com/musthavemods/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-2.5 bg-sims-pink hover:bg-sims-pink/80 text-white font-semibold rounded-lg transition-colors whitespace-nowrap"
+                    className="px-5 py-2.5 bg-[#E60023] hover:bg-[#BD081C] text-white font-semibold rounded-lg transition-colors whitespace-nowrap"
                   >
                     Follow on Pinterest
                   </a>

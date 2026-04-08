@@ -3,14 +3,16 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
 import { AnalyticsEventType } from '@prisma/client';
 
+// Required: this route uses request.url, cookies, and headers via requireAdmin
+export const dynamic = 'force-dynamic';
+
 // Type for analytics data structure
 interface AnalyticsDataType {
   totalPageViews: number;
   uniqueVisitors: { userId: string | null; sessionId: string | null }[];
   totalSearches: number;
   totalDownloadClicks: number;
-  totalAdViews: number;
-  totalAdClicks: number;
+  totalModViews: number;
   averageTimeOnPage: { _avg: { timeOnPage: number | null } };
   averageScrollDepth: { _avg: { scrollDepth: number | null } };
   topSearchQueries: { searchQuery: string | null; _count: { searchQuery: number } }[];
@@ -82,8 +84,7 @@ export async function GET(request: NextRequest) {
       uniqueVisitors: 0,
       totalSearches: 0,
       totalDownloadClicks: 0,
-      totalAdViews: 0,
-      totalAdClicks: 0,
+      totalModViews: 0,
       averageTimeOnPage: 0,
       averageScrollDepth: 0,
     },
@@ -104,8 +105,7 @@ export async function GET(request: NextRequest) {
       uniqueVisitors,
       totalSearches,
       totalDownloadClicks,
-      totalAdViews,
-      totalAdClicks,
+      totalModViews,
       averageTimeOnPage,
       averageScrollDepth,
       topSearchQueries,
@@ -151,18 +151,11 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Total ad views
+      // Total mod detail views (PAGE_VIEW on /mods/[id] routes)
       prisma.analyticsEvent.count({
         where: {
-          eventType: AnalyticsEventType.AD_VIEW,
-          createdAt: { gte: startDate },
-        },
-      }),
-
-      // Total ad clicks
-      prisma.analyticsEvent.count({
-        where: {
-          eventType: AnalyticsEventType.AD_CLICK,
+          eventType: AnalyticsEventType.PAGE_VIEW,
+          page: { startsWith: '/mods/' },
           createdAt: { gte: startDate },
         },
       }),
@@ -301,8 +294,7 @@ export async function GET(request: NextRequest) {
       uniqueVisitors,
       totalSearches,
       totalDownloadClicks,
-      totalAdViews,
-      totalAdClicks,
+      totalModViews,
       averageTimeOnPage,
       averageScrollDepth,
       topSearchQueries: topSearchQueries as { searchQuery: string | null; _count: { searchQuery: number } }[],
@@ -382,8 +374,7 @@ export async function GET(request: NextRequest) {
       uniqueVisitors: analyticsData.uniqueVisitors.length,
       totalSearches: analyticsData.totalSearches,
       totalDownloadClicks: analyticsData.totalDownloadClicks,
-      totalAdViews: analyticsData.totalAdViews,
-      totalAdClicks: analyticsData.totalAdClicks,
+      totalModViews: analyticsData.totalModViews,
       averageTimeOnPage: Math.round(analyticsData.averageTimeOnPage._avg.timeOnPage || 0),
       averageScrollDepth: Math.round(analyticsData.averageScrollDepth._avg.scrollDepth || 0),
     },

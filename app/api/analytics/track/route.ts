@@ -71,6 +71,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Keep the denormalized Mod counters in sync with analytics events so
+    // the admin dashboard, mod cards, and sort-by-popularity all agree.
+    // Fire-and-forget — counter increments should never block the response.
+    if (modId && eventType === 'DOWNLOAD_CLICK') {
+      prisma.mod
+        .update({
+          where: { id: modId },
+          data: { downloadCount: { increment: 1 } },
+        })
+        .catch((err) => {
+          console.error('Failed to increment mod downloadCount:', err);
+        });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     // Fail silently - analytics tracking should never break the user experience

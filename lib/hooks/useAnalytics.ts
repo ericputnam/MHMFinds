@@ -120,10 +120,14 @@ export const usePageTracking = () => {
         sessionId: getSessionId(),
       };
 
-      navigator.sendBeacon(
-        '/api/analytics/track',
-        JSON.stringify(data)
-      );
+      // sendBeacon MUST be given a Blob with the correct Content-Type or the
+      // server will receive an empty body (Next.js only parses JSON when the
+      // Content-Type header says so). Without this, every beforeunload event
+      // was silently dropped.
+      const blob = new Blob([JSON.stringify(data)], {
+        type: 'application/json',
+      });
+      navigator.sendBeacon('/api/analytics/track', blob);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);

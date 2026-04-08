@@ -26,8 +26,7 @@ interface AnalyticsData {
     uniqueVisitors: number;
     totalSearches: number;
     totalDownloadClicks: number;
-    totalAdViews: number;
-    totalAdClicks: number;
+    totalModViews: number;
     averageTimeOnPage: number;
     averageScrollDepth: number;
   };
@@ -222,13 +221,13 @@ export default function AnalyticsDashboard() {
             </div>
             <div>
               <h4 className="text-2xl font-bold text-white">
-                {overview.totalAdViews.toLocaleString()}
+                {overview.totalModViews.toLocaleString()}
               </h4>
-              <p className="text-sm text-slate-400">Ad Impressions</p>
+              <p className="text-sm text-slate-400">Mod Detail Views</p>
               <p className="text-xs text-slate-500">
-                {overview.totalAdClicks} clicks (
-                {overview.totalAdViews > 0
-                  ? ((overview.totalAdClicks / overview.totalAdViews) * 100).toFixed(1)
+                {overview.totalDownloadClicks.toLocaleString()} downloads (
+                {overview.totalModViews > 0
+                  ? ((overview.totalDownloadClicks / overview.totalModViews) * 100).toFixed(1)
                   : 0}
                 % CTR)
               </p>

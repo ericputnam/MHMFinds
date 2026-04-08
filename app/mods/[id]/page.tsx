@@ -23,6 +23,7 @@ import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { ModJsonLd } from '@/components/ModJsonLd';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
+import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -35,6 +36,7 @@ export default function ModDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { trackDownload } = useDownloadTracking();
 
   useEffect(() => {
     const fetchMod = async () => {
@@ -70,7 +72,9 @@ export default function ModDetailPage() {
   const handleDownload = () => {
     if (!mod) return;
 
-    // TODO: Track download in database
+    // Track the download click — the server increments Mod.downloadCount
+    // for DOWNLOAD_CLICK events, so analytics + the mod record stay in sync.
+    trackDownload(mod.id);
     if (mod.downloadUrl) {
       window.open(mod.downloadUrl, '_blank');
     } else if (mod.sourceUrl) {
