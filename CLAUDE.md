@@ -706,8 +706,11 @@ This section is automatically updated by the nightly compound automation system.
 ### Patterns That Work Well
 
 - **Dedicated API routes for proxy edge cases**: When middleware rewrites can't handle query params reliably (e.g., `/blog/?s=term`), creating a dedicated API route (`/api/blog/search`) as a proxy is more reliable than trying to fix middleware param forwarding across Vercel edge + Next.js layers.
-- **Left spacer div to balance ad sidebar**: When a right-side ad sidebar breaks visual centering of the main content, add a matching-width hidden `<div>` on the left (same width as sidebar, `aria-hidden="true"`, hidden below breakpoint). This keeps filters+grid visually centered without flexbox hacks.
+- **Left spacer div to balance ad sidebar**: When a right-side ad sidebar breaks visual centering of the main content, add a matching-width hidden `<div>` on the left (same width as sidebar, `aria-hidden="true"`, hidden below breakpoint). This keeps filters+grid visually centered without flexbox hacks. Confirmed reusable across /mods/[id], blog archive, and /go/[modId].
 - **Incremental search icon styling**: Kadence search uses `<input type="submit">` with a sibling SVG, not a `<button>`. Style the native SVG directly rather than injecting new elements to avoid duplicates.
+- **Render ad anchors on first paint, before loading state resolves**: Mediavine Script Wrapper scans the DOM once on initial hydration. If ad anchors (`.mv-ads`, `<aside id="secondary">`, video slots) are hidden behind a loading guard (`if (loading) return <Loader/>`), Mediavine finds nothing and fills zero slots for the entire pageview. Fix: render the full layout shell with skeleton placeholders on first paint, and swap in real data when it arrives. The global `usePageTracking` hook handles `newPageView()` — don't add a second call.
+- **Single sidebar placeholder on short pages**: The ATF + BTF dual-placeholder pattern (used on /mods/[id]) only works on tall, scrollable pages where sticky behavior activates. On short interstitial pages like /go/[modId], use a single placeholder at y=0 so the ad renders at the top of the aside immediately.
+- **mv-ads needs multiple children for in-content injection**: Mediavine injects display ads BETWEEN children of `.mv-ads` containers. A single-child `.mv-ads` div stays empty. Always ensure at least two child elements (e.g., content block + CTA) to create an injection point.
 
 ### Gotchas and Pitfalls
 
@@ -718,18 +721,26 @@ This section is automatically updated by the nightly compound automation system.
 - **Kadence search form `action` URL rewriting**: When proxying WordPress through middleware, search forms have `action="https://blog.musthavemods.com/"`. Must rewrite these with `BLOG_ACTION_REGEX` to point to `/blog/` so searches route through the proxy instead of hitting the subdomain directly.
 - **Dead code removal can cascade**: Removing a service file (e.g., newsletter service) can break API routes that import from it. Always search for imports before deleting files: `grep -r "from.*deleted-file" --include="*.ts"`.
 - **Affiliate card grid items need standard grid treatment**: AffiliateRecommendations cards inserted into ModGrid should be regular grid cells, not spanning multiple columns or using special positioning — otherwise they break the grid flow and push mod cards out of alignment.
+- **Double `mediavine.newPageView()` calls race and tear down all ads**: The global `usePageTracking` hook (app/providers.tsx) already calls `newPageView()` on every route mount. Adding a second call in a page component (e.g., in a useEffect after loading completes) fires ~0ms later, races Mediavine's init, resets its pageview state mid-setup, and tears down every ad slot — including ones that were working. Never call `newPageView()` from individual page components.
+- **Mediavine Universal Player inline anchoring is unreliable**: `class="mv-video-player"` + `data-video-type="inline"` attributes are documented but don't reliably anchor the Universal Player inline. Mediavine defaults to outstream-floating (bottom-right corner). Workaround: use a MutationObserver to detect `.mv-outstream-container`, then DOM-move it into your slot and reset its inline styles. Long-term fix: email publishers@mediavine.com to configure inline placement.
+- **sendBeacon silently drops JSON payloads**: `navigator.sendBeacon(url, JSON.stringify(data))` sends with `Content-Type: text/plain`, causing server-side JSON parsing to fail silently (no error, data just disappears). Fix: wrap in a `Blob` with explicit type: `new Blob([JSON.stringify(data)], { type: 'application/json' })`.
+- **Loading guards hide ad anchors from Mediavine**: A client component that returns `<Loader/>` while fetching data hides all ad anchors from Mediavine's initial DOM scan. By the time the real layout mounts, Mediavine has already finished scanning and won't rescan. Render the layout shell (with skeletons) immediately; never gate the entire page behind a loading state.
 
 ### Performance Insights
 
 - **Default grid columns reduced from 5 to 4**: 5-column grid made cards too narrow on most screens. 4 columns provides better card readability while still showing plenty of content.
 - **`max-w-[1800px]` with `xl:px-6`**: Slightly reduced horizontal padding at xl breakpoint prevents content from looking smushed when the ad sidebar is present.
+- **Download countdown 10s > 5s for ad revenue**: Extending the /go/[modId] countdown from 5s to 10s doubles dwell time, giving ad slots time to request, render, and record viewable impressions. Improves RPM without meaningfully hurting UX on a page users are already committed to waiting on.
+- **Preconnect hints for Mediavine**: Adding `<link rel="preconnect">` for exchange/keywords/video.mediavine.com and `<link rel="preload">` for the wrapper script shaves ~200-400ms off first-ad render time. Added via `wp_head` priority 1 in functions.php.
 
 ### Code Quality Notes
 
 - **Debug commits in production**: The blog search routing fix required 10+ iterative commits including debug headers and test endpoints. Consider using a feature branch for exploratory debugging to keep main history cleaner.
 - **Middleware growing in complexity**: `middleware.ts` now handles admin auth, creator auth, WordPress proxying, HTML rewriting, search form action rewriting, and query param forwarding. Consider extracting WordPress proxy logic into a separate utility if it grows further.
 - **Security improvement**: Admin API middleware auth (`/api/admin/*`) added as first line of defense, checking `getToken()` for both authentication and `isAdmin` flag before requests reach route handlers. This complements existing route-level auth checks.
+- **Iterative Mediavine ad placement requires patience**: The /go/[modId] ad integration went through 8 commits (video inline → display fallback → DOM move → loading guard fix → double-newPageView fix → sidebar collapse → centering). Each fix revealed the next issue. When integrating third-party ad scripts, expect multi-step debugging — the script's behavior is opaque and documentation is incomplete.
+- **Track analytics events where they actually fire**: The download tracking TODO was in the code but never wired up — admin dashboard showed 0 downloads. Always verify analytics events fire by checking the tracking API endpoint, not just the client-side code.
 
 ---
 
-*Last compound review: 2026-03-17*
+*Last compound review: 2026-04-08*
