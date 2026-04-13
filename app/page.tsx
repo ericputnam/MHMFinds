@@ -335,14 +335,14 @@ function HomePageContent() {
         )}
 
         {/* Main Content with balanced layout for centering.
-            On xl+: left spacer (300px) + filters + grid + ad sidebar (300px)
+            On lg+: left spacer (300px) + filters + grid + ad sidebar (300px)
             The left spacer balances the right ad sidebar so filters+grid appear centered.
-            On < xl: no spacer, no ad sidebar — filters+grid use full width. */}
+            On < lg: no spacer, no ad sidebar — filters+grid use full width. */}
         <div className="max-w-[1800px] mx-auto px-4 xl:px-6 overflow-visible">
           <div className="flex gap-6">
             {/* Left spacer — matches ad sidebar width to center the filters+grid.
-                Hidden below xl (when ad sidebar is also hidden). */}
-            <div className="hidden xl:block flex-shrink-0 w-[300px]" aria-hidden="true" />
+                Hidden below lg (when ad sidebar is also hidden). */}
+            <div className="hidden lg:block flex-shrink-0 w-[300px]" aria-hidden="true" />
 
             {/* Faceted Sidebar */}
               <div className="hidden lg:block flex-shrink-0">
@@ -430,14 +430,13 @@ function HomePageContent() {
                 overflow must be visible on this element and all ancestors. */}
             <aside
               id="secondary"
-              className="widget-area primary-sidebar hidden xl:block flex-shrink-0 w-[300px] overflow-visible"
+              className="widget-area primary-sidebar hidden lg:block flex-shrink-0 w-[300px] overflow-visible"
               role="complementary"
               aria-label="Sidebar"
             >
-              {/* ATF ad placeholder — Mediavine needs min-height for CLS optimization */}
-              <div className="min-h-[250px]" />
-              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
-              <div className="min-h-[250px]" />
+              {/* Empty — Mediavine auto-fills with its own stacked ad containers.
+                  Placeholder divs removed: WordPress blog sidebar uses empty aside and
+                  Mediavine fills it better than when constrained by min-h placeholders. */}
             </aside>
           </div>
         </div>

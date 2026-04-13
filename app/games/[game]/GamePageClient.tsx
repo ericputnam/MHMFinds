@@ -199,9 +199,16 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
           defaultGame={gameName}
         />
 
-        {/* Main Content with Sidebar */}
-        <div className="container mx-auto px-4">
+        {/* Main Content with balanced layout for centering.
+            On lg+: left spacer (300px) + filters + grid + ad sidebar (300px)
+            The left spacer balances the right ad sidebar so filters+grid appear centered. */}
+        <div className="max-w-[1800px] mx-auto px-4 xl:px-6 overflow-visible">
           <div className="flex gap-6">
+            {/* Left spacer — matches ad sidebar width to center the filters+grid.
+                Hidden below lg (when ad sidebar is also hidden). */}
+            <div className="hidden lg:block flex-shrink-0 w-[300px]" aria-hidden="true" />
+
+            {/* Faceted Sidebar */}
             <div className="hidden lg:block flex-shrink-0">
               <div className="sticky top-24">
                 <FacetedSidebar
@@ -275,6 +282,18 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
                 affiliateInterval={5}
               />
             </div>
+
+            {/* Right Ad Sidebar — Mediavine auto-detects <aside id="secondary">.
+                IMPORTANT: Do NOT add position:sticky/fixed — Mediavine handles stickiness.
+                overflow must be visible on this element and all ancestors. */}
+            <aside
+              id="secondary"
+              className="widget-area primary-sidebar hidden lg:block flex-shrink-0 w-[300px] overflow-visible"
+              role="complementary"
+              aria-label="Sidebar ads"
+            >
+              {/* Empty — Mediavine auto-fills */}
+            </aside>
           </div>
         </div>
 

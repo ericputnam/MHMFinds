@@ -471,10 +471,8 @@ export default function ModDetailPage() {
               role="complementary"
               aria-label="Sidebar ads"
             >
-              {/* ATF ad placeholder */}
-              <div className="min-h-[250px]" />
-              {/* BTF sticky ad placeholder — Mediavine makes this sticky automatically */}
-              <div className="min-h-[250px]" />
+              {/* Empty — Mediavine auto-fills with its own stacked ad containers.
+                  Matches WordPress blog sidebar pattern for better Mediavine detection. */}
             </aside>
           </div>
         </div>
