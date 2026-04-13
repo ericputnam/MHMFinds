@@ -276,7 +276,7 @@ export default function DownloadInterstitialPage() {
 
           {/* Main content column */}
           <div className="w-full lg:max-w-[760px] lg:flex-shrink-0">
-            {/* Mod Preview — skeleton while mod loads */}
+            {/* Mod Preview + Download Action — always visible above the fold */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
               <div className="flex items-center gap-6">
                 {loading || !mod ? (
@@ -306,15 +306,42 @@ export default function DownloadInterstitialPage() {
                         Your download from {mod.source} will begin shortly
                       </p>
                     </div>
-                    {!canProceed && (
-                      <div className="text-center">
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <Clock className="h-5 w-5" />
-                          <span className="text-2xl font-bold tabular-nums">{countdown}s</span>
-                        </div>
-                      </div>
-                    )}
                   </>
+                )}
+              </div>
+
+              {/* Download button / countdown — inside the mod card so it's always above the fold */}
+              <div className="mt-5 pt-5 border-t border-slate-700">
+                {canProceed && mod ? (
+                  <button
+                    onClick={handleProceed}
+                    className="w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-sims-pink hover:bg-sims-pink/80 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl"
+                  >
+                    <Download className="h-6 w-6" />
+                    Continue to Download
+                  </button>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-slate-400 text-sm">
+                        {loading
+                          ? 'Preparing your download...'
+                          : 'Your download will be ready soon'}
+                      </p>
+                      {!loading && (
+                        <div className="flex items-center gap-2 text-slate-400">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-lg font-bold tabular-nums">{countdown}s</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="w-full h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-sims-pink transition-all duration-1000 ease-linear rounded-full"
+                        style={{ width: `${loading ? 0 : ((10 - countdown) / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -413,6 +440,8 @@ export default function DownloadInterstitialPage() {
                     <Link
                       key={related.id}
                       href={`/mods/${related.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="group block rounded-lg overflow-hidden border border-slate-600 hover:border-sims-pink/40 bg-slate-700/30 hover:bg-slate-700/60 transition-all"
                     >
                       <div className="relative aspect-[4/3] bg-slate-800 overflow-hidden">
@@ -452,32 +481,6 @@ export default function DownloadInterstitialPage() {
               </div>
             )}
 
-            {/* Continue Button */}
-            <div className="text-center">
-              {canProceed && mod ? (
-                <button
-                  onClick={handleProceed}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-sims-pink hover:bg-sims-pink/80 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl"
-                >
-                  <Download className="h-6 w-6" />
-                  Continue to Download
-                </button>
-              ) : (
-                <div className="text-slate-400">
-                  <p className="mb-2">
-                    {loading
-                      ? 'Preparing your download...'
-                      : `Your download will be ready in ${countdown} seconds`}
-                  </p>
-                  <div className="w-64 h-2 bg-slate-700 rounded-full mx-auto overflow-hidden">
-                    <div
-                      className="h-full bg-sims-pink transition-all duration-1000 ease-linear"
-                      style={{ width: `${loading ? 0 : ((10 - countdown) / 10) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
           {/*
