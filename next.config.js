@@ -24,7 +24,8 @@ const nextConfig = {
       'via.placeholder.com',
       'musthavemods.com',
       'blog.musthavemods.com',
-      'api.dicebear.com'
+      'api.dicebear.com',
+      'images.surferseo.art'
     ],
   },
   async headers() {

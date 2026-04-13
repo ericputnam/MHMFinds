@@ -75,6 +75,11 @@ const FACET_SEEDS: FacetSeed[] = [
   { facetType: 'contentType', value: 'cas-background', displayName: 'CAS Background', icon: '🖥️', color: '#7C3AED', sortOrder: 59 },
   { facetType: 'contentType', value: 'loading-screen', displayName: 'Loading Screen', icon: '⏳', color: '#F43F5E', sortOrder: 60 },
 
+  // Pregnancy / maternity — Revenue Pivot Initiative 1 (added 2026-04-09).
+  // Populated by scripts/backfill-pregnancy-facet.ts which re-tags mods
+  // matching the pregnancy/maternity keyword set in contentTypeDetector.
+  { facetType: 'contentType', value: 'pregnancy', displayName: 'Pregnancy & Maternity', icon: '🤰', color: '#F472B6', sortOrder: 61 },
+
   // ==========================================
   // VISUAL STYLE - Art style
   // ==========================================

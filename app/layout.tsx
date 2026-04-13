@@ -87,6 +87,27 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+        {/*
+          Mediavine performance hints.
+          Matches the wp_head priority-1 hints added to the WordPress blog in
+          functions.php — the Next.js app was missing these, which is the
+          single biggest fixable cause of slow first-ad render. Shaves
+          ~200-400ms off initial ad load by warming up the TLS/DNS to
+          Mediavine's auction and creative delivery endpoints before the
+          wrapper script runs.
+        */}
+        <link rel="preconnect" href="https://scripts.mediavine.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://exchange.mediavine.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://keywords.mediavine.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://video.mediavine.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://ads.mediavine.com" />
+        <link
+          rel="preload"
+          as="script"
+          href="https://scripts.mediavine.com/tags/must-have-mods-new-owner.js"
+          crossOrigin="anonymous"
+        />
         <meta name="theme-color" content="#1e1b4b" />
         <meta name="msapplication-TileColor" content="#1e1b4b" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

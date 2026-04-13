@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Mod } from '@/lib/api';
+import Link from 'next/link';
 import {
   Download,
   Eye,
@@ -264,12 +265,13 @@ export default function ModDetailPage() {
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {mod.tags.map((tag, index) => (
-                    <span
+                    <Link
                       key={index}
-                      className="bg-sims-pink/20 text-sims-pink px-3 py-1 rounded-full text-sm font-medium hover:bg-sims-pink/30 transition-colors cursor-pointer border border-sims-pink/30"
+                      href={`/?search=${encodeURIComponent(tag)}`}
+                      className="bg-sims-pink/20 text-sims-pink px-3 py-1 rounded-full text-sm font-medium hover:bg-sims-pink/30 transition-colors border border-sims-pink/30"
                     >
                       {tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>

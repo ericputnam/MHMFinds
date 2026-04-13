@@ -1,11 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { X, Download, Heart, ExternalLink, CheckCircle2, Star, Eye, Layers, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { X, Download, Heart, ExternalLink, CheckCircle2, Star, Eye, Layers, Sparkles, ArrowRight, Package } from 'lucide-react';
 import { Mod } from '../lib/api';
 import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
 import { getFacetColor, formatFacetLabel } from '../lib/facetColors';
+
+interface RelatedMod {
+  id: string;
+  title: string;
+  thumbnail: string | null;
+  category: string;
+  author: string | null;
+  rating: number | null;
+  isFree: boolean;
+  price: string | null;
+}
 
 interface ModDetailsModalProps {
   mod: Mod;
@@ -13,6 +25,21 @@ interface ModDetailsModalProps {
 }
 
 export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }) => {
+  const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
+
+  useEffect(() => {
+    const fetchRelated = async () => {
+      try {
+        const response = await fetch(`/api/mods/${mod.id}/related`);
+        if (!response.ok) return;
+        const data = await response.json();
+        setRelatedMods(data.slice(0, 4));
+      } catch {
+        // silently fail — related mods are non-critical
+      }
+    };
+    fetchRelated();
+  }, [mod.id]);
 
   // Close on click outside
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -152,7 +179,7 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
             </div>
 
             {/* Main Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <ProtectedDownloadButton
                 modId={mod.id}
                 downloadUrl={mod.downloadUrl}
@@ -172,6 +199,16 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
                 {mod.sourceUrl ? 'View Blog Post' : 'MustHaveMods Blog'}
               </a>
             </div>
+
+            {/* View Full Details — bridges modal → detail page → related mods flow */}
+            <Link
+              href={`/mods/${mod.id}`}
+              onClick={onClose}
+              className="flex items-center justify-center gap-2 w-full py-3 px-5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#06B6D4]/20 to-sims-pink/20 border border-[#06B6D4]/30 text-[#06B6D4] hover:from-[#06B6D4]/30 hover:to-sims-pink/30 hover:border-[#06B6D4]/50 transition-all hover:-translate-y-0.5 mb-6"
+            >
+              View Full Details
+              <ArrowRight className="w-4 h-4" />
+            </Link>
 
             {/* About Section */}
             {mod.description && (
@@ -267,9 +304,65 @@ export const ModDetailsModal: React.FC<ModDetailsModalProps> = ({ mod, onClose }
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {mod.tags.map((tag, index) => (
-                    <span key={index} className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs border border-white/5 transition-all hover:border-white/20 cursor-pointer">
+                    <Link
+                      key={index}
+                      href={`/?search=${encodeURIComponent(tag)}`}
+                      onClick={onClose}
+                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs border border-white/5 transition-all hover:border-white/20"
+                    >
                       {tag}
-                    </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Related Mods */}
+            {relatedMods.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-white/5">
+                <h3 className="text-white font-bold text-base mb-4">
+                  You Might Also Like
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {relatedMods.map((related) => (
+                    <Link
+                      key={related.id}
+                      href={`/mods/${related.id}`}
+                      onClick={onClose}
+                      className="group block rounded-xl overflow-hidden border border-white/5 hover:border-sims-pink/30 bg-white/5 hover:bg-white/10 transition-all"
+                    >
+                      <div className="relative aspect-[4/3] bg-slate-900 overflow-hidden">
+                        {related.thumbnail ? (
+                          <Image
+                            src={related.thumbnail}
+                            alt={related.title}
+                            fill
+                            unoptimized
+                            sizes="200px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Package size={24} className="text-slate-600" />
+                          </div>
+                        )}
+                        <div className="absolute top-2 left-2">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold text-white ${
+                            related.isFree ? 'bg-sims-green/90' : 'bg-amber-500/90'
+                          }`}>
+                            {related.isFree ? 'Free' : `$${parseFloat(related.price || '0').toFixed(2)}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-2.5">
+                        <h4 className="text-xs font-semibold text-white line-clamp-2 group-hover:text-sims-blue transition-colors leading-snug">
+                          {related.title}
+                        </h4>
+                        <p className="text-[10px] text-slate-500 mt-1 truncate">
+                          {related.author || 'Unknown Creator'}
+                        </p>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </div>

@@ -114,6 +114,19 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
     priority: 104,
   },
 
+  // Pregnancy / Maternity (Revenue Pivot Initiative 1, added 2026-04-09)
+  // High priority because "maternity dress" and "pregnancy belly" would
+  // otherwise match generic dress/skin rules. Backfilled by
+  // scripts/backfill-pregnancy-facet.ts against ~115 keyword-matching mods.
+  {
+    keywords: [
+      'pregnan', 'maternity', 'belly overlay', 'pregnancy belly',
+      'baby bump', 'preggo', 'pregnant sim',
+    ],
+    contentType: 'pregnancy',
+    priority: 103,
+  },
+
   // ============================================
   // CAS SPECIAL ITEMS (Priority 90-99)
   // ============================================

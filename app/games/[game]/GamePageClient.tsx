@@ -199,15 +199,11 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
           defaultGame={gameName}
         />
 
-        {/* Main Content with balanced layout for centering.
-            On lg+: left spacer (300px) + filters + grid + ad sidebar (300px)
-            The left spacer balances the right ad sidebar so filters+grid appear centered. */}
+        {/* Main Content: filters + grid + ad sidebar.
+            No left spacer — the filter sidebar provides enough left-side visual weight
+            and the extra 300px gives the mod grid substantially more room. */}
         <div className="max-w-[1800px] mx-auto px-4 xl:px-6 overflow-visible">
           <div className="flex gap-6">
-            {/* Left spacer — matches ad sidebar width to center the filters+grid.
-                Hidden below lg (when ad sidebar is also hidden). */}
-            <div className="hidden lg:block flex-shrink-0 w-[300px]" aria-hidden="true" />
-
             {/* Faceted Sidebar */}
             <div className="hidden lg:block flex-shrink-0">
               <div className="sticky top-24">

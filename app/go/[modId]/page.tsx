@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Download, ArrowLeft, Loader2, Clock, Info } from 'lucide-react';
+import { Download, ArrowLeft, Loader2, Clock, Info, Package } from 'lucide-react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 
 interface Mod {
@@ -14,9 +14,21 @@ interface Mod {
   downloadUrl: string | null;
   sourceUrl: string | null;
   source: string;
+  category: string;
+  gameVersion: string | null;
   creator?: {
     handle: string;
   };
+}
+
+interface RelatedMod {
+  id: string;
+  title: string;
+  thumbnail: string | null;
+  category: string;
+  author: string | null;
+  isFree: boolean;
+  price: string | null;
 }
 
 export default function DownloadInterstitialPage() {
@@ -26,10 +38,11 @@ export default function DownloadInterstitialPage() {
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(10);
   const [canProceed, setCanProceed] = useState(false);
+  const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
   const videoSlotRef = useRef<HTMLDivElement>(null);
   const { trackDownload } = useDownloadTracking();
 
-  // Fetch mod details
+  // Fetch mod details + related mods
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -37,6 +50,12 @@ export default function DownloadInterstitialPage() {
         if (modResponse.ok) {
           const modData = await modResponse.json();
           setMod(modData);
+
+          // Fetch related mods in parallel once we have mod data
+          fetch(`/api/mods/${params.modId}/related`)
+            .then((res) => (res.ok ? res.json() : []))
+            .then((data) => setRelatedMods(data.slice(0, 4)))
+            .catch(() => {});
         }
       } catch (error) {
         console.error('Error fetching mod:', error);
@@ -384,6 +403,54 @@ export default function DownloadInterstitialPage() {
                 </div>
               </div>
             </div>
+
+            {/* While You Wait — related mods during countdown */}
+            {relatedMods.length > 0 && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
+                <h2 className="text-lg font-semibold text-white mb-4">While you wait...</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {relatedMods.map((related) => (
+                    <Link
+                      key={related.id}
+                      href={`/mods/${related.id}`}
+                      className="group block rounded-lg overflow-hidden border border-slate-600 hover:border-sims-pink/40 bg-slate-700/30 hover:bg-slate-700/60 transition-all"
+                    >
+                      <div className="relative aspect-[4/3] bg-slate-800 overflow-hidden">
+                        {related.thumbnail ? (
+                          <Image
+                            src={related.thumbnail}
+                            alt={related.title}
+                            fill
+                            unoptimized
+                            sizes="(max-width: 640px) 50vw, 25vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Package size={24} className="text-slate-600" />
+                          </div>
+                        )}
+                        <div className="absolute top-1.5 left-1.5">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold text-white ${
+                            related.isFree ? 'bg-sims-green/90' : 'bg-amber-500/90'
+                          }`}>
+                            {related.isFree ? 'Free' : `$${parseFloat(related.price || '0').toFixed(2)}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <h3 className="text-xs font-semibold text-white line-clamp-2 group-hover:text-sims-pink transition-colors leading-snug">
+                          {related.title}
+                        </h3>
+                        <p className="text-[10px] text-slate-400 mt-1 truncate">
+                          {related.author || 'Unknown Creator'}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Continue Button */}
             <div className="text-center">
