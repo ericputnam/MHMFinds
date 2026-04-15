@@ -119,7 +119,7 @@
       "id": 20,
       "title": "Verify removed scripts and dependency are gone",
       "description": "Verify: npm ls https-proxy-agent shows no results. Running any removed script (e.g. npm run facets:vision) returns 'missing script'. Confirm /privacy-policy still renders.",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }
