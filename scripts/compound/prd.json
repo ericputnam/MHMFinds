@@ -22,7 +22,7 @@
       "id": 4,
       "title": "Delete orphaned lib/services/contentAggregator.ts",
       "description": "Delete lib/services/contentAggregator.ts — 421 lines, zero imports, replaced by privacyAggregator.ts",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 5,
