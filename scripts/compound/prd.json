@@ -113,7 +113,7 @@
       "id": 19,
       "title": "Verify build succeeds with no new warnings",
       "description": "Run npm run build and verify it succeeds with zero new errors/warnings. Also run npx tsc --noEmit to confirm error count doesn't increase (baseline: 19 errors in test files).",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 20,
