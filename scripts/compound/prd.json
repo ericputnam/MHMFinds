@@ -10,7 +10,7 @@
       "id": 2,
       "title": "Delete orphaned components/TrendingMods.tsx",
       "description": "Delete components/TrendingMods.tsx — zero imports anywhere in codebase (~50 lines)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 3,
