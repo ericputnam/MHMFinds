@@ -53,7 +53,7 @@
       "id": 9,
       "title": "Remove unused Sparkles import from app/admin/monetization/affiliates/page.tsx",
       "description": "Remove unused Sparkles from the lucide-react import in app/admin/monetization/affiliates/page.tsx",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 10,

@@ -15,7 +15,6 @@ import {
   X,
   Users,
   Link,
-  Sparkles,
   CheckCircle,
   XCircle,
   Loader2,
