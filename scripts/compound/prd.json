@@ -16,7 +16,7 @@
       "id": 3,
       "title": "Delete orphaned lib/services/visionFacetExtractor.ts",
       "description": "Delete lib/services/visionFacetExtractor.ts — 565 lines, zero imports, consumer script scripts/migrate-with-vision.ts never existed",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 4,
