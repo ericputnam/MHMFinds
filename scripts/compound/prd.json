@@ -28,7 +28,7 @@
       "id": 5,
       "title": "Remove 8 dead script entries from package.json",
       "description": "Remove these dead scripts from package.json: facets:vision, facets:vision:test, facets:vision:text, facets:vision:clear (target: scripts/migrate-with-vision.ts), facets:audit (target: scripts/ralph/facet-audit.ts), screenshot (target: scripts/ralph/screenshot.ts), images:migrate (target: scripts/migrate-image-urls.ts), content:test (target: scripts/test-privacy-aggregator.ts)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 6,
