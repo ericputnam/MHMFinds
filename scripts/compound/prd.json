@@ -59,7 +59,7 @@
       "id": 10,
       "title": "Replace setGridColumns useState with const in app/page.tsx",
       "description": "In app/page.tsx, replace useState(4) for gridColumns with a simple const gridColumns = 4, since setGridColumns is never called",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 11,

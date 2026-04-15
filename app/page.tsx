@@ -31,7 +31,7 @@ function HomePageContent() {
   const [sortBy, setSortBy] = useState(initialSort);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [gridColumns, setGridColumns] = useState(4);
+  const gridColumns = 4;
   const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
   const [modsPerPage, setModsPerPage] = useState(20);
 
