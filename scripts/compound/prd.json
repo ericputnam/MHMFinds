@@ -2,57 +2,123 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Remove socks-proxy-agent dependency",
-      "description": "Run `npm remove socks-proxy-agent` to remove the unused dependency from package.json and package-lock.json",
+      "title": "Delete orphaned app/privacy/page.tsx",
+      "description": "Delete app/privacy/page.tsx — superseded by app/privacy-policy/page.tsx, zero inbound links (~80 lines)",
       "status": "completed"
     },
     {
       "id": 2,
-      "title": "Verify socks-proxy-agent has zero imports",
-      "description": "Run `npm ls socks-proxy-agent` and grep the codebase to confirm no references remain after removal",
-      "status": "completed"
+      "title": "Delete orphaned components/TrendingMods.tsx",
+      "description": "Delete components/TrendingMods.tsx — zero imports anywhere in codebase (~50 lines)",
+      "status": "pending"
     },
     {
       "id": 3,
-      "title": "Delete test endpoint for monetization config",
-      "description": "Delete the file app/api/monetization/config/test/route.ts and its directory — test endpoint should not ship to production",
-      "status": "completed"
+      "title": "Delete orphaned lib/services/visionFacetExtractor.ts",
+      "description": "Delete lib/services/visionFacetExtractor.ts — 565 lines, zero imports, consumer script scripts/migrate-with-vision.ts never existed",
+      "status": "pending"
     },
     {
       "id": 4,
-      "title": "Fix TS18048 errors in admin-categories.test.ts",
-      "description": "Fix 8 'response is possibly undefined' errors in __tests__/integration/api/admin-categories.test.ts by adding non-null assertions or early-return guards after API calls",
-      "status": "completed"
+      "title": "Delete orphaned lib/services/contentAggregator.ts",
+      "description": "Delete lib/services/contentAggregator.ts — 421 lines, zero imports, replaced by privacyAggregator.ts",
+      "status": "pending"
     },
     {
       "id": 5,
-      "title": "Fix TS18048 errors in admin-users.test.ts",
-      "description": "Fix 5 'response is possibly undefined' errors in __tests__/integration/api/admin-users.test.ts by adding non-null assertions or early-return guards after API calls",
-      "status": "completed"
+      "title": "Remove 8 dead script entries from package.json",
+      "description": "Remove these dead scripts from package.json: facets:vision, facets:vision:test, facets:vision:text, facets:vision:clear (target: scripts/migrate-with-vision.ts), facets:audit (target: scripts/ralph/facet-audit.ts), screenshot (target: scripts/ralph/screenshot.ts), images:migrate (target: scripts/migrate-image-urls.ts), content:test (target: scripts/test-privacy-aggregator.ts)",
+      "status": "pending"
     },
     {
       "id": 6,
-      "title": "Fix TS18048 errors in reject-submission.test.ts",
-      "description": "Fix 2 'response is possibly undefined' errors in __tests__/integration/api/reject-submission.test.ts by adding non-null assertions or early-return guards after API calls",
-      "status": "completed"
+      "title": "Remove unused https-proxy-agent dependency",
+      "description": "Run npm remove https-proxy-agent — zero imports in any .ts/.tsx file. privacyAggregator.ts uses HttpsProxyAgent from undici, not this package.",
+      "status": "pending"
     },
     {
       "id": 7,
-      "title": "Add JSDoc to lib/middleware/auth.ts requireAdmin",
-      "description": "Add JSDoc comment to requireAdmin() in lib/middleware/auth.ts noting the other implementation in lib/auth/adminAuth.ts and explaining the different return shapes",
-      "status": "completed"
+      "title": "Remove unused FileText import from app/creators/submissions/page.tsx",
+      "description": "Remove unused FileText from the lucide-react import in app/creators/submissions/page.tsx",
+      "status": "pending"
     },
     {
       "id": 8,
-      "title": "Add JSDoc to lib/auth/adminAuth.ts requireAdmin",
-      "description": "Add JSDoc comment to requireAdmin() in lib/auth/adminAuth.ts noting the other implementation in lib/middleware/auth.ts and explaining it includes audit logging",
-      "status": "completed"
+      "title": "Remove unused FileText import from app/admin/submissions/page.tsx",
+      "description": "Remove unused FileText from the lucide-react import in app/admin/submissions/page.tsx",
+      "status": "pending"
     },
     {
       "id": 9,
-      "title": "Run build and type checks",
-      "description": "Run `npm run build`, `npx tsc --noEmit` (errors should drop from 19 to 0), and `npx next lint` to verify no regressions",
-      "status": "completed"
+      "title": "Remove unused Sparkles import from app/admin/monetization/affiliates/page.tsx",
+      "description": "Remove unused Sparkles from the lucide-react import in app/admin/monetization/affiliates/page.tsx",
+      "status": "pending"
+    },
+    {
+      "id": 10,
+      "title": "Replace setGridColumns useState with const in app/page.tsx",
+      "description": "In app/page.tsx, replace useState(4) for gridColumns with a simple const gridColumns = 4, since setGridColumns is never called",
+      "status": "pending"
+    },
+    {
+      "id": 11,
+      "title": "Remove unnecessary import React from components/ModGrid.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced, Next.js JSX transform handles it",
+      "status": "pending"
+    },
+    {
+      "id": 12,
+      "title": "Remove unnecessary import React from app/privacy-policy/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 13,
+      "title": "Remove unnecessary import React from app/terms/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "title": "Remove unnecessary import React from app/about/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 15,
+      "title": "Remove unnecessary import React from app/admin/mods/submit/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 16,
+      "title": "Remove unnecessary import React from app/admin/mods/new/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 17,
+      "title": "Remove unnecessary import React from app/creators/submit/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 18,
+      "title": "Remove unnecessary import React from app/creators/mods/page.tsx",
+      "description": "Remove 'import React from react' — React. is never referenced",
+      "status": "pending"
+    },
+    {
+      "id": 19,
+      "title": "Verify build succeeds with no new warnings",
+      "description": "Run npm run build and verify it succeeds with zero new errors/warnings. Also run npx tsc --noEmit to confirm error count doesn't increase (baseline: 19 errors in test files).",
+      "status": "pending"
+    },
+    {
+      "id": 20,
+      "title": "Verify removed scripts and dependency are gone",
+      "description": "Verify: npm ls https-proxy-agent shows no results. Running any removed script (e.g. npm run facets:vision) returns 'missing script'. Confirm /privacy-policy still renders.",
+      "status": "pending"
     }
   ]
 }

@@ -6,7 +6,7 @@ import { getToken } from 'next-auth/jwt';
 // Any request whose first path segment matches one of these goes to Next.js.
 const NEXTJS_PREFIXES = new Set([
   'api', 'admin', 'creators', 'mods', 'account', 'sign-in',
-  'submit-mod', 'about', 'privacy', 'privacy-policy', 'terms',
+  'submit-mod', 'about', 'privacy-policy', 'terms',
   'games', 'go', 'top-creators', 'simple-main', 'verify-md',
   '_next', 'sitemap', 'manifest', 'robots.txt',
 ]);
