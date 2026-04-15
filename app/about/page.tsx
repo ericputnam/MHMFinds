@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Sparkles, Shield, Users, Mail } from 'lucide-react';
