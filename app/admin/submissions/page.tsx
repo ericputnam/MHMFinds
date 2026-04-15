@@ -10,7 +10,6 @@ import {
   Mail,
   User,
   Package,
-  FileText,
   Loader2,
   Edit,
 } from 'lucide-react';
