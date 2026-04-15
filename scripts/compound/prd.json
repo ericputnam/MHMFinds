@@ -41,7 +41,7 @@
       "id": 7,
       "title": "Remove unused FileText import from app/creators/submissions/page.tsx",
       "description": "Remove unused FileText from the lucide-react import in app/creators/submissions/page.tsx",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 8,
