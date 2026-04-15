@@ -77,7 +77,7 @@
       "id": 13,
       "title": "Remove unnecessary import React from app/terms/page.tsx",
       "description": "Remove 'import React from react' — React. is never referenced",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": 14,
