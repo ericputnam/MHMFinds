@@ -34,7 +34,8 @@
       "id": 6,
       "title": "Remove unused https-proxy-agent dependency",
       "description": "Run npm remove https-proxy-agent — zero imports in any .ts/.tsx file. privacyAggregator.ts uses HttpsProxyAgent from undici, not this package.",
-      "status": "pending"
+      "status": "completed",
+      "note": "https-proxy-agent was never a direct dependency in package.json — only present as a transitive dep of @google-analytics/data and jsdom. No action needed."
     },
     {
       "id": 7,
