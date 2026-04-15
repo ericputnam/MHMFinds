@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Mod } from '../lib/api';
 import { ModCard } from './ModCard';
 import { AffiliateCard, AffiliateOffer } from './AffiliateCard';
