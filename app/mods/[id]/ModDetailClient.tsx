@@ -228,8 +228,18 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
 
           {/* Right Column - Mod Info & Actions */}
           <div className="lg:col-span-1">
+            {/*
+              Sidebar in-content ad wrapper. Mediavine injects an ad BETWEEN
+              the children of a `.mv-ads` element, so wrapping the Download
+              block and Additional Information as two real content siblings
+              creates a single high-quality injection point directly adjacent
+              to the page's primary CTA. An empty `.mv-ads` with placeholder
+              divs did not fill reliably — Mediavine's injector prefers real
+              content blocks as neighbors.
+            */}
+            <div className="mv-ads space-y-6 mb-6">
             {/* Title & Creator */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{mod.title}</h1>
 
               {/* Creator Info */}
@@ -342,16 +352,9 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
               </div>
             </div>
 
-            {/* Sidebar in-content ad — sits directly under the Download block.
-                Premium placement: next to the page's primary CTA, above the fold
-                on most desktop sizes. `.mv-ads` needs ≥2 children so Mediavine
-                injects between them. */}
-            <div className="mv-ads mb-6" aria-hidden="true">
-              <div />
-              <div />
-            </div>
-
-            {/* Additional Info */}
+            {/* Additional Info — second child of the `.mv-ads` wrapper above,
+                so Mediavine has a clean injection point between the Download
+                block and this card. */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="font-bold text-gray-800 mb-4">Additional Information</h3>
               <div className="space-y-3 text-sm">
@@ -394,6 +397,8 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                 )}
               </div>
             </div>
+            </div>
+            {/* end .mv-ads sidebar wrapper */}
 
             {/* Affiliate Product Recommendations */}
             {mod.themes && mod.themes.length > 0 && (
