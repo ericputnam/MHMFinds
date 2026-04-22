@@ -4,9 +4,11 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import type { Mod } from '@/lib/api';
 
+const pushMock = vi.fn();
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
     replace: vi.fn(),
     back: vi.fn(),
     forward: vi.fn(),
@@ -87,9 +89,7 @@ describe('ModDetailClient behavior', () => {
     vi.clearAllMocks();
   });
 
-  it('toggles favorite state and triggers download action', async () => {
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-
+  it('toggles favorite state and routes download through the /go interstitial', async () => {
     render(<ModDetailClient initialMod={mockMod} />);
 
     expect(screen.getByRole('heading', { name: 'Crystal Hair' })).toBeInTheDocument();
@@ -101,6 +101,6 @@ describe('ModDetailClient behavior', () => {
     const downloadButton = screen.getByRole('button', { name: /download this mod now/i });
     await userEvent.click(downloadButton);
 
-    expect(openSpy).toHaveBeenCalledWith('https://example.com/download', '_blank');
+    expect(pushMock).toHaveBeenCalledWith('/go/mod-1');
   });
 });
