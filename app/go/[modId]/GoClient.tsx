@@ -359,8 +359,7 @@ export default function GoClient() {
               <div
                 ref={videoSlotRef}
                 id="mhm-inline-video-slot"
-                className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 inline-flex flex-col items-center"
-                style={{ minHeight: '240px', minWidth: '340px', maxWidth: '100%' }}
+                className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex flex-col items-center w-full max-w-[728px]"
               >
                 <div className="text-center mb-3">
                   <p className="text-sm text-slate-400 uppercase tracking-wider">Advertisement</p>
@@ -368,7 +367,18 @@ export default function GoClient() {
                     Thanks for supporting free mods — this ad keeps MustHaveMods running
                   </p>
                 </div>
-                {/* Mediavine's .mv-outstream-container is appended here by useEffect */}
+                {/*
+                  Mediavine display ad fallback. Serves a display ad (~300x250)
+                  with ~98% fill rate. If Mediavine's Universal Player bids,
+                  the useEffect above relocates `.mv-outstream-container` into
+                  this slot (appended after these children), taking priority
+                  over the display — video CPM is 5-10x higher.
+                  `.mv-ads` needs ≥2 children so Mediavine injects between them.
+                */}
+                <div className="mv-ads w-full min-h-[250px]">
+                  <div />
+                  <div />
+                </div>
               </div>
             </div>
 
