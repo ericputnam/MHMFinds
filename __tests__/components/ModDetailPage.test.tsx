@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import type { Mod } from '@/lib/api';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -21,53 +22,77 @@ vi.mock('@/components/AffiliateRecommendations', () => ({
   AffiliateRecommendations: () => null,
 }));
 
+vi.mock('@/components/RelatedMods', () => ({
+  RelatedMods: () => null,
+}));
+
+vi.mock('@/components/ModContentSections', () => ({
+  ModContentSections: () => null,
+}));
+
+vi.mock('@/components/MoreFromCreator', () => ({
+  MoreFromCreator: () => null,
+}));
+
 vi.mock('next/image', () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
-import ModDetailPage from '@/app/mods/[id]/page';
+import ModDetailClient from '@/app/mods/[id]/ModDetailClient';
 
-describe('ModDetailPage behavior', () => {
+const mockMod: Mod = {
+  id: 'mod-1',
+  title: 'Crystal Hair',
+  description: 'Great mod description',
+  shortDescription: 'Great mod',
+  version: '1.0.0',
+  gameVersion: 'Sims 4',
+  category: 'Hair',
+  tags: ['hair'],
+  contentType: null,
+  visualStyle: null,
+  themes: [],
+  ageGroups: [],
+  genderOptions: [],
+  occultTypes: [],
+  packRequirements: [],
+  thumbnail: 'https://example.com/thumb.jpg',
+  images: [],
+  downloadUrl: 'https://example.com/download',
+  sourceUrl: 'https://example.com/source',
+  source: 'Patreon',
+  sourceId: null,
+  author: 'creator',
+  isFree: true,
+  price: null,
+  currency: null,
+  isNSFW: false,
+  isVerified: true,
+  isFeatured: false,
+  downloadCount: 100,
+  viewCount: 50,
+  rating: 4.7,
+  ratingCount: 11,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  publishedAt: null,
+  lastScraped: null,
+  creatorId: null,
+  creator: { id: 'c1', handle: 'creator', isVerified: true },
+  _count: { reviews: 0, favorites: 5, downloads: 100 },
+};
+
+describe('ModDetailClient behavior', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('toggles favorite state and triggers download action', async () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        id: 'mod-1',
-        title: 'Crystal Hair',
-        description: 'Great mod description',
-        shortDescription: 'Great mod',
-        category: 'Hair',
-        gameVersion: 'Sims 4',
-        version: '1.0.0',
-        thumbnail: 'https://example.com/thumb.jpg',
-        images: [],
-        tags: ['hair'],
-        isVerified: true,
-        isFree: true,
-        price: null,
-        source: 'Patreon',
-        sourceUrl: 'https://example.com/source',
-        downloadUrl: 'https://example.com/download',
-        creator: { handle: 'creator', isVerified: true },
-        author: 'creator',
-        rating: 4.7,
-        ratingCount: 11,
-        _count: { downloads: 100, favorites: 5 },
-        downloadCount: 100,
-        viewCount: 50,
-      }),
-    } as any);
 
-    render(<ModDetailPage />);
+    render(<ModDetailClient initialMod={mockMod} />);
 
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Crystal Hair' })).toBeInTheDocument();
-    });
+    expect(screen.getByRole('heading', { name: 'Crystal Hair' })).toBeInTheDocument();
 
     const favoriteButton = screen.getByRole('button', { name: /add to favorites/i });
     await userEvent.click(favoriteButton);

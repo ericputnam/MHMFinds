@@ -391,6 +391,7 @@ describe('4.0 - Sitemap hygiene', () => {
 
     expect(content).not.toContain('sitemap-blog-categories.xml')
     expect(content).toContain('sitemap-nextjs.xml')
+    expect(content).toContain('sitemap-mods.xml')
     expect(content).toContain('sitemap-blog-posts.xml')
     expect(content).toContain('sitemap-blog-pages.xml')
   })

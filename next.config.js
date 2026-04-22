@@ -13,19 +13,22 @@ const nextConfig = {
     // appDir: true, // Removed - this is now default in Next.js 14
   },
   images: {
-    domains: [
-      'www.thesimsresource.com',
-      'simsdom.com',
-      'sims4studio.com',
-      'cdn.patreon.com',
-      'curseforge.com',
-      'media.tumblr.com',
-      'images.unsplash.com',
-      'via.placeholder.com',
-      'musthavemods.com',
-      'blog.musthavemods.com',
-      'api.dicebear.com',
-      'images.surferseo.art'
+    remotePatterns: [
+      { protocol: 'https', hostname: 'www.thesimsresource.com' },
+      { protocol: 'https', hostname: 'simsdom.com' },
+      { protocol: 'https', hostname: 'sims4studio.com' },
+      { protocol: 'https', hostname: 'cdn.patreon.com' },
+      { protocol: 'https', hostname: 'curseforge.com' },
+      { protocol: 'https', hostname: 'media.forgecdn.net' },
+      { protocol: 'https', hostname: 'media.tumblr.com' },
+      { protocol: 'https', hostname: '*.media.tumblr.com' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'via.placeholder.com' },
+      { protocol: 'https', hostname: 'musthavemods.com' },
+      { protocol: 'https', hostname: 'blog.musthavemods.com' },
+      { protocol: 'https', hostname: 'api.dicebear.com' },
+      { protocol: 'https', hostname: 'images.surferseo.art' },
+      { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
     ],
   },
   async headers() {

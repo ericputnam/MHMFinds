@@ -11,6 +11,9 @@ export async function GET() {
     <loc>${baseUrl}/sitemap-nextjs.xml</loc>
   </sitemap>
   <sitemap>
+    <loc>${baseUrl}/sitemap-mods.xml</loc>
+  </sitemap>
+  <sitemap>
     <loc>${baseUrl}/sitemap-blog-posts.xml</loc>
   </sitemap>
   <sitemap>

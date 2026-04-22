@@ -31,8 +31,8 @@ describe('Sidebar presence: <aside id="secondary"> on all page types', () => {
   const pagesWithSidebar = [
     { name: 'Homepage', file: 'app/page.tsx' },
     { name: 'Game browse (/games/[game])', file: 'app/games/[game]/GamePageClient.tsx' },
-    { name: 'Mod detail (/mods/[id])', file: 'app/mods/[id]/page.tsx' },
-    { name: 'Download interstitial (/go/[modId])', file: 'app/go/[modId]/page.tsx' },
+    { name: 'Mod detail (/mods/[id])', file: 'app/mods/[id]/ModDetailClient.tsx' },
+    { name: 'Download interstitial (/go/[modId])', file: 'app/go/[modId]/GoClient.tsx' },
   ]
 
   for (const page of pagesWithSidebar) {
@@ -82,7 +82,7 @@ describe('Sidebar content: empty aside pattern (no min-h placeholders)', () => {
   const pages = [
     { name: 'Homepage', file: 'app/page.tsx' },
     { name: 'Game browse', file: 'app/games/[game]/GamePageClient.tsx' },
-    { name: 'Mod detail', file: 'app/mods/[id]/page.tsx' },
+    { name: 'Mod detail', file: 'app/mods/[id]/ModDetailClient.tsx' },
   ]
 
   for (const page of pages) {
@@ -133,8 +133,8 @@ describe('Sidebar safety: no CSS sticky/fixed on ad sidebar', () => {
   const pages = [
     { name: 'Homepage', file: 'app/page.tsx' },
     { name: 'Game browse', file: 'app/games/[game]/GamePageClient.tsx' },
-    { name: 'Mod detail', file: 'app/mods/[id]/page.tsx' },
-    { name: 'Download interstitial', file: 'app/go/[modId]/page.tsx' },
+    { name: 'Mod detail', file: 'app/mods/[id]/ModDetailClient.tsx' },
+    { name: 'Download interstitial', file: 'app/go/[modId]/GoClient.tsx' },
   ]
 
   for (const page of pages) {
