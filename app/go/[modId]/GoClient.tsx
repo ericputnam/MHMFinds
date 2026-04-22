@@ -40,6 +40,7 @@ export default function GoClient() {
   const [canProceed, setCanProceed] = useState(false);
   const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
   const videoSlotRef = useRef<HTMLDivElement>(null);
+  const displayFallbackRef = useRef<HTMLDivElement>(null);
   const { trackDownload } = useDownloadTracking();
 
   // Fetch mod details + related mods
@@ -144,21 +145,39 @@ export default function GoClient() {
       }
 
       // Reset Mediavine's floating positioning so it renders inline inside
-      // our slot. Deliberately DO NOT force width: 100% — we want the video
-      // to keep its natural (small) size and be centered by the flex parent,
-      // so the "Advertisement" box can hug the video tightly.
+      // our slot, and force it to fill the slot width in a 16:9 box so the
+      // player is actually readable (Mediavine's default outstream thumbnail
+      // is ~160x90, which looked like a broken ad in our 728px-wide slot).
       const resetStyles: Partial<CSSStyleDeclaration> = {
         position: 'relative',
         top: 'auto',
         left: 'auto',
         right: 'auto',
         bottom: 'auto',
+        width: '100%',
+        height: 'auto',
         maxWidth: '100%',
+        aspectRatio: '16 / 9',
         transform: 'none',
         margin: '0 auto',
         zIndex: 'auto',
       };
       Object.assign(outstream.style, resetStyles);
+
+      // Stretch the inner video + any wrapper divs to fill the container so
+      // the thumbnail doesn't sit as a tiny 160x90 square in the corner.
+      outstream.querySelectorAll<HTMLElement>('video, .mv-video-wrapper, .mv-video-container').forEach((el) => {
+        el.style.width = '100%';
+        el.style.height = '100%';
+        el.style.maxWidth = '100%';
+        (el.style as CSSStyleDeclaration & { objectFit: string }).objectFit = 'contain';
+      });
+
+      // Hide the display-ad fallback once video wins — otherwise the 250px
+      // display slot sits empty above the video, making the box look broken.
+      if (displayFallbackRef.current) {
+        displayFallbackRef.current.style.display = 'none';
+      }
 
       slot.appendChild(outstream);
       moved = true;
@@ -375,7 +394,10 @@ export default function GoClient() {
                   over the display — video CPM is 5-10x higher.
                   `.mv-ads` needs ≥2 children so Mediavine injects between them.
                 */}
-                <div className="mv-ads w-full min-h-[250px]">
+                <div
+                  ref={displayFallbackRef}
+                  className="mv-ads w-full min-h-[250px]"
+                >
                   <div />
                   <div />
                 </div>
