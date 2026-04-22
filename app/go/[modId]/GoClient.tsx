@@ -41,6 +41,7 @@ export default function GoClient() {
   const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
   const videoSlotRef = useRef<HTMLDivElement>(null);
   const displayFallbackRef = useRef<HTMLDivElement>(null);
+  const [adSlotEmpty, setAdSlotEmpty] = useState(false);
   const { trackDownload } = useDownloadTracking();
 
   // Fetch mod details + related mods
@@ -211,6 +212,48 @@ export default function GoClient() {
     };
   }, [loading]);
 
+  /*
+    Detect if neither the Universal Player nor the display fallback ever fills
+    the ad slot, so we can hide the entire "Advertisement" card instead of
+    showing empty chrome over a blank box. Gives Mediavine 8s to fill — long
+    enough to cover their auction + lazy-load, short enough that the user
+    doesn't stare at an empty box during the 10s countdown.
+  */
+  useEffect(() => {
+    if (loading) return;
+    if (typeof window === 'undefined') return;
+
+    let settled = false;
+    const checkFill = () => {
+      if (settled) return;
+      const slot = videoSlotRef.current;
+      if (!slot) return;
+
+      const hasVideo = !!slot.querySelector('.mv-outstream-container video, .mv-outstream-container iframe');
+      const display = displayFallbackRef.current;
+      const hasDisplay = !!(
+        display &&
+        (display.querySelector('iframe') || display.querySelector('ins') || display.offsetHeight > 260)
+      );
+
+      if (hasVideo || hasDisplay) {
+        settled = true;
+        setAdSlotEmpty(false);
+      }
+    };
+
+    const fillPoll = setInterval(checkFill, 500);
+    const hideTimer = setTimeout(() => {
+      if (!settled) setAdSlotEmpty(true);
+      clearInterval(fillPoll);
+    }, 8000);
+
+    return () => {
+      clearInterval(fillPoll);
+      clearTimeout(hideTimer);
+    };
+  }, [loading]);
+
   const handleProceed = useCallback(() => {
     if (!mod) return;
 
@@ -374,7 +417,10 @@ export default function GoClient() {
               container. min-height/min-width reserve a reasonable footprint
               so there's no CLS before the player is moved in.
             */}
-            <div className="flex justify-center mb-8">
+            <div
+              className={`flex justify-center mb-8${adSlotEmpty ? ' hidden' : ''}`}
+              aria-hidden={adSlotEmpty}
+            >
               <div
                 ref={videoSlotRef}
                 id="mhm-inline-video-slot"
