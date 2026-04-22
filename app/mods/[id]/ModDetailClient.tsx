@@ -342,6 +342,15 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
               </div>
             </div>
 
+            {/* Sidebar in-content ad — sits directly under the Download block.
+                Premium placement: next to the page's primary CTA, above the fold
+                on most desktop sizes. `.mv-ads` needs ≥2 children so Mediavine
+                injects between them. */}
+            <div className="mv-ads mb-6" aria-hidden="true">
+              <div />
+              <div />
+            </div>
+
             {/* Additional Info */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="font-bold text-gray-800 mb-4">Additional Information</h3>
