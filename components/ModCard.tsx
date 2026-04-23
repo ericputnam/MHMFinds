@@ -12,7 +12,6 @@ interface ModCardProps {
   mod: Mod;
   onFavorite: (modId: string) => void;
   isFavorited: boolean;
-  onClick?: (mod: Mod) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -28,20 +27,17 @@ const formatNumber = (num: number): string => {
   return num.toString();
 };
 
-export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '', style }: ModCardProps) {
+export function ModCard({ mod, onFavorite, isFavorited, className = '', style }: ModCardProps) {
   const router = useRouter();
+  const href = `/mods/${mod.id}`;
 
   const handleCardClick = () => {
-    if (onClick) {
-      onClick(mod);
-    } else {
-      router.push(`/mods/${mod.id}`);
-    }
+    router.push(href);
   };
 
-  const handleViewDetails = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleCardClick();
+  // Warm the route on hover so the page feels instant once the user clicks.
+  const handleMouseEnter = () => {
+    router.prefetch(href);
   };
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -60,6 +56,7 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
   return (
     <article
       onClick={handleCardClick}
+      onMouseEnter={handleMouseEnter}
       className={`group relative bg-mhm-card border border-white/5 rounded-2xl overflow-hidden hover:border-sims-purple/30 transition-all duration-300 hover:shadow-2xl hover:shadow-sims-pink/10 flex flex-col h-full hover:-translate-y-1 cursor-pointer ${className}`}
       style={style}
       aria-label={`${mod.title} by ${mod.creator?.handle || mod.author || 'Unknown Creator'}`}

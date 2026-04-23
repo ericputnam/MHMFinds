@@ -10,7 +10,6 @@ export interface ModGridProps {
   loading: boolean;
   error: string | null;
   onFavorite: (modId: string) => void;
-  onModClick?: (mod: Mod) => void;
   favorites: string[];
   gridColumns?: number; // New prop for dynamic grid columns
   affiliateOffers?: AffiliateOffer[]; // Affiliate offers to inject into grid
@@ -22,7 +21,6 @@ export function ModGrid({
   loading,
   error,
   onFavorite,
-  onModClick,
   favorites,
   gridColumns = 4,
   affiliateOffers = [],
@@ -121,7 +119,6 @@ export function ModGrid({
               key={item.data.id}
               mod={item.data}
               onFavorite={onFavorite}
-              onClick={onModClick}
               isFavorited={favorites.includes(item.data.id)}
               className="animate-fade-in"
               style={{ animationDelay: `${index * 50}ms` }}
