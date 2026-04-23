@@ -113,7 +113,7 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                     src={selectedImage}
                     alt={mod.title}
                     fill
-
+                    priority
                     sizes="(max-width: 1024px) 100vw, 66vw"
                     className="w-full h-full object-cover"
                   />
