@@ -6,7 +6,6 @@ import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
 import { Footer } from '../components/Footer';
-import { ModDetailsModal } from '../components/ModDetailsModal';
 import { FacetedSidebar } from '../components/FacetedSidebar';
 import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
@@ -32,7 +31,6 @@ function HomePageContent() {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
   const gridColumns = 4;
-  const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
   const [modsPerPage, setModsPerPage] = useState(20);
 
   // Faceted filter state
@@ -194,11 +192,6 @@ function HomePageContent() {
     const params = buildUrlParams();
     updateBrowserUrl(params);
   }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, currentPage, buildUrlParams, updateBrowserUrl]);
-
-  // Handle mod card click - show details immediately (no paywall)
-  const handleModClick = (mod: Mod) => {
-    setSelectedMod(mod);
-  };
 
   const handleSearch = async (query: string, category?: string, gameVersion?: string) => {
     // Reset to page 1 when search changes
@@ -410,7 +403,6 @@ function HomePageContent() {
                   loading={loading}
                   error={error}
                   onFavorite={handleFavorite}
-                  onModClick={handleModClick}
                   favorites={favorites}
                   gridColumns={gridColumns}
                   affiliateOffers={affiliateOffers}
@@ -481,14 +473,6 @@ function HomePageContent() {
       </main>
 
       <Footer />
-
-      {/* Mod Details Modal */}
-      {selectedMod && (
-        <ModDetailsModal
-          mod={selectedMod}
-          onClose={() => setSelectedMod(null)}
-        />
-      )}
     </div>
   );
 }

@@ -6,7 +6,6 @@
  * Receives pre-fetched mods from the server component so the first
  * paint already has the grid + schema. Handles:
  *   - Favorites toggle (optimistic, with rollback)
- *   - Mod detail modal
  *   - Breadcrumb nav
  *   - Mediavine sidebar + in-content ad anchors
  *   - Related collections grid
@@ -21,7 +20,6 @@ import { ChevronRight, Home } from 'lucide-react';
 import { Navbar } from '../../../../components/Navbar';
 import { Footer } from '../../../../components/Footer';
 import { ModGrid } from '../../../../components/ModGrid';
-import { ModDetailsModal } from '../../../../components/ModDetailsModal';
 import { Mod } from '../../../../lib/api';
 import type { CollectionDefinition } from '../../../../lib/collections';
 
@@ -40,9 +38,6 @@ export default function CollectionPageClient({
 }: CollectionPageClientProps) {
   const [mods] = useState<Mod[]>(initialMods);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
-
-  const handleModClick = (mod: Mod) => setSelectedMod(mod);
 
   const handleFavorite = async (modId: string) => {
     const isFavorited = favorites.includes(modId);
@@ -157,7 +152,6 @@ export default function CollectionPageClient({
                 loading={false}
                 error={null}
                 onFavorite={handleFavorite}
-                onModClick={handleModClick}
                 favorites={favorites}
                 gridColumns={3}
               />
@@ -206,13 +200,6 @@ export default function CollectionPageClient({
       </main>
 
       <Footer />
-
-      {selectedMod && (
-        <ModDetailsModal
-          mod={selectedMod}
-          onClose={() => setSelectedMod(null)}
-        />
-      )}
     </div>
   );
 }

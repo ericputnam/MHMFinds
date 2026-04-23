@@ -6,7 +6,6 @@ import { Navbar } from '../../../components/Navbar';
 import { Hero } from '../../../components/Hero';
 import { ModGrid } from '../../../components/ModGrid';
 import { Footer } from '../../../components/Footer';
-import { ModDetailsModal } from '../../../components/ModDetailsModal';
 import { FacetedSidebar } from '../../../components/FacetedSidebar';
 import { Mod } from '../../../lib/api';
 import { useSearchTracking } from '../../../lib/hooks/useAnalytics';
@@ -34,7 +33,6 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gridColumns] = useState(4);
-  const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
   const [modsPerPage, setModsPerPage] = useState(20);
 
   const [selectedFacets, setSelectedFacets] = useState<{
@@ -128,8 +126,6 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
     const newUrl = queryString ? `/games/${gameSlug}?${queryString}` : `/games/${gameSlug}`;
     router.replace(newUrl, { scroll: false });
   }, [searchQuery, selectedCategory, sortBy, currentPage, gameSlug, router]);
-
-  const handleModClick = (mod: Mod) => setSelectedMod(mod);
 
   const handleSearch = async (query: string, category?: string, gameVersion?: string) => {
     setCurrentPage(1);
@@ -271,7 +267,6 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
                 loading={loading}
                 error={error}
                 onFavorite={handleFavorite}
-                onModClick={handleModClick}
                 favorites={favorites}
                 gridColumns={gridColumns}
                 affiliateOffers={affiliateOffers}
@@ -338,13 +333,6 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
       </main>
 
       <Footer />
-
-      {selectedMod && (
-        <ModDetailsModal
-          mod={selectedMod}
-          onClose={() => setSelectedMod(null)}
-        />
-      )}
     </div>
   );
 }
