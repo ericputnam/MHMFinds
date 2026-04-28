@@ -80,6 +80,44 @@ const FACET_SEEDS: FacetSeed[] = [
   // matching the pregnancy/maternity keyword set in contentTypeDetector.
   { facetType: 'contentType', value: 'pregnancy', displayName: 'Pregnancy & Maternity', icon: '🤰', color: '#F472B6', sortOrder: 61 },
 
+  // Easter — seasonal collection. Mirrors the pregnancy pattern: also exists
+  // as a `themes` facet, but tagged as a contentType for catalog browsing.
+  // Slug-driven by /sims-4-easter-cc/ in mhmScraperUtils.ts.
+  { facetType: 'contentType', value: 'easter', displayName: 'Easter', icon: '🐰', color: '#A78BFA', sortOrder: 62 },
+
+  // Princess — editorial collection. Same dual-facet pattern as easter:
+  // also exists as a `themes` value, but tagged as a contentType so the
+  // /sims-4-princess-cc/ listing browses cleanly as one category. The
+  // granular per-mod types (dresses, hair, jewelry, etc.) get noisy on
+  // these mixed editorial pages, so contentType wins. Slug-driven in
+  // mhmScraperUtils.ts.
+  { facetType: 'contentType', value: 'princess', displayName: 'Princess', icon: '👑', color: '#EC4899', sortOrder: 63 },
+
+  // Royals — sibling editorial collection to princess, but gender-neutral
+  // (the /sims-4-royal-cc/ listing includes male CC, regal uniforms, etc.).
+  // Same pattern: contentType + theme, slug-driven in mhmScraperUtils.ts.
+  { facetType: 'contentType', value: 'royals', displayName: 'Royals', icon: '🏰', color: '#6D28D9', sortOrder: 64 },
+
+  // Lookbooks — curated outfit showcases. MHM publishes many of these
+  // ("sims-4-fall-lookbook", "sims-4-fairy-lookbook"). The article links
+  // out to multiple CC pieces; the editorial unit is the lookbook itself,
+  // not the individual mods. Slug-driven in mhmScraperUtils.ts.
+  { facetType: 'contentType', value: 'lookbook', displayName: 'Lookbook', icon: '📸', color: '#F59E0B', sortOrder: 65 },
+
+  // Challenges — gameplay rule-sets ("100 Baby Challenge", "Very Veggie
+  // Challenge"). Not downloadable mods, but a recurring editorial format.
+  { facetType: 'contentType', value: 'challenge', displayName: 'Challenge', icon: '🎯', color: '#EF4444', sortOrder: 66 },
+
+  // Main-menu overrides — replace the default Sims 4 main menu (background,
+  // music, layout). A specific gameplay-mod sub-type, broken out for catalog
+  // browsing.
+  { facetType: 'contentType', value: 'main-menu', displayName: 'Main Menu', icon: '🖥️', color: '#0EA5E9', sortOrder: 67 },
+
+  // CC Finds — monthly editorial roundups ("April 2026 CC Finds"). After
+  // normalizeSlug() strips the date markers, the slug matches the cc-finds
+  // rule. One contentType captures all the monthly variants.
+  { facetType: 'contentType', value: 'cc-finds', displayName: 'CC Finds', icon: '🔍', color: '#A855F7', sortOrder: 68 },
+
   // ==========================================
   // VISUAL STYLE - Art style
   // ==========================================
@@ -126,6 +164,8 @@ const FACET_SEEDS: FacetSeed[] = [
   { facetType: 'themes', value: 'rustic', displayName: 'Rustic', icon: '🪵', color: '#78350F', sortOrder: 29 },
   { facetType: 'themes', value: 'witchy', displayName: 'Witchy', icon: '🔮', color: '#7C3AED', sortOrder: 30 },
   { facetType: 'themes', value: 'fairycore', displayName: 'Fairycore', icon: '🧚', color: '#C4B5FD', sortOrder: 31 },
+  { facetType: 'themes', value: 'princess', displayName: 'Princess', icon: '👑', color: '#EC4899', sortOrder: 32 },
+  { facetType: 'themes', value: 'royals', displayName: 'Royals', icon: '🏰', color: '#6D28D9', sortOrder: 33 },
 
   // ==========================================
   // AGE GROUPS

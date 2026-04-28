@@ -28,6 +28,7 @@ This document tracks all Product Requirements Documents (PRDs) for the MHMFinds 
 | [Age Category Cleanup](./PRD-age-category-cleanup.md) | High | Not Started | 2025-01-13 | - | Fix misfits in age filters (e.g., adult items in Child) |
 | [Author Data Cleanup](./PRD-author-data-cleanup.md) | High | Not Started | 2025-01-13 | - | Research-first approach to fix author extraction |
 | [Mod Categorization](./PRD-mod-categorization.md) | High | Not Started | 2025-01-13 | - | Fix contentType and facet population (~40-60% incomplete) |
+| [Dead-Link Cleanup](./PRD-dead-link-cleanup.md) | Medium | Phase 1 (Probe) Done | 2026-04-28 | - | Probe found ~2.5% dead rate (~342 catalog-wide). Bulk-hide via `isVerified=false`. Also flagged ~13.5% mislabeled `isFree:false`. |
 
 ### Scraper & Data Pipeline
 
@@ -107,7 +108,7 @@ See [Monetization Agent PRD Index](./monetization-agent/PRD-00-overview.md) for 
 | Category | Total | Not Started | In Progress | Completed |
 |----------|-------|-------------|-------------|-----------|
 | Bugs Fixed | 1 | 0 | 0 | 1 |
-| Data Quality | 3 | 3 | 0 | 0 |
+| Data Quality | 4 | 3 | 1 | 0 |
 | Scraper | 1 | 1 | 0 | 0 |
 | Features | 3 | 2 | 0 | 1 |
 | Navigation | 1 | 1 | 0 | 0 |
@@ -115,7 +116,7 @@ See [Monetization Agent PRD Index](./monetization-agent/PRD-00-overview.md) for 
 | **Monetization Backend** | **7** | **0** | **0** | **7** |
 | **Monetization Admin UI** | **7** | **0** | **0** | **7** |
 | **Monetization Intelligence** | **4** | **4** | **0** | **0** |
-| **Total** | **29** | **11** | **0** | **18** |
+| **Total** | **30** | **11** | **1** | **18** |
 
 ---
 

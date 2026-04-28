@@ -8,7 +8,13 @@ import {
   detectContentType,
   detectRoomThemes,
 } from './contentTypeDetector';
-import { detectGame, detectContentTypeFromUrl } from './mhmScraperUtils';
+import {
+  detectGame,
+  detectContentTypeFromUrl,
+  detectThemesFromUrl,
+  shouldSkipPost,
+} from './mhmScraperUtils';
+import { extractAuthor } from './scraperExtraction/authorExtractor';
 
 // CSV file path for tracking scraped URLs
 const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'mhm-scraped-urls.csv');
@@ -139,6 +145,28 @@ export class MustHaveModsScraper {
    */
   private getLastScrapedDate(url: string): Date | null {
     return this.scrapedUrlsCache.get(url)?.lastScraped || null;
+  }
+
+  /**
+   * Public: has this URL ever been scraped (irrespective of how long ago)?
+   *
+   * Differs from the private `wasRecentlyScraped` (which only returns true
+   * within the 3-month freshness window). Used by helper scripts that want
+   * to process the never-seen-before backlog one at a time.
+   */
+  hasUrlBeenScrapedEver(url: string): boolean {
+    return this.scrapedUrlsCache.has(url);
+  }
+
+  /**
+   * Public: append a URL to the freshness tracker after a scrape.
+   *
+   * Thin wrapper around the existing `saveScrapedUrlToCsv` so external
+   * scripts that bypass `runFullScrape` and call `scrapeModsFromPost` /
+   * `saveModsToDatabase` directly can still update the CSV.
+   */
+  recordScrapedUrl(url: string, modsFound: number): void {
+    this.saveScrapedUrlToCsv(url, modsFound);
   }
 
   /**
@@ -413,6 +441,32 @@ export class MustHaveModsScraper {
               ...this.extractTagsFromTitle(aiMod.title),
             ].filter(t => t && t.length > 0);
 
+            // V2 author extraction — runs even when AI returned an author,
+            // because AI can hallucinate from byline-like text in the article.
+            // V2's URL/HTML/Patreon-API signals are authoritative when present.
+            // We also need its isPaywalled signal to drive isFree correctly.
+            let v2Author: string | undefined;
+            let v2Paywalled = false;
+            if (aiMod.downloadUrl) {
+              try {
+                const v2Result = await extractAuthor({
+                  url: aiMod.downloadUrl,
+                  title: aiMod.title,
+                  $: cheerio.load(''),
+                  prisma: prisma as any,
+                  fetchDestination: true,
+                });
+                if (v2Result.value) v2Author = v2Result.value;
+                if (v2Result.isPaywalled) v2Paywalled = true;
+              } catch {
+                /* fall back to aiMod.author */
+              }
+            }
+
+            const descSaysPaid =
+              aiMod.description?.toLowerCase().includes('early access') ||
+              aiMod.description?.toLowerCase().includes('patreon exclusive');
+
             mods.push({
               title: aiMod.title,
               description: aiMod.description,
@@ -424,9 +478,8 @@ export class MustHaveModsScraper {
               downloadUrl: aiMod.downloadUrl,
               sourceUrl: postUrl,
               source: 'MustHaveMods.com',
-              author: aiMod.author,
-              isFree: !aiMod.description?.toLowerCase().includes('early access') &&
-                !aiMod.description?.toLowerCase().includes('patreon exclusive'),
+              author: v2Author ?? aiMod.author,
+              isFree: !descSaysPaid && !v2Paywalled,
               isNSFW: false,
               publishedAt: postDate ? new Date(postDate) : new Date(),
               game: detectedGame,
@@ -743,42 +796,65 @@ export class MustHaveModsScraper {
             elementsChecked++;
           }
 
-          // Extract author - prioritize title, then download URL, then scrape mod page
-          if (!author && authorFromTitle) {
-            author = authorFromTitle;
-          }
-          if (!author && downloadUrl) {
-            try {
-              const url = new URL(downloadUrl);
-              author = this.extractAuthorFromUrl(url);
-            } catch (error) {
-              // Invalid URL
-            }
-          }
-          // If still no author, try to scrape the actual mod page as a last resort
-          // Skip for protected sites (Patreon, CurseForge) since they block scraping
-          if (!author && downloadUrl) {
-            const hostname = new URL(downloadUrl).hostname.toLowerCase();
-            const isProtectedSite = hostname.includes('patreon.com') || hostname.includes('curseforge.com');
-
-            if (!isProtectedSite) {
-              console.log(`      🔍 Scraping author from mod page...`);
-              author = await this.scrapeAuthorFromModPage(downloadUrl);
-              if (author) {
-                console.log(`      ✅ Found author from mod page: ${author}`);
-              }
-            }
-          }
-
           // CRITICAL FILTER: Skip if no download link found
           // Rule: No download link = Not a mod
           if (!downloadUrl) {
             continue;
           }
 
+          // ─────────────────────────────────────────────────────────────
+          // Author extraction — V2 multi-strategy chain
+          //
+          // V2 (lib/services/scraperExtraction/authorExtractor.ts) runs:
+          //   1. fromUrl                — site-specific URL slug parsing
+          //                               (TSR /artists/{name}/, Patreon /c/{name}/, …)
+          //   2. fromTitlePattern       — "Mod by AuthorName" / "- by Author"
+          //   3. fromJsonLd             — schema.org Person/Organization
+          //   4. fromOpenGraph          — og:title author conventions
+          //   5. fromHtmlHeuristics     — TSR data-item, Patreon attribution, …
+          //   6. fromPatreonApi         — public posts API (also flags paywall)
+          //   + fromCreatorProfileMatch — fuzzy-confirms against existing handles
+          //   + isValidAuthor denylist  — rejects "Title", "ShRef", URL segments
+          //
+          // V2 also returns isPaywalled when Patreon's API responds 403
+          // ViewForbidden, so we can mark the mod as paid even when no
+          // author was recovered. See PRD-paywalled-patreon-isfree.md.
+          // ─────────────────────────────────────────────────────────────
+          let isPaywalledFromApi = false;
+          try {
+            const v2Result = await extractAuthor({
+              url: downloadUrl,
+              title: modTitle,
+              $: cheerio.load(''), // V2 fetches destination HTML itself
+              prisma: prisma as any,
+              fetchDestination: true,
+            });
+            if (v2Result.value) {
+              author = v2Result.value;
+            }
+            if (v2Result.isPaywalled) {
+              isPaywalledFromApi = true;
+            }
+          } catch (err) {
+            // V2 errors are non-fatal — fall back to legacy paths below
+            console.log(`      ⚠️  V2 extractAuthor failed: ${err instanceof Error ? err.message : err}`);
+          }
+
+          // Legacy fallback: trust the title's "by Author" pattern only when
+          // V2 returned nothing. This preserves recovery for blog-roundup
+          // posts where the creator isn't visible at the destination URL.
+          if (!author && authorFromTitle) {
+            author = authorFromTitle;
+          }
+
           // Determine if it's free or early access
-          const isFree = !description.toLowerCase().includes('early access') &&
-            !description.toLowerCase().includes('patreon exclusive');
+          // Authoritative signal: Patreon API 403 ViewForbidden → paywalled.
+          // Fallback: description heuristic (rarely triggers for paid posts
+          // because most paid Patreon previews don't include these strings).
+          const descSaysPaid =
+            description.toLowerCase().includes('early access') ||
+            description.toLowerCase().includes('patreon exclusive');
+          const isFree = !descSaysPaid && !isPaywalledFromApi;
 
           // Build tags from post tags, categories, and mod title
           const tags = [
@@ -838,11 +914,18 @@ export class MustHaveModsScraper {
       return { cleanTitle: dashMatch[1].trim(), author: dashMatch[2].trim() };
     }
 
-    // Pattern 3: "Mod Name (AuthorName)"
-    const parenMatch = title.match(/^(.+?)\s+\(([^)]+)\)$/);
-    if (parenMatch && parenMatch[2].length > 2 && parenMatch[2].length < 30) {
-      return { cleanTitle: parenMatch[1].trim(), author: parenMatch[2].trim() };
-    }
+    // Pattern 3 (DISABLED): "Mod Name (AuthorName)"
+    //
+    // Removed Apr 2026 — this pattern produced false positives on variant
+    // labels like "Ankle Bracelets V2 (Left Side)" → author="Left Side",
+    // "Star Charm Anklet (Right)" → author="Right", "Hair (V2)" → author="V2".
+    // The vast majority of parenthetical suffixes on mod titles describe
+    // the mod itself (variant, side, version, color), NOT the creator.
+    //
+    // True author-in-parens cases are recovered by the V2 extractAuthor
+    // chain (URL slug → JSON-LD → og:title → site-specific HTML heuristics
+    // → Patreon API). If V2 finds nothing, leaving the parenthetical text
+    // in the title is more useful than fabricating a wrong author.
 
     // Pattern 4: "Mod Name | AuthorName"
     const pipeMatch = title.match(/^(.+?)\s+\|\s+(.+)$/);
@@ -1339,11 +1422,25 @@ export class MustHaveModsScraper {
     for (const mod of mods) {
       try {
         // Detect content type: URL-based (from blog post category) is the strongest signal,
-        // title-based detection is a fallback for generic/mixed-category posts
+        // title-based detection is a fallback for generic/mixed-category posts.
+        //
+        // GAME-GATING (Apr 2026): The title detector's keyword rules in
+        // contentTypeDetector.ts are Sims 4-specific and use substring matching.
+        // Running them on Stardew Valley / Minecraft mods produces false
+        // positives (e.g. "Bigger Backpack" → 'accessories', "Yet Another
+        // Harvest…" → 'tops' via the substring "vest"). The URL detector is
+        // already game-aware via detectGameFromUrl, so we keep it for all games
+        // but ONLY run the title detector when we're confident this is a Sims
+        // 4 mod. Non-Sims-4 mods get null contentType when the URL doesn't
+        // match a STARDEW_/MINECRAFT_ rule — better null than wrong.
+        const game = mod.game || 'Sims 4';
         const urlContentType = detectContentTypeFromUrl(mod.sourceUrl);
-        const titleContentType = detectContentType(mod.title, mod.description);
+        const titleContentType =
+          game === 'Sims 4' ? detectContentType(mod.title, mod.description) : undefined;
         const detectedContentType = urlContentType || titleContentType;
-        const detectedThemes = detectRoomThemes(mod.title, mod.description);
+        const urlThemes = detectThemesFromUrl(mod.sourceUrl);
+        const titleThemes = detectRoomThemes(mod.title, mod.description);
+        const detectedThemes = Array.from(new Set([...urlThemes, ...titleThemes]));
 
         // Check if mod already exists by download URL (most reliable)
         // or by title + source URL combination
@@ -1372,6 +1469,11 @@ export class MustHaveModsScraper {
           const detectedGame = mod.game || 'Sims 4';
           const gameNeedsUpdate = detectedGame !== 'Sims 4' && existing.gameVersion === 'Sims 4';
 
+          // URL-derived themes come from the editorial slug (e.g.
+          // /sims-4-princess-cc/ → 'princess'). They're deterministic, so
+          // always merge them in if missing — even on otherwise-complete mods.
+          const missingUrlThemes = urlThemes.filter(t => !existing.themes.includes(t));
+
           const needsUpdate =
             (!existing.thumbnail && mod.thumbnail) ||
             (!existing.description && mod.description) ||
@@ -1382,6 +1484,7 @@ export class MustHaveModsScraper {
             (existing.downloadUrl && existing.downloadUrl.includes('musthavemods.com') && mod.downloadUrl && !mod.downloadUrl.includes('musthavemods.com')) || // Fix internal download links
             (!existing.contentType && detectedContentType) || // Add missing content type
             (existing.themes.length === 0 && detectedThemes.length > 0) || // Add missing themes
+            missingUrlThemes.length > 0 || // Backfill slug-derived themes
             gameNeedsUpdate; // Fix incorrectly tagged game
 
           if (needsUpdate) {
@@ -1398,7 +1501,10 @@ export class MustHaveModsScraper {
                 tags: mod.tags.length > existing.tags.length ? mod.tags : existing.tags,
                 // Add content type and themes if detected and missing
                 contentType: existing.contentType || detectedContentType,
-                themes: existing.themes.length > 0 ? existing.themes : detectedThemes,
+                themes:
+                  existing.themes.length > 0
+                    ? Array.from(new Set([...existing.themes, ...urlThemes]))
+                    : detectedThemes,
                 // Fix game version if incorrectly tagged
                 gameVersion: gameNeedsUpdate ? detectedGame : existing.gameVersion,
               },
@@ -1519,6 +1625,7 @@ export class MustHaveModsScraper {
     let totalMods = 0;
     let totalSaved = 0;
     let skippedFreshness = 0;
+    let skippedNonMod = 0;
 
     for (let i = startPosition; i < endPosition; i++) {
       const postUrl = postUrls[i];
@@ -1529,6 +1636,19 @@ export class MustHaveModsScraper {
         const lastScrapedStr = lastScraped ? lastScraped.toLocaleDateString() : 'unknown';
         console.log(`\n[${i + 1}/${postUrls.length}] ⏭️  Skipping (scraped ${lastScrapedStr}): ${postUrl}`);
         skippedFreshness++;
+        continue;
+      }
+
+      // SKIP-LIST (Apr 2026): some MHM URLs aren't about mods at all —
+      // they're posts about EA-published packs, troubleshooting articles,
+      // or cheat-code reference pages. We mark them as scraped so we don't
+      // re-try every run, but write nothing to the DB. See SKIP_POST_SLUGS
+      // in mhmScraperUtils.ts for the rule list.
+      if (shouldSkipPost(postUrl)) {
+        console.log(`\n[${i + 1}/${postUrls.length}] ⏭️  Skipping non-mod post: ${postUrl}`);
+        // Mark as scraped (with 0 mods) so freshness tracking shelves it.
+        this.saveScrapedUrlToCsv(postUrl, 0);
+        skippedNonMod++;
         continue;
       }
 
@@ -1560,6 +1680,7 @@ export class MustHaveModsScraper {
     console.log('='.repeat(60));
     console.log(`📄 Pages scraped: ${this.stats.pagesScraped}`);
     console.log(`⏭️  Skipped (recently scraped): ${skippedFreshness}`);
+    console.log(`⏭️  Skipped (non-mod post): ${skippedNonMod}`);
     console.log(`🔍 Mods discovered: ${this.stats.modsDiscovered}`);
     console.log(`✅ Mods imported (new): ${this.stats.modsImported}`);
     console.log(`🔄 Mods updated: ${this.stats.modsUpdated}`);

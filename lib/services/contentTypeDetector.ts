@@ -62,7 +62,13 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   // Eyebrows
   {
     keywords: ['eyebrow', 'eyebrows', 'brow', 'brows'],
-    negativeKeywords: ['lash', 'eyelash', 'eyeliner', 'lipstick', 'blush', 'mascara'],
+    // Defensive: piercing/jewelry vocabulary in title or desc disqualifies the
+    // eyebrows rule. "Brow ring slots" in a piercings post must not win over
+    // jewelry. See __tests__/unit/contentTypeDetector.test.ts.
+    negativeKeywords: [
+      'lash', 'eyelash', 'eyeliner', 'lipstick', 'blush', 'mascara',
+      'piercing', 'piercings',
+    ],
     contentType: 'eyebrows',
     priority: 110,
   },
@@ -148,7 +154,10 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   // Preset (body preset, CAS preset)
   {
     keywords: ['body preset', 'preset', 'presets', 'face preset', 'cas preset', 'sim preset'],
-    negativeKeywords: ['reshade', 'gshade', 'shader'],  // These are UI presets, not body presets
+    // 'reshade'/'gshade'/'shader' are UI presets, not body presets.
+    // 'piercing'/'piercings' gate this rule out of piercings posts that link
+    // to body-preset articles in their description.
+    negativeKeywords: ['reshade', 'gshade', 'shader', 'piercing', 'piercings'],
     contentType: 'preset',
     priority: 97,
   },
@@ -273,13 +282,20 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   // Full Body (check before individual pieces)
   {
     keywords: ['outfit', 'outfits', 'full body', 'full-body', 'jumpsuit', 'romper',
-               'bodysuit', 'onesie', 'overalls', 'uniform', 'costume', 'pajamas', 'pyjamas',
-               'sleepwear', 'swimsuit', 'bikini', 'swimwear', 'wetsuit', 'clothing set',
-               'clothes set', 'outfit set'],
-    // 'set' alone is too generic - sneaker set, eyeshadow set, etc.
-    // Use specific clothing set patterns instead
-    negativeKeywords: ['eyeshadow', 'makeup', 'palette', 'sneaker', 'shoe', 'boots',
-                       'furniture', 'decor', 'clutter', 'tattoo'],
+               'bodysuit', 'onesie', 'overall', 'overalls', 'uniform', 'costume',
+               'pajamas', 'pyjamas', 'sleepwear', 'swimsuit', 'bikini', 'swimwear',
+               'wetsuit', 'clothing set', 'clothes set', 'outfit set'],
+    // 'set' alone is too generic — sneaker set, eyeshadow set, etc.
+    // We do NOT include 'shoe'/'boots'/'sneaker' here: real outfit descriptions
+    // routinely mention companion footwear ("pair with boots") and disqualifying
+    // full-body on those words let jewelry win on incidental "studded
+    // wristbands"/"layered chokers" hits. With the two-pass title-priority
+    // detector, real shoe mods still resolve correctly via title.
+    // 'piercing'/'piercings' gate full-body out when the post is a piercings
+    // post that incidentally mentions outfits.
+    negativeKeywords: ['eyeshadow', 'makeup', 'palette',
+                       'furniture', 'decor', 'clutter', 'tattoo',
+                       'piercing', 'piercings'],
     contentType: 'full-body',
     priority: 35,
   },
@@ -528,40 +544,58 @@ export function detectContentTypeWithConfidence(
   // Sort rules by priority (highest first)
   const sortedRules = [...CONTENT_TYPE_RULES].sort((a, b) => b.priority - a.priority);
 
+  // Helper: a rule's negative keywords disqualify it if any appear in title or desc.
+  const isDisqualified = (rule: KeywordRule): boolean => {
+    if (!rule.negativeKeywords) return false;
+    return rule.negativeKeywords.some(
+      neg => titleLower.includes(neg) || descLower.includes(neg)
+    );
+  };
+
+  // ===========================================================================
+  // PASS 1 — Title-only match.
+  // The mod title is the user's intent: an "Anklet" mod is jewelry, even when
+  // its description name-drops sandals or outfits. Scan every rule (highest
+  // priority first) and return the FIRST title hit, regardless of priority.
+  // This means a low-priority rule with a title match (e.g. jewelry @ 30)
+  // beats a high-priority rule whose only match is in the description
+  // (e.g. shoes @ 31 matching "heels" in the desc).
+  // ===========================================================================
   for (const rule of sortedRules) {
-    // Check for negative keywords first
-    if (rule.negativeKeywords) {
-      const hasNegative = rule.negativeKeywords.some(neg =>
-        titleLower.includes(neg) || descLower.includes(neg)
-      );
-      if (hasNegative) {
-        continue;
-      }
-    }
+    if (isDisqualified(rule)) continue;
 
-    // Check for matching keywords
     const matchedInTitle: string[] = [];
-    const matchedInDesc: string[] = [];
-
     for (const keyword of rule.keywords) {
       if (titleLower.includes(keyword)) {
         matchedInTitle.push(keyword);
-      } else if (descLower.includes(keyword)) {
-        matchedInDesc.push(keyword);
       }
     }
 
-    // Determine confidence based on where matches were found
     if (matchedInTitle.length > 0) {
-      // Match in title = high confidence
-      const confidence: ConfidenceLevel = matchedInTitle.length >= 2 ? 'high' :
-                                          rule.priority >= 100 ? 'high' : 'medium';
+      const confidence: ConfidenceLevel =
+        matchedInTitle.length >= 2 ? 'high' : rule.priority >= 100 ? 'high' : 'medium';
       return {
         contentType: rule.contentType,
         confidence,
         matchedKeywords: matchedInTitle,
         reasoning: `Found "${matchedInTitle.join('", "')}" in title`,
       };
+    }
+  }
+
+  // ===========================================================================
+  // PASS 2 — Description fallback.
+  // No title hit anywhere. Now scan rules in priority order and accept
+  // description-based matches with the same thresholds as before.
+  // ===========================================================================
+  for (const rule of sortedRules) {
+    if (isDisqualified(rule)) continue;
+
+    const matchedInDesc: string[] = [];
+    for (const keyword of rule.keywords) {
+      if (descLower.includes(keyword)) {
+        matchedInDesc.push(keyword);
+      }
     }
 
     if (matchedInDesc.length >= 2) {
@@ -585,8 +619,8 @@ export function detectContentTypeWithConfidence(
     }
 
     if (matchedInDesc.length === 1) {
-      // Single match in description for lower priority = low confidence
-      // Continue checking other rules but track this as a fallback
+      // Single match in description for lower priority = low confidence,
+      // tracked as fallback only.
       if (matchedKeywords.length === 0) {
         matchedKeywords.push(...matchedInDesc);
       }

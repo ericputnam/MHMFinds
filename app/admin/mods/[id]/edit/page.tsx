@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -12,6 +12,9 @@ import {
   X,
   Link as LinkIcon,
   Tag,
+  Search,
+  Check,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -90,6 +93,13 @@ export default function EditModPage() {
   const [tagInput, setTagInput] = useState('');
   const [imageInput, setImageInput] = useState('');
 
+  // Content Type typeahead state
+  const [contentTypeQuery, setContentTypeQuery] = useState('');
+  const [contentTypeOpen, setContentTypeOpen] = useState(false);
+  const [contentTypeHighlight, setContentTypeHighlight] = useState(0);
+  const contentTypeWrapperRef = useRef<HTMLDivElement | null>(null);
+  const contentTypeInputRef = useRef<HTMLInputElement | null>(null);
+
   // Facet definitions from API
   const [facetDefinitions, setFacetDefinitions] = useState<Record<string, FacetDefinition[]>>({});
 
@@ -138,6 +148,23 @@ export default function EditModPage() {
     };
     fetchFacets();
   }, []);
+
+  // Close Content Type typeahead when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        contentTypeWrapperRef.current &&
+        !contentTypeWrapperRef.current.contains(e.target as Node)
+      ) {
+        setContentTypeOpen(false);
+        setContentTypeQuery('');
+      }
+    }
+    if (contentTypeOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [contentTypeOpen]);
 
   // Fetch existing mod data
   useEffect(() => {
@@ -490,24 +517,158 @@ export default function EditModPage() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Content Type (single-select) */}
+            {/* Content Type (typeahead combobox) */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
                 Content Type
               </label>
-              <select
-                value={formData.contentType}
-                onChange={(e) => setFormData({ ...formData, contentType: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
-              >
-                <option value="">— Not Set —</option>
-                {getActiveFacets('contentType').map((facet) => (
-                  <option key={facet.id} value={facet.value}>
-                    {facet.icon ? `${facet.icon} ` : ''}{facet.displayName}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-slate-500 mt-1">What IS this mod? (hair, furniture, etc.)</p>
+              {(() => {
+                const allCT = getActiveFacets('contentType');
+                const selectedCT = allCT.find((f) => f.value === formData.contentType);
+                const q = contentTypeQuery.trim().toLowerCase();
+                const filteredCT = q
+                  ? allCT.filter(
+                      (f) =>
+                        f.value.toLowerCase().includes(q) ||
+                        f.displayName.toLowerCase().includes(q),
+                    )
+                  : allCT;
+                // Clamp highlight inside filtered range whenever it shrinks.
+                const safeHighlight = Math.min(
+                  Math.max(0, contentTypeHighlight),
+                  Math.max(0, filteredCT.length - 1),
+                );
+
+                const commitSelection = (value: string) => {
+                  setFormData({ ...formData, contentType: value });
+                  setContentTypeOpen(false);
+                  setContentTypeQuery('');
+                  setContentTypeHighlight(0);
+                };
+
+                const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!contentTypeOpen) setContentTypeOpen(true);
+                    setContentTypeHighlight((h) =>
+                      Math.min(filteredCT.length - 1, h + 1),
+                    );
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setContentTypeHighlight((h) => Math.max(0, h - 1));
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (contentTypeOpen && filteredCT[safeHighlight]) {
+                      commitSelection(filteredCT[safeHighlight].value);
+                    }
+                  } else if (e.key === 'Escape') {
+                    setContentTypeOpen(false);
+                    setContentTypeQuery('');
+                    contentTypeInputRef.current?.blur();
+                  }
+                };
+
+                const displayValue = contentTypeOpen
+                  ? contentTypeQuery
+                  : selectedCT
+                    ? `${selectedCT.icon ? selectedCT.icon + ' ' : ''}${selectedCT.displayName}`
+                    : '';
+
+                return (
+                  <div ref={contentTypeWrapperRef} className="relative">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+                      <input
+                        ref={contentTypeInputRef}
+                        type="text"
+                        value={displayValue}
+                        placeholder="Type to search content types…"
+                        onFocus={() => {
+                          setContentTypeOpen(true);
+                          setContentTypeQuery('');
+                          setContentTypeHighlight(0);
+                        }}
+                        onChange={(e) => {
+                          setContentTypeQuery(e.target.value);
+                          setContentTypeOpen(true);
+                          setContentTypeHighlight(0);
+                        }}
+                        onKeyDown={handleKeyDown}
+                        className="w-full pl-9 pr-16 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+                      />
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        {formData.contentType && (
+                          <button
+                            type="button"
+                            onClick={() => commitSelection('')}
+                            className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-white"
+                            title="Clear content type"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (contentTypeOpen) {
+                              setContentTypeOpen(false);
+                            } else {
+                              contentTypeInputRef.current?.focus();
+                            }
+                          }}
+                          className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-white"
+                          title="Open list"
+                        >
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${contentTypeOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                    {contentTypeOpen && (
+                      <ul
+                        className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl"
+                        role="listbox"
+                      >
+                        {filteredCT.length === 0 ? (
+                          <li className="px-3 py-2 text-sm text-slate-500">
+                            No matches for &ldquo;{contentTypeQuery}&rdquo;
+                          </li>
+                        ) : (
+                          filteredCT.map((facet, idx) => {
+                            const active = idx === safeHighlight;
+                            const isCurrent = facet.value === formData.contentType;
+                            return (
+                              <li
+                                key={facet.id}
+                                role="option"
+                                aria-selected={isCurrent}
+                                onMouseDown={(e) => {
+                                  // mousedown so it fires before input blur
+                                  e.preventDefault();
+                                  commitSelection(facet.value);
+                                }}
+                                onMouseEnter={() => setContentTypeHighlight(idx)}
+                                className={`flex items-center gap-2 px-3 py-2 cursor-pointer text-sm ${
+                                  active ? 'bg-sims-pink/20 text-white' : 'text-slate-200 hover:bg-slate-700'
+                                }`}
+                              >
+                                <span className="w-5 text-center">{facet.icon || '•'}</span>
+                                <span className="flex-1">{facet.displayName}</span>
+                                <span className="text-xs text-slate-500 font-mono">{facet.value}</span>
+                                {isCurrent && <Check className="h-4 w-4 text-sims-pink" />}
+                              </li>
+                            );
+                          })
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })()}
+              <p className="text-xs text-slate-500 mt-1">
+                What IS this mod? Type to filter (hair, furniture, lot, jewelry, etc.)
+              </p>
             </div>
 
             {/* Visual Style (single-select) */}
