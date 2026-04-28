@@ -66,8 +66,13 @@ export default function ModsManagementPage() {
   const [filterContentType, setFilterContentType] = useState('');
   const [filterVisualStyle, setFilterVisualStyle] = useState('');
   const [filterTheme, setFilterTheme] = useState('');
-  const [filterMissingFacets, setFilterMissingFacets] = useState(false);
-  const [missingFacetsCount, setMissingFacetsCount] = useState(0);
+  // Quality filters
+  const [filterMissingContentType, setFilterMissingContentType] = useState(false);
+  const [filterMissingAuthor, setFilterMissingAuthor] = useState(false);
+  const [filterNoDownloadUrl, setFilterNoDownloadUrl] = useState(false);
+  const [missingContentTypeCount, setMissingContentTypeCount] = useState(0);
+  const [missingAuthorCount, setMissingAuthorCount] = useState(0);
+  const [noDownloadUrlCount, setNoDownloadUrlCount] = useState(0);
 
   // Facet definitions
   const [facetDefs, setFacetDefs] = useState<Record<string, FacetDefinition[]>>({});
@@ -135,7 +140,9 @@ export default function ModsManagementPage() {
         ...(filterContentType && { contentType: filterContentType }),
         ...(filterVisualStyle && { visualStyle: filterVisualStyle }),
         ...(filterTheme && { theme: filterTheme }),
-        ...(filterMissingFacets && { missingFacets: 'true' }),
+        ...(filterMissingContentType && { missingContentType: 'true' }),
+        ...(filterMissingAuthor && { missingAuthor: 'true' }),
+        ...(filterNoDownloadUrl && { noDownloadUrl: 'true' }),
       });
 
       const response = await fetch(`/api/admin/mods?${params}`);
@@ -143,13 +150,25 @@ export default function ModsManagementPage() {
       setMods(data.mods || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
-      setMissingFacetsCount(data.missingFacetsCount || 0);
+      setMissingContentTypeCount(data.missingContentTypeCount || 0);
+      setMissingAuthorCount(data.missingAuthorCount || 0);
+      setNoDownloadUrlCount(data.noDownloadUrlCount || 0);
     } catch (error) {
       console.error('Failed to fetch mods:', error);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchQuery, filterCategory, filterContentType, filterVisualStyle, filterTheme, filterMissingFacets]);
+  }, [
+    currentPage,
+    searchQuery,
+    filterCategory,
+    filterContentType,
+    filterVisualStyle,
+    filterTheme,
+    filterMissingContentType,
+    filterMissingAuthor,
+    filterNoDownloadUrl,
+  ]);
 
   useEffect(() => {
     fetchMods();
@@ -304,12 +323,21 @@ export default function ModsManagementPage() {
     setFilterContentType('');
     setFilterVisualStyle('');
     setFilterTheme('');
-    setFilterMissingFacets(false);
+    setFilterMissingContentType(false);
+    setFilterMissingAuthor(false);
+    setFilterNoDownloadUrl(false);
     setCurrentPage(1);
   };
 
   const hasActiveFilters =
-    searchQuery || filterCategory || filterContentType || filterVisualStyle || filterTheme || filterMissingFacets;
+    searchQuery ||
+    filterCategory ||
+    filterContentType ||
+    filterVisualStyle ||
+    filterTheme ||
+    filterMissingContentType ||
+    filterMissingAuthor ||
+    filterNoDownloadUrl;
 
   // Helper to get facet display name
   const getFacetDisplay = (facetType: string, value: string | null): { name: string; color: string | null } => {
@@ -411,20 +439,58 @@ export default function ModsManagementPage() {
 
         {/* Second row of filters */}
         <div className="flex flex-wrap items-center gap-4 mt-4">
-          {/* Missing Facets Filter */}
+          {/* Missing Content Type Filter */}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={filterMissingFacets}
-              onChange={(e) => setFilterMissingFacets(e.target.checked)}
+              checked={filterMissingContentType}
+              onChange={(e) => setFilterMissingContentType(e.target.checked)}
               className="w-4 h-4 text-sims-pink bg-slate-800 border-slate-600 rounded focus:ring-sims-pink"
             />
             <span className="text-sm text-slate-300 flex items-center gap-1">
               <AlertCircle className="h-4 w-4 text-yellow-500" />
-              Missing Facets Only
-              {missingFacetsCount > 0 && (
+              Missing Content Type
+              {missingContentTypeCount > 0 && (
                 <span className="ml-1 px-2 py-0.5 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-semibold">
-                  {missingFacetsCount}
+                  {missingContentTypeCount}
+                </span>
+              )}
+            </span>
+          </label>
+
+          {/* Missing Author Filter */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={filterMissingAuthor}
+              onChange={(e) => setFilterMissingAuthor(e.target.checked)}
+              className="w-4 h-4 text-sims-pink bg-slate-800 border-slate-600 rounded focus:ring-sims-pink"
+            />
+            <span className="text-sm text-slate-300 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4 text-orange-400" />
+              Missing Author
+              {missingAuthorCount > 0 && (
+                <span className="ml-1 px-2 py-0.5 bg-orange-400/20 text-orange-400 rounded-full text-xs font-semibold">
+                  {missingAuthorCount}
+                </span>
+              )}
+            </span>
+          </label>
+
+          {/* No Download URL Filter */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={filterNoDownloadUrl}
+              onChange={(e) => setFilterNoDownloadUrl(e.target.checked)}
+              className="w-4 h-4 text-sims-pink bg-slate-800 border-slate-600 rounded focus:ring-sims-pink"
+            />
+            <span className="text-sm text-slate-300 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              No Download URL
+              {noDownloadUrlCount > 0 && (
+                <span className="ml-1 px-2 py-0.5 bg-red-400/20 text-red-400 rounded-full text-xs font-semibold">
+                  {noDownloadUrlCount}
                 </span>
               )}
             </span>

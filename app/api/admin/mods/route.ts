@@ -27,7 +27,13 @@ export async function GET(request: NextRequest) {
     const contentType = searchParams.get('contentType') || '';
     const visualStyle = searchParams.get('visualStyle') || '';
     const theme = searchParams.get('theme') || '';
-    const missingFacets = searchParams.get('missingFacets') === 'true';
+    // Health/quality filters. `missingFacets` kept as alias for backward compat
+    // with any external callers — prefer `missingContentType`.
+    const missingContentType =
+      searchParams.get('missingContentType') === 'true' ||
+      searchParams.get('missingFacets') === 'true';
+    const missingAuthor = searchParams.get('missingAuthor') === 'true';
+    const noDownloadUrl = searchParams.get('noDownloadUrl') === 'true';
 
     // Build where clause using AND array to properly combine conditions
     const whereConditions: any[] = [];
@@ -59,48 +65,53 @@ export async function GET(request: NextRequest) {
       whereConditions.push({ themes: { has: theme } });
     }
 
-    // For missing facets filter, we need to find:
-    // 1. Mods with NULL contentType
-    // 2. Mods with contentType values that don't have active FacetDefinitions
-    // Get active contentType values for the missing facets check
-    let activeContentTypes: string[] = [];
-    if (missingFacets) {
-      const activeFacets = await prisma.facetDefinition.findMany({
-        where: {
-          facetType: 'contentType',
-          isActive: true,
-        },
-        select: { value: true },
-      });
-      activeContentTypes = activeFacets.map((f) => f.value);
+    // Always fetch active contentType values — needed for both the
+    // missingContentType filter clause and the count returned to the UI.
+    const activeFacets = await prisma.facetDefinition.findMany({
+      where: { facetType: 'contentType', isActive: true },
+      select: { value: true },
+    });
+    const activeContentTypes: string[] = activeFacets.map((f) => f.value);
 
-      // Filter mods where contentType is NULL OR not in the active list
-      whereConditions.push({
-        OR: [
-          { contentType: null },
-          { contentType: { notIn: activeContentTypes } },
-        ],
-      });
+    // "Missing Content Type" — NULL OR a value that isn't in the active facet list
+    const missingContentTypeWhere = {
+      OR: [
+        { contentType: null },
+        { contentType: { notIn: activeContentTypes } },
+      ],
+    };
+
+    // "Missing Author" — author is NULL or empty string
+    const missingAuthorWhere = {
+      OR: [{ author: null }, { author: '' }],
+    };
+
+    // "No Download URL" — downloadUrl is NULL or empty string
+    const noDownloadUrlWhere = {
+      OR: [{ downloadUrl: null }, { downloadUrl: '' }],
+    };
+
+    if (missingContentType) {
+      whereConditions.push(missingContentTypeWhere);
+    }
+    if (missingAuthor) {
+      whereConditions.push(missingAuthorWhere);
+    }
+    if (noDownloadUrl) {
+      whereConditions.push(noDownloadUrlWhere);
     }
 
     // Combine all conditions with AND
     const where = whereConditions.length > 0 ? { AND: whereConditions } : {};
 
-    // Always fetch active content types for the missing facets count
-    // (reuse if already fetched for the filter)
-    if (!missingFacets && activeContentTypes.length === 0) {
-      const activeFacets = await prisma.facetDefinition.findMany({
-        where: {
-          facetType: 'contentType',
-          isActive: true,
-        },
-        select: { value: true },
-      });
-      activeContentTypes = activeFacets.map((f) => f.value);
-    }
-
-    // Get mods, total count, and count of mods with missing facets
-    const [mods, total, missingFacetsCount] = await Promise.all([
+    // Get mods, total count, and counts for all three quality filters
+    const [
+      mods,
+      total,
+      missingContentTypeCount,
+      missingAuthorCount,
+      noDownloadUrlCount,
+    ] = await Promise.all([
       prisma.mod.findMany({
         where,
         skip,
@@ -125,15 +136,9 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.mod.count({ where }),
-      // Count mods with missing facets (NULL contentType or inactive facet)
-      prisma.mod.count({
-        where: {
-          OR: [
-            { contentType: null },
-            { contentType: { notIn: activeContentTypes } },
-          ],
-        },
-      }),
+      prisma.mod.count({ where: missingContentTypeWhere }),
+      prisma.mod.count({ where: missingAuthorWhere }),
+      prisma.mod.count({ where: noDownloadUrlWhere }),
     ]);
 
     const response = NextResponse.json({
@@ -142,7 +147,11 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
-      missingFacetsCount,
+      // New canonical names + legacy alias for any external callers
+      missingContentTypeCount,
+      missingAuthorCount,
+      noDownloadUrlCount,
+      missingFacetsCount: missingContentTypeCount,
     });
 
     // Prevent caching of admin data
