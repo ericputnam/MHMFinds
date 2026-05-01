@@ -13,12 +13,20 @@ module.exports = {
         'display': ['Poppins', 'system-ui', 'sans-serif'],
       },
       colors: {
-        'mhm-dark': '#0B0F19', // Deeper, richer background
-        'mhm-card': '#151B2B', // Slightly lighter for cards
-        'sims-green': '#10B981', // Plumbob
-        'sims-blue': '#06B6D4', // UI Blue
-        'sims-pink': '#EC4899', // Accent Pink
-        'sims-purple': '#8B5CF6', // Accent Purple
+        // ─── Surface hierarchy (dark mode) ──────────────────────────────
+        // Use these for backgrounds. Avoid raw `bg-slate-800` / `bg-slate-900`
+        // for surfaces — those are leftover from the legacy system and create
+        // subtle banding against the mhm-* shades. Slate is fine for borders
+        // (`border-white/10`) and overlay tints (`bg-white/5`).
+        // See app/globals.css token comment block for the full system.
+        'mhm-dark': '#0B0F19',     // Page background (deepest)
+        'mhm-card': '#0F1422',     // Cards, sidebar, search bar (mid) — subtle lift
+        'mhm-elevated': '#161D30', // Hover, popover, modal-on-card (lifted)
+        // ─── Brand accents ──────────────────────────────────────────────
+        'sims-green': '#10B981',  // Plumbob (success, "verified")
+        'sims-blue': '#06B6D4',   // UI Blue (informational)
+        'sims-pink': '#EC4899',   // Accent Pink (primary CTA, dominant accent)
+        'sims-purple': '#8B5CF6', // Accent Purple (focus rings, hover glow)
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',

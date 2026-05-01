@@ -94,7 +94,7 @@ export const Navbar: React.FC = () => {
               </button>
 
               {showGamesMenu && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-[#0F141F] border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden p-2">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-mhm-card border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden p-2">
                   <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold px-3 pt-2 pb-2">
                     Browse by Game
                   </p>
@@ -174,7 +174,7 @@ export const Navbar: React.FC = () => {
 
               {/* Dropdown Menu */}
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-[#0F141F] border border-white/10 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 bg-mhm-card border border-white/10 rounded-xl shadow-lg overflow-hidden">
                   <div className="px-4 py-3 border-b border-white/5">
                     <p className="text-sm font-medium text-white truncate">
                       {session.user.username || session.user.email}

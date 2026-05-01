@@ -130,54 +130,40 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
         </button>
       </div>
 
-      {/* Content */}
-      <div className="p-5 flex-1 flex flex-col relative z-20 -mt-4">
-        <div className="mb-1">
-          {/* Rating Badge */}
-          {typeof mod.rating === 'number' && mod.rating > 0 && (
-            <div className="inline-flex items-center gap-1 text-yellow-400 text-xs font-bold mb-2 bg-yellow-400/10 px-2 py-0.5 rounded">
-              <Star className="w-3 h-3 fill-current" />
-              {mod.rating.toFixed(1)}
+      {/* Content — denser layout that holds up at narrow widths.
+          Rating moved into the stats row, contentType deduped against the
+          image badge, author row collapsed into a single text line. */}
+      <div className="p-4 flex-1 flex flex-col gap-2.5">
+        {/* Title + Author */}
+        <div className="min-w-0">
+          <h3 className="text-[15px] font-bold text-white leading-snug line-clamp-2 group-hover:text-sims-blue transition-colors">
+            {mod.title}
+          </h3>
+          {(mod.creator || mod.author) && (
+            <div className="flex items-center gap-1 mt-1 text-[11px] text-slate-400 font-medium">
+              <span className="truncate">
+                by <span className="text-slate-300">{mod.creator?.handle || mod.author || 'Creator'}</span>
+              </span>
+              {(mod.creator?.isVerified || mod.isVerified) && (
+                <Crown className="w-3 h-3 text-sims-blue shrink-0" />
+              )}
             </div>
           )}
         </div>
 
-        <h3 className="text-lg font-bold text-white leading-tight mb-2 group-hover:text-sims-blue transition-colors line-clamp-2">
-          {mod.title}
-        </h3>
-
-        {/* Author Line */}
-        {(mod.creator || mod.author) && (
-          <div className="flex items-center text-slate-400 text-xs mb-4 font-medium">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center mr-2 text-[8px] text-white border border-white/10">
-              {(mod.creator?.handle || mod.author || 'C').substring(0, 2).toUpperCase()}
-            </div>
-            <span className="hover:text-white cursor-pointer transition-colors">
-              {mod.creator?.handle || mod.author || 'Creator'}
-            </span>
-            {(mod.creator?.isVerified || mod.isVerified) && (
-              <Crown className="w-3 h-3 ml-1 text-sims-blue" />
-            )}
-          </div>
-        )}
-
+        {/* Description — kept short at narrow widths */}
         {mod.description && (
-          <p className="text-slate-400 text-sm line-clamp-2 mb-3 flex-1 leading-relaxed">
+          <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
             {mod.description}
           </p>
         )}
 
-        {/* Facet Tags */}
-        {(mod.contentType || mod.visualStyle || (mod.themes && mod.themes.length > 0)) && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+        {/* Facet Tags — contentType deduped (already on image badge) */}
+        {(mod.visualStyle || (mod.themes && mod.themes.length > 0)) && (
+          <div className="flex flex-wrap gap-1">
             {mod.visualStyle && (
               <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ${getFacetColor(mod.visualStyle).bg} ${getFacetColor(mod.visualStyle).text}`}>
                 {formatFacetLabel(mod.visualStyle)}
-              </span>
-            )}
-            {mod.contentType && (
-              <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ${getFacetColor(mod.contentType).bg} ${getFacetColor(mod.contentType).text}`}>
-                {formatFacetLabel(mod.contentType)}
               </span>
             )}
             {mod.themes?.slice(0, 2).map((theme) => (
@@ -196,20 +182,28 @@ export function ModCard({ mod, onFavorite, isFavorited, onClick, className = '',
           </div>
         )}
 
-        {/* Stats & Action */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-          <div className="flex items-center text-slate-500 text-xs font-medium">
-            <Download className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-            {formatNumber(mod.downloadCount || 0)} Downloads
+        {/* Stats Row — rating + downloads + download button, all in one strip */}
+        <div className="flex items-center justify-between gap-2 pt-3 mt-auto border-t border-white/5">
+          <div className="flex items-center gap-2.5 min-w-0 text-[11px] font-medium">
+            {typeof mod.rating === 'number' && mod.rating > 0 && (
+              <span className="flex items-center gap-1 text-yellow-400 font-semibold shrink-0">
+                <Star className="w-3 h-3 fill-current" />
+                {mod.rating.toFixed(1)}
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-slate-500 truncate">
+              <Download className="w-3 h-3 shrink-0" />
+              {formatNumber(mod.downloadCount || 0)}
+            </span>
           </div>
 
           <ProtectedDownloadButton
             modId={mod.id}
             downloadUrl={mod.downloadUrl}
             sourceUrl={mod.sourceUrl}
-            className="bg-white/5 hover:bg-white text-white hover:text-black p-2.5 rounded-xl transition-all duration-200 group/btn"
+            className="bg-white/5 hover:bg-white text-white hover:text-black p-2 rounded-lg transition-all duration-200 shrink-0"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
           </ProtectedDownloadButton>
         </div>
       </div>

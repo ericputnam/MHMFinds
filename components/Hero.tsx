@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Loader2, X } from 'lucide-react';
+import { GAME_COLORS } from '../lib/gameColors';
 
 interface HeroProps {
   onSearch: (query: string, category?: string, gameVersion?: string) => void;
@@ -9,6 +10,15 @@ interface HeroProps {
   initialSearch?: string;
   defaultGame?: string;
 }
+
+// Active games — kept in display order. Animal Crossing was removed
+// from the discovery surfaces (Apr 2026); the route still resolves but
+// it isn't a primary tab here.
+const GAMES: Array<{ key: string; label: string; short: string; emoji: string }> = [
+  { key: 'Sims 4', label: 'Sims 4', short: 'Sims 4', emoji: '✨' },
+  { key: 'Stardew Valley', label: 'Stardew Valley', short: 'Stardew', emoji: '🌾' },
+  { key: 'Minecraft', label: 'Minecraft', short: 'Minecraft', emoji: '🟫' },
+];
 
 // Game-specific trending searches (SEO-003)
 const trendingByGame: Record<string, Array<{ label: string; query: string }>> = {
@@ -19,7 +29,6 @@ const trendingByGame: Record<string, Array<{ label: string; query: string }>> = 
     { label: 'Basemental', query: 'basemental' },
     { label: 'Slice of Life', query: 'slice of life' },
     { label: 'Poses', query: 'poses' },
-    { label: 'Build Mode', query: 'build mode' },
   ],
   'Stardew Valley': [
     { label: 'SVE', query: 'stardew valley expanded' },
@@ -27,16 +36,7 @@ const trendingByGame: Record<string, Array<{ label: string; query: string }>> = 
     { label: 'Aesthetic', query: 'aesthetic' },
     { label: 'Farm Maps', query: 'farm map' },
     { label: 'Portraits', query: 'portraits' },
-    { label: 'Dialogue', query: 'dialogue' },
     { label: 'Furniture', query: 'furniture' },
-  ],
-  'Animal Crossing': [
-    { label: 'Island Designs', query: 'island design' },
-    { label: 'Furniture', query: 'furniture' },
-    { label: 'Patterns', query: 'patterns' },
-    { label: 'Villagers', query: 'villagers' },
-    { label: 'Custom Items', query: 'custom items' },
-    { label: 'Aesthetic', query: 'aesthetic' },
   ],
   'Minecraft': [
     { label: 'Shaders', query: 'shaders' },
@@ -46,16 +46,8 @@ const trendingByGame: Record<string, Array<{ label: string; query: string }>> = 
     { label: 'OptiFine', query: 'optifine' },
     { label: 'Skins', query: 'skins' },
   ],
-  'Other': [
-    { label: 'Mods', query: 'mods' },
-    { label: 'Custom Content', query: 'custom content' },
-    { label: 'Scripts', query: 'scripts' },
-    { label: 'Aesthetic', query: 'aesthetic' },
-    { label: 'UI', query: 'ui' },
-  ],
 };
 
-// General trending searches shown when no game is selected
 const trendingGeneral: Array<{ label: string; query: string }> = [
   { label: 'Wicked Whims', query: 'wicked whims' },
   { label: 'Shaders', query: 'shaders' },
@@ -70,128 +62,217 @@ function getTrendingForGame(game: string): Array<{ label: string; query: string 
   return trendingByGame[game] || trendingGeneral;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onSearch, isLoading, initialSearch = '', defaultGame = '' }) => {
+export const Hero: React.FC<HeroProps> = ({
+  onSearch,
+  isLoading,
+  initialSearch = '',
+  defaultGame = '',
+}) => {
   const [query, setQuery] = useState(initialSearch);
   const [selectedGame, setSelectedGame] = useState<string>(defaultGame);
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
   // Sync query with parent's search state (e.g., when facets clear the search)
   useEffect(() => {
     setQuery(initialSearch);
   }, [initialSearch]);
 
+  // Fetch per-game mod counts once on mount — used as a credibility cue
+  // on the game switcher. Best-effort: silently fall back to no count
+  // if the request fails.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          GAMES.map(async ({ key }) => {
+            const res = await fetch(
+              `/api/mods?gameVersion=${encodeURIComponent(key)}&limit=1`,
+            );
+            if (!res.ok) return [key, 0] as const;
+            const data = await res.json();
+            return [key, data?.pagination?.total ?? data?.total ?? 0] as const;
+          }),
+        );
+        if (!cancelled) {
+          const next: Record<string, number> = {};
+          for (const [k, v] of results) next[k] = v;
+          setCounts(next);
+        }
+      } catch {
+        /* non-fatal */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query);
-    }
+    if (query.trim()) onSearch(query);
   };
 
-  const handleGameFilter = (game: string) => {
+  const handleGameSelect = (game: string) => {
+    if (selectedGame === game) {
+      // Toggle off — clear filter
+      setSelectedGame('');
+      onSearch('', undefined, '');
+      return;
+    }
     setSelectedGame(game);
     setQuery('');
-    const gameFilter = game === 'Other' ? '__other__' : game;
-    onSearch('', undefined, gameFilter);
+    onSearch('', undefined, game);
   };
+
+  const activeColor = selectedGame ? GAME_COLORS[selectedGame] : '#ec4899';
+  const placeholder = selectedGame
+    ? `Search ${selectedGame} mods, CC, scripts…`
+    : 'Search mods, CC, scripts across every game…';
+
+  // Pretty-format mod count: 13,739 → "13.7k", 412 → "412"
+  const fmt = (n: number) =>
+    n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 1 : 1).replace(/\.0$/, '')}k` : `${n}`;
 
   return (
     <div className="relative w-full overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] bg-sims-purple/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen opacity-40 animate-pulse-slow" />
-      <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-sims-pink/20 rounded-full blur-[100px] pointer-events-none mix-blend-screen opacity-30" />
+      {/* Background ambience — subtly tinted by the active game */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] rounded-full blur-[120px] pointer-events-none mix-blend-screen opacity-40 animate-pulse-slow transition-colors duration-700"
+        style={{ backgroundColor: `${activeColor}33` }}
+      />
+      <div
+        className="absolute top-20 right-0 w-[600px] h-[600px] rounded-full blur-[100px] pointer-events-none mix-blend-screen opacity-25 transition-colors duration-700"
+        style={{ backgroundColor: `${activeColor}33` }}
+      />
 
-      <div className="container mx-auto px-4 pt-8 pb-12 relative z-10">
-        {/* Title section - centered with max-width for readability */}
-        <div className="max-w-4xl mx-auto flex flex-col items-center text-center mb-6">
-          {/* SEO-optimized H1 with primary keywords */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight px-2">
-            <span className="text-white">Find Your Next </span>
-            <span className="text-sims-pink">Favorite Mod</span>
+      <div className="container mx-auto px-4 pt-6 pb-10 relative z-10">
+        {/* Title block — single-line headline that incorporates the game lineup */}
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black tracking-tight leading-[1.1]">
+            <span className="text-white">The best mods </span>
+            <span style={{ color: activeColor }} className="transition-colors duration-500">
+              &amp; CC
+            </span>
+            <span className="text-white"> for Sims 4, Stardew Valley &amp; Minecraft</span>
           </h1>
-
-          {/* Verified mods badge - prominent for trust */}
-          <div className="inline-flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-full px-5 py-2 mb-5 backdrop-blur-md shadow-lg">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sims-green opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-sims-green"></span>
-            </span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-200 tracking-wider uppercase">
-              15,000+ Verified Mods Indexed
-            </span>
-          </div>
-
-          {/* Single concise tagline - SEO-004 */}
-          <p className="text-base sm:text-lg text-slate-400 font-light">
-            Search by vibe, style, or keyword across all your favorite games.
-          </p>
         </div>
 
-        {/* Search and filters section - full width to match content grid below */}
-        <div className="w-full">
-          <div className="max-w-3xl mx-auto px-2 sm:px-4">
-            <form onSubmit={handleSubmit} className="relative group">
-              <div className="absolute -inset-1 bg-sims-pink/30 rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur-xl"></div>
-              <div className="relative flex items-center bg-mhm-card/90 backdrop-blur-xl rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/10 group-focus-within:border-sims-pink/50 transition-all">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search mods, CC, scripts..."
-                  className="flex-1 bg-transparent text-white placeholder-slate-500 px-3 sm:px-4 md:px-5 py-3 sm:py-4 outline-none focus:outline-none focus:ring-0 ring-0 text-sm sm:text-base md:text-lg font-medium min-w-0"
-                />
-
-                <div className="flex items-center space-x-1 sm:space-x-2 pr-1 sm:pr-2">
-                  {/* Clear Button - only show when there's a search query */}
-                  {query && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuery('');
-                        onSearch('');
-                      }}
-                      className="text-slate-400 hover:text-white p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
-                      title="Clear search"
-                    >
-                      <X className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </button>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="bg-sims-pink hover:bg-sims-pink/90 text-white p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                  >
-                    {isLoading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3px]" />}
-                  </button>
-                </div>
-              </div>
-            </form>
-
-          </div>
-
-          {/* Quick Game Filter Tags - full width */}
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            {['Sims 4', 'Stardew Valley', 'Animal Crossing', 'Minecraft', 'Other'].map((game) => (
+        {/* Game switcher — compact, content-sized pills */}
+        <div
+          role="tablist"
+          aria-label="Filter by game"
+          className="max-w-3xl mx-auto px-2 sm:px-4 mb-3 flex items-center justify-center flex-wrap gap-2"
+        >
+          {GAMES.map(({ key, label, short, emoji }) => {
+            const active = selectedGame === key;
+            const color = GAME_COLORS[key];
+            const count = counts[key];
+            return (
               <button
-                key={game}
-                onClick={() => handleGameFilter(game)}
-                className="px-4 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-sims-pink/30 text-[0.995rem] font-medium text-slate-400 hover:text-white transition-all"
+                key={key}
+                role="tab"
+                aria-selected={active}
+                onClick={() => handleGameSelect(key)}
+                className={`group inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  active
+                    ? 'text-white'
+                    : 'text-slate-400 hover:text-white border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06]'
+                }`}
+                style={
+                  active
+                    ? {
+                        backgroundColor: `${color}1f`,
+                        border: `1px solid ${color}66`,
+                        boxShadow: `0 0 20px ${color}26`,
+                      }
+                    : undefined
+                }
               >
-                {game}
+                <span className="text-[15px] leading-none">{emoji}</span>
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{short}</span>
+                {count !== undefined && count > 0 && (
+                  <span
+                    className={`text-[11px] font-medium tabular-nums transition-colors ${
+                      active ? 'text-white/70' : 'text-slate-500 group-hover:text-slate-400'
+                    }`}
+                  >
+                    · {fmt(count)}
+                  </span>
+                )}
               </button>
-            ))}
-          </div>
+            );
+          })}
+        </div>
 
-          {/* Trending Searches - Game-specific (SEO-003) */}
-          <div className="mt-6 flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-sm">
-            <span className="text-slate-500 font-medium">Trending:</span>
-            {getTrendingForGame(selectedGame).map(({ label, query: searchQuery }) => (
+        {/* Search bar */}
+        <div className="max-w-3xl mx-auto px-2 sm:px-4">
+          <form onSubmit={handleSubmit} className="relative group">
+            <div
+              className="absolute -inset-1 rounded-2xl opacity-30 group-hover:opacity-60 transition duration-500 blur-xl"
+              style={{ backgroundColor: `${activeColor}55` }}
+            />
+            <div
+              className="relative flex items-center bg-mhm-card/90 backdrop-blur-xl rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/10 group-focus-within:border-white/30 transition-all"
+              style={{ boxShadow: `0 0 0 1px ${activeColor}11, 0 25px 50px -12px rgba(0,0,0,0.5)` }}
+            >
+              <Search className="ml-3 sm:ml-4 h-5 w-5 text-slate-500 shrink-0" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={placeholder}
+                className="flex-1 bg-transparent text-white placeholder-slate-500 px-3 sm:px-4 py-3 sm:py-4 outline-none focus:outline-none focus:ring-0 ring-0 text-sm sm:text-base md:text-lg font-medium min-w-0"
+              />
+
+              <div className="flex items-center space-x-1 sm:space-x-2 pr-1 sm:pr-2">
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery('');
+                      onSearch('');
+                    }}
+                    className="text-slate-400 hover:text-white p-1.5 sm:p-2 rounded-lg hover:bg-white/10 transition-all"
+                    title="Clear search"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="text-white p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:brightness-110"
+                  style={{ backgroundColor: activeColor }}
+                  aria-label="Search"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3px]" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Trending chips */}
+        <div className="mt-4 max-w-3xl mx-auto px-2 sm:px-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+            <span className="text-slate-500 font-medium mr-1">
+              {selectedGame ? `Try in ${selectedGame}:` : 'Trending:'}
+            </span>
+            {getTrendingForGame(selectedGame).map(({ label, query: q }) => (
               <button
                 key={label}
                 onClick={() => {
-                  setQuery(searchQuery);
-                  onSearch(searchQuery);
+                  setQuery(q);
+                  onSearch(q);
                 }}
-                className="text-slate-400 hover:text-sims-pink transition-colors underline-offset-2 hover:underline"
+                className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 text-[13px] font-medium text-slate-300 hover:text-white transition-all"
               >
                 {label}
               </button>

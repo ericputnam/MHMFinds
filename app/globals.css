@@ -2,54 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Properties */
+/* Design tokens
+ * ─────────────────────────────────────────────────────────────────
+ * Surface hierarchy (dark) — values tuned for ~4–9pt luminance steps
+ * so cards lift subtly off the page without reading as a different palette.
+ *   --mhm-dark      #0B0F19  page background (deepest)
+ *   --mhm-card      #0F1422  cards, sidebar, search bar (mid)
+ *   --mhm-elevated  #161D30  hover, popover, modal-on-card (lifted)
+ *
+ * Brand accents (use Tailwind tokens directly: sims-pink, sims-purple, sims-blue, sims-green)
+ *   #EC4899  sims-pink     primary CTA
+ *   #8B5CF6  sims-purple   focus, hover glow
+ *   #06B6D4  sims-blue     informational
+ *   #10B981  sims-green    success, "verified"
+ *
+ * Text: prefer Tailwind slate-* (slate-200 body, slate-400 muted, slate-500 dimmed)
+ *
+ * AVOID raw `bg-slate-800` / `bg-slate-900` for surfaces — use the mhm-* tokens
+ * defined in tailwind.config.js so the surface stack stays coherent. Slate is
+ * fine for borders (`border-white/10`) and overlay tints (`bg-white/5`).
+ * ───────────────────────────────────────────────────────────────── */
 :root {
-  --brand-primary: #4f46e5;
-  --brand-secondary: #7c3aed;
+  --mhm-dark: #0B0F19;
+  --mhm-card: #0F1422;
+  --mhm-elevated: #161D30;
+  --brand-primary: #8b5cf6;
+  --brand-secondary: #ec4899;
   --brand-accent: #06b6d4;
   --brand-success: #10b981;
   --brand-warning: #f59e0b;
   --brand-error: #ef4444;
-  --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   --gradient-secondary: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
 }
 
-/* Base Styles */
+/* Base Styles — dark mode by default to match the app shell */
+html {
+  background: var(--mhm-dark);
+}
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #f9fafb;
-  color: #1f2937;
+  background: var(--mhm-dark);
+  color: #e2e8f0; /* slate-200 — matches the page wrapper */
   line-height: 1.6;
 }
 
-/* Scrollbar Styling */
+/* Scrollbar — themed for dark mode */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--mhm-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: rgba(139, 92, 246, 0.35); /* sims-purple at 35% */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  background: rgba(139, 92, 246, 0.55);
 }
 
-/* Focus Styles */
-*:focus {
-  outline: 2px solid #4f46e5;
+/* Firefox scrollbar */
+* {
+  scrollbar-color: rgba(139, 92, 246, 0.35) var(--mhm-dark);
+  scrollbar-width: thin;
+}
+
+/* Focus Styles — brand purple to match accents */
+*:focus-visible {
+  outline: 2px solid #8b5cf6;
   outline-offset: 2px;
 }
+*:focus:not(:focus-visible) {
+  outline: none;
+}
 
-/* Selection Styles */
+/* Selection — brand pink to match the dominant accent */
 ::selection {
-  background: rgba(79, 70, 229, 0.2);
-  color: #4f46e5;
+  background: rgba(236, 72, 153, 0.3);
+  color: #ffffff;
 }
 
 /* Custom Animations */
