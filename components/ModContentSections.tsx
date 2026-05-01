@@ -144,14 +144,14 @@ export function ModContentSections({
   return (
     <>
       {/* Installation Guide */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Wrench size={20} className="text-indigo-600" />
+      <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mt-6">
+        <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
+          <Wrench size={20} className="text-sims-pink" />
           How to Install
         </h2>
-        <div className="border-t border-gray-200 mb-6" />
+        <div className="border-t border-white/10 mb-6" />
 
-        <p className="text-gray-600 mb-4">
+        <p className="text-slate-300 mb-4">
           Follow these steps to install <strong>{title}</strong> on your {game} game:
         </p>
 
@@ -161,7 +161,7 @@ export function ModContentSections({
               <span className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm flex items-center justify-center">
                 {index + 1}
               </span>
-              <p className="text-gray-700 leading-relaxed pt-0.5">{item.step}</p>
+              <p className="text-slate-200 leading-relaxed pt-0.5">{item.step}</p>
             </li>
           ))}
         </ol>
@@ -180,28 +180,28 @@ export function ModContentSections({
       </div>
 
       {/* Compatibility Info */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Monitor size={20} className="text-indigo-600" />
+      <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mt-6">
+        <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
+          <Monitor size={20} className="text-sims-pink" />
           Compatibility
         </h2>
-        <div className="border-t border-gray-200 mb-6" />
+        <div className="border-t border-white/10 mb-6" />
 
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-            <HardDrive size={18} className="text-gray-500" />
+          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+            <HardDrive size={18} className="text-slate-400" />
             <div>
-              <p className="text-sm text-gray-500">Platform</p>
-              <p className="font-semibold text-gray-900">{compatibility.platform}</p>
+              <p className="text-sm text-slate-400">Platform</p>
+              <p className="font-semibold text-white">{compatibility.platform}</p>
             </div>
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-800 mb-2">Requirements</h3>
+            <h3 className="font-semibold text-slate-100 mb-2">Requirements</h3>
             <ul className="space-y-2">
               {compatibility.requirements.map((req, index) => (
-                <li key={index} className="flex items-start gap-2 text-gray-700">
-                  <span className="text-indigo-500 mt-1.5">•</span>
+                <li key={index} className="flex items-start gap-2 text-slate-200">
+                  <span className="text-sims-pink mt-1.5">•</span>
                   <span className="leading-relaxed">{req}</span>
                 </li>
               ))}
@@ -217,34 +217,34 @@ export function ModContentSections({
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <HelpCircle size={20} className="text-indigo-600" />
+      <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mt-6">
+        <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
+          <HelpCircle size={20} className="text-sims-pink" />
           Frequently Asked Questions
         </h2>
-        <div className="border-t border-gray-200 mb-6" />
+        <div className="border-t border-white/10 mb-6" />
 
         <div className="space-y-3">
           {faqItems.map((item, index) => (
             <div
               key={index}
-              className="border border-gray-200 rounded-xl overflow-hidden"
+              className="border border-white/10 rounded-xl overflow-hidden"
             >
               <button
                 onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-colors"
               >
-                <span className="font-semibold text-gray-800 pr-4">{item.question}</span>
+                <span className="font-semibold text-slate-100 pr-4">{item.question}</span>
                 <ChevronDown
                   size={18}
-                  className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${
+                  className={`text-slate-500 flex-shrink-0 transition-transform duration-200 ${
                     expandedFaq === index ? 'rotate-180' : ''
                   }`}
                 />
               </button>
               {expandedFaq === index && (
                 <div className="px-4 pb-4">
-                  <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+                  <p className="text-slate-300 leading-relaxed">{item.answer}</p>
                 </div>
               )}
             </div>

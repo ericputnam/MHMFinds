@@ -93,15 +93,15 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+          <div className="h-4 bg-white/10 rounded w-1/2 mb-4"></div>
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="space-y-2">
-                <div className="aspect-square bg-gray-200 rounded-lg"></div>
-                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="aspect-square bg-white/10 rounded-lg"></div>
+                <div className="h-3 bg-white/10 rounded w-3/4"></div>
+                <div className="h-3 bg-white/10 rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -120,14 +120,14 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
+    <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <ShoppingBag size={18} className="text-sims-pink" />
-          <h3 className="font-bold text-gray-800">Complete the Look</h3>
+          <h3 className="font-bold text-slate-100">Complete the Look</h3>
         </div>
-        <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+        <span className="text-[10px] text-slate-500 uppercase tracking-wide font-medium">
           Sponsored
         </span>
       </div>
@@ -138,10 +138,10 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
           <button
             key={product.id}
             onClick={() => handleProductClick(product)}
-            className="group text-left bg-gray-50 rounded-xl overflow-hidden hover:shadow-md hover:bg-gray-100 transition-all duration-200 border border-gray-100 hover:border-sims-pink/30"
+            className="group text-left bg-white/5 rounded-xl overflow-hidden hover:shadow-md hover:bg-white/10 transition-all duration-200 border border-white/5 hover:border-sims-pink/30"
           >
             {/* Product Image */}
-            <div className="relative aspect-square bg-white overflow-hidden">
+            <div className="relative aspect-square bg-mhm-elevated overflow-hidden">
               {product.imageUrl ? (
                 <Image
                   src={product.imageUrl}
@@ -152,8 +152,8 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                  <ShoppingBag size={24} className="text-gray-400" />
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-mhm-elevated to-mhm-card">
+                  <ShoppingBag size={24} className="text-slate-500" />
                 </div>
               )}
 
@@ -165,15 +165,15 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
 
             {/* Product Info */}
             <div className="p-3">
-              <p className="text-xs font-medium text-gray-800 line-clamp-2 mb-1 group-hover:text-sims-pink transition-colors">
+              <p className="text-xs font-medium text-slate-100 line-clamp-2 mb-1 group-hover:text-sims-pink transition-colors">
                 {product.name}
               </p>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-gray-900">
+                <span className="text-sm font-bold text-white">
                   ${getPrice(product).toFixed(2)}
                 </span>
                 {product.partner && (
-                  <span className="text-[10px] text-gray-500">
+                  <span className="text-[10px] text-slate-400">
                     {product.partner}
                   </span>
                 )}
@@ -184,8 +184,8 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
       </div>
 
       {/* Shop Now CTA */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-[11px] text-gray-500 text-center">
+      <div className="mt-4 pt-4 border-t border-white/5">
+        <p className="text-[11px] text-slate-400 text-center">
           Clicking these links supports our site at no extra cost to you
         </p>
       </div>

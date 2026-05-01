@@ -26,7 +26,6 @@ export const Footer: React.FC = () => {
               <li><Link href="/games/sims-4" className="hover:text-sims-pink transition-colors">Sims 4 Mods</Link></li>
               <li><Link href="/games/stardew-valley" className="hover:text-sims-pink transition-colors">Stardew Valley Mods</Link></li>
               <li><Link href="/games/minecraft" className="hover:text-sims-pink transition-colors">Minecraft Mods</Link></li>
-              <li><Link href="/games/animal-crossing" className="hover:text-sims-pink transition-colors">Animal Crossing Mods</Link></li>
             </ul>
           </div>
 

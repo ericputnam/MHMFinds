@@ -52,18 +52,18 @@ export function MoreFromCreator({ modId, author }: MoreFromCreatorProps) {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <UserCircle size={20} className="text-indigo-600" />
+      <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mt-6">
+        <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
+          <UserCircle size={20} className="text-sims-pink" />
           More from Creator
         </h2>
-        <div className="border-t border-gray-200 mb-6" />
+        <div className="border-t border-white/10 mb-6" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
-              <div className="aspect-[4/3] bg-gray-200 rounded-xl mb-3" />
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-              <div className="h-3 bg-gray-200 rounded w-1/2" />
+              <div className="aspect-[4/3] bg-white/10 rounded-xl mb-3" />
+              <div className="h-4 bg-white/10 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-white/10 rounded w-1/2" />
             </div>
           ))}
         </div>
@@ -82,22 +82,22 @@ export function MoreFromCreator({ modId, author }: MoreFromCreatorProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <UserCircle size={20} className="text-indigo-600" />
+    <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mt-6">
+      <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
+        <UserCircle size={20} className="text-sims-pink" />
         More from {author}
       </h2>
-      <div className="border-t border-gray-200 mb-6" />
+      <div className="border-t border-white/10 mb-6" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {mods.map((mod) => (
           <Link
             key={mod.id}
             href={`/mods/${mod.id}`}
-            className="group block rounded-xl overflow-hidden border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all duration-300"
+            className="group block rounded-xl overflow-hidden border border-white/10 hover:border-sims-pink/40 hover:shadow-lg transition-all duration-300"
           >
             {/* Thumbnail */}
-            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+            <div className="relative aspect-[4/3] bg-white/5 overflow-hidden">
               {mod.thumbnail ? (
                 <Image
                   src={mod.thumbnail}
@@ -108,7 +108,7 @@ export function MoreFromCreator({ modId, author }: MoreFromCreatorProps) {
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Package size={32} className="text-gray-300" />
+                  <Package size={32} className="text-slate-500" />
                 </div>
               )}
 
@@ -131,11 +131,11 @@ export function MoreFromCreator({ modId, author }: MoreFromCreatorProps) {
 
             {/* Card content */}
             <div className="p-3">
-              <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-snug mb-1.5">
+              <h3 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-sims-pink transition-colors leading-snug mb-1.5">
                 {mod.title}
               </h3>
 
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center justify-between text-xs text-slate-400">
                 <span className="truncate max-w-[60%]">
                   {mod.gameVersion || 'Sims 4'}
                 </span>
