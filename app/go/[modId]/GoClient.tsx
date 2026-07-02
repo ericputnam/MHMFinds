@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info, Package } from 'lucide-react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
+import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 
 interface Mod {
   id: string;
@@ -16,6 +17,7 @@ interface Mod {
   source: string;
   category: string;
   gameVersion: string | null;
+  themes?: string[];
   creator?: {
     handle: string;
   };
@@ -508,6 +510,23 @@ export default function GoClient() {
                 </div>
               </div>
             </div>
+
+            {/*
+              Affiliate recommendations — theme-matched physical products.
+              The countdown makes this a captive, high-dwell placement; links
+              open in a new tab so clicking never interrupts the countdown.
+              Deliberately a SIBLING of the mv-ads wrapper above (adding a
+              third child inside it would change Mediavine's injection gaps).
+            */}
+            {mod?.themes && mod.themes.length > 0 && (
+              <div className="mb-8">
+                <AffiliateRecommendations
+                  modId={mod.id}
+                  themes={mod.themes}
+                  sourceType="interstitial"
+                />
+              </div>
+            )}
 
             {/* While You Wait — related mods during countdown */}
             {relatedMods.length > 0 && (

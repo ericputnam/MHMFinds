@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { NewsletterSignup } from './NewsletterSignup';
 
 export const Footer: React.FC = () => {
   return (
@@ -50,6 +51,17 @@ export const Footer: React.FC = () => {
               <li><Link href="/privacy-policy" className="hover:text-sims-pink transition-colors">Privacy Policy</Link></li>
               <li><a href="mailto:olivia@musthavemods.com" className="hover:text-sims-pink transition-colors">Contact</a></li>
             </ul>
+          </div>
+        </div>
+
+        {/* Newsletter signup — builds an owned audience off Pinterest */}
+        <div className="border-t border-white/5 pt-8 mb-12">
+          <div className="max-w-xl mx-auto text-center">
+            <h3 className="text-white font-semibold mb-1">Never miss a mod drop</h3>
+            <p className="text-slate-500 text-sm mb-4">
+              The best Sims 4 CC and mod finds, straight to your inbox.
+            </p>
+            <NewsletterSignup source="footer" />
           </div>
         </div>
 

@@ -17,9 +17,11 @@ interface AffiliateProduct {
 interface AffiliateRecommendationsProps {
   modId: string;
   themes: string[];
+  /** Where this block is rendered — recorded on AffiliateClick ('mod_page', 'interstitial', ...) */
+  sourceType?: string;
 }
 
-export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendationsProps) {
+export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page' }: AffiliateRecommendationsProps) {
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function AffiliateRecommendations({ modId, themes }: AffiliateRecommendat
         },
         body: JSON.stringify({
           offerId: product.id,
-          sourceType: 'mod_page',
+          sourceType,
           modId,
           pageUrl: typeof window !== 'undefined' ? window.location.href : '',
         }),
