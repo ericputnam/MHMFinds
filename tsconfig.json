@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
+    "scripts/mcp-mediavine",
     "newapp",
     "newapp_musthavemods",
     "staging",
