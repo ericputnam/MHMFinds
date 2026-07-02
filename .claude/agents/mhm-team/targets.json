@@ -1,0 +1,162 @@
+{
+  "_comment": "MHM executive team targets. Baseline is established by Mark (mhm-finance) BEFORE targets are set. Do not invent numbers — fields marked PENDING are filled from real data. All currency in USD.",
+  "lastUpdated": "2026-07-01",
+  "_refreshNote": "2026-07-01 spot-check by Mark: trailing-30d ad revenue $8,220 (2026-06-03 to 2026-07-02) and confirmed June calendar month $8,676.74 (paid invoice, payout 2026-09-05). Baseline fields below still reflect the 2026-06-22 ESTABLISHED figures ($8,437.21/mo, $21.95 RPM) — revenue has moved up modestly since (session RPM ~$22.7-23 trailing 30d). Not re-baselining formally (too soon, <2 weeks since establishment) but flagging the drift for the P&L snapshot delivered 2026-07-01.",
+  "priority": "ad-rpm",
+  "baseline": {
+    "status": "ESTABLISHED",
+    "establishedOn": "2026-06-22",
+    "period": "last 30 days (2026-05-23 to 2026-06-22)",
+    "sources": {
+      "revenue": "Mediavine reporting MCP (site 14318) — live pull 2026-06-22",
+      "traffic": "GA4 property 437117335 — live pull 2026-06-22",
+      "costs": "PENDING operator confirmation — repo docs contain no confirmed cost figures"
+    },
+    "monthlyRevenue": {
+      "adRevenue": 8437.21,
+      "affiliateRevenue": null,
+      "_affiliateNote": "PENDING operator confirmation — no affiliate revenue data sourced from repo or MCP",
+      "total": null,
+      "_totalNote": "Partial — ad revenue locked; total blocked on affiliate + costs confirmation"
+    },
+    "monthlyCosts": {
+      "vercel": null,
+      "_vercelNote": "PENDING operator confirmation — VERCEL_PRODUCTION_SETUP.md contains no billing figures",
+      "prismaAccelerate": null,
+      "_prismaNote": "PENDING operator confirmation — Prisma Accelerate tier/cost not in repo docs",
+      "openai": null,
+      "_openaiNote": "PENDING operator confirmation — OpenAI embedding spend not tracked in repo",
+      "other": null,
+      "total": null
+    },
+    "monthlyNetTakeHome": null,
+    "_netTakeHomeNote": "Cannot compute until costs confirmed. Revenue side locked at $8,437.21/mo ad revenue.",
+    "trafficAndRpm": {
+      "monthlySessions": 384413,
+      "_monthlySessionsSource": "Mediavine (monetizable-eligible sessions, excludes bots/filtered traffic)",
+      "monthlySessionsGa4": 404502,
+      "_ga4Note": "GA4 total sessions 404,502 — ~5% higher than Mediavine figure as expected (bot/filter diff)",
+      "sessionRpm": 21.95,
+      "monetizableSessionRpm": 34.12,
+      "monetizableSessions": 247269,
+      "monetizablePct": 64.3,
+      "overallViewability": 57.57,
+      "desktopViewability": 45.9,
+      "_desktopViewabilityNote": "Aggregate ~46% looks low, but Mediavine Optimized Ad Experience (OAE) is ENABLED — desktop/mobile viewability + in-content ads are Mediavine-managed ('no action needed'); per-page dashboard values are mostly 57-82%. NOT a code-side issue. Verified on dashboard 2026-06-22.",
+      "desktopRevenueSharePct": 96.3
+    },
+    "adHealth": {
+      "stickySidebarStatus": "teal star (best)",
+      "stickySidebarAdsPerSession": 14.2,
+      "_stickySidebarNote": "CORRECTION (2026-06-22, verified on live dashboard): 14.2 is AVERAGE STICKY-SIDEBAR AD IMPRESSIONS PER SESSION, goal 2.0 — NOT a 0-100 health score. Dashboard: 'achieved teal star status. Stay teal by maintaining a score of 2.0 or higher.' We are at ~7x goal = excellent. There is NO sidebar regression; the earlier '14 vs 50' alarm was a misread of this metric. No fix was deployed.",
+      "adsTxt": "ok",
+      "privacyPolicy": "ok",
+      "_privacyPolicyNote": "Dashboard 2026-06-22: 'Great! Thanks for keeping your Privacy Policy up-to-date.' The historical 'ok-missing-on-home-page' sub-state has resolved."
+    },
+    "priorPeriod": {
+      "period": "2026-04-23 to 2026-05-22",
+      "adRevenue": 6543.10,
+      "sessions": 356317,
+      "sessionRpm": 18.36,
+      "monetizableSessionRpm": 29.49,
+      "overallViewability": 58.76
+    },
+    "momGrowth": {
+      "adRevenuePct": 28.9,
+      "sessionsPct": 7.9,
+      "sessionRpmPct": 19.6
+    },
+    "confirmedPayments": [
+      { "month": "2026-03", "paid": 4811.06, "payoutDate": "2026-06-05" },
+      { "month": "2026-04", "paid": 5158.93, "payoutDate": "2026-07-05" },
+      { "month": "2026-05", "paid": 7450.74, "payoutDate": "2026-08-05" }
+    ],
+    "notes": "Baseline established 2026-06-22 by Mark (mhm-finance). Revenue side locked from live Mediavine MCP pull and corroborated by GA4. Cost side PENDING operator confirmation — operator offline overnight. Targets below are PROPOSED and require operator approval before they become binding."
+  },
+  "targets": {
+    "status": "PROPOSED — pending operator approval",
+    "method": "Ad revenue baseline $8,437/mo. Targets set as % growth over baseline. Weekly derived as monthly / 4.33. Net take-home targets left null until costs are confirmed — revenue targets used as proxy.",
+    "_approvalNote": "Operator must approve these figures before the team treats them as binding. Mark will recompute net-take-home targets once costs are confirmed.",
+    "weekly": {
+      "adRevenue": 2045,
+      "growthVsBaselinePct": 5,
+      "_basis": "Monthly baseline $8,437 / 4.33 wks = $1,948/wk baseline. +5% = $2,045/wk.",
+      "netTakeHome": null
+    },
+    "monthly": {
+      "adRevenue": 8859,
+      "growthVsBaselinePct": 5,
+      "_basis": "$8,437 × 1.05. Minimum bar — reflects current RPM improvement work.",
+      "netTakeHome": null
+    },
+    "yearly": {
+      "adRevenue": 121493,
+      "growthVsBaselinePct": 20,
+      "_basis": "$8,437 × 12 = $101,244 annualized baseline × 1.20. 20% YoY accounts for Q3 seasonal dip in gaming traffic, the rising RPM trend, and operator-side Mediavine levers (floor CPM review, Video). No code 'sidebar fix' is assumed — sidebar is already teal-star.",
+      "netTakeHome": null
+    }
+  },
+  "roleKpis": {
+    "max": {
+      "role": "Ad Revenue Ops",
+      "primary": "sessionRpm",
+      "kpis": ["sessionRpm", "monthlyAdRevenue", "stickySidebarStatus"],
+      "baseline": {
+        "sessionRpm": 21.95,
+        "monetizableSessionRpm": 34.12,
+        "monthlyAdRevenue": 8437.21,
+        "stickySidebarAdsPerSession": 14.2,
+        "_stickySidebarNote": "Mediavine teal-star metric (goal 2.0); currently ~7x goal — healthy, not a lever."
+      },
+      "targets": {
+        "sessionRpm": 24.00,
+        "_sessionRpmBasis": "+9.3% over baseline. Driven by the rising RPM trend (RPM up ~51% over the trailing 67 days) plus operator-side Mediavine levers (sidebar-sticky floor CPM review, Video/Universal Player). NOT dependent on any code 'sidebar fix' — the sidebar is already at teal-star status.",
+        "monthlyAdRevenue": 8859,
+        "stickySidebarStatus": "maintain teal star (>= 2.0 ads/session; currently 14.2)"
+      }
+    },
+    "tim": {
+      "role": "Growth / SEO",
+      "primary": "monthlyOrganicSessions",
+      "kpis": ["monthlyOrganicSessions", "page1Keywords", "quickWinsShipped"],
+      "baseline": {
+        "monthlyOrganicSessions": 404502,
+        "_source": "GA4 total sessions — organic share unknown until GA4 channel breakdown pulled"
+      },
+      "targets": {
+        "monthlyOrganicSessions": 420000,
+        "_basis": "+3.8% over GA4 baseline 404,502. Conservative — RPM improvement is higher priority than raw traffic per current operator priority.",
+        "quickWinsShipped": ">= 4 / month"
+      }
+    },
+    "mark": {
+      "role": "Finance / CFO",
+      "primary": "monthlyNetTakeHome",
+      "kpis": ["monthlyNetTakeHome", "costToRevenueRatio", "forecastAccuracyPct"],
+      "baseline": {
+        "monthlyAdRevenue": 8437.21,
+        "monthlyNetTakeHome": null,
+        "_netTakeHomeNote": "PENDING cost confirmation"
+      },
+      "targets": {
+        "monthlyAdRevenue": 8859,
+        "monthlyNetTakeHome": null,
+        "_netTakeHomeNote": "Will be set once Vercel, Prisma, and OpenAI costs are confirmed by operator",
+        "costToRevenueRatio": "<= baseline",
+        "forecastAccuracyPct": ">= 80"
+      }
+    },
+    "sterling": {
+      "role": "CEO / Strategy",
+      "primary": "totalMonthlyRevenueVsTarget",
+      "kpis": ["totalMonthlyRevenueVsTarget", "highRoiActionsShipped"],
+      "baseline": {
+        "totalMonthlyAdRevenue": 8437.21
+      },
+      "targets": {
+        "totalMonthlyAdRevenue": 8859,
+        "highRoiActionsShipped": ">= 3 / month"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mediavine-reporting": {
+      "command": "npx",
+      "args": ["tsx", "scripts/mcp-mediavine/server.ts"]
+    }
+  }
+}

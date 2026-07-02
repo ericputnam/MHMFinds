@@ -1,0 +1,4 @@
+# NEVER commit the Mediavine token — it is a live credential to the full account.
+.env.local
+*.token
+token*.json

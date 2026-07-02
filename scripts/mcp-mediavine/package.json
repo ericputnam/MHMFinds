@@ -1,0 +1,6 @@
+{
+  "name": "mhm-mediavine-mcp",
+  "private": true,
+  "type": "module",
+  "description": "MCP server exposing the Mediavine reporting dashboard to MHM agents"
+}
