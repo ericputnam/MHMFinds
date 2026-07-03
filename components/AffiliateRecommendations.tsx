@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ExternalLink, ShoppingBag } from 'lucide-react';
+import { trackAndOpenAffiliateLink, AffiliateClickContext } from '@/lib/affiliateClick';
 
 interface AffiliateProduct {
   id: string;
@@ -12,13 +13,25 @@ interface AffiliateProduct {
   salePrice?: number | null;
   originalPrice?: number | null;
   partner?: string;
+  category?: string;
 }
 
 interface AffiliateRecommendationsProps {
   modId: string;
   themes: string[];
   /** Where this block is rendered — recorded on AffiliateClick ('mod_page', 'interstitial', ...) */
-  sourceType?: string;
+  sourceType?: AffiliateClickContext['sourceType'];
+}
+
+// "Complete the Look" fits decor/fashion products but reads oddly for game keys
+// or software subscriptions — pick the header from what's actually being shown.
+const DIGITAL_CATEGORIES = new Set(['games', 'software', 'design-tools']);
+
+function headingFor(products: AffiliateProduct[]): string {
+  const topCategory = products[0]?.category;
+  return topCategory && DIGITAL_CATEGORIES.has(topCategory)
+    ? 'You Might Also Like'
+    : 'Complete the Look';
 }
 
 export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page' }: AffiliateRecommendationsProps) {
@@ -65,27 +78,15 @@ export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page
   }, [themes]);
 
   const handleProductClick = async (product: AffiliateProduct) => {
-    // Track the click before redirecting
-    try {
-      await fetch('/api/affiliates/click', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          offerId: product.id,
-          sourceType,
-          modId,
-          pageUrl: typeof window !== 'undefined' ? window.location.href : '',
-        }),
-      });
-    } catch (err) {
-      // Don't block the redirect if tracking fails
-      console.error('Failed to track click:', err);
-    }
-
-    // Open the affiliate link in a new tab
-    window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
+    // Track the click and open the subid-tagged link so the network's
+    // conversion report can attribute the sale back to this click.
+    await trackAndOpenAffiliateLink({
+      offerId: product.id,
+      sourceType,
+      modId,
+      partner: product.partner,
+      fallbackUrl: product.affiliateUrl,
+    });
   };
 
   // Don't render if no themes, loading, error, or no products
@@ -127,7 +128,7 @@ export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <ShoppingBag size={18} className="text-sims-pink" />
-          <h3 className="font-bold text-slate-100">Complete the Look</h3>
+          <h3 className="font-bold text-slate-100">{headingFor(products)}</h3>
         </div>
         <span className="text-[10px] text-slate-500 uppercase tracking-wide font-medium">
           Sponsored

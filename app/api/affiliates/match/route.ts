@@ -37,6 +37,17 @@ export async function POST(request: NextRequest) {
       take: limit,
     });
 
+    // Count impressions (fire and forget — never block the response).
+    // GET /api/affiliates does the same for grid placements.
+    if (products.length > 0) {
+      prisma.affiliateOffer
+        .updateMany({
+          where: { id: { in: products.map((p) => p.id) } },
+          data: { impressions: { increment: 1 } },
+        })
+        .catch((err) => console.error('Error counting match impressions:', err));
+    }
+
     return NextResponse.json({ products });
   } catch (error) {
     console.error('Error matching affiliate products:', error);

@@ -20,9 +20,10 @@ Steps:
    is `PENDING`, Mark establishes it now from this data + your confirmed infra costs,
    then proposes targets. (If a tool returns `AUTH_EXPIRED`, Mark asks you to refresh
    the Mediavine JWT — he won't guess.)
-3. Spawn **Max and Tim in parallel** (`mhm-ad-revenue`, `mhm-growth`) to pull their
-   KPI actuals, grade 🟢/🟡/🔴 vs `targets.json`, and append a dated playbook entry.
-4. Spawn **Sterling** (`mhm-ceo`) with the three self-grades to:
+3. Spawn **Max, Tim, and Ivy in parallel** (`mhm-ad-revenue`, `mhm-growth`,
+   `mhm-affiliates`) to pull their KPI actuals, grade 🟢/🟡/🔴 vs `targets.json`,
+   and append a dated playbook entry.
+4. Spawn **Sterling** (`mhm-ceo`) with the four self-grades to:
    - produce a rolled-up team grade,
    - write a new dated block at the top of `mhm-team/scorecard.md` (use its template),
    - return the top 3 ranked actions for next week.

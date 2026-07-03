@@ -1188,14 +1188,19 @@ model AffiliateOffer {
   personaFeedback       String?  @db.Text        // Summary of persona feedback
 
   // Conversion tracking
-  conversions           Int      @default(0)     // Number of conversions
-  revenue               Decimal  @default(0) @db.Decimal(10, 2) // Revenue from conversions
+  conversions           Int      @default(0)     // Number of conversions (rolled up from AffiliateEarning)
+  revenue               Decimal  @default(0) @db.Decimal(10, 2) // Commission revenue (rolled up from AffiliateEarning, excludes reversed)
+
+  // Which affiliate network the tracking link belongs to: "impact", "rakuten", "cj", "amazon"
+  // Auto-detected from affiliateUrl when null (see lib/services/affiliateEarnings/network.ts)
+  network     String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   clickEvents AffiliateClick[]
+  earnings    AffiliateEarning[]
 
   @@unique([affiliateUrl])  // Prevent duplicate offers for same product
   @@index([isActive, priority(sort: Desc)])
@@ -1227,10 +1232,76 @@ model AffiliateClick {
 
   // Relations
   offer       AffiliateOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  earnings    AffiliateEarning[]
 
   @@index([offerId, clickedAt(sort: Desc)])
   @@index([sourceType, clickedAt])
   @@map("affiliate_clicks")
+}
+
+// Actual commission/conversion data ingested from affiliate network reporting APIs
+// (Impact.com Actions, Rakuten Events, CJ Commission Detail) or CSV import (Amazon).
+// Joined back to clicks/offers via the subId we inject into tracking links at click time.
+model AffiliateEarning {
+  id                   String   @id @default(cuid())
+
+  // Source network: "impact", "rakuten", "cj", "amazon"
+  network              String
+  // Network-side unique transaction ID (Impact action Id, Rakuten etransaction_id,
+  // CJ commissionId, Amazon order line hash). Dedupe key for idempotent re-syncs.
+  networkTransactionId String
+
+  // Join keys back to our tracking data
+  subId                String?  // Raw subid returned by the network (we inject AffiliateClick.id at click time)
+  clickId              String?  // Resolved AffiliateClick.id (null if subId missing/unresolvable)
+  offerId              String?  // Resolved offer (via click, or matched by advertiser/campaign)
+
+  // Money
+  saleAmount           Decimal  @default(0) @db.Decimal(10, 2) // Order/sale amount reported by network
+  commissionAmount     Decimal  @default(0) @db.Decimal(10, 2) // Our commission (the number that matters)
+  currency             String   @default("USD")
+
+  // Lifecycle: "pending", "approved", "reversed", "paid"
+  status               String   @default("pending")
+
+  // Network-side metadata
+  advertiserName       String?  // "Logitech", "Razer", ...
+  campaignId           String?  // Impact CampaignId / Rakuten mid / CJ advertiser CID
+  eventDate            DateTime  // When the conversion happened
+  postingDate          DateTime? // When the network posted/locked it
+  rawData              Json?     // Full network payload for debugging/reprocessing
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  offer                AffiliateOffer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  click                AffiliateClick? @relation(fields: [clickId], references: [id], onDelete: SetNull)
+
+  @@unique([network, networkTransactionId])
+  @@index([offerId, eventDate(sort: Desc)])
+  @@index([network, eventDate(sort: Desc)])
+  @@index([status])
+  @@index([clickId])
+  @@map("affiliate_earnings")
+}
+
+// One row per commission-sync attempt (cron or manual) for observability:
+// the whole point of this system is killing a blind spot, so sync failures must be visible.
+model AffiliateSyncRun {
+  id             String   @id @default(cuid())
+  trigger        String   // "cron", "manual", "csv_import"
+  status         String   @default("running") // "running", "completed", "failed", "partial"
+  networksSynced String[] // Networks that synced successfully this run
+  earningsCreated Int     @default(0)
+  earningsUpdated Int     @default(0)
+  totalCommission Decimal @default(0) @db.Decimal(10, 2) // Commission sum touched this run
+  errorDetails   Json?    // Per-network error messages
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  @@index([startedAt(sort: Desc)])
+  @@map("affiliate_sync_runs")
 }
 
 // ============================================

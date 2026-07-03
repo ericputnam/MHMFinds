@@ -111,12 +111,12 @@
     },
     {
       "source": "/sims-4-goth-cc-2",
-      "destination": "/sims-4-goth-cc/",
+      "destination": "/games/sims-4/goth-cc/",
       "permanent": true
     },
     {
       "source": "/sims-4-goth-cc-2/",
-      "destination": "/sims-4-goth-cc/",
+      "destination": "/games/sims-4/goth-cc/",
       "permanent": true
     },
     {
@@ -237,6 +237,36 @@
     {
       "source": "/sims-4-athletic-body-presets/",
       "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-goth-cc",
+      "destination": "/games/sims-4/goth-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-goth-cc/",
+      "destination": "/games/sims-4/goth-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cottagecore-cc",
+      "destination": "/games/sims-4/cottagecore-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cottagecore-cc/",
+      "destination": "/games/sims-4/cottagecore-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-y2k-cc",
+      "destination": "/games/sims-4/y2k-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-y2k-cc/",
+      "destination": "/games/sims-4/y2k-cc/",
       "permanent": true
     }
   ],

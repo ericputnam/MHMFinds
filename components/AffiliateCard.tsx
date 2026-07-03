@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ExternalLink, Sparkles } from 'lucide-react';
+import { trackAndOpenAffiliateLink } from '@/lib/affiliateClick';
 
 export interface AffiliateOffer {
   id: string;
@@ -25,19 +26,14 @@ interface AffiliateCardProps {
 
 export function AffiliateCard({ offer, className = '', style }: AffiliateCardProps) {
   const handleClick = async () => {
-    // Track the click (fire and forget)
-    fetch('/api/affiliates/click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        offerId: offer.id,
-        sourceType: 'grid',
-        pageUrl: window.location.href,
-      }),
-    }).catch(console.error);
-
-    // Open affiliate link
-    window.open(offer.affiliateUrl, '_blank');
+    // Track the click and open the subid-tagged link so the network's
+    // conversion report can attribute the sale back to this click.
+    await trackAndOpenAffiliateLink({
+      offerId: offer.id,
+      sourceType: 'grid',
+      partner: offer.partner,
+      fallbackUrl: offer.affiliateUrl,
+    });
   };
 
   return (

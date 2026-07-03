@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mhmfinds.affiliate-weekly-report</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/eputnam/java_projects/MHMFinds/scripts/agents/run-affiliate-weekly-report.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/eputnam/java_projects/MHMFinds</string>
+
+    <!-- Run at 7:30 AM every Wednesday (matches the weekly review cadence) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Weekday</key>
+        <integer>3</integer>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/affiliate-weekly-report.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/affiliate-weekly-report.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/eputnam</string>
+    </dict>
+</dict>
+</plist>

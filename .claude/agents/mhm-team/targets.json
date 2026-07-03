@@ -157,6 +157,23 @@
         "totalMonthlyAdRevenue": 8859,
         "highRoiActionsShipped": ">= 3 / month"
       }
+    },
+    "ivy": {
+      "role": "Affiliate Revenue Ops",
+      "primary": "monthlyAffiliateRevenue",
+      "kpis": ["monthlyAffiliateRevenue", "epc", "clickThroughRate"],
+      "baseline": {
+        "monthlyAffiliateRevenue": null,
+        "epc": null,
+        "clickThroughRate": null,
+        "_note": "PENDING — Ivy establishes the baseline from AffiliateEarning data once network creds are live"
+      },
+      "targets": {
+        "monthlyAffiliateRevenue": null,
+        "epc": null,
+        "clickThroughRate": null,
+        "_note": "PENDING — Ivy establishes the baseline from AffiliateEarning data once network creds are live"
+      }
     }
   }
 }
