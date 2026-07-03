@@ -192,6 +192,11 @@ async function proxyAndRewriteWordPress(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ── Vanity URLs for first-party mods (shareable slugs for Pinterest/social;
+  // must run before the WordPress catch-all proxy) ──
+  if (pathname === '/sims-4-main-character-energy-trait-pack' || pathname === '/sims-4-main-character-energy-trait-pack/') {
+    return NextResponse.redirect(new URL('/mods/cmr5jdnta0ahn2cf8kaj5gfcu/', request.url), 308);
+  }
 
   // ── Auth: protect /api/admin/* API routes (CRITICAL SECURITY) ──
   if (pathname.startsWith('/api/admin')) {
