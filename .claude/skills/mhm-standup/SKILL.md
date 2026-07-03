@@ -19,8 +19,9 @@ Steps:
    - Max → live ad health via `mv_health_status` (sidebar sticky score) +
      `check-blog-sidebar.sh` + `/go` regressions.
    - Tim → GSC clicks WoW + new quick wins + indexing of pages <7 days old.
-   - Ivy → affiliate CTR/EPC WoW via a read-only Postgres query against
-     `affiliate_offers`/`affiliate_clicks`/`affiliate_earnings` + link-health spot check.
+   - Ivy → read latest `reports/affiliates/daily/<date>.md` (run
+     `scripts/agents/affiliate-daily-pulse.ts` if today's is missing) and relay
+     the PULSE line + any 🔴 flags.
 2. Summarize the four pulses in 4 lines for the operator.
 3. **If any pulse is 🔴**, surface it prominently with the recommended next step —
    but never auto-fix anything human-gated (functions.php, Mediavine layout, infra,
