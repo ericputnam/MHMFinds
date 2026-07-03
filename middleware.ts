@@ -8,7 +8,7 @@ const NEXTJS_PREFIXES = new Set([
   'api', 'admin', 'creators', 'mods', 'account', 'sign-in',
   'submit-mod', 'about', 'privacy-policy', 'terms',
   'games', 'go', 'top-creators', 'simple-main', 'verify-md',
-  '_next', 'sitemap', 'manifest', 'robots.txt',
+  '_next', 'sitemap', 'manifest', 'robots.txt', 'downloads',
 ]);
 
 const WP_ORIGIN = 'https://blog.musthavemods.com';
