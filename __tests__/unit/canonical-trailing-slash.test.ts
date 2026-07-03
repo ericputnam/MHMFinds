@@ -117,6 +117,15 @@ describe('games-page collection nav (GamePageClient)', () => {
     expect(navBlock).not.toContain('mv-ads');
   });
 
+  it('games page renders dynamically so the chips reach served HTML', () => {
+    // GamePageClient uses useSearchParams(); under SSG the prerendered
+    // HTML is only the Suspense fallback — the chips (and the whole
+    // page shell) never reach crawlers. force-dynamic keeps the full
+    // shell in the response. Verified against prod 2026-07-03.
+    const pageSrc = read('app/games/[game]/page.tsx');
+    expect(pageSrc).toContain("export const dynamic = 'force-dynamic'");
+  });
+
   it('collection chips are static — not gated behind the mods loading state', () => {
     // A loading guard here would hide the links (and delay layout) on
     // first paint. The strip must only depend on the collections prop.
