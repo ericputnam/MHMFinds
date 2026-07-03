@@ -25,6 +25,7 @@ export const Footer: React.FC = () => {
             <h3 className="text-white font-semibold mb-4">Game Mods</h3>
             <ul className="space-y-2 text-sm text-slate-400">
               <li><Link href="/games/sims-4" className="hover:text-sims-pink transition-colors">Sims 4 Mods</Link></li>
+              <li><a href="/must-have-mods-sims-4/" className="hover:text-sims-pink transition-colors">Must-Have Sims 4 Mods</a></li>
               <li><Link href="/games/stardew-valley" className="hover:text-sims-pink transition-colors">Stardew Valley Mods</Link></li>
               <li><Link href="/games/minecraft" className="hover:text-sims-pink transition-colors">Minecraft Mods</Link></li>
             </ul>
