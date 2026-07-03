@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info, Package } from 'lucide-react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { PremiumWaitlistBanner } from '@/components/PremiumWaitlistBanner';
 
 interface Mod {
   id: string;
@@ -409,6 +410,14 @@ export default function GoClient() {
                 )}
               </div>
             </div>
+
+            {/*
+              Premium intent test — a compact, non-blocking banner right under
+              the countdown, at the exact moment the user is feeling the wait.
+              Measures demand via Waitlist signups (source='premium_go')
+              before we invest in enforcing the already-built Stripe paywall.
+            */}
+            <PremiumWaitlistBanner source="premium_go" />
 
             {/*
               Video advertisement box.
