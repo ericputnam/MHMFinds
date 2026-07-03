@@ -28,4 +28,34 @@ are live and `AffiliateEarning` data starts populating._
 
 ## Learnings log
 <!-- format: YYYY-MM-DD — situation → action → CTR/EPC before/after → verdict -->
-_No entries yet._
+
+### 2026-07-04 — Impact.com wired end-to-end; placeholder offers superseded
+- **Situation:** Impact.com API creds (`IMPACT_ACCOUNT_SID` + token) went live
+  in `.env.local` and are confirmed working. Root-caused the near-zero
+  affiliate revenue to date: the 23 seeded `AffiliateOffer` rows were
+  placeholders (`isActive: false`) waiting on real tracking links that never
+  got pasted in — impressions × CTR × EPC was ~0 because impressions were
+  effectively 0 (inactive offers don't render).
+- **Action:** `scripts/impact-sync-catalog.ts` now pulls approved Impact
+  campaigns, auto-builds/refreshes `AffiliateOffer` rows from real product
+  catalogs and minted deep links, and activates them with real tracking URLs.
+  `scripts/agents/affiliate-daily-pulse.ts` + launchd (daily 8:15) now writes
+  `reports/affiliates/daily/<date>.md` with contract health, offers-by-partner,
+  clicks vs 7d avg, earnings by status, and a PULSE line.
+- **Approved + Active Impact programs (as of 2026-07-04):** Redbubble (11754,
+  fan-art merch catalog), CapCut (22474, minted deep links), Logitech G (11355,
+  Aurora line catalog), Logitech (8585), GTRacing (18111, catalog), Novilla
+  (23934), oyrosy (32511).
+- **EXPIRED contracts (don't treat as live):** Canva (10068), Shopify, XreArt.
+- **NOT applied:** Green Man Gaming — operator to-do, see
+  `reports/affiliates/impact-apply-list.md`.
+- **Known API limitation:** Impact's Catalog Item Search endpoint 403s for
+  this account — sync uses client-side keyword filtering over
+  `/Catalogs/{id}/Items` instead. TrackingLinks minting works normally.
+- **Next measure point:** first full week of real Impact-sourced offers live
+  (week of 2026-07-06) — compare clicks/CTR/EPC against the old placeholder
+  baseline (effectively zero) and against the weekly digest cadence
+  (Wednesdays) to establish the first real baseline in `targets.json`.
+- **Verdict:** provisional 🟢 — infrastructure unblocked, but revenue impact
+  unproven until offers have run live for at least a week and
+  `AffiliateEarning` rows accumulate through the commission-sync cron.
