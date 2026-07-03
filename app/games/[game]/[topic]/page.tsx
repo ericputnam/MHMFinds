@@ -57,7 +57,11 @@ export async function generateMetadata({
     return { title: 'Collection not found | MustHaveMods' };
   }
 
-  const canonical = `https://musthavemods.com/games/${collection.gameSlug}/${collection.slug}`;
+  // Trailing slash required: next.config.js sets trailingSlash: true,
+  // so the non-slash variant 308-redirects. A canonical pointing at a
+  // redirect splits indexing signals (caused "Crawled - currently not
+  // indexed" on /games/sims-4/pregnancy-mods/, found Jul 2026).
+  const canonical = `https://musthavemods.com/games/${collection.gameSlug}/${collection.slug}/`;
 
   return {
     title: collection.metaTitle,
@@ -181,7 +185,7 @@ function buildJsonLd(
   mods: Mod[],
   totalCount: number,
 ) {
-  const canonical = `https://musthavemods.com/games/${collection.gameSlug}/${collection.slug}`;
+  const canonical = `https://musthavemods.com/games/${collection.gameSlug}/${collection.slug}/`;
 
   const itemList = {
     '@type': 'ItemList',
@@ -189,7 +193,7 @@ function buildJsonLd(
     itemListElement: mods.slice(0, 20).map((mod, idx) => ({
       '@type': 'ListItem',
       position: idx + 1,
-      url: `https://musthavemods.com/mods/${mod.id}`,
+      url: `https://musthavemods.com/mods/${mod.id}/`,
       name: mod.title,
       image: mod.thumbnail || mod.images?.[0] || undefined,
     })),

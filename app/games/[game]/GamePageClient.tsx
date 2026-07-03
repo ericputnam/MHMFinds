@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Navbar } from '../../../components/Navbar';
 import { Hero } from '../../../components/Hero';
@@ -15,9 +16,11 @@ import { ArrowUpDown } from 'lucide-react';
 interface GamePageClientProps {
   gameName: string;
   gameSlug: string;
+  /** Collection nav chips (slug + heading), from lib/collections.ts via the server page */
+  collections?: Array<{ slug: string; heading: string }>;
 }
 
-export default function GamePageClient({ gameName, gameSlug }: GamePageClientProps) {
+export default function GamePageClient({ gameName, gameSlug, collections = [] }: GamePageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -194,6 +197,35 @@ export default function GamePageClient({ gameName, gameSlug }: GamePageClientPro
           initialSearch={searchQuery}
           defaultGame={gameName}
         />
+
+        {/* Collection nav — compact chip strip so the mod finder stays
+            near the fold. Static (no loading gate) so the links are in
+            first-paint HTML for crawlers; the collection pages' only
+            in-app entry point (per growth advisory 2026-07-03). Kept
+            OUTSIDE the flex row below so the Mediavine sidebar
+            (aside#secondary) is untouched. No .mv-ads class — this is
+            navigation, not an ad-injection point. */}
+        {collections.length > 0 && (
+          <nav
+            aria-label={`${gameName} collections`}
+            className="max-w-[1800px] mx-auto px-4 xl:px-6 pb-5"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-slate-400 mr-1">
+                Browse collections:
+              </span>
+              {collections.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={`/games/${gameSlug}/${c.slug}/`}
+                  className="px-3 py-1.5 rounded-full text-sm bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 hover:bg-white/10 transition-colors"
+                >
+                  {c.heading}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
 
         {/* Main Content: filters + grid + ad sidebar.
             No left spacer — the filter sidebar provides enough left-side visual weight
