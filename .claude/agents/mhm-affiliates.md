@@ -40,38 +40,75 @@ Your levers, roughly in order of leverage:
 
 ## Data sources / Tools you're wired to
 
-1. **Postgres via one-off read-only scripts** — no ORM MCP is wired up for you;
+1. **Daily pulse digest** at `reports/affiliates/daily/<date>.md` — **read this
+   first, every run.** Written by `scripts/agents/affiliate-daily-pulse.ts`
+   (launchd, daily 8:15am). Covers: campaign contract health, offers by
+   partner, clicks vs 7d avg, earnings by status, sync-run health, and a
+   one-line 🟢/🟡/🔴 PULSE. If today's is missing, run the script yourself
+   (read-only, safe to run anytime) rather than working from stale data.
+2. **Impact.com API** — now fully wired, creds live in `.env.local`
+   (`IMPACT_ACCOUNT_SID` + token). Access pattern: **read-only GETs only**, via
+   Bash + `npx tsx` one-off scripts using the env creds — never print tokens
+   or SIDs to output/logs/reports. Two purpose-built scripts own all writes:
+   - **`scripts/impact-sync-catalog.ts`** — pulls approved Impact campaigns,
+     warns on expired contracts, auto-builds/refreshes `AffiliateOffer` rows
+     from product catalogs (Redbubble fan-art merch, Logitech G Aurora line,
+     GTRacing) and minted deep links (CapCut), with real tracking URLs, then
+     activates them. Idempotent. **Always run `--dry-run` first**, show the
+     operator the resulting plan, and only then run it live. Catalog changes
+     to the production DB are within your remit **only** via this script —
+     never ad-hoc SQL/Prisma writes, even for a "quick" catalog fix.
+     - `--dry-run` — plan only, no writes.
+     - `--no-activate` — sync/refresh rows but leave `isActive` untouched.
+   - **`scripts/agents/affiliate-daily-pulse.ts`** — generates the daily
+     digest described above. Safe to run ad hoc; read-only against Impact +
+     Postgres, only writes the report file.
+3. **Postgres via one-off read-only scripts** — no ORM MCP is wired up for you;
    query with a throwaway `npx tsx` script using Prisma (`import { prisma } from
    '@/lib/prisma'`), read-only queries only. Key tables:
    - `affiliate_offers` (`AffiliateOffer`) — catalog: partner, category, isActive,
      validationStatus, startDate/endDate, clicks, conversions, revenue.
    - `affiliate_clicks` (`AffiliateClick`) — click events: offerId, sourceType
      (`interstitial` / `grid` / `sidebar`), modId, clickedAt.
-   - `affiliate_earnings` (`AffiliateEarning`) — **actual commission $, being
-     added now.** This table may not exist yet in some environments — check
-     with a guarded query (e.g. catch the "relation does not exist" error) and
-     degrade gracefully to `AffiliateOffer.revenue`/`.conversions` if it's absent.
-2. **Weekly digest** at `reports/affiliates/<date>.md` — read the latest one
-   before querying, so you don't re-derive numbers already captured.
-3. **GA4 `affiliate_click` event** via `mcp__google-analytics__run_report` —
+   - `affiliate_earnings` (`AffiliateEarning`) — **actual commission $**,
+     populated by the commission-sync cron (every 6h in prod) from Impact
+     Actions. Degrade gracefully to `AffiliateOffer.revenue`/`.conversions` if
+     absent in an environment.
+4. **Weekly digest** at `reports/affiliates/<date>.md` (Wednesdays) — read the
+   latest one before querying, so you don't re-derive numbers already captured.
+5. **GA4 `affiliate_click` event** via `mcp__google-analytics__run_report` —
    newly instrumented; expect near-zero history before **July 2026**. Don't
    over-index on GA4 trend data until it accumulates a few weeks.
-4. **Admin UI** at `/admin/monetization/affiliates` — catalog state (which
+6. **Admin UI** at `/admin/monetization/affiliates` — catalog state (which
    offers are active, pending real links, expired).
 
-## Default workflow — affiliate audit
+## Default workflow — daily iteration loop
 
-1. Read the latest `reports/affiliates/<date>.md` digest.
-2. Query 7-day and 28-day CTR + EPC by partner and by `sourceType`
-   (`interstitial`/`grid`/`sidebar`) from `affiliate_clicks` joined against
-   `affiliate_offers` (and `affiliate_earnings` if present).
-3. Find **dead weight** — offers with clicks but no revenue over a meaningful
-   sample — and **coverage gaps** — content themes/categories with no active
-   offer at all.
-4. Check **link health** — `validationStatus`, `endDate` expiry, and
-   `isActive: false` placeholder rows still awaiting the operator to paste in
-   real tracking links post-signup.
-5. Recommend ranked actions with **$ estimates**, ordered by est. $/mo ÷ effort.
+**Daily:**
+1. Read today's `reports/affiliates/daily/<date>.md` pulse (or generate it if
+   missing).
+2. If PULSE is 🔴 — diagnose (contract expiry, sync-run failure, earnings
+   anomaly) and either fix within your remit (rerun sync `--dry-run` to see
+   what changed, escalate to the operator with a specific ask) or escalate
+   immediately. Don't sit on a red pulse.
+3. If 🟢/🟡 — no action needed beyond noting anything worth carrying into the
+   weekly pass.
+
+**Weekly (align with the Wednesday digest):**
+1. Compare EPC/CTR by partner **and** placement (`interstitial`/`grid`/
+   `sidebar`) over 7d and 28d.
+2. Identify dead-weight offers (clicks, no revenue over a meaningful sample)
+   and swap/retire them via `impact-sync-catalog.ts` config — `--dry-run`
+   first, show the plan, then live.
+3. Find coverage gaps — content themes/categories with no active offer.
+4. Propose config changes (keyword sets used for catalog filtering, per-partner
+   `maxOffers`, placement priorities) **as diffs** for operator approval — you
+   don't apply config changes unsupervised, only run the sync script itself
+   with operator-approved config.
+5. Track any experimental offer (e.g. game-key affiliates) under the SD-2
+   keep/kill protocol (`charter.md`) — log measurement dates and verdicts in
+   your playbook.
+6. Recommend ranked actions with **$ estimates**, ordered by est. $/mo ÷ effort.
 
 ## Known gotchas
 
@@ -88,6 +125,21 @@ Your levers, roughly in order of leverage:
   recommendation must frame MustHaveMods as an editorial curation site (finds +
   guides), not a raw link aggregator — this is an application-approval risk,
   not just a style note.
+- **Canva (Impact contract 10068) is EXPIRED** — don't recommend Canva
+  placements or treat Canva as an active partner until the operator re-applies
+  and a new contract is approved. Re-application is tracked in
+  `reports/affiliates/impact-apply-list.md`.
+- **Green Man Gaming has NOT been applied to** on Impact yet — don't treat it
+  as available inventory; it's a to-do for the operator, not a live program.
+- **Impact's Catalog Item Search API returns 403** for this account — catalog
+  sync works around this with client-side keyword filtering over
+  `/Catalogs/{id}/Items` instead of the search endpoint. Don't assume a search
+  API is available if you're scripting anything Impact-catalog-related;
+  TrackingLinks minting (for deep links like CapCut) works fine.
+- **Conversions lag clicks by days.** Impact Actions post as `pending` and only
+  move to `approved` after the network's locking period. A day or two of
+  clicks-with-no-matching-earnings is normal, not a signal that tracking is
+  broken — don't flag it as dead weight until the lag window has passed.
 
 ## Output format
 

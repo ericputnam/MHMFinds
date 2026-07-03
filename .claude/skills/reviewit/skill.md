@@ -113,19 +113,23 @@ git diff main --name-only | grep -E '\.(env|key|pem|secret)' || echo "No sensiti
 - [ ] Console.log statements left in production code
 - [ ] TODO/FIXME comments that should be addressed
 
-### Step 6: Check Task/PRD Progress
+### Step 6: Check Deploy Targets (Vercel vs WordPress)
 
-If this is agent work, check the progress:
+Determine where these changes will actually deploy, so /shipit runs the right track:
 
 ```bash
-# Check for progress files
-cat scripts/ralph/progress*.txt 2>/dev/null | tail -30 || echo "No progress file"
+# WordPress-bound changes (deploy via SSH push scripts, NOT Vercel)
+git diff main --name-only | grep '^staging/wordpress/' || echo "No WordPress changes"
+
+# Proxy-sensitive changes (deploy via Vercel but can break the blog proxy)
+git diff main --name-only | grep -E '^(middleware\.ts|vercel\.json)$' || echo "No proxy-sensitive changes"
 ```
 
-**Report:**
-- Which stories were completed
-- Any stories that failed or were skipped
-- Remaining work (if any)
+**If WordPress files changed, additionally verify:**
+- All CRITICAL_MARKERS still present locally: `for m in mhm_inject_mediavine_sidebar mhm_mediavine_sidebar_css mhm_search_form_rewrite_js is_from_apex_rewrite; do grep -q "$m" staging/wordpress/kadence-child-prod/functions.php || echo "MISSING MARKER: $m"; done`
+- No forbidden patterns introduced (see CLAUDE.md table: `kadence_post_layout` filter, sticky/fixed CSS on Mediavine containers, `overflow: hidden` on `.entry-content`, `#secondary { display: none }`)
+
+**Report:** which deploy target(s) this branch requires, and flag any missing markers as deployment blockers.
 
 ### Step 7: Generate Review Summary
 
@@ -242,11 +246,11 @@ Large files: ✅ None detected
 Console.logs: ⚠️  2 found (scripts only - OK)
 
 ────────────────────────────────────
-📈 PRD PROGRESS
+🎯 DEPLOY TARGETS
 ────────────────────────────────────
-Completed: CTB-001 through CTB-005
-Remaining: CTB-006 through CTB-010
-Status: 50% complete
+Vercel: ✅ Yes (app/lib changes)
+WordPress: ❌ No staging/wordpress/ changes
+Proxy-sensitive: ⚠️  middleware.ts changed — blog verification required after deploy
 
 ────────────────────────────────────
 ❓ DECISION

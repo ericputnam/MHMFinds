@@ -107,6 +107,16 @@ npm run security:check-admin-auth
 
 This ensures no unprotected admin API routes are ever committed.
 
+**If any files under `staging/wordpress/` were modified**, verify the CRITICAL_MARKERS are still present before committing:
+
+```bash
+for m in mhm_inject_mediavine_sidebar mhm_mediavine_sidebar_css mhm_search_form_rewrite_js is_from_apex_rewrite; do
+  grep -q "$m" staging/wordpress/kadence-child-prod/functions.php || echo "MISSING MARKER: $m"
+done
+```
+
+If any marker is missing, STOP — a revenue feature is about to be regressed (see CLAUDE.md's WordPress push-script rules). Also remind the user that committing does NOT deploy WordPress files; /shipit's WordPress track handles that.
+
 ### Step 5: Stage Changes
 
 Stage all relevant changes:
@@ -241,9 +251,11 @@ chore: Update Prisma to v6.19
 
 ❌ Don't include in commit messages:
 - Claude Code branding or tokens
-- Co-authored-by tags (unless requested)
 - Timestamps or generation markers
 - Conversation context
+- Hardcoded/stale model names (e.g. an old model in a Co-Authored-By line)
+
+✅ Co-Authored-By trailer: this repo's convention (see `git log`) is to end commits with a trailer naming the model actually running the session, e.g. `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`. Include it unless the user says otherwise.
 
 ✅ Do include:
 - Clear description of changes
