@@ -248,6 +248,22 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     related: ['clutter', 'holidays-cc', 'decor'],
   },
   {
+    slug: 'body-presets',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Body Presets',
+    heading: 'Sims 4 Body Presets',
+    metaTitle: 'Sims 4 Body Presets — 130+ Realistic CAS Presets | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 body presets for CAS. Realistic, curvy, plus-size, athletic, and male body presets — one click instead of an hour of slider work.',
+    tagline: 'Curvy, plus-size, athletic, and male presets for realistic sims',
+    intro:
+      'CAS sliders will only take a sim\'s body so far. Vanilla Sims 4 bodies converge on the same two or three silhouettes no matter how long you drag, because the sliders move a handful of regions and leave the rest alone. Body presets fix this at the mesh level: one click in CAS and the whole body shape changes — hip-to-waist ratios the sliders can\'t reach, shoulders that actually vary, soft bodies that look like people instead of mannequins.\n\nThis collection pulls together 130+ body presets across the full range: curvy and plus-size presets (consistently the most-downloaded category), athletic and muscular builds, male body presets — chronically under-served in CAS content — and the subtle "slightly more realistic than vanilla" presets that you\'ll end up applying to half your saves. Presets are also the cheapest diversity tool in the game: a household where every sim shares the same body reads as generated; one where bodies actually vary reads as written.\n\nTwo tips before you download: presets stack with skin details (a body preset plus a skin overlay is the standard realism combo — see the skin details collection), and most presets are found under the body type icons in CAS, not in a catalog category, so check the creator\'s install note if you can\'t find one in-game.',
+    filter: { contentType: 'body-preset' },
+    expectedCount: 139,
+    related: ['skin-details', 'female-clothes', 'male-clothes'],
+  },
+  {
     slug: 'poses',
     game: 'Sims 4',
     gameSlug: 'sims-4',

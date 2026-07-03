@@ -299,11 +299,23 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
 
   const duplicatePairs = [
     { from: '/sims-4-cc-clothes-packs-2025/', to: '/sims-4-cc-clothes-packs/' },
-    { from: '/sims-4-body-presets-2/', to: '/sims-4-body-presets/' },
+    // -2 duplicate points directly at the collection page (no chain via /sims-4-body-presets/)
+    { from: '/sims-4-body-presets-2/', to: '/games/sims-4/body-presets/' },
     { from: '/sims-4-goth-cc-2/', to: '/sims-4-goth-cc/' },
     { from: '/sims-4-cc-2/', to: '/sims-4-cc/' },
     { from: '/sims-4-eyelashes-cc-2/', to: '/sims-4-eyelashes-cc/' },
     { from: '/15-must-have-sims-4-woohoo-mods-for-2025/', to: '/best-woohoo-mods-sims-4-ultimate-guide/' },
+    // Legacy blog pages consolidated into /games/sims-4/* collection pages (Jul 2026,
+    // legacy-vs-collection cannibalization fix — see reports/rpm-dip-mitigation-2026-07-02.md)
+    { from: '/sims-4-female-clothes-cc/', to: '/games/sims-4/female-clothes/' },
+    { from: '/sims-4-male-clothes-cc/', to: '/games/sims-4/male-clothes/' },
+    { from: '/sims-4-cc-skin-details/', to: '/games/sims-4/skin-details/' },
+    { from: '/sims-4-gallery-poses/', to: '/games/sims-4/poses/' },
+    { from: '/sims-4-pregnancy-mods/', to: '/games/sims-4/pregnancy-mods/' },
+    { from: '/sims-4-body-presets/', to: '/games/sims-4/body-presets/' },
+    { from: '/sims-4-male-body-presets-cc/', to: '/games/sims-4/body-presets/' },
+    { from: '/sims-4-plus-size-body-presets/', to: '/games/sims-4/body-presets/' },
+    { from: '/sims-4-athletic-body-presets/', to: '/games/sims-4/body-presets/' },
   ]
 
   for (const pair of duplicatePairs) {
@@ -460,10 +472,10 @@ describe('5.0 - Middleware WordPress proxy', () => {
 
   it('vercel.json should only have static asset rewrites (no HTML proxying)', () => {
     const rewrites = vercelConfig.rewrites || []
-    // Only wp-content and wp-includes rewrites should exist
-    expect(rewrites.length).toBe(2)
-    expect(rewrites[0].source).toBe('/wp-content/:path*')
-    expect(rewrites[1].source).toBe('/wp-includes/:path*')
+    // Only static-asset rewrites should exist (ads.txt + WP assets) — never HTML pages
+    const allowedSources = ['/ads.txt', '/wp-content/:path*', '/wp-includes/:path*']
+    const unexpected = rewrites.filter((r: any) => !allowedSources.includes(r.source))
+    expect(unexpected).toEqual([])
   })
 
   it('vercel.json should NOT have catch-all slug rewrites', () => {
