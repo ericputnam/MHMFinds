@@ -27,7 +27,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Mod not found | MustHaveMods' };
   }
 
-  const url = `https://musthavemods.com/mods/${mod.id}`;
+  // Trailing slash matches trailingSlash: true in next.config.js —
+  // without it the canonical points at a 308 redirect.
+  const url = `https://musthavemods.com/mods/${mod.id}/`;
   const description =
     mod.shortDescription ||
     mod.description?.slice(0, 160) ||

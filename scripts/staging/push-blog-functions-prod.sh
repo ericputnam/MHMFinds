@@ -33,12 +33,21 @@ CRITICAL_MARKERS=(
   "mhm_mediavine_sidebar_css|Mediavine Sidebar CSS"
   "mhm_search_form_rewrite_js|Blog Search Form Rewrite"
   "is_from_apex_rewrite|Apex Domain Rewrite Helper"
+  "mhm_collection_crosslinks|Legacy->collection cross-links (SEO)"
 )
 
 FORCE=0
-if [[ "${1:-}" == "--force" ]]; then
-  FORCE=1
-fi
+AUTO_YES=0
+for arg in "$@"; do
+  case "$arg" in
+    --force) FORCE=1 ;;
+    # Non-interactive confirm for agent/CI runs. Only use after the
+    # diff has been reviewed (e.g. via a read-only pull + diff) —
+    # every other safety check (lint, markers, wipe detection) still
+    # runs and still aborts on failure.
+    --yes|-y) AUTO_YES=1 ;;
+  esac
+done
 
 if [ ! -f "$LOCAL_FILE" ]; then
   echo "ERROR: Local file not found: $LOCAL_FILE"
@@ -147,15 +156,19 @@ if [ "$DIFF_LINES" -eq 0 ]; then
   exit 0
 fi
 
-read -p "  Show full diff? (y/N) " show_diff
-if [[ "$show_diff" == "y" || "$show_diff" == "Y" ]]; then
-  diff -u "$TMP_PROD" "$LOCAL_FILE" | less -R
-fi
+if [ $AUTO_YES -eq 1 ]; then
+  echo "  --yes passed: skipping interactive confirmation."
+else
+  read -p "  Show full diff? (y/N) " show_diff
+  if [[ "$show_diff" == "y" || "$show_diff" == "Y" ]]; then
+    diff -u "$TMP_PROD" "$LOCAL_FILE" | less -R
+  fi
 
-read -p "  Continue with push? (y/N) " confirm
-if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-  echo "Aborted."
-  exit 0
+  read -p "  Continue with push? (y/N) " confirm
+  if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+    echo "Aborted."
+    exit 0
+  fi
 fi
 
 # 6. Backup, upload, lint, cache flush

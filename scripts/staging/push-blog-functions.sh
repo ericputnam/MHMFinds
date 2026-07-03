@@ -26,6 +26,7 @@ CRITICAL_MARKERS=(
   "mhm_mediavine_sidebar_css|Mediavine Sidebar CSS"
   "mhm_search_form_rewrite_js|Blog Search Form Rewrite"
   "is_from_apex_rewrite|Apex Domain Rewrite Helper"
+  "mhm_collection_crosslinks|Legacy->collection cross-links (SEO)"
 )
 
 FORCE=0

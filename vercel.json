@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/monetization-agent",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/commission-sync",
+      "schedule": "0 */6 * * *"
     }
   ],
   "functions": {
@@ -12,6 +16,12 @@
       "maxDuration": 10
     },
     "app/api/cron/**/*": {
+      "maxDuration": 300
+    },
+    "app/api/admin/affiliates/earnings/sync/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/admin/affiliates/earnings/import/route.ts": {
       "maxDuration": 300
     }
   },
@@ -91,12 +101,12 @@
     },
     {
       "source": "/sims-4-body-presets-2",
-      "destination": "/sims-4-body-presets/",
+      "destination": "/games/sims-4/body-presets/",
       "permanent": true
     },
     {
       "source": "/sims-4-body-presets-2/",
-      "destination": "/sims-4-body-presets/",
+      "destination": "/games/sims-4/body-presets/",
       "permanent": true
     },
     {
@@ -137,6 +147,96 @@
     {
       "source": "/15-must-have-sims-4-woohoo-mods-for-2025/",
       "destination": "/best-woohoo-mods-sims-4-ultimate-guide/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-female-clothes-cc",
+      "destination": "/games/sims-4/female-clothes/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-female-clothes-cc/",
+      "destination": "/games/sims-4/female-clothes/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-male-clothes-cc",
+      "destination": "/games/sims-4/male-clothes/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-male-clothes-cc/",
+      "destination": "/games/sims-4/male-clothes/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cc-skin-details",
+      "destination": "/games/sims-4/skin-details/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-cc-skin-details/",
+      "destination": "/games/sims-4/skin-details/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-gallery-poses",
+      "destination": "/games/sims-4/poses/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-gallery-poses/",
+      "destination": "/games/sims-4/poses/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-pregnancy-mods",
+      "destination": "/games/sims-4/pregnancy-mods/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-pregnancy-mods/",
+      "destination": "/games/sims-4/pregnancy-mods/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-body-presets",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-body-presets/",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-male-body-presets-cc",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-male-body-presets-cc/",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-plus-size-body-presets",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-plus-size-body-presets/",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-athletic-body-presets",
+      "destination": "/games/sims-4/body-presets/",
+      "permanent": true
+    },
+    {
+      "source": "/sims-4-athletic-body-presets/",
+      "destination": "/games/sims-4/body-presets/",
       "permanent": true
     }
   ],

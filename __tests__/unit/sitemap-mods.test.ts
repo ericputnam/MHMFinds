@@ -44,7 +44,9 @@ describe('GET /sitemap-mods.xml', () => {
     expect(urlMatches.length).toBe(fakeMods.length);
 
     for (const mod of fakeMods) {
-      expect(body).toContain(`<loc>https://musthavemods.com/mods/${mod.id}</loc>`);
+      // Trailing slash required — trailingSlash: true means the
+      // non-slash URL is a 308 redirect, not the canonical page.
+      expect(body).toContain(`<loc>https://musthavemods.com/mods/${mod.id}/</loc>`);
     }
   });
 

@@ -18,9 +18,9 @@ describe('generateMetadata for /mods/[id]', () => {
 
     expect(meta.title).toBe('Test Mod Title');
     expect(meta.description).toBeTruthy();
-    expect(meta.alternates?.canonical).toBe('https://musthavemods.com/mods/mod-abc');
+    expect(meta.alternates?.canonical).toBe('https://musthavemods.com/mods/mod-abc/');
     expect(meta.openGraph?.title).toBe('Test Mod Title');
-    expect(meta.openGraph?.url).toBe('https://musthavemods.com/mods/mod-abc');
+    expect(meta.openGraph?.url).toBe('https://musthavemods.com/mods/mod-abc/');
     expect((meta.openGraph as any)?.images?.[0]).toMatchObject({ url: 'https://example.com/thumb.jpg' });
     expect(meta.twitter).toBeTruthy();
     expect((meta.twitter as any).card).toBe('summary_large_image');

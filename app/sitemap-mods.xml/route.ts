@@ -17,7 +17,7 @@ export async function GET() {
           ? m.updatedAt.toISOString().split('T')[0]
           : String(m.updatedAt).split('T')[0];
       return `  <url>
-    <loc>${baseUrl}/mods/${m.id}</loc>
+    <loc>${baseUrl}/mods/${m.id}/</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

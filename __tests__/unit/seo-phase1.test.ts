@@ -299,11 +299,23 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
 
   const duplicatePairs = [
     { from: '/sims-4-cc-clothes-packs-2025/', to: '/sims-4-cc-clothes-packs/' },
-    { from: '/sims-4-body-presets-2/', to: '/sims-4-body-presets/' },
+    // -2 duplicate points directly at the collection page (no chain via /sims-4-body-presets/)
+    { from: '/sims-4-body-presets-2/', to: '/games/sims-4/body-presets/' },
     { from: '/sims-4-goth-cc-2/', to: '/sims-4-goth-cc/' },
     { from: '/sims-4-cc-2/', to: '/sims-4-cc/' },
     { from: '/sims-4-eyelashes-cc-2/', to: '/sims-4-eyelashes-cc/' },
     { from: '/15-must-have-sims-4-woohoo-mods-for-2025/', to: '/best-woohoo-mods-sims-4-ultimate-guide/' },
+    // Legacy blog pages consolidated into /games/sims-4/* collection pages (Jul 2026,
+    // legacy-vs-collection cannibalization fix — see reports/rpm-dip-mitigation-2026-07-02.md)
+    { from: '/sims-4-female-clothes-cc/', to: '/games/sims-4/female-clothes/' },
+    { from: '/sims-4-male-clothes-cc/', to: '/games/sims-4/male-clothes/' },
+    { from: '/sims-4-cc-skin-details/', to: '/games/sims-4/skin-details/' },
+    { from: '/sims-4-gallery-poses/', to: '/games/sims-4/poses/' },
+    { from: '/sims-4-pregnancy-mods/', to: '/games/sims-4/pregnancy-mods/' },
+    { from: '/sims-4-body-presets/', to: '/games/sims-4/body-presets/' },
+    { from: '/sims-4-male-body-presets-cc/', to: '/games/sims-4/body-presets/' },
+    { from: '/sims-4-plus-size-body-presets/', to: '/games/sims-4/body-presets/' },
+    { from: '/sims-4-athletic-body-presets/', to: '/games/sims-4/body-presets/' },
   ]
 
   for (const pair of duplicatePairs) {
@@ -460,10 +472,13 @@ describe('5.0 - Middleware WordPress proxy', () => {
 
   it('vercel.json should only have static asset rewrites (no HTML proxying)', () => {
     const rewrites = vercelConfig.rewrites || []
-    // Only wp-content and wp-includes rewrites should exist
-    expect(rewrites.length).toBe(2)
-    expect(rewrites[0].source).toBe('/wp-content/:path*')
-    expect(rewrites[1].source).toBe('/wp-includes/:path*')
+    // Only static asset rewrites (ads.txt, wp-content, wp-includes) should exist —
+    // no HTML/catch-all proxying via vercel.json
+    const sources = rewrites.map((r: any) => r.source)
+    expect(sources.sort()).toEqual(['/ads.txt', '/wp-content/:path*', '/wp-includes/:path*'])
+
+    const adsTxt = rewrites.find((r: any) => r.source === '/ads.txt')
+    expect(adsTxt.destination).toBe('https://blog.musthavemods.com/ads.txt')
   })
 
   it('vercel.json should NOT have catch-all slug rewrites', () => {
@@ -496,6 +511,50 @@ describe('5.0 - Middleware WordPress proxy', () => {
     ]
     for (const slug of phase2Slugs) {
       expect(redirects.find((r: any) => r.source === slug)).toBeDefined()
+    }
+  })
+})
+
+// ============================================================
+// 6.0 - Legacy vs. collection strategy split (2026-07-03)
+// ============================================================
+// Five legacy/collection pairs (plus the body-preset cluster) were
+// CONSOLIDATED via 301 — those are locked in the duplicatePairs list
+// in section 2.0 above. The remaining pairs are DIFFERENTIATED: the
+// legacy article keeps its editorial "best X" intent and cross-links
+// the collection page (lib/collections.ts blogUrl). These legacy
+// pages out-earn their collection twins in GSC — do NOT add 301s for
+// them without re-checking the data. See
+// reports/legacy-vs-collection-strategy-2026-07-03.md.
+describe('6.0 - Differentiated legacy pages are NOT redirected', () => {
+  let vercelConfig: any
+
+  beforeEach(() => {
+    const configPath = path.resolve(__dirname, '../../vercel.json')
+    vercelConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+  })
+
+  it('keeps the differentiated legacy articles live (no 301s)', () => {
+    const redirects = vercelConfig.redirects || []
+    const differentiatedLegacySlugs = [
+      '/sims-4-furniture-cc/',
+      '/sims-4-hairstyles-cc/',
+      '/sims-4-hair-mods/',
+      '/sims-4-clutter/',
+      '/sims-4-clutter-cc/',
+      '/sims-4-holiday-mods/',
+      '/sims-4-holiday-ideas/',
+      '/sims-4-holiday-traditions/',
+      '/sims-4-tattoos/',
+      '/sims-4-poses/',
+      '/sims-4-skin-overlay/',
+      '/sims-4-skin-details/',
+    ]
+    for (const slug of differentiatedLegacySlugs) {
+      expect(
+        redirects.find((r: any) => r.source === slug),
+        `${slug} should NOT be redirected — it is a differentiated pair`,
+      ).toBeUndefined()
     }
   })
 })
