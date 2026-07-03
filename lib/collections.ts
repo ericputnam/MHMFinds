@@ -42,6 +42,8 @@ export type CollectionFacetQuery = {
   genderOptionsAny?: string[];
   /** At least one of these age groups */
   ageGroupsAny?: string[];
+  /** At least one of these occult types (e.g., ["vampire"]) */
+  occultTypesAny?: string[];
 };
 
 export type CollectionDefinition = {
@@ -343,6 +345,26 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     related: ['female-clothes', 'hair-cc', 'poses'],
   },
   {
+    slug: 'vampire-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Vampire CC',
+    heading: 'Sims 4 Vampire CC',
+    // Browse-intent title: the legacy article /sims-4-vampire-cc/
+    // stays live (differentiated pair — it ranks ~pos 10 for the head
+    // term) and cross-links here via blogUrl.
+    metaTitle: 'Sims 4 Vampire CC Finder — Browse 55+ Occult Finds | MustHaveMods',
+    metaDescription:
+      'Browse Sims 4 vampire CC in one filterable grid — vampire eyes, fangs, coffins, lair decor, and dark clothing sorted by downloads.',
+    tagline: 'Eyes, fangs, coffins, and lair decor for your creatures of the night',
+    intro:
+      'The Vampires game pack gave us the occult itself — the powers, the dark form, Vladislaus showing up uninvited — but the CAS and build catalog runs out fast. Two coffin styles, a handful of gothic pieces, and eyes that don\'t glow quite right. If your vampire looks like a regular sim with pale skin, the community has been fixing that for years.\n\nThis collection pulls together the vampire CC we\'ve tagged so far: glowing and blood-red default eye replacements, fang sets for every age (yes, including toddler vampires), coffins and coffin recolors, full lair decor, CAS background rooms styled like a vampire\'s study, victim and couple pose packs for storytelling, and the dramatic clothing — capes, gowns, and high-collared shirts — that separates a proper vampire from a sim in a black hoodie. A few pop-culture picks made the cut too, from Twilight-inspired hair to a Dracula\'s Castle build.\n\nVampire CC overlaps heavily with the goth collection — most vampire wardrobes are goth wardrobes with better teeth — so hit that next if you\'re building a full creature of the night. Everything here is filtered to Sims 4, link-checked, and SFW. Sort by downloads for the staples, or scroll for the single-set finds the big listicles miss.',
+    filter: { occultTypesAny: ['vampire'] },
+    expectedCount: 57,
+    related: ['goth-cc', 'skin-details', 'poses'],
+    blogUrl: '/sims-4-vampire-cc/',
+  },
+  {
     slug: 'poses',
     game: 'Sims 4',
     gameSlug: 'sims-4',
@@ -443,6 +465,9 @@ export function buildWhereClause(filter: CollectionFacetQuery): Prisma.ModWhereI
   }
   if (filter.ageGroupsAny?.length) {
     where.ageGroups = { hasSome: filter.ageGroupsAny };
+  }
+  if (filter.occultTypesAny?.length) {
+    where.occultTypes = { hasSome: filter.occultTypesAny };
   }
 
   return where;

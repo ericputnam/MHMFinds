@@ -555,6 +555,9 @@ describe('6.0 - Differentiated legacy pages are NOT redirected', () => {
       '/sims-4-poses/',
       '/sims-4-skin-overlay/',
       '/sims-4-skin-details/',
+      // vampire-cc pair (2026-07-03): legacy article ranks ~pos 10 for
+      // "sims 4 vampire cc" — differentiated, do not consolidate.
+      '/sims-4-vampire-cc/',
     ]
     for (const slug of differentiatedLegacySlugs) {
       expect(
