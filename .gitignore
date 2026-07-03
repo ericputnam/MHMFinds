@@ -127,8 +127,9 @@ newapp_musthavemods/node_modules/
 *.db-journal
 
 # Scraped/Downloaded Data
+# (root-anchored so public/downloads/ — site-hosted mod files — stays tracked)
 data/
-downloads/
+/downloads/
 scraped/
 *.json.bak
 mods-cache/

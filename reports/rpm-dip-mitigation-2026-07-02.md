@@ -39,6 +39,15 @@ titles, pregnancy page becomes indexable, plus AEO groundwork (llms.txt; JSON-LD
 was audited and is already strong: WebSite+SearchAction, Organization, SoftwareApplication,
 BreadcrumbList, ItemList).
 
+- `ec49e18` — **three theme collection pages** (operator approved): Goth CC (157 mods),
+  Cottagecore CC (276), Y2K CC (147) via the `themesAny` facet, each 301-consolidating its
+  legacy blog twin. Targets high-demand aesthetic queries; auto-listed in llms.txt.
+  Facet audit note: vampire/occult facets are EMPTY in prod (occultTypes/themes have no
+  vampire values) — a vampire collection needs a facet backfill first; queued.
+- Also today: the full **affiliate overhaul shipped to main** (Ivy's branch: AffiliateEarning
+  model, commission-sync cron, network clients, GA4 affiliate_click events, digital catalog
+  seed + Amazon retirement scripts) — the second revenue stream's infrastructure is deployed.
+
 **Operator follow-ups from this deploy:** (a) resubmit the sitemap in Search Console (the
 API service account is read-only — one click in the GSC UI speeds up discovery of the new
 page and redirects); (b) Mediavine email still pending — operator will send in the next

@@ -1,0 +1,15 @@
+{
+  "name": "mhm-main-character-energy",
+  "private": true,
+  "description": "Builder for the MHM Main Character Energy Sims 4 trait pack",
+  "scripts": {
+    "build": "node build.js",
+    "validate": "node validate.js"
+  },
+  "dependencies": {
+    "@s4tk/hashing": "^0.2.1",
+    "@s4tk/images": "^0.2.4",
+    "@s4tk/models": "^0.6.14",
+    "pngjs": "^7.0.0"
+  }
+}
