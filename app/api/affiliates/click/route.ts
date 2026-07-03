@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { appendClickSubId } from '@/lib/services/affiliateEarnings/network';
 
 // POST /api/affiliates/click - Track affiliate click
 export async function POST(request: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const sessionId = Buffer.from(`${ipAddress}-${userAgent}`).toString('base64').slice(0, 32);
 
     // Use a transaction to create click record and increment offer clicks atomically
-    const [, offer] = await prisma.$transaction([
+    const [click, offer] = await prisma.$transaction([
       // Record the click
       prisma.affiliateClick.create({
         data: {
@@ -43,9 +44,14 @@ export async function POST(request: NextRequest) {
       }),
     ]);
 
+    // Inject the click ID as the network's subid (Impact subId1, Rakuten u1,
+    // CJ sid, Amazon ascsubtag) so the network's conversion report can be
+    // joined back to this click — this is what makes EPC-per-placement possible.
+    const redirectUrl = appendClickSubId(offer.affiliateUrl, click.id, offer.network);
+
     return NextResponse.json({
       success: true,
-      redirectUrl: offer.affiliateUrl,
+      redirectUrl,
     });
   } catch (error) {
     console.error('Error tracking affiliate click:', error);

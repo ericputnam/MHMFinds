@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/monetization-agent",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/commission-sync",
+      "schedule": "0 */6 * * *"
     }
   ],
   "functions": {
@@ -12,6 +16,12 @@
       "maxDuration": 10
     },
     "app/api/cron/**/*": {
+      "maxDuration": 300
+    },
+    "app/api/admin/affiliates/earnings/sync/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/admin/affiliates/earnings/import/route.ts": {
       "maxDuration": 300
     }
   },

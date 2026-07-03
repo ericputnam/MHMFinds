@@ -19,6 +19,7 @@ import {
   XCircle,
   Loader2,
 } from 'lucide-react';
+import { AffiliateRevenuePanel } from '@/components/admin/AffiliateRevenuePanel';
 
 interface PersonaVote {
   wouldBuy: boolean;
@@ -69,6 +70,8 @@ const CATEGORIES = [
   { value: 'streaming', label: 'Streaming Gear' },
   { value: 'merch', label: 'Merchandise' },
   { value: 'software', label: 'Software' },
+  { value: 'decor', label: 'Decor' },
+  { value: 'design-tools', label: 'Design Tools' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -347,6 +350,9 @@ export default function AffiliatesAdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Commission revenue: actual earnings from network reports, EPC per placement */}
+      <AffiliateRevenuePanel />
 
       {/* Filters */}
       <div className="flex gap-4">
