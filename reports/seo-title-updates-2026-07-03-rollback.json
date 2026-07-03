@@ -1,0 +1,22 @@
+{
+  "appliedAt": "2026-07-03T10:54:54.589Z",
+  "source": "GSC quick-wins audit 2026-07-02",
+  "updates": [
+    {
+      "id": "cmmvasdcy00droxzgi9g77mz6",
+      "before": "Attachment Styles",
+      "after": "Attachment Styles Mod for Sims 4"
+    },
+    {
+      "id": "cmim8rron0028oxy8oqyd43er",
+      "before": "Love Triangle",
+      "after": "Love Triangle Mod for Sims 4"
+    },
+    {
+      "id": "cmijql8fw0034ox8oaadxjlsu",
+      "before": "Messy Relationships Mod",
+      "after": "Messy Relationships Mod for Sims 4",
+      "note": "Already had the new title in the DB before this run (likely applied in a prior session); search index refreshed 2026-07-03."
+    }
+  ]
+}
