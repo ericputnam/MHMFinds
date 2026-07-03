@@ -4745,6 +4745,7 @@ function mhm_collection_crosslink_map() {
         'sims-4-holiday-ideas'      => array( 'holidays-cc', 'Holiday & Seasonal CC' ),
         'sims-4-holiday-traditions' => array( 'holidays-cc', 'Holiday & Seasonal CC' ),
         'sims-4-tattoos'            => array( 'tattoos', 'Tattoo CC' ),
+        'sims-4-vampire-cc'         => array( 'vampire-cc', 'Vampire CC' ),
     );
 }
 
