@@ -301,7 +301,7 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
     { from: '/sims-4-cc-clothes-packs-2025/', to: '/sims-4-cc-clothes-packs/' },
     // -2 duplicate points directly at the collection page (no chain via /sims-4-body-presets/)
     { from: '/sims-4-body-presets-2/', to: '/games/sims-4/body-presets/' },
-    { from: '/sims-4-goth-cc-2/', to: '/sims-4-goth-cc/' },
+    { from: '/sims-4-goth-cc-2/', to: '/games/sims-4/goth-cc/' },
     { from: '/sims-4-cc-2/', to: '/sims-4-cc/' },
     { from: '/sims-4-eyelashes-cc-2/', to: '/sims-4-eyelashes-cc/' },
     { from: '/15-must-have-sims-4-woohoo-mods-for-2025/', to: '/best-woohoo-mods-sims-4-ultimate-guide/' },
@@ -316,6 +316,10 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
     { from: '/sims-4-male-body-presets-cc/', to: '/games/sims-4/body-presets/' },
     { from: '/sims-4-plus-size-body-presets/', to: '/games/sims-4/body-presets/' },
     { from: '/sims-4-athletic-body-presets/', to: '/games/sims-4/body-presets/' },
+    // Theme collections shipped Jul 2026 (goth/cottagecore/y2k)
+    { from: '/sims-4-goth-cc/', to: '/games/sims-4/goth-cc/' },
+    { from: '/sims-4-cottagecore-cc/', to: '/games/sims-4/cottagecore-cc/' },
+    { from: '/sims-4-y2k-cc/', to: '/games/sims-4/y2k-cc/' },
   ]
 
   for (const pair of duplicatePairs) {

@@ -264,6 +264,54 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     related: ['skin-details', 'female-clothes', 'male-clothes'],
   },
   {
+    slug: 'goth-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Goth CC',
+    heading: 'Sims 4 Goth CC',
+    metaTitle: 'Sims 4 Goth CC — 150+ Dark & Alt Finds | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 goth CC. Dark clothing, alt hair, dramatic makeup, and gothic decor for your alternative sims.',
+    tagline: 'Dark clothing, alt hair, and dramatic makeup for alternative sims',
+    intro:
+      'EA\'s idea of goth is one black dress and the Goth family. If your sim\'s whole personality is dark eyeliner, silver jewelry, and a wardrobe with no colors in it, base-game CAS runs out of options in about ninety seconds. The community\'s alt scene, on the other hand, has been dressing goth sims properly for a decade.\n\nThis collection rounds up 150+ goth picks across the full look: black-heavy clothing from fishnets to platform boots, dramatic makeup (dark lips, heavy liner, pale skin overlays), alt hairstyles, chokers and silver jewelry, and the darker build/buy pieces — candelabras, ouija coffee tables, the works — that turn a build from "modern farmhouse" into something with actual atmosphere.\n\nGoth CC overlaps heavily with the tattoo and skin-detail categories, so if you\'re building a full alt sim, hit those collections next. Everything here is filtered to Sims 4, link-checked, and SFW.',
+    filter: { themesAny: ['goth'] },
+    expectedCount: 157,
+    related: ['tattoos', 'skin-details', 'hair-cc'],
+  },
+  {
+    slug: 'cottagecore-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Cottagecore CC',
+    heading: 'Sims 4 Cottagecore CC',
+    metaTitle: 'Sims 4 Cottagecore CC — 270+ Cozy Cottage Finds | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 cottagecore CC. Cozy cottage furniture, prairie dresses, kitchen clutter, and garden decor for soft rural builds.',
+    tagline: 'Prairie dresses, cozy kitchens, and garden clutter for soft rural sims',
+    intro:
+      'Cottage Living gave us the setting; it didn\'t give us nearly enough stuff. If your sim\'s aesthetic is linen dresses, a kitchen full of dried herbs, and a garden that looks lived-in rather than landscaped, you burn through the pack\'s catalog fast. Cottagecore is one of the biggest CC aesthetics in the community, and it shows in the depth available.\n\nThe 270+ picks here cover both halves of the aesthetic: CAS (prairie and milkmaid dresses, knit cardigans, braided hair, soft floral everything) and build/buy (farmhouse kitchens, quilted bedding, canned-goods clutter, cottage garden decor). It pairs naturally with the clutter and furniture collections — most cottagecore builds are really clutter-density projects wearing a floral apron.\n\nEverything is Sims 4 only, link-checked, and SFW. Sort by downloads for the staples, or dig into the long tail where single-set creators do some of the best cottage clutter in the community.',
+    filter: { themesAny: ['cottagecore'] },
+    expectedCount: 276,
+    related: ['clutter', 'furniture-cc', 'female-clothes'],
+  },
+  {
+    slug: 'y2k-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Y2K CC',
+    heading: 'Sims 4 Y2K CC',
+    metaTitle: 'Sims 4 Y2K CC — 140+ 2000s Fashion Finds | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 Y2K CC. Low-rise jeans, baby tees, butterfly clips, and 2000s-era fashion for your throwback sims.',
+    tagline: 'Low-rise jeans, baby tees, and butterfly clips for 2000s sims',
+    intro:
+      'Y2K came back everywhere at once — TikTok, the runways, and the Sims CC scene, where creators had been quietly making low-rise jeans and baby tees for years before the revival made them cool again. Base-game Sims 4 has essentially nothing from this era; the game skipped from generic-modern to generic-modern.\n\nThis collection pulls together 140+ Y2K picks: the fashion staples (low-rise everything, cropped baby tees, velour sets, cargo skirts, platform sandals), the accessories that sell the look (butterfly clips, tinted sunglasses, chunky rings, shoulder bags), and the hair — face-framing highlights, crimped textures, and the tiny-clips-everywhere styles that scream 2003.\n\nY2K works best layered with the female-clothes and hair collections for the full wardrobe rebuild. As always: Sims 4 only, links checked, NSFW filtered out.',
+    filter: { themesAny: ['y2k'] },
+    expectedCount: 147,
+    related: ['female-clothes', 'hair-cc', 'poses'],
+  },
+  {
     slug: 'poses',
     game: 'Sims 4',
     gameSlug: 'sims-4',
