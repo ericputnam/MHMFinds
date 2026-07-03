@@ -69,9 +69,9 @@ const CATALOG_TARGETS: CatalogTarget[] = [
     // US stickers feed. (Catalog 9134, the GB full product feed, consistently
     // returns HTTP 400 on the Items endpoint — excluded until Impact fixes it.)
     catalogIds: ['8110'],
-    primaryKeywords: ['sims', 'plumbob', 'cottagecore', 'pastel room', 'kawaii'],
-    bonusKeywords: ['poster', 'sticker', 'aesthetic', 'cozy', 'pastel', 'y2k', 'fairy', 'mushroom'],
-    maxOffers: 8,
+    primaryKeywords: ['sims', 'plumbob', 'cozy gam', 'gamer girl', 'cottagecore', 'pastel room', 'kawaii'],
+    bonusKeywords: ['poster', 'sticker', 'aesthetic', 'cozy', 'pastel', 'y2k', 'fairy', 'mushroom', 'game'],
+    maxOffers: 10,
     matchingThemes: ['cozy', 'modern', 'fantasy'],
     priority: 70,
   },
@@ -102,6 +102,51 @@ const CATALOG_TARGETS: CatalogTarget[] = [
 
 /** Programs without a catalog — we mint deep tracking links instead. */
 const DEEPLINK_TARGETS = [
+  {
+    // Curated collection cards: one card fronting an entire browsable Sims 4
+    // category converts differently than a single product — worth A/B data.
+    // imageUrl is filled at runtime from a collected same-partner catalog item.
+    partner: 'redbubble',
+    programId: '11754',
+    category: 'decor',
+    offers: [
+      {
+        name: 'Sims 4 Posters & Wall Art — Fan Creations on Redbubble',
+        description:
+          'Hundreds of Sims 4 posters, art prints, and wall decor made by fan artists — plumbobs, CAS aesthetics, and build-mode energy for your real room.',
+        deepLink: 'https://www.redbubble.com/shop/sims+4+posters',
+        imageUrl: '',
+        matchingThemes: ['cozy', 'modern', 'fantasy'],
+        priority: 75,
+      },
+      {
+        name: 'Sims 4 Stickers, Cases & Merch on Redbubble',
+        description:
+          'The full Sims 4 fan-art collection — laptop stickers, phone cases, tees, and more from independent artists.',
+        deepLink: 'https://www.redbubble.com/shop/sims+4',
+        imageUrl: '',
+        matchingThemes: ['cozy', 'modern', 'fantasy'],
+        priority: 72,
+      },
+    ],
+  },
+  {
+    // Logitech's pastel Aurora collection page — designed for this exact demo.
+    partner: 'logitech-g',
+    programId: '11355',
+    category: 'peripherals',
+    offers: [
+      {
+        name: 'Logitech G Aurora Collection — Pastel Gaming Gear',
+        description:
+          'The white-and-pastel Aurora line: cloud-soft headsets, compact keyboards, and mice designed for cozy gaming setups.',
+        deepLink: 'https://www.logitechg.com/en-us/shop/collections/aurora',
+        imageUrl: '',
+        matchingThemes: ['cozy', 'modern', 'minimalist'],
+        priority: 65,
+      },
+    ],
+  },
   {
     partner: 'capcut',
     programId: '22474',
@@ -221,10 +266,13 @@ interface OfferInput {
   originalPrice: number | null;
 }
 
-async function upsertOffer(offer: OfferInput): Promise<'created' | 'updated'> {
+async function upsertOffer(offer: OfferInput): Promise<'created' | 'updated' | 'skipped_retired'> {
   const existing = await prisma.affiliateOffer.findFirst({
     where: { OR: [{ affiliateUrl: offer.affiliateUrl }, { partner: offer.partner, name: offer.name }] },
   });
+  // Offers killed by the optimizer (validationStatus 'retired') stay dead —
+  // re-syncing the catalog must never resurrect a proven non-converter.
+  if (existing?.validationStatus === 'retired') return 'skipped_retired';
   const data = {
     ...offer,
     // /api/affiliates/match ranks by finalScore desc; without this the new
@@ -288,10 +336,19 @@ async function main() {
         ? `(dry-run: would mint tracking link for ${o.deepLink})`
         : await mintTrackingLink(target.programId, o.deepLink);
       if (!trackingUrl) continue;
+      // Collection cards without their own image borrow one from a catalog
+      // item of the same partner; skip entirely if none resolves (the grid
+      // card component requires an image).
+      const imageUrl =
+        o.imageUrl || collected.find((c) => c.partner === target.partner)?.imageUrl || '';
+      if (!imageUrl) {
+        console.log(`  Skipping "${o.name.slice(0, 50)}" — no image resolvable`);
+        continue;
+      }
       collected.push({
         name: o.name,
         description: o.description,
-        imageUrl: o.imageUrl,
+        imageUrl,
         affiliateUrl: trackingUrl,
         partner: target.partner,
         category: target.category,
@@ -306,12 +363,16 @@ async function main() {
   console.log(`\n=== ${DRY_RUN ? 'Would sync' : 'Syncing'} ${collected.length} offers ===`);
   let created = 0;
   let updated = 0;
+  let skipped = 0;
   for (const offer of collected) {
     console.log(`  [${offer.partner}/${offer.category}] ${offer.name.slice(0, 70)}`);
     if (DRY_RUN) continue;
     const result = await upsertOffer(offer);
-    result === 'created' ? created++ : updated++;
+    if (result === 'created') created++;
+    else if (result === 'updated') updated++;
+    else skipped++;
   }
+  if (skipped) console.log(`  (${skipped} skipped — retired by the optimizer, not resurrected)`);
 
   if (!DRY_RUN) {
     console.log(`\nCreated ${created}, updated ${updated}, active=${ACTIVATE}.`);
