@@ -27,7 +27,7 @@ export const ModSubmissionSchema = z.object({
  * Used for POST /api/admin/submissions/[id]/reject
  */
 export const SubmissionRejectSchema = z.object({
-  reason: z.string().min(1, 'Rejection reason is required').max(1000, 'Reason too long'),
+  reason: z.string().min(10, 'Rejection reason must be at least 10 characters').max(1000, 'Reason too long'),
 });
 
 /**

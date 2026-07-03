@@ -88,17 +88,27 @@ export default function SubmissionsPage() {
   };
 
   const handleReject = async (id: string) => {
-    const reason = prompt('Rejection reason (optional):');
+    const reason = prompt('Rejection reason (minimum 10 characters):');
     if (reason === null) return; // User cancelled
+
+    if (reason.trim().length < 10) {
+      alert('Rejection reason must be at least 10 characters.');
+      return;
+    }
 
     try {
       setProcessing(id);
-      await fetch(`/api/admin/submissions/${id}/reject`, {
+      const response = await fetch(`/api/admin/submissions/${id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
       });
-      fetchSubmissions();
+      if (response.ok) {
+        fetchSubmissions();
+      } else {
+        const data = await response.json();
+        alert(`Failed to reject: ${data.error}`);
+      }
     } catch (error) {
       console.error('Rejection failed:', error);
       alert('Failed to reject submission');
