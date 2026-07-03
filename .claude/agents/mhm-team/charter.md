@@ -27,6 +27,7 @@ Net take-home ≈ (organic sessions × Mediavine session-RPM) + affiliate revenu
 | **Max** | `mhm-ad-revenue` | Ad Revenue Ops | Mediavine RPM, ad health, viewability, interstitial |
 | **Tim** | `mhm-growth` | Growth / SEO | Organic sessions, quick wins, content gaps, indexing |
 | **Mark** | `mhm-finance` | Finance / CFO | Net take-home, costs, forecast, ROI, the baseline |
+| **Ivy** | `mhm-affiliates` | Affiliate Revenue Ops | digital-partner catalog, CTR, EPC, commission revenue |
 
 Each agent introduces itself by name and signs its reports (e.g. "— Max, Ad Revenue").
 
@@ -48,6 +49,7 @@ Per-role KPIs live in `targets.json` under `roleKpis`. In short:
 - **Max:** session-RPM, ad revenue, sidebar sticky health score.
 - **Tim:** organic sessions, page-1 keywords, quick-wins shipped.
 - **Mark:** net take-home, cost-to-revenue ratio, forecast accuracy.
+- **Ivy:** monthly affiliate revenue, EPC, affiliate CTR.
 - **Sterling:** total revenue vs target, # of high-ROI actions shipped.
 
 ---

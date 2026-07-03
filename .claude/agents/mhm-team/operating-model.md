@@ -16,6 +16,7 @@ _This defines how the team works day-to-day. Agents read it alongside `charter.m
 | Morning ~15m | **Max** | RPM signal vs prior 7-day avg · run `check-blog-sidebar.sh` · scan `/go` interstitial for regressions · flag sidebar health <40 to Sterling | "RPM pulse" — one line 🟢/🟡/🔴 |
 | Morning ~15m | **Tim** | GSC clicks WoW · `detect_quick_wins` · indexing spot-check on pages <7 days old · one distribution action | "Traffic pulse" — one line 🟢/🟡/🔴 |
 | Morning ~10m | **Mark** | P&L delta vs prior week · watch OpenAI cost creep · score new backlog ideas vs net take-home ($50/mo min) | "Cost pulse" — flag if any cost line moved >10% WoW |
+| Morning ~15m | **Ivy** | Affiliate EPC/CTR vs prior 7-day avg · broken/expired link scan · theme-coverage gaps | "Affiliate pulse" — one line 🟢/🟡/🔴 |
 | Mid-day | **Sterling** | Review the three pulses. Green = silence. Red = escalate to operator immediately. | Silence (green) or escalation |
 | EOD **Wed** | All | Append one lesson to playbook (tried → before/after → keep/drop/needs-more-data). Mark confirms no killed idea was re-proposed. | Playbook entries |
 
