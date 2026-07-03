@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<I c="Trait" i="trait" m="traits.traits" n="TURBODRIVER:WickedWhims_Trait_reward_Infertile" s="10346383034611201714">
+  <L n="ages">
+    <E>TEEN</E>
+    <E>ADULT</E>
+    <E>ELDER</E>
+    <E>YOUNGADULT</E>
+  </L>
+  <T n="buffs_add_on_spawn_only">False</T>
+  <L n="conflicting_traits">
+    <T>26498<!--Trait: trait_Fertile--></T>
+  </L>
+  <T n="display_name">0x78E25EF0</T>
+  <T n="display_name_gender_neutral">0x466D093D</T>
+  <T p="InfertileIcon" n="icon">2f7d0004:00000000:809682990031C1EF</T>
+  <T n="trait_description">0x84DEF596</T>
+  <T n="trait_origin_description">0x7ACBD430</T>
+  <E n="trait_type">GAMEPLAY</E>
+</I>
