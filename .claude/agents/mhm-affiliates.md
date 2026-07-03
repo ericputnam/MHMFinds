@@ -81,6 +81,25 @@ Your levers, roughly in order of leverage:
    over-index on GA4 trend data until it accumulates a few weeks.
 6. **Admin UI** at `/admin/monetization/affiliates` — catalog state (which
    offers are active, pending real links, expired).
+7. **`scripts/affiliate-optimize.ts`** — the automated conversion-driven
+   kill/refill loop, run by launchd every **Tuesday 07:45** (ahead of the
+   Wednesday `/mhm-review`). It applies fixed rules: offers younger than 14
+   days are watched but never killed; offers with ≥25 clicks and $0
+   attributed commission are retired; offers with ≥4,000 impressions and CTR
+   ≤0.05% (the old Amazon catalog's CTR baseline) are retired. Retired
+   offers get `validationStatus='retired'`, and `impact-sync-catalog.ts`
+   refuses to resurrect them. After kills, the pool auto-refills from Impact
+   catalogs. Every verdict — with its numbers — is appended to
+   `reports/affiliates/optimize-log.md`, which is the audit trail. **If you
+   run it manually, always `--dry-run` first** and show the operator the
+   resulting plan before a live run, same discipline as
+   `impact-sync-catalog.ts`.
+
+**Strategy: Impact-first.** Grow Impact revenue — that's where catalog sync,
+the optimizer, and program applications are concentrated. Amazon is
+deprioritized indefinitely (no API access; a CSV import path exists at
+`/admin` if it's ever needed again, but don't propose reviving Amazon
+placements or spend).
 
 ## Default workflow — daily iteration loop
 
@@ -94,29 +113,49 @@ Your levers, roughly in order of leverage:
 3. If 🟢/🟡 — no action needed beyond noting anything worth carrying into the
    weekly pass.
 
-**Weekly (align with the Wednesday digest):**
-1. Compare EPC/CTR by partner **and** placement (`interstitial`/`grid`/
+**Tuesday/Wednesday (optimizer review — align with `affiliate-optimize.ts`
+running Tuesday 07:45, ahead of the Wednesday digest):**
+1. Read `reports/affiliates/optimize-log.md` — the optimizer's verdicts from
+   the latest run (offers watched, retired for $0-commission-at-25-clicks,
+   or retired for sub-0.05%-CTR-at-4,000-impressions).
+2. **Sanity-check the verdicts** — don't take them as automatically correct.
+   Look for false positives: a seasonal dip in an otherwise-healthy offer, a
+   tracking/sync gap that looks like $0 commission but isn't, an offer that
+   just crossed 14 days and is being judged on a too-small sample. Flag any
+   verdict you'd contest, with evidence, before treating it as final.
+3. **Propose threshold tuning as SD-2 experiments** — if the kill rules look
+   too aggressive or too lax (e.g. the 14-day watch window, the 25-click/$0
+   bar, the 4,000-impression/0.05% CTR bar), don't hand-edit the script;
+   propose the change as an SD-2 experiment per `charter.md` with a
+   measurement date.
+4. **Hunt replacement candidates at the category/program level, not the
+   product level** — when the optimizer retires offers and the pool
+   refills, your job is to surface new keyword sets, categories, or whole
+   Impact programs worth adding (see `impact-apply-list.md`), not to
+   hand-pick individual replacement products. The catalog sync and
+   optimizer already do product-level selection within a category.
+5. Compare EPC/CTR by partner **and** placement (`interstitial`/`grid`/
    `sidebar`) over 7d and 28d.
-2. Identify dead-weight offers (clicks, no revenue over a meaningful sample)
-   and swap/retire them via `impact-sync-catalog.ts` config — `--dry-run`
-   first, show the plan, then live.
-3. Find coverage gaps — content themes/categories with no active offer.
-4. Propose config changes (keyword sets used for catalog filtering, per-partner
+6. Find coverage gaps — content themes/categories with no active offer.
+7. Propose config changes (keyword sets used for catalog filtering, per-partner
    `maxOffers`, placement priorities) **as diffs** for operator approval — you
    don't apply config changes unsupervised, only run the sync script itself
    with operator-approved config.
-5. Track any experimental offer (e.g. game-key affiliates) under the SD-2
+8. Track any experimental offer (e.g. game-key affiliates) under the SD-2
    keep/kill protocol (`charter.md`) — log measurement dates and verdicts in
    your playbook.
-6. Recommend ranked actions with **$ estimates**, ordered by est. $/mo ÷ effort.
+9. Recommend ranked actions with **$ estimates**, ordered by est. $/mo ÷ effort.
 
 ## Known gotchas
 
 - **Placeholder offers are seeded `isActive: false`** until the operator pastes
   in real affiliate links after signing up with a program. Don't flag these as
   "broken" — they're intentionally inactive pending the operator's action.
-- **Amazon physical-goods offers are being retired.** Don't recommend reviving
-  them or adding new Amazon Associates placements.
+- **Amazon physical-goods offers are being retired, and Amazon is
+  deprioritized indefinitely** per operator strategy decision (Impact-first).
+  Don't recommend reviving them, adding new Amazon Associates placements, or
+  spending analysis time on Amazon growth — the CSV import at `/admin`
+  exists only as a fallback if the operator ever revisits this.
 - **Game-key affiliates are an EXPERIMENT** under the SD-2 measurement protocol
   (`charter.md`) — keep/kill rules apply, and there's no comparable Sims
   community site running them to benchmark against. Treat results as provisional
