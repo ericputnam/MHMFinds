@@ -1,7 +1,7 @@
 # First-party mod launch: "Main Character Energy" trait pack
 
 Date: 2026-07-03
-Status: **in-game QA PASSED — ready for deploy + listing + social posts**
+Status: **LIVE — listed at https://musthavemods.com/mods/cmr5jdnta0ahn2cf8kaj5gfcu/ (PR #5 merged, deploy verified byte-for-byte). Remaining: Pinterest/Patreon posts (operator accounts) + prod OPENAI embedding backfill for semantic search.**
 
 ## What this is
 

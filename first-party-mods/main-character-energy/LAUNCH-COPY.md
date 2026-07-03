@@ -1,8 +1,10 @@
 # Launch copy — Main Character Energy trait pack
 
 Voice-matched to the blog/collections editorial tone. No emojis, straight
-quotes, no announcement-speak. Link target should be the mod's /go/ page (or
-the /mods/ detail page) so downloads route through the interstitial.
+quotes, no announcement-speak. Live links:
+- Pin/download link: https://musthavemods.com/go/cmr5jdnta0ahn2cf8kaj5gfcu/
+- Listing page: https://musthavemods.com/mods/cmr5jdnta0ahn2cf8kaj5gfcu/
+- Direct file (for the Patreon attachment note): https://musthavemods.com/downloads/MHM-Main-Character-Energy-Trait-Pack-v1.0.package
 
 ---
 
@@ -63,7 +65,7 @@ The boring details that matter: base game only, no packs, Teen through Elder.
 It's a pure tuning mod, so you don't even need Script Mods turned on — just
 "Enable Custom Content and Mods" in Game Options. The file is 32 kilobytes.
 
-Download: [LINK]
+Download: https://musthavemods.com/go/cmr5jdnta0ahn2cf8kaj5gfcu/
 
 Drop the .package straight into your Mods folder, restart, and check the
 trait picker in CAS. If a trait shows up with blank text or a moodlet doesn't
