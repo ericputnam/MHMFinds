@@ -24,6 +24,12 @@ interface ImpactAction {
   SubId1?: string;
 }
 
+// Impact rejects ISO timestamps with milliseconds ("Parameter 'StartDate' has
+// invalid value") — it wants YYYY-MM-DDTHH:mm:ssZ exactly.
+function formatImpactDate(d: Date): string {
+  return d.toISOString().slice(0, 19) + 'Z';
+}
+
 function mapState(state: string | undefined): EarningStatus {
   switch ((state || '').toUpperCase()) {
     case 'APPROVED':
@@ -54,8 +60,8 @@ export const impactClient: NetworkClient = {
     let nextUri: string | null =
       `/Mediapartners/${sid}/Actions?` +
       new URLSearchParams({
-        StartDate: since.toISOString(),
-        EndDate: until.toISOString(),
+        StartDate: formatImpactDate(since),
+        EndDate: formatImpactDate(until),
         PageSize: String(PAGE_SIZE),
       }).toString();
 

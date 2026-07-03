@@ -73,7 +73,14 @@ export type CollectionDefinition = {
   expectedCount: number;
   /** Slugs of related collections for internal linking */
   related: string[];
-  /** Optional cross-link to the original blog article */
+  /**
+   * Optional cross-link to the legacy blog article covering the same
+   * topic. Part of the legacy-vs-collection differentiation strategy
+   * (2026-07-03): the blog article keeps the editorial "best X" list
+   * intent, the collection page targets browse/filter intent, and the
+   * two cross-link instead of competing. Relative path (same domain —
+   * legacy pages are WordPress proxied at the apex by middleware.ts).
+   */
   blogUrl?: string;
 };
 
@@ -107,6 +114,12 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 115,
     related: ['female-clothes', 'poses', 'skin-details'],
+    // No blogUrl: the legacy article /sims-4-pregnancy-mods/ 301s to
+    // this page (vercel.json, 2026-07-03). This is the one pair that
+    // was CONSOLIDATED instead of differentiated — Google refused to
+    // index this page as a duplicate of the legacy article, and the
+    // legacy article itself ranked poorly (pos ~43), so the collection
+    // page absorbed it.
   },
   {
     slug: 'holidays-cc',
@@ -114,9 +127,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Holidays & Seasonal CC',
     heading: 'Sims 4 Holiday & Seasonal CC',
-    metaTitle: 'Sims 4 Holiday CC — 900+ Seasonal Mods & Decor | MustHaveMods',
+    metaTitle: 'Sims 4 Holiday CC Finder — Browse 900+ Seasonal Mods | MustHaveMods',
     metaDescription:
-      'The best Sims 4 holiday and seasonal custom content. Christmas, Halloween, Valentine\'s, Easter, and more decor, clothes, and gameplay for every season.',
+      'Browse every Sims 4 holiday and seasonal CC find in one filterable grid — Christmas, Halloween, Valentine\'s, and Easter decor, clothes, and gameplay sorted by downloads.',
     tagline: 'Christmas, Halloween, Easter, and every season in between',
     intro:
       'Seasons expansion gave us weather. It did not give us holiday CC. If you want a sim house that actually looks like December — garland on the banister, a tree with presents that aren\'t recolored vanilla meshes, a dining table that reads "Thanksgiving" instead of "generic spread" — you need community CC.\n\nThis collection is the biggest one we run: nearly a thousand mods spanning Christmas decor, Halloween costumes and yard setups, Valentine\'s clutter, Easter decor, and the summer/fall seasonal pieces people forget exist. Creators like Syboubou, Felixandre, and HarrieCC come up a lot here, but the strength of the Sims holiday scene is really the volume of smaller builders shipping one good pumpkin set or one good Hanukkah table a year.\n\nUse it as a seasonal swap — archive half of it in the spring, swap back in October. The grid is sorted by downloads first, so the evergreen picks rise to the top, and seasonal one-offs live further down for the specific occasion you\'re building for.',
@@ -128,6 +141,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 926,
     related: ['clutter', 'furniture', 'female-clothes'],
+    blogUrl: '/sims-4-holiday-mods/',
   },
   {
     slug: 'clutter',
@@ -135,15 +149,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Clutter & CC Finds',
     heading: 'Sims 4 Clutter CC',
-    metaTitle: 'Sims 4 Clutter CC — 140+ Must-Have Finds | MustHaveMods',
+    metaTitle: 'Sims 4 Clutter CC Finder — Browse 140+ Finds | MustHaveMods',
     metaDescription:
-      'The best Sims 4 clutter CC for builders who love the tiny details. Books, trinkets, kitchen bits, and shelf essentials from top creators.',
+      'Browse Sims 4 clutter CC in one filterable grid — books, trinkets, kitchen bits, and shelf essentials sorted by downloads, with verified links only.',
     tagline: 'Books, trinkets, and the tiny details that make a build',
     intro:
       'Clutter is what separates a finished build from a staged one. A shelf without stacked books looks empty. A kitchen counter without coffee mugs, a half-eaten bagel, and the one random takeout menu looks like a showroom. Vanilla Sims 4 gives you maybe a dozen usable clutter meshes. The community has made thousands.\n\nWe lean heavily on the usual build suspects here — Felixandre, Pierisim, HeyHarrie, and Severinka\'s sets pop up repeatedly because their clutter reads at the size Sims 4 cameras actually see. But the finds further down the grid are where it gets interesting: single-set releases from creators who built one perfect witch altar or one perfect apothecary shelf and then disappeared for a year.\n\nFilter by theme on the main mod finder if you want clutter that matches the room you\'re already building. Everything in this collection is live-link checked and cleared of the NSFW flag, so you can grab anything from the grid without vetting the link.',
     filter: { contentType: 'clutter' },
     expectedCount: 148,
     related: ['furniture', 'holidays-cc', 'decor'],
+    blogUrl: '/sims-4-clutter/',
   },
   {
     slug: 'hair-cc',
@@ -151,15 +166,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Hair CC',
     heading: 'Sims 4 Hair CC',
-    metaTitle: 'Sims 4 Hair CC — 1,700+ Alpha & Maxis Match Styles | MustHaveMods',
+    metaTitle: 'Sims 4 Hair CC Finder — Browse 1,700+ Styles | MustHaveMods',
     metaDescription:
-      'Over 1,700 Sims 4 hair CC picks. Alpha, maxis match, curly, braids, buns, short cuts, and long styles for every sim.',
+      'Browse 1,700+ Sims 4 hair CC picks in one filterable finder — alpha, maxis match, curly, braids, buns, and short cuts sorted by downloads.',
     tagline: 'Alpha, maxis match, and every style in between',
     intro:
       'Hair is where most Sims 4 CC journeys start, and for good reason — the base game has maybe six hairstyles you can look at without flinching. Everything else gets a recolor pass and that\'s the wardrobe.\n\nThe 1,700+ hair CC picks in this collection split roughly in half between alpha (Simpliciaty, Anto, Stealthic territory — shiny, high-detail, the aesthetic most gameplay YouTubers use) and maxis match (Sentate, SimStrouds, Aharris00britney — matches EA\'s art style without sticking out). We also pulled in the curly and textured hair creators worth knowing by name — NaevysSims and Ebonix come up constantly because they\'re some of the few people shipping hair that actually looks like Black hair instead of a texture slapped on a straight mesh.\n\nSort by downloads for the known quantities and scroll for the less-obvious picks. Every hair in the collection is Sims 4 specifically — no cross-game mixups — and the grid is filtered to verified, SFW mods only.',
     filter: { contentType: 'hair' },
     expectedCount: 1780,
     related: ['skin-details', 'female-clothes', 'male-clothes'],
+    blogUrl: '/sims-4-hairstyles-cc/',
   },
   {
     slug: 'tattoos',
@@ -167,15 +183,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Tattoos',
     heading: 'Sims 4 Tattoo CC',
-    metaTitle: 'Sims 4 Tattoo CC — 100+ Realistic & Alpha Designs | MustHaveMods',
+    metaTitle: 'Sims 4 Tattoo CC Finder — Browse 100+ Designs | MustHaveMods',
     metaDescription:
-      'Sims 4 tattoo CC for every vibe. Sleeves, back pieces, small minimal ink, and full body coverage from alpha creators.',
+      'Browse Sims 4 tattoo CC in one filterable grid — sleeves, back pieces, small minimal ink, and full body coverage sorted by downloads.',
     tagline: 'Sleeves, back pieces, small ink, and full coverage',
     intro:
       'Sims 4 ships with a handful of tattoos that haven\'t been updated since 2014. They look it. If you want ink that actually reads as a real design at CAS distance — a fine-line flower on the collarbone, a sleeve that wraps properly, a single small piece that doesn\'t pixelate when you zoom in — you need community tattoo CC.\n\nThis collection is smaller than the hair or clothing grids (about a hundred mods) because tattoo CC is a narrower niche, but it\'s one of the categories where the drop in quality between vanilla and community content is most obvious. Creators like Pralinesims, Sims3Melancholic, and remussirion have basically carried the scene for years.\n\nYou\'ll find sleeves, back pieces, small minimalist ink, and a handful of full-body sets. If you build story-heavy sims, tattoos are one of the cheapest character-building details you can add — a single well-chosen piece communicates more about a sim than half the traits panel.',
     filter: { contentType: 'tattoos' },
     expectedCount: 107,
     related: ['skin-details', 'male-clothes', 'female-clothes'],
+    blogUrl: '/sims-4-tattoos/',
   },
   {
     slug: 'skin-details',
@@ -183,6 +200,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Skin Details',
     heading: 'Sims 4 Skin Details CC',
+    // Head-term title: the legacy article /sims-4-cc-skin-details/
+    // 301s here (2026-07-03), so this page owns the query.
     metaTitle: 'Sims 4 Skin Details — 270+ Overlays & Freckles | MustHaveMods',
     metaDescription:
       'Sims 4 skin details, overlays, freckles, moles, and body blush CC. Add realism to any sim with hand-picked skin details.',
@@ -192,6 +211,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     filter: { contentType: 'skin' },
     expectedCount: 276,
     related: ['hair-cc', 'tattoos', 'female-clothes'],
+    // NOT /sims-4-cc-skin-details/ — that article 301s here. The
+    // skin-overlay article is the still-live editorial companion.
+    blogUrl: '/sims-4-skin-overlay/',
   },
   {
     slug: 'male-clothes',
@@ -199,6 +221,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Male Clothes CC',
     heading: 'Sims 4 Male Clothes CC',
+    // Head-term title: the legacy article /sims-4-male-clothes-cc/
+    // 301s here (2026-07-03), so this page owns the query.
     metaTitle: 'Sims 4 Male Clothes CC — 400+ Outfits & Streetwear | MustHaveMods',
     metaDescription:
       'The best Sims 4 male clothes CC. Streetwear, formal, casual, and everyday outfits for male sims from top creators.',
@@ -211,6 +235,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 420,
     related: ['female-clothes', 'hair-cc', 'tattoos'],
+    // No blogUrl: /sims-4-male-clothes-cc/ 301s here (2026-07-03).
   },
   {
     slug: 'female-clothes',
@@ -218,6 +243,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Female Clothes CC',
     heading: 'Sims 4 Female Clothes CC',
+    // Head-term title: the legacy article /sims-4-female-clothes-cc/
+    // 301s here (2026-07-03), so this page owns the query.
     metaTitle: 'Sims 4 Female Clothes CC — 1,600+ Outfits & Dresses | MustHaveMods',
     metaDescription:
       'Over 1,600 Sims 4 female clothes CC picks. Dresses, tops, bottoms, full outfits, and shoes for every style.',
@@ -230,6 +257,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 1601,
     related: ['male-clothes', 'hair-cc', 'skin-details'],
+    // No blogUrl: /sims-4-female-clothes-cc/ 301s here (2026-07-03).
   },
   {
     slug: 'furniture-cc',
@@ -237,15 +265,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Furniture CC',
     heading: 'Sims 4 Furniture CC',
-    metaTitle: 'Sims 4 Furniture CC — 900+ Build & Buy Finds | MustHaveMods',
+    metaTitle: 'Sims 4 Furniture CC Finder — Browse 900+ Build & Buy Finds | MustHaveMods',
     metaDescription:
-      'The best Sims 4 furniture CC for every room. Sofas, beds, dining sets, shelves, and statement pieces from top creators.',
+      'Browse 900+ Sims 4 furniture CC finds in one filterable grid — sofas, beds, dining sets, shelves, and statement pieces sorted by downloads.',
     tagline: 'Sofas, beds, shelves, and statement pieces',
     intro:
       'If you\'ve ever tried to build a cohesive living room with just base-game furniture, you already know the problem: every sofa looks like every other sofa, and the "design" options are a color swatch. Furniture CC is what turns Sims 4 Build mode from a chore into the reason people actually play.\n\nThis is a 900+ mod collection covering the full stack: sofas and armchairs, beds, dining sets, shelves, desks, kitchen islands, vanities, outdoor seating, and the statement pieces (clawfoot tubs, chesterfield couches, old-world wardrobes) that anchor a whole room. The heavy hitters here are the build CC creators everyone knows — Felixandre, Pierisim, HarrieCC, Myshunosun, and Syboubou — because they\'ve been shipping cohesive sets for long enough that you can build an entire house from a single creator\'s catalog.\n\nSort by downloads for the already-popular picks, or scroll for smaller sets that pair well with the staples. Everything here is Sims 4 specifically, verified, and SFW — grab what you want and go build.',
     filter: { contentType: 'furniture' },
     expectedCount: 901,
     related: ['clutter', 'holidays-cc', 'decor'],
+    blogUrl: '/sims-4-furniture-cc/',
   },
   {
     slug: 'body-presets',
@@ -262,6 +291,56 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     filter: { contentType: 'body-preset' },
     expectedCount: 139,
     related: ['skin-details', 'female-clothes', 'male-clothes'],
+    // No blogUrl: all four legacy body-preset articles 301 here
+    // (vercel.json, 2026-07-03).
+  },
+  {
+    slug: 'goth-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Goth CC',
+    heading: 'Sims 4 Goth CC',
+    metaTitle: 'Sims 4 Goth CC — 150+ Dark & Alt Finds | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 goth CC. Dark clothing, alt hair, dramatic makeup, and gothic decor for your alternative sims.',
+    tagline: 'Dark clothing, alt hair, and dramatic makeup for alternative sims',
+    intro:
+      'EA\'s idea of goth is one black dress and the Goth family. If your sim\'s whole personality is dark eyeliner, silver jewelry, and a wardrobe with no colors in it, base-game CAS runs out of options in about ninety seconds. The community\'s alt scene, on the other hand, has been dressing goth sims properly for a decade.\n\nThis collection rounds up 150+ goth picks across the full look: black-heavy clothing from fishnets to platform boots, dramatic makeup (dark lips, heavy liner, pale skin overlays), alt hairstyles, chokers and silver jewelry, and the darker build/buy pieces — candelabras, ouija coffee tables, the works — that turn a build from "modern farmhouse" into something with actual atmosphere.\n\nGoth CC overlaps heavily with the tattoo and skin-detail categories, so if you\'re building a full alt sim, hit those collections next. Everything here is filtered to Sims 4, link-checked, and SFW.',
+    filter: { themesAny: ['goth'] },
+    expectedCount: 157,
+    related: ['tattoos', 'skin-details', 'hair-cc'],
+  },
+  {
+    slug: 'cottagecore-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Cottagecore CC',
+    heading: 'Sims 4 Cottagecore CC',
+    metaTitle: 'Sims 4 Cottagecore CC — 270+ Cozy Cottage Finds | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 cottagecore CC. Cozy cottage furniture, prairie dresses, kitchen clutter, and garden decor for soft rural builds.',
+    tagline: 'Prairie dresses, cozy kitchens, and garden clutter for soft rural sims',
+    intro:
+      'Cottage Living gave us the setting; it didn\'t give us nearly enough stuff. If your sim\'s aesthetic is linen dresses, a kitchen full of dried herbs, and a garden that looks lived-in rather than landscaped, you burn through the pack\'s catalog fast. Cottagecore is one of the biggest CC aesthetics in the community, and it shows in the depth available.\n\nThe 270+ picks here cover both halves of the aesthetic: CAS (prairie and milkmaid dresses, knit cardigans, braided hair, soft floral everything) and build/buy (farmhouse kitchens, quilted bedding, canned-goods clutter, cottage garden decor). It pairs naturally with the clutter and furniture collections — most cottagecore builds are really clutter-density projects wearing a floral apron.\n\nEverything is Sims 4 only, link-checked, and SFW. Sort by downloads for the staples, or dig into the long tail where single-set creators do some of the best cottage clutter in the community.',
+    filter: { themesAny: ['cottagecore'] },
+    expectedCount: 276,
+    related: ['clutter', 'furniture-cc', 'female-clothes'],
+  },
+  {
+    slug: 'y2k-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Y2K CC',
+    heading: 'Sims 4 Y2K CC',
+    metaTitle: 'Sims 4 Y2K CC — 140+ 2000s Fashion Finds | MustHaveMods',
+    metaDescription:
+      'The best Sims 4 Y2K CC. Low-rise jeans, baby tees, butterfly clips, and 2000s-era fashion for your throwback sims.',
+    tagline: 'Low-rise jeans, baby tees, and butterfly clips for 2000s sims',
+    intro:
+      'Y2K came back everywhere at once — TikTok, the runways, and the Sims CC scene, where creators had been quietly making low-rise jeans and baby tees for years before the revival made them cool again. Base-game Sims 4 has essentially nothing from this era; the game skipped from generic-modern to generic-modern.\n\nThis collection pulls together 140+ Y2K picks: the fashion staples (low-rise everything, cropped baby tees, velour sets, cargo skirts, platform sandals), the accessories that sell the look (butterfly clips, tinted sunglasses, chunky rings, shoulder bags), and the hair — face-framing highlights, crimped textures, and the tiny-clips-everywhere styles that scream 2003.\n\nY2K works best layered with the female-clothes and hair collections for the full wardrobe rebuild. As always: Sims 4 only, links checked, NSFW filtered out.',
+    filter: { themesAny: ['y2k'] },
+    expectedCount: 147,
+    related: ['female-clothes', 'hair-cc', 'poses'],
   },
   {
     slug: 'poses',
@@ -269,6 +348,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Pose Packs',
     heading: 'Sims 4 Pose Packs',
+    // Head-term title: the legacy article /sims-4-gallery-poses/
+    // 301s here (2026-07-03), so this page owns the query.
     metaTitle: 'Sims 4 Pose Packs — 500+ CAS & In-Game Poses | MustHaveMods',
     metaDescription:
       'The best Sims 4 pose packs for screenshots, CAS, couples, and storytelling. Hand-picked pose packs from top creators.',
@@ -278,6 +359,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     filter: { contentType: 'poses' },
     expectedCount: 573,
     related: ['female-clothes', 'male-clothes', 'pregnancy-mods'],
+    // NOT /sims-4-gallery-poses/ — that article 301s here. The
+    // general poses article is the still-live editorial companion.
+    blogUrl: '/sims-4-poses/',
   },
 ];
 
@@ -325,9 +409,13 @@ export function getAllCollectionRoutes(): Array<{ gameSlug: string; topicSlug: s
 export function buildWhereClause(filter: CollectionFacetQuery): Prisma.ModWhereInput {
   const where: Prisma.ModWhereInput = {};
 
-  // Phase 1 temporary: pregnancy keyword fallback
+  // Phase 1 temporary: pregnancy keyword fallback. The real facet
+  // (`contentType: 'pregnancy'`) is included in the OR so the page
+  // automatically picks up mods as the Phase 1a backfill lands —
+  // no code change needed when the facet goes live.
   if (filter.contentType === '__pregnancy_keyword__') {
     where.OR = [
+      { contentType: 'pregnancy' },
       { title: { contains: 'pregnan', mode: 'insensitive' } },
       { title: { contains: 'maternity', mode: 'insensitive' } },
       { description: { contains: 'pregnan', mode: 'insensitive' } },

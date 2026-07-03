@@ -4705,3 +4705,114 @@ function mhm_mediavine_preconnect_hints() {
     echo '<link rel="preload" href="https://scripts.mediavine.com/tags/must-have-mods-new-owner.js" as="script" fetchpriority="high" crossorigin>' . "\n";
 }
 add_action( 'wp_head', 'mhm_mediavine_preconnect_hints', 1 );
+
+
+/**
+ * ============================================================
+ * Collection cross-links (mhm_collection_crosslinks)
+ * ============================================================
+ * Legacy-vs-collection strategy, 2026-07-03 (see MHMFinds repo:
+ * reports/legacy-vs-collection-strategy-2026-07-03.md).
+ *
+ * DIFFERENTIATED pairs: the legacy listicle stays live and gets a
+ * cross-link box to its filterable collection page on the Next.js
+ * app; the reciprocal links live in lib/collections.ts (blogUrl).
+ *
+ * CONSOLIDATED pairs: the legacy article's apex URL 301s to its
+ * collection page (vercel.json). Those posts get a canonical override
+ * pointing at the collection page and are dropped from the Rank Math
+ * sitemap. Do NOT noindex instead — the BigScoots cache leaks noindex
+ * to the apex (see Feb 2026 note above).
+ *
+ * Output is identical for proxied and direct requests, so all of
+ * this is BigScoots-cache-safe.
+ */
+function mhm_collection_crosslink_map() {
+    // Differentiated legacy post slug => array( collection topic slug, display title ).
+    // Only slugs whose apex URL still serves 200 belong here — a slug
+    // that 301s to its collection page goes in
+    // mhm_consolidated_post_map() instead.
+    return array(
+        'sims-4-skin-details'       => array( 'skin-details', 'Skin Details' ),
+        'sims-4-skin-overlay'       => array( 'skin-details', 'Skin Details' ),
+        'sims-4-poses'              => array( 'poses', 'Pose Packs' ),
+        'sims-4-furniture-cc'       => array( 'furniture-cc', 'Furniture CC' ),
+        'sims-4-hairstyles-cc'      => array( 'hair-cc', 'Hair CC' ),
+        'sims-4-hair-mods'          => array( 'hair-cc', 'Hair CC' ),
+        'sims-4-clutter'            => array( 'clutter', 'Clutter CC' ),
+        'sims-4-clutter-cc'         => array( 'clutter', 'Clutter CC' ),
+        'sims-4-holiday-mods'       => array( 'holidays-cc', 'Holiday & Seasonal CC' ),
+        'sims-4-holiday-ideas'      => array( 'holidays-cc', 'Holiday & Seasonal CC' ),
+        'sims-4-holiday-traditions' => array( 'holidays-cc', 'Holiday & Seasonal CC' ),
+        'sims-4-tattoos'            => array( 'tattoos', 'Tattoo CC' ),
+    );
+}
+
+function mhm_consolidated_post_map() {
+    // Consolidated legacy post slug => collection topic slug. The apex
+    // URL for each of these 301s to /games/sims-4/<topic>/ via
+    // vercel.json — keep the two lists in sync.
+    return array(
+        'sims-4-pregnancy-mods'         => 'pregnancy-mods',
+        'sims-4-female-clothes-cc'      => 'female-clothes',
+        'sims-4-male-clothes-cc'        => 'male-clothes',
+        'sims-4-cc-skin-details'        => 'skin-details',
+        'sims-4-gallery-poses'          => 'poses',
+        'sims-4-body-presets'           => 'body-presets',
+        'sims-4-male-body-presets-cc'   => 'body-presets',
+        'sims-4-plus-size-body-presets' => 'body-presets',
+        'sims-4-athletic-body-presets'  => 'body-presets',
+        'sims-4-goth-cc'                => 'goth-cc',
+        'sims-4-cottagecore-cc'         => 'cottagecore-cc',
+        'sims-4-y2k-cc'                 => 'y2k-cc',
+    );
+}
+
+function mhm_collection_crosslinks( $content ) {
+    if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+        return $content;
+    }
+    $map  = mhm_collection_crosslink_map();
+    $slug = get_post_field( 'post_name' );
+    if ( ! isset( $map[ $slug ] ) ) {
+        return $content;
+    }
+    list( $topic, $title ) = $map[ $slug ];
+    $url = 'https://musthavemods.com/games/sims-4/' . $topic . '/';
+    $box = '<div class="mhm-collection-crosslink" style="margin:2em 0;padding:1.25em 1.5em;border:1px solid rgba(236,72,153,.4);border-radius:12px;background:rgba(236,72,153,.06);">'
+        . '<p style="margin:0;font-size:1.05em;">Want more than this list? '
+        . '<a href="' . esc_url( $url ) . '" style="font-weight:600;">Browse the full Sims 4 ' . esc_html( $title ) . ' collection</a>'
+        . ' &mdash; every find in our database, filterable and sorted by downloads.</p>'
+        . '</div>';
+    return $content . $box;
+}
+add_filter( 'the_content', 'mhm_collection_crosslinks', 20 );
+
+// Consolidated posts: canonical points at the collection page the apex
+// URL 301s to. Runs after the origin-swap canonical filter above
+// (priority 20 > default 10).
+add_filter( 'rank_math/frontend/canonical', function ( $canonical ) {
+    if ( is_singular( 'post' ) ) {
+        $map  = mhm_consolidated_post_map();
+        $slug = get_post_field( 'post_name' );
+        if ( isset( $map[ $slug ] ) ) {
+            return 'https://musthavemods.com/games/sims-4/' . $map[ $slug ] . '/';
+        }
+    }
+    return $canonical;
+}, 20 );
+
+// Drop consolidated posts from the Rank Math sitemap.
+// NOTE: Rank Math's sitemap module is currently disabled (404s), and
+// the apex blog sitemap is built from the REST API by the Next.js
+// route app/sitemap-blog-posts.xml (which excludes these posts). This
+// filter is a belt-and-braces in case Rank Math sitemaps are enabled.
+add_filter( 'rank_math/sitemap/entry', function ( $entry, $type, $object ) {
+    if ( 'post' === $type && is_object( $object ) && isset( $object->post_name ) ) {
+        $map = mhm_consolidated_post_map();
+        if ( isset( $map[ $object->post_name ] ) ) {
+            return false;
+        }
+    }
+    return $entry;
+}, 10, 3 );

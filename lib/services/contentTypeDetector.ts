@@ -86,7 +86,7 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   // Lipstick
   {
     keywords: ['lipstick', 'lip stick', 'lip gloss', 'lipgloss', 'lip color', 'lip colour',
-               'lips n', 'lips for', 'cerise lips', 'glossy lips', 'matte lips',
+               'lips n*', 'lips for', 'cerise lips', 'glossy lips', 'matte lips',
                'gloss collection', 'butter gloss', 'lip tint'],
     contentType: 'lipstick',
     priority: 107,
@@ -120,7 +120,7 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   // scripts/backfill-pregnancy-facet.ts against ~115 keyword-matching mods.
   {
     keywords: [
-      'pregnan', 'maternity', 'belly overlay', 'pregnancy belly',
+      'pregnan*', 'maternity', 'belly overlay', 'pregnancy belly',
       'baby bump', 'preggo', 'pregnant sim',
     ],
     contentType: 'pregnancy',
@@ -239,7 +239,8 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
 
   // Decor (broader than wall-art or clutter)
   {
-    keywords: ['decor', 'decoration', 'decorations', 'decorative', 'ornament', 'ornaments'],
+    keywords: ['decor', 'decoration', 'decorations', 'decorative', 'ornament', 'ornaments',
+               'wallpaper', 'wallpapers', 'wall paper'],
     contentType: 'decor',
     priority: 45,
   },
@@ -248,10 +249,17 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   {
     keywords: ['furniture', 'sofa', 'couch', 'chair', 'table', 'desk', 'bed', 'beds',
                'dresser', 'wardrobe', 'closet', 'shelf', 'shelves', 'bookshelf',
+               'shelving', 'bookcase', 'drawer', 'drawers',
                'cabinet', 'nightstand', 'vanity', 'mirror', 'fireplace', 'armchair',
                'bench', 'stool', 'ottoman', 'console', 'sideboard', 'buffet',
                'dining table', 'coffee table', 'end table', 'tv stand', 'entertainment center',
-               'sink', 'toilet', 'shower', 'tub', 'bathtub'],
+               'sink', 'toilet', 'shower', 'tub', 'bathtub',
+               'bedroom', 'bedding', 'suite',
+               'living room set', 'living room collection', 'dining room set',
+               'bedroom set', 'bedroom collection', 'kitchen set', 'bathroom set',
+               'nursery set', 'nursery collection', 'furniture set', 'furniture collection'],
+    // Scene-named pose packs ("Bed Talk Poses") are poses, not furniture
+    negativeKeywords: ['pose', 'poses', 'pose pack', 'posepack'],
     contentType: 'furniture',
     priority: 44,
   },
@@ -264,7 +272,7 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   {
     keywords: ['hair', 'hairstyle', 'hairstyles', 'haircut', 'ponytail', 'braids', 'braid',
                'bun', 'updo', 'bangs', 'wig', 'locs', 'loc', 'dreadlocks', 'dreads',
-               'afro', 'mohawk', 'pixie', 'bob cut', 'curls', 'waves', 'straight hair'],
+               'afro', 'mohawk', 'pixie', 'bob', 'bob cut', 'curls', 'waves', 'straight hair'],
     negativeKeywords: ['facial hair', 'beard', 'eyebrow', 'brow', 'body hair'],
     contentType: 'hair',
     priority: 38,
@@ -275,7 +283,8 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
     keywords: ['outfit', 'outfits', 'full body', 'full-body', 'jumpsuit', 'romper',
                'bodysuit', 'onesie', 'overalls', 'uniform', 'costume', 'pajamas', 'pyjamas',
                'sleepwear', 'swimsuit', 'bikini', 'swimwear', 'wetsuit', 'clothing set',
-               'clothes set', 'outfit set'],
+               'clothes set', 'outfit set',
+               'suit', 'suits', 'tuxedo', 'activewear', 'sportswear', 'athleisure'],
     // 'set' alone is too generic - sneaker set, eyeshadow set, etc.
     // Use specific clothing set patterns instead
     negativeKeywords: ['eyeshadow', 'makeup', 'palette', 'sneaker', 'shoe', 'boots',
@@ -286,26 +295,27 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
 
   // Dresses
   {
-    keywords: ['dress', 'dresses', 'gown', 'gowns', 'maxi', 'mini dress', 'midi dress',
-               'cocktail dress', 'evening dress', 'wedding dress', 'ball gown'],
+    keywords: ['dress', 'dresses', 'gown', 'gowns', 'nightgown', 'maxi', 'mini dress',
+               'midi dress', 'cocktail dress', 'evening dress', 'wedding dress', 'ball gown'],
     contentType: 'dresses',
     priority: 34,
   },
 
   // Tops
   {
-    keywords: ['top', 'tops', 'shirt', 'shirts', 'blouse', 'sweater', 'sweaters',
-               'hoodie', 'hoodies', 'jacket', 'jackets', 'coat', 'coats', 'cardigan',
-               't-shirt', 'tshirt', 'tank top', 'crop top', 'turtleneck', 'vest',
-               'blazer', 'pullover'],
+    keywords: ['top', 'tops', 'shirt', 'shirts', 'sweatshirt', 'blouse', 'sweater', 'sweaters',
+               'hoodie', 'hoodies', 'jacket', 'jackets', 'coat', 'coats', 'raincoat',
+               'overcoat', 'cardigan', 't-shirt', 'tshirt', 'tank top', 'crop top',
+               'turtleneck', 'vest', 'blazer', 'pullover', 'corset', 'corsets'],
     contentType: 'tops',
     priority: 33,
   },
 
   // Bottoms
   {
-    keywords: ['pants', 'jeans', 'shorts', 'skirt', 'skirts', 'leggings', 'trousers',
-               'sweatpants', 'joggers', 'capris', 'culottes', 'mini skirt', 'maxi skirt'],
+    keywords: ['pants', 'jeans', 'shorts', 'skirt', 'skirts', 'miniskirt', 'leggings',
+               'trousers', 'sweatpants', 'joggers', 'capris', 'culottes', 'mini skirt',
+               'maxi skirt'],
     contentType: 'bottoms',
     priority: 32,
   },
@@ -346,8 +356,8 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
 
   // Accessories (generic - lower priority than specific types)
   {
-    keywords: ['accessory', 'accessories', 'bag', 'bags', 'purse', 'backpack', 'belt',
-               'scarf', 'scarves', 'gloves', 'watch', 'watches', 'socks', 'tights'],
+    keywords: ['accessory', 'accessories', 'bag', 'bags', 'handbag', 'purse', 'backpack',
+               'belt', 'scarf', 'scarves', 'gloves', 'watch', 'watches', 'socks', 'tights'],
     contentType: 'accessories',
     priority: 25,
   },
@@ -428,7 +438,9 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   // Lot/Build
   {
     keywords: ['lot', 'house', 'home', 'apartment', 'mansion', 'cottage', 'residential',
-               'venue', 'community lot', 'starter', 'build', 'renovation'],
+               'venue', 'community lot', 'starter', 'build', 'renovation',
+               'estate', 'villa', 'colonial', 'townhouse', 'farmhouse', 'manor',
+               'chateau', 'bungalow'],
     contentType: 'lot',
     priority: 12,
   },
@@ -487,6 +499,34 @@ const ROOM_THEME_RULES: RoomThemeRule[] = [
 ];
 
 // ============================================
+// KEYWORD MATCHING
+// ============================================
+
+// Keywords match on word boundaries (with an optional trailing s/es plural),
+// so 'dress' does NOT match "headdress" and 'suit' does NOT match "suite".
+// A trailing '*' marks a prefix keyword with no end boundary, e.g. 'pregnan*'
+// matches "pregnancy" and "pregnant".
+const keywordRegexCache = new Map<string, RegExp>();
+
+function keywordToRegex(keyword: string): RegExp {
+  let regex = keywordRegexCache.get(keyword);
+  if (!regex) {
+    const prefixOnly = keyword.endsWith('*');
+    const kw = prefixOnly ? keyword.slice(0, -1) : keyword;
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const lead = /^\w/.test(kw) ? '\\b' : '';
+    const trail = prefixOnly ? '' : /\w$/.test(kw) ? '(?:s|es)?\\b' : '';
+    regex = new RegExp(`${lead}${escaped}${trail}`);
+    keywordRegexCache.set(keyword, regex);
+  }
+  return regex;
+}
+
+function keywordMatches(text: string, keyword: string): boolean {
+  return keywordToRegex(keyword).test(text);
+}
+
+// ============================================
 // MAIN DETECTION FUNCTIONS
 // ============================================
 
@@ -521,37 +561,27 @@ export function detectContentTypeWithConfidence(
 ): DetectionResult {
   const titleLower = (title || '').toLowerCase();
   const descLower = (description || '').toLowerCase();
-  const combinedText = `${titleLower} ${descLower}`;
 
   const matchedKeywords: string[] = [];
 
   // Sort rules by priority (highest first)
   const sortedRules = [...CONTENT_TYPE_RULES].sort((a, b) => b.priority - a.priority);
 
+  const hasNegative = (rule: KeywordRule): boolean =>
+    !!rule.negativeKeywords?.some(neg =>
+      keywordMatches(titleLower, neg) || keywordMatches(descLower, neg)
+    );
+
+  // PASS 1: title matches only. The title is what the creator named the item,
+  // so any title match — even a low-priority one — beats a description-only
+  // match (a dress whose description mentions "body preset" stays a dress).
   for (const rule of sortedRules) {
-    // Check for negative keywords first
-    if (rule.negativeKeywords) {
-      const hasNegative = rule.negativeKeywords.some(neg =>
-        titleLower.includes(neg) || descLower.includes(neg)
-      );
-      if (hasNegative) {
-        continue;
-      }
+    if (hasNegative(rule)) {
+      continue;
     }
 
-    // Check for matching keywords
-    const matchedInTitle: string[] = [];
-    const matchedInDesc: string[] = [];
+    const matchedInTitle = rule.keywords.filter(kw => keywordMatches(titleLower, kw));
 
-    for (const keyword of rule.keywords) {
-      if (titleLower.includes(keyword)) {
-        matchedInTitle.push(keyword);
-      } else if (descLower.includes(keyword)) {
-        matchedInDesc.push(keyword);
-      }
-    }
-
-    // Determine confidence based on where matches were found
     if (matchedInTitle.length > 0) {
       // Match in title = high confidence
       const confidence: ConfidenceLevel = matchedInTitle.length >= 2 ? 'high' :
@@ -563,6 +593,15 @@ export function detectContentTypeWithConfidence(
         reasoning: `Found "${matchedInTitle.join('", "')}" in title`,
       };
     }
+  }
+
+  // PASS 2: description-only matches, used when the title was uninformative
+  for (const rule of sortedRules) {
+    if (hasNegative(rule)) {
+      continue;
+    }
+
+    const matchedInDesc = rule.keywords.filter(kw => keywordMatches(descLower, kw));
 
     if (matchedInDesc.length >= 2) {
       // Multiple matches in description = medium confidence

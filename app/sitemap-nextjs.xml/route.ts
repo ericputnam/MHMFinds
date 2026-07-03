@@ -6,25 +6,28 @@ export async function GET() {
   // Use a stable date rather than Date.now() — dynamic timestamps
   // make lastmod meaningless since it changes on every request.
   // Update this date when the Next.js app pages actually change.
-  const appLastmod = '2026-04-09';
+  const appLastmod = '2026-07-03';
 
   // /blog is omitted here — it lives in sitemap-blog-pages.xml as /blog/
   // to avoid duplicate entries across sitemaps.
 
+  // All locs use trailing slashes: next.config.js sets trailingSlash:
+  // true, so non-slash URLs 308-redirect. Sitemap entries pointing at
+  // redirects split indexing signals with the canonical variant.
   const staticUrls = [
     { loc: `${baseUrl}/`, priority: '1.0', changefreq: 'daily' },
-    { loc: `${baseUrl}/mods`, priority: '0.9', changefreq: 'daily' },
-    { loc: `${baseUrl}/creators`, priority: '0.7', changefreq: 'weekly' },
-    { loc: `${baseUrl}/games/sims-4`, priority: '0.9', changefreq: 'daily' },
-    { loc: `${baseUrl}/games/stardew-valley`, priority: '0.9', changefreq: 'daily' },
-    { loc: `${baseUrl}/games/minecraft`, priority: '0.9', changefreq: 'daily' },
+    { loc: `${baseUrl}/mods/`, priority: '0.9', changefreq: 'daily' },
+    { loc: `${baseUrl}/creators/`, priority: '0.7', changefreq: 'weekly' },
+    { loc: `${baseUrl}/games/sims-4/`, priority: '0.9', changefreq: 'daily' },
+    { loc: `${baseUrl}/games/stardew-valley/`, priority: '0.9', changefreq: 'daily' },
+    { loc: `${baseUrl}/games/minecraft/`, priority: '0.9', changefreq: 'daily' },
   ];
 
   // Collection topic pages — /games/[game]/[topic]. Higher priority
   // than bare /games/[game] because these are the Pinterest funnel
   // entry points (Revenue Pivot Initiative 1).
   const collectionUrls = getAllCollectionRoutes().map((r) => ({
-    loc: `${baseUrl}/games/${r.gameSlug}/${r.topicSlug}`,
+    loc: `${baseUrl}/games/${r.gameSlug}/${r.topicSlug}/`,
     priority: '0.85',
     changefreq: 'weekly',
   }));

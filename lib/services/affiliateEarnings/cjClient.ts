@@ -60,8 +60,8 @@ export const cjClient: NetworkClient = {
       const query = `{
         publisherCommissions(
           forPublishers: ["${publisherId}"],
-          sincePostingDate: "${since.toISOString()}",
-          beforePostingDate: "${until.toISOString()}"${cursorArg}
+          sincePostingDate: "${since.toISOString().slice(0, 19)}Z",
+          beforePostingDate: "${until.toISOString().slice(0, 19)}Z"${cursorArg}
         ) {
           count
           payloadComplete
