@@ -1,6 +1,6 @@
 ---
 name: git-commit-custom
-description: Creates git commits with clean commit messages. Use when user asks to commit changes, create commits, make commits, or save changes to git. Generates concise commit messages without Claude Code footer tokens.
+description: Creates git commits with clean commit messages and NO Claude attribution of any kind. Use ONLY when the user explicitly asks for a clean/unattributed commit (e.g. for public-facing repos). For normal commits in this repo, use /commitit (checkpoint on feature branch) or /committhis (simple commit) instead - the repo convention includes a Co-Authored-By trailer naming the current model.
 allowed-tools: [Bash(git:*), Bash(gh:*)]
 ---
 
@@ -79,7 +79,7 @@ EOF
 
 ❌ Do NOT add these to commit messages:
 - "🤖 Generated with [Claude Code]..."
-- "Co-Authored-By: Claude Sonnet..."
+- Co-Authored-By trailers naming any Claude model
 - Any Claude Code branding or tokens
 - Analysis headers or conversation markers
 - Code review comments
