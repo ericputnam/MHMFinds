@@ -111,7 +111,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-2xl font-bold mb-4 text-white">7. Affiliate Disclosure</h2>
                 <p className="text-slate-300 leading-relaxed mb-4">
-                  Must Have Mods participates in affiliate programs including Amazon Associates. We may earn commissions on qualifying purchases.
+                  Must Have Mods participates in affiliate programs including Amazon Associates, Impact.com partners (such as Canva and Green Man Gaming), Awin partners (such as Kinguin), Displate, CDKeys, and NordVPN. We may earn commissions on qualifying purchases made through links on the Site.
                 </p>
                 <p className="text-slate-300 leading-relaxed">
                   Affiliate relationships do not influence editorial content.

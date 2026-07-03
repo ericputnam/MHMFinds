@@ -13,9 +13,12 @@ export async function GET(request: NextRequest) {
 
     const now = new Date();
 
-    // Build where clause
+    // Build where clause. personaValidated keeps placeholder/unvetted offers
+    // (e.g. seeded rows awaiting real tracking links) out of the grid — /match
+    // applies the same gate.
     const where: any = {
       isActive: true,
+      personaValidated: true,
       OR: [
         { startDate: null },
         { startDate: { lte: now } },

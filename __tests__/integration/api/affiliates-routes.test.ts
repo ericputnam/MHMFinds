@@ -5,6 +5,7 @@ import { mockPrismaClient, resetPrismaMocks } from '../../setup/mocks/prisma';
 
 import { GET as getAffiliates } from '@/app/api/affiliates/route';
 import { POST as trackClick } from '@/app/api/affiliates/click/route';
+import { POST as matchProducts } from '@/app/api/affiliates/match/route';
 
 describe('API /api/affiliates*', () => {
   beforeEach(() => {
@@ -53,6 +54,35 @@ describe('API /api/affiliates*', () => {
     expect(json.offers).toHaveLength(2);
     expect(json.offers[0].priority).toBeUndefined();
     expect(mockPrismaClient.affiliateOffer.updateMany).toHaveBeenCalled();
+    // Unvetted (placeholder-link) offers must never serve on the grid path
+    expect(mockPrismaClient.affiliateOffer.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ isActive: true, personaValidated: true }),
+      })
+    );
+  });
+
+  it('counts impressions for POST /api/affiliates/match', async () => {
+    mockPrismaClient.affiliateOffer.findMany.mockResolvedValue([
+      { id: 'o1', name: 'Offer One', partner: 'displate', category: 'decor' },
+      { id: 'o2', name: 'Offer Two', partner: 'kinguin', category: 'games' },
+    ] as any);
+    mockPrismaClient.affiliateOffer.updateMany.mockResolvedValue({ count: 2 } as any);
+
+    const request = new NextRequest('http://localhost:3000/api/affiliates/match', {
+      method: 'POST',
+      body: JSON.stringify({ themes: ['cozy'], limit: 2 }),
+    });
+
+    const response = await matchProducts(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.products).toHaveLength(2);
+    expect(mockPrismaClient.affiliateOffer.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['o1', 'o2'] } },
+      data: { impressions: { increment: 1 } },
+    });
   });
 
   it('validates required fields for click tracking', async () => {
@@ -94,5 +124,34 @@ describe('API /api/affiliates*', () => {
     expect(response.status).toBe(200);
     expect(json.success).toBe(true);
     expect(json.redirectUrl).toBe('https://example.com/redirect');
+  });
+
+  it('injects the click id as the network subid in the redirect url', async () => {
+    mockPrismaClient.$transaction.mockResolvedValue([
+      { id: 'c1' },
+      {
+        id: 'o1',
+        affiliateUrl: 'https://greenmangaming.sjv.io/c/123/456/789',
+        network: 'impact',
+      },
+    ] as any);
+
+    const request = new NextRequest('http://localhost:3000/api/affiliates/click', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.10.10.10', 'user-agent': 'vitest' },
+      body: JSON.stringify({
+        offerId: 'o1',
+        sourceType: 'interstitial',
+        modId: 'm1',
+        pageUrl: '/go/m1',
+      }),
+    });
+
+    const response = await trackClick(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    const redirect = new URL(json.redirectUrl);
+    expect(redirect.searchParams.get('subId1')).toBe('c1');
   });
 });
