@@ -24,6 +24,22 @@ import type { MetricsSummary } from '../mcp-mediavine/client.js';
 const PROJECT_DIR = '/Users/eputnam/java_projects/MHMFinds';
 const TOKEN_WARN_DAYS = 21;
 
+// --- Q3 Recovery Watch (seasonal CPM dip, Jun 29 2026) -----------------------
+// Session RPM fell ~$25 → $17 across Jun 29-30 2026 on a pure CPM drop (Q2→Q3
+// ad-budget reset; same -20% event occurred Jul 2025). Root cause + plan:
+// reports/rpm-dip-mitigation-2026-07-02.md. This section tracks the recovery and
+// self-retires after RECOVERY_WATCH_END.
+const RECOVERY_WATCH_END = '2026-08-15';
+const RECOVERY_CPM_TARGET = 0.95; // blended CPM ($/1000 paid impressions)
+const RECOVERY_ESCALATE_AFTER = '2026-07-21'; // 3 wks past the 2025 recovery point
+const WATCHED_DSPS = ['The Trade Desk', 'Kargo', 'GumGum']; // sharpest late-June pullback
+
+interface AdvertiserRow {
+  partner: string;
+  revenue: number;
+  cpm: number;
+}
+
 function isoDaysAgo(n: number): string {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - n);
@@ -123,6 +139,51 @@ async function main() {
       md += `_No page data returned._\n`;
     }
     md += `\n`;
+
+    // --- Q3 Recovery Watch --------------------------------------------------
+    if (today <= RECOVERY_WATCH_END) {
+      md += `## Q3 Recovery Watch (seasonal CPM dip — see reports/rpm-dip-mitigation-2026-07-02.md)\n\n`;
+      try {
+        const [advCurr, advPrev] = await Promise.all([
+          client.advertisers(isoDaysAgo(7), isoDaysAgo(1)) as Promise<{ advertisers?: AdvertiserRow[] }>,
+          client.advertisers(isoDaysAgo(14), isoDaysAgo(8)) as Promise<{ advertisers?: AdvertiserRow[] }>,
+        ]);
+
+        const latestCpm =
+          latest && Number(latest.paid_impressions) > 0
+            ? (Number(latest.revenue) / Number(latest.paid_impressions)) * 1000
+            : null;
+        if (latestCpm != null) {
+          const recovered = latestCpm >= RECOVERY_CPM_TARGET;
+          const icon = recovered ? '🟢' : today > RECOVERY_ESCALATE_AFTER ? '🔴' : '🟡';
+          md += `- ${icon} **Blended CPM (latest day)**: $${latestCpm.toFixed(2)} — target $${RECOVERY_CPM_TARGET.toFixed(2)} `;
+          md += recovered ? `(recovered)\n` : `(recovering; dip began 2026-06-29)\n`;
+          if (!recovered && today > RECOVERY_ESCALATE_AFTER) {
+            md += `- 🔴 **ESCALATE**: CPM has not recovered by ${RECOVERY_ESCALATE_AFTER} (3 weeks past the 2025 recovery point). A second, non-seasonal factor may be in play — run a full ad-stack/code audit.\n`;
+          }
+        }
+
+        const currRows = advCurr.advertisers ?? [];
+        const prevRows = advPrev.advertisers ?? [];
+        md += `- **DSP re-acceleration** (leading indicator of Q3 budgets flowing; revenue last 7d vs prior 7d):\n`;
+        for (const name of WATCHED_DSPS) {
+          const c = currRows.find((r) => r.partner === name);
+          const p = prevRows.find((r) => r.partner === name);
+          if (!c && !p) {
+            md += `  - ${name}: no data\n`;
+            continue;
+          }
+          const cr = c?.revenue ?? 0;
+          const pr = p?.revenue ?? 0;
+          const pct = pr ? ((cr - pr) / pr) * 100 : null;
+          const arrow = pct == null ? '▪️' : pct > 5 ? '🔺' : pct < -5 ? '🔻' : '▪️';
+          md += `  - ${name}: ${money(cr)} vs ${money(pr)} ${arrow}${pct != null ? ` ${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% WoW` : ''} (CPM $${(c?.cpm ?? 0).toFixed(2)})\n`;
+        }
+      } catch (err) {
+        md += `- ⚪ Recovery-watch data unavailable: ${(err as Error).message}\n`;
+      }
+      md += `\n`;
+    }
 
     if (daysLeft != null) md += `---\n_Token valid ~${daysLeft} more days. Site ${siteId}._\n`;
   } catch (err) {
