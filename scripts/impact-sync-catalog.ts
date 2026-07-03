@@ -157,7 +157,9 @@ const DEEPLINK_TARGETS = [
         description:
           'The free-to-start video editor behind most Sims TikToks. Pro unlocks premium effects, auto-captions, and background removal for your builds and CAS videos.',
         deepLink: 'https://www.capcut.com/',
-        imageUrl: 'https://lf16-web-buz.capcut.com/obj/capcut-web-buz-us/common/images/new_logo.png',
+        // CapCut's official og:image (their old /common/images/new_logo.png 404s).
+        imageUrl:
+          'https://p16-seeyou-useast8.capcutcdn-us.com/tos-useast8-i-2zwwjm3azk-tx2/af60401275b14f6684c2af1f7564d717~tplv-2zwwjm3azk-image.image',
         matchingThemes: ALL_THEMES,
         priority: 60,
       },
@@ -203,6 +205,39 @@ async function mintTrackingLink(programId: string, deepLink: string): Promise<st
   return json?.TrackingURL ?? null;
 }
 
+/**
+ * Partner product feeds (especially Shopify-based ones like GTRacing) ship
+ * descriptions polluted with raw HTML tags and CSS rules. Strip both; if
+ * nothing readable survives, return null — no description beats garbage.
+ */
+function sanitizeDescription(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  let text = raw
+    .replace(/<[^>]*>/g, ' ') // HTML tags
+    .replace(/[^{}]*\{[^{}]*\}/g, ' ') // CSS rule blocks (selector { ... })
+    .replace(/&[a-z]+;/gi, ' ') // HTML entities
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Leftover selector fragments ("#shopify-section...", ".sp-N-padding ...")
+  text = text.replace(/(^|\s)[.#][\w>.,\s-]+(?=\s|$)/g, ' ').replace(/\s+/g, ' ').trim();
+  if (text.length < 30 || /[{}]|<\/?\w+/.test(text)) return null;
+  return text.slice(0, 240);
+}
+
+/** A broken product image renders as an ugly alt-text card — verify at sync time. */
+async function imageLoads(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', Range: 'bytes=0-0' },
+      signal: AbortSignal.timeout(10000),
+    });
+    return res.ok && (res.headers.get('content-type') ?? '').startsWith('image');
+  } catch {
+    return false;
+  }
+}
+
 /** Score an item against a target's keywords; 0 = off-topic. */
 function scoreItem(item: ImpactItem, target: CatalogTarget): number {
   const hay = `${item.Name ?? ''} ${item.Description ?? ''}`.toLowerCase();
@@ -243,7 +278,7 @@ async function collectCatalogOffers(target: CatalogTarget) {
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, target.maxOffers).map(({ item }) => ({
     name: item.Name!.slice(0, 120),
-    description: (item.Description ?? '').replace(/\s+/g, ' ').trim().slice(0, 240) || null,
+    description: sanitizeDescription(item.Description),
     imageUrl: item.ImageUrl!,
     affiliateUrl: item.Url!,
     partner: target.partner,
@@ -359,12 +394,22 @@ async function main() {
     }
   }
 
-  // 3. Upsert.
-  console.log(`\n=== ${DRY_RUN ? 'Would sync' : 'Syncing'} ${collected.length} offers ===`);
+  // 3. Validate images — a dead image URL renders as a broken alt-text card.
+  const validated: OfferInput[] = [];
+  for (const offer of collected) {
+    if (await imageLoads(offer.imageUrl)) {
+      validated.push(offer);
+    } else {
+      console.log(`  ✗ Dropping "${offer.name.slice(0, 55)}" — image failed to load`);
+    }
+  }
+
+  // 4. Upsert.
+  console.log(`\n=== ${DRY_RUN ? 'Would sync' : 'Syncing'} ${validated.length} offers ===`);
   let created = 0;
   let updated = 0;
   let skipped = 0;
-  for (const offer of collected) {
+  for (const offer of validated) {
     console.log(`  [${offer.partner}/${offer.category}] ${offer.name.slice(0, 70)}`);
     if (DRY_RUN) continue;
     const result = await upsertOffer(offer);
