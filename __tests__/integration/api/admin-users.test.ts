@@ -7,6 +7,15 @@ vi.mock('@/lib/middleware/auth', () => ({
   requireAdmin: vi.fn(),
 }));
 
+vi.mock('next-auth', () => ({
+  getServerSession: vi.fn(),
+}));
+
+vi.mock('@/lib/authOptions', () => ({
+  authOptions: {},
+}));
+
+import { getServerSession } from 'next-auth';
 import { requireAdmin } from '@/lib/middleware/auth';
 import { GET as getUsers } from '@/app/api/admin/users/route';
 import { GET as getUserStats } from '@/app/api/admin/users/stats/route';
@@ -15,6 +24,11 @@ describe('API /api/admin/users*', () => {
   beforeEach(() => {
     resetPrismaMocks();
     vi.clearAllMocks();
+    // Routes also call getServerSession(authOptions) directly as a second
+    // auth layer (defense-in-depth), so it must resolve to an admin session.
+    vi.mocked(getServerSession).mockResolvedValue({
+      user: { id: 'admin-1', isAdmin: true },
+    } as any);
   });
 
   it('rejects unauthorized access for users list', async () => {
