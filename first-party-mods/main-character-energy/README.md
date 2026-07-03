@@ -33,27 +33,47 @@ against two independent sources (Zerbu's Mod Constructor presets and
 TURBODRIVER's extracted tuning), not from memory:
 
 - Mood instance IDs: Confident 14634, Energized 14636, Happy 14640,
-  Inspired 14641, Playful 14642
+  Inspired 14641, Playful 14642 (14634 re-confirmed live from the installed
+  game's own `Buff_View_Confident`)
 - `TraitType.PERSONALITY = 0` (decompiled `simulation/traits/trait_type.py`)
-- Trait SimData schema hash `0x992BFA76` (group `0x005FDD0C`), Buff SimData
-  schema hash `0x71722956` (group `0x0017E8F6`)
+- **SimData schemas extracted from the installed game itself** (see
+  `extract-game-schema.js` and `templates/game_*_current.xml`): Trait schema
+  hash `0x236FC540` (25 columns, group `0x005FDD0C`), Buff schema hash
+  `0xDCE584D3` (12 columns, group `0x0017E8F6`). Older community-documented
+  hashes are silently rejected by the current game — this was the root cause
+  of the traits not appearing in CAS during the first live test.
+- CAS personality traits use **FNV32** instance IDs (64-bit hashes cause
+  "Unknown Trait" in the Sim profile); buffs use FNV64
+- Traits must carry tags `TraitPersonality` (234) plus a `TraitGroup_*`
+  (753-756) or the CAS trait picker filters them out; numeric values
+  confirmed against Sims4CommunityLibrary's tag enum and the game's own
+  trait_Ambitious/trait_Cheerful SimData
+- `always_on_buffs` carries the permanent moodlet (matches current shipping
+  personality-trait mods; confirmed working live)
 - STBL group `0x80000000`, locale code in instance high byte
 - Icons ship as both PNG (`0x2F7D0004`) and shuffled DST DDS (`0x00B2D882`)
   under the same instance, matching how shipping mods do it
-- Every tunable field name in the trait and buff XML was checked against
-  decompiled EA simulation code (`simulation/traits/traits.py`,
-  `simulation/buffs/buff.py`, `simulation/sims/lod_mixin.py`). This caught
-  one issue: `always_on_buffs` is not present in that decompile, so the
-  traits use the verified classic `buffs` list instead ("Buffs that should
-  be added to the Sim whenever this trait is equipped" per EA's own
-  docstring), matching the XML shape of shipping trait mods
 
 `validate.js` re-parses every resource from the final file: DBPF header,
 tuning XML class/module/instance hashes, SimData round-trips, string-key
 cross-references (every key referenced by tuning must exist in every STBL),
 buff↔trait references, icon instance references, and DST shuffle state.
 
-## In-game QA checklist (must pass before public launch)
+## In-game QA status: PASSED (2026-07-03)
+
+Verified live on a real install (macOS, current game version):
+
+- Game lists the package under Custom Content at startup
+- All 4 traits appear in the CAS personality trait picker with icons and text
+- Moodlet confirmed in Live Mode: "Confident +1 — Main Character Energy" with
+  our buff description and custom icons rendering in the moodlet bar
+- Zero `lastException`/`lastUIException` files across the entire session
+- First lot load after a fresh install can hang for several minutes (shader
+  cache warmup, 75% CPU) — not mod-related; second load is fast
+
+Optional remaining check: trait persistence across save/reload.
+
+## In-game QA checklist (for future versions)
 
 Static validation cannot replace a live game test. Before posting the
 download link publicly, run this 5-minute smoke test on a real install:

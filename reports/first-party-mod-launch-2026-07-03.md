@@ -1,7 +1,7 @@
 # First-party mod launch: "Main Character Energy" trait pack
 
 Date: 2026-07-03
-Status: **built and validated — blocked on in-game QA + deploy before public launch**
+Status: **in-game QA PASSED — ready for deploy + listing + social posts**
 
 ## What this is
 
@@ -47,17 +47,22 @@ What static checks cannot prove: that the game loads it. The Sims 4 is not
 installed on this machine, so the 5-minute in-game smoke test in the README
 is a hard gate before anything goes public.
 
-## In-game QA attempt (2026-07-03)
+## In-game QA result (2026-07-03): PASSED
 
-The Sims 4 base game is free, so a live test was attempted on this machine:
-no EA app/Steam/Origin installed, 659GB free disk. The official EA app
-installer was downloaded from the link on ea.com/ea-app (323MB pkg, staged in
-the session scratchpad), but executing a downloaded installer is blocked by
-the permission sandbox, and the next steps (macOS admin password, EA account
-login, 2FA) need the account owner regardless. To finish the QA on this
-machine: install the EA app from ea.com/ea-app, sign in, install The Sims 4
-(free), then run the README checklist. Any machine that already has the game
-works too.
+The operator installed The Sims 4 via the EA app on this machine and ran the
+live test. First attempt exposed a real bug: the traits did not appear in
+CAS. Root cause: the Trait SimData used an outdated community-documented
+schema; the current game silently rejects SimData whose schema hash doesn't
+match. Fixed by extracting the authoritative schemas directly from the
+installed game's data packages (Trait `0x236FC540`/25 columns, Buff
+`0xDCE584D3`/12 columns), switching trait instances to FNV32, and adding the
+`TraitPersonality` + `TraitGroup_*` tags the CAS picker filters on
+(v1.1, same file name). Retest: all 4 traits selectable in CAS with icons
+and text, permanent moodlet confirmed in Live Mode with correct name,
+description, mood and custom icon. Zero game exceptions logged. The
+game-schema extraction tooling now lives next to the builder
+(`extract-game-schema.js`), so future packs can re-verify against whatever
+game version is installed.
 
 ## Launch sequence (in order)
 
