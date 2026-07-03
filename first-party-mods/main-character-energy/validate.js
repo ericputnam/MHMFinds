@@ -88,8 +88,11 @@ for (const e of traits) {
   console.log(` -- ${name}`);
   ok(attr(xml, "c") === "Trait" && attr(xml, "m") === "traits.traits", "class/module correct");
   ok(inst === e.key.instance, "tuning s= matches resource key instance");
-  ok(inst === fnv64(name), "instance is fnv64(name)");
+  ok(inst === BigInt(require("@s4tk/hashing").fnv32(name)), "instance is fnv32(name) — CAS trait rule");
   ok(xml.includes('n="trait_type">PERSONALITY'), "trait_type PERSONALITY");
+  ok(xml.includes("<E>TraitPersonality</E>"), "tags include TraitPersonality");
+  ok(/TraitGroup_(Emotional|Hobbies|Lifestyle|Social)/.test(xml), "tags include a TraitGroup_*");
+  ok(xml.includes("<E>HUMAN</E>"), "species HUMAN");
   ok(xml.includes("<E>TEEN</E>") && xml.includes("<E>ELDER</E>"), "ages include TEEN..ELDER");
 
   // paired SimData in trait group
@@ -99,8 +102,14 @@ for (const e of traits) {
     const parsed = SimDataResource.from(sd.value.getBuffer ? sd.value.getBuffer() : sd.value.buffer);
     const sdXml = parsed.toXmlDocument().toXml();
     ok(sdXml.includes(`name="${name}"`), "SimData instance name matches tuning name");
-    ok(sdXml.includes('schema="Trait"') || sdXml.includes('name="Trait"'), "SimData uses Trait schema");
-    ok(sdXml.includes('name="trait_type">0<') || /name="trait_type"[^>]*>0</.test(sdXml), "SimData trait_type=0 (PERSONALITY)");
+    ok(/schema_hash="0x236FC540"/i.test(sdXml), "SimData schema hash matches installed game (0x236FC540)");
+    ok((sdXml.match(/<Column /g) || []).length === 25, "SimData schema has 25 columns");
+    ok(sdXml.includes(">234<"), "SimData tags include TraitPersonality (234)");
+    ok(/name="trait_type"[^>]*>0</.test(sdXml), "SimData trait_type=0 (PERSONALITY)");
+    // structural equivalence with the schema extracted from the game
+    const gameSchema = fs.readFileSync(path.join(__dirname, "templates", "game_trait_simdata_current.xml"), "utf8");
+    const cols = (x) => [...x.matchAll(/<Column name="([^"]+)" type="([^"]+)"/g)].map((m) => m[1] + ":" + m[2]).join(",");
+    ok(cols(sdXml) === cols(gameSchema), "SimData columns exactly match game-extracted schema");
   }
 
   // referenced buff exists
@@ -143,6 +152,10 @@ for (const e of buffs) {
     const sdXml = parsed.toXmlDocument().toXml();
     ok(sdXml.includes(`name="${name}"`), "SimData name matches");
     ok(sdXml.includes(`name="mood_type">${mood}<`), "SimData mood_type matches tuning");
+    ok(/schema_hash="0xDCE584D3"/i.test(sdXml), "Buff SimData schema hash matches installed game (0xDCE584D3)");
+    const gameBuffSchema = fs.readFileSync(path.join(__dirname, "templates", "game_buff_simdata_current.xml"), "utf8");
+    const bcols = (x) => [...x.matchAll(/<Column name="([^"]+)" type="([^"]+)"/g)].map((m) => m[1] + ":" + m[2]).join(",");
+    ok(bcols(sdXml) === [...new Set(bcols(gameBuffSchema).split(","))].join(","), "Buff SimData columns match game-extracted schema");
   }
   for (const sname of ["buff_name", "buff_description"]) {
     const key = parseInt(tunable(xml, sname), 16);

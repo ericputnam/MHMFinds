@@ -1,0 +1,56 @@
+{
+  "trait_Ambitious": {
+    "tags": [
+      "234",
+      "753"
+    ],
+    "ui_variant": "0x603EAA6C",
+    "ui_value": "0",
+    "instance": "16823"
+  },
+  "trait_Geek": {
+    "tags": [
+      "234",
+      "754"
+    ],
+    "ui_variant": "0x603EAA6C",
+    "ui_value": "0",
+    "instance": "16841"
+  },
+  "trait_Creative": {
+    "tags": [
+      "234",
+      "753"
+    ],
+    "ui_variant": "0x603EAA6C",
+    "ui_value": "0",
+    "instance": "16850"
+  },
+  "trait_Loner": {
+    "tags": [
+      "234",
+      "756"
+    ],
+    "ui_variant": "0x603EAA6C",
+    "ui_value": "0",
+    "instance": "9602"
+  },
+  "trait_Cheerful": {
+    "tags": [
+      "234",
+      "753"
+    ],
+    "ui_variant": "0x603EAA6C",
+    "ui_value": "0",
+    "instance": "9322"
+  },
+  "trait_Goofball": {
+    "tags": [
+      "234",
+      "753"
+    ],
+    "ui_variant": "0x603EAA6C",
+    "ui_value": "0",
+    "instance": "9337"
+  }
+}

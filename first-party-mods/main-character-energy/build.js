@@ -1,10 +1,23 @@
 /**
- * MHM "Main Character Energy" Trait Pack — package builder
+ * MHM "Main Character Energy" Trait Pack — package builder (v1.1)
  *
  * Builds a Sims 4 .package containing 4 CAS personality traits, each with a
  * permanent always-on mood buff, custom icons, and string tables for all 18
- * game locales. All game constants verified against extracted game tuning
- * (see VERIFIED-CONSTANTS.md).
+ * game locales.
+ *
+ * v1.1 fixes (root cause of traits not appearing in CAS):
+ * - Trait SimData now uses the CURRENT 25-column schema (hash 0x236FC540),
+ *   extracted directly from this machine's installed game (trait_Ambitious
+ *   in ClientDeltaBuild0.package). The old 13-column schema was silently
+ *   rejected by the game, so CAS never saw the traits.
+ * - Buff SimData now uses the current 12-column schema (hash 0xDCE584D3),
+ *   extracted from Buff_View_Confident in the same game data.
+ * - Trait tuning + SimData instances now use FNV32 (CAS personality traits
+ *   use 32-bit IDs; 64-bit shows "Unknown Trait" in the Sim profile).
+ *   Buffs keep FNV64.
+ * - Traits now carry tags TraitPersonality (234) + a TraitGroup_* so the CAS
+ *   trait picker's category filter includes them.
+ * - species HUMAN in tuning, species [1] in SimData.
  */
 const fs = require("fs");
 const path = require("path");
@@ -20,17 +33,27 @@ const ICON_DIR = path.join(OUT_DIR, "icons");
 fs.mkdirSync(ICON_DIR, { recursive: true });
 
 // ---------------------------------------------------------------------------
-// Verified game constants (do not change without re-verifying)
+// Verified game constants — extracted from the installed game and cross-
+// checked against Sims4CommunityLibrary + Zerbu Mod Constructor. Do not
+// change without re-extracting (see extract-game-schema.js).
 // ---------------------------------------------------------------------------
 const MOODS = {
-  Confident: 14634n,
+  Confident: 14634n, // confirmed live: Buff_View_Confident mood_type=14634
   Energized: 14636n,
   Happy: 14640n,
   Inspired: 14641n,
   Playful: 14642n,
 };
 const AGE = { TEEN: 8n, YOUNGADULT: 16n, ADULT: 32n, ELDER: 64n };
-const TRAIT_TYPE_PERSONALITY = 0n; // sims4 TraitType.PERSONALITY
+const TAG = {
+  TraitPersonality: 234,
+  TraitGroup_Emotional: 753,
+  TraitGroup_Hobbies: 754,
+  TraitGroup_Lifestyle: 755,
+  TraitGroup_Social: 756,
+};
+const TRAIT_SCHEMA_HASH = "0x236FC540"; // 25 columns, current install
+const BUFF_SCHEMA_HASH = "0xDCE584D3"; // 12 columns, current install
 
 // ---------------------------------------------------------------------------
 // Trait pack definition
@@ -48,6 +71,7 @@ const TRAITS = [
     buffName: "Main Character Energy",
     buffDesc: "Somebody has to be the moment. It might as well be this Sim.",
     mood: "Confident",
+    group: "TraitGroup_Social",
     color: [242, 140, 68], // warm amber
     glyph: "star",
   },
@@ -60,6 +84,7 @@ const TRAITS = [
     buffName: "Golden Retriever Energy",
     buffDesc: "Life is a tennis ball and this Sim will absolutely chase it.",
     mood: "Playful",
+    group: "TraitGroup_Social",
     color: [240, 180, 84], // golden
     glyph: "paw",
   },
@@ -72,6 +97,7 @@ const TRAITS = [
     buffName: "Certified Delulu",
     buffDesc: "Reality is negotiable and this Sim negotiated a better deal.",
     mood: "Happy",
+    group: "TraitGroup_Emotional",
     color: [199, 155, 242], // lilac
     glyph: "heart",
   },
@@ -85,6 +111,7 @@ const TRAITS = [
     buffName: "Meadow Mind",
     buffDesc: "The soft life is not a dream. It is a lifestyle choice.",
     mood: "Inspired",
+    group: "TraitGroup_Lifestyle",
     color: [126, 178, 122], // sage
     glyph: "mushroom",
   },
@@ -165,7 +192,7 @@ function glyphTest(glyph, x, y) {
   return false;
 }
 
-// mushroom cap dots + heart shine drawn in badge color on top of glyph
+// mushroom cap dots drawn in badge color on top of glyph
 function glyphCutout(glyph, x, y) {
   const c = SIZE / 2;
   if (glyph === "mushroom") {
@@ -219,7 +246,9 @@ async function buildIcon(trait) {
 }
 
 // ---------------------------------------------------------------------------
-// XML builders (mirroring verified templates from extracted game mods)
+// XML builders — mirror the CURRENT structures extracted from the installed
+// game (templates/game_trait_simdata_current.xml, game_buff_simdata_current)
+// and the working LilNinthel PERSONALITY trait tuning.
 // ---------------------------------------------------------------------------
 function traitTuningXml(t, ids) {
   return `<?xml version="1.0" encoding="utf-8"?>
@@ -230,7 +259,7 @@ function traitTuningXml(t, ids) {
     <E>ADULT</E>
     <E>ELDER</E>
   </L>
-  <L n="buffs">
+  <L n="always_on_buffs">
     <U>
       <T n="buff_type">${ids.buffInst}<!--${ids.buffName}--></T>
     </U>
@@ -240,6 +269,13 @@ function traitTuningXml(t, ids) {
   <T n="display_name_gender_neutral">${hex32(ids.nameKey)}<!--${t.displayName}--></T>
   <T n="icon" p="${t.key}Icon">2f7d0004:00000000:${hexInst(ids.iconInst)}</T>
   <E n="min_lod_value">MINIMUM</E>
+  <L n="species">
+    <E>HUMAN</E>
+  </L>
+  <L n="tags">
+    <E>TraitPersonality</E>
+    <E>${t.group}</E>
+  </L>
   <T n="trait_description">${hex32(ids.descKey)}<!--trait description--></T>
   <E n="trait_type">PERSONALITY</E>
 </I>`;
@@ -256,36 +292,67 @@ function traitSimDataXml(t, ids) {
         <T type="Int64">${AGE.ADULT}</T>
         <T type="Int64">${AGE.ELDER}</T>
       </L>
+      <L name="bb_filter_styles" />
+      <L name="bb_filter_tags" />
+      <T name="cas_allowed_pack">0</T>
       <T name="cas_idle_asm_key">00000000-00000000-0000000000000000</T>
       <T name="cas_idle_asm_state"></T>
       <T name="cas_selected_icon">00000000-00000000-0000000000000000</T>
-      <T name="cas_trait_asm_param">None</T>
+      <T name="cas_trait_asm_param"></T>
+      <T name="cas_trait_hidden">0</T>
+      <T name="cas_trait_vfx"></T>
       <L name="conflicting_traits" />
       <T name="display_name">${hex32(ids.nameKey)}</T>
+      <T name="display_name_gender_neutral">${hex32(ids.nameKey)}</T>
+      <L name="display_overrides" />
       <L name="genders" />
       <T name="icon">00B2D882-00000000-${hexInst(ids.iconInst).toUpperCase()}</T>
-      <L name="tags" />
+      <L name="occults" />
+      <T name="refresh_sim_thumbnail">0</T>
+      <L name="species">
+        <T type="Int64">1</T>
+      </L>
+      <L name="tags">
+        <T type="Int64">${TAG.TraitPersonality}</T>
+        <T type="Int64">${TAG[t.group]}</T>
+      </L>
+      <T name="thumbnail_type_asm_param"></T>
       <T name="trait_description">${hex32(ids.descKey)}</T>
       <T name="trait_origin_description">0x00000000</T>
-      <T name="trait_type">${TRAIT_TYPE_PERSONALITY}</T>
+      <T name="trait_type">0</T>
+      <V name="ui_category" variant="0x603EAA6C">
+        <T type="Int64">0</T>
+      </V>
     </I>
   </Instances>
   <Schemas>
-    <Schema name="Trait" schema_hash="0x992BFA76">
+    <Schema name="Trait" schema_hash="${TRAIT_SCHEMA_HASH}">
       <Columns>
         <Column name="ages" type="Vector" flags="0x00000000" />
+        <Column name="bb_filter_styles" type="Vector" flags="0x00000000" />
+        <Column name="bb_filter_tags" type="Vector" flags="0x00000000" />
+        <Column name="cas_allowed_pack" type="Int64" flags="0x00000000" />
         <Column name="cas_idle_asm_key" type="ResourceKey" flags="0x00000000" />
         <Column name="cas_idle_asm_state" type="String" flags="0x00000000" />
         <Column name="cas_selected_icon" type="ResourceKey" flags="0x00000000" />
         <Column name="cas_trait_asm_param" type="String" flags="0x00000000" />
+        <Column name="cas_trait_hidden" type="Boolean" flags="0x00000000" />
+        <Column name="cas_trait_vfx" type="String" flags="0x00000000" />
         <Column name="conflicting_traits" type="Vector" flags="0x00000000" />
         <Column name="display_name" type="LocalizationKey" flags="0x00000000" />
+        <Column name="display_name_gender_neutral" type="LocalizationKey" flags="0x00000000" />
+        <Column name="display_overrides" type="Vector" flags="0x00000000" />
         <Column name="genders" type="Vector" flags="0x00000000" />
         <Column name="icon" type="ResourceKey" flags="0x00000000" />
+        <Column name="occults" type="Vector" flags="0x00000000" />
+        <Column name="refresh_sim_thumbnail" type="Boolean" flags="0x00000000" />
+        <Column name="species" type="Vector" flags="0x00000000" />
         <Column name="tags" type="Vector" flags="0x00000000" />
+        <Column name="thumbnail_type_asm_param" type="String" flags="0x00000000" />
         <Column name="trait_description" type="LocalizationKey" flags="0x00000000" />
         <Column name="trait_origin_description" type="LocalizationKey" flags="0x00000000" />
         <Column name="trait_type" type="Int64" flags="0x00000000" />
+        <Column name="ui_category" type="Variant" flags="0x00000000" />
       </Columns>
     </Schema>
   </Schemas>
@@ -312,28 +379,34 @@ function buffSimDataXml(t, ids) {
 <SimData version="0x00000101" u="0x00000000">
   <Instances>
     <I name="${ids.buffName}" schema="Buff" type="Object">
-      <T name="audio_sting_on_add">39B2AA4A-00000000-8AF8B916CF64C646</T>
-      <T name="audio_sting_on_remove">39B2AA4A-00000000-3BF33216A25546EA</T>
+      <T name="audio_sting_on_add">00000000-00000000-0000000000000000</T>
+      <T name="audio_sting_on_remove">00000000-00000000-0000000000000000</T>
       <T name="buff_description">${hex32(ids.buffDescKey)}</T>
       <T name="buff_name">${hex32(ids.buffNameKey)}</T>
+      <T name="cas_vfx"></T>
       <T name="icon">00B2D882-00000000-${hexInst(ids.iconInst).toUpperCase()}</T>
       <T name="mood_type">${MOODS[t.mood]}</T>
       <T name="mood_weight">1</T>
+      <T name="plumbob_vfx"></T>
       <T name="timeout_string">0x00000000</T>
+      <T name="timeout_string_no_next_buff">0x00000000</T>
       <T name="ui_sort_order">1</T>
     </I>
   </Instances>
   <Schemas>
-    <Schema name="Buff" schema_hash="0x71722956">
+    <Schema name="Buff" schema_hash="${BUFF_SCHEMA_HASH}">
       <Columns>
         <Column name="audio_sting_on_add" type="ResourceKey" flags="0x00000000" />
         <Column name="audio_sting_on_remove" type="ResourceKey" flags="0x00000000" />
         <Column name="buff_description" type="LocalizationKey" flags="0x00000000" />
         <Column name="buff_name" type="LocalizationKey" flags="0x00000000" />
+        <Column name="cas_vfx" type="String" flags="0x00000000" />
         <Column name="icon" type="ResourceKey" flags="0x00000000" />
         <Column name="mood_type" type="TableSetReference" flags="0x00000000" />
         <Column name="mood_weight" type="Int32" flags="0x00000000" />
+        <Column name="plumbob_vfx" type="String" flags="0x00000000" />
         <Column name="timeout_string" type="LocalizationKey" flags="0x00000000" />
+        <Column name="timeout_string_no_next_buff" type="LocalizationKey" flags="0x00000000" />
         <Column name="ui_sort_order" type="Int32" flags="0x00000000" />
       </Columns>
     </Schema>
@@ -356,8 +429,8 @@ async function main() {
     const ids = {
       traitName,
       buffName,
-      traitInst: fnv64(traitName),
-      buffInst: fnv64(buffName),
+      traitInst: BigInt(fnv32(traitName)), // CAS personality traits use FNV32
+      buffInst: fnv64(buffName), // buffs use FNV64
       iconInst: fnv64(iconName),
       nameKey: addString(`${t.key}_TraitName`, t.displayName),
       descKey: addString(`${t.key}_TraitDesc`, t.traitDesc),
@@ -398,10 +471,11 @@ async function main() {
 
     manifest.traits.push({
       trait: traitName,
-      traitInstance: "0x" + hexInst(ids.traitInst).toUpperCase(),
+      traitInstance: ids.traitInst.toString() + " (fnv32)",
       buff: buffName,
       buffInstance: "0x" + hexInst(ids.buffInst).toUpperCase(),
       mood: `Mood_${t.mood} (${MOODS[t.mood]})`,
+      tags: [TAG.TraitPersonality, TAG[t.group]],
       strings: [ids.nameKey, ids.descKey, ids.buffNameKey, ids.buffDescKey].map(hex32),
     });
   }
