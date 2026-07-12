@@ -208,36 +208,6 @@
       "source": "/sims-4-body-presets/",
       "destination": "/games/sims-4/body-presets/",
       "permanent": true
-    },
-    {
-      "source": "/sims-4-male-body-presets-cc",
-      "destination": "/games/sims-4/body-presets/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-male-body-presets-cc/",
-      "destination": "/games/sims-4/body-presets/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-plus-size-body-presets",
-      "destination": "/games/sims-4/body-presets/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-plus-size-body-presets/",
-      "destination": "/games/sims-4/body-presets/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-athletic-body-presets",
-      "destination": "/games/sims-4/body-presets/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-athletic-body-presets/",
-      "destination": "/games/sims-4/body-presets/",
-      "permanent": true
     }
   ],
   "rewrites": [

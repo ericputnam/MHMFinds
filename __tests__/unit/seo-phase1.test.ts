@@ -313,9 +313,17 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
     { from: '/sims-4-gallery-poses/', to: '/games/sims-4/poses/' },
     { from: '/sims-4-pregnancy-mods/', to: '/games/sims-4/pregnancy-mods/' },
     { from: '/sims-4-body-presets/', to: '/games/sims-4/body-presets/' },
-    { from: '/sims-4-male-body-presets-cc/', to: '/games/sims-4/body-presets/' },
-    { from: '/sims-4-plus-size-body-presets/', to: '/games/sims-4/body-presets/' },
-    { from: '/sims-4-athletic-body-presets/', to: '/games/sims-4/body-presets/' },
+  ]
+
+  // Body-presets consolidation is HYBRID (see reports/rpm-dip-mitigation-2026-07-02.md,
+  // "Update 2026-07-03"): only the weak generic pages are redirected. These three niche
+  // pages rank well for their own sub-intents (~600 clicks/quarter) and must stay live —
+  // redirecting them shipped by mistake in 5af9390 and cost 44→19 clicks/wk on the male
+  // page before being reverted (Jul 12).
+  const keepLivePages = [
+    '/sims-4-male-body-presets-cc',
+    '/sims-4-plus-size-body-presets',
+    '/sims-4-athletic-body-presets',
   ]
 
   for (const pair of duplicatePairs) {
@@ -338,6 +346,14 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
       expect(redirects.find((r: any) => r.source === withSlash)).toBeDefined()
     }
   })
+
+  for (const page of keepLivePages) {
+    it(`should NOT redirect the well-ranking niche page ${page}/`, () => {
+      const redirects = vercelConfig.redirects || []
+      expect(redirects.find((r: any) => r.source === page)).toBeUndefined()
+      expect(redirects.find((r: any) => r.source === `${page}/`)).toBeUndefined()
+    })
+  }
 })
 
 // ============================================================
