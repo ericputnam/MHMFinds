@@ -77,13 +77,25 @@ async function main() {
   }
 
   try {
-    const [recentDaily, last7, prev7, last30, health, topPages] = await Promise.all([
-      client.earnings(isoDaysAgo(4), isoDaysAgo(1)),
-      client.metricsSummary(isoDaysAgo(7), isoDaysAgo(1)),
-      client.metricsSummary(isoDaysAgo(14), isoDaysAgo(8)),
-      client.metricsSummary(isoDaysAgo(30), isoDaysAgo(1)),
+    // Mediavine posts revenue a day before session counts. A trailing day with
+    // revenue but 0 sessions inside a rolling window understates the session
+    // denominator and inflates session RPM and its WoW delta (2026-07-12: a
+    // phantom "+14.2% vs prior 7d" because Jul 11 sessions hadn't posted yet).
+    // Anchor every rolling window at the most recent FULLY finalized day.
+    const recentDaily = await client.earnings(isoDaysAgo(7), isoDaysAgo(1));
+    const latest = [...(recentDaily.earnings ?? [])]
+      .reverse()
+      .find((r) => Number(r.revenue) > 0 && Number(r.sessions) > 0);
+    // Mediavine returns dates as "2026/07/10" — normalize to ISO for comparison.
+    const latestDate = latest ? String(latest.date).slice(0, 10).replace(/\//g, '-') : null;
+    const end = latestDate ? ([1, 2, 3, 4, 5, 6, 7].find((n) => isoDaysAgo(n) === latestDate) ?? 1) : 1;
+
+    const [last7, prev7, last30, health, topPages] = await Promise.all([
+      client.metricsSummary(isoDaysAgo(end + 6), isoDaysAgo(end)),
+      client.metricsSummary(isoDaysAgo(end + 13), isoDaysAgo(end + 7)),
+      client.metricsSummary(isoDaysAgo(end + 29), isoDaysAgo(end)),
       client.healthCheckStatus() as Promise<{ health_check?: Record<string, unknown> }>,
-      client.pages(isoDaysAgo(7), isoDaysAgo(1), { perPage: 5, sort: 'page_revenue', direction: 'desc' }) as Promise<{
+      client.pages(isoDaysAgo(end + 6), isoDaysAgo(end), { perPage: 5, sort: 'page_revenue', direction: 'desc' }) as Promise<{
         pages?: Array<Record<string, unknown>>;
       }>,
     ]);
@@ -95,18 +107,14 @@ async function main() {
     md += `| Window | Revenue | Session RPM | Monetizable RPM | Sessions | Viewability |\n`;
     md += `|---|--:|--:|--:|--:|--:|\n`;
 
-    // Mediavine finalizes ad revenue with a 1–2 day lag, so show the most recent day
-    // that actually has revenue rather than a half-empty "yesterday".
-    // Require BOTH revenue and sessions finalized — Mediavine posts revenue a day
-    // before session counts, so a revenue-only day would show a bogus $0 RPM.
-    const latest = [...(recentDaily.earnings ?? [])].reverse().find((r) => Number(r.revenue) > 0 && Number(r.sessions) > 0);
     if (latest) {
       md +=
-        `| Latest day (${latest.date}) | ${money(Number(latest.revenue))} | ${money(Number(latest.session_rpm))} | ` +
+        `| Latest finalized day (${latestDate}) | ${money(Number(latest.revenue))} | ${money(Number(latest.session_rpm))} | ` +
         `${money(Number(latest.monetizable_session_rpm))} | ${num(Number(latest.sessions))} | ${Number(latest.overall_viewability).toFixed(1)}% |\n`;
     }
-    md += row('Last 7 days', last7, rpmTrend(last7.session_rpm, prev7.session_rpm)) + '\n';
-    md += row('Last 30 days', last30) + '\n\n';
+    const windowNote = end > 1 ? ` (to ${latestDate})` : '';
+    md += row(`Last 7 days${windowNote}`, last7, rpmTrend(last7.session_rpm, prev7.session_rpm)) + '\n';
+    md += row(`Last 30 days${windowNote}`, last30) + '\n\n';
 
     // --- Ad health ----------------------------------------------------------
     md += `## Ad Health\n\n`;
@@ -145,8 +153,8 @@ async function main() {
       md += `## Q3 Recovery Watch (seasonal CPM dip — see reports/rpm-dip-mitigation-2026-07-02.md)\n\n`;
       try {
         const [advCurr, advPrev] = await Promise.all([
-          client.advertisers(isoDaysAgo(7), isoDaysAgo(1)) as Promise<{ advertisers?: AdvertiserRow[] }>,
-          client.advertisers(isoDaysAgo(14), isoDaysAgo(8)) as Promise<{ advertisers?: AdvertiserRow[] }>,
+          client.advertisers(isoDaysAgo(end + 6), isoDaysAgo(end)) as Promise<{ advertisers?: AdvertiserRow[] }>,
+          client.advertisers(isoDaysAgo(end + 13), isoDaysAgo(end + 7)) as Promise<{ advertisers?: AdvertiserRow[] }>,
         ]);
 
         const latestCpm =
