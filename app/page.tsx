@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
@@ -298,6 +299,30 @@ function HomePageContent() {
 
       <main className="flex-grow">
         <Hero onSearch={handleSearch} isLoading={loading} initialSearch={searchQuery} />
+
+        {/* Popular collections — internal links into the top Sims 4 mod
+            collection pages using descriptive anchor text. Small,
+            self-contained block; does not touch grid/sidebar layout. */}
+        <div className="container mx-auto px-4 pt-6">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-slate-500">Popular:</span>
+            <Link href="/games/sims-4/female-clothes" className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors">
+              Sims 4 Female Clothes CC
+            </Link>
+            <Link href="/games/sims-4/male-clothes" className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors">
+              Sims 4 Male Clothes CC
+            </Link>
+            <Link href="/games/sims-4/skin-details" className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors">
+              Sims 4 Skin Details CC
+            </Link>
+            <Link href="/games/sims-4/body-presets" className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors">
+              Sims 4 Body Presets
+            </Link>
+            <Link href="/games/sims-4/poses" className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors">
+              Sims 4 Pose Packs
+            </Link>
+          </div>
+        </div>
 
         {/* Creator Filter Banner */}
         {creatorParam && (

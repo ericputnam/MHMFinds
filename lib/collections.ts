@@ -204,9 +204,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     heading: 'Sims 4 Skin Details CC',
     // Head-term title: the legacy article /sims-4-cc-skin-details/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Skin Details — 270+ Overlays & Freckles | MustHaveMods',
+    metaTitle: 'Sims 4 Skin Details CC — 270+ Overlays & Freckles | MustHaveMods',
     metaDescription:
-      'Sims 4 skin details, overlays, freckles, moles, and body blush CC. Add realism to any sim with hand-picked skin details.',
+      'Browse Sims 4 skin details, overlays, freckles, moles, and body blush CC in one filterable grid — sorted by downloads, link-checked, no dead pages.',
     tagline: 'Overlays, freckles, moles, and body blush for realism',
     intro:
       'Skin details are the CAS layer most people skip and then wonder why their sims look slightly uncanny. Vanilla skin is flat. No freckles, no moles, no cheek blush that actually sits on the face, no body hair that looks like anything other than a shadow. Community skin overlays fix all of this with a few CAS clicks.\n\nWe\'ve pulled together about 275 skin detail picks: full skin overlays that replace the base texture, freckle maps, mole placement sets, nose bridge details, cheek blushes, body hair, pregnancy stretch marks, and the specialty stuff like aging details and sunspots. Pralinesims and Obscurus-Sims turn up a lot here because they\'ve been shipping realistic skin overlays for years, but there\'s a long tail of smaller skin creators doing great work on specific features.\n\nMost of these stack — you can layer a skin overlay, freckles, a blush, and a nose detail all on one sim. The trick is stopping before you over-CAS them into looking like a different art style than the hair and clothes you\'re using.',
@@ -372,9 +372,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     heading: 'Sims 4 Pose Packs',
     // Head-term title: the legacy article /sims-4-gallery-poses/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Pose Packs — 500+ CAS & In-Game Poses | MustHaveMods',
+    metaTitle: 'Sims 4 Gallery Poses & Pose Packs — 570+ Poses | MustHaveMods',
     metaDescription:
-      'The best Sims 4 pose packs for screenshots, CAS, couples, and storytelling. Hand-picked pose packs from top creators.',
+      'Browse 570+ Sims 4 pose packs and gallery poses for CAS, couples, and storytelling — sorted by downloads, hand-picked from top creators.',
     tagline: 'Screenshot-ready poses for CAS, couples, and stories',
     intro:
       'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together nearly 600 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',

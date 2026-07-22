@@ -7,16 +7,16 @@ import { ConditionalScripts } from './components/ConditionalScripts';
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
-  description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players. Curated collections, exclusive mods, and intelligent discovery.',
+  title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
+  description: "15,000+ Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, and more, every link checked by hand.",
   authors: [{ name: 'MustHaveMods Team' }],
-  keywords: 'sims 4 mods, custom content, sims mods, premium mods, ai recommendations, sims 4 custom content, mod discovery, musthavemods',
+  keywords: 'sims 4 mods, sims 4 cc, custom content, sims mods, sims 4 custom content, mod finder, musthavemods',
   creator: 'MustHaveMods',
   publisher: 'MustHaveMods',
   robots: 'index, follow',
   openGraph: {
-    title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
-    description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players.',
+    title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
+    description: "15,000+ Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, and more, every link checked by hand.",
     url: 'https://musthavemods.com',
     siteName: 'MustHaveMods',
     locale: 'en_US',
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MustHaveMods - Premium Sims 4 Mods & Custom Content Discovery',
-    description: 'Discover premium Sims 4 mods with AI-powered recommendations. The ultimate destination for custom content creators and players.',
+    title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
+    description: "15,000+ Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, and more, every link checked by hand.",
     images: ['/og-image.jpg'],
   },
   metadataBase: new URL('https://musthavemods.com'),
