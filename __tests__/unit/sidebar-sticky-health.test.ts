@@ -83,10 +83,11 @@ describe('Sidebar content: empty aside pattern (no min-h placeholders)', () => {
     { name: 'Homepage', file: 'app/page.tsx' },
     { name: 'Game browse', file: 'app/games/[game]/GamePageClient.tsx' },
     { name: 'Mod detail', file: 'app/mods/[id]/ModDetailClient.tsx' },
+    { name: 'Download interstitial', file: 'app/go/[modId]/GoClient.tsx' },
   ]
 
   for (const page of pages) {
-    it(`${page.name} sidebar must NOT have min-h-[250px] placeholder divs`, () => {
+    it(`${page.name} sidebar must NOT have min-h placeholder divs`, () => {
       const src = readSource(page.file)
       // Extract the aside element content
       const asideStart = src.indexOf('id="secondary"')
@@ -97,7 +98,9 @@ describe('Sidebar content: empty aside pattern (no min-h placeholders)', () => {
       const closingIdx = asideRegion.indexOf('</aside>')
       if (closingIdx > -1) {
         const asideContent = asideRegion.substring(0, closingIdx)
-        expect(asideContent).not.toContain('min-h-[250px]')
+        // Any min-h-[...] placeholder (250px, 600px, etc.) confuses
+        // Mediavine's auto-fill — the aside must be empty
+        expect(asideContent).not.toMatch(/min-h-\[/)
       }
     })
   }
@@ -121,6 +124,15 @@ describe('Layout: no left spacer divs wasting horizontal space', () => {
     const src = readSource('app/games/[game]/GamePageClient.tsx')
     const spacerPattern = /aria-hidden="true"[\s\S]*?w-\[300px\][\s\S]*?FacetedSidebar/
     const reversePattern = /w-\[300px\][\s\S]*?aria-hidden="true"[\s\S]{0,200}FacetedSidebar/
+    expect(src).not.toMatch(spacerPattern)
+    expect(src).not.toMatch(reversePattern)
+  })
+
+  it('Download interstitial must NOT have an aria-hidden spacer div', () => {
+    const src = readSource('app/go/[modId]/GoClient.tsx')
+    // /go has no FacetedSidebar — any aria-hidden 300px element is a spacer
+    const spacerPattern = /aria-hidden="true"[\s\S]{0,200}w-\[300px\]/
+    const reversePattern = /w-\[300px\]"?[\s\S]{0,200}aria-hidden="true"/
     expect(src).not.toMatch(spacerPattern)
     expect(src).not.toMatch(reversePattern)
   })

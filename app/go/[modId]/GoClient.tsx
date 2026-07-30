@@ -314,30 +314,12 @@ export default function GoClient() {
       </div>
 
       {/*
-        3-column desktop layout: invisible left spacer | centered main | sticky sidebar.
-
-        Why the left spacer:
-        We want the main content visually centered on the page (like blog
-        posts and mod detail pages), but Mediavine's sticky sidebar needs
-        to anchor to the right side of the main column. Without a matching
-        left spacer, a 2-column grid pushes the main content to the left
-        edge so it "hugs" the sidebar. The left spacer is the same width
-        as the sidebar and is aria-hidden — so the visual center of the
-        main column lines up with the visual center of the page, while
-        Mediavine still gets its right-anchored aside.
-
-        Same pattern used by the blog/archive layout after the sidebar
-        rollout (see compound learnings: "Left spacer div to balance ad
-        sidebar").
+        2-column desktop layout: main content | sticky sidebar.
+        No left spacer — the filter/blog layouts dropped theirs Apr 2026
+        (wastes 300px and the sidebar-health tests forbid it).
       */}
       <div className="max-w-[1400px] mx-auto px-6 py-12">
         <div className="flex flex-col lg:flex-row lg:justify-center gap-8">
-          {/* Left spacer — invisible, matches sidebar width for centering */}
-          <div
-            className="hidden lg:block lg:w-[300px] lg:flex-shrink-0"
-            aria-hidden="true"
-          />
-
           {/* Main content column */}
           <div className="w-full lg:max-w-[760px] lg:flex-shrink-0">
             {/* Mod Preview + Download Action — always visible above the fold */}
@@ -583,23 +565,14 @@ export default function GoClient() {
           {/*
             Mediavine sticky sidebar (desktop only, lg+).
 
-            Why only ONE placeholder here (unlike /mods/[id] which has two):
-            This is a short interstitial page — no scrolling, everything
-            fits in one viewport. A classic ATF + BTF sidebar puts the BTF
-            sticky ad at its natural flow position AFTER the ATF, which on
-            a short page lands halfway down the viewport. The ad then
-            appears "at the bottom" because the user never scrolls.
-
-            With a single placeholder as the one-and-only child of the
-            aside, Mediavine's sticky sidebar ad renders at flow position
-            y=0 inside the aside — top-right of the grid row, right next
-            to the mod preview card. This is the position the user wants.
-
             Rules (per CLAUDE.md / MEMORY.md):
             - <aside id="secondary" class="widget-area primary-sidebar">
+            - Keep the aside EMPTY — Mediavine auto-fills it with its own
+              stacked ad containers; placeholder divs confuse the auto-fill
+              and tank the sidebar-health score (12.9 → 50+ on the blog
+              after removing them)
             - overflow must be visible (no overflow:hidden on ancestors)
             - Do NOT add position:sticky/fixed — Mediavine handles stickiness
-            - Sticky ad MUST be the last (here: only) element in the sidebar
           */}
           <aside
             id="secondary"
@@ -607,11 +580,8 @@ export default function GoClient() {
             role="complementary"
             aria-label="Sidebar ads"
           >
-            {/* Single sticky placeholder — Mediavine places its sidebar ad
-                at the top of this div and makes it sticky. min-h-[600px]
-                reserves enough vertical space for a 300x600 half-page unit
-                without causing CLS as Mediavine mounts the iframe. */}
-            <div className="min-h-[600px]" />
+            {/* Empty — Mediavine auto-fills with its own stacked ad containers.
+                Matches WordPress blog sidebar pattern for better Mediavine detection. */}
           </aside>
         </div>
       </div>
