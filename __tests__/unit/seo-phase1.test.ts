@@ -157,21 +157,31 @@ describe('1.3 - sitemap-nextjs.xml includes game pages', () => {
     expect(content).toContain('https://musthavemods.com/games/minecraft')
   })
 
-  it('should include /mods browse page in the sitemap', async () => {
+  it('should include /games/animal-crossing in the sitemap', async () => {
     const { GET } = await import('@/app/sitemap-nextjs.xml/route')
     const response = await GET()
     const content = await response.text()
 
-    expect(content).toContain('https://musthavemods.com/mods')
+    expect(content).toContain('https://musthavemods.com/games/animal-crossing/')
   })
 
-  it('should still include the original pages (/, /creators) but NOT /blog (moved to blog-pages sitemap)', async () => {
+  it('should NOT include /mods (404s — no such route) or /creators (307s to /sign-in for crawlers)', async () => {
     const { GET } = await import('@/app/sitemap-nextjs.xml/route')
     const response = await GET()
     const content = await response.text()
 
-    expect(content).toContain('https://musthavemods.com/')
-    expect(content).toContain('https://musthavemods.com/creators')
+    expect(content).not.toContain('<loc>https://musthavemods.com/mods/</loc>')
+    expect(content).not.toContain('<loc>https://musthavemods.com/creators/</loc>')
+  })
+
+  it('should include static pages with canonicals but NOT /blog (moved to blog-pages sitemap)', async () => {
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route')
+    const response = await GET()
+    const content = await response.text()
+
+    expect(content).toContain('<loc>https://musthavemods.com/</loc>')
+    expect(content).toContain('https://musthavemods.com/about/')
+    expect(content).toContain('https://musthavemods.com/top-creators/')
     // /blog is in sitemap-blog-pages.xml to avoid cross-sitemap duplicates
     expect(content).not.toContain('https://musthavemods.com/blog')
   })

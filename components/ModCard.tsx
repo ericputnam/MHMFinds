@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Mod } from '../lib/api';
 import { Download, Star, Heart, Crown, Sparkles } from 'lucide-react';
 import { ProtectedDownloadButton } from './subscription/ProtectedDownloadButton';
@@ -29,7 +30,9 @@ const formatNumber = (num: number): string => {
 
 export function ModCard({ mod, onFavorite, isFavorited, className = '', style }: ModCardProps) {
   const router = useRouter();
-  const href = `/mods/${mod.id}`;
+  // Trailing slash matches trailingSlash: true in next.config.js — without
+  // it the rendered <a href> points at a 308 redirect for crawlers.
+  const href = `/mods/${mod.id}/`;
 
   const handleCardClick = () => {
     router.push(href);
@@ -134,7 +137,11 @@ export function ModCard({ mod, onFavorite, isFavorited, className = '', style }:
         {/* Title + Author */}
         <div className="min-w-0">
           <h3 className="text-[15px] font-bold text-white leading-snug line-clamp-2 group-hover:text-sims-blue transition-colors">
-            {mod.title}
+            {/* Real anchor so crawlers can discover mod pages from grids —
+                the card's onClick handles the same navigation for mouse users. */}
+            <Link href={href} prefetch={false} onClick={(e) => e.stopPropagation()}>
+              {mod.title}
+            </Link>
           </h3>
           {(mod.creator || mod.author) && (
             <div className="flex items-center gap-1 mt-1 text-[11px] text-slate-400 font-medium">

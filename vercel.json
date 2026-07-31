@@ -76,6 +76,16 @@
   ],
   "redirects": [
     {
+      "source": "/mods",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/mods/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/home",
       "destination": "/",
       "permanent": true

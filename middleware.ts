@@ -73,18 +73,26 @@ const BLOG_ACTION_REGEX = /action=["']https:\/\/blog\.musthavemods\.com\/?["']/g
  * - <head>: Strip any noindex meta tags (safety net for caching layer issues)
  * - <body>: Rewrite href links to keep users on musthavemods.com (but NOT asset src URLs)
  */
-function rewriteHtml(html: string): string {
+function rewriteHtml(html: string, preserveNoindex: boolean): string {
   const headEndIndex = html.indexOf('</head>');
   if (headEndIndex === -1) return html;
 
   const head = html.substring(0, headEndIndex);
   const rest = html.substring(headEndIndex);
 
-  // Head: rewrite all blog.musthavemods.com references + strip noindex
-  const rewrittenHead = head
+  // Head: rewrite all blog.musthavemods.com references + strip noindex.
+  // The noindex strip is a safety net for caching-layer leaks on singular
+  // posts/pages; category/tag/author archives are intentionally noindex
+  // (see sitemap-blog-categories.xml), so their tags must survive.
+  let rewrittenHead = head
     .replace(BLOG_ORIGIN_REGEX, CANONICAL_ORIGIN)
-    .replace(BLOG_ORIGIN_ENCODED_REGEX, 'https%3A%2F%2Fmusthavemods.com')
-    .replace(/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex[^"']*["']\s*\/?>/gi, '');
+    .replace(BLOG_ORIGIN_ENCODED_REGEX, 'https%3A%2F%2Fmusthavemods.com');
+  if (!preserveNoindex) {
+    rewrittenHead = rewrittenHead.replace(
+      /<meta\s+name=["']robots["']\s+content=["'][^"']*noindex[^"']*["']\s*\/?>/gi,
+      ''
+    );
+  }
 
   // Body: rewrite href links (navigation) but NOT src links (images, scripts, styles)
   // Also rewrite form action URLs so search forms point to /blog/ (not root /)
@@ -140,18 +148,33 @@ async function proxyAndRewriteWordPress(
   const wpResponse = await fetch(url.toString(), fetchOptions);
   const contentType = wpResponse.headers.get('content-type') || '';
 
+  // Category/tag/author archives keep their intentional noindex signals;
+  // everything else gets the noindex safety-net strip (see rewriteHtml).
+  const preserveNoindex = /^\/(category|tag|author)\//.test(request.nextUrl.pathname);
+
   // Copy response headers, dropping ones invalidated by body rewriting
   const responseHeaders = new Headers();
   wpResponse.headers.forEach((value, key) => {
     const lower = key.toLowerCase();
-    if (['content-length', 'content-encoding', 'transfer-encoding', 'x-robots-tag'].includes(lower)) return;
+    if (['content-length', 'content-encoding', 'transfer-encoding'].includes(lower)) return;
+    if (lower === 'x-robots-tag' && !preserveNoindex) return;
     responseHeaders.append(key, value);
   });
 
   // HTML responses — rewrite head (SEO) + body links (navigation)
   if (contentType.includes('text/html')) {
     const html = await wpResponse.text();
-    const rewritten = rewriteHtml(html);
+    let rewritten = rewriteHtml(html, preserveNoindex);
+    // The /blog/ landing proxies WP's /homepage/ page, whose canonical and
+    // og:url point at /homepage/ — a URL that 301s to /. Point them at
+    // /blog/, the URL actually being served, so the page self-canonicalizes.
+    const pathname = request.nextUrl.pathname;
+    if (pathname === '/blog' || pathname === '/blog/') {
+      rewritten = rewritten.replace(
+        /https:\/\/musthavemods\.com\/homepage\//g,
+        'https://musthavemods.com/blog/'
+      );
+    }
     return new Response(rewritten, {
       status: wpResponse.status,
       headers: responseHeaders,

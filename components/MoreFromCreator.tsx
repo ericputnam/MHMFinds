@@ -93,7 +93,7 @@ export function MoreFromCreator({ modId, author }: MoreFromCreatorProps) {
         {mods.map((mod) => (
           <Link
             key={mod.id}
-            href={`/mods/${mod.id}`}
+            href={`/mods/${mod.id}/`}
             className="group block rounded-xl overflow-hidden border border-white/10 hover:border-sims-pink/40 hover:shadow-lg transition-all duration-300"
           >
             {/* Thumbnail */}

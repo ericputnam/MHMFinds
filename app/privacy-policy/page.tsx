@@ -4,6 +4,8 @@ import { Footer } from '../../components/Footer';
 export const metadata = {
   title: 'Privacy Policy - MustHaveMods',
   description: 'Privacy Policy for MustHaveMods - Learn how we collect, use, and protect your personal information.',
+  // Without this the page inherits canonical "/" from the root layout.
+  alternates: { canonical: '/privacy-policy/' },
 };
 
 export default function PrivacyPolicyPage() {
