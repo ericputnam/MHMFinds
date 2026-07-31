@@ -265,7 +265,7 @@ export default function GoClient() {
       trackDownload(mod.id);
       window.open(targetUrl, '_blank');
       // Redirect back to mod page or home
-      router.push(`/mods/${mod.id}`);
+      router.push(`/mods/${mod.id}/`);
     }
   }, [mod, router, trackDownload]);
 
@@ -536,7 +536,7 @@ export default function GoClient() {
                   {relatedMods.map((related) => (
                     <Link
                       key={related.id}
-                      href={`/mods/${related.id}`}
+                      href={`/mods/${related.id}/`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group block rounded-lg overflow-hidden border border-slate-600 hover:border-sims-pink/40 bg-slate-700/30 hover:bg-slate-700/60 transition-all"

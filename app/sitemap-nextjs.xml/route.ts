@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllCollectionRoutes } from '../../lib/collections';
+import { getAllGameSlugs } from '../../lib/gameRoutes';
 
 export async function GET() {
   const baseUrl = 'https://musthavemods.com';
@@ -14,13 +15,20 @@ export async function GET() {
   // All locs use trailing slashes: next.config.js sets trailingSlash:
   // true, so non-slash URLs 308-redirect. Sitemap entries pointing at
   // redirects split indexing signals with the canonical variant.
+  // /mods/ (no such route — 404s) and /creators/ (307s to /sign-in for
+  // logged-out visitors, i.e. every crawler) are intentionally absent.
   const staticUrls = [
     { loc: `${baseUrl}/`, priority: '1.0', changefreq: 'daily' },
-    { loc: `${baseUrl}/mods/`, priority: '0.9', changefreq: 'daily' },
-    { loc: `${baseUrl}/creators/`, priority: '0.7', changefreq: 'weekly' },
-    { loc: `${baseUrl}/games/sims-4/`, priority: '0.9', changefreq: 'daily' },
-    { loc: `${baseUrl}/games/stardew-valley/`, priority: '0.9', changefreq: 'daily' },
-    { loc: `${baseUrl}/games/minecraft/`, priority: '0.9', changefreq: 'daily' },
+    ...getAllGameSlugs().map((slug) => ({
+      loc: `${baseUrl}/games/${slug}/`,
+      priority: '0.9',
+      changefreq: 'daily',
+    })),
+    { loc: `${baseUrl}/top-creators/`, priority: '0.5', changefreq: 'weekly' },
+    { loc: `${baseUrl}/about/`, priority: '0.3', changefreq: 'monthly' },
+    { loc: `${baseUrl}/submit-mod/`, priority: '0.3', changefreq: 'monthly' },
+    { loc: `${baseUrl}/privacy-policy/`, priority: '0.1', changefreq: 'yearly' },
+    { loc: `${baseUrl}/terms/`, priority: '0.1', changefreq: 'yearly' },
   ];
 
   // Collection topic pages — /games/[game]/[topic]. Higher priority
