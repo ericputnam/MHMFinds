@@ -16,10 +16,8 @@ const REDIRECTED_POST_PATHS = [
   '/sims-4-male-clothes-cc/',
   '/sims-4-cc-skin-details/',
   '/sims-4-gallery-poses/',
-  '/sims-4-body-presets/',
-  '/sims-4-male-body-presets-cc/',
-  '/sims-4-plus-size-body-presets/',
-  '/sims-4-athletic-body-presets/',
+  // The four body-preset listicles were un-redirected (2026-07 revert:
+  // they outranked the collection page) and must stay in the sitemap.
   '/sims-4-goth-cc/',
   '/sims-4-cottagecore-cc/',
   '/sims-4-y2k-cc/',

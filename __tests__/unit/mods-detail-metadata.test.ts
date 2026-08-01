@@ -16,7 +16,7 @@ describe('generateMetadata for /mods/[id]', () => {
 
     const meta = await generateMetadata({ params: { id: 'mod-abc' } });
 
-    expect(meta.title).toBe('Test Mod Title');
+    expect(meta.title).toBe('Test Mod Title - Sims 4 CC | MustHaveMods');
     expect(meta.description).toBeTruthy();
     expect(meta.alternates?.canonical).toBe('https://musthavemods.com/mods/mod-abc/');
     expect(meta.openGraph?.title).toBe('Test Mod Title');

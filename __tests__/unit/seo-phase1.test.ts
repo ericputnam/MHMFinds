@@ -313,7 +313,6 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
     { from: '/sims-4-cc-skin-details/', to: '/games/sims-4/skin-details/' },
     { from: '/sims-4-gallery-poses/', to: '/games/sims-4/poses/' },
     { from: '/sims-4-pregnancy-mods/', to: '/games/sims-4/pregnancy-mods/' },
-    { from: '/sims-4-body-presets/', to: '/games/sims-4/body-presets/' },
     // Theme collections shipped Jul 2026 (goth/cottagecore/y2k)
     { from: '/sims-4-goth-cc/', to: '/games/sims-4/goth-cc/' },
     { from: '/sims-4-cottagecore-cc/', to: '/games/sims-4/cottagecore-cc/' },
@@ -326,6 +325,7 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
   // redirecting them shipped by mistake in 5af9390 and cost 44→19 clicks/wk on the male
   // page before being reverted (Jul 12).
   const keepLivePages = [
+    '/sims-4-body-presets',
     '/sims-4-male-body-presets-cc',
     '/sims-4-plus-size-body-presets',
     '/sims-4-athletic-body-presets',

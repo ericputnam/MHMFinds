@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: true,
       shortDescription: true,
       thumbnail: true,
+      gameVersion: true,
     },
   });
 
@@ -35,8 +36,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     mod.description?.slice(0, 160) ||
     `${mod.title} - Sims 4 custom content mod on MustHaveMods.`;
 
+  // Exact-match long-tail title: "<mod name> - Sims 4 CC | MustHaveMods".
+  // Mod-name queries are the catalog's rankable surface; the game
+  // qualifier matches how players search ("<mod> sims 4"). Skipped when
+  // the mod title already names the game.
+  const game = mod.gameVersion || 'Sims 4';
+  const qualifier = mod.title.toLowerCase().includes(game.toLowerCase())
+    ? ''
+    : game === 'Sims 4'
+      ? ' - Sims 4 CC'
+      : ` - ${game} Mod`;
+
   return {
-    title: mod.title,
+    title: `${mod.title}${qualifier} | MustHaveMods`,
     description,
     alternates: { canonical: url },
     openGraph: {

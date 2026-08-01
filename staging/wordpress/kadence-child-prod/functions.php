@@ -4746,6 +4746,12 @@ function mhm_collection_crosslink_map() {
         'sims-4-holiday-traditions' => array( 'holidays-cc', 'Holiday & Seasonal CC' ),
         'sims-4-tattoos'            => array( 'tattoos', 'Tattoo CC' ),
         'sims-4-vampire-cc'         => array( 'vampire-cc', 'Vampire CC' ),
+        // Body-preset listicles: un-redirected 2026-07 (they outrank the
+        // collection page) — differentiated, not consolidated.
+        'sims-4-body-presets'           => array( 'body-presets', 'Body Presets' ),
+        'sims-4-male-body-presets-cc'   => array( 'body-presets', 'Body Presets' ),
+        'sims-4-plus-size-body-presets' => array( 'body-presets', 'Body Presets' ),
+        'sims-4-athletic-body-presets'  => array( 'body-presets', 'Body Presets' ),
     );
 }
 
@@ -4759,10 +4765,6 @@ function mhm_consolidated_post_map() {
         'sims-4-male-clothes-cc'        => 'male-clothes',
         'sims-4-cc-skin-details'        => 'skin-details',
         'sims-4-gallery-poses'          => 'poses',
-        'sims-4-body-presets'           => 'body-presets',
-        'sims-4-male-body-presets-cc'   => 'body-presets',
-        'sims-4-plus-size-body-presets' => 'body-presets',
-        'sims-4-athletic-body-presets'  => 'body-presets',
         'sims-4-goth-cc'                => 'goth-cc',
         'sims-4-cottagecore-cc'         => 'cottagecore-cc',
         'sims-4-y2k-cc'                 => 'y2k-cc',
