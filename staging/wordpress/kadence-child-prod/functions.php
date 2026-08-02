@@ -4791,6 +4791,64 @@ function mhm_collection_crosslinks( $content ) {
 }
 add_filter( 'the_content', 'mhm_collection_crosslinks', 20 );
 
+/**
+ * ============================================================
+ * Catalog mod cross-links (mhm_catalog_mod_links)
+ * ============================================================
+ * GSC-driven internal linking (MHMFinds repo:
+ * reports/listicle-refresh-queue-2026-08-01.md). Catalog mod pages
+ * ranking positions 7-10 for mod-name queries get crawlable links
+ * from the topically-matching listicles — the listicle passes
+ * authority to the mod page and both rank for adjacent intents.
+ *
+ * Keep anchors matched to the query language GSC shows (e.g.
+ * "Attachment Styles Mod" for "attachment styles sims 4").
+ * Output is identical for proxied and direct requests
+ * (BigScoots-cache-safe).
+ */
+function mhm_catalog_mod_link_map() {
+    // Post slug => array of array( catalog path, anchor text ).
+    return array(
+        'sims-4-teen-mods' => array(
+            array( '/mods/cmijl2oru005boxc8cpapj4m8/', 'Teen Lifestyle Gamepack Mod' ),
+            array( '/mods/cmijl2e1h0055oxc80c1ssg1c/', 'Teen Stories and Activities Mod' ),
+            array( '/mods/cmmvasdcy00droxzgi9g77mz6/', 'Attachment Styles Mod' ),
+        ),
+        'sims-4-teen-jobs' => array(
+            array( '/mods/cmijl2oru005boxc8cpapj4m8/', 'Teen Lifestyle Gamepack Mod' ),
+            array( '/mods/cmijl2e1h0055oxc80c1ssg1c/', 'Teen Stories and Activities Mod' ),
+        ),
+        'best-woohoo-mods-sims-4-ultimate-guide' => array(
+            array( '/mods/cmim8rron0028oxy8oqyd43er/', 'Love Triangle Mod' ),
+            array( '/mods/cmoipxsoc000soxkjwtpcenal/', 'Love Language Mod' ),
+            array( '/mods/cmijql8fw0034ox8oaadxjlsu/', 'Messy Relationships Mod' ),
+            array( '/mods/cmmvasdcy00droxzgi9g77mz6/', 'Attachment Styles Mod' ),
+        ),
+    );
+}
+
+function mhm_catalog_mod_links( $content ) {
+    if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+        return $content;
+    }
+    $map  = mhm_catalog_mod_link_map();
+    $slug = get_post_field( 'post_name' );
+    if ( ! isset( $map[ $slug ] ) ) {
+        return $content;
+    }
+    $items = '';
+    foreach ( $map[ $slug ] as $link ) {
+        $url    = 'https://musthavemods.com' . $link[0];
+        $items .= '<li style="margin:.4em 0;"><a href="' . esc_url( $url ) . '" style="font-weight:600;">' . esc_html( $link[1] ) . '</a></li>';
+    }
+    $box = '<div class="mhm-catalog-mod-links" style="margin:2em 0;padding:1.25em 1.5em;border:1px solid rgba(99,102,241,.4);border-radius:12px;background:rgba(99,102,241,.06);">'
+        . '<p style="margin:0 0 .5em;font-size:1.05em;font-weight:600;">Mods from our finder that pair with this list:</p>'
+        . '<ul style="margin:0;padding-left:1.25em;">' . $items . '</ul>'
+        . '</div>';
+    return $content . $box;
+}
+add_filter( 'the_content', 'mhm_catalog_mod_links', 21 );
+
 // Consolidated posts: canonical points at the collection page the apex
 // URL 301s to. Runs after the origin-swap canonical filter above
 // (priority 20 > default 10).
