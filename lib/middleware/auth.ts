@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
 /**
@@ -7,11 +8,22 @@ import { authOptions } from '@/lib/authOptions';
  * Provides functions to require authentication, admin access, and creator access
  */
 
+// Discriminated union so `if (!auth.authorized) return auth.response;` narrows:
+// callers get a plain NextResponse on failure and non-optional session/user on
+// success, instead of `NextResponse | undefined` leaking into handler return types.
+type AuthFailure = { authorized: false; response: NextResponse };
+type AuthSuccess = {
+  authorized: true;
+  session: Session;
+  user: NonNullable<Session['user']>;
+};
+export type AuthResult = AuthFailure | AuthSuccess;
+
 /**
  * Require user to be authenticated
  * Returns user session if authenticated, or 401 response if not
  */
-export async function requireAuth(request: NextRequest) {
+export async function requireAuth(request: NextRequest): Promise<AuthResult> {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -35,7 +47,7 @@ export async function requireAuth(request: NextRequest) {
  * Require user to be authenticated AND have admin role
  * Returns user session if authorized, or 401/403 response if not
  */
-export async function requireAdmin(request: NextRequest) {
+export async function requireAdmin(request: NextRequest): Promise<AuthResult> {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -69,7 +81,7 @@ export async function requireAdmin(request: NextRequest) {
  * Require user to be authenticated AND have creator role
  * Returns user session if authorized, or 401/403 response if not
  */
-export async function requireCreator(request: NextRequest) {
+export async function requireCreator(request: NextRequest): Promise<AuthResult> {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -103,7 +115,7 @@ export async function requireCreator(request: NextRequest) {
  * Require user to be authenticated AND have premium subscription
  * Returns user session if authorized, or 401/403 response if not
  */
-export async function requirePremium(request: NextRequest) {
+export async function requirePremium(request: NextRequest): Promise<AuthResult> {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
