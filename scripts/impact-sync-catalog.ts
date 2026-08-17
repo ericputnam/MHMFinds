@@ -148,6 +148,28 @@ const DEEPLINK_TARGETS = [
     ],
   },
   {
+    // Bare Logitech consumer program (contract 8585) — a separate contract
+    // from Logitech G (11355) with no browsable Impact catalog, so deep-link
+    // only. First coverage ever for this program; the POP line is the pastel
+    // consumer range aimed at the same demo as the G Aurora collection.
+    partner: 'logitech',
+    programId: '8585',
+    category: 'peripherals',
+    offers: [
+      {
+        name: 'Logitech POP Keys — Retro Mechanical Keyboard with Emoji Keys',
+        description:
+          'Round typewriter-style keys in candy colorways, swappable emoji caps, and a satisfying mechanical click — the desk upgrade that matches your build aesthetic.',
+        deepLink:
+          'https://www.logitech.com/en-us/products/keyboards/pop-keys-wireless-mechanical.html',
+        imageUrl:
+          'https://resource.logitech.com/w_800,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/keyboards/pop-keys-wireless-mechanical/gallery/pop-keys-gallery-heartbreak-1.png',
+        matchingThemes: ['cozy', 'modern', 'minimalist'],
+        priority: 58,
+      },
+    ],
+  },
+  {
     partner: 'capcut',
     programId: '22474',
     category: 'software',

@@ -32,7 +32,10 @@ function HomePageContent() {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
   const gridColumns = 4;
-  const [modsPerPage, setModsPerPage] = useState(20);
+  // Default 16 (was 20): the whole grid is one .mv-ads container, and a 5-row
+  // default pushed several Content-unit ad injections below the fold — see
+  // reports/viewability-investigation-2026-08-16.md before changing this.
+  const [modsPerPage, setModsPerPage] = useState(16);
 
   // Faceted filter state
   const [selectedFacets, setSelectedFacets] = useState<{
@@ -388,7 +391,7 @@ function HomePageContent() {
                     <div className="flex items-center gap-2 text-sm text-slate-400">
                       <span className="hidden sm:inline">Show</span>
                       <div className="flex items-center bg-black/20 border border-white/10 rounded-lg overflow-hidden">
-                        {[20, 50, 100].map((num) => (
+                        {[16, 50, 100].map((num) => (
                           <button
                             key={num}
                             onClick={() => handlePerPageChange(num)}

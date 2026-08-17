@@ -73,6 +73,33 @@ export default function GoClient() {
     }
   }, [params.modId]);
 
+  // GA4 scroll-depth marks, this page only — measures whether users ever reach
+  // the content-hub ad block below the video slot before continuing to
+  // download (reports/viewability-investigation-2026-08-16.md §5.3). Read that
+  // data before moving any .mv-ads block on this page.
+  useEffect(() => {
+    if (loading) return;
+    const fired = new Set<number>();
+    const onScroll = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      const pct = (window.scrollY / scrollable) * 100;
+      for (const mark of [25, 50, 75, 90]) {
+        if (pct >= mark && !fired.has(mark)) {
+          fired.add(mark);
+          (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+            'event',
+            'go_scroll_depth',
+            { percent: mark, mod_id: String(params.modId) }
+          );
+        }
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [loading, params.modId]);
+
   // NOTE: Do NOT call window.mediavine.newPageView() here.
   // `usePageTracking` is already mounted globally in app/providers.tsx and
   // fires newPageView() on every route change (including this page's

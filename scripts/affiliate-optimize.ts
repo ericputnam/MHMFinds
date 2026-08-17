@@ -6,8 +6,8 @@
  *   1. Evaluates every active offer against kill rules that respect sample
  *      size — we never kill on noise, only on enough volume to mean something:
  *        - DEAD CLICKS: >= 25 clicks and $0 attributed commission → retire.
- *        - LOW CTR: >= 4,000 impressions and CTR <= 0.05% → retire. (0.05% was
- *          the retired Amazon catalog's CTR — the bar an offer must beat.)
+ *        - LOW CTR: >= 4,000 impressions and CTR at or below half the site's
+ *          own lifetime average CTR, recomputed each run → retire.
  *        - Offers younger than 14 days are only "watched", never killed.
  *   2. Retires losers: isActive=false + validationStatus='retired'. The
  *      catalog sync explicitly refuses to resurrect retired offers, so a kill
@@ -42,7 +42,13 @@ const PROJECT_DIR = '/Users/eputnam/java_projects/MHMFinds';
 const MIN_AGE_DAYS = 14; // younger offers are watched, never killed
 const DEAD_CLICK_THRESHOLD = 25; // clicks with $0 commission → dead
 const LOW_CTR_MIN_IMPRESSIONS = 4000;
-const LOW_CTR_MAX = 0.0005; // 0.05% — the retired Amazon catalog's CTR
+// The low-CTR bar is relative: half the site's own lifetime average CTR,
+// recomputed each run. The old absolute 0.05% bar (the retired Amazon
+// catalog's CTR) sat ~6x above this placement mix's real CTR and mass-retired
+// 16/17 offers on 2026-07-21 — see reports/affiliates/impact-dryrun-2026-08-16.md
+// before re-tuning.
+const LOW_CTR_SITE_MULTIPLIER = 0.5;
+const LOW_CTR_FALLBACK = 0.0005; // only used if the site has no impression history
 const MIN_ACTIVE_FLOOR = 8; // never let the pool shrink below this without refill
 
 interface Verdict {
@@ -79,6 +85,18 @@ async function evaluate(): Promise<Verdict[]> {
     console.error('AffiliateEarning unavailable; evaluating on CTR rules only.');
   }
 
+  const siteTotals = await prisma.affiliateOffer.aggregate({
+    where: { partner: { not: 'amazon' }, impressions: { gt: 0 } },
+    _sum: { clicks: true, impressions: true },
+  });
+  const siteImpressions = siteTotals._sum.impressions ?? 0;
+  const siteCtr = siteImpressions > 0 ? (siteTotals._sum.clicks ?? 0) / siteImpressions : 0;
+  const lowCtrBar = siteCtr > 0 ? siteCtr * LOW_CTR_SITE_MULTIPLIER : LOW_CTR_FALLBACK;
+  console.log(
+    `Low-CTR bar this run: ${(lowCtrBar * 100).toFixed(4)}% ` +
+      `(site avg ${(siteCtr * 100).toFixed(4)}% × ${LOW_CTR_SITE_MULTIPLIER})\n`
+  );
+
   const now = Date.now();
   const verdicts: Verdict[] = [];
 
@@ -112,11 +130,13 @@ async function evaluate(): Promise<Verdict[]> {
       });
       continue;
     }
-    if (o.impressions >= LOW_CTR_MIN_IMPRESSIONS && ctr <= LOW_CTR_MAX) {
+    if (o.impressions >= LOW_CTR_MIN_IMPRESSIONS && ctr <= lowCtrBar) {
       verdicts.push({
         ...base,
         action: 'retire',
-        reason: `CTR ${(ctr * 100).toFixed(3)}% after ${o.impressions} impressions (low-CTR rule)`,
+        reason:
+          `CTR ${(ctr * 100).toFixed(4)}% ≤ bar ${(lowCtrBar * 100).toFixed(4)}% ` +
+          `after ${o.impressions} impressions (low-CTR rule)`,
       });
       continue;
     }
