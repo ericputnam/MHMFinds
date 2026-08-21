@@ -20,6 +20,7 @@ import {
   Home
 } from 'lucide-react';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { InlineVideoAd } from '@/components/InlineVideoAd';
 import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
@@ -180,7 +181,13 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
               </div>
             </div>
 
-            <InContentAd />
+            {/*
+              Video-first ad slot — upgrades the first in-content position
+              from display-only to Mediavine Universal Player with a display
+              fallback (same behavior as before if no video bids). Video CPM
+              is 5-10x display; pattern proven on /go/[modId].
+            */}
+            <InlineVideoAd />
 
             {/* Tags Section */}
             {mod.tags && mod.tags.length > 0 && (
