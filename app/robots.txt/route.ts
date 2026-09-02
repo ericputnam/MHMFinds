@@ -16,6 +16,49 @@ Disallow: /*?cat=
 Disallow: /*?p=
 Disallow: /*?page_id=`;
 
+// Explicit allow rules for AI answer-engine crawlers.
+// Without these, crawlers that default to "ask first" may skip the site.
+// Refs: OpenAI GPTBot, Anthropic ClaudeBot, Perplexity, Google AI crawlers.
+const AI_CRAWLER_RULES = `User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin/`;
+
 const RESPONSE_HEADERS = {
   'Content-Type': 'text/plain',
   'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
@@ -56,7 +99,7 @@ async function fetchWordPressRules(): Promise<string> {
 export async function GET() {
   const wpRules = await fetchWordPressRules();
 
-  const sections = [BASE_RULES];
+  const sections = [BASE_RULES, AI_CRAWLER_RULES];
   if (wpRules) {
     sections.push(`# Rules inherited from the WordPress blog\n${wpRules}`);
   }
