@@ -113,14 +113,15 @@ restore_functions_php() {
   log "blog markers missing → re-pushing functions.php from git (this tree's copy = origin/main in the runner)"
   if "$ROOT/scripts/staging/push-blog-functions-prod.sh" --yes >>"$LOG" 2>&1; then log "functions.php re-pushed"; else log "functions.php re-push FAILED — see $LOG"; fi
 }
-ledger() {  # $1 result, $2 notes
-  local dir f
-  for dir in "$ROOT/reports/funnel" "$OPERATOR_DIR/reports/funnel"; do
+ledger() {  # $1 result, $2 notes — written to this checkout, Quinn's primary worktree (if set) and the operator's tree
+  local dir f seen=" "
+  for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel" "$OPERATOR_DIR/reports/funnel"; do
+    [ "$dir" = "/reports/funnel" ] && continue
+    case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
     [ -d "$dir" ] || continue
     f="$dir/changelog.md"
     [ -f "$f" ] || printf '# Production change ledger\n\nAppended automatically by `scripts/agents/deploy-verify.sh` on every production deploy, evening check and rollback, so the operator can see exactly what changed and whether it was verified. Newest at the bottom.\n\n| when | mode | who / what | commit | deployment | result | notes |\n|---|---|---|---|---|---|---|\n' >"$f"
     printf '| %s | %s | %s | %s | %s | %s | %s |\n' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$2" | tr '|' '/' | tr '\n' ' ')" >>"$f"
-    [ "$ROOT/reports/funnel" = "$OPERATOR_DIR/reports/funnel" ] && break
   done
 }
 incident() {  # $1 title, $2 action taken
@@ -136,7 +137,10 @@ incident() {  # $1 title, $2 action taken
     echo "- Smoke output: $SMOKE_JSON"
   } >"$f"
   log "incident written: $f"
-  if [ "$ROOT" != "$OPERATOR_DIR" ]; then mkdir -p "$OPERATOR_DIR/reports/funnel/incidents"; cp "$f" "$OPERATOR_DIR/reports/funnel/incidents/" 2>/dev/null; fi
+  local d
+  for d in "${FUNNEL_PRIMARY_WT:-}" "$OPERATOR_DIR"; do
+    [ -n "$d" ] && [ "$d" != "$ROOT" ] && { mkdir -p "$d/reports/funnel/incidents"; cp "$f" "$d/reports/funnel/incidents/" 2>/dev/null; }
+  done
 }
 fail_and_fix() {  # $1 = rollback target (may be empty)
   local first="$FAILS"

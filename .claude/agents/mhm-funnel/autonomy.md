@@ -79,7 +79,9 @@ conditions. They are enforced by scripts, not by memory:
 
 ### Ship protocol (every merge, every tier, no exceptions)
 
-1. Branch from `origin/main` in the runner's worktree: `funnel/<agent>/<slug>`.
+1. Branch from `origin/main` in **your own** worktree (the runner creates one per
+   agent and Quinn passes the path; five agents committing in one checkout
+   cross-contaminated three of five PRs on 2026-09-02): `funnel/<agent>/<slug>`.
 2. Checks, all green: `npm run build`, `npm run type-check`,
    `npx vitest run __tests__/unit/sidebar-sticky-health.test.ts` (any change under
    `app/`, `components/`, `middleware.ts`), the tests for what you touched,

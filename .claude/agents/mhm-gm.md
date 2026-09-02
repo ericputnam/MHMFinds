@@ -91,8 +91,10 @@ registry) > net-new; human-voice-safe > needs the writer.
 
 ## Shipping mechanics (you and every agent)
 
-- Work in the runner's worktree (`git rev-parse --show-toplevel`), never in the
-  operator's tree. Branch `funnel/<agent>/<slug>` from `origin/main`.
+- Work in your own worktree, never in the operator's tree and never in another
+  agent's. The runner creates one per agent (`<quinn-worktree>-<agent>`) and
+  appends the paths to Quinn's prompt; Quinn hands each agent its path. Branch
+  `funnel/<agent>/<slug>` from `origin/main` there.
 - Before any PR: `npm run type-check`, `npm run build`, `npx vitest run
   __tests__/unit/sidebar-sticky-health.test.ts` (plus tests for what you touched),
   `npm run security:check-admin-auth` if you touched `app/api/admin`.
