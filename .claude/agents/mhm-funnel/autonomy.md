@@ -84,7 +84,10 @@ conditions. They are enforced by scripts, not by memory:
    `npx vitest run __tests__/unit/sidebar-sticky-health.test.ts` (any change under
    `app/`, `components/`, `middleware.ts`), the tests for what you touched,
    `npm run security:check-admin-auth` if `app/api/admin` changed,
-   `bash -n` for shell scripts.
+   `bash -n` for shell scripts. **`type-check` is never optional, even for a
+   "scripts-only" or "docs-only" PR**: `next build` on Vercel type-checks every
+   `.ts` under `scripts/` too (tsconfig `include: **/*.ts`), so a type error in a
+   standalone script fails the production build (PR #19, 2026-09-02).
 3. PR body: `Tier:` / `Stage:` / `Metric:` / `Before:` / `Read on:` /
    `Keep if:` / `Rollback:` lines. Ends with the Claude Code footer.
 4. `gh pr merge --squash --delete-branch`, then read the merge sha

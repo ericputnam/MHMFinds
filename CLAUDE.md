@@ -774,3 +774,6 @@ Ship protocol for any automated merge: feature branch from `origin/main` → `np
 security:check-admin-auth` if `app/api/admin` changed → PR with Tier / Stage / Metric /
 Before / Read-on / Keep-if / Rollback → `gh pr merge --squash` → `deploy-verify.sh
 --after-merge --sha <merge sha>` → ledger row. A merge without a ledger row did not happen.
+`type-check` is never optional: Vercel's `next build` type-checks every `.ts` under `scripts/` as
+well (tsconfig includes `**/*.ts`), so a standalone script with a type error breaks the production
+build (PR #19, 2026-09-02 — caught by `deploy-verify.sh`, production untouched).
