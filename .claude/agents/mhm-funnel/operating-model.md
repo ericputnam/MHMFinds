@@ -100,5 +100,6 @@ Pip turns her posts and lookbooks into pins and social copy automatically
 | Mediavine / affiliate daily reports | `scripts/agents/mediavine-daily-report.ts`, `affiliate-daily-pulse.ts` (launchd) | keep; scoreboard reads them |
 | Pinner | `~/java_projects/MHMUtils` → BigScoots cron + Supabase | scoreboard checks freshness |
 | Operator queue / experiments / ideas inbox | this directory | new |
+| Headless CLI auth | macOS keychain OAuth for `claude -p` (operator: `claude auth login`) | runner preflights before Quinn; on failure writes a DEGRADED digest naming the fix (2026-09-02) |
 
 — Quinn, GM

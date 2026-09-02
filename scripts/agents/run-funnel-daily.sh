@@ -64,13 +64,17 @@ cd "$WT" || exit 1
 [ -f "$PROJECT_DIR/.env.local" ] && ln -sf "$PROJECT_DIR/.env.local" "$WT/.env.local"
 [ -f "$PROJECT_DIR/scripts/mcp-mediavine/.env.local" ] && ln -sf "$PROJECT_DIR/scripts/mcp-mediavine/.env.local" "$WT/scripts/mcp-mediavine/.env.local"
 # Reuse the operator's node_modules (identical lockfile on origin/main is the common case; falls back to npm ci if not).
-if cmp -s "$PROJECT_DIR/package-lock.json" "$WT/package-lock.json" && [ -d "$PROJECT_DIR/node_modules" ]; then
+# Sharing node_modules also shares the generated Prisma client (node_modules/.prisma). If the operator's
+# schema differs from origin/main (feature branch), `prisma generate` here would clobber the operator's
+# client — so only share when both lockfile AND schema are identical; otherwise install our own.
+if cmp -s "$PROJECT_DIR/package-lock.json" "$WT/package-lock.json" && cmp -s "$PROJECT_DIR/prisma/schema.prisma" "$WT/prisma/schema.prisma" && [ -d "$PROJECT_DIR/node_modules" ]; then
   ln -s "$PROJECT_DIR/node_modules" "$WT/node_modules"
+  [ -d "$WT/node_modules/.prisma/client" ] || npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
 else
-  log "lockfile differs from origin/main — npm ci in worktree"
+  log "lockfile or prisma schema differs from origin/main — npm ci + prisma generate in worktree (operator's node_modules untouched)"
   npm ci --no-audit --no-fund >>"$LOG_FILE" 2>&1 || { log "npm ci failed"; exit 1; }
+  npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
 fi
-npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
 mkdir -p "$WT/reports/funnel" "$WT/reports/funnel/drafts" "$WT/logs"
 # Bootstrap: until the funnel-team files are merged to main, copy them in from the operator's tree
 # so the loop can run. Logged loudly so the operator merges soon (the copies are not committed here).
@@ -126,10 +130,48 @@ fi
 if [ "${FUNNEL_DRY_RUN:-0}" = "1" ]; then log "Dry run — stopping after scoreboard + circuit breaker."; exit 0; fi
 
 # --- 2. Quinn ----------------------------------------------------------------
-log "Running Quinn ($MODEL)…"
+# The nested CLI must authenticate on its own (keychain OAuth), not through the desktop session that
+# launched the scheduled task: strip the host-session vars so it self-refreshes, and prove it can reach
+# the API before spending the run. A dead token is the #1 silent failure of this run (2026-09-02: the
+# keychain token had expired in April; the API returned 401 ten times and Quinn never started).
+CLAUDE_CLEAN=(env -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH -u CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH \
+  -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_TOKEN \
+  -u CLAUDE_CODE_HOST_SESSION_ID -u CLAUDE_CODE_SESSION_ID -u CLAUDE_CODE_CHILD_SESSION -u CLAUDE_PID)
+claude_preflight() {
+  perl -e 'alarm 240; exec @ARGV' "${CLAUDE_CLEAN[@]}" claude -p "Reply with exactly: ok" --model "$MODEL" --max-turns 1 \
+    --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null 2>>"$LOG_FILE" | grep -q '"is_error":false'
+}
+token_expiry() {
+  security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | python3 -c 'import json,sys,datetime
+try:
+    e=(json.load(sys.stdin).get("claudeAiOauth") or {}).get("expiresAt")
+    print(datetime.datetime.fromtimestamp(e/1000).strftime("%Y-%m-%d %H:%M") if e else "unknown")
+except Exception:
+    print("unknown")' 2>/dev/null || echo unknown
+}
 DIGEST="$WT/reports/funnel/digest-$TODAY.md"
+if ! claude_preflight; then
+  EXP="$(token_expiry)"
+  log "🔴 Quinn cannot run: the Claude CLI could not authenticate headlessly (keychain OAuth token expiry: $EXP)."
+  GUARD_SUMMARY="status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" )"
+  cat >"$PROJECT_DIR/reports/funnel/digest-$TODAY.md" <<EOF
+# Funnel digest — $TODAY (DEGRADED: Quinn did not run)
+
+🔴 **Quinn could not start.** The Claude CLI on this Mac cannot authenticate headlessly (keychain OAuth token expiry: $EXP; the API answered 401 and the token could not be refreshed). No agent can fix this. **Open a terminal and run \`claude auth login\`**, then run \`npm run funnel:daily\` or wait for tomorrow's pulse.
+
+What still ran today (deterministic scripts, no LLM):
+- Scoreboard: reports/funnel/$TODAY.md
+- Circuit breaker: $GUARD_MD — $GUARD_SUMMARY
+- Ledger: reports/funnel/changelog.md (the 18:30 evening deploy check still runs on its own)
+
+Changed today: nothing merged by the team (Quinn did not run).
+EOF
+  log "Wrote degraded digest: reports/funnel/digest-$TODAY.md"
+  exit 4
+fi
+log "Running Quinn ($MODEL)…"
 GUARD_LINE="CIRCUIT BREAKER TODAY: status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" ) — full report: $GUARD_MD. If the runner rolled back, the ledger row and incident file are already written; you are in incident mode."
-if claude -p "$(cat "$PROMPT_FILE")
+if "${CLAUDE_CLEAN[@]}" claude -p "$(cat "$PROMPT_FILE")
 
 $GUARD_LINE" \
     --model "$MODEL" \

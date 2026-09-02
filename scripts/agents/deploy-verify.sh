@@ -52,7 +52,7 @@ vls() { (cd "$ROOT" && vercel ls --format json --yes 2>/dev/null); }
 current_prod() {  # inspect prints on stderr; the CLI occasionally aborts, so retry
   local u i
   for i in 1 2 3; do
-    u="$( (cd "$ROOT" && vercel inspect "$PROD_ALIAS" 2>&1) | awk '$1=="url"{print $2; exit}')"
+    u="$( (cd "$ROOT" && vercel inspect "$PROD_ALIAS" 2>&1) 2>/dev/null | awk '$1=="url"{print $2; exit}')"  # outer 2> hides the CLI's occasional "Abort trap"
     [ -n "$u" ] && { echo "$u"; return 0; }; sleep 3
   done
   return 1
