@@ -1,0 +1,143 @@
+{
+  "_comment": "Funnel team targets. Baselines are REAL numbers pulled 2026-09-01 (sources noted). The scoreboard script (scripts/agents/funnel-scoreboard.ts) reports actuals against these daily. Quinn rewrites `bets` monthly. All currency USD.",
+  "lastUpdated": "2026-09-01",
+  "autonomy": "tiered",
+  "_autonomyNote": "\"tiered\" = Tier 0 ships, Tier 1 ships after a 24h veto window, Tier 2 queues for the operator (see autonomy.md). Set to \"ask\" to make everything queue.",
+  "quarterEnd": "2026-12-31",
+  "quarterTest": "Owned-audience net adds/week must be >= 3x the September baseline AND non-ad revenue >= $1,000/mo, or the team is replaced.",
+  "baseline": {
+    "establishedOn": "2026-09-01",
+    "sessions": {
+      "monthlyGa4": 399071,
+      "monthlyMediavine": 401901,
+      "period": "2026-08",
+      "byChannel90d": {
+        "pinterestOrganic": 756886,
+        "pinterestReferral": 30745,
+        "bingOrganic": 223258,
+        "_bingNote": "12.6x Google organic; suspected bot/misattribution. Do not count as growth until verified.",
+        "direct": 63969,
+        "googleOrganic": 17661,
+        "tumblrReferral": 8412,
+        "redditReferral": 3055,
+        "chatgptAiAssistant": 1790,
+        "notSetLandingPage30d": 15882,
+        "_notSetNote": "3.4% engagement; likely bot/tag misfire. Flagged for Pip."
+      },
+      "desktopSharePct": 93.8,
+      "returningSharePct": 52,
+      "engagementRatePct": 73.7,
+      "source": "GA4 property 437117335, pulled 2026-09-01"
+    },
+    "search": {
+      "gscClicksMonthly": 2097,
+      "gscClicksMonthlyMay2025": 38102,
+      "gscImpressionsMonthly": 190684,
+      "sitemapIndexedPerApi": 0,
+      "_sitemapNote": "API says 0/16,550 indexed; spot checks pass. Unreconciled — Sage's first job.",
+      "source": "GSC sc-domain:musthavemods.com, 2026-08 (partial month)"
+    },
+    "adRevenue": {
+      "monthly": 6066.16,
+      "sessionRpm": 15.09,
+      "period": "2026-08",
+      "peakMonthly": 8676.74,
+      "peakPeriod": "2026-06",
+      "trailing12mo": 71977.67,
+      "source": "Mediavine reporting API site 14318, anchored 2026-08-30"
+    },
+    "ownedAudience": {
+      "emailSubscribers": 17,
+      "emailSubscribersBySource": { "footer": 16, "sign-in": 1 },
+      "emailAddsLast30d": 7,
+      "patreonFreeMembers": 5144,
+      "patreonPaidMembers": 49,
+      "_patreonNote": "Public page scrape of patreon.com/MustHaveModsOfficial 2026-09-01 (funnel-scoreboard.ts): Support Tier $1×9, Tip Jar $3×40, Extra Support $5×0 = 49 paid, $129/mo gross; 5,144 free. No API access yet (T2 queue item).",
+      "registeredAccounts": 1522,
+      "accountAddsLast30d": 245,
+      "pushSubscribers": 0,
+      "weeklyNetAddsAllSources": 63,
+      "_weeklyNetAddsNote": "(7 email + 245 accounts)/4.33 ≈ 58/wk + Patreon free adds unknown (assume ~5/wk). This is the number that must 3x by 2026-12-31.",
+      "source": "Production DB counts 2026-09-01 (scripts/_tmp_counts run), Patreon public page"
+    },
+    "engagement": {
+      "favoritesTotal": 19250,
+      "userCollections": 1502,
+      "downloadClicks30d": 1076,
+      "affiliateClicks30d": 50,
+      "reviews": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "modsInCatalog": 15888,
+      "source": "Production DB 2026-09-01"
+    },
+    "nonAdRevenue": {
+      "monthlyTotal": 100,
+      "_range": "85–150",
+      "patreon": 129,
+      "membership": 0,
+      "firstPartyMods": 0,
+      "affiliates": 0,
+      "sponsorship": 0,
+      "source": "Patreon public tier counts × price (gross, before Patreon fees). Affiliates: AffiliateEarning table has 0 rows."
+    },
+    "content": {
+      "blogPostsPerMonth": 20,
+      "blogPostsTotal": 670,
+      "collectionPages": "see lib/collections.ts registry",
+      "firstPartyMods": ["main-character-energy", "lookbook-camera", "mhm-roadster (in build)"],
+      "source": "WP REST + repo"
+    },
+    "costs": {
+      "vercel": null,
+      "prismaAccelerate": null,
+      "openai": null,
+      "sendgrid": null,
+      "bigscootsHosting": null,
+      "_note": "Still PENDING operator confirmation (asked 5x by the old team). The funnel team does not block on this; add to ideas-inbox.md when known."
+    }
+  },
+  "targets": {
+    "weekly": {
+      "ownedAudienceNetAdds": { "2026-09": 120, "2026-10": 200, "2026-11": 300, "2026-12": 400 },
+      "_basis": "Baseline ~63/wk. Instrumentation + 5 capture surfaces at 0.3% of page sessions on the top-10 pages ≈ +100/wk by end of Sept; newsletter + Patreon module + account re-engagement compound from there. 3x = 190/wk is the quarter floor; 400 is the stretch."
+    },
+    "monthly": {
+      "nonAdRevenue": { "2026-09": 200, "2026-10": 450, "2026-11": 750, "2026-12": 1000 },
+      "_basis": "Patreon tier relaunch (49 → 90 paid at blended $4) ≈ $360; membership via Patreon OAuth 60 members × $3–5 ≈ $250; one sponsor ≈ $300; premium mod editions ≈ $100.",
+      "mediavineRevenueGuardrail": "28-day rolling revenue >= 95% of the prior 28 days, adjusted for the seasonal pattern in the fact base (Q4 rises). Below 90% = 🔴 and the team's first move is diagnosis.",
+      "sessions": { "2026-12": 450000 },
+      "_sessionsBasis": "+13% vs Aug. Not the headline metric; Pinterest read-back + catalog pins + AI referrals + search recovery. Excludes Bing/(not set) once filtered."
+    },
+    "yearly": {
+      "nonAdRevenue2027": 60000,
+      "_basis": "$5K/mo run-rate by end of 2027: 500 paying members at ~$5 + 3 sponsors + mod editions. This is the path to a business that does not live on CPMs; ads on top."
+    }
+  },
+  "bets": {
+    "month": "2026-09",
+    "list": [
+      {
+        "id": "B1",
+        "name": "Capture everywhere: instrument signups, put a capture surface on the top-10 pages, turn on the newsletter",
+        "owner": "Cass",
+        "metric": "ownedAudienceNetAdds weekly",
+        "target": "120/wk by 2026-09-30"
+      },
+      {
+        "id": "B2",
+        "name": "Patreon relaunch + site membership via Patreon OAuth (skip the countdown, early mods, lookbooks)",
+        "owner": "Rio (with Cass for the free-member funnel)",
+        "metric": "nonAdRevenue monthly",
+        "target": "$200/mo by 2026-09-30, $450 by 2026-10-31"
+      },
+      {
+        "id": "B3",
+        "name": "Diagnose the 94% Google collapse + ship the AI-discoverability surface (robots, llms-full, feeds, homepage SSR shell)",
+        "owner": "Sage (Pip adds Pinterest read-back + catalog pins in parallel)",
+        "metric": "organic + AI-referral sessions 28d",
+        "target": "diagnosis report by 2026-09-08; +25% AI-referral sessions by 2026-09-30"
+      }
+    ]
+  }
+}

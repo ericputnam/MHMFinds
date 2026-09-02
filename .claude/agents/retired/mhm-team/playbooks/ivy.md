@@ -29,6 +29,62 @@ are live and `AffiliateEarning` data starts populating._
 ## Learnings log
 <!-- format: YYYY-MM-DD — situation → action → CTR/EPC before/after → verdict -->
 
+### 2026-08-16 — Diagnosed 80 inactive offers + 7-day cron false-red; kill-threshold contested
+- **Situation:** dry-run diagnosis requested — Redbubble/CapCut/Logitech G/Logitech
+  showed 0 live offers vs. gtracing's 3, despite all having Active Impact
+  contracts. Full writeup: `reports/affiliates/impact-dryrun-2026-08-16.md`.
+- **Root cause (Redbubble/CapCut/Logitech G, 16 of 17 offers):** the
+  2026-07-21 `affiliate-optimize.ts` run retired them under the ≥4,000
+  impressions / CTR ≤0.05% rule — a bar calibrated to the **old Amazon
+  catalog's CTR baseline**, not this site's actual measured CTR (~0.0086%,
+  confirmed: 28/304,919 clicks/impressions on the 3 surviving gtracing
+  offers = 0.0092%). Several killed offers (CapCut 0.015%, Logitech G Aurora
+  0.028%, multiple Redbubble SKUs 0.017–0.047%) were performing *above* the
+  site-wide average when killed — the bar itself, not the offers, is the
+  problem. `impact-sync-catalog.ts`'s `upsertOffer()` correctly refuses to
+  resurrect `validationStatus: 'retired'` rows (working as designed), and
+  `collectCatalogOffers()` doesn't exclude retired items from its scored
+  candidate list, so catalogs with limited on-theme inventory (Redbubble's
+  10 designs, Logitech G's 1 matching SKU, CapCut's 1 hardcoded deep link)
+  never get a "next-best" replacement — the pool stays permanently empty.
+  GTRracing avoided this only because its catalog has more SKU/colorway
+  variety to cycle in fresh candidates.
+- **Root cause (bare Logitech, contract 8585):** different problem — never
+  retired, **never configured**. `CATALOG_TARGETS`/`DEEPLINK_TARGETS` in
+  `impact-sync-catalog.ts` has no entry for `logitech` (8585), only
+  `logitech-g` (11355). New-coverage gap, not a kill-rule casualty.
+- **Contested verdict → proposed SD-2 experiment:** recalibrate the
+  low-CTR kill bar from an absolute 0.05% to something anchored to the
+  site's own trailing CTR (e.g. 0.5x trailing-28d average, recomputed each
+  run) rather than the stale Amazon-era hardcode. Awaiting operator
+  approval — not applied.
+- **Honest $/mo math on reactivation:** lifetime catalog totals are 1,144
+  clicks / 2,716,582 impressions / **$0 revenue / 0 conversions**, and
+  `AffiliateEarning` has zero rows ever (not pending — empty). At 0.0086%
+  CTR and $0 proven EPC, reactivating the 17 retired SKUs as-is nets an
+  estimated low single digits $/mo — not worth prioritizing over the
+  threshold fix. Recommended the operator NOT do a blanket reactivation
+  under the unchanged threshold (would just re-burn another 4–6 week watch
+  cycle before getting re-killed the same way).
+- **Cron false-red diagnosis:** `affiliate-daily-pulse` showed 🔴 "Can't
+  reach database server at db.prisma.io:5432" for 7 straight days
+  (2026-08-10 → 08-16) despite manual queries connecting fine and the
+  script's `.env.local`/`DIRECT_DATABASE_URL` handling being correct. Root
+  cause: a **wake-time network race**, not a config bug — confirmed via
+  `logs/mediavine-daily-report.log` (separate script, separate launchd job)
+  showing the identical `fetch failed` symptom on the same overlapping
+  days, and via `affiliate-daily-pulse.log` timestamps drifting 8:16–8:29am
+  against an 8:15am schedule (the launchd wake-from-sleep signature — job
+  fires network calls before Wi-Fi/DNS finish reconnecting post-wake).
+  Recommended fix (not applied — infra, needs operator approval): a
+  network-readiness `curl` retry loop at the top of the wrapper shell
+  scripts, or a retry/backoff wrapper around the Prisma connection + fetch
+  calls in the scripts themselves. **Treat Aug 10–16 daily pulses as "no
+  signal," not "sync is broken."**
+- **Verdict:** provisional — diagnosis complete, both fixes (threshold
+  recalibration, cron network-readiness guard) are proposals awaiting
+  operator sign-off, nothing shipped.
+
 ### 2026-07-04 — Optimizer live; Impact-first strategy locked; gaming-tilted catalog shipped
 - **Situation:** `scripts/affiliate-optimize.ts` — the automated
   conversion-driven kill/refill loop — went live via launchd, running every

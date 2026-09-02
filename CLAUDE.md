@@ -751,3 +751,26 @@ This section is automatically updated by the nightly compound automation system.
 ---
 
 *Last compound review: 2026-04-13*
+
+---
+
+## 🤖 Funnel-team autonomy: the operator's three rules (2026-09-01)
+
+The operator granted the automated funnel team (Quinn/Pip/Sage/Nova/Cass/Rio, run by
+`scripts/agents/run-funnel-daily.sh` from a clean worktree of `origin/main`) permission to
+**commit, open PRs, and merge to `main` without asking**, under three rules that are enforced
+by scripts, not by good intentions. This is a **scoped exception** to the "Never Auto-Commit"
+rule above: it applies to funnel runs and to sessions the operator has explicitly put in
+autonomous mode. Ordinary interactive sessions still never commit unless asked.
+
+| # | Rule (operator's words) | Enforcement |
+|---|---|---|
+| 1 | *"Always check if you broke something — Vercel logs during deployment, or viewing WordPress. You can restore from WordPress backups or roll back Vercel."* | `scripts/agents/deploy-verify.sh --after-merge --sha <commit>` runs after **every** merge: waits for the Vercel build, renders `/`, `/mods`, `/mods/[id]`, `/go/[id]`, blog, sitemap and llms.txt in headless Chromium (`smoke-render.ts`), checks Mediavine loader + `aside#secondary` + `.mv-ads`, runs `check-blog-sidebar.sh`, counts 5xx in Vercel logs. Failure → automatic `vercel rollback` to the previous READY deploy and/or `push-blog-functions-prod.sh --yes` to restore `functions.php` from git, then re-check. `--check` runs again every evening. |
+| 2 | *"If your change significantly hurts RPM and revenue we go under as a business. You can't allow that, and if it happens you need to fix it quickly."* | `scripts/agents/revenue-guardrail.ts` runs first every morning: last finalized Mediavine day and 3-day window vs the same weekdays of the previous 4 weeks. **Red** (RPM < 85 % *and* revenue < 80 %, or Mediavine health not ok) + a production deploy inside the window → automatic rollback to the last deploy before the window, incident file, digest leads with it, no Tier 1 merges until closed. **Yellow** (revenue < 90 %) → no Tier 1 merges that day, Tier 0 only. Tier 2 items (ad layout, `functions.php`, schema, auth, `lib/prisma.ts`, money) are never merged by the team. |
+| 3 | *"Run the daily pulse with full autonomy of what you need to do to achieve your goal. Make sure it's clear to me what you did."* | The scheduled task pre-approves the runner; the runner pre-approves the tools the agents need. Every production change is a row in **`reports/funnel/changelog.md`** (who, commit, deployment, verify result), every rollback is a file in `reports/funnel/incidents/`, and the digest has a "Changed today" section listing each PR / deploy / verify result. |
+
+Ship protocol for any automated merge: feature branch from `origin/main` → `npm run build`,
+`npm run type-check`, `npx vitest run __tests__/unit/sidebar-sticky-health.test.ts`, `npm run
+security:check-admin-auth` if `app/api/admin` changed → PR with Tier / Stage / Metric /
+Before / Read-on / Keep-if / Rollback → `gh pr merge --squash` → `deploy-verify.sh
+--after-merge --sha <merge sha>` → ledger row. A merge without a ledger row did not happen.

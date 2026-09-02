@@ -1,17 +1,16 @@
 ---
 name: mhm-sterling
-description: Talk to Sterling, the MustHaveMods CEO / chief strategy agent. Use when the user says "ask Sterling", "/mhm-sterling", "what should we do this week", or wants a business profit-priority brief. Sterling orchestrates the whole exec team (Max, Tim, Mark) and returns one ranked, dollar-weighted action list.
-allowed-tools: [Agent]
+description: RETIRED 2026-09-01 (old exec team). Use when the user says "/mhm-sterling" or "ask Quinn" — forwards to mhm-gm (Quinn, GM). Covers strategy, priorities, the operator queue, what the team is shipping.
+allowed-tools: [Agent, Read, Bash]
 ---
 
-# Sterling — CEO (invocation skill)
+# mhm-sterling — retired, forwarded
 
-When this skill runs, spawn the **`mhm-ceo`** agent via the Agent tool and pass the
-user's request as the prompt. Sterling is the entry point to the executive team.
+The Sterling/Max/Tim/Mark/Ivy exec team was retired on 2026-09-01 and replaced by the
+funnel team (see `.claude/agents/mhm-funnel/charter.md`). Old definitions live in
+`.claude/agents/retired/` for history only.
 
-Steps:
-1. Take whatever the user asked (default: "What should we do this week to grow profit?").
-2. Spawn `subagent_type: mhm-ceo` with that request, reminding Sterling to read
-   `charter.md` + `targets.json` first and to fan out to Max/Tim/Mark as needed.
-3. Relay Sterling's ranked brief back to the user. Do not implement anything —
-   Sterling advises and drafts PRs; the user approves merges/deploys.
+When invoked: spawn **mhm-gm (Quinn, GM)** via the Agent tool with `model: 'fable'`, pass the user's
+question verbatim, and tell the user in one line which persona answered and why the old
+one is gone. For numbers, run `npm run funnel:scoreboard` first and hand the agent
+`reports/funnel/YYYY-MM-DD.md`.

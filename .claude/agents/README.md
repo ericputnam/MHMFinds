@@ -1,5 +1,41 @@
 # Agent Governance
 
+## The business team (2026-09-01): the funnel team
+
+The agents that run the MustHaveMods *business* (as opposed to codebase chores) are the
+six funnel-team personas. Start with `mhm-funnel/charter.md`; it explains why the previous
+exec team was retired and what this one is judged on.
+
+| Agent file | Persona | Owns |
+|---|---|---|
+| `mhm-gm.md` | Quinn | The loop: scoreboard, digest, guardrails, experiments, operator queue |
+| `mhm-distribution.md` | Pip | Pinterest scale + read-back, Tumblr/X/FB, launch amplification, next channel |
+| `mhm-search-ai.md` | Sage | SEO recovery, AI/LLM discoverability, indexing |
+| `mhm-content-creators.md` | Nova | Collection pages, writer briefs, creator program, first-party mods, /play |
+| `mhm-capture.md` | Cass | Email / Patreon-free / account capture, sends, re-engagement |
+| `mhm-product-revenue.md` | Rio | Patreon paid tiers, membership, premium mods, sponsorships, ad guardrail |
+
+Shared state lives in `mhm-funnel/`: `charter.md`, `autonomy.md` (Tier 0/1/2 rules),
+`operating-model.md`, `targets.json`, `scorecard.md`, `experiments.md`,
+`operator-queue.md`, `ideas-inbox.md`, `playbooks/`. Daily numbers come from
+`scripts/agents/funnel-scoreboard.ts`; the headless loop is
+`scripts/agents/run-funnel-daily.sh` (scheduled task `mhm-daily-pulse`).
+
+The team may commit and merge to `main` under the operator's three rules (2026-09-01;
+`mhm-funnel/autonomy.md` → "The operator's three rules"). Enforcement:
+`scripts/agents/revenue-guardrail.ts` (circuit breaker, runs first every morning),
+`scripts/agents/deploy-verify.sh` (renders production after every merge and every evening
+via `mhm-guardrail-evening`; rolls Vercel back / restores `functions.php` on failure), and
+the ledger `reports/funnel/changelog.md` + `reports/funnel/incidents/`, which the digest's
+"Changed today" section summarises.
+
+`retired/` holds the 2026-06 exec team (Sterling / Max / Tim / Mark / Ivy) and its
+`mhm-team/` state for history. Files in subdirectories are not loaded as agents.
+
+---
+
+## Task agents (codebase chores)
+
 This directory contains implementation plans and prompts for autonomous agents that work on MHMFinds.
 
 ## Directory Structure

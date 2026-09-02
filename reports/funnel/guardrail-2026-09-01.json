@@ -1,0 +1,49 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-08-30",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 224.3375,
+    "sessions": 14529.75,
+    "rpm": 15.412500000000001
+  },
+  "actualDay": {
+    "date": "2026-08-30",
+    "revenue": 233.55,
+    "sessions": 14899,
+    "rpm": 15.67
+  },
+  "window3": {
+    "actualRevenue": 665.05,
+    "expectedRevenue": 654.0124999999999,
+    "actualSessions": 41159,
+    "expectedSessions": 42599.75,
+    "actualRpm": 16.158069923953448,
+    "expectedRpm": 15.485531326040245
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T01:45:21.124Z",
+      "ref": "fa6e2e0",
+      "text": "READY fix(ads): remove Mediavine player relocation + 8s hide timer on /go interstitial (#18) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cem8xisxa-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-01T21:45:17-04:00",
+      "ref": "fa6e2e0",
+      "text": "fix(ads): remove Mediavine player relocation + 8s hide timer on /go interstitial (#18)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/01",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $233.55 (4.1%), RPM 15.67 (1.7%), sessions 2.5% vs same weekday, prior 4 weeks · 3-day revenue 1.7%"
+  ]
+}

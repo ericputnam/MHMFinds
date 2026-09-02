@@ -25,8 +25,16 @@ fi
 # Fetch latest (including tonight's CLAUDE.md updates)
 log "Fetching latest from main..."
 git fetch origin main
-git checkout main
-git reset --hard origin/main
+# SD-6 (2026-09-01): never `git checkout main` in the operator's tree — uncommitted
+# work made this fail silently for weeks. Work in a detached worktree of origin/main.
+WT="$HOME/.mhm-worktrees/compound-$(date +%Y%m%d)-$$"
+mkdir -p "$HOME/.mhm-worktrees"
+git worktree prune
+git worktree add --detach "$WT" origin/main || { log "worktree add failed"; exit 1; }
+trap 'cd "$PROJECT_DIR" && git worktree remove --force "$WT" >/dev/null 2>&1; git worktree prune >/dev/null 2>&1' EXIT
+[ -f "$PROJECT_DIR/.env.local" ] && ln -sf "$PROJECT_DIR/.env.local" "$WT/.env.local"
+[ -d "$PROJECT_DIR/node_modules" ] && ln -s "$PROJECT_DIR/node_modules" "$WT/node_modules"
+cd "$WT"
 
 # Find the latest prioritized report
 LATEST_REPORT=$(ls -t reports/*.md 2>/dev/null | head -1)
@@ -119,9 +127,7 @@ log "Starting execution loop..."
 
 # Check if we have changes to commit
 if git diff --quiet && git diff --staged --quiet; then
-    log "No changes to commit. Cleaning up branch."
-    git checkout main
-    git branch -D "$BRANCH_NAME" 2>/dev/null || true
+    log "No changes to commit. Worktree is discarded on exit."
     exit 0
 fi
 
