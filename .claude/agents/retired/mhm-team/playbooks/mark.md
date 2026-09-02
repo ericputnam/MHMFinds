@@ -26,6 +26,75 @@ memory across sessions. Newest learnings at the top.
 ## Learnings log
 <!-- format: YYYY-MM-DD — what I measured → figure → verdict / action -->
 
+### 2026-07-30 — Weekly review (Jul 23-29 vs Jul 16-22; MTD through Jul 30)
+
+**Figures (clean window, anchored at last fully-finalized day 07-29, per the 07-12 SOP
+refinement):** Revenue $1,527.47 vs $1,606.45 prior week (-4.9% WoW). GA4 sessions 96,317
+vs 94,189 (+2.3% WoW) — traffic growing while revenue falls = pure RPM/CPM compression.
+Mediavine's own session_rpm $18.70 vs $16.96 (+10.3%, looks like improvement) — but this is
+the same reporting-lag artifact flagged 07-12: Mediavine's own sessions this window (81,686)
+vs prior window (94,708) fell -13.7%, which doesn't match GA4's +2.3%, so Mediavine's own
+RPM denominator is unreliable this close to "today." **True RPM (revenue ÷ GA4 sessions)
+$15.86 vs $17.05 prior week = -7.0% WoW — the honest number.** Both readings show session
+RPM well below the $24.00 target and below the $21.95 baseline.
+
+**Monthly pace check (bigger finding):** July MTD (through day 30 of 31) = **$6,586.60**.
+Annualized/full-month pace is tracking **~24% below June's confirmed $8,676.74** and ~26%
+below the $8,859 monthly target. This is no longer consistent with the 07-02 mitigation
+report's framing of "a two-day tail event" — it's a month-long shortfall.
+
+**Exit-criteria finding (important — needs Max follow-up):** The 07-02 RPM-dip report set an
+explicit exit criterion: "if CPM has not recovered to $0.95+ by ~Jul 21, that indicates a
+second, non-seasonal factor — trigger a full code-level audit." This week's blended CPM was
+still $0.80-0.87 (daily range, 07-23 to 07-28) — 9 days past that checkpoint with no recovery
+and, as far as I can find, no documented follow-up audit. Flagging this explicitly rather than
+re-asserting the "seasonal, will recover" thesis unchallenged — it needs re-validation with
+fresh advertiser-level data (Trade Desk/Kargo/GumGum), which is Max's lane, not mine, but it's
+a P&L-relevant miss so I'm surfacing it here too.
+
+**Costs still 100% PENDING** — now 5+ weeks since baseline (06-22), asked explicitly 5 times
+(06-22, 07-01, 07-02, 07-12, 07-30). Net take-home remains fundamentally uncomputable. This is
+the single biggest open item blocking my primary KPI.
+
+**Tooling gap found:** `npm run agent:forecast` failed with
+`PrismaClientInitializationError: Can't reach database server at db.prisma.io:5432` — could
+not produce the automated forecast this week. Used manual MTD run-rate instead. Worth a
+one-line flag to whoever owns script/DB connectivity, since I rely on this tool every week.
+
+**Self-grade: 🔴.** Ad-revenue proxy missed the weekly target by 25.3% ($1,527 vs $2,045) and
+the primary KPI (net take-home) remains unmeasured for the sixth consecutive report. Both
+signals point the same direction even though I can't fully verify the bottom-line number —
+reporting it as missed rather than "pending" is the honest call per the accountability rules.
+
+### 2026-07-12 — Weekly review (Jul 5-11 vs Jun 28-Jul 4)
+
+**Figures:** Mediavine revenue $1,628.95 vs $1,628.38 prior week (+0.03%, flat). GA4
+total sessions 95,981 vs 93,987 (+2.1%). True RPM (revenue ÷ GA4 sessions, the
+apples-to-apples denominator) $16.97 vs $17.33 (-2.1%). Affiliate revenue: still $0
+confirmed (no commission events; Impact.com sync 0/0 as of 2026-07-08 report). Costs:
+still 100% unconfirmed — 20 days since baseline (06-22) and 10 days since explicitly
+re-asked in the rpm-dip-mitigation report (07-02), operator action #5 remains open.
+
+**Data-quality finding (important, recurring risk):** Mediavine's own rolling "last 7
+days" session_rpm comparison (the one baked into the daily digest, e.g. "+14.2% WoW")
+is an artifact of session-count reporting lagging revenue reporting by ~1 extra day.
+On 2026-07-11, Mediavine had posted $261.57 of revenue but 0 sessions for that date
+(not yet processed) — this drags the week's session denominator down and inflates the
+RPM delta. Cross-checked against GA4 (which had full session data for the same day):
+GA4-sessions RPM shows -2.1% WoW, not +14.2%. **Action for future weekly reviews:**
+always cross-check the digest's WoW RPM claim against GA4 session totals for the same
+window before repeating it — do not take the digest's rolling WoW delta at face value
+when the most recent 1-2 days are involved.
+
+**Verdict:** Flat week, not a fresh decline — sits inside the "documented seasonal dip,
+proactively flagged" exception in the accountability ladder (§4 operating-model.md;
+the dip was flagged 07-02). Below the PROPOSED weekly target ($2,045) by ~20%, but the
+underlying CPM/Trade-Desk recovery signal turned positive for the first time since the
+dip began (TTD WoW +0.2% on 07-11, +16.7% on 07-12, vs -40 to -60% throughout late
+June/early July) — on track for the Jul 21 exit-criteria checkpoint, no escalation
+warranted yet. **Cost confirmation is now the single biggest blocker to this role** —
+net take-home cannot be computed at all without it; flagged to operator again this week.
+
 ### 2026-07-01 — New-monetization CFO input for Sterling (existential ask)
 
 **Trigger:** Owner asked Sterling to recommend a NEW monetization channel beyond

@@ -1,15 +1,16 @@
 ---
 name: mhm-mark
-description: Talk to Mark, the MustHaveMods Finance / CFO agent. Use when the user says "ask Mark", "/mhm-mark", or wants P&L / cost / forecast work — net take-home, cost-to-revenue, ROI ranking, and establishing the revenue baseline.
-allowed-tools: [Agent]
+description: RETIRED 2026-09-01 (old exec team). Use when the user says "/mhm-mark" or "show me the scoreboard" — forwards to scripts/agents/funnel-scoreboard.ts (finance is now a script) + mhm-gm (Quinn). Covers revenue, sessions, owned-audience numbers.
+allowed-tools: [Agent, Read, Bash]
 ---
 
-# Mark — Finance / CFO (invocation skill)
+# mhm-mark — retired, forwarded
 
-When this skill runs, spawn the **`mhm-finance`** agent via the Agent tool with the
-user's request (default: "Establish the revenue/cost baseline and propose targets").
+The Sterling/Max/Tim/Mark/Ivy exec team was retired on 2026-09-01 and replaced by the
+funnel team (see `.claude/agents/mhm-funnel/charter.md`). Old definitions live in
+`.claude/agents/retired/` for history only.
 
-Remind Mark to read `charter.md`, `targets.json`, and his playbook first, to never
-invent precise cost figures (label assumptions, ask the operator to confirm), and
-to express everything in net-take-home terms. If the baseline is `PENDING`, that's
-his top job. Relay his report and any proposed targets back to the user for approval.
+When invoked: spawn **scripts/agents/funnel-scoreboard.ts (finance is now a script) + mhm-gm (Quinn)** via the Agent tool with `model: 'fable'`, pass the user's
+question verbatim, and tell the user in one line which persona answered and why the old
+one is gone. For numbers, run `npm run funnel:scoreboard` first and hand the agent
+`reports/funnel/YYYY-MM-DD.md`.

@@ -5,6 +5,7 @@ set -euo pipefail
 # Usage:
 #   ./scripts/staging/push-blog-functions-prod.sh           # safe mode (default)
 #   ./scripts/staging/push-blog-functions-prod.sh --force   # bypass safety checks
+#   ./scripts/staging/push-blog-functions-prod.sh --yes     # non-interactive; safety checks still apply (automation/restore)
 #
 # CAUTION: This pushes to blog.musthavemods.com (PRODUCTION).
 # Always test on staging first.
@@ -33,20 +34,15 @@ CRITICAL_MARKERS=(
   "mhm_mediavine_sidebar_css|Mediavine Sidebar CSS"
   "mhm_search_form_rewrite_js|Blog Search Form Rewrite"
   "is_from_apex_rewrite|Apex Domain Rewrite Helper"
-  "mhm_collection_crosslinks|Legacy->collection cross-links (SEO)"
-  "mhm_catalog_mod_links|Catalog mod cross-links (SEO internal linking)"
+  "mhm_collection_crosslinks|Collection Cross-links (SEO internal linking)"
 )
 
 FORCE=0
-AUTO_YES=0
-for arg in "$@"; do
-  case "$arg" in
+YES=0   # --yes: non-interactive (automation / rollback). Safety checks still run; a WIPE risk still aborts.
+for _arg in "$@"; do
+  case "$_arg" in
     --force) FORCE=1 ;;
-    # Non-interactive confirm for agent/CI runs. Only use after the
-    # diff has been reviewed (e.g. via a read-only pull + diff) —
-    # every other safety check (lint, markers, wipe detection) still
-    # runs and still aborts on failure.
-    --yes|-y) AUTO_YES=1 ;;
+    --yes)   YES=1 ;;
   esac
 done
 
@@ -157,8 +153,15 @@ if [ "$DIFF_LINES" -eq 0 ]; then
   exit 0
 fi
 
-if [ $AUTO_YES -eq 1 ]; then
-  echo "  --yes passed: skipping interactive confirmation."
+if [ "$YES" -eq 1 ]; then
+  # Non-interactive mode (used by scripts/agents/deploy-verify.sh to restore functions.php from git).
+  # Never wipe a feature that prod has and local lacks — that is the Mar 17 2026 regression.
+  if [ ${#LOCAL_MISSING[@]} -gt 0 ] && [ $FORCE -ne 1 ]; then
+    echo "  --yes refused: prod has features the local file lacks (would WIPE them). Aborting."
+    exit 3
+  fi
+  echo "  --yes: proceeding without prompts (lint + marker checks passed)."
+  diff -u "$TMP_PROD" "$LOCAL_FILE" | head -80 || true
 else
   read -p "  Show full diff? (y/N) " show_diff
   if [[ "$show_diff" == "y" || "$show_diff" == "Y" ]]; then

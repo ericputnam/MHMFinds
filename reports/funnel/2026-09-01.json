@@ -1,0 +1,156 @@
+{
+  "date": "2026-09-01",
+  "headline": {
+    "ownedAdds7d": 62,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 129,
+    "nonAdTarget": 200,
+    "mediavine28d": 5663.27,
+    "mediavine28dPrev": 6345.74
+  },
+  "flags": [
+    "🔴 Mediavine 28d revenue $5,663.27 is -10.8% vs prior 28d — guardrail breached"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-24→2026-08-30 vs 2026-08-17→2026-08-23",
+      "sessions7d": 91395,
+      "sessionsPrev7d": 92013,
+      "byChannel7d": {
+        "pinterest": 61048,
+        "bing_organic": 17955,
+        "direct": 4525,
+        "other_search": 2732,
+        "google_organic": 1393,
+        "tumblr": 951,
+        "other": 2219,
+        "ai_referral": 340,
+        "reddit": 232
+      },
+      "byChannelPrev7d": {
+        "pinterest": 60789,
+        "bing_organic": 17978,
+        "direct": 5210,
+        "other_search": 2819,
+        "google_organic": 1375,
+        "tumblr": 960,
+        "other": 2362,
+        "ai_referral": 275,
+        "reddit": 245
+      },
+      "aiReferral7d": 340,
+      "aiReferralPrev7d": 275,
+      "captureEvents7d": {
+        "affiliate_click": 14,
+        "favorite": 7
+      },
+      "notSetLanding7d": 4064
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-02→2026-08-29",
+      "clicks28d": 2017,
+      "clicksPrev28d": 2172,
+      "impressions28d": 177992
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-08-30",
+      "revenue7d": 1459.82,
+      "revenuePrev7d": 1451.87,
+      "rpm7d": 16.05,
+      "rpmPrev7d": 15.86,
+      "sessions7d": 90958,
+      "revenue28d": 5663.27,
+      "revenuePrev28d": 6345.74,
+      "rpm28d": 15.45,
+      "health": {
+        "date": "2026/09/01",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 71
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1522,
+      "users7d": 60,
+      "users30d": 245,
+      "subscribers": 17,
+      "subscribers7d": 2,
+      "subscribers30d": 7,
+      "subscribersBySource": {
+        "footer": 16,
+        "sign-in": 1
+      },
+      "favorites": 19250,
+      "favorites7d": 1166,
+      "downloadClicks7d": 170,
+      "downloadClicks30d": 1076,
+      "affiliateClicks7d": 17,
+      "affiliateClicks30d": 50,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 15888,
+      "collections": 1502
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 49,
+      "freeMembers": 5144,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5144,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 9,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 40,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 129
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 21,
+      "posts7d": 7,
+      "latestPost": "2026-09-01 sims-4-y2k-hairstyles"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-01",
+      "postedLast7d": 92,
+      "unpostedBacklog": 1731
+    }
+  }
+}

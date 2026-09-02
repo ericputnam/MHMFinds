@@ -1,32 +1,21 @@
 ---
 name: mhm-standup
-description: Run the MustHaveMods daily team pulse. Use when the user says "/mhm-standup", "daily standup", "morning pulse", or "how's the site doing today". Max, Tim, Mark, and Ivy each return a one-line 🟢/🟡/🔴 status; anything red is escalated. Light and fast — most days it's all green.
-allowed-tools: [Agent, Read]
+description: Run the MustHaveMods funnel team's daily loop interactively. Use when the user says "/mhm-standup", "daily standup", "morning pulse", "run the team", or "how's the site doing today". Runs the scoreboard script, then Quinn (GM) spawns Pip/Sage/Nova/Cass/Rio to each execute one move at the highest allowed autonomy tier, and returns the ≤25-line digest.
+allowed-tools: [Agent, Read, Bash, Write, Edit, Glob, Grep]
 ---
 
-# MHM Daily Standup (light pulse)
+# MHM Funnel Daily (interactive)
 
-The daily beat from `.claude/agents/mhm-team/operating-model.md` §1. Keep it FAST —
-this is a pulse check, not a full audit.
+This is the interactive twin of the scheduled `mhm-daily-pulse` task
+(`scripts/agents/run-funnel-daily.sh`). Same loop, same output, but run from the
+operator's terminal so they can answer questions inline.
 
-Steps:
-1. Spawn **Max, Tim, Mark, Ivy in parallel** (Agent: `mhm-ad-revenue`, `mhm-growth`,
-   `mhm-finance`, `mhm-affiliates`). Brief each: "Daily pulse only. Return ONE line: 🟢/🟡/🔴 + the
-   single most important number and any red flag. Do a full audit only if asked."
-   - Mark → Mediavine revenue & session-RPM (yesterday + 7d) via the
-     `mediavine-reporting` MCP (`mv_metrics_summary`/`mv_earnings`) + GA4 sessions WoW
-     + cost creep. Lead the summary with the revenue/RPM number.
-   - Max → live ad health via `mv_health_status` (sidebar sticky score) +
-     `check-blog-sidebar.sh` + `/go` regressions.
-   - Tim → GSC clicks WoW + new quick wins + indexing of pages <7 days old.
-   - Ivy → read latest `reports/affiliates/daily/<date>.md` (run
-     `scripts/agents/affiliate-daily-pulse.ts` if today's is missing) and relay
-     the PULSE line + any 🔴 flags.
-2. Summarize the four pulses in 4 lines for the operator.
-3. **If any pulse is 🔴**, surface it prominently with the recommended next step —
-   but never auto-fix anything human-gated (functions.php, Mediavine layout, infra,
-   deploy). Escalate and wait.
-4. If all 🟢, say so in one line. No busywork.
+1. Run the scoreboard: `npm run funnel:scoreboard` (writes `reports/funnel/YYYY-MM-DD.md` + `.json`).
+2. Spawn **mhm-gm** (Quinn) via the Agent tool with `model: 'fable'` and the contents of
+   `scripts/agents/funnel-daily-prompt.md` as the prompt, with one difference: because the
+   operator is present, Quinn may ask up to three yes/no questions about Tier 2 items
+   in `.claude/agents/mhm-funnel/operator-queue.md` before spawning the team.
+3. Print Quinn's digest verbatim. Do not summarize it further.
 
-Note: full revenue scoring needs the baseline in `targets.json` (set by Mark). If
-it's still PENDING, the pulse reports WoW deltas only and reminds the operator.
+If the user only wants numbers ("how's the site doing"), stop after step 1 and print the
+scoreboard's Headline and Flags sections.

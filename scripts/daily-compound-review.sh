@@ -17,9 +17,15 @@ cd "$PROJECT_DIR"
 
 log "Starting daily compound review..."
 
-# Ensure we're on main and up to date
-git checkout main
-git pull origin main
+# SD-6 (2026-09-01): read-only review runs against a detached worktree of origin/main
+# instead of `git checkout main` in the operator's tree (which fails on uncommitted work).
+git fetch origin main
+WT="$HOME/.mhm-worktrees/review-$(date +%Y%m%d)-$$"
+mkdir -p "$HOME/.mhm-worktrees"
+git worktree prune
+git worktree add --detach "$WT" origin/main || { log "worktree add failed"; exit 1; }
+trap 'cd "$PROJECT_DIR" && git worktree remove --force "$WT" >/dev/null 2>&1; git worktree prune >/dev/null 2>&1' EXIT
+cd "$WT"
 
 log "Running Claude Code to review threads and compound learnings..."
 

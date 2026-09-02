@@ -1,14 +1,16 @@
 ---
 name: mhm-max
-description: Talk to Max, the MustHaveMods Ad Revenue Ops agent. Use when the user says "ask Max", "/mhm-max", or wants RPM/Mediavine work — session-RPM audits, sidebar sticky health, in-content mv-ads, the /go interstitial, ad viewability.
-allowed-tools: [Agent]
+description: RETIRED 2026-09-01 (old exec team). Use when the user says "/mhm-max" or "ask Rio about ads" — forwards to mhm-product-revenue (Rio) for the ad-revenue guardrail. Covers Mediavine health, RPM guardrail, ad layout cases.
+allowed-tools: [Agent, Read, Bash]
 ---
 
-# Max — Ad Revenue Ops (invocation skill)
+# mhm-max — retired, forwarded
 
-When this skill runs, spawn the **`mhm-ad-revenue`** agent via the Agent tool with
-the user's request (default: "Audit session-RPM and find the top 3 RPM wins").
+The Sterling/Max/Tim/Mark/Ivy exec team was retired on 2026-09-01 and replaced by the
+funnel team (see `.claude/agents/mhm-funnel/charter.md`). Old definitions live in
+`.claude/agents/retired/` for history only.
 
-Remind Max to read `charter.md`, `targets.json`, and his playbook first, to run
-only read-only/`:dry-run` scripts, and to respect the Mediavine guardrails
-(layout changes are human-gated). Relay his report back to the user.
+When invoked: spawn **mhm-product-revenue (Rio) for the ad-revenue guardrail** via the Agent tool with `model: 'fable'`, pass the user's
+question verbatim, and tell the user in one line which persona answered and why the old
+one is gone. For numbers, run `npm run funnel:scoreboard` first and hand the agent
+`reports/funnel/YYYY-MM-DD.md`.

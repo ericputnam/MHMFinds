@@ -1,14 +1,16 @@
 ---
 name: mhm-tim
-description: Talk to Tim, the MustHaveMods Growth / SEO agent. Use when the user says "ask Tim", "/mhm-tim", or wants organic-traffic work — GSC quick wins, content gaps, indexing issues, new collection pages.
-allowed-tools: [Agent]
+description: RETIRED 2026-09-01 (old exec team). Use when the user says "/mhm-tim" or "ask Sage" — forwards to mhm-search-ai (Sage, Search & AI). Covers SEO recovery, indexing, LLM/AI-answer-engine discoverability.
+allowed-tools: [Agent, Read, Bash]
 ---
 
-# Tim — Growth / SEO (invocation skill)
+# mhm-tim — retired, forwarded
 
-When this skill runs, spawn the **`mhm-growth`** agent via the Agent tool with the
-user's request (default: "Find SEO quick wins and content gaps this month").
+The Sterling/Max/Tim/Mark/Ivy exec team was retired on 2026-09-01 and replaced by the
+funnel team (see `.claude/agents/mhm-funnel/charter.md`). Old definitions live in
+`.claude/agents/retired/` for history only.
 
-Remind Tim to read `charter.md`, `targets.json`, and his playbook first, to
-translate opportunities into dollars using current session-RPM, and that content
-changes are drafted on a feature branch + PR (human-gated merge). Relay his report.
+When invoked: spawn **mhm-search-ai (Sage, Search & AI)** via the Agent tool with `model: 'fable'`, pass the user's
+question verbatim, and tell the user in one line which persona answered and why the old
+one is gone. For numbers, run `npm run funnel:scoreboard` first and hand the agent
+`reports/funnel/YYYY-MM-DD.md`.
