@@ -377,7 +377,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     tagline: 'Broomsticks, cauldrons, spell books, and spellcaster fashion',
     intro:
       'Realm of Magic gave us spellcasters. It did not give us nearly enough stuff. The cauldron is a prop. The wand is the same wand in three colors. The spellcaster outfit options run out before you finish one sim. If you want a witch save that actually feels like a witch save — shelves of potion bottles, a wardrobe that reads dark-academia without being goth cosplay, a cottage that smells like herbs and old books — you need community CC.\n\nThis collection pulls together the witch and spellcaster CC we\'ve tagged so far: cauldrons and spell-book clutter that make a build feel inhabited, broomstick recolors and broom CC for the ones who like the travel option, witchy clothing from flowing robes to modern dark-academia cardigans, hat CC that isn\'t the same pointed cone, and potion-shelf deco sets that build out a proper apothecary. A few creators have built entire witchy room sets — Syboubou and Felixandre come up in the build-mode picks, while the CAS side leans on creators who work the dark-academic and cottagecore overlap.\n\nWitch CC sits right at the intersection of goth, cottagecore, and fantasy — so if this collection runs short for what you\'re building, those three collections extend it. Everything here is Sims 4, link-checked, and SFW.',
-    filter: { themesAny: ['witch'] },
+    // The `witch` theme tag is sparse (0 verified mods on 2026-09-02), so
+    // this uses the same temporary keyword-fallback pattern as pregnancy
+    // until a witch/spellcaster facet backfill lands (~344 keyword matches).
+    filter: { contentType: '__witch_keyword__' },
     expectedCount: 60,
     related: ['goth-cc', 'cottagecore-cc', 'vampire-cc'],
     blogUrl: '/sims-4-witch-cc/',
@@ -459,6 +462,22 @@ export function buildWhereClause(filter: CollectionFacetQuery): Prisma.ModWhereI
       { title: { contains: 'pregnan', mode: 'insensitive' } },
       { title: { contains: 'maternity', mode: 'insensitive' } },
       { description: { contains: 'pregnan', mode: 'insensitive' } },
+    ];
+    return where;
+  }
+
+  // Phase 1 temporary: witch keyword fallback (same pattern as pregnancy).
+  // The real facets (witch theme / spellcaster occult) are in the OR so the
+  // page picks up backfilled mods automatically with no code change.
+  if (filter.contentType === '__witch_keyword__') {
+    where.OR = [
+      { themes: { hasSome: ['witch'] } },
+      { occultTypes: { hasSome: ['witch', 'spellcaster'] } },
+      { title: { contains: 'witch', mode: 'insensitive' } },
+      { title: { contains: 'spellcaster', mode: 'insensitive' } },
+      { title: { contains: 'cauldron', mode: 'insensitive' } },
+      { title: { contains: 'broomstick', mode: 'insensitive' } },
+      { description: { contains: 'witch', mode: 'insensitive' } },
     ];
     return where;
   }
