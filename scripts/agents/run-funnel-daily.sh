@@ -12,7 +12,8 @@
 #    red-rpm day with a production deploy inside the window is rolled back HERE,
 #    before Quinn starts, via deploy-verify.sh --rollback. A failed blog-marker
 #    check is fixed by re-pushing functions.php from git.
-# 4. Runs Quinn (claude -p) with the daily prompt + the guardrail status.
+# 4. Creates one worktree per agent, then runs Quinn (claude -p) with the daily prompt, the guardrail
+#    status and the agent worktree paths.
 # 5. Copies the digest, scoreboard, guardrail report, ledger and incidents back
 #    into the operator's tree so they are readable without a pull, and appends
 #    to logs/funnel-daily.log.
@@ -54,28 +55,51 @@ if ! git worktree add --detach "$WT" origin/main >>"$LOG_FILE" 2>&1; then
 fi
 cleanup() {
   cd "$PROJECT_DIR" || exit 0
-  git worktree remove --force "$WT" >/dev/null 2>&1 || true
+  local d
+  for d in "$WT" "$WT"-*; do [ -d "$d" ] && git worktree remove --force "$d" >/dev/null 2>&1; done
   git worktree prune >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
 cd "$WT" || exit 1
-# Secrets stay in the operator's .env.local; symlink so scripts (DB, Mediavine) work. Never copied, never committed (.gitignore covers .env*).
-[ -f "$PROJECT_DIR/.env.local" ] && ln -sf "$PROJECT_DIR/.env.local" "$WT/.env.local"
-[ -f "$PROJECT_DIR/scripts/mcp-mediavine/.env.local" ] && ln -sf "$PROJECT_DIR/scripts/mcp-mediavine/.env.local" "$WT/scripts/mcp-mediavine/.env.local"
-# Reuse the operator's node_modules (identical lockfile on origin/main is the common case; falls back to npm ci if not).
-# Sharing node_modules also shares the generated Prisma client (node_modules/.prisma). If the operator's
-# schema differs from origin/main (feature branch), `prisma generate` here would clobber the operator's
-# client — so only share when both lockfile AND schema are identical; otherwise install our own.
-if cmp -s "$PROJECT_DIR/package-lock.json" "$WT/package-lock.json" && cmp -s "$PROJECT_DIR/prisma/schema.prisma" "$WT/prisma/schema.prisma" && [ -d "$PROJECT_DIR/node_modules" ]; then
-  ln -s "$PROJECT_DIR/node_modules" "$WT/node_modules"
-  [ -d "$WT/node_modules/.prisma/client" ] || npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
-else
-  log "lockfile or prisma schema differs from origin/main — npm ci + prisma generate in worktree (operator's node_modules untouched)"
-  npm ci --no-audit --no-fund >>"$LOG_FILE" 2>&1 || { log "npm ci failed"; exit 1; }
-  npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
-fi
+# Secrets: COPY .env.local into the throwaway worktrees — never symlink it. Webpack follows the link and
+# parses the target as a module, which breaks `next build` (Quinn, 2026-09-02). .gitignore covers .env*,
+# and cleanup() deletes the worktrees, so the copies never outlive the run.
+copy_env() {  # $1 worktree
+  if [ -f "$PROJECT_DIR/.env.local" ]; then cp "$PROJECT_DIR/.env.local" "$1/.env.local"; chmod 600 "$1/.env.local"; fi
+  if [ -f "$PROJECT_DIR/scripts/mcp-mediavine/.env.local" ] && [ -d "$1/scripts/mcp-mediavine" ]; then
+    cp "$PROJECT_DIR/scripts/mcp-mediavine/.env.local" "$1/scripts/mcp-mediavine/.env.local"; chmod 600 "$1/scripts/mcp-mediavine/.env.local"
+  fi
+  return 0
+}
+# A checkout must NEVER carry a node_modules symlink. PR #20 accidentally tracked one pointing at the
+# operator's tree (.gitignore's `node_modules/` ignores directories, not links); `npm ci` through it
+# emptied the operator's node_modules on 2026-09-02 and concurrent checkouts kept restoring the link
+# mid-run. Drop any link before touching npm, and never share the operator's install with the run.
+drop_nm_link() { if [ -L "$1/node_modules" ]; then rm "$1/node_modules"; log "removed node_modules symlink in $1"; fi; return 0; }
+copy_env "$WT"; drop_nm_link "$WT"
+log "npm ci + prisma generate in the worktree (the operator's node_modules is never shared or touched)"
+npm ci --no-audit --no-fund >>"$LOG_FILE" 2>&1 || { log "npm ci failed"; exit 1; }
+npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
 mkdir -p "$WT/reports/funnel" "$WT/reports/funnel/drafts" "$WT/logs"
+
+# --- one worktree per agent ---------------------------------------------------
+# Five agents committing in ONE checkout race on git state: on 2026-09-02 three of five PRs carried other
+# agents' commits and Quinn had to rebuild them by hand. Each agent now gets its own detached checkout of
+# origin/main (deps shared read-mostly with Quinn's install via symlink, secrets copied); Quinn passes the
+# paths down and every agent does all git/build/test/PR work inside its own directory.
+export FUNNEL_PRIMARY_WT="$WT"   # deploy-verify.sh mirrors ledger rows + incidents here so Quinn's digest sees them
+AGENT_WT_LINE="AGENT WORKTREES — one per agent, each a clean detached checkout of origin/main with node_modules and .env.local ready. An agent does ALL of its git/branch/build/test/PR/merge/deploy-verify work inside its OWN directory (prefix every Bash command with \`cd <its path> &&\`), never in yours (Quinn: $WT) or another agent's:"
+for a in pip sage nova cass rio; do
+  AWT="$WT-$a"
+  if git worktree add --detach "$AWT" origin/main >>"$LOG_FILE" 2>&1; then
+    drop_nm_link "$AWT"; ln -s "$WT/node_modules" "$AWT/node_modules"; copy_env "$AWT"
+    mkdir -p "$AWT/reports/funnel/incidents" "$AWT/logs"
+    AGENT_WT_LINE="$AGENT_WT_LINE $a=$AWT"
+  else
+    log "worktree for $a failed — that agent must work in Quinn's worktree today"
+  fi
+done
 # Bootstrap: until the funnel-team files are merged to main, copy them in from the operator's tree
 # so the loop can run. Logged loudly so the operator merges soon (the copies are not committed here).
 if [ ! -f "$WT/scripts/agents/funnel-scoreboard.ts" ]; then
@@ -173,7 +197,9 @@ log "Running Quinn ($MODEL)…"
 GUARD_LINE="CIRCUIT BREAKER TODAY: status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" ) — full report: $GUARD_MD. If the runner rolled back, the ledger row and incident file are already written; you are in incident mode."
 if "${CLAUDE_CLEAN[@]}" claude -p "$(cat "$PROMPT_FILE")
 
-$GUARD_LINE" \
+$GUARD_LINE
+
+$AGENT_WT_LINE" \
     --model "$MODEL" \
     --max-turns "$MAX_TURNS" \
     --permission-mode acceptEdits \

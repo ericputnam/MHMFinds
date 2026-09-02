@@ -90,7 +90,7 @@ Pip turns her posts and lookbooks into pins and social copy automatically
 | Piece | Path | Status 2026-09-01 |
 |---|---|---|
 | Scheduled task | `~/.claude/scheduled-tasks/mhm-daily-pulse/SKILL.md` | reset to the funnel prompt |
-| Clean-worktree runner | `scripts/agents/run-funnel-daily.sh` | new; fixes the dirty-tree failure that broke `auto-compound` |
+| Clean-worktree runner | `scripts/agents/run-funnel-daily.sh` | one worktree per agent (2026-09-02); own `npm ci`, `.env.local` copied not linked; never touches the operator's node_modules |
 | Scoreboard | `scripts/agents/funnel-scoreboard.ts` | new |
 | Circuit breaker | `scripts/agents/revenue-guardrail.ts` | new; runs before Quinn; can trigger rollback |
 | Deploy verifier / rollback / ledger | `scripts/agents/deploy-verify.sh` (+ `smoke-render.ts`, Playwright) | new; after every merge and every evening (`mhm-guardrail-evening`) |
