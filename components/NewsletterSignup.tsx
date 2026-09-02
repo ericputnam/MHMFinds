@@ -38,6 +38,12 @@ export function NewsletterSignup({ source = 'footer' }: NewsletterSignupProps) {
       if (response.ok && data.success) {
         setStatus('success');
         setEmail('');
+        // Fire GA4 conversion event so signups are visible in the scoreboard
+        (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+          'event',
+          'newsletter_signup',
+          { source }
+        );
       } else {
         setStatus('error');
         setErrorMessage(data.message || 'Something went wrong. Please try again.');
