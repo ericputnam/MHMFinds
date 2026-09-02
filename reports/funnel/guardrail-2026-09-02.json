@@ -1,0 +1,88 @@
+{
+  "status": "yellow",
+  "action": "watch",
+  "day": "2026-08-31",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 186.95,
+    "sessions": 13087.5,
+    "rpm": 14.295
+  },
+  "actualDay": {
+    "date": "2026-08-31",
+    "revenue": 150.08,
+    "sessions": 12547,
+    "rpm": 11.96
+  },
+  "window3": {
+    "actualRevenue": 623.98,
+    "expectedRevenue": 642.2325,
+    "actualSessions": 41406,
+    "expectedSessions": 42931.5,
+    "actualRpm": 15.069796647828818,
+    "expectedRpm": 15.091454981225828
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T12:08:42.710Z",
+      "ref": "4a8ace1",
+      "text": "READY fix(funnel): runner auth preflight + degraded digest, prisma-aware node_modules (#21) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-nmf74jhgo-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T11:47:15.344Z",
+      "ref": "4fb45b6",
+      "text": "READY fix(agents): funnel-scoreboard matchAll spread breaks Vercel build (ES5 target) (#20) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-c9hh23oep-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T11:44:32.630Z",
+      "ref": "428384d",
+      "text": "ERROR feat(agents): funnel team framework + enforced commit/merge autonomy (#19) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-3zzaouqq1-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T01:45:21.124Z",
+      "ref": "fa6e2e0",
+      "text": "READY fix(ads): remove Mediavine player relocation + 8s hide timer on /go interstitial (#18) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cem8xisxa-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:08:38-04:00",
+      "ref": "4a8ace1",
+      "text": "fix(funnel): runner auth preflight + degraded digest, prisma-aware node_modules (#21)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T07:47:12-04:00",
+      "ref": "4fb45b6",
+      "text": "fix(agents): funnel-scoreboard matchAll spread breaks Vercel build (ES5 target) (#20)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T07:44:28-04:00",
+      "ref": "428384d",
+      "text": "feat(agents): funnel team framework + enforced commit/merge autonomy (#19)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-01T21:45:17-04:00",
+      "ref": "fa6e2e0",
+      "text": "fix(ads): remove Mediavine player relocation + 8s hide timer on /go interstitial (#18)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/02",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $150.08 on 2026-08-31 is -19.7% vs same weekday avg; 3-day -2.8%"
+  ]
+}
