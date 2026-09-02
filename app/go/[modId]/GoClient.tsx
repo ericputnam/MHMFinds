@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info, Package } from 'lucide-react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
 
 interface Mod {
   id: string;
@@ -349,6 +350,22 @@ export default function GoClient() {
                 />
               </div>
             )}
+
+            {/*
+              Email capture — sibling of mv-ads, never inside it.
+              Placed here so users see it while the countdown runs.
+              source="go-interstitial" lets the scoreboard attribute adds
+              to this surface specifically.
+            */}
+            <div className="bg-slate-800/50 border border-sims-pink/20 rounded-xl p-6 mb-8">
+              <p className="text-white font-semibold mb-1 text-center">
+                Get new mods weekly — straight to your inbox
+              </p>
+              <p className="text-sm text-slate-400 mb-4 text-center">
+                Join the list and never miss a Sims 4 CC drop.
+              </p>
+              <NewsletterSignup source="go-interstitial" />
+            </div>
 
             {/* While You Wait — related mods during countdown */}
             {relatedMods.length > 0 && (
