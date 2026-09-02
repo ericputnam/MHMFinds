@@ -327,8 +327,8 @@ async function pullPatreon(): Promise<PatreonData> {
     const objStart = back.lastIndexOf('"type":"reward"');
     if (objStart >= 0) back = back.slice(objStart);
     const ahead = html.slice(m.index, m.index + 200);
-    const amt = [...back.matchAll(/"amount_cents":(\d+)/g)].pop();
-    const freeFlag = [...back.matchAll(/"is_free_tier":(true|false)/g)].pop();
+    const amt = Array.from(back.matchAll(/"amount_cents":(\d+)/g)).pop();
+    const freeFlag = Array.from(back.matchAll(/"is_free_tier":(true|false)/g)).pop();
     const title = ahead.match(/"title":"([^"]{0,80})"/)?.[1] ?? '';
     if (!amt || !freeFlag) continue;
     const free = freeFlag[1] === 'true';
