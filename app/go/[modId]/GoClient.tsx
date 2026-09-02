@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -41,9 +41,6 @@ export default function GoClient() {
   const [countdown, setCountdown] = useState(10);
   const [canProceed, setCanProceed] = useState(false);
   const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
-  const videoSlotRef = useRef<HTMLDivElement>(null);
-  const displayFallbackRef = useRef<HTMLDivElement>(null);
-  const [adSlotEmpty, setAdSlotEmpty] = useState(false);
   const { trackDownload } = useDownloadTracking();
 
   // Fetch mod details + related mods
@@ -128,160 +125,18 @@ export default function GoClient() {
   }, [loading]);
 
   /*
-    Relocate Mediavine's Universal Video Player into our in-content ad slot.
-
-    Why this is needed:
-    Mediavine serves a Universal Player on this site, but the Script Wrapper
-    auto-places it as a floating outstream container in the bottom-right
-    corner of the viewport. None of the documented anchor attributes
-    (`#mediavine-video-player`, `.mv-video-player`, `data-video-type="inline"`)
-    reliably override that on our setup — the player keeps floating.
-
-    How this works:
-    1. Mount a target `videoSlotRef` div inside the "Advertisement" box.
-    2. Watch the DOM with a MutationObserver for Mediavine to add its
-       `.mv-outstream-container` (which wraps the <video> element and the
-       `#universalPlayer` adunit).
-    3. When it appears, reset Mediavine's floating styles (position, offsets,
-       width, transform) and physically move the container into our slot.
-    4. Disconnect the observer once moved, or after a 15s safety timeout.
-
-    Risks / mitigations:
-    - Moving Mediavine's DOM can disrupt viewability tracking. Mitigated by
-      only moving once, and placing the slot in a naturally-visible area
-      above the fold so IntersectionObserver still measures it correctly.
-    - Mediavine may re-create the container on ad refresh. The observer keeps
-      running for 15s to catch re-creations during initial ad-load settle.
+    Mediavine (Lauren Funari, Senior Support, Sep 2026) asked us to remove
+    the custom Universal Player relocation script and the 8s "hide the ad box
+    if empty" timer that used to live here:
+    - the relocation hunted `.mv-outstream-container`, often matched nothing
+      (so the player floated anyway) and moved Mediavine's DOM, which breaks
+      their viewability measurement;
+    - the timer hid an `.mv-ads` container mid-auction, so ads that were
+      about to fill were counted as unviewable.
+    Do NOT re-add: DOM relocation of Mediavine elements, timed hiding of
+    `.mv-ads` containers, or `window.mediavine.newPageView()` calls here.
+    See reports/viewability-fix-2026-09-01.md.
   */
-  useEffect(() => {
-    if (loading) return;
-    if (typeof window === 'undefined') return;
-
-    let moved = false;
-
-    const relocateVideo = () => {
-      if (moved) return true;
-      const slot = videoSlotRef.current;
-      if (!slot) return false;
-
-      // Mediavine wraps the outstream video + universalPlayer adunit in this container.
-      const outstream = document.querySelector<HTMLElement>('.mv-outstream-container');
-      if (!outstream) return false;
-
-      // Already in our slot — nothing to do.
-      if (slot.contains(outstream)) {
-        moved = true;
-        return true;
-      }
-
-      // Reset Mediavine's floating positioning so it renders inline inside
-      // our slot, and force it to fill the slot width in a 16:9 box so the
-      // player is actually readable (Mediavine's default outstream thumbnail
-      // is ~160x90, which looked like a broken ad in our 728px-wide slot).
-      const resetStyles: Partial<CSSStyleDeclaration> = {
-        position: 'relative',
-        top: 'auto',
-        left: 'auto',
-        right: 'auto',
-        bottom: 'auto',
-        width: '100%',
-        height: 'auto',
-        maxWidth: '100%',
-        aspectRatio: '16 / 9',
-        transform: 'none',
-        margin: '0 auto',
-        zIndex: 'auto',
-      };
-      Object.assign(outstream.style, resetStyles);
-
-      // Stretch the inner video + any wrapper divs to fill the container so
-      // the thumbnail doesn't sit as a tiny 160x90 square in the corner.
-      outstream.querySelectorAll<HTMLElement>('video, .mv-video-wrapper, .mv-video-container').forEach((el) => {
-        el.style.width = '100%';
-        el.style.height = '100%';
-        el.style.maxWidth = '100%';
-        (el.style as CSSStyleDeclaration & { objectFit: string }).objectFit = 'contain';
-      });
-
-      // Hide the display-ad fallback once video wins — otherwise the 250px
-      // display slot sits empty above the video, making the box look broken.
-      if (displayFallbackRef.current) {
-        displayFallbackRef.current.style.display = 'none';
-      }
-
-      slot.appendChild(outstream);
-      moved = true;
-      return true;
-    };
-
-    // Try immediately in case Mediavine already injected the player.
-    if (relocateVideo()) return;
-
-    // Otherwise watch for it to be added to the DOM.
-    const observer = new MutationObserver(() => {
-      relocateVideo();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Fallback: also poll every 500ms for the first 10s (belt-and-suspenders
-    // in case Mediavine mutates inside an existing node rather than adding new).
-    const pollInterval = setInterval(() => {
-      if (relocateVideo()) clearInterval(pollInterval);
-    }, 500);
-
-    const cleanupTimer = setTimeout(() => {
-      observer.disconnect();
-      clearInterval(pollInterval);
-    }, 15000);
-
-    return () => {
-      observer.disconnect();
-      clearInterval(pollInterval);
-      clearTimeout(cleanupTimer);
-    };
-  }, [loading]);
-
-  /*
-    Detect if neither the Universal Player nor the display fallback ever fills
-    the ad slot, so we can hide the entire "Advertisement" card instead of
-    showing empty chrome over a blank box. Gives Mediavine 8s to fill — long
-    enough to cover their auction + lazy-load, short enough that the user
-    doesn't stare at an empty box during the 10s countdown.
-  */
-  useEffect(() => {
-    if (loading) return;
-    if (typeof window === 'undefined') return;
-
-    let settled = false;
-    const checkFill = () => {
-      if (settled) return;
-      const slot = videoSlotRef.current;
-      if (!slot) return;
-
-      const hasVideo = !!slot.querySelector('.mv-outstream-container video, .mv-outstream-container iframe');
-      const display = displayFallbackRef.current;
-      const hasDisplay = !!(
-        display &&
-        (display.querySelector('iframe') || display.querySelector('ins') || display.offsetHeight > 260)
-      );
-
-      if (hasVideo || hasDisplay) {
-        settled = true;
-        setAdSlotEmpty(false);
-      }
-    };
-
-    const fillPoll = setInterval(checkFill, 500);
-    const hideTimer = setTimeout(() => {
-      if (!settled) setAdSlotEmpty(true);
-      clearInterval(fillPoll);
-    }, 8000);
-
-    return () => {
-      clearInterval(fillPoll);
-      clearTimeout(hideTimer);
-    };
-  }, [loading]);
 
   const handleProceed = useCallback(() => {
     if (!mod) return;
@@ -416,48 +271,6 @@ export default function GoClient() {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/*
-              Video advertisement box.
-              The outer flex container centers the box horizontally in the
-              main column. The box itself uses `inline-flex` + `w-fit` so it
-              shrinks to hug Mediavine's Universal Player at its natural size
-              (~300-400px wide, 16:9) instead of stretching to a huge empty
-              container. min-height/min-width reserve a reasonable footprint
-              so there's no CLS before the player is moved in.
-            */}
-            <div
-              className={`flex justify-center mb-8${adSlotEmpty ? ' hidden' : ''}`}
-              aria-hidden={adSlotEmpty}
-            >
-              <div
-                ref={videoSlotRef}
-                id="mhm-inline-video-slot"
-                className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex flex-col items-center w-full max-w-[728px]"
-              >
-                <div className="text-center mb-3">
-                  <p className="text-sm text-slate-400 uppercase tracking-wider">Advertisement</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Thanks for supporting free mods — this ad keeps MustHaveMods running
-                  </p>
-                </div>
-                {/*
-                  Mediavine display ad fallback. Serves a display ad (~300x250)
-                  with ~98% fill rate. If Mediavine's Universal Player bids,
-                  the useEffect above relocates `.mv-outstream-container` into
-                  this slot (appended after these children), taking priority
-                  over the display — video CPM is 5-10x higher.
-                  `.mv-ads` needs ≥2 children so Mediavine injects between them.
-                */}
-                <div
-                  ref={displayFallbackRef}
-                  className="mv-ads w-full min-h-[250px]"
-                >
-                  <div />
-                  <div />
-                </div>
               </div>
             </div>
 
