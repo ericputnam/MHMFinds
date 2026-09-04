@@ -20,6 +20,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { Navbar } from '../../../../components/Navbar';
 import { Footer } from '../../../../components/Footer';
 import { ModGrid } from '../../../../components/ModGrid';
+import { NewsletterSignup } from '../../../../components/NewsletterSignup';
 import { Mod } from '../../../../lib/api';
 import type { CollectionDefinition } from '../../../../lib/collections';
 
@@ -179,6 +180,27 @@ export default function CollectionPageClient({
                   </div>
                 </section>
               )}
+
+              {/* Email capture — sibling of the mod grid, never inside or
+                  adjacent to the <aside id="secondary"> ad anchor.
+                  Placed after related collections so it appears at natural
+                  scroll depth without displacing ad injection slots.
+                  source="collection-page" so the scoreboard attributes
+                  net adds to this surface separately from footer/go. */}
+              <div className="mt-12 pt-8 border-t border-white/10">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-sims-pink mb-2">
+                    Weekly finds
+                  </p>
+                  <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
+                    New {collection.title} every week
+                  </h2>
+                  <p className="text-sm text-slate-400 mb-5">
+                    Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam, unsubscribe anytime.
+                  </p>
+                  <NewsletterSignup source="collection-page" />
+                </div>
+              </div>
             </div>
 
             {/* Sidebar column: Mediavine ad anchors.
