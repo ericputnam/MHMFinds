@@ -9,7 +9,7 @@ _Established 2026-09-01. Replaces `mhm-team/operating-model.md`._
 
 ## 1. The daily run (automated, ~06:30 local, 7 days a week)
 
-Triggered by the `mhm-daily-pulse` scheduled task. Five steps in order:
+Triggered by the `mhm-funnel-daily` scheduled task. Five steps in order:
 
 | Step | Who | What | Output |
 |---|---|---|---|
@@ -89,7 +89,7 @@ Pip turns her posts and lookbooks into pins and social copy automatically
 
 | Piece | Path | Status 2026-09-01 |
 |---|---|---|
-| Scheduled task | `~/.claude/scheduled-tasks/mhm-daily-pulse/SKILL.md` | reset to the funnel prompt |
+| Scheduled task | `~/.claude/scheduled-tasks/mhm-funnel-daily/SKILL.md` | recreated 2026-09-04 (model = Auto; the old `mhm-daily-pulse` was pinned to a model that stopped launching on 09-03) |
 | Clean-worktree runner | `scripts/agents/run-funnel-daily.sh` | one worktree per agent (2026-09-02); own `npm ci`, `.env.local` copied not linked; never touches the operator's node_modules |
 | Scoreboard | `scripts/agents/funnel-scoreboard.ts` | new |
 | Circuit breaker | `scripts/agents/revenue-guardrail.ts` | new; runs before Quinn; can trigger rollback |
