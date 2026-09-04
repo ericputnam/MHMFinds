@@ -1,0 +1,190 @@
+{
+  "status": "yellow",
+  "action": "watch",
+  "day": "2026-09-02",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 185.25750000000002,
+    "sessions": 12612,
+    "rpm": 14.762500000000001
+  },
+  "actualDay": {
+    "date": "2026-09-02",
+    "revenue": 160.2,
+    "sessions": 11269,
+    "rpm": 14.21
+  },
+  "window3": {
+    "actualRevenue": 469.07000000000005,
+    "expectedRevenue": 560.995,
+    "actualSessions": 35362,
+    "expectedSessions": 38456,
+    "actualRpm": 13.264804026921555,
+    "expectedRpm": 14.606260767187123
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-03T02:32:47.268Z",
+      "ref": "6c06d1a",
+      "text": "READY chore: compound learnings from 2026-09-02 (#30)",
+      "url": "https://mhm-finds-dw5l-hedslxw7c-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T16:05:13.943Z",
+      "ref": "053b7f0",
+      "text": "READY fix(funnel): one worktree per agent, copy .env.local, untrack node_modules symlink (#29)",
+      "url": "https://mhm-finds-dw5l-fohrjnnch-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T13:24:19.210Z",
+      "ref": "5ddbf8f",
+      "text": "READY funnel: daily run 2026-09-02 — reports, digest, experiments, playbook (#28)",
+      "url": "https://mhm-finds-dw5l-5i5vrx98h-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T13:16:20.406Z",
+      "ref": "90ece59",
+      "text": "READY fix(content): witch-cc keyword fallback — theme tag matched 0 verified mods (#27)",
+      "url": "https://mhm-finds-dw5l-cjdvz17hp-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T13:11:06.956Z",
+      "ref": "a467367",
+      "text": "READY feat(capture): GA4 newsletter_signup event + email form on /go interstitial (#26)",
+      "url": "https://mhm-finds-dw5l-738ifoxrt-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T13:07:12.001Z",
+      "ref": "f4892bd",
+      "text": "READY feat(content): add witch-cc collection page + W36 writer brief (#22)",
+      "url": "https://mhm-finds-dw5l-6rh8fc7l5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T13:02:52.425Z",
+      "ref": "01cdf27",
+      "text": "READY feat(sage): add AI crawler allow rules to robots.txt (#24)",
+      "url": "https://mhm-finds-dw5l-n9v42b9nh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T12:58:33.628Z",
+      "ref": "1bf37ba",
+      "text": "READY docs(funnel): Rio guardrail diagnosis 2026-09-02 — demand-side verdict (#25)",
+      "url": "https://mhm-finds-dw5l-ko7nojurh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-02T12:54:35.923Z",
+      "ref": "9ec85ca",
+      "text": "READY feat(pip): Pinterest read-back — baselined catalog pinning gap + corrected (not set) landi",
+      "url": "https://mhm-finds-dw5l-kwyb4fgcw-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-04T11:43:50.740Z",
+      "ref": "516fab0",
+      "text": "READY docs(funnel): daily loop is launched by the mhm-funnel-daily scheduled task (#31) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-8nnhsffl1-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:43:47-04:00",
+      "ref": "516fab0",
+      "text": "docs(funnel): daily loop is launched by the mhm-funnel-daily scheduled task (#31)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T22:32:44-04:00",
+      "ref": "6c06d1a",
+      "text": "chore: compound learnings from 2026-09-02 (#30)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T12:05:08-04:00",
+      "ref": "053b7f0",
+      "text": "fix(funnel): one worktree per agent, copy .env.local, untrack node_modules symlink (#29)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:24:15-04:00",
+      "ref": "5ddbf8f",
+      "text": "funnel: daily run 2026-09-02 — reports, digest, experiments, playbook (#28)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:16:16-04:00",
+      "ref": "90ece59",
+      "text": "fix(content): witch-cc keyword fallback — theme tag matched 0 verified mods (#27)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:11:02-04:00",
+      "ref": "a467367",
+      "text": "feat(capture): GA4 newsletter_signup event + email form on /go interstitial (#26)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:07:07-04:00",
+      "ref": "f4892bd",
+      "text": "feat(content): add witch-cc collection page + W36 writer brief (#22)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:02:47-04:00",
+      "ref": "01cdf27",
+      "text": "feat(sage): add AI crawler allow rules to robots.txt (#24)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:58:30-04:00",
+      "ref": "1bf37ba",
+      "text": "docs(funnel): Rio guardrail diagnosis 2026-09-02 — demand-side verdict (#25)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:54:32-04:00",
+      "ref": "9ec85ca",
+      "text": "feat(pip): Pinterest read-back — baselined catalog pinning gap + corrected (not set) landi"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:08:38-04:00",
+      "ref": "4a8ace1",
+      "text": "fix(funnel): runner auth preflight + degraded digest, prisma-aware node_modules (#21)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T07:47:12-04:00",
+      "ref": "4fb45b6",
+      "text": "fix(agents): funnel-scoreboard matchAll spread breaks Vercel build (ES5 target) (#20)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T07:44:28-04:00",
+      "ref": "428384d",
+      "text": "feat(agents): funnel team framework + enforced commit/merge autonomy (#19)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-01T21:45:17-04:00",
+      "ref": "fa6e2e0",
+      "text": "fix(ads): remove Mediavine player relocation + 8s hide timer on /go interstitial (#18)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/04",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $160.20 on 2026-09-02 is -13.5% vs same weekday avg; 3-day -16.4%"
+  ]
+}

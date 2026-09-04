@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-04
+- Tried: second full daily loop, first under a 🟡 guardrail (Tier 0 only) — 5/5 agents shipped: 4 PRs (#32–#35) merged, all deploy-verify PASS, plus Pip's data-only pinner insert (7 Supabase rows). 0 cross-contaminated PRs vs 3/5 on 09-02 — per-agent worktrees (PR #29) fixed the race.
+- Before → after: cumulative shipped moves 6 → 11; capture surfaces 1 → 2 (all 16 collection pages, ~7K sessions/7d addressable); collection pages 15 → 16; B3 Google diagnosis delivered 2026-09-04 vs 09-08 due date.
+- Verdict: KEEP per-agent worktrees + yellow-day Tier-0-only discipline; MORE DATA on the dip itself (E5/E9 read 2026-09-15).
+- Next time: (1) funnel-scoreboard.ts writes to MHM_PROJECT_DIR (defaults to the operator tree) — export MHM_PROJECT_DIR=$PWD in the runner or copy the dated files into the run worktree; (2) 09-03's run never launched (scheduled task pinned to a dead model — fixed in PR #31): a missed day should itself be a digest red flag, check the previous digest date every run.
+
 ## 2026-09-02
 - Tried: first full daily loop — 6 T0 merges (PRs #22–#27), all deploy-verify PASS; rebuilt 3 of 5 agent branches before merging because concurrent agents in ONE shared worktree cross-contaminated each other's commits (PR #22 carried Cass's files, #24/#26 carried 2–3 foreign commits each).
 - Before → after: shipped moves this week 0 → 6; owned-audience capture surfaces on /go 0 → 1; collection pages 15 → 16 (witch-cc, 48 mods rendered after #27 fixed a 0-verified-match theme filter); AI-crawler robots rules 0 → 8 bots.

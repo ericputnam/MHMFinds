@@ -1,0 +1,156 @@
+{
+  "date": "2026-09-04",
+  "headline": {
+    "ownedAdds7d": 55,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 127,
+    "nonAdTarget": 200,
+    "mediavine28d": 5590.26,
+    "mediavine28dPrev": 6236.79
+  },
+  "flags": [
+    "🔴 Mediavine 28d revenue $5,590.26 is -10.4% vs prior 28d — guardrail breached"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-27→2026-09-02 vs 2026-08-20→2026-08-26",
+      "sessions7d": 88048,
+      "sessionsPrev7d": 92305,
+      "byChannel7d": {
+        "pinterest": 57859,
+        "bing_organic": 17925,
+        "direct": 4474,
+        "other_search": 2726,
+        "google_organic": 1470,
+        "tumblr": 952,
+        "other": 2163,
+        "ai_referral": 278,
+        "reddit": 201
+      },
+      "byChannelPrev7d": {
+        "pinterest": 61654,
+        "bing_organic": 17807,
+        "direct": 4826,
+        "other_search": 2724,
+        "google_organic": 1423,
+        "tumblr": 953,
+        "other": 2332,
+        "ai_referral": 328,
+        "reddit": 258
+      },
+      "aiReferral7d": 278,
+      "aiReferralPrev7d": 328,
+      "captureEvents7d": {
+        "affiliate_click": 13,
+        "favorite": 6
+      },
+      "notSetLanding7d": 4019
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-05→2026-09-01",
+      "clicks28d": 2106,
+      "clicksPrev28d": 2132,
+      "impressions28d": 159092
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-02",
+      "revenue7d": 1326.09,
+      "revenuePrev7d": 1510.52,
+      "rpm7d": 14.98,
+      "rpmPrev7d": 16.48,
+      "sessions7d": 88518,
+      "revenue28d": 5590.26,
+      "revenuePrev28d": 6236.79,
+      "rpm28d": 15.46,
+      "health": {
+        "date": "2026/09/04",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 69
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1531,
+      "users7d": 54,
+      "users30d": 230,
+      "subscribers": 17,
+      "subscribers7d": 1,
+      "subscribers30d": 7,
+      "subscribersBySource": {
+        "footer": 16,
+        "sign-in": 1
+      },
+      "favorites": 19474,
+      "favorites7d": 1102,
+      "downloadClicks7d": 159,
+      "downloadClicks30d": 1055,
+      "affiliateClicks7d": 13,
+      "affiliateClicks30d": 52,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 15888,
+      "collections": 1511
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 47,
+      "freeMembers": 5201,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5201,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 7,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 40,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 127
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 22,
+      "posts7d": 6,
+      "latestPost": "2026-09-03 sims-4-nicki-minaj-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-04",
+      "postedLast7d": 88,
+      "unpostedBacklog": 1965
+    }
+  }
+}

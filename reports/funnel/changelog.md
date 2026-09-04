@@ -15,3 +15,12 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-02 09:07 | after-merge | Nova: PR #22 witch-cc collection + W36 writer brief | f4892bd | https://mhm-finds-dw5l-6rh8fc7l5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-02 09:11 | after-merge | Cass: PR #26 GA4 newsletter_signup + /go email capture | a467367 | https://mhm-finds-dw5l-738ifoxrt-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-02 09:16 | after-merge | Quinn: PR #27 witch-cc keyword fallback fix | 90ece59 | https://mhm-finds-dw5l-cjdvz17hp-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-02 09:24 | after-merge | Quinn: PR #28 funnel: daily run 2026-09-02 | 5ddbf8f | https://mhm-finds-dw5l-5i5vrx98h-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-02 12:05 | after-merge | Quinn: PR #29 runner per-agent worktrees + untrack node_modules | 053b7f0 | https://mhm-finds-dw5l-fohrjnnch-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-02 18:31 | check | evening-check |  | https://mhm-finds-dw5l-fohrjnnch-ericputnams-projects.vercel.app | PASS | evening/ad-hoc check · 5xx/15m=0  |
+| 2026-09-03 18:31 | check | evening-check |  | https://mhm-finds-dw5l-hedslxw7c-ericputnams-projects.vercel.app | PASS | evening/ad-hoc check · 5xx/15m=0  |
+| 2026-09-04 07:43 | after-merge | Quinn: PR #31 docs: mhm-funnel-daily task id | 516fab0 | https://mhm-finds-dw5l-8nnhsffl1-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-04 07:56 | after-merge | Nova: PR #32 makeup-cc collection page | 58af131 | https://mhm-finds-dw5l-jkkk58spl-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-04 07:57 | after-merge | Cass: PR #33 collection-page newsletter capture | cbd8079 | https://mhm-finds-dw5l-nt0n4gw6d-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-04 07:59 | after-merge | Rio: PR #34 guardrail diagnosis 2026-09-04 + Patreon draft | 94a9c81 | https://mhm-finds-dw5l-86cg8jwsn-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-04 08:01 | after-merge | Sage: PR #35 google-collapse-diagnosis | 76f7ad4 | https://mhm-finds-dw5l-kyia2v74b-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
