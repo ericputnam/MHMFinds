@@ -19,7 +19,7 @@ Shared state lives in `mhm-funnel/`: `charter.md`, `autonomy.md` (Tier 0/1/2 rul
 `operating-model.md`, `targets.json`, `scorecard.md`, `experiments.md`,
 `operator-queue.md`, `ideas-inbox.md`, `playbooks/`. Daily numbers come from
 `scripts/agents/funnel-scoreboard.ts`; the headless loop is
-`scripts/agents/run-funnel-daily.sh` (scheduled task `mhm-daily-pulse`).
+`scripts/agents/run-funnel-daily.sh` (scheduled task `mhm-funnel-daily`).
 
 The team may commit and merge to `main` under the operator's three rules (2026-09-01;
 `mhm-funnel/autonomy.md` → "The operator's three rules"). Enforcement:

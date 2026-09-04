@@ -6,7 +6,7 @@ allowed-tools: [Agent, Read, Bash, Write, Edit, Glob, Grep]
 
 # MHM Funnel Daily (interactive)
 
-This is the interactive twin of the scheduled `mhm-daily-pulse` task
+This is the interactive twin of the scheduled `mhm-funnel-daily` task
 (`scripts/agents/run-funnel-daily.sh`). Same loop, same output, but run from the
 operator's terminal so they can answer questions inline.
 
