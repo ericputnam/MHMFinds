@@ -406,6 +406,24 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
   },
+  {
+    slug: 'makeup-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Makeup CC',
+    heading: 'Sims 4 Makeup CC',
+    metaTitle: 'Sims 4 Makeup CC Finder — Browse 900+ Looks | MustHaveMods',
+    metaDescription:
+      'Browse 900+ Sims 4 makeup CC picks in one filterable grid — lashes, eyeshadow, lipstick, blush, and full makeup sets sorted by downloads.',
+    tagline: 'Lashes, eyeshadow, lipstick, and full sets for every look',
+    intro:
+      'Base-game Sims 4 makeup has not kept up with the rest of CAS. The lipstick options reuse the same two shine levels. The eyeshadow palette runs out of interesting choices in about three swatches. The lashes are a single flat mesh that looks like a crescent moon pasted to the eyelid. Community makeup CC fixes all of this — and the Sims makeup creator scene is one of the deepest in the whole CC ecosystem.\n\nThis collection pulls together over 900 makeup picks across every category: 3D lash sets (the most-downloaded single item on this site is a lash CC), eyeshadow and full eye looks, lipstick and lipgloss, blush, and full skin-detail-adjacent eye CC including default eye replacements and colored contacts. Creators like Pralinesims and Nords-Sims show up in the blush and skin-overlay end of the spectrum; the lash and makeup-specific end has its own ecosystem of creators — Moonflower-cc, Kiara24, and Okruee among them — building CAS-ready looks that stack cleanly on top of skin overlays.\n\nThe filter here is composite: makeup, eyebrows, eyeliner, blush, lipstick, and eyes content types together. Use the main finder\'s visual-style filter if you want to narrow to alpha-style or maxis-match makeup specifically. Everything here is Sims 4 only, link-checked, and SFW.',
+    filter: {
+      contentTypeIn: ['makeup', 'eyebrows', 'eyeliner', 'blush', 'lipstick', 'eyes'],
+    },
+    expectedCount: 922,
+    related: ['skin-details', 'hair-cc', 'female-clothes'],
+  },
 ];
 
 /**
