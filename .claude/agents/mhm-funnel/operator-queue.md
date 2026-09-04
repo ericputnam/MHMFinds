@@ -31,8 +31,13 @@ _(none yet)_
 - `NEWSLETTER_WEEKLY_ENABLED` is unset in Vercel; the cron exists. Cass will draft issue #1 and QA it. When it's ready it will appear above as a Tier 1 item. Nothing to do now except: is the SendGrid sender domain verified? (If you don't know, Cass will test with a send to your address.)
 - **Reply:**
 
-### Q4 · Patreon tier relaunch (arrives ~2026-09-05 from Rio)
-- Placeholder: tier copy + free→paid announcement post will be attached here for you to paste into Patreon. Price choice will be two options with the math.
+### Q4 · Patreon tier relaunch — package ready (Rio, 2026-09-04)
+- **Package:** `reports/funnel/drafts/patreon-tier-relaunch-2026-09-04.md` (merged to main, PR #34). Tier copy + free→paid announcement draft are written; you paste into Patreon (~5 min).
+- **Current:** 47 paid, $127/mo gross ($1×7, $3×40, $5×0), 5,201 free members.
+- **Option A (conservative):** $3 Early Access / $5 CC Curator / $10 Sims Muse — target 90 patrons ≈ $475/mo gross (+$348).
+- **Option B (simplified):** $5 / $10 only, grandfather existing — anchors higher, fewer tiers.
+- **Ask:** reply "approve 4 option A" or "approve 4 option B" (or reject with reason). Perks reuse things already built/planned (early lookbooks, countdown skip, mod-topic votes) — no new infrastructure.
+- **Risk:** low; pricing is operator-only (Tier 2). Rollback: revert tiers in Patreon dashboard.
 - **Reply:**
 
 ---
