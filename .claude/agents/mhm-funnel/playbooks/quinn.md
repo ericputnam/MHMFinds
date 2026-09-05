@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-05
+- Tried: third full loop, second consecutive yellow (Tier 0 only) — 4 PRs merged (#38 Cass mod-detail capture, #39 Rio diagnosis + affiliate hold, #40 Nova W37 brief, #41 Sage hydration fix). Opened the day by closing the 09-04 evening incident: ERR_TIMED_OUT on ALL pages including the known-good rollback target = network-level false alarm; morning re-check PASS 06:49.
+- Before → after: production alias pinned to 09-04 code → main HEAD serving (promoted 08:02). The 09-04 auto-rollback PAUSED Vercel auto-promotion, so all 4 verified merges built READY but sat unserved for ~66 min (06:56 → 08:02); their "verified live" ledger rows had actually verified the OLD code. Also: 4 merges inside 49 s → 2/4 ledger rows carry a neighbor's merge sha and 1/4 (Nova) got no row (backfilled 07:59).
+- Verdict: KEEP the loop; FIX two runner gaps: (1) after any rollback, the next run must check `vercel ls`/alias vs origin/main HEAD and re-promote once verified — deploy-verify only *logs* "alias serves X (expected Y)" and still PASSes; (2) serialize the merge→deploy-verify step (Quinn merges queued PRs one at a time) so sha attribution and rows stay 1:1.
+- Next time: after closing a rollback incident as a false alarm, immediately ask "is auto-promotion still paused?" — a PASS on what-is-live can hide that nothing new is going live.
+
 ## 2026-09-04
 - Tried: second full daily loop, first under a 🟡 guardrail (Tier 0 only) — 5/5 agents shipped: 4 PRs (#32–#35) merged, all deploy-verify PASS, plus Pip's data-only pinner insert (7 Supabase rows). 0 cross-contaminated PRs vs 3/5 on 09-02 — per-agent worktrees (PR #29) fixed the race.
 - Before → after: cumulative shipped moves 6 → 11; capture surfaces 1 → 2 (all 16 collection pages, ~7K sessions/7d addressable); collection pages 15 → 16; B3 Google diagnosis delivered 2026-09-04 vs 09-08 due date.

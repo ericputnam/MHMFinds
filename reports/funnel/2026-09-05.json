@@ -1,0 +1,158 @@
+{
+  "date": "2026-09-05",
+  "headline": {
+    "ownedAdds7d": 51,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 127,
+    "nonAdTarget": 200,
+    "mediavine28d": 5575.13,
+    "mediavine28dPrev": 6176.59
+  },
+  "flags": [
+    "🟡 Mediavine 28d revenue -9.7% vs prior 28d"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-28→2026-09-03 vs 2026-08-21→2026-08-27",
+      "sessions7d": 87087,
+      "sessionsPrev7d": 91601,
+      "byChannel7d": {
+        "pinterest": 57351,
+        "bing_organic": 17514,
+        "direct": 4453,
+        "other_search": 2747,
+        "google_organic": 1481,
+        "tumblr": 957,
+        "other": 2136,
+        "ai_referral": 247,
+        "reddit": 201
+      },
+      "byChannelPrev7d": {
+        "pinterest": 61340,
+        "bing_organic": 17509,
+        "direct": 4752,
+        "other_search": 2702,
+        "google_organic": 1421,
+        "tumblr": 954,
+        "other": 2338,
+        "ai_referral": 336,
+        "reddit": 249
+      },
+      "aiReferral7d": 247,
+      "aiReferralPrev7d": 336,
+      "captureEvents7d": {
+        "affiliate_click": 11,
+        "favorite": 4
+      },
+      "notSetLanding7d": 3999
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-06→2026-09-02",
+      "clicks28d": 2121,
+      "clicksPrev28d": 2124,
+      "impressions28d": 152442
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-03",
+      "revenue7d": 1298.44,
+      "revenuePrev7d": 1520.11,
+      "rpm7d": 14.8,
+      "rpmPrev7d": 16.6,
+      "sessions7d": 87742,
+      "revenue28d": 5575.13,
+      "revenuePrev28d": 6176.59,
+      "rpm28d": 15.5,
+      "health": {
+        "date": "2026/09/05",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 68
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1537,
+      "users7d": 48,
+      "users30d": 227,
+      "subscribers": 19,
+      "subscribers7d": 3,
+      "subscribers30d": 8,
+      "subscribersBySource": {
+        "collection-page": 1,
+        "footer": 16,
+        "go-interstitial": 1,
+        "sign-in": 1
+      },
+      "favorites": 19487,
+      "favorites7d": 844,
+      "downloadClicks7d": 130,
+      "downloadClicks30d": 1043,
+      "affiliateClicks7d": 15,
+      "affiliateClicks30d": 53,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 15888,
+      "collections": 1517
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 47,
+      "freeMembers": 5212,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5212,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 7,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 40,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 127
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 22,
+      "posts7d": 6,
+      "latestPost": "2026-09-05 sims-4-social-media-mods"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-04",
+      "postedLast7d": 96,
+      "unpostedBacklog": 1932
+    }
+  }
+}
