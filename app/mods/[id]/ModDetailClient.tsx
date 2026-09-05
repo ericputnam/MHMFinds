@@ -173,7 +173,10 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
             {/* Description Section */}
             <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mb-6">
               <h2 className="text-2xl font-bold text-white mb-4">About This Mod</h2>
-              <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed">
+              {/* suppressHydrationWarning: ReactMarkdown parses description HTML on the
+                  client; server-rendered output may differ slightly for markdown with
+                  embedded HTML entities or unusual whitespace. The mismatch is cosmetic. */}
+              <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed" suppressHydrationWarning>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {mod.description || mod.shortDescription || 'No description available.'}
                 </ReactMarkdown>
@@ -290,8 +293,8 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 text-sims-pink mb-1">
                     <Download size={18} />
-                    <span className="font-bold text-lg text-white">
-                      {(mod._count?.downloads || mod.downloadCount || 0).toLocaleString()}
+                    <span className="font-bold text-lg text-white" suppressHydrationWarning>
+                      {(mod._count?.downloads || mod.downloadCount || 0).toLocaleString('en-US')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">downloads</p>
@@ -299,8 +302,8 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
                     <Heart size={18} />
-                    <span className="font-bold text-lg text-white">
-                      {(mod._count?.favorites || 0).toLocaleString()}
+                    <span className="font-bold text-lg text-white" suppressHydrationWarning>
+                      {(mod._count?.favorites || 0).toLocaleString('en-US')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">favorites</p>
@@ -308,8 +311,8 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 text-sims-blue mb-1">
                     <Eye size={18} />
-                    <span className="font-bold text-lg text-white">
-                      {(mod.viewCount || 0).toLocaleString()}
+                    <span className="font-bold text-lg text-white" suppressHydrationWarning>
+                      {(mod.viewCount || 0).toLocaleString('en-US')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">views</p>
@@ -363,11 +366,12 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                     <Calendar size={16} className="text-slate-500 mt-0.5" />
                     <div>
                       <p className="text-slate-400">Published</p>
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-white" suppressHydrationWarning>
                         {new Date(mod.publishedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
-                          day: 'numeric'
+                          day: 'numeric',
+                          timeZone: 'UTC',
                         })}
                       </p>
                     </div>
@@ -385,11 +389,12 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
                     <TrendingUp size={16} className="text-slate-500 mt-0.5" />
                     <div>
                       <p className="text-slate-400">Last Updated</p>
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-white" suppressHydrationWarning>
                         {new Date(mod.updatedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
-                          day: 'numeric'
+                          day: 'numeric',
+                          timeZone: 'UTC',
                         })}
                       </p>
                     </div>
