@@ -23,6 +23,7 @@ import { AffiliateRecommendations } from '@/components/AffiliateRecommendations'
 import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -224,6 +225,23 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
 
             {/* Related Mods */}
             <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
+
+            {/*
+              Email capture — sibling of all .mv-ads blocks, never inside them.
+              Placed after RelatedMods so it appears when the user has finished
+              reading and is deciding what to do next.
+              source="mod-detail" lets the scoreboard attribute adds to this
+              surface specifically (E10).
+            */}
+            <div className="bg-mhm-card border border-sims-pink/20 rounded-2xl p-6 mt-6">
+              <p className="text-white font-semibold mb-1">
+                Get the best new Sims 4 mods weekly
+              </p>
+              <p className="text-sm text-slate-400 mb-4">
+                New CC drops, curated finds, and free mod roundups — straight to your inbox.
+              </p>
+              <NewsletterSignup source="mod-detail" />
+            </div>
           </div>
 
           {/* Right Column - Mod Info & Actions */}
