@@ -30,7 +30,7 @@ WORKTREE_ROOT="$HOME/.mhm-worktrees"
 TODAY="$(date '+%Y-%m-%d')"
 WT="$WORKTREE_ROOT/funnel-$TODAY-$$"
 PROMPT_FILE="$PROJECT_DIR/scripts/agents/funnel-daily-prompt.md"
-MODEL="${FUNNEL_MODEL:-claude-fable-5}"
+MODEL="${FUNNEL_MODEL:-claude-fable-5-1}"   # operator 2026-09-05: Fable is the advisor; specialists get cheaper models per operating-model.md §7
 MAX_TURNS="${FUNNEL_MAX_TURNS:-400}"
 
 mkdir -p "$PROJECT_DIR/logs" "$WORKTREE_ROOT" "$PROJECT_DIR/reports/funnel"

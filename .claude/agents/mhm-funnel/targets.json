@@ -3,6 +3,7 @@
   "lastUpdated": "2026-09-01",
   "autonomy": "tiered",
   "_autonomyNote": "\"tiered\" = Tier 0 ships, Tier 1 ships after a 24h veto window, Tier 2 queues for the operator (see autonomy.md). Set to \"ask\" to make everything queue.",
+  "successCriterion": "Total revenue growth: Mediavine + non-ad revenue, 28d rolling vs prior 28d (and vs same 28d a year earlier once available). Operator decision 2026-09-05; leads the digest Scoreboard line. Owned-audience adds and non-ad revenue below are the levers, not the verdict.",
   "quarterEnd": "2026-12-31",
   "quarterTest": "Owned-audience net adds/week must be >= 3x the September baseline AND non-ad revenue >= $1,000/mo, or the team is replaced.",
   "baseline": {

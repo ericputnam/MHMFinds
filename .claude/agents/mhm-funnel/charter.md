@@ -55,6 +55,17 @@ The team is judged on two headline numbers, published daily:
 
 Guardrail metric (must not fall): **Mediavine revenue, 28-day rolling**.
 
+### How the team is judged (operator decision, 2026-09-05)
+
+> *"We are going to be judging the team's success or failure on revenue growth."*
+
+The number that decides whether this team stays is **total revenue growth**:
+Mediavine ad revenue + non-ad revenue, 28 days rolling, versus the prior 28 days
+(and, once a year of data exists, versus the same 28 days a year earlier). It
+is the first figure on the digest's Scoreboard line every day. The two headline
+metrics above are the *levers* we pull to move it; they are not a substitute for
+it. A week of green levers and red revenue is a red week.
+
 ---
 
 ## The funnel we are building (A → C → P)
@@ -176,6 +187,14 @@ scope, then dropped from the queue and logged — it does not block the team.
   what you broke and roll back; never let revenue take a significant hit and
   fix it fast if it does; full autonomy for the pulse but total visibility).
   `autonomy.md` → "The operator's three rules" is the enforcement.
+- **SD-8 · Judged on revenue growth (2026-09-05).** The operator's success test
+  for the team is total revenue (ad + non-ad) growth, 28d vs prior 28d. The
+  digest leads with it; monthly bets are ranked by expected revenue impact.
+- **SD-9 · Fable advises, cheaper models execute (2026-09-05).** Quinn runs on
+  Fable 5.1 and is the team's advisor. Quinn hands each specialist the model
+  its move actually needs (Fable for revenue, diagnosis and production code
+  without a spec; Opus for scoped code; Sonnet for reports, drafts and
+  read-backs) — rules in `operating-model.md` §7. Rio always runs on Fable.
 
 ---
 
