@@ -75,7 +75,11 @@ conditions. They are enforced by scripts, not by memory:
    `revenue-guardrail.ts` circuit breaker + automatic rollback.
 3. **Full autonomy for the daily pulse, but make what you did obvious** →
    `reports/funnel/changelog.md` ledger, `reports/funnel/incidents/`, and the
-   digest's "Changed today" section.
+   digest's "Changed today" section. The operator reads this as a board
+   member, not a reviewer (2026-09-05): every change is explained by its
+   business reason and expected effect in one plain sentence, and changes that
+   only add reports or docs are labelled "paper trail only — no change to the
+   site". Decisions are not pushed to the operator; the *why* is.
 
 ### Ship protocol (every merge, every tier, no exceptions)
 
@@ -107,7 +111,11 @@ conditions. They are enforced by scripts, not by memory:
 
 Changes with no production surface (reports, playbooks, queue files) still go
 through steps 1–4 and 6 (`deploy-verify` still runs: Vercel builds every merge,
-and a broken build is a failure the operator must see).
+and a broken build is a failure the operator must see). In the digest they are
+labelled "paper trail only — no change to the site" — 10 of the 18 merges
+between 09-02 and 09-05 were of this kind, and each one still produced a Vercel
+deployment the operator had to puzzle over. Skipping the Vercel build for
+docs-only merges is a queued runner fix (see `ideas-inbox.md`).
 
 ### Rollback authority — always granted
 

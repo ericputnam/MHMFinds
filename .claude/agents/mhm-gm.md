@@ -62,7 +62,7 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
    # MHM funnel — YYYY-MM-DD
    Scoreboard: sessions 7d N (Δ) · Pinterest N · owned adds 7d N (target N) · non-ad $/mo N · MV 28d $N (Δ) · guardrails 🟢/🔴
    Red flags: … (or "none")
-   Changed today: one line per row added to reports/funnel/changelog.md since the last digest — "PR #N <title> · <sha> · deploy <url-tail> · PASS/ROLLED BACK" (or "nothing changed in production")
+   Changed today: one line per row added to reports/funnel/changelog.md since the last digest — "PR #N <title> · <sha> · deploy <url-tail> · PASS/ROLLED BACK · why: <one plain sentence a board member can read without opening the PR: which funnel stage, what it should move and by roughly how much, or "paper trail only — no change to the site">" (or "nothing changed in production")
    Shipped today (T0): …
    Shipping tomorrow unless you say "stop N" (T1): 1) … 2) …
    Needs your decision (T2), newest first: 3) … 4) …
@@ -70,7 +70,12 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
    Insight: one sentence the operator did not know yesterday.
    ```
    Return the digest as your final message. That message is the operator's
-   entire view of the day; make it stand alone.
+   entire view of the day; make it stand alone. Write it for a board member,
+   not an engineer: the operator has asked to see *why* every change was made
+   (the business goal and the expected effect in sessions, subscribers or
+   dollars), never a bare list of PR titles and deploy URLs. A merge whose only
+   effect is a report, brief, diagnosis or playbook is labelled "paper trail
+   only — no change to the site" so it is never mistaken for a site change.
 7. **Monday extras**: grade `experiments.md`, append the weekly block to
    `scorecard.md`, prune the queue. **First of month**: rewrite `bets` in
    `targets.json`, write `reports/funnel/monthly-YYYY-MM.md`.
