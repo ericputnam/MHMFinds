@@ -12,7 +12,13 @@ are dropped and logged.
 
 ## Tier 1 — shipping unless you say stop
 
-_(none yet)_
+### T1 · Cass — newsletter sends through the BigScoots mailbox, not SendGrid (operator decision 2026-09-05)
+- **Operator said:** we already have SMTP and a mailbox on BigScoots; the old tool charged per contact so we dropped it; ideally we email *everyone*; it must not look like spam; do not go the SendGrid (pay) path.
+- **Build (Cass, Tier 1, no credentials touched):** `lib/services/emailNotifier.ts` gains an SMTP transport (`nodemailer`) that is used whenever `SMTP_HOST` is set; the SendGrid branch stays only as a fallback. Env names: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`. Sends go out in throttled batches under BigScoots' hourly limit (ask BigScoots for the number; until confirmed cap at 100/hour — never guess higher), with `List-Unsubscribe` + `List-Unsubscribe-Post` headers, the per-recipient unsubscribe link that already exists, a plain-text alternative, and a bounce check on the mailbox after each batch. Warm-up: first issue to the 17 subscribers, then engaged registered accounts, then the rest — never all 1,500 accounts in one day.
+- **Consent gate:** registered accounts did not opt in to marketing. Before any bulk send to accounts, Cass ships a one-time re-permission email ("want the weekly finds?") and only the people who click join the list. Patreon free members are reached through Patreon posts, not by exporting their emails.
+- **Deliverability (operator, ~10 min in the BigScoots panel):** pick the sending mailbox (a dedicated `news@musthavemods.com` is cleaner than sharing `admin@`; `simsnews@` also works), click **Enable Site SMTP** for it, open the **Email Deliverability** tab and make sure SPF, DKIM and DMARC all show green for musthavemods.com. Then put the SMTP host, port, user and password into Vercel (Production) and `.env.local` under the names above. Cass will confirm with a mail-tester.com score ≥ 9/10 before the first real issue.
+- **Ships when:** the env vars exist in Vercel. Until then Cass builds and tests against a local mailbox.
+
 
 ## Tier 2 — needs your decision
 
@@ -22,14 +28,14 @@ _(none yet)_
 - **Risk:** medium (schema + auth changes). Rollback: `vercel rollback <previous deployment>`.
 - **Reply:**
 
-### Q2 · Grant read access so the team can measure Patreon and Pinterest (2026-09-01)
-- **Patreon:** create a Creator Access Token at patreon.com/portal/registration/register-clients (client already exists — `PATREON_CLIENT_ID` is in `.env.local`) and add `PATREON_CREATOR_ACCESS_TOKEN` to `.env.local`. Read-only: member counts and pledge totals per tier. Until then the scoreboard scrapes the public page (paid count only, no $).
-- **Pinterest:** the pinner's `PINTEREST_ACCESS_TOKEN` in `~/java_projects/MHMUtils/.env` can already read `/v5/user_account/analytics` and `/v5/pins/{id}/analytics` if the app has the `pins:read` + `user_accounts:read` scopes. Confirm the scopes (or regenerate with them) and copy the token into MHMFinds `.env.local` as `PINTEREST_ACCESS_TOKEN`.
-- **Reply:**
+### Q2 · Grant read access so the team can measure Patreon and Pinterest (2026-09-01) — operator asked where the keys go (2026-09-05)
+- **Where:** MHMFinds `.env.local` (local runs) **and** Vercel → Settings → Environment Variables → Production (server-side use). Never in git.
+  - `PATREON_CREATOR_ACCESS_TOKEN` — from patreon.com/portal/registration/register-clients → the existing client → "Creator's Access Token". Read-only for the sync script.
+  - `PINTEREST_ACCESS_TOKEN` is **not** the permanent answer (v5 access tokens die after 30 days — the operator's complaint). Permanent: the pinner's `~/java_projects/MHMUtils/config.json` already holds `client_id`, `client_secret`, `creator_refresh_token` and `pinterest_token_manager.py` refreshes the access token automatically before every run. MHMFinds should read Pinterest through that same manager (Pip: port `ensure_valid_token()` or shell out to it) instead of a hand-pasted token. The current refresh token has lapsed (401), so the operator runs `python3 pinterest_token_helper.py` once in `~/java_projects/MHMUtils` to re-authorize; after that no more pasting as long as the pinner runs at least monthly.
+- **Reply:** keys will be added by the operator; Pip owns the token-manager port.
 
-### Q3 · Confirm the newsletter can send (2026-09-01)
-- `NEWSLETTER_WEEKLY_ENABLED` is unset in Vercel; the cron exists. Cass will draft issue #1 and QA it. When it's ready it will appear above as a Tier 1 item. Nothing to do now except: is the SendGrid sender domain verified? (If you don't know, Cass will test with a send to your address.)
-- **Reply:**
+### Q3 · Confirm the newsletter can send (2026-09-01) — CLOSED 2026-09-05
+- Operator decision: send through the BigScoots mailbox over SMTP, not SendGrid. See the Tier 1 item above. `NEWSLETTER_WEEKLY_ENABLED` stays unset until the SMTP transport is live and issue #1 has passed QA.
 
 ### Q4 · Patreon tier relaunch — package ready (Rio, 2026-09-04)
 - **Package:** `reports/funnel/drafts/patreon-tier-relaunch-2026-09-04.md` (merged to main, PR #34). Tier copy + free→paid announcement draft are written; you paste into Patreon (~5 min).

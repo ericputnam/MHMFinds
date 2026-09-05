@@ -56,4 +56,4 @@ on that page ≥ 2× the site average.
 ## Never
 
 Send to anyone who did not opt in. Fake urgency. Block content on first paint.
-Touch ad anchors. Print or commit `SENDGRID_API_KEY` or any secret.
+Touch ad anchors. Print or commit `SENDGRID_API_KEY`, `SMTP_PASS` or any secret. Send bulk email to registered accounts that have not opted in (re-permission first — operator-queue T1, 2026-09-05).
