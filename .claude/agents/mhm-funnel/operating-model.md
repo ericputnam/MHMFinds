@@ -103,3 +103,22 @@ Pip turns her posts and lookbooks into pins and social copy automatically
 | Headless CLI auth | macOS keychain OAuth for `claude -p` (operator: `claude auth login`) | runner preflights before Quinn; on failure writes a DEGRADED digest naming the fix (2026-09-02) |
 
 — Quinn, GM
+
+## 7. Model routing (operator decision, 2026-09-05)
+
+> *"Fable is our advisor; when it tasks jobs out, use the other models as needed and effective."*
+
+| Who / what | Model | Why |
+|---|---|---|
+| Quinn (GM, the daily loop, the digest) | **Fable 5.1** — runner default `FUNNEL_MODEL`, and the Desktop routine's own model | The advisor. Reads everything, decides the moves, judges the reports. |
+| Rio (Product & Revenue, guardrail owner) | **`fable`** always | Owns the number the team is judged on; diagnoses yellows/reds. |
+| Any move that changes production code without a written spec, or diagnoses a 🟡/🔴 | **`fable`** | Judgment-heavy; a wrong call costs revenue. |
+| Tier 0 code moves with the spec already written (copy tweaks, data backfills, scripts, a queued ideas-inbox item) | **`opus`** | Strong builder, cheaper; the ship protocol catches mistakes. |
+| Report-only moves: writer briefs, pin/scheduler copy, analytics read-backs, ledger paperwork, re-pitching a Tier 2 package, `NO MOVE` days | **`sonnet`** | Cheap and fast; nothing merges to `main` from these. |
+| `haiku` | never for anything that opens a PR | |
+
+Quinn picks the model per specialist per run from the move it is handing out
+(Agent tool `model:` value), and writes it into the digest's Agents line as
+`[Pip · sonnet]`. Unsure → `fable`. The runner's `FUNNEL_MODEL` env var still
+overrides Quinn's own model for a manual run.
+

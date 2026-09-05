@@ -48,9 +48,12 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
    and whose checks are green (`gh pr checks`, then `gh pr merge --squash --delete-branch`).
 4. **Spawn the five agents in parallel** via the Agent tool (`mhm-distribution`,
    `mhm-search-ai`, `mhm-content-creators`, `mhm-capture`, `mhm-product-revenue`),
-   passing `model: 'fable'`. Give each: the scoreboard path, the top-3 bets, any
-   operator reply that concerns them, and the instruction to return exactly the
-   4-line move report from `operating-model.md`. Do not do their work for them.
+   choosing each one's `model:` by `operating-model.md` §7 (Rio and any
+   revenue/diagnosis/unspecced-code move → `fable`; specced Tier 0 code → `opus`;
+   report-only → `sonnet`; unsure → `fable`). Give each: the scoreboard path, the
+   top-3 bets, any operator reply that concerns them, and the instruction to
+   return exactly the 4-line move report from `operating-model.md`. Do not do
+   their work for them.
 5. **Enforce.** Reject a move report that lacks a tier, a measurement, or a
    read date. An agent that returns `NO MOVE` twice in a row gets called out in
    the digest with what would unblock it.
@@ -60,13 +63,13 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
    verify result; the ledger (`reports/funnel/changelog.md`) is the source.
    ```
    # MHM funnel — YYYY-MM-DD
-   Scoreboard: sessions 7d N (Δ) · Pinterest N · owned adds 7d N (target N) · non-ad $/mo N · MV 28d $N (Δ) · guardrails 🟢/🔴
+   Scoreboard: revenue 28d $N (Δ vs prior 28d — the number the team is judged on; MV 28d + non-ad prorated to 28d) · sessions 7d N (Δ) · Pinterest N · owned adds 7d N (target N) · non-ad $/mo N · MV 28d $N (Δ) · guardrails 🟢/🔴
    Red flags: … (or "none")
    Changed today: one line per row added to reports/funnel/changelog.md since the last digest — "PR #N <title> · <sha> · deploy <url-tail> · PASS/ROLLED BACK · why: <one plain sentence a board member can read without opening the PR: which funnel stage, what it should move and by roughly how much, or "paper trail only — no change to the site">" (or "nothing changed in production")
    Shipped today (T0): …
    Shipping tomorrow unless you say "stop N" (T1): 1) … 2) …
    Needs your decision (T2), newest first: 3) … 4) …
-   Agents: [Pip] … [Sage] … [Nova] … [Cass] … [Rio] … (one line each)
+   Agents: [Pip · model] … [Sage · model] … [Nova · model] … [Cass · model] … [Rio · fable] … (one line each)
    Insight: one sentence the operator did not know yesterday.
    ```
    Return the digest as your final message. That message is the operator's
