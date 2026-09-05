@@ -104,7 +104,12 @@ conditions. They are enforced by scripts, not by memory:
    `check-blog-sidebar.sh`, and counts 5xx. Exit 0 = shipped. Exit 2 = it
    already rolled production back; read the incident file and fix forward on a
    new PR. Exit 3 = still broken after rollback; stop everything and lead the
-   digest with it.
+   digest with it. A ledger result of **INCONCLUSIVE** (exit 0) means the
+   Chromium smoke could not run at all — usually a worktree without
+   `node_modules` — so only blog markers + 5xx were checked and nothing was
+   rolled back; say so in the digest and run
+   `npx tsx scripts/agents/smoke-render.ts` from a tree with dependencies.
+   A check that cannot run is never evidence that the site is broken.
 6. The ledger row it writes to `reports/funnel/changelog.md` *is* the record
    of the change. Quote it in the digest under **Changed today**. A merge
    without a ledger row did not happen.

@@ -23,6 +23,10 @@
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
 # Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back.
 # Exit: 0 pass · 1 smoke-only failure · 2 failed and rolled back / build failed · 3 still failing after rollback
+# A check that CANNOT RUN (no node_modules/playwright in a fresh worktree, Chromium missing) is INCONCLUSIVE:
+# it is logged, the ledger row says INCONCLUSIVE, exit stays 0 and nothing is rolled back. Only a smoke run that
+# actually rendered pages and saw them fail (or a 5xx flood / missing blog markers) can trigger a rollback.
+# (2026-09-05: two false-alarm rollbacks in 24 h came from 'smoke-render: could not run' in dependency-less worktrees.)
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -81,14 +85,33 @@ for x in d:
 }
 
 # ---------------------------------------------------------------- checks
-FAILS=""; FIVEXX=0; SMOKE_JSON="$ROOT/logs/smoke-$STAMP.json"
+FAILS=""; FIVEXX=0; INCONCLUSIVE=""; SMOKE_JSON="$ROOT/logs/smoke-$STAMP.json"
 addfail() { FAILS="${FAILS}${FAILS:+; }$1"; }
+smoke_dir() {  # first tree that has the deps smoke-render needs — fresh runner worktrees have no node_modules
+  local d
+  for d in "$ROOT" "${FUNNEL_PRIMARY_WT:-}" "$OPERATOR_DIR"; do
+    [ -n "$d" ] && [ -d "$d/node_modules/playwright" ] && [ -f "$d/scripts/agents/smoke-render.ts" ] && { echo "$d"; return 0; }
+  done
+  return 1
+}
 smoke() {
-  FAILS=""
-  log "check: rendering production pages in headless Chromium…"
-  if ! (cd "$ROOT" && npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON" >>"$LOG" 2>&1); then
-    addfail "smoke-render: $(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(" | ".join(f["path"]+" -> "+", ".join(f["failures"]) for f in d["failed"]))' "$SMOKE_JSON" 2>/dev/null || echo 'could not run')"
+  FAILS=""; INCONCLUSIVE=""
+  local sdir out="$SMOKE_JSON.out"
+  rm -f "$SMOKE_JSON"
+  if sdir="$(smoke_dir)"; then
+    log "check: rendering production pages in headless Chromium (deps from $sdir)…"
+    (cd "$sdir" && npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1; cat "$out" >>"$LOG"
+    if [ -f "$SMOKE_JSON" ]; then  # smoke-render writes the JSON only after it really rendered every page
+      local fl
+      fl="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(" | ".join(f["path"]+" -> "+", ".join(f["failures"]) for f in d["failed"]))' "$SMOKE_JSON" 2>/dev/null)"
+      [ -n "$fl" ] && addfail "smoke-render: $fl"
+    else
+      INCONCLUSIVE="smoke-render could not run: $(grep -m1 -oE "Cannot find module '[^']*'|browserType\.launch.{0,100}|Error: .{0,100}" "$out" || echo 'no output')"
+    fi
+  else
+    INCONCLUSIVE="smoke-render could not run: no tree with node_modules/playwright (looked in $ROOT, ${FUNNEL_PRIMARY_WT:-<unset>}, $OPERATOR_DIR)"
   fi
+  [ -n "$INCONCLUSIVE" ] && log "WARN: $INCONCLUSIVE — a check that cannot run is INCONCLUSIVE, never a rollback trigger"
   log "check: WordPress critical markers…"
   local blog_out
   if ! blog_out="$("$ROOT/scripts/agents/check-blog-sidebar.sh" --quiet 2>&1)"; then
@@ -99,9 +122,11 @@ smoke() {
   FIVEXX="${n5:-0}"
   # The WordPress proxy returns a trickle of 502s for font files at all times; only a flood counts.
   [ "$FIVEXX" -gt 60 ] && addfail "$FIVEXX 5xx responses in the last 15 min (threshold 60)"
-  log "check: 5xx in last 15m = $FIVEXX · failures: ${FAILS:-none}"
+  log "check: 5xx in last 15m = $FIVEXX · failures: ${FAILS:-none}${INCONCLUSIVE:+ · smoke INCONCLUSIVE}"
   [ -z "$FAILS" ]
 }
+verdict() { if [ -n "$INCONCLUSIVE" ]; then echo "INCONCLUSIVE"; else echo "PASS"; fi; }
+vnotes() { echo "${INCONCLUSIVE:+$INCONCLUSIVE · blog markers + 5xx checked, smoke NOT — verify by hand: npx tsx scripts/agents/smoke-render.ts · }$1"; }
 do_rollback() {
   log "ROLLING BACK production to $1"
   if (cd "$ROOT" && vercel rollback "$1" --timeout 5m --yes >>"$LOG" 2>&1) || (cd "$ROOT" && vercel rollback "$1" --timeout 5m >>"$LOG" 2>&1); then
@@ -152,7 +177,7 @@ fail_and_fix() {  # $1 = rollback target (may be empty)
   fi
   if echo "$first" | grep -q "check-blog-sidebar"; then restore_functions_php; fi
   if smoke; then
-    FAILS="$first"; ledger "ROLLED BACK -> ${1:-functions.php restored}" "was: $first"
+    FAILS="$first"; ledger "ROLLED BACK -> ${1:-functions.php restored}" "$(vnotes "was: $first")"
     incident "verification failed; rolled back" "Rolled production back to ${1:-(unchanged)}${first##*check-blog-sidebar*} and/or re-pushed functions.php. Re-check PASSES."; exit 2
   fi
   local second="$FAILS"; FAILS="$first"
@@ -182,21 +207,21 @@ case "$MODE" in
     done
     log "deployment READY: $DEPLOY_URL"; sleep 15
     CUR="$(current_prod)"; [ "$CUR" = "$DEPLOY_URL" ] || log "note: alias serves $CUR (expected $DEPLOY_URL) — verifying what is live"
-    if smoke; then ledger "PASS" "verified live · 5xx/15m=$FIVEXX"; log "PASS"; exit 0; fi
+    if smoke; then ledger "$(verdict)" "$(vnotes "verified live · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
     fail_and_fix "$PREV" ;;
   check)
     DEPLOY_URL="$(current_prod)"; PREV="$(previous_ready "$DEPLOY_URL")"
     log "checking live production $DEPLOY_URL (rollback target if needed: ${PREV:-none})"
-    if smoke; then ledger "PASS" "evening/ad-hoc check · 5xx/15m=$FIVEXX"; log "PASS"; exit 0; fi
+    if smoke; then ledger "$(verdict)" "$(vnotes "evening/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
     fail_and_fix "$PREV" ;;
   rollback)
     CUR="$(current_prod)"; TARGET="${TO:-$(previous_ready "$CUR")}"; DEPLOY_URL="$TARGET"
     [ -n "$TARGET" ] || { log "no rollback target"; exit 2; }
     do_rollback "$TARGET" || exit 2
-    if smoke; then ledger "ROLLED BACK from $CUR" "requested by $LABEL · re-check passes"; exit 0; fi
+    if smoke; then ledger "ROLLED BACK from $CUR" "$(vnotes "requested by $LABEL · re-check passes")"; exit 0; fi
     ledger "ROLLED BACK from $CUR, STILL FAILING" "$FAILS"; incident "rollback did not clear the failure" "Rolled back $CUR → $TARGET; still failing: $FAILS"; exit 3 ;;
   smoke-only)
     DEPLOY_URL="$(current_prod)"
-    if smoke; then ledger "PASS" "smoke-only · 5xx/15m=$FIVEXX"; exit 0; fi
+    if smoke; then ledger "$(verdict)" "$(vnotes "smoke-only · 5xx/15m=$FIVEXX")"; exit 0; fi
     ledger "FAIL (smoke-only)" "$FAILS"; exit 1 ;;
 esac

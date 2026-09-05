@@ -29,7 +29,7 @@ interface Result {
   path: string; kind: Kind; status: number | null; ms: number;
   secondary: number; mvAds: number; mediavineScript: boolean; textLength: number;
   pageErrors: string[]; consoleErrors: number; appError: boolean;
-  hydrationErrors: number; failures: string[];
+  hydrationErrors: number; failures: string[]; transientErrors?: string[];
 }
 
 async function modIdFromSitemap(): Promise<string | null> {
@@ -76,10 +76,13 @@ async function main() {
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36 mhm-smoke/1.0',
   });
   const results: Result[] = [];
-  for (const t of targets) {
+  const render = async (t: Target): Promise<Result> => {
     const page = await ctx.newPage();
     const pageErrors: string[] = []; let consoleErrors = 0;
-    page.on('pageerror', (e) => pageErrors.push(String(e?.message ?? e)));
+    page.on('pageerror', (e) => {
+      const frame = String(e?.stack ?? '').split('\n').find((l) => /https?:\/\//.test(l))?.trim();
+      pageErrors.push(String(e?.message ?? e).split('\n')[0].slice(0, 200) + (frame ? ` @ ${frame.slice(0, 160)}` : ''));
+    });
     page.on('console', (m) => { if (m.type() === 'error') consoleErrors++; });
     const t0 = Date.now();
     let status: number | null = null;
@@ -105,9 +108,22 @@ async function main() {
     const hydrationErrors = pageErrors.filter((e) => /error #4(18|23|25)\b|Hydration failed|hydrat/i.test(e)).length;
     const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, failures: [] };
     r.failures = expectations(r);
-    results.push(r);
-    console.log(`${r.failures.length ? '✗' : '✓'} ${t.path.padEnd(34)} ${String(status).padEnd(4)} ${String(r.ms).padStart(5)}ms  secondary=${secondary} mv-ads=${mvAds} mv-script=${mediavineScript ? 'y' : 'n'} text=${textLength} errors=${pageErrors.length}${hydrationErrors ? ` (hydration ${hydrationErrors} ⚠)` : ''}${r.failures.length ? '\n    → ' + r.failures.join('; ') : ''}`);
     await page.close();
+    return r;
+  };
+  for (const t of targets) {
+    let r = await render(t);
+    // A single uncaught page error on one load (third-party script, race) must not roll production back by
+    // itself (2026-09-05: 1 of 7 homepage loads threw a circular-JSON error nobody could reproduce). Render the
+    // page once more; the failure counts only if it reproduces. Structural failures (HTTP, ad anchors, blank
+    // render, Application error) are deterministic and are not retried.
+    if (r.failures.length && r.failures.every((f) => /uncaught page error/.test(f))) {
+      const again = await render(t);
+      if (!again.failures.length) { again.transientErrors = r.pageErrors; console.log(`  ↻ ${t.path}: page error did not reproduce on a second load — recorded as transient, not a failure`); }
+      r = again;
+    }
+    results.push(r);
+    console.log(`${r.failures.length ? '✗' : '✓'} ${t.path.padEnd(34)} ${String(r.status).padEnd(4)} ${String(r.ms).padStart(5)}ms  secondary=${r.secondary} mv-ads=${r.mvAds} mv-script=${r.mediavineScript ? 'y' : 'n'} text=${r.textLength} errors=${r.pageErrors.length}${r.hydrationErrors ? ` (hydration ${r.hydrationErrors} ⚠)` : ''}${r.transientErrors ? ` (transient ${r.transientErrors.length} ↻)` : ''}${r.failures.length ? '\n    → ' + r.failures.join('; ') : ''}`);
   }
   await browser.close();
   const failed = results.filter((r) => r.failures.length);
