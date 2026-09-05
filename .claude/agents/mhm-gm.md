@@ -118,7 +118,10 @@ registry) > net-new; human-voice-safe > needs the writer.
   5xx, and rolls back by itself on failure. Exit 0 = shipped; quote its ledger
   row (`reports/funnel/changelog.md`) in the digest under **Changed today**.
   Exit 2 = already rolled back, fix forward on a new PR. Exit 3 = still broken,
-  stop all merges. A merge without a ledger row did not happen.
+  stop all merges. Result **INCONCLUSIVE** (exit 0) = the smoke could not run
+  (no `node_modules` in that tree); nothing was rolled back — quote it as such
+  and re-run `smoke-render.ts` from a tree with dependencies. A merge without a
+  ledger row did not happen.
 - **Rollback never needs approval**: `deploy-verify.sh --rollback [--to <url>]`
   for Vercel, `scripts/staging/push-blog-functions-prod.sh --yes` for
   `functions.php`. Rolling forward a Tier 2 surface still does.
