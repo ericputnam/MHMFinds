@@ -2,13 +2,49 @@ import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
+import PatreonProvider from "next-auth/providers/patreon";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import {
+  fetchPatreonMembership,
+  isPatreonProviderConfigured,
+  qualifiesForMembership,
+  PATREON_SCOPE,
+  PATREON_USERINFO_URL,
+} from "@/lib/membership";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
+    // Membership via Patreon OAuth (B2, Rio 2026-09-07). Registered ONLY when
+    // NEXT_PUBLIC_MEMBERSHIP_ENABLED=1 and PATREON_CLIENT_ID/SECRET exist —
+    // with the flag off this spread is empty and auth is byte-for-byte the
+    // same as before. See lib/membership.ts and the operator-queue package.
+    ...(isPatreonProviderConfigured()
+      ? [
+          PatreonProvider({
+            clientId: process.env.PATREON_CLIENT_ID!,
+            clientSecret: process.env.PATREON_CLIENT_SECRET!,
+            authorization: { params: { scope: PATREON_SCOPE } },
+            // The provider default is the deprecated v1 `current_user`; use v2.
+            userinfo: { url: PATREON_USERINFO_URL },
+            profile(profile: any) {
+              return {
+                id: profile?.data?.id,
+                name: profile?.data?.attributes?.full_name ?? null,
+                email: profile?.data?.attributes?.email ?? null,
+                image: profile?.data?.attributes?.image_url ?? null,
+              };
+            },
+            // Patreon verifies emails. Linking by email lets an existing
+            // (credentials) account connect Patreon and receive member status
+            // instead of erroring with OAuthAccountNotLinked — which is what
+            // the signIn callback's pre-create below would otherwise cause.
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -123,6 +159,27 @@ export const authOptions: NextAuthOptions = {
         token.isCreator = user.isCreator;
         token.isPremium = user.isPremium;
         token.isAdmin = user.isAdmin;
+      }
+
+      // Membership via Patreon OAuth: on a Patreon sign-in, ask Patreon whether
+      // this person is an active patron and persist it as `isPremium`. Runs
+      // only when the Patreon provider is registered (flag on). A Patreon API
+      // failure returns null and leaves the existing status untouched — it
+      // never blocks sign-in.
+      if (account?.provider === 'patreon' && account.access_token && token.id) {
+        try {
+          const membership = await fetchPatreonMembership(account.access_token);
+          if (membership) {
+            const isPremium = qualifiesForMembership(membership);
+            await prisma.user.update({
+              where: { id: token.id as string },
+              data: { isPremium },
+            });
+            token.isPremium = isPremium;
+          }
+        } catch (error) {
+          console.error('[membership] Patreon membership check failed:', error);
+        }
       }
       return token;
     },

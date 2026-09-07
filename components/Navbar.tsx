@@ -2,14 +2,17 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, Menu, Sparkles, LogOut, User, Settings, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { Heart, Menu, Sparkles, LogOut, User, Settings, LayoutDashboard, ChevronDown, Crown } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { UsageIndicator } from './subscription/UsageIndicator';
 import { GAME_COLORS, GAME_TAGLINES } from '../lib/gameColors';
 import { GAME_TO_SLUG } from '../lib/gameRoutes';
+import { isMembershipEnabled } from '../lib/membership';
 
 export const Navbar: React.FC = () => {
   const { data: session, status } = useSession();
+  // Member badge (B2). Build-time flag; renders nothing until NEXT_PUBLIC_MEMBERSHIP_ENABLED=1.
+  const showMemberBadge = isMembershipEnabled() && !!session?.user?.isPremium;
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showGamesMenu, setShowGamesMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -166,7 +169,11 @@ export const Navbar: React.FC = () => {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2.5 rounded-full text-sm font-medium text-white transition-all"
               >
-                <User className="h-4 w-4" />
+                {showMemberBadge ? (
+                  <Crown className="h-4 w-4 text-amber-300" aria-label="Member" />
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
                 <span className="max-w-[120px] truncate">
                   {session.user.username || session.user.email}
                 </span>
@@ -182,6 +189,12 @@ export const Navbar: React.FC = () => {
                     <p className="text-xs text-slate-400 truncate">
                       {session.user.email}
                     </p>
+                    {showMemberBadge && (
+                      <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300">
+                        <Crown className="h-3 w-3" />
+                        Member
+                      </p>
+                    )}
                   </div>
                   <div className="py-1">
                     {session.user.isCreator && (
