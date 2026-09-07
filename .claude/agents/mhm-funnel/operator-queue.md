@@ -39,13 +39,6 @@ are dropped and logged.
 - **Risk:** medium (schema + auth changes). Rollback: `vercel rollback <previous deployment>`.
 - **Reply:**
 
-### Q2 · Grant read access so the team can measure Patreon and Pinterest (2026-09-01) — operator asked where the keys go (2026-09-05)
-- **Where:** MHMFinds `.env.local` (local runs) **and** Vercel → Settings → Environment Variables → Production (server-side use). Never in git.
-  - `PATREON_CREATOR_ACCESS_TOKEN` — from patreon.com/portal/registration/register-clients → the existing client → "Creator's Access Token". Read-only for the sync script.
-  - `PINTEREST_ACCESS_TOKEN` is **not** the permanent answer (v5 access tokens die after 30 days — the operator's complaint). Permanent: the pinner's `~/java_projects/MHMUtils/config.json` already holds `client_id`, `client_secret`, `creator_refresh_token` and `pinterest_token_manager.py` refreshes the access token automatically before every run. MHMFinds should read Pinterest through that same manager (Pip: port `ensure_valid_token()` or shell out to it) instead of a hand-pasted token. The current refresh token has lapsed (401), so the operator runs `python3 pinterest_token_helper.py` once in `~/java_projects/MHMUtils` to re-authorize; after that no more pasting as long as the pinner runs at least monthly.
-- **Reply:** keys will be added by the operator; Pip owns the token-manager port.
-- **Status 2026-09-07:** Pinterest half done — Pip's PR #50 ports the token manager into the repo; `check-pinner.sh` token step went 401 → OK/VALID, refresh-token TTL 363 days, no more pasting. Still open: `PATREON_CREATOR_ACCESS_TOKEN` (also needed by Q5).
-
 ### Q3 · Confirm the newsletter can send (2026-09-01) — CLOSED 2026-09-05
 - Operator decision: send through the BigScoots mailbox over SMTP, not SendGrid. See the Tier 1 item above. `NEWSLETTER_WEEKLY_ENABLED` stays unset until the SMTP transport is live and issue #1 has passed QA.
 
@@ -56,7 +49,8 @@ are dropped and logged.
 - **Option B (simplified):** $5 / $10 only, grandfather existing — anchors higher, fewer tiers.
 - **Ask:** reply "approve 4 option A" or "approve 4 option B" (or reject with reason). Perks reuse things already built/planned (early lookbooks, countdown skip, mod-topic votes) — no new infrastructure.
 - **Risk:** low; pricing is operator-only (Tier 2). Rollback: revert tiers in Patreon dashboard.
-- **Reply:**
+- **Reply:** **approve 4 option A** (operator, 2026-09-07).
+- **Status 2026-09-07 (Quinn):** site side done — the "skip the download countdown" perk is live for $3+ patrons (Q5 / PR #52, `PATREON_MEMBER_MIN_CENTS=300`), so the Option A copy is true on day one. **Left for you (~5 min, Patreon dashboard, operator-only):** (1) rename/re-price tiers to $3 Early Access / $5 CC Curator / $10 Sims Muse with the Option A copy in the package — one edit: the countdown line should read "Skip the download countdown on MustHaveMods.com (connect Patreon on any download page)"; retire the $1 tier for new joins (existing 7 grandfathered); (2) post the announcement draft in your voice. Rio reads paid count + gross from the scoreboard daily; keep if ≥ 60 paid and ≥ $200/mo by 2026-10-07.
 
 
 ### Q5 · Site membership via Patreon OAuth — "patrons skip the countdown" (Rio, 2026-09-07) — pairs with Q4
@@ -66,10 +60,18 @@ are dropped and logged.
 - **You do (≈10 min):** (1) Patreon portal → existing client → add redirect URI `https://musthavemods.com/api/auth/callback/patreon`; (2) Vercel Production env: `NEXT_PUBLIC_MEMBERSHIP_ENABLED=1`, `PATREON_CAMPAIGN_ID=<campaign id>`, `PATREON_MEMBER_MIN_CENTS=300` (A: $3+) or `500` (B: $5+); confirm `PATREON_CLIENT_ID`/`PATREON_CLIENT_SECRET` exist; (3) reply; Quinn merges + redeploys (flag is build-time).
 - **Ad risk:** `/go/` ≈ 725 pageviews/28d × $15.60 RPM ≤ $11/mo for the whole page; members a fraction. Guardrail unaffected.
 - **Rollback:** `NEXT_PUBLIC_MEMBERSHIP_ENABLED=0` + redeploy, or `vercel rollback`.
-- **Reply:** "approve 5 A" / "approve 5 B" / reject with reason.
+- **Reply:** **approve 5 A** (operator, 2026-09-07).
+- **Status 2026-09-07 (Quinn):** SHIPPED — PR #52 merged as `f7820cd`, deploy-verify PASS (5xx/15m = 0, ad anchors + blog markers intact, ledger row 09:07). Vercel Production now has `NEXT_PUBLIC_MEMBERSHIP_ENABLED=1`, `PATREON_CAMPAIGN_ID=13460416`, `PATREON_MEMBER_MIN_CENTS=300`, `PATREON_CLIENT_ID`, `PATREON_CLIENT_SECRET` (the last two were *not* there before — the package assumed they were). Production `/api/auth/providers` lists `patreon`; a sign-in start redirects to Patreon's authorize page with `redirect_uri=https://musthavemods.com/api/auth/callback/patreon` and the three scopes. **One click left for you:** in the Patreon portal tab (Edit Client) the Redirect URIs field is pre-filled with the old WordPress URI plus the new callback, and App Category is set to Member Benefits — press **Update Client**. Until then Patreon answers "Connect Patreon" with a redirect-URI mismatch; the rest of the site is unaffected. Read on 2026-10-07: ≥ 20 Patreon-linked accounts, ≥ 60 paid patrons, `/go` 7d RPM within −10%.
 
 ---
 
 ## Closed (last 30 days)
 
-_(none)_
+### Q2 · Grant read access so the team can measure Patreon and Pinterest (2026-09-01) — operator asked where the keys go (2026-09-05)
+- **Where:** MHMFinds `.env.local` (local runs) **and** Vercel → Settings → Environment Variables → Production (server-side use). Never in git.
+  - `PATREON_CREATOR_ACCESS_TOKEN` — from patreon.com/portal/registration/register-clients → the existing client → "Creator's Access Token". Read-only for the sync script.
+  - `PINTEREST_ACCESS_TOKEN` is **not** the permanent answer (v5 access tokens die after 30 days — the operator's complaint). Permanent: the pinner's `~/java_projects/MHMUtils/config.json` already holds `client_id`, `client_secret`, `creator_refresh_token` and `pinterest_token_manager.py` refreshes the access token automatically before every run. MHMFinds should read Pinterest through that same manager (Pip: port `ensure_valid_token()` or shell out to it) instead of a hand-pasted token. The current refresh token has lapsed (401), so the operator runs `python3 pinterest_token_helper.py` once in `~/java_projects/MHMUtils` to re-authorize; after that no more pasting as long as the pinner runs at least monthly.
+- **Reply:** keys will be added by the operator; Pip owns the token-manager port.
+- **Status 2026-09-07:** Pinterest half done — Pip's PR #50 ports the token manager into the repo; `check-pinner.sh` token step went 401 → OK/VALID, refresh-token TTL 363 days, no more pasting. Still open: `PATREON_CREATOR_ACCESS_TOKEN` (also needed by Q5).
+- **Closed 2026-09-07:** Patreon done too — `PATREON_CLIENT_ID/SECRET` + creator access/refresh tokens live in `.env.local` (mode 600) and refresh themselves via `scripts/_patreon-auth.ts`; `sync-patreon-subscribers.ts` dry run reads 5,324 members (free 5,065 / former 199 / active 46 / declined 15). `--apply` is deliberately not run — it waits on the consent gate + SMTP (T1 Cass). Creator tokens are not copied to Vercel (they rotate on refresh; `.env.local` is the single source).
+
