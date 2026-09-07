@@ -183,6 +183,39 @@ describe('legacy/collection strategy (lib/collections.ts)', () => {
     }
   });
 
+  // Regression guard (Nova, 2026-09-07). `app/games/[game]/[topic]/page.tsx`
+  // resolves `related` with `.map(find).filter(Boolean)`, so a slug that
+  // does not exist is silently dropped — no build error, no 404, the
+  // related-collections strip just renders fewer cards. Three pages were
+  // shipping dangling slugs ('furniture' instead of 'furniture-cc', and
+  // 'decor' before the decor-cc page existed); /games/sims-4/clutter/
+  // rendered one related card instead of three.
+  it('every related slug resolves to a real collection', async () => {
+    const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
+    const slugs = new Set(SIMS4_COLLECTIONS.map((c) => c.slug));
+    for (const c of SIMS4_COLLECTIONS) {
+      for (const rel of c.related) {
+        expect(
+          slugs.has(rel),
+          `${c.slug} lists related "${rel}", which is not a collection slug`,
+        ).toBe(true);
+      }
+      expect(
+        c.related.includes(c.slug),
+        `${c.slug} lists itself as a related collection`,
+      ).toBe(false);
+    }
+  });
+
+  it('every collection slug is unique', async () => {
+    const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
+    const seen = new Set<string>();
+    for (const c of SIMS4_COLLECTIONS) {
+      expect(seen.has(c.slug), `duplicate collection slug "${c.slug}"`).toBe(false);
+      seen.add(c.slug);
+    }
+  });
+
   it('differentiated collections signal browse intent, distinct from legacy listicles', async () => {
     const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
     for (const c of SIMS4_COLLECTIONS) {

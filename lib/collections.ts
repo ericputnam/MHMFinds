@@ -142,7 +142,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentType: 'holidays',
     },
     expectedCount: 926,
-    related: ['clutter', 'furniture', 'female-clothes'],
+    // 'furniture' was a dangling slug until 2026-09-07 (the real slug is
+    // 'furniture-cc'); the renderer silently dropped it.
+    related: ['clutter', 'furniture-cc', 'female-clothes'],
     blogUrl: '/sims-4-holiday-mods/',
   },
   {
@@ -159,8 +161,39 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Clutter is what separates a finished build from a staged one. A shelf without stacked books looks empty. A kitchen counter without coffee mugs, a half-eaten bagel, and the one random takeout menu looks like a showroom. Vanilla Sims 4 gives you maybe a dozen usable clutter meshes. The community has made thousands.\n\nWe lean heavily on the usual build suspects here — Felixandre, Pierisim, HeyHarrie, and Severinka\'s sets pop up repeatedly because their clutter reads at the size Sims 4 cameras actually see. But the finds further down the grid are where it gets interesting: single-set releases from creators who built one perfect witch altar or one perfect apothecary shelf and then disappeared for a year.\n\nFilter by theme on the main mod finder if you want clutter that matches the room you\'re already building. Everything in this collection is live-link checked and cleared of the NSFW flag, so you can grab anything from the grid without vetting the link.',
     filter: { contentType: 'clutter' },
     expectedCount: 148,
-    related: ['furniture', 'holidays-cc', 'decor'],
+    // 'furniture' and 'decor' were dangling slugs until 2026-09-07 — the
+    // renderer silently drops related entries that don't resolve, so this
+    // page rendered exactly one related collection instead of three.
+    related: ['furniture-cc', 'holidays-cc', 'decor-cc'],
     blogUrl: '/sims-4-clutter/',
+  },
+  {
+    slug: 'decor-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Decor CC',
+    heading: 'Sims 4 Decor CC',
+    metaTitle: 'Sims 4 Decor CC Finder — Browse 700+ Finds | MustHaveMods',
+    metaDescription:
+      'Browse 700+ Sims 4 decor CC finds in one filterable grid — wall art, posters, plants, rugs, and full room decor sets sorted by downloads, links checked.',
+    tagline: 'Wall art, posters, plants, and rugs that finish a room',
+    intro:
+      'There is a specific moment in every Sims 4 build where the walls are up, the furniture is placed, and the room still looks like a showroom nobody has ever walked through. Decor is what fixes it. Not the sofa — the thing above the sofa. The rug under it. The plant in the corner that stops the room reading as a rectangle with objects in it.\n\nBase-game decor is the weakest catalog in Build mode by a distance. There are maybe a dozen paintings worth using, four plants, and rugs that all look like the same rug rotated. This collection pulls together over 700 decor finds across the four categories that actually change how a room reads: wall art and posters (including override sets that replace EA\'s paintings wholesale), plants — the potted, hanging, and oversized-monstera variety that builders lean on constantly — rugs, and general room decor sets that ship as a themed bundle.\n\nThe strongest picks here tend to be the full sets rather than single objects, because decor works by density: one poster looks like a mistake, six posters look like a person lives there. Room-decor bundles from the aesthetic-CC end of the community show up near the top of the grid for exactly that reason, alongside the mural and canvas sets that give kids\' rooms and studios something other than the default landscape print.\n\nDecor sits between the clutter and furniture collections and works best stacked with both — clutter for the small surface details, furniture for the anchor pieces, decor for the walls and floors that tie them together. Everything in the grid is Sims 4 only, link-checked, and filtered to SFW. Sort by downloads for the sets everyone already uses, or scroll for the smaller single-set finds the big roundups never get to.',
+    filter: {
+      // decor (600) + plants (62) + rugs (39) + wall-art (30) = 731 SFW
+      // Sims 4 mods, verified against prod 2026-09-07. 'lighting' and
+      // 'curtains' were deliberately left out: both facets are badly
+      // mis-tagged (the top 'lighting' rows include a GShade preset, a
+      // skin overlay and a police car), so including them would put
+      // obvious junk at the top of the grid.
+      contentTypeIn: ['decor', 'plants', 'rugs', 'wall-art'],
+    },
+    expectedCount: 731,
+    related: ['clutter', 'furniture-cc', 'holidays-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial
+    // "best decor CC" intent, this page owns browse/filter intent.
+    // Verified live and not redirected on 2026-09-07.
+    blogUrl: '/sims-4-decor-cc/',
   },
   {
     slug: 'hair-cc',
@@ -275,7 +308,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'If you\'ve ever tried to build a cohesive living room with just base-game furniture, you already know the problem: every sofa looks like every other sofa, and the "design" options are a color swatch. Furniture CC is what turns Sims 4 Build mode from a chore into the reason people actually play.\n\nThis is a 900+ mod collection covering the full stack: sofas and armchairs, beds, dining sets, shelves, desks, kitchen islands, vanities, outdoor seating, and the statement pieces (clawfoot tubs, chesterfield couches, old-world wardrobes) that anchor a whole room. The heavy hitters here are the build CC creators everyone knows — Felixandre, Pierisim, HarrieCC, Myshunosun, and Syboubou — because they\'ve been shipping cohesive sets for long enough that you can build an entire house from a single creator\'s catalog.\n\nSort by downloads for the already-popular picks, or scroll for smaller sets that pair well with the staples. Everything here is Sims 4 specifically, verified, and SFW — grab what you want and go build.',
     filter: { contentType: 'furniture' },
     expectedCount: 901,
-    related: ['clutter', 'holidays-cc', 'decor'],
+    related: ['clutter', 'holidays-cc', 'decor-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -423,6 +456,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 922,
     related: ['skin-details', 'hair-cc', 'female-clothes'],
+    // Missing since this collection shipped (PR #32, 2026-09-04) — the
+    // legacy article is live and does not 301 here, so the differentiated
+    // pair was simply never wired up. Added 2026-09-07.
+    blogUrl: '/sims-4-makeup-cc/',
   },
 ];
 
