@@ -1,6 +1,6 @@
 # Patreon Tier Relaunch — Q4 Package
 
-**Status: QUEUED-T2** — operator must approve and post. Rio has drafted; Quinn to add to operator-queue.md.
+**Status: APPROVED — Option A (operator, 2026-09-07).** Site dependency shipped the same day: PR #52 (`f7820cd`) makes "skip the download countdown" live for $3+ patrons (`PATREON_MEMBER_MIN_CENTS=300`), so the copy below is true on launch. Remaining steps are operator-only: edit the tiers in the Patreon dashboard with the Option A copy (countdown line → "connect Patreon on any download page") and post the announcement. Read date moves to 2026-10-07.
 **Written:** 2026-09-04 by Rio
 **Bet:** B2 — 49 → 90 paid patrons at blended $4/mo ≈ $360/mo gross (from ~$127/mo today)
 **Target live date:** operator's call; recommend before October 1 to capture Q4 engagement
