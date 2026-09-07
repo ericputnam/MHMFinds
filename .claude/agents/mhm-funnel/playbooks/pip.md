@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-07
+- Tried: (a) token-manager port — scripts/agents/pinterest-token-status.py obtains a valid Pinterest token (imports MHMUtils pinterest_token_manager, falls back to an embedded stdlib port when `requests` is missing) and check-pinner.sh now asks it instead of trusting the stored string; (b) catalog pins for the two collection pages shipped since E1 — /games/sims-4/makeup-cc/ (id 11428) and /games/sims-4/witch-cc/ (id 11429) inserted into n8n_pinterest_posts. (T0, PR #50)
+- Before -> after: check-pinner.sh token step FAIL (HTTP 401, 2026-09-05) -> OK/VALID (2026-09-07, backend=embedded-port; the runner's python3 has no `requests`, so the import-only path would have been dead on every run). Refresh-token TTL 363 days. Catalog batch 7/9 posted, 2 pending. Pinterest sessions to makeup-cc and witch-cc: 0 and 0 (all sources, GA4 7d 2026-08-30 -> 2026-09-05).
+- Verdict: MORE DATA (read 2026-09-14 token, 2026-09-21 pins)
+- Next time: the 09-05 401 was recoverable staleness, not an outage — a monitor that cannot renew a credential will cry wolf about a pipeline that is fine. And 2 days after E1's pins posted, all 7 pages still showed ~0 Pinterest sessions (hair-cc 13/7d, poses 37/7d, none from Pinterest): pin -> session lag is weeks, so never read a catalog-pin experiment before day 14.
+
 ## 2026-09-02
 - Tried: Pinterest read-back via GA4 landingPage x source analysis (7d 2026-08-25 to 2026-08-31); 437 distinct Pinterest landing pages analyzed. Two decisions written to experiments.md (DQ-1: not-set label correction; DQ-2: catalog pinning gap baselined). (T0, PR for experiments.md + pip.md)
 - Before -> after: Pinterest sessions/7d to catalog pages: pregnancy-mods 812, female-clothes 695, male-clothes 137, body-presets 127, goth-cc 42, skin-details 42, cottagecore-cc 19; hair-cc/tattoos/holidays-cc/clutter/y2k-cc/vampire-cc/poses = 0

@@ -12,6 +12,17 @@ are dropped and logged.
 
 ## Tier 1 — shipping unless you say stop
 
+### 49 · Cass — PR #49 "send the newsletter over BigScoots SMTP, not SendGrid" — **merges 2026-09-08 unless you say "stop 49"**
+- **What:** the sending path from your 2026-09-05 decision: nodemailer SMTP transport used whenever `SMTP_HOST` is set (SendGrid demoted to fallback), bulk mailer that is dry-run by default with a 100/hour hard ceiling, per-recipient List-Unsubscribe + one-click headers, plain-text alternative, preview script, 24 offline tests. **Inert until the SMTP env vars exist** — nothing is sent by merging it. https://github.com/ericputnam/MHMFinds/pull/49
+- **Your 10 minutes (still pending — 0 of 5 `SMTP_*` vars in Vercel production on 2026-09-07):** BigScoots panel → pick/create the sending mailbox (`news@musthavemods.com`) → Enable Site SMTP → Email Deliverability tab: SPF/DKIM/DMARC green → add `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` to Vercel Production and `.env.local`. Cass then runs a mail-tester ≥ 9/10 before issue #1 goes to the 20 subscribers.
+- **Reply:** (silence = merges 09-08)
+
+### 48 · Sage — PR #48 "server-render the homepage shell — h1, collection links, ItemList in first-byte HTML" — **merges 2026-09-08 unless you say "stop 48"**
+- **What:** `app/page.tsx` becomes a force-dynamic server component wrapping the existing client page (ad anchors byte-identical), plus a server-rendered "Browse Sims 4 CC by collection" block (17 links) and ItemList JSON-LD. Served `/` HTML goes from 20,350 B / 0 `<h1>` / 0 `aside#secondary` to 51,188 B / 1 `<h1>` / 1 `aside#secondary` / 17 links. Highest-leverage fix in Sage's Google-collapse diagnosis: the homepage was the #1 click source before July 2025 and now sits at 512 clicks / position 42.2 over 28 days. https://github.com/ericputnam/MHMFinds/pull/48
+- **Verified:** type-check 0, build 0, sidebar-sticky-health + mod-click-funnel 48/48, `next start` smoke of the PR build: hydration errors 0 on `/`, `/mods/[id]`, `/go/[id]`. The Vercel preview is behind SSO (no bypass secret), so the preview smoke was inconclusive; `deploy-verify.sh` runs on the custom domain after the merge.
+- **Watch:** homepage session RPM ±5% for 7 days after merge (Rio). Rollback: `vercel rollback` or revert the PR.
+- **Reply:** (silence = merges 09-08)
+
 ### T1 · Cass — newsletter sends through the BigScoots mailbox, not SendGrid (operator decision 2026-09-05)
 - **Operator said:** we already have SMTP and a mailbox on BigScoots; the old tool charged per contact so we dropped it; ideally we email *everyone*; it must not look like spam; do not go the SendGrid (pay) path.
 - **Build (Cass, Tier 1, no credentials touched):** `lib/services/emailNotifier.ts` gains an SMTP transport (`nodemailer`) that is used whenever `SMTP_HOST` is set; the SendGrid branch stays only as a fallback. Env names: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`. Sends go out in throttled batches under BigScoots' hourly limit (ask BigScoots for the number; until confirmed cap at 100/hour — never guess higher), with `List-Unsubscribe` + `List-Unsubscribe-Post` headers, the per-recipient unsubscribe link that already exists, a plain-text alternative, and a bounce check on the mailbox after each batch. Warm-up: first issue to the 17 subscribers, then engaged registered accounts, then the rest — never all 1,500 accounts in one day.
@@ -33,6 +44,7 @@ are dropped and logged.
   - `PATREON_CREATOR_ACCESS_TOKEN` — from patreon.com/portal/registration/register-clients → the existing client → "Creator's Access Token". Read-only for the sync script.
   - `PINTEREST_ACCESS_TOKEN` is **not** the permanent answer (v5 access tokens die after 30 days — the operator's complaint). Permanent: the pinner's `~/java_projects/MHMUtils/config.json` already holds `client_id`, `client_secret`, `creator_refresh_token` and `pinterest_token_manager.py` refreshes the access token automatically before every run. MHMFinds should read Pinterest through that same manager (Pip: port `ensure_valid_token()` or shell out to it) instead of a hand-pasted token. The current refresh token has lapsed (401), so the operator runs `python3 pinterest_token_helper.py` once in `~/java_projects/MHMUtils` to re-authorize; after that no more pasting as long as the pinner runs at least monthly.
 - **Reply:** keys will be added by the operator; Pip owns the token-manager port.
+- **Status 2026-09-07:** Pinterest half done — Pip's PR #50 ports the token manager into the repo; `check-pinner.sh` token step went 401 → OK/VALID, refresh-token TTL 363 days, no more pasting. Still open: `PATREON_CREATOR_ACCESS_TOKEN` (also needed by Q5).
 
 ### Q3 · Confirm the newsletter can send (2026-09-01) — CLOSED 2026-09-05
 - Operator decision: send through the BigScoots mailbox over SMTP, not SendGrid. See the Tier 1 item above. `NEWSLETTER_WEEKLY_ENABLED` stays unset until the SMTP transport is live and issue #1 has passed QA.
@@ -45,6 +57,16 @@ are dropped and logged.
 - **Ask:** reply "approve 4 option A" or "approve 4 option B" (or reject with reason). Perks reuse things already built/planned (early lookbooks, countdown skip, mod-topic votes) — no new infrastructure.
 - **Risk:** low; pricing is operator-only (Tier 2). Rollback: revert tiers in Patreon dashboard.
 - **Reply:**
+
+
+### Q5 · Site membership via Patreon OAuth — "patrons skip the countdown" (Rio, 2026-09-07) — pairs with Q4
+- **Package:** `reports/funnel/drafts/membership-patreon-oauth-2026-09-07.md` · PR #52 https://github.com/ericputnam/MHMFinds/pull/52 (open, green, **not merged** — auth = Tier 2).
+- **What it does:** adds "Sign in with Patreon"; on sign-in asks Patreon if the person is an active patron of our campaign and marks the account a member; members get the `/go` download without the 10s countdown and a Member badge; non-members see one line "Patrons skip the wait · Connect Patreon · Become a patron". **No-op until `NEXT_PUBLIC_MEMBERSHIP_ENABLED=1`.** `/go` ad anchors untouched; sidebar-sticky tests 25/25.
+- **Why:** it is the perk that makes the Q4 $3 tier true instead of "coming soon". No new billing stack. B2 target $200/mo by 09-30.
+- **You do (≈10 min):** (1) Patreon portal → existing client → add redirect URI `https://musthavemods.com/api/auth/callback/patreon`; (2) Vercel Production env: `NEXT_PUBLIC_MEMBERSHIP_ENABLED=1`, `PATREON_CAMPAIGN_ID=<campaign id>`, `PATREON_MEMBER_MIN_CENTS=300` (A: $3+) or `500` (B: $5+); confirm `PATREON_CLIENT_ID`/`PATREON_CLIENT_SECRET` exist; (3) reply; Quinn merges + redeploys (flag is build-time).
+- **Ad risk:** `/go/` ≈ 725 pageviews/28d × $15.60 RPM ≤ $11/mo for the whole page; members a fraction. Guardrail unaffected.
+- **Rollback:** `NEXT_PUBLIC_MEMBERSHIP_ENABLED=0` + redeploy, or `vercel rollback`.
+- **Reply:** "approve 5 A" / "approve 5 B" / reject with reason.
 
 ---
 
