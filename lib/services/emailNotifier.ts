@@ -1,11 +1,62 @@
 /**
  * Email Notification Service (PRD-19)
  *
- * Sends email notifications for digests and reports.
- * Uses SendGrid if configured, otherwise logs to console.
+ * Sends email notifications for digests, reports and the newsletter.
+ *
+ * Transport order (operator decision 2026-09-05, operator-queue T1):
+ *   1. SMTP via the BigScoots mailbox whenever `SMTP_HOST` is set. This is the
+ *      path we send list mail on — the hosting plan already includes it, so it
+ *      costs nothing per contact.
+ *   2. SendGrid, only as a fallback, when SMTP is not configured.
+ *   3. Console log, when neither is configured (local dev / CI).
+ *
+ * Nothing here reads or prints a credential value. `SMTP_PASS` is passed
+ * straight from `process.env` into nodemailer and never logged.
  */
 
+import type { Transporter } from 'nodemailer';
 import { prisma } from '@/lib/prisma';
+
+export type EmailTransport = 'smtp' | 'sendgrid' | 'none';
+
+export interface SendOptions {
+  /** Plain-text alternative. Required for list mail; derived if omitted. */
+  text?: string;
+  /** Extra headers, e.g. List-Unsubscribe. */
+  headers?: Record<string, string>;
+  /** Override the From address for this message. */
+  from?: string;
+  /** Friendly From name. */
+  fromName?: string;
+  replyTo?: string;
+  /** Skip the NotificationLog row (bulk sends do their own accounting). */
+  skipLog?: boolean;
+}
+
+/** Very small HTML -> text reducer. Good enough for a multipart alternative. */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<head[\s\S]*?<\/head>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, '$2 ($1)')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|tr|li)>/gi, '\n')
+    .replace(/<li\b[^>]*>/gi, '- ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .join('\n')
+    .trim();
+}
 
 // Daily digest stats
 interface DailyDigestStats {
@@ -50,6 +101,7 @@ interface WeeklyReportStats {
 export class EmailNotifier {
   private sendgridApiKey: string | undefined;
   private fromEmail: string;
+  private transporter: Transporter | null = null;
 
   constructor() {
     this.sendgridApiKey = process.env.SENDGRID_API_KEY;
@@ -57,21 +109,122 @@ export class EmailNotifier {
   }
 
   /**
-   * Check if email is configured
+   * Which transport a send would use right now. SMTP wins whenever SMTP_HOST
+   * is set; SendGrid is a fallback only.
    */
-  isConfigured(): boolean {
-    return !!this.sendgridApiKey;
+  transport(): EmailTransport {
+    if (process.env.SMTP_HOST) return 'smtp';
+    if (process.env.SENDGRID_API_KEY) return 'sendgrid';
+    return 'none';
   }
 
   /**
-   * Send an email
+   * Check if email is configured
    */
-  async send(to: string, subject: string, html: string): Promise<boolean> {
-    if (!this.sendgridApiKey) {
+  isConfigured(): boolean {
+    return this.transport() !== 'none';
+  }
+
+  /** Reset the cached SMTP connection pool (tests, credential rotation). */
+  resetTransport(): void {
+    try {
+      this.transporter?.close();
+    } catch {
+      /* nothing to close */
+    }
+    this.transporter = null;
+    this.sendgridApiKey = process.env.SENDGRID_API_KEY;
+    this.fromEmail = process.env.EMAIL_FROM || process.env.FROM_EMAIL || 'noreply@musthavemods.com';
+  }
+
+  /**
+   * Lazily build the nodemailer transport. Pooled: BigScoots meters
+   * connections as well as messages, so one connection is reused for a batch.
+   */
+  private async getTransporter(): Promise<Transporter> {
+    if (this.transporter) return this.transporter;
+
+    const host = process.env.SMTP_HOST;
+    if (!host) throw new Error('[EmailNotifier] SMTP_HOST is not set');
+
+    const port = Number(process.env.SMTP_PORT || 587);
+    const nodemailer = (await import('nodemailer')).default;
+
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      // 465 is implicit TLS; 587 starts plain and upgrades via STARTTLS.
+      secure: port === 465,
+      requireTLS: port !== 465,
+      auth:
+        process.env.SMTP_USER && process.env.SMTP_PASS
+          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+          : undefined,
+      pool: true,
+      maxConnections: Number(process.env.SMTP_MAX_CONNECTIONS || 1),
+      maxMessages: Number(process.env.SMTP_MAX_MESSAGES || 50),
+    });
+
+    return this.transporter;
+  }
+
+  /**
+   * Open a connection and authenticate without sending anything. Used by the
+   * preview/QA script so a bad credential fails loudly before a real issue.
+   */
+  async verifyTransport(): Promise<{ ok: boolean; transport: EmailTransport; error?: string }> {
+    const transport = this.transport();
+    if (transport !== 'smtp') {
+      return { ok: transport === 'sendgrid', transport };
+    }
+    try {
+      const t = await this.getTransporter();
+      await t.verify();
+      return { ok: true, transport };
+    } catch (error) {
+      return { ok: false, transport, error: String(error) };
+    }
+  }
+
+  /**
+   * Send an email. SMTP first, SendGrid as fallback, console otherwise.
+   */
+  async send(to: string, subject: string, html: string, options: SendOptions = {}): Promise<boolean> {
+    const transport = this.transport();
+    const text = options.text ?? htmlToPlainText(html);
+    const from = options.from || this.fromEmail;
+    const fromName = options.fromName || 'MustHaveMods';
+
+    if (transport === 'none') {
       console.log(`[EmailNotifier] Not configured - would send to ${to}:`);
       console.log(`  Subject: ${subject}`);
       console.log(`  Body preview: ${html.slice(0, 200)}...`);
       return false;
+    }
+
+    if (transport === 'smtp') {
+      try {
+        const t = await this.getTransporter();
+        await t.sendMail({
+          to,
+          from: { address: from, name: fromName },
+          replyTo: options.replyTo,
+          subject,
+          html,
+          text,
+          headers: options.headers,
+        });
+        if (!options.skipLog) {
+          await this.logNotification('email', 'sent', to, subject, html, true);
+        }
+        return true;
+      } catch (error) {
+        console.error('[EmailNotifier] SMTP error:', String(error));
+        if (!options.skipLog) {
+          await this.logNotification('email', 'send_failed', to, subject, html, false, String(error));
+        }
+        return false;
+      }
     }
 
     try {
@@ -79,28 +232,43 @@ export class EmailNotifier {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.sendgridApiKey}`,
+          'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
         },
         body: JSON.stringify({
-          personalizations: [{ to: [{ email: to }] }],
-          from: { email: this.fromEmail, name: 'MustHaveMods Agent' },
+          personalizations: [
+            {
+              to: [{ email: to }],
+              ...(options.headers ? { headers: options.headers } : {}),
+            },
+          ],
+          from: { email: from, name: fromName },
+          ...(options.replyTo ? { reply_to: { email: options.replyTo } } : {}),
           subject,
-          content: [{ type: 'text/html', value: html }],
+          content: [
+            { type: 'text/plain', value: text },
+            { type: 'text/html', value: html },
+          ],
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('[EmailNotifier] SendGrid error:', response.status, errorText);
-        await this.logNotification('email', 'send_failed', to, subject, html, false, errorText);
+        if (!options.skipLog) {
+          await this.logNotification('email', 'send_failed', to, subject, html, false, errorText);
+        }
         return false;
       }
 
-      await this.logNotification('email', 'sent', to, subject, html, true);
+      if (!options.skipLog) {
+        await this.logNotification('email', 'sent', to, subject, html, true);
+      }
       return true;
     } catch (error) {
       console.error('[EmailNotifier] Error:', error);
-      await this.logNotification('email', 'error', to, subject, html, false, String(error));
+      if (!options.skipLog) {
+        await this.logNotification('email', 'error', to, subject, html, false, String(error));
+      }
       return false;
     }
   }
