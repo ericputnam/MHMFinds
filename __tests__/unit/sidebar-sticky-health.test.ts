@@ -29,7 +29,7 @@ function readSource(relativePath: string): string {
 // ============================================================
 describe('Sidebar presence: <aside id="secondary"> on all page types', () => {
   const pagesWithSidebar = [
-    { name: 'Homepage', file: 'app/page.tsx' },
+    { name: 'Homepage', file: 'app/HomePageClient.tsx' },
     { name: 'Game browse (/games/[game])', file: 'app/games/[game]/GamePageClient.tsx' },
     { name: 'Mod detail (/mods/[id])', file: 'app/mods/[id]/ModDetailClient.tsx' },
     { name: 'Download interstitial (/go/[modId])', file: 'app/go/[modId]/GoClient.tsx' },
@@ -58,7 +58,7 @@ describe('Sidebar presence: <aside id="secondary"> on all page types', () => {
 // ============================================================
 describe('Sidebar breakpoint: visible at lg (1024px), not xl (1280px)', () => {
   it('Homepage sidebar must NOT use xl:block (would hide from 1024-1279px)', () => {
-    const src = readSource('app/page.tsx')
+    const src = readSource('app/HomePageClient.tsx')
     // Find the aside element's className — should contain lg:block, not xl:block
     const asideMatch = src.match(/id="secondary"[\s\S]*?className="([^"]*)"/)
     expect(asideMatch).toBeTruthy()
@@ -80,7 +80,7 @@ describe('Sidebar breakpoint: visible at lg (1024px), not xl (1280px)', () => {
 // ============================================================
 describe('Sidebar content: empty aside pattern (no min-h placeholders)', () => {
   const pages = [
-    { name: 'Homepage', file: 'app/page.tsx' },
+    { name: 'Homepage', file: 'app/HomePageClient.tsx' },
     { name: 'Game browse', file: 'app/games/[game]/GamePageClient.tsx' },
     { name: 'Mod detail', file: 'app/mods/[id]/ModDetailClient.tsx' },
     { name: 'Download interstitial', file: 'app/go/[modId]/GoClient.tsx' },
@@ -111,7 +111,7 @@ describe('Sidebar content: empty aside pattern (no min-h placeholders)', () => {
 // ============================================================
 describe('Layout: no left spacer divs wasting horizontal space', () => {
   it('Homepage must NOT have a left spacer div', () => {
-    const src = readSource('app/page.tsx')
+    const src = readSource('app/HomePageClient.tsx')
     // The old spacer was: <div className="hidden lg:block flex-shrink-0 w-[300px]" aria-hidden="true" />
     // It should not exist between the flex container and the FacetedSidebar
     const spacerPattern = /aria-hidden="true"[\s\S]*?w-\[300px\][\s\S]*?FacetedSidebar/
@@ -139,11 +139,49 @@ describe('Layout: no left spacer divs wasting horizontal space', () => {
 })
 
 // ============================================================
+// 4b. Homepage server shell: the route entry must stay a per-request
+//     server component around HomePageClient (Sage, 2026-09-07).
+//     If app/page.tsx goes back to a static 'use client' page calling
+//     useSearchParams(), the served HTML is once again a spinner with no
+//     <h1>, no links, and no <aside id="secondary"> — crawlers score an
+//     empty page and Mediavine's anchors only exist after hydration.
+// ============================================================
+describe('Homepage server shell (app/page.tsx wraps app/HomePageClient.tsx)', () => {
+  it('app/page.tsx must be a server component (no use client directive)', () => {
+    const src = readSource('app/page.tsx')
+    expect(src).not.toMatch(/^\s*['"]use client['"]/m)
+  })
+
+  it('app/page.tsx must render per-request (force-dynamic) so useSearchParams does not bail to the spinner', () => {
+    const src = readSource('app/page.tsx')
+    expect(src).toMatch(/export const dynamic = ['"]force-dynamic['"]/)
+  })
+
+  it('app/page.tsx must render HomePageClient', () => {
+    const src = readSource('app/page.tsx')
+    expect(src).toMatch(/<HomePageClient\b/)
+  })
+
+  it('app/HomePageClient.tsx must be the client tree (use client) and hold the ad sidebar', () => {
+    const src = readSource('app/HomePageClient.tsx')
+    expect(src).toMatch(/^\s*['"]use client['"]/m)
+    expect(src).toContain('id="secondary"')
+  })
+
+  it('app/HomePageClient.tsx must not gate the layout behind a loading return', () => {
+    const src = readSource('app/HomePageClient.tsx')
+    // A top-level `if (loading) return <Loader/>` hides every ad anchor from
+    // Mediavine's initial DOM scan. The grid's own skeleton lives in ModGrid.
+    expect(src).not.toMatch(/if \(loading\)\s*return/)
+  })
+})
+
+// ============================================================
 // 5. Sidebar must NEVER have position:sticky or position:fixed
 // ============================================================
 describe('Sidebar safety: no CSS sticky/fixed on ad sidebar', () => {
   const pages = [
-    { name: 'Homepage', file: 'app/page.tsx' },
+    { name: 'Homepage', file: 'app/HomePageClient.tsx' },
     { name: 'Game browse', file: 'app/games/[game]/GamePageClient.tsx' },
     { name: 'Mod detail', file: 'app/mods/[id]/ModDetailClient.tsx' },
     { name: 'Download interstitial', file: 'app/go/[modId]/GoClient.tsx' },
