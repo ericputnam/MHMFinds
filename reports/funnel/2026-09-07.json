@@ -1,0 +1,159 @@
+{
+  "date": "2026-09-07",
+  "headline": {
+    "ownedAdds7d": 44,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 127,
+    "nonAdTarget": 200,
+    "mediavine28d": 5628.24,
+    "mediavine28dPrev": 6088.06
+  },
+  "flags": [
+    "🟡 Mediavine 28d revenue -7.6% vs prior 28d"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-30→2026-09-05 vs 2026-08-23→2026-08-29",
+      "sessions7d": 87770,
+      "sessionsPrev7d": 91683,
+      "byChannel7d": {
+        "pinterest": 57522,
+        "bing_organic": 17720,
+        "direct": 4301,
+        "google_organic": 1846,
+        "other_search": 2724,
+        "tumblr": 1003,
+        "other": 2213,
+        "reddit": 213,
+        "ai_referral": 228
+      },
+      "byChannelPrev7d": {
+        "pinterest": 61518,
+        "bing_organic": 17590,
+        "direct": 4659,
+        "other_search": 2717,
+        "google_organic": 1402,
+        "tumblr": 943,
+        "other": 2276,
+        "ai_referral": 344,
+        "reddit": 234
+      },
+      "aiReferral7d": 228,
+      "aiReferralPrev7d": 344,
+      "captureEvents7d": {
+        "affiliate_click": 8,
+        "favorite": 3,
+        "newsletter_signup": 2
+      },
+      "notSetLanding7d": 4016
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-08→2026-09-04",
+      "clicks28d": 2171,
+      "clicksPrev28d": 2098,
+      "impressions28d": 142947
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-05",
+      "revenue7d": 1334.9,
+      "revenuePrev7d": 1482.35,
+      "rpm7d": 15.07,
+      "rpmPrev7d": 16.28,
+      "sessions7d": 88585,
+      "revenue28d": 5628.24,
+      "revenuePrev28d": 6088.06,
+      "rpm28d": 15.6,
+      "health": {
+        "date": "2026/09/07",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 66
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1553,
+      "users7d": 41,
+      "users30d": 227,
+      "subscribers": 20,
+      "subscribers7d": 3,
+      "subscribers30d": 9,
+      "subscribersBySource": {
+        "collection-page": 1,
+        "footer": 16,
+        "go-interstitial": 2,
+        "sign-in": 1
+      },
+      "favorites": 19574,
+      "favorites7d": 422,
+      "downloadClicks7d": 111,
+      "downloadClicks30d": 1031,
+      "affiliateClicks7d": 10,
+      "affiliateClicks30d": 53,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 15888,
+      "collections": 1533
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 47,
+      "freeMembers": 5268,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5268,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 7,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 40,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 127
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 21,
+      "posts7d": 5,
+      "latestPost": "2026-09-07 sims-4-cardi-b-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-07",
+      "postedLast7d": 112,
+      "unpostedBacklog": 1901
+    }
+  }
+}

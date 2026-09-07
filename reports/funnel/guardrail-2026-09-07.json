@@ -1,0 +1,287 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-05",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 240.5275,
+    "sessions": 13554,
+    "rpm": 17.7375
+  },
+  "actualDay": {
+    "date": "2026-09-05",
+    "revenue": 269.49,
+    "sessions": 14925,
+    "rpm": 18.05
+  },
+  "window3": {
+    "actualRevenue": 632.28,
+    "expectedRevenue": 622.315,
+    "actualSessions": 38324,
+    "expectedSessions": 38514.5,
+    "actualRpm": 16.498277841561425,
+    "expectedRpm": 16.164420196914833
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-06T02:32:58.964Z",
+      "ref": "dcbc14a",
+      "text": "READY chore: compound learnings from 2026-09-05",
+      "url": "https://mhm-finds-dw5l-obqpghu39-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T14:52:42.506Z",
+      "ref": "c022917",
+      "text": "READY docs(funnel): newsletter via BigScoots SMTP not SendGrid; where Patreon/Pinterest keys go ",
+      "url": "https://mhm-finds-dw5l-iqgnebtgx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T14:47:03.019Z",
+      "ref": "f216a2c",
+      "text": "READY fix(agents): an un-runnable smoke check is INCONCLUSIVE, never a rollback; retry transient",
+      "url": "https://mhm-finds-dw5l-nigsey2k3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T14:26:10.136Z",
+      "ref": "3c53855",
+      "text": "READY docs(funnel): judged on revenue growth; Fable advises, cheaper models execute (#45)",
+      "url": "https://mhm-finds-dw5l-kuzh6step-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T13:14:15.961Z",
+      "ref": "8548fb7",
+      "text": "READY docs(funnel): digest explains the why of every change, board-member style (#44)",
+      "url": "https://mhm-finds-dw5l-o0xhdtjso-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T12:34:01.464Z",
+      "ref": "3973e6f",
+      "text": "READY funnel: daily run 2026-09-05 — scoreboard, guardrail, digest, experiments E10–E14, inciden",
+      "url": "https://mhm-finds-dw5l-na4dr8bd0-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T12:29:55.972Z",
+      "ref": "be21a4a",
+      "text": "READY feat(pip): pinner liveness check — Supabase staleness/backlog + Pinterest token health (E1",
+      "url": "https://mhm-finds-dw5l-cbc7x9z4d-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T10:56:04.738Z",
+      "ref": "0b80796",
+      "text": "READY content(nova): W37 writer brief — hospital build, Y2K, decor, dark-academia, teen-pregnanc",
+      "url": "https://mhm-finds-dw5l-m9rf3vngo-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T10:55:59.524Z",
+      "ref": "1b2f431",
+      "text": "READY fix(mods): resolve React #425 hydration errors on /mods/[id] (#41)",
+      "url": "https://mhm-finds-dw5l-jndsdpiw8-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-05T10:55:50.161Z",
+      "ref": "b31b1d9",
+      "text": "READY docs(rio): guardrail diagnosis 2026-09-05 — traffic-side verdict + affiliate hold decision",
+      "url": "https://mhm-finds-dw5l-ob1gdy8co-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T02:33:24.729Z",
+      "ref": "e7bb532",
+      "text": "READY chore: compound learnings from 2026-09-06 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ejke9j3yl-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-06T22:33:18-04:00",
+      "ref": "e7bb532",
+      "text": "chore: compound learnings from 2026-09-06"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T22:32:42-04:00",
+      "ref": "dcbc14a",
+      "text": "chore: compound learnings from 2026-09-05"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:52:39-04:00",
+      "ref": "c022917",
+      "text": "docs(funnel): newsletter via BigScoots SMTP not SendGrid; where Patreon/Pinterest keys go "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:46:59-04:00",
+      "ref": "f216a2c",
+      "text": "fix(agents): an un-runnable smoke check is INCONCLUSIVE, never a rollback; retry transient"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:26:06-04:00",
+      "ref": "3c53855",
+      "text": "docs(funnel): judged on revenue growth; Fable advises, cheaper models execute (#45)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T09:14:12-04:00",
+      "ref": "8548fb7",
+      "text": "docs(funnel): digest explains the why of every change, board-member style (#44)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T08:33:58-04:00",
+      "ref": "3973e6f",
+      "text": "funnel: daily run 2026-09-05 — scoreboard, guardrail, digest, experiments E10–E14, inciden"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T08:29:53-04:00",
+      "ref": "be21a4a",
+      "text": "feat(pip): pinner liveness check — Supabase staleness/backlog + Pinterest token health (E1"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:56:01-04:00",
+      "ref": "0b80796",
+      "text": "content(nova): W37 writer brief — hospital build, Y2K, decor, dark-academia, teen-pregnanc"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:56-04:00",
+      "ref": "1b2f431",
+      "text": "fix(mods): resolve React #425 hydration errors on /mods/[id] (#41)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:46-04:00",
+      "ref": "b31b1d9",
+      "text": "docs(rio): guardrail diagnosis 2026-09-05 — traffic-side verdict + affiliate hold decision"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:14-04:00",
+      "ref": "11a683b",
+      "text": "feat(capture): add newsletter capture block on mod detail pages (E10) (#38)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T22:55:07-04:00",
+      "ref": "a1674aa",
+      "text": "chore: compound learnings from 2026-09-04 (#37)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T08:08:57-04:00",
+      "ref": "e2dc41d",
+      "text": "funnel: daily run 2026-09-04 — scoreboard, guardrail, digest, experiments E6–E9, Patreon T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T08:01:11-04:00",
+      "ref": "76f7ad4",
+      "text": "docs(sage): Google click collapse diagnosis — two core updates, canonical conflicts, homep"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:58:51-04:00",
+      "ref": "94a9c81",
+      "text": "docs(rio): guardrail diagnosis 2026-09-04 — traffic-side verdict + Patreon tier relaunch d"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:56:53-04:00",
+      "ref": "cbd8079",
+      "text": "feat(capture): add newsletter capture block to all collection pages (E6) (#33)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:56:27-04:00",
+      "ref": "58af131",
+      "text": "feat(content): add makeup-cc collection page — 922 mods, W36 brief cross-link surface (#32"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:43:47-04:00",
+      "ref": "516fab0",
+      "text": "docs(funnel): daily loop is launched by the mhm-funnel-daily scheduled task (#31)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T22:32:44-04:00",
+      "ref": "6c06d1a",
+      "text": "chore: compound learnings from 2026-09-02 (#30)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T12:05:08-04:00",
+      "ref": "053b7f0",
+      "text": "fix(funnel): one worktree per agent, copy .env.local, untrack node_modules symlink (#29)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:24:15-04:00",
+      "ref": "5ddbf8f",
+      "text": "funnel: daily run 2026-09-02 — reports, digest, experiments, playbook (#28)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:16:16-04:00",
+      "ref": "90ece59",
+      "text": "fix(content): witch-cc keyword fallback — theme tag matched 0 verified mods (#27)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:11:02-04:00",
+      "ref": "a467367",
+      "text": "feat(capture): GA4 newsletter_signup event + email form on /go interstitial (#26)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:07:07-04:00",
+      "ref": "f4892bd",
+      "text": "feat(content): add witch-cc collection page + W36 writer brief (#22)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T09:02:47-04:00",
+      "ref": "01cdf27",
+      "text": "feat(sage): add AI crawler allow rules to robots.txt (#24)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:58:30-04:00",
+      "ref": "1bf37ba",
+      "text": "docs(funnel): Rio guardrail diagnosis 2026-09-02 — demand-side verdict (#25)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:54:32-04:00",
+      "ref": "9ec85ca",
+      "text": "feat(pip): Pinterest read-back — baselined catalog pinning gap + corrected (not set) landi"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-02T08:08:38-04:00",
+      "ref": "4a8ace1",
+      "text": "fix(funnel): runner auth preflight + degraded digest, prisma-aware node_modules (#21)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/07",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $269.49 (12.0%), RPM 18.05 (1.8%), sessions 10.1% vs same weekday, prior 4 weeks · 3-day revenue 1.6%"
+  ]
+}

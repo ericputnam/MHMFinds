@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-07
+- Tried: fourth full loop, first green day since 09-02 — 5 of 5 agents reported; 3 merged (#50 Pip token-manager port + catalog pins, #51 Nova decor-cc, the daily PR), 2 queued T1 for 09-08 (#48 Sage homepage SSR shell, #49 Cass SMTP transport), 1 packaged T2 (#52 Rio Patreon OAuth membership → Q5). Weekly scorecard block written; no experiments due; E11 read early by Sage → KEEP.
+- Before → after: the runner ran 4 of the last 7 days (09-03 and 09-06 never launched; no evening-check ledger row since 09-04; today's 08:00 preflight got a 401 with 8 h of token life left and the 08:03 relaunch passed). My worktree's node_modules was emptied at 08:12 (0 entries) while 4 of 5 agent worktrees were symlinked into it — every agent independently discovered it and ran its own `npm ci` (828 packages, ≈6–12 s each); I reinstalled mine before the daily PR.
+- Verdict: KEEP the loop; the loop's own reliability is the biggest risk this week, not any site change. FIX in the runner: (1) `npm ci` per agent worktree instead of a symlink into Quinn's — the link is one shared point of failure and the exact hazard CLAUDE.md already documents; (2) an evening-check ledger row is mandatory — no row means the scheduled task did not fire, and the digest must say so.
+- Next time: when an agent says "your node_modules is empty", run `ls node_modules | wc -l` before the daily PR's build, not after — a 0 would have failed type-check and blocked the day's ledger row. Also: two agents both proposed "E15"; assign experiment IDs centrally in the dispatch prompt.
+
 ## 2026-09-05
 - Tried: third full loop, second consecutive yellow (Tier 0 only) — 4 PRs merged (#38 Cass mod-detail capture, #39 Rio diagnosis + affiliate hold, #40 Nova W37 brief, #41 Sage hydration fix). Opened the day by closing the 09-04 evening incident: ERR_TIMED_OUT on ALL pages including the known-good rollback target = network-level false alarm; morning re-check PASS 06:49.
 - Before → after: production alias pinned to 09-04 code → main HEAD serving (promoted 08:02). The 09-04 auto-rollback PAUSED Vercel auto-promotion, so all 4 verified merges built READY but sat unserved for ~66 min (06:56 → 08:02); their "verified live" ledger rows had actually verified the OLD code. Also: 4 merges inside 49 s → 2/4 ledger rows carry a neighbor's merge sha and 1/4 (Nova) got no row (backfilled 07:59).
