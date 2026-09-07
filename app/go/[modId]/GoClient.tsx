@@ -4,10 +4,16 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Download, ArrowLeft, Loader2, Clock, Info, Package } from 'lucide-react';
+import { Download, ArrowLeft, Loader2, Clock, Info, Package, Crown } from 'lucide-react';
+import { useSession, signIn } from 'next-auth/react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { isMembershipEnabled, PATREON_PAGE_URL } from '@/lib/membership';
+
+type Gtag = (...args: unknown[]) => void;
+const gtag = (...args: unknown[]) =>
+  (window as unknown as { gtag?: Gtag }).gtag?.(...args);
 
 interface Mod {
   id: string;
@@ -43,6 +49,20 @@ export default function GoClient() {
   const [canProceed, setCanProceed] = useState(false);
   const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
   const { trackDownload } = useDownloadTracking();
+
+  // Membership via Patreon OAuth (B2, Rio 2026-09-07). `membershipOn` is a
+  // build-time constant from NEXT_PUBLIC_MEMBERSHIP_ENABLED; with the flag
+  // off, isMember is always false and this page behaves exactly as before.
+  // The layout (mv-ads wrapper, empty aside#secondary) is untouched either
+  // way — members just get the Continue button without the 10s wait.
+  const { data: session } = useSession();
+  const membershipOn = isMembershipEnabled();
+  const isMember = membershipOn && !!session?.user?.isPremium;
+
+  const handleConnectPatreon = useCallback(() => {
+    gtag('event', 'patreon_click', { source: 'go-member-cta-connect', mod_id: String(params.modId) });
+    signIn('patreon', { callbackUrl: window.location.href });
+  }, [params.modId]);
 
   // Fetch mod details + related mods
   useEffect(() => {
@@ -85,11 +105,7 @@ export default function GoClient() {
       for (const mark of [25, 50, 75, 90]) {
         if (pct >= mark && !fired.has(mark)) {
           fired.add(mark);
-          (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
-            'event',
-            'go_scroll_depth',
-            { percent: mark, mod_id: String(params.modId) }
-          );
+          gtag('event', 'go_scroll_depth', { percent: mark, mod_id: String(params.modId) });
         }
       }
     };
@@ -107,9 +123,16 @@ export default function GoClient() {
   // by the time Mediavine runs its first DOM scan, the mv-ads wrapper,
   // the video slot, and the sticky <aside> are already in the DOM.
 
-  // Countdown timer
+  // Countdown timer — members skip it (the B2 "no countdown" perk)
   useEffect(() => {
     if (loading) return;
+
+    if (isMember) {
+      setCountdown(0);
+      setCanProceed(true);
+      gtag('event', 'member_skip_countdown', { mod_id: String(params.modId) });
+      return;
+    }
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -123,7 +146,7 @@ export default function GoClient() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading]);
+  }, [loading, isMember, params.modId]);
 
   /*
     Mediavine (Lauren Funari, Senior Support, Sep 2026) asked us to remove
@@ -241,6 +264,12 @@ export default function GoClient() {
 
               {/* Download button / countdown — inside the mod card so it's always above the fold */}
               <div className="mt-5 pt-5 border-t border-slate-700">
+                {isMember && (
+                  <p className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300">
+                    <Crown className="h-3.5 w-3.5" />
+                    Member perk: no countdown
+                  </p>
+                )}
                 {canProceed && mod ? (
                   <button
                     onClick={handleProceed}
@@ -270,6 +299,35 @@ export default function GoClient() {
                         style={{ width: `${loading ? 0 : ((10 - countdown) / 10) * 100}%` }}
                       />
                     </div>
+                    {/*
+                      Member CTA — renders only when the membership flag is on.
+                      Lives inside the mod card (a sibling of the mv-ads wrapper
+                      below, never inside it or the aside), per SD-3.
+                    */}
+                    {membershipOn && !loading && (
+                      <p className="mt-3 text-xs text-slate-500 text-center">
+                        Patrons skip the wait.{' '}
+                        <button
+                          type="button"
+                          onClick={handleConnectPatreon}
+                          className="text-sims-pink hover:underline font-semibold"
+                        >
+                          Connect Patreon
+                        </button>
+                        {' · '}
+                        <a
+                          href={PATREON_PAGE_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() =>
+                            gtag('event', 'patreon_click', { source: 'go-member-cta-join', mod_id: String(params.modId) })
+                          }
+                          className="text-sims-pink hover:underline font-semibold"
+                        >
+                          Become a patron
+                        </a>
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
