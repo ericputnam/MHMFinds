@@ -20,21 +20,30 @@ set -euo pipefail
 # WHAT IT CHECKS:
 #   1. Pinner staleness  — last "Is Posted"=true row older than STALE_DAYS → FAIL
 #   2. Backlog drain     — unposted backlog = 0 → WARN
-#   3. Pinterest token   — live GET /v5/user_account → WARN if invalid (auto-refresh
-#                          runs in the pinner itself; this flags before the next post)
+#   3. Pinterest token   — asks the token manager (pinterest-token-status.py, which
+#                          prefers MHMUtils/pinterest_token_manager.ensure_valid_token
+#                          and falls back to an embedded stdlib port) for a *valid*
+#                          token instead of trusting the stored string. A stale
+#                          stored token that the refresh token can renew is no longer
+#                          a FAIL — only a dead refresh token is (operator-queue Q2,
+#                          2026-09-05: "Pip owns the token-manager port")
 #   4. Refresh token TTL — decode JWT payload, warn if expiry < REFRESH_WARN_DAYS
-#   5. Catalog pins      — IDs 11421-11427 (E1 batch, inserted 2026-09-04):
-#                          report posted count (if --catalog flag present)
+#   5. Catalog pins      — IDs 11421-11429 (E1 batch 2026-09-04 + makeup-cc /
+#                          witch-cc 2026-09-07): report posted count (--catalog)
 #
 # CREDENTIALS: reads ~/java_projects/MHMUtils/config.json (no fallback to .env;
 # the scoreboard already handles .env fallback — this script is for the runner).
 
 QUIET=0
 CATALOG=0
+NO_REFRESH=0
 for arg in "$@"; do
-  [[ "$arg" == "--quiet"  ]] && QUIET=1
-  [[ "$arg" == "--catalog" ]] && CATALOG=1
+  [[ "$arg" == "--quiet"      ]] && QUIET=1
+  [[ "$arg" == "--catalog"    ]] && CATALOG=1
+  [[ "$arg" == "--no-refresh" ]] && NO_REFRESH=1
 done
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---- colour helpers (suppressed when not a tty) ---------------------------
 if [[ -t 1 ]]; then
@@ -72,6 +81,9 @@ fi
 
 STALE_DAYS="${PINNER_STALE_DAYS:-1}"
 REFRESH_WARN_DAYS="${PINNER_REFRESH_WARN_DAYS:-30}"
+# Catalog-pin batches inserted by scripts/agents/insert-catalog-pins.py.
+CATALOG_ID_MIN="${PINNER_CATALOG_ID_MIN:-11421}"
+CATALOG_ID_MAX="${PINNER_CATALOG_ID_MAX:-11429}"
 
 say "==> Pinner liveness check ($(date -u +%Y-%m-%dT%H:%M)Z)"
 
@@ -144,8 +156,47 @@ fi
 say ""
 say "--- 3. Pinterest access token"
 
-if [[ -z "$PINTEREST_TOKEN" ]]; then
-  warn "creator_access_token missing from config.json — pinner will fail on next post"
+TOKEN_HELPER="$SCRIPT_DIR/pinterest-token-status.py"
+
+if command -v python3 >/dev/null 2>&1 && [[ -f "$TOKEN_HELPER" ]]; then
+  # Ask the token manager for a token that is valid *now*. It refreshes from
+  # creator_refresh_token when the stored access token has aged out (v5 access
+  # tokens live ~30 days) and writes the new one back to config.json, which is
+  # the same token the pinner will use on its next run. No token is printed.
+  HELPER_ARGS=()
+  [[ "$NO_REFRESH" -eq 1 ]] && HELPER_ARGS+=("--no-refresh")
+
+  set +e
+  TOKEN_OUT=$(MHM_UTILS_DIR="$MHM_UTILS" MHM_PINTEREST_CONFIG="$CONFIG_JSON" \
+    python3 "$TOKEN_HELPER" ${HELPER_ARGS[@]+"${HELPER_ARGS[@]}"} 2>&1)
+  TOKEN_RC=$?
+  set -e
+
+  TOKEN_STATE=$(printf '%s' "$TOKEN_OUT" | head -1 | cut -f1)
+  TOKEN_BACKEND=$(printf '%s' "$TOKEN_OUT" | head -1 | cut -f2)
+  TOKEN_MSG=$(printf '%s' "$TOKEN_OUT" | head -1 | cut -f3-)
+
+  case "$TOKEN_RC" in
+    0)
+      if [[ "$TOKEN_STATE" == "REFRESHED" ]]; then
+        ok "Pinterest token renewed by the token manager ($TOKEN_BACKEND) — pipeline healthy"
+      else
+        ok "Pinterest token valid (via $TOKEN_BACKEND token manager)"
+      fi
+      ;;
+    2)
+      warn "Pinterest token not evaluated [$TOKEN_STATE]: $TOKEN_MSG"
+      WARN=1
+      ;;
+    *)
+      fail "Pinterest token UNRECOVERABLE [$TOKEN_STATE]: $TOKEN_MSG"
+      fail "Operator action: cd ~/java_projects/MHMUtils && python3 pinterest_token_helper.py (one-time re-authorization)"
+      FAIL=1
+      ;;
+  esac
+elif [[ -z "$PINTEREST_TOKEN" ]]; then
+  # Degraded path: no python3 or no helper alongside this script.
+  warn "creator_access_token missing from config.json and the token manager is unavailable"
   WARN=1
 else
   TOKEN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -155,11 +206,12 @@ else
   TOKEN_STATUS="${TOKEN_STATUS:-000}"
 
   if [[ "$TOKEN_STATUS" == "200" ]]; then
-    ok "Pinterest access token valid (HTTP 200)"
+    ok "Pinterest access token valid (HTTP 200; token manager unavailable, stored token checked directly)"
   elif [[ "$TOKEN_STATUS" == "401" ]]; then
-    fail "Pinterest access token INVALID (HTTP 401) — pinner auto-refresh should run next cycle, but manual check recommended"
-    fail "Run: cd ~/java_projects/MHMUtils && python3 -c \"from pinterest_token_manager import ensure_valid_token; ensure_valid_token()\""
-    FAIL=1
+    # Recoverable on its own: the pinner refreshes before it posts. WARN, not FAIL.
+    warn "Stored Pinterest access token is stale (HTTP 401) and the token manager is unavailable here"
+    warn "Run where python3 exists: scripts/agents/pinterest-token-status.py"
+    WARN=1
   elif [[ "$TOKEN_STATUS" == "000" ]]; then
     warn "Pinterest API unreachable (curl error) — check network"
     WARN=1
@@ -172,6 +224,10 @@ fi
 # ---- 4. Refresh token TTL -------------------------------------------------
 say ""
 say "--- 4. Refresh token TTL"
+
+# Re-read: a refresh in step 3 can rotate creator_refresh_token, so the value
+# read at startup may already be superseded.
+REFRESH_TOKEN=$(python3 -c "import json; c=json.load(open('$CONFIG_JSON')); print(c.get('creator_refresh_token',''))" 2>/dev/null || echo "$REFRESH_TOKEN")
 
 if [[ -z "$REFRESH_TOKEN" ]]; then
   warn "creator_refresh_token missing from config.json — cannot auto-refresh expired access token"
@@ -216,12 +272,12 @@ fi
 # ---- 5. Catalog pin drain (E1 batch, optional) ----------------------------
 if [[ "$CATALOG" -eq 1 ]]; then
   say ""
-  say "--- 5. E1 catalog pins (IDs 11421-11427, inserted 2026-09-04)"
+  say "--- 5. Catalog pins (IDs ${CATALOG_ID_MIN}-${CATALOG_ID_MAX}: E1 2026-09-04, makeup-cc/witch-cc 2026-09-07)"
 
   CATALOG_RESP=$(curl -sf \
     -H "apikey: $SUPABASE_KEY" \
     -H "Authorization: Bearer $SUPABASE_KEY" \
-    "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?id=gte.11421&id=lte.11427&select=id,%22Is%20Posted%22,%22Post%20Date%22&order=id.asc" \
+    "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?id=gte.${CATALOG_ID_MIN}&id=lte.${CATALOG_ID_MAX}&select=id,%22Post%20URL%22,%22Is%20Posted%22,%22Post%20Date%22&order=id.asc" \
     2>/dev/null) || { warn "Could not query catalog pins"; WARN=1; }
 
   if [[ -n "${CATALOG_RESP:-}" ]]; then
@@ -230,10 +286,11 @@ import json, sys
 rows = json.loads(sys.stdin.read())
 posted = [r for r in rows if r.get('Is Posted')]
 pending = [r for r in rows if not r.get('Is Posted')]
-print(f'  E1 catalog pins: {len(posted)}/7 posted, {len(pending)} pending')
+print(f'  Catalog pins: {len(posted)}/{len(rows)} posted, {len(pending)} pending')
 for r in rows:
     status = 'posted' if r.get('Is Posted') else 'pending'
-    print(f'    ID {r[\"id\"]}: {status} (date={str(r.get(\"Post Date\",\"\"))[:10]})')
+    page = str(r.get('Post URL','')).rstrip('/').split('/')[-1]
+    print(f'    ID {r[\"id\"]} {page}: {status} (date={str(r.get(\"Post Date\",\"\"))[:10]})')
 " <<< "$CATALOG_RESP" 2>/dev/null
   fi
 fi
