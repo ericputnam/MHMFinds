@@ -29,8 +29,23 @@ interface Result {
   path: string; kind: Kind; status: number | null; ms: number;
   secondary: number; mvAds: number; mediavineScript: boolean; textLength: number;
   pageErrors: string[]; consoleErrors: number; appError: boolean;
-  hydrationErrors: number; failures: string[]; transientErrors?: string[];
+  hydrationErrors: number; thirdPartyErrors: number; failures: string[]; transientErrors?: string[];
 }
+
+const OUR_HOST = new URL(BASE).host;
+const isHydration = (e: string) => /error #4(18|23|25)\b|Hydration failed|hydrat/i.test(e);
+/**
+ * An uncaught error whose top frame lives on another origin (Mediavine's prebid bundle is the
+ * repeat offender: "Converting circular structure to JSON @ at track (https://scripts.mediavine.com/…)")
+ * is not something a deploy of ours can have caused, and rolling production back does not fix it —
+ * 2026-09-07 09:14: a two-markdown-file merge was rolled back because it reproduced on both loads.
+ * It is recorded and shown as a warning; the structural checks below still decide pass/fail.
+ * An error with no frame, or one on our own host (/_next bundles), stays a hard failure.
+ */
+const isThirdParty = (e: string) => {
+  const m = e.match(/@ .*?\(?(https?:\/\/[^/\s)]+)/);
+  return !!m && new URL(m[1]).host !== OUR_HOST;
+};
 
 async function modIdFromSitemap(): Promise<string | null> {
   try {
@@ -45,7 +60,7 @@ function expectations(r: Result): string[] {
   if (r.status !== 200) f.push(`HTTP ${r.status ?? 'no response'}`);
   // React hydration mismatches (#418/#423/#425) recover by client-rendering; they are a warning
   // (tracked for Sage/Nova), not a revenue-affecting failure. Anything else uncaught fails the page.
-  const hard = r.pageErrors.filter((e) => !/error #4(18|23|25)\b|Hydration failed|hydrat/i.test(e));
+  const hard = r.pageErrors.filter((e) => !isHydration(e) && !isThirdParty(e));
   if (hard.length) f.push(`${hard.length} uncaught page error(s): ${hard[0].slice(0, 120)}`);
   if (r.appError) f.push('Next.js "Application error" boundary rendered');
   const adPage = r.kind === 'catalog' || r.kind === 'detail' || r.kind === 'interstitial' || r.kind === 'blog';
@@ -105,8 +120,9 @@ async function main() {
       }));
       ({ secondary, mvAds, mediavineScript, textLength, appError } = d);
     } catch (e) { pageErrors.push(`evaluate: ${String((e as Error).message).slice(0, 160)}`); }
-    const hydrationErrors = pageErrors.filter((e) => /error #4(18|23|25)\b|Hydration failed|hydrat/i.test(e)).length;
-    const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, failures: [] };
+    const hydrationErrors = pageErrors.filter(isHydration).length;
+    const thirdPartyErrors = pageErrors.filter((e) => !isHydration(e) && isThirdParty(e)).length;
+    const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, thirdPartyErrors, failures: [] };
     r.failures = expectations(r);
     await page.close();
     return r;
@@ -123,7 +139,7 @@ async function main() {
       r = again;
     }
     results.push(r);
-    console.log(`${r.failures.length ? '✗' : '✓'} ${t.path.padEnd(34)} ${String(r.status).padEnd(4)} ${String(r.ms).padStart(5)}ms  secondary=${r.secondary} mv-ads=${r.mvAds} mv-script=${r.mediavineScript ? 'y' : 'n'} text=${r.textLength} errors=${r.pageErrors.length}${r.hydrationErrors ? ` (hydration ${r.hydrationErrors} ⚠)` : ''}${r.transientErrors ? ` (transient ${r.transientErrors.length} ↻)` : ''}${r.failures.length ? '\n    → ' + r.failures.join('; ') : ''}`);
+    console.log(`${r.failures.length ? '✗' : '✓'} ${t.path.padEnd(34)} ${String(r.status).padEnd(4)} ${String(r.ms).padStart(5)}ms  secondary=${r.secondary} mv-ads=${r.mvAds} mv-script=${r.mediavineScript ? 'y' : 'n'} text=${r.textLength} errors=${r.pageErrors.length}${r.hydrationErrors ? ` (hydration ${r.hydrationErrors} ⚠)` : ''}${r.thirdPartyErrors ? ` (3rd-party ${r.thirdPartyErrors} ⚠ ${r.pageErrors.find(isThirdParty)?.slice(0, 90)})` : ''}${r.transientErrors ? ` (transient ${r.transientErrors.length} ↻)` : ''}${r.failures.length ? '\n    → ' + r.failures.join('; ') : ''}`);
   }
   await browser.close();
   const failed = results.filter((r) => r.failures.length);
