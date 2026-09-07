@@ -161,9 +161,21 @@ if [ "${FUNNEL_DRY_RUN:-0}" = "1" ]; then log "Dry run — stopping after scoreb
 CLAUDE_CLEAN=(env -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH -u CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH \
   -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_TOKEN \
   -u CLAUDE_CODE_HOST_SESSION_ID -u CLAUDE_CODE_SESSION_ID -u CLAUDE_CODE_CHILD_SESSION -u CLAUDE_PID)
+PREFLIGHT_OUT="$PROJECT_DIR/logs/funnel-preflight-$TODAY.json"
 claude_preflight() {
   perl -e 'alarm 240; exec @ARGV' "${CLAUDE_CLEAN[@]}" claude -p "Reply with exactly: ok" --model "$MODEL" --max-turns 1 \
-    --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null 2>>"$LOG_FILE" | grep -q '"is_error":false'
+    --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null >"$PREFLIGHT_OUT" 2>>"$LOG_FILE"
+  grep -q '"is_error":false' "$PREFLIGHT_OUT"
+}
+# Why the preflight failed — the fix differs, so the digest must not blame auth for everything
+# (2026-09-06/07: the CLI was 2.1.108, Fable needs >= 2.1.251; the digest said "run claude auth login" and
+# two days were lost). Echoes one of: CLI_TOO_OLD | AUTH | OTHER, plus a short sanitized excerpt.
+preflight_diagnosis() {
+  local out; out="$(tr -d '\n\r' <"$PREFLIGHT_OUT" 2>/dev/null | head -c 4000)"
+  local excerpt; excerpt="$(printf '%s' "$out" | grep -oE '"(error|message)":"[^"]{0,200}' | head -2 | tr '\n' ' ' | sed -E 's/[A-Za-z0-9_-]{25,}/<redacted>/g')"
+  if printf '%s' "$out" | grep -q 'claude_code_version_too_old'; then echo "CLI_TOO_OLD|$excerpt"
+  elif printf '%s' "$out" | grep -qiE 'authentication|not logged in|401|invalid.*token|oauth'; then echo "AUTH|$excerpt"
+  else echo "OTHER|$excerpt"; fi
 }
 token_expiry() {
   security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | python3 -c 'import json,sys,datetime
@@ -176,12 +188,19 @@ except Exception:
 DIGEST="$WT/reports/funnel/digest-$TODAY.md"
 if ! claude_preflight; then
   EXP="$(token_expiry)"
-  log "🔴 Quinn cannot run: the Claude CLI could not authenticate headlessly (keychain OAuth token expiry: $EXP)."
+  DIAG="$(preflight_diagnosis)"; DIAG_KIND="${DIAG%%|*}"; DIAG_EXCERPT="${DIAG#*|}"
+  CLI_VER="$(claude --version 2>/dev/null | head -1 || echo unknown)"
+  case "$DIAG_KIND" in
+    CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
+    AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth token expiry: $EXP; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
+    *)           CAUSE="The Claude CLI preflight failed for a reason that is neither auth nor version — see logs/funnel-preflight-$TODAY.json (excerpt: ${DIAG_EXCERPT:-none}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
+  esac
+  log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"
   GUARD_SUMMARY="status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" )"
   cat >"$PROJECT_DIR/reports/funnel/digest-$TODAY.md" <<EOF
 # Funnel digest — $TODAY (DEGRADED: Quinn did not run)
 
-🔴 **Quinn could not start.** The Claude CLI on this Mac cannot authenticate headlessly (keychain OAuth token expiry: $EXP; the API answered 401 and the token could not be refreshed). No agent can fix this. **Open a terminal and run \`claude auth login\`**, then run \`npm run funnel:daily\` or wait for tomorrow's pulse.
+🔴 **Quinn could not start.** $CAUSE, then run \`npm run funnel:daily\` or wait for tomorrow's pulse. No agent can fix this. Reminder: the 06:30 / 18:30 routines only fire while the Claude desktop app is open on this Mac.
 
 What still ran today (deterministic scripts, no LLM):
 - Scoreboard: reports/funnel/$TODAY.md
