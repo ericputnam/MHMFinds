@@ -1,0 +1,157 @@
+{
+  "date": "2026-09-08",
+  "headline": {
+    "ownedAdds7d": 46,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 126,
+    "nonAdTarget": 200,
+    "mediavine28d": 5707.88,
+    "mediavine28dPrev": 6006.4
+  },
+  "flags": [],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-31→2026-09-06 vs 2026-08-24→2026-08-30",
+      "sessions7d": 88610,
+      "sessionsPrev7d": 91395,
+      "byChannel7d": {
+        "pinterest": 58246,
+        "bing_organic": 17511,
+        "direct": 4488,
+        "google_organic": 1828,
+        "other_search": 2780,
+        "tumblr": 1046,
+        "other": 2248,
+        "reddit": 217,
+        "ai_referral": 246
+      },
+      "byChannelPrev7d": {
+        "pinterest": 61048,
+        "bing_organic": 17955,
+        "direct": 4525,
+        "other_search": 2732,
+        "google_organic": 1393,
+        "tumblr": 951,
+        "other": 2219,
+        "ai_referral": 340,
+        "reddit": 232
+      },
+      "aiReferral7d": 246,
+      "aiReferralPrev7d": 340,
+      "captureEvents7d": {
+        "affiliate_click": 9,
+        "newsletter_signup": 3,
+        "favorite": 1
+      },
+      "notSetLanding7d": 4047
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-09→2026-09-05",
+      "clicks28d": 2183,
+      "clicksPrev28d": 2104,
+      "impressions28d": 144040
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-06",
+      "revenue7d": 1395.97,
+      "revenuePrev7d": 1459.82,
+      "rpm7d": 15.67,
+      "rpmPrev7d": 16.05,
+      "sessions7d": 89101,
+      "revenue28d": 5707.88,
+      "revenuePrev28d": 6006.4,
+      "rpm28d": 15.78,
+      "health": {
+        "date": "2026/09/08",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 65
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1562,
+      "users7d": 43,
+      "users30d": 231,
+      "subscribers": 20,
+      "subscribers7d": 3,
+      "subscribers30d": 9,
+      "subscribersBySource": {
+        "collection-page": 1,
+        "footer": 16,
+        "go-interstitial": 2,
+        "sign-in": 1
+      },
+      "favorites": 19649,
+      "favorites7d": 459,
+      "downloadClicks7d": 117,
+      "downloadClicks30d": 977,
+      "affiliateClicks7d": 12,
+      "affiliateClicks30d": 56,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 15888,
+      "collections": 1542
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 46,
+      "freeMembers": 5287,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5287,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 6,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 40,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 126
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 22,
+      "posts7d": 6,
+      "latestPost": "2026-09-08 sims-4-goth-accessories"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-07",
+      "postedLast7d": 136,
+      "unpostedBacklog": 1879
+    }
+  }
+}

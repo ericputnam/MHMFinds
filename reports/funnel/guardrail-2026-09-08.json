@@ -1,0 +1,267 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-06",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 232.5075,
+    "sessions": 14682.25,
+    "rpm": 15.817499999999999
+  },
+  "actualDay": {
+    "date": "2026-09-06",
+    "revenue": 294.62,
+    "sessions": 15415,
+    "rpm": 19.11
+  },
+  "window3": {
+    "actualRevenue": 762.58,
+    "expectedRevenue": 672.0774999999999,
+    "actualSessions": 42518,
+    "expectedSessions": 40849.75,
+    "actualRpm": 17.935462627593022,
+    "expectedRpm": 16.44779429592996
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-08T02:34:06.757Z",
+      "ref": "ae9a670",
+      "text": "READY chore: compound learnings from 2026-09-07 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-nxte301dc-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T13:38:21.482Z",
+      "ref": "d4c2e0a",
+      "text": "READY docs(queue): Q5 — Patreon portal client updated by operator; Connect Patreon end-to-end li [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ez1j7n3o9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T13:21:25.256Z",
+      "ref": "5b7ee43",
+      "text": "READY fix(agents): smoke-render treats third-party script errors as warnings; close incident 202 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-r6vqesvju-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T13:11:55.551Z",
+      "ref": "5d1b8da",
+      "text": "READY docs(funnel): record operator approvals — Q5 \"approve 5 A\" shipped (PR #52), Q4 \"approve 4 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-l5tet3v1j-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T13:06:47.911Z",
+      "ref": "f7820cd",
+      "text": "READY feat(membership): Patreon OAuth sign-in + /go countdown skip for patrons, behind NEXT_PUBL [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-k0sjsbndt-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T12:33:26.757Z",
+      "ref": "ab0823c",
+      "text": "READY fix(agents): runner preflight tells CLI-too-old apart from auth failure (#54) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-kb7dlsl67-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T12:28:57.385Z",
+      "ref": "7458581",
+      "text": "READY funnel: daily run 2026-09-07 (#53) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ixtmgy5pn-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T12:16:53.818Z",
+      "ref": "d790cff",
+      "text": "READY feat(collections): decor-cc collection page (731 mods) + fix 4 dangling related slugs (#51 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-g42oo7dat-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-07T12:16:27.163Z",
+      "ref": "b12ab6b",
+      "text": "READY feat(agents): Pinterest token-manager port + catalog pins for makeup-cc/witch-cc (#50) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-a8dh4kz9t-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T22:33:59-04:00",
+      "ref": "ae9a670",
+      "text": "chore: compound learnings from 2026-09-07"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:38:18-04:00",
+      "ref": "d4c2e0a",
+      "text": "docs(queue): Q5 — Patreon portal client updated by operator; Connect Patreon end-to-end li"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:21:21-04:00",
+      "ref": "5b7ee43",
+      "text": "fix(agents): smoke-render treats third-party script errors as warnings; close incident 202"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:11:48-04:00",
+      "ref": "5d1b8da",
+      "text": "docs(funnel): record operator approvals — Q5 \"approve 5 A\" shipped (PR #52), Q4 \"approve 4"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:06:44-04:00",
+      "ref": "f7820cd",
+      "text": "feat(membership): Patreon OAuth sign-in + /go countdown skip for patrons, behind NEXT_PUBL"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:33:23-04:00",
+      "ref": "ab0823c",
+      "text": "fix(agents): runner preflight tells CLI-too-old apart from auth failure (#54)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:28:54-04:00",
+      "ref": "7458581",
+      "text": "funnel: daily run 2026-09-07 (#53)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:16:50-04:00",
+      "ref": "d790cff",
+      "text": "feat(collections): decor-cc collection page (731 mods) + fix 4 dangling related slugs (#51"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:16:24-04:00",
+      "ref": "b12ab6b",
+      "text": "feat(agents): Pinterest token-manager port + catalog pins for makeup-cc/witch-cc (#50)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-06T22:33:18-04:00",
+      "ref": "e7bb532",
+      "text": "chore: compound learnings from 2026-09-06"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T22:32:42-04:00",
+      "ref": "dcbc14a",
+      "text": "chore: compound learnings from 2026-09-05"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:52:39-04:00",
+      "ref": "c022917",
+      "text": "docs(funnel): newsletter via BigScoots SMTP not SendGrid; where Patreon/Pinterest keys go "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:46:59-04:00",
+      "ref": "f216a2c",
+      "text": "fix(agents): an un-runnable smoke check is INCONCLUSIVE, never a rollback; retry transient"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:26:06-04:00",
+      "ref": "3c53855",
+      "text": "docs(funnel): judged on revenue growth; Fable advises, cheaper models execute (#45)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T09:14:12-04:00",
+      "ref": "8548fb7",
+      "text": "docs(funnel): digest explains the why of every change, board-member style (#44)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T08:33:58-04:00",
+      "ref": "3973e6f",
+      "text": "funnel: daily run 2026-09-05 — scoreboard, guardrail, digest, experiments E10–E14, inciden"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T08:29:53-04:00",
+      "ref": "be21a4a",
+      "text": "feat(pip): pinner liveness check — Supabase staleness/backlog + Pinterest token health (E1"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:56:01-04:00",
+      "ref": "0b80796",
+      "text": "content(nova): W37 writer brief — hospital build, Y2K, decor, dark-academia, teen-pregnanc"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:56-04:00",
+      "ref": "1b2f431",
+      "text": "fix(mods): resolve React #425 hydration errors on /mods/[id] (#41)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:46-04:00",
+      "ref": "b31b1d9",
+      "text": "docs(rio): guardrail diagnosis 2026-09-05 — traffic-side verdict + affiliate hold decision"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:14-04:00",
+      "ref": "11a683b",
+      "text": "feat(capture): add newsletter capture block on mod detail pages (E10) (#38)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T22:55:07-04:00",
+      "ref": "a1674aa",
+      "text": "chore: compound learnings from 2026-09-04 (#37)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T08:08:57-04:00",
+      "ref": "e2dc41d",
+      "text": "funnel: daily run 2026-09-04 — scoreboard, guardrail, digest, experiments E6–E9, Patreon T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T08:01:11-04:00",
+      "ref": "76f7ad4",
+      "text": "docs(sage): Google click collapse diagnosis — two core updates, canonical conflicts, homep"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:58:51-04:00",
+      "ref": "94a9c81",
+      "text": "docs(rio): guardrail diagnosis 2026-09-04 — traffic-side verdict + Patreon tier relaunch d"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:56:53-04:00",
+      "ref": "cbd8079",
+      "text": "feat(capture): add newsletter capture block to all collection pages (E6) (#33)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:56:27-04:00",
+      "ref": "58af131",
+      "text": "feat(content): add makeup-cc collection page — 922 mods, W36 brief cross-link surface (#32"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:43:47-04:00",
+      "ref": "516fab0",
+      "text": "docs(funnel): daily loop is launched by the mhm-funnel-daily scheduled task (#31)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/08",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $294.62 (26.7%), RPM 19.11 (20.8%), sessions 5.0% vs same weekday, prior 4 weeks · 3-day revenue 13.5%"
+  ]
+}

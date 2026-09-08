@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-08
+- Tried: pinner backlog metric corrected to "schedulable" — the poster (MHMUtils/supabase_pin_poster_server.py) only reads rows with Post Date inside [today-14, today]; both the scoreboard and check-pinner.sh were counting every unposted row. Also queued the decor-cc catalog pin (id 11430). (T0, PR #60)
+- Before → after: reported backlog 1,879 with schedulable 0 → "1 schedulable, 1,879 stranded"; check-pinner step 2 [OK] → [WARN]; scoreboard Flags 🟢 none → 🟡. Posted 136 pins/7d, all from new blog posts. All 1,879 stranded rows have images that have never been posted (0 duplicates against the posted set).
+- Verdict: MORE DATA (read 2026-09-15 monitoring, 2026-09-22 decor-cc pin)
+- Next time: a health check whose threshold sits far below any value the metric can reach is decoration, not monitoring. Both my earlier pinner checks (E14, E15) passed a queue that could post nothing — I validated the query, never the threshold against the real distribution. Ask "what value would make this fire, and can the metric get there?" before shipping any check. Same trap produced the hardcoded catalog ID range, fixed in the same PR.
+
 ## 2026-09-07
 - Tried: (a) token-manager port — scripts/agents/pinterest-token-status.py obtains a valid Pinterest token (imports MHMUtils pinterest_token_manager, falls back to an embedded stdlib port when `requests` is missing) and check-pinner.sh now asks it instead of trusting the stored string; (b) catalog pins for the two collection pages shipped since E1 — /games/sims-4/makeup-cc/ (id 11428) and /games/sims-4/witch-cc/ (id 11429) inserted into n8n_pinterest_posts. (T0, PR #50)
 - Before -> after: check-pinner.sh token step FAIL (HTTP 401, 2026-09-05) -> OK/VALID (2026-09-07, backend=embedded-port; the runner's python3 has no `requests`, so the import-only path would have been dead on every run). Refresh-token TTL 363 days. Catalog batch 7/9 posted, 2 pending. Pinterest sessions to makeup-cc and witch-cc: 0 and 0 (all sources, GA4 7d 2026-08-30 -> 2026-09-05).
