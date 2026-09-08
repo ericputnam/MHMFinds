@@ -201,16 +201,6 @@
       "permanent": true
     },
     {
-      "source": "/sims-4-pregnancy-mods",
-      "destination": "/games/sims-4/pregnancy-mods/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-pregnancy-mods/",
-      "destination": "/games/sims-4/pregnancy-mods/",
-      "permanent": true
-    },
-    {
       "source": "/sims-4-goth-cc",
       "destination": "/games/sims-4/goth-cc/",
       "permanent": true
@@ -228,16 +218,6 @@
     {
       "source": "/sims-4-cottagecore-cc/",
       "destination": "/games/sims-4/cottagecore-cc/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-y2k-cc",
-      "destination": "/games/sims-4/y2k-cc/",
-      "permanent": true
-    },
-    {
-      "source": "/sims-4-y2k-cc/",
-      "destination": "/games/sims-4/y2k-cc/",
       "permanent": true
     }
   ],

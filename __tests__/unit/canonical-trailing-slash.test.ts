@@ -86,17 +86,71 @@ describe('sitemap <loc> entries use trailing slashes', () => {
   it('sitemap-blog-posts.xml excludes every legacy post that 301s to a collection page', () => {
     const src = read('app/sitemap-blog-posts.xml/route.ts');
     const consolidatedPaths = [
-      '/sims-4-pregnancy-mods/',
       '/sims-4-female-clothes-cc/',
       '/sims-4-male-clothes-cc/',
       '/sims-4-cc-skin-details/',
       '/sims-4-gallery-poses/',
-              '/sims-4-goth-cc/',
+      '/sims-4-goth-cc/',
       '/sims-4-cottagecore-cc/',
-      '/sims-4-y2k-cc/',
     ];
     for (const p of consolidatedPaths) {
       expect(src, `${p} missing from REDIRECTED_POST_PATHS`).toContain(`'${p}'`);
+    }
+  });
+
+  it('sitemap-blog-posts.xml keeps every un-redirected legacy post (they are live 200s)', () => {
+    // Un-consolidated 2026-07 (body-presets) and 2026-09 (pregnancy,
+    // y2k): these articles serve 200 on the apex again and must be
+    // listed. Excluding a live page from the sitemap is a silent
+    // ranking-signal loss, not a build error.
+    const src = read('app/sitemap-blog-posts.xml/route.ts');
+    const listStart = src.indexOf('const REDIRECTED_POST_PATHS');
+    const listEnd = src.indexOf('];', listStart);
+    const list = src.slice(listStart, listEnd);
+    for (const p of ['/sims-4-pregnancy-mods/', '/sims-4-y2k-cc/', '/sims-4-body-presets/']) {
+      expect(list, `${p} must not be in REDIRECTED_POST_PATHS`).not.toContain(`'${p}'`);
+    }
+  });
+});
+
+describe('un-consolidated legacy pairs (pregnancy-mods, y2k-cc — 2026-09)', () => {
+  // Google refused the collection-page canonical for both pairs and
+  // indexed the blog-subdomain copy of the article instead (pregnancy
+  // pos 10.95 / 93 clicks per 28d vs facet pos 33 / 2 clicks; y2k pos
+  // 10.2 / 20 vs pos 29.8 / 4 — GSC 2026-08-09→09-05). Same call as the
+  // 2026-07 body-presets revert. All three layers must agree: no apex
+  // redirect (vercel.json), no facet canonical (functions.php
+  // consolidated map), crosslink box present (functions.php crosslink
+  // map). A half-applied revert re-creates the canonical conflict.
+  const PAIRS: Array<[string, string]> = [
+    ['sims-4-pregnancy-mods', 'pregnancy-mods'],
+    ['sims-4-y2k-cc', 'y2k-cc'],
+  ];
+
+  it('vercel.json has no redirect for either legacy slug', () => {
+    const vercel = JSON.parse(read('vercel.json')) as {
+      redirects: Array<{ source: string; destination: string }>;
+    };
+    for (const [legacy] of PAIRS) {
+      const hits = vercel.redirects.filter(
+        (r) => r.source === `/${legacy}` || r.source === `/${legacy}/`,
+      );
+      expect(hits, `${legacy} still redirects: ${JSON.stringify(hits)}`).toHaveLength(0);
+    }
+  });
+
+  it('functions.php lists both slugs in the crosslink map, not the consolidated map', () => {
+    const php = read('staging/wordpress/kadence-child-prod/functions.php');
+    const section = (fn: string) => {
+      const start = php.indexOf(`function ${fn}()`);
+      expect(start, `${fn} missing from functions.php`).toBeGreaterThan(-1);
+      return php.slice(start, php.indexOf('\n}', start));
+    };
+    const crosslink = section('mhm_collection_crosslink_map');
+    const consolidated = section('mhm_consolidated_post_map');
+    for (const [legacy, facet] of PAIRS) {
+      expect(crosslink).toMatch(new RegExp(`'${legacy}'\\s*=>\\s*array\\(\\s*'${facet}'`));
+      expect(consolidated).not.toMatch(new RegExp(`'${legacy}'\\s*=>`));
     }
   });
 });
@@ -138,28 +192,26 @@ describe('legacy/collection strategy (lib/collections.ts)', () => {
   // 2026-07-03). They own their head terms; a blogUrl pointing at the
   // consolidated legacy article would 301 straight back to the same
   // page (self-loop).
+  // pregnancy-mods and y2k-cc left this set 2026-09 (un-consolidated,
+  // see the describe block above).
   const CONSOLIDATED = new Set([
-    'pregnancy-mods',
     'female-clothes',
     'male-clothes',
     'skin-details',
     'poses',
     'goth-cc',
     'cottagecore-cc',
-    'y2k-cc',
   ]);
 
   // Legacy paths that 301 to collection pages — a blogUrl must never
   // point at one of these.
   const REDIRECTED_LEGACY_PATHS = new Set([
-    '/sims-4-pregnancy-mods/',
     '/sims-4-female-clothes-cc/',
     '/sims-4-male-clothes-cc/',
     '/sims-4-cc-skin-details/',
     '/sims-4-gallery-poses/',
     '/sims-4-goth-cc/',
     '/sims-4-cottagecore-cc/',
-    '/sims-4-y2k-cc/',
   ]);
 
   it('every differentiated collection cross-links its legacy article via blogUrl', async () => {

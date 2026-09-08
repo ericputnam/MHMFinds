@@ -4752,6 +4752,13 @@ function mhm_collection_crosslink_map() {
         'sims-4-male-body-presets-cc'   => array( 'body-presets', 'Body Presets' ),
         'sims-4-plus-size-body-presets' => array( 'body-presets', 'Body Presets' ),
         'sims-4-athletic-body-presets'  => array( 'body-presets', 'Body Presets' ),
+        // Un-redirected 2026-09 (same reason as body-presets): Google
+        // refused the collection-page canonical and indexed the
+        // blog-subdomain copy instead — pregnancy at pos 10.95 / 93
+        // clicks per 28d vs the collection page at pos 33 / 2 clicks;
+        // y2k at pos 10.2 / 20 clicks vs pos 29.8 / 4. Differentiated.
+        'sims-4-pregnancy-mods'         => array( 'pregnancy-mods', 'Pregnancy Mods' ),
+        'sims-4-y2k-cc'                 => array( 'y2k-cc', 'Y2K CC' ),
     );
 }
 
@@ -4759,15 +4766,15 @@ function mhm_consolidated_post_map() {
     // Consolidated legacy post slug => collection topic slug. The apex
     // URL for each of these 301s to /games/sims-4/<topic>/ via
     // vercel.json — keep the two lists in sync.
+    // sims-4-pregnancy-mods and sims-4-y2k-cc moved to the
+    // differentiated map above (2026-09).
     return array(
-        'sims-4-pregnancy-mods'         => 'pregnancy-mods',
         'sims-4-female-clothes-cc'      => 'female-clothes',
         'sims-4-male-clothes-cc'        => 'male-clothes',
         'sims-4-cc-skin-details'        => 'skin-details',
         'sims-4-gallery-poses'          => 'poses',
         'sims-4-goth-cc'                => 'goth-cc',
         'sims-4-cottagecore-cc'         => 'cottagecore-cc',
-        'sims-4-y2k-cc'                 => 'y2k-cc',
     );
 }
 

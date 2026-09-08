@@ -11,16 +11,16 @@ interface WordPressPost {
 // are skipped here. Keep in sync with the consolidation redirects in
 // vercel.json and reports/legacy-vs-collection-strategy-2026-07-03.md.
 const REDIRECTED_POST_PATHS = [
-  '/sims-4-pregnancy-mods/',
   '/sims-4-female-clothes-cc/',
   '/sims-4-male-clothes-cc/',
   '/sims-4-cc-skin-details/',
   '/sims-4-gallery-poses/',
   // The four body-preset listicles were un-redirected (2026-07 revert:
   // they outranked the collection page) and must stay in the sitemap.
+  // /sims-4-pregnancy-mods/ and /sims-4-y2k-cc/ were un-redirected for
+  // the same reason (2026-09) and must stay in the sitemap too.
   '/sims-4-goth-cc/',
   '/sims-4-cottagecore-cc/',
-  '/sims-4-y2k-cc/',
 ];
 
 async function fetchAllWordPressPosts(): Promise<string[]> {
