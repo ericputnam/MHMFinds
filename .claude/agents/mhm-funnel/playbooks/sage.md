@@ -18,6 +18,14 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-08
+- Tried: un-consolidate the pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, PR #63 open, NOT merged — needs operator: vercel.json + functions.php). Mirrors the 2026-07-31 body-presets revert (1be3289).
+- Finding: the "canonical conflict" in the E8 diagnosis is NOT a middleware bug. WP already emits apex canonicals; the facet-pointing canonicals come from mhm_consolidated_post_map() in functions.php (RankMath filter, priority 20) and the 308s come from vercel.json, which runs before middleware. Google rejected the facet canonical for both pairs and indexed the blog-subdomain copy: blog pregnancy 93 clicks / pos 10.95 vs facet 2 / pos 33.0; blog y2k 20 / pos 10.2 vs facet 4 / pos 29.8 (GSC 2026-08-09→09-05). The other 6 consolidated pairs did not show the blog-copy-outranking pattern in the 28d window — leave them alone.
+- Also found: GA4 7d hostName blog.musthavemods.com = 19,730 sessions (22% of all), 17,276 from Pinterest. Not fixable in functions.php (BigScoots cache leak); Pip lever + BigScoots nginx ticket.
+- Before → after: pregnancy pair clicks 28d (apex article + facet) 95 (2026-09-05) → read 2026-10-06
+- Verdict: MORE DATA (read on 2026-10-06, after operator merges #63 and runs push-blog-functions-prod.sh)
+- Next time: T0 middleware move — extend the /homepage/ → /blog/ self-canonical fix (middleware.ts ~168–177) to /blog/all/ ("Crawled - currently not indexed"); then ItemList/CollectionPage schema on the top-20 blog posts.
+
 ## 2026-09-07
 - Tried: Homepage SSR shell (T1, PR #48) — `app/page.tsx` became a `force-dynamic` server component wrapping the former client page (now `app/HomePageClient.tsx`), plus a server-rendered "Browse by collection" block (17 links from `lib/collections.ts`) and an ItemList JSON-LD. Ad anchors untouched; no loading guard; no second `newPageView()`. Queued for the 24h veto, merges 2026-09-08.
 - Before → after: served `/` HTML 20,350 bytes / 0 `<h1>` / 0 `aside#secondary` / 0 collection links (prod, 2026-09-07) → 51,188 bytes / 1 `<h1>` / 1 `aside#secondary` / 17 collection links / 1 ItemList (local `next start` of the PR build). GSC homepage 28d to 2026-09-04: 512 clicks, 14,314 impressions, pos 42.2 → read 2026-09-22, final 2026-10-06.
