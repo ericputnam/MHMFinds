@@ -205,7 +205,10 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
 
   // Curtains
   {
-    keywords: ['curtain', 'curtains', 'drapes', 'drape', 'blinds', 'window treatment'],
+    keywords: ['curtain', 'drape', 'blind', 'window treatment'],
+    // "curtain bangs" is a hairstyle, not a window treatment — it put a male
+    // hair CC pack into the `curtains` facet (Nova, 2026-09-08).
+    negativeKeywords: ['curtain bang', 'bangs', 'hair'],
     contentType: 'curtains',
     priority: 56,
   },
@@ -220,10 +223,20 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   },
 
   // Lighting
+  //
+  // The bare adjective 'light' was removed on 2026-09-08: it matched
+  // "Light To Medium Skintones", "Light Up Gaming PC", "Into the Light" and
+  // any build set whose description happened to say "adds a warm light".
+  // Only nouns that can only be a light fixture remain.
   {
-    keywords: ['lamp', 'lamps', 'light', 'lights', 'lighting', 'chandelier', 'sconce',
-               'lantern', 'ceiling light', 'floor lamp', 'table lamp', 'pendant light'],
-    negativeKeywords: ['christmas light', 'fairy light', 'string light'],  // These are decor
+    keywords: ['lamp', 'lighting', 'chandelier', 'sconce', 'lantern',
+               'ceiling light', 'floor lamp', 'table lamp', 'pendant light',
+               'wall light', 'light fixture', 'nightlight', 'night light'],
+    negativeKeywords: [
+      'christmas light', 'fairy light', 'string light',  // These are decor
+      // Lighting *presets* and skin/CAS assets are not build-mode lights.
+      'gshade', 'reshade', 'preset', 'skintone', 'skin tone', 'overlay',
+    ],
     contentType: 'lighting',
     priority: 54,
   },
@@ -526,6 +539,42 @@ function keywordMatches(text: string, keyword: string): boolean {
   return keywordToRegex(keyword).test(text);
 }
 
+/**
+ * Collapse a matched keyword to the concept it represents, so that
+ * redundant singular/plural spellings in the same rule cannot be counted
+ * as two independent pieces of evidence.
+ *
+ * `keywordToRegex` already appends an optional `(?:s|es)?` plural, so a rule
+ * listing BOTH 'light' and 'lights' produced TWO matches from the single word
+ * "lights" in a description. The description pass promotes anything with
+ * >= 2 matches to medium confidence, so one incidental word was enough to
+ * relabel a mod. That is how 140 mods — a GShade preset, a skin overlay and a
+ * Ford Crown Victoria among them — ended up tagged `lighting` (Nova, 2026-09-08).
+ *
+ * Deduping by stem means "lights" counts once, while a description that
+ * genuinely says "lamp" *and* "chandelier" still counts twice.
+ */
+function keywordStem(keyword: string): string {
+  const kw = keyword.endsWith('*') ? keyword.slice(0, -1) : keyword;
+  return kw.replace(/(?:es|s)$/, '');
+}
+
+/**
+ * Keywords from `rule.keywords` that match `text`, with singular/plural
+ * spellings of the same concept collapsed to one entry.
+ */
+function matchedKeywordsIn(text: string, keywords: string[]): string[] {
+  const bySt = new Map<string, string>();
+  for (const kw of keywords) {
+    if (!keywordMatches(text, kw)) continue;
+    const stem = keywordStem(kw);
+    // Keep the longest spelling for readable `reasoning` strings.
+    const existing = bySt.get(stem);
+    if (!existing || kw.length > existing.length) bySt.set(stem, kw);
+  }
+  return Array.from(bySt.values());
+}
+
 // ============================================
 // MAIN DETECTION FUNCTIONS
 // ============================================
@@ -580,7 +629,7 @@ export function detectContentTypeWithConfidence(
       continue;
     }
 
-    const matchedInTitle = rule.keywords.filter(kw => keywordMatches(titleLower, kw));
+    const matchedInTitle = matchedKeywordsIn(titleLower, rule.keywords);
 
     if (matchedInTitle.length > 0) {
       // Match in title = high confidence
@@ -601,7 +650,7 @@ export function detectContentTypeWithConfidence(
       continue;
     }
 
-    const matchedInDesc = rule.keywords.filter(kw => keywordMatches(descLower, kw));
+    const matchedInDesc = matchedKeywordsIn(descLower, rule.keywords);
 
     if (matchedInDesc.length >= 2) {
       // Multiple matches in description = medium confidence
