@@ -17,12 +17,13 @@
 #
 # Modes:
 #   --after-merge [--sha <commit>] [--label "<who / PR>"] [--wait-min 25]
-#         wait for the production deploy of <sha> (default: the newest), verify, roll back on failure
+#         wait for the production deploy of <sha> (default: the newest), promote it if the alias still serves an
+#         older build (a rollback pauses Vercel auto-promotion), verify, roll back on failure
 #   --check [--label "<who>"]        verify what is live now (evening check); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
 # Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back.
-# Exit: 0 pass · 1 smoke-only failure · 2 failed and rolled back / build failed · 3 still failing after rollback
+# Exit: 0 pass · 1 smoke-only failure · 2 failed and rolled back / build failed / build not promoted · 3 still failing after rollback
 # A check that CANNOT RUN (no node_modules/playwright in a fresh worktree, Chromium missing) is INCONCLUSIVE:
 # it is logged, the ledger row says INCONCLUSIVE, exit stays 0 and nothing is rolled back. Only a smoke run that
 # actually rendered pages and saw them fail (or a 5xx flood / missing blog markers) can trigger a rollback.
@@ -130,9 +131,24 @@ vnotes() { echo "${INCONCLUSIVE:+$INCONCLUSIVE · blog markers + 5xx checked, sm
 do_rollback() {
   log "ROLLING BACK production to $1"
   if (cd "$ROOT" && vercel rollback "$1" --timeout 5m --yes >>"$LOG" 2>&1) || (cd "$ROOT" && vercel rollback "$1" --timeout 5m >>"$LOG" 2>&1); then
-    sleep 20; log "rollback done; production now serves $(current_prod)"; return 0
+    sleep 20; log "rollback done; production now serves $(current_prod)"
+    log "NOTE: after a rollback Vercel stops auto-promoting new builds; the next after-merge run promotes explicitly (ensure_promoted)"; return 0
   fi
   log "rollback command FAILED — see $LOG"; return 1
+}
+ensure_promoted() {  # $1 = READY deployment for the merged sha. A `vercel rollback` silently pauses auto-promotion
+  # (2026-09-05: PRs #38–#41 sat READY for 66 min; 2026-09-07/08: PRs #56, #57 and the nightly compound commit built but
+  # production kept serving the rollback target for 22 h while the ledger said "verified live"). Verifying "what is live"
+  # is not verifying the merge, so promote explicitly and refuse to record PASS for a build that is not serving.
+  local cur i
+  cur="$(current_prod)"
+  [ "$cur" = "$1" ] && return 0
+  log "alias serves $cur, not the new build $1 — auto-promotion is paused; promoting explicitly"
+  if ! (cd "$ROOT" && vercel promote "$1" --yes >>"$LOG" 2>&1); then log "vercel promote FAILED — see $LOG"; fi
+  for i in 1 2 3 4 5 6; do
+    sleep 10; cur="$(current_prod)"; [ "$cur" = "$1" ] && { log "promoted: production now serves $1"; return 0; }
+  done
+  log "production still serves $cur after promote"; return 1
 }
 restore_functions_php() {
   log "blog markers missing → re-pushing functions.php from git (this tree's copy = origin/main in the runner)"
@@ -206,7 +222,10 @@ case "$MODE" in
       sleep 30
     done
     log "deployment READY: $DEPLOY_URL"; sleep 15
-    CUR="$(current_prod)"; [ "$CUR" = "$DEPLOY_URL" ] || log "note: alias serves $CUR (expected $DEPLOY_URL) — verifying what is live"
+    if ! ensure_promoted "$DEPLOY_URL"; then
+      ledger "NOT PROMOTED" "build READY but production still serves $PREV after vercel promote; nothing to roll back — promote by hand: vercel promote $DEPLOY_URL --yes"
+      exit 2
+    fi
     if smoke; then ledger "$(verdict)" "$(vnotes "verified live · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
     fail_and_fix "$PREV" ;;
   check)
