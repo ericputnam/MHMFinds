@@ -43,13 +43,27 @@ export const PATREON_PAGE_URL = 'https://www.patreon.com/MustHaveModsOfficial';
 
 type Env = Record<string, string | undefined>;
 
-export function isMembershipEnabled(env: Env = process.env): boolean {
-  return env[MEMBERSHIP_FLAG] === '1';
+/**
+ * Is the membership feature on?
+ *
+ * Next.js inlines `NEXT_PUBLIC_*` into client bundles ONLY when the variable
+ * is referenced literally as `process.env.NEXT_PUBLIC_…`. A dynamic
+ * `env[MEMBERSHIP_FLAG]` lookup is left as-is, and in the browser
+ * `process.env` is an empty object — so the flag read `undefined` on the
+ * client while the server (authOptions) read "1". Q5 shipped dark for
+ * visitors on 2026-09-07 → 09-08: no /go CTA, no countdown skip, no badge
+ * (Rio, 2026-09-08). The default path MUST stay a literal read; an injected
+ * `env` is only for tests.
+ */
+export function isMembershipEnabled(env?: Env): boolean {
+  const value = env ? env[MEMBERSHIP_FLAG] : process.env.NEXT_PUBLIC_MEMBERSHIP_ENABLED;
+  return value === '1';
 }
 
 /** The Patreon provider is only registered when the flag is on AND both OAuth credentials exist. */
-export function isPatreonProviderConfigured(env: Env = process.env): boolean {
-  return isMembershipEnabled(env) && !!env.PATREON_CLIENT_ID && !!env.PATREON_CLIENT_SECRET;
+export function isPatreonProviderConfigured(env?: Env): boolean {
+  const e = env ?? process.env;
+  return isMembershipEnabled(env) && !!e.PATREON_CLIENT_ID && !!e.PATREON_CLIENT_SECRET;
 }
 
 export interface PatreonMembership {

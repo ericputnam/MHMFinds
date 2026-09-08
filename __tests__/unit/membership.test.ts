@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import {
@@ -37,6 +37,26 @@ describe('feature flag: everything is off by default', () => {
 
   it('flag "1" → enabled', () => {
     expect(isMembershipEnabled({ NEXT_PUBLIC_MEMBERSHIP_ENABLED: '1' })).toBe(true)
+  })
+
+  describe('default path reads the real process.env (the client-bundle regression, 2026-09-08)', () => {
+    afterEach(() => vi.unstubAllEnvs())
+
+    it('no-arg call reflects process.env.NEXT_PUBLIC_MEMBERSHIP_ENABLED', () => {
+      vi.stubEnv('NEXT_PUBLIC_MEMBERSHIP_ENABLED', '1')
+      expect(isMembershipEnabled()).toBe(true)
+      vi.stubEnv('NEXT_PUBLIC_MEMBERSHIP_ENABLED', '0')
+      expect(isMembershipEnabled()).toBe(false)
+    })
+
+    it('provider check with no args also reads process.env', () => {
+      vi.stubEnv('NEXT_PUBLIC_MEMBERSHIP_ENABLED', '1')
+      vi.stubEnv('PATREON_CLIENT_ID', 'a')
+      vi.stubEnv('PATREON_CLIENT_SECRET', 'b')
+      expect(isPatreonProviderConfigured()).toBe(true)
+      vi.stubEnv('NEXT_PUBLIC_MEMBERSHIP_ENABLED', '0')
+      expect(isPatreonProviderConfigured()).toBe(false)
+    })
   })
 
   it('provider needs the flag AND both Patreon credentials', () => {
@@ -110,6 +130,22 @@ describe('pledge floor (the operator pricing knob, PATREON_MEMBER_MIN_CENTS)', (
 describe('source-level guards (no-op until the flag is set)', () => {
   it('lib/membership.ts must not import prisma (it is imported by client components)', () => {
     expect(readSource('lib/membership.ts')).not.toMatch(/@\/lib\/prisma|from ['"]\.\/prisma/)
+  })
+
+  it('the flag is read as a LITERAL process.env.NEXT_PUBLIC_… so Next.js inlines it into client bundles', () => {
+    // Regression guard: `env[MEMBERSHIP_FLAG]` on the default path is never
+    // inlined by Next.js, and the browser's process.env is {} — the /go CTA,
+    // countdown skip and badge were all dark in production 2026-09-07 → 09-08
+    // while the server-side provider registration worked.
+    const src = readSource('lib/membership.ts')
+    expect(src).toMatch(/:\s*process\.env\.NEXT_PUBLIC_MEMBERSHIP_ENABLED\b/)
+    expect(src).not.toMatch(/process\.env\[MEMBERSHIP_FLAG\]/)
+    expect(src).not.toMatch(/env:\s*Env\s*=\s*process\.env\)\s*:\s*boolean\s*\{\s*return env\[MEMBERSHIP_FLAG\]/)
+  })
+
+  it('client components call isMembershipEnabled() with no argument (the inlined path)', () => {
+    expect(readSource('app/go/[modId]/GoClient.tsx')).toContain('isMembershipEnabled()')
+    expect(readSource('components/Navbar.tsx')).toContain('isMembershipEnabled()')
   })
 
   it('authOptions registers the Patreon provider only behind isPatreonProviderConfigured()', () => {
