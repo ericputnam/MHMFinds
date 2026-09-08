@@ -11,6 +11,16 @@ posted). This is the same move for the collection pages that have shipped since.
 /games/sims-4/witch-cc/ (Nova, E3, 2026-09-02). Both had 0 sessions from any
 source in GA4 for 2026-08-30 -> 2026-09-05.
 
+2026-09-08 batch: /games/sims-4/decor-cc/ (Nova, E17, live 2026-09-07, 731
+mods). Closing the launch-amplification lag: witch-cc waited 5 days for its
+first pin and makeup-cc waited 3, so a page that ships on a Monday spends its
+first week with no Pinterest surface at all.
+
+NOTE ON SCHEDULING: the poster (MHMUtils/supabase_pin_poster_server.py) only
+reads rows whose "Post Date" is inside [today - 14, today]. Inserting with
+Post Date = today is what makes these pins go out the same day; inserting them
+with any older date files them straight into the stranded pile.
+
 Safe to re-run: every insert is guarded by a duplicate check on Image URL.
 
 USAGE
@@ -73,6 +83,30 @@ CATALOG_ENTRIES = [
             'Sims 4 witch CC for your spellcaster — witchy dresses and hats, broomsticks, '
             'cauldrons, spell books, potion clutter and moody celestial decor. All free '
             'downloads in one filterable grid. #sims4 #sims4cc #sims4witch #spellcaster'
+        ),
+        'Post Date': POST_DATE,
+        'Is Posted': False,
+    },
+    {
+        # E17 / PR #51 — decor + plants + rugs + wall-art = 731 SFW Sims 4 mods.
+        # Board: "Sims 4 Furniture CC" is the closest existing board; there is no
+        # decor board on the account and creating one is a Tier 1 move.
+        # Image: 1000x1434 from the decor article's own media library — the
+        # nearest thing to Pinterest's 2:3 in that post.
+        'Post Title': 'Sims 4 Decor CC — Wall Art, Plants and Rugs That Finish a Room',
+        'Post URL': 'https://musthavemods.com/games/sims-4/decor-cc/',
+        'Image URL': (
+            'https://blog.musthavemods.com/wp-content/uploads/2025/04/'
+            '0c7fa71d-b585-458d-a7be-d3b9df6cc6a1-1.png'
+        ),
+        'Board ID': '762656586838187596',
+        'Board Name': 'Sims 4 Furniture CC',
+        'Wordpress Keyword': 'sims-4-decor-cc',
+        'AI Text Slug': (
+            'The walls are up, the furniture is placed, and the room still looks like a '
+            'showroom nobody has walked through. Decor is what fixes it — 700+ Sims 4 finds: '
+            'wall art and poster sets, plants, rugs, and full room decor bundles, sorted by '
+            'downloads with every link checked. #sims4 #sims4cc #sims4decor #sims4build'
         ),
         'Post Date': POST_DATE,
         'Is Posted': False,

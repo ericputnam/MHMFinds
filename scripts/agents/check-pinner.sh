@@ -19,7 +19,17 @@ set -euo pipefail
 #
 # WHAT IT CHECKS:
 #   1. Pinner staleness  — last "Is Posted"=true row older than STALE_DAYS → FAIL
-#   2. Backlog drain     — unposted backlog = 0 → WARN
+#   2. Backlog drain     — counts the rows the poster can actually reach, not the
+#                          raw unposted total. MHMUtils/supabase_pin_poster_server.py
+#                          (fetch_unposted_entries) selects only rows whose
+#                          "Post Date" is inside [today - BACKLOG_LOOKBACK_DAYS, today]
+#                          (lookback = 14). Rows dated before that window are
+#                          invisible to the poster forever. On 2026-09-08 all
+#                          1,879 unposted rows were stranded that way and this
+#                          step reported "Backlog: 1879 unposted pins [OK]" —
+#                          a green light over an empty queue, which is the exact
+#                          failure shape of the July 6 silent outage. 0
+#                          schedulable → WARN.
 #   3. Pinterest token   — asks the token manager (pinterest-token-status.py, which
 #                          prefers MHMUtils/pinterest_token_manager.ensure_valid_token
 #                          and falls back to an embedded stdlib port) for a *valid*
@@ -81,9 +91,17 @@ fi
 
 STALE_DAYS="${PINNER_STALE_DAYS:-1}"
 REFRESH_WARN_DAYS="${PINNER_REFRESH_WARN_DAYS:-30}"
-# Catalog-pin batches inserted by scripts/agents/insert-catalog-pins.py.
-CATALOG_ID_MIN="${PINNER_CATALOG_ID_MIN:-11421}"
-CATALOG_ID_MAX="${PINNER_CATALOG_ID_MAX:-11429}"
+# Must match BACKLOG_LOOKBACK_DAYS in MHMUtils/supabase_pin_poster_server.py.
+# If that constant changes there, change it here — otherwise this check reports
+# a buffer the poster cannot see.
+LOOKBACK_DAYS="${PINNER_LOOKBACK_DAYS:-14}"
+# Below this many schedulable pins the queue has no meaningful buffer.
+LOW_BACKLOG="${PINNER_LOW_BACKLOG:-20}"
+# Catalog pins inserted by scripts/agents/insert-catalog-pins.py are matched by
+# URL rather than by an ID range: an ID range has to be widened by hand after
+# every batch, and a range nobody updated silently stops reporting the newest
+# pins (the same maintenance trap as the backlog window above).
+CATALOG_URL_MATCH="${PINNER_CATALOG_URL_MATCH:-*/games/sims-4/*}"
 
 say "==> Pinner liveness check ($(date -u +%Y-%m-%dT%H:%M)Z)"
 
@@ -130,26 +148,49 @@ fi
 
 # ---- 2. Backlog count -----------------------------------------------------
 say ""
-say "--- 2. Queue backlog"
+say "--- 2. Queue backlog (schedulable = Post Date within the poster's ${LOOKBACK_DAYS}d window)"
 
-BACKLOG_RESP=$(curl -sf \
-  -H "apikey: $SUPABASE_KEY" \
-  -H "Authorization: Bearer $SUPABASE_KEY" \
-  -H "Prefer: count=exact" \
-  "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?select=id&%22Is%20Posted%22=eq.false" \
-  -I 2>/dev/null) || { warn "Could not query backlog count"; WARN=1; }
+TODAY_STR=$(date -u +%Y-%m-%d)
+FLOOR_STR=$(python3 -c "
+import datetime
+print(datetime.date.today() - datetime.timedelta(days=$LOOKBACK_DAYS))
+" 2>/dev/null)
 
-if [[ -n "${BACKLOG_RESP:-}" ]]; then
-  BACKLOG_COUNT=$(echo "$BACKLOG_RESP" | grep -i '^content-range:' | sed 's|.*\/||' | tr -d '[:space:]' || echo "0")
-  if [[ "$BACKLOG_COUNT" -eq 0 ]]; then
-    warn "Queue empty — backlog = 0 unposted pins. New posts must be added to maintain cadence."
+# Counts a PostgREST query via the exact-count Content-Range header.
+# Echoes the count, or an empty string if the query failed.
+backlog_count() {
+  local qs="$1" resp
+  resp=$(curl -sf \
+    -H "apikey: $SUPABASE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_KEY" \
+    -H "Prefer: count=exact" \
+    "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?${qs}" \
+    -I 2>/dev/null) || { echo ""; return 0; }
+  echo "$resp" | grep -i '^content-range:' | sed 's|.*/||' | tr -d '[:space:]'
+}
+
+UNPOSTED_TOTAL=$(backlog_count 'select=id&%22Is%20Posted%22=eq.false')
+SCHEDULABLE=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${TODAY_STR}")
+STRANDED=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${FLOOR_STR}")
+
+if [[ -z "$SCHEDULABLE" || -z "$UNPOSTED_TOTAL" ]]; then
+  warn "Could not query backlog counts"
+  WARN=1
+else
+  if [[ "$SCHEDULABLE" -eq 0 ]]; then
+    warn "0 pins schedulable — the poster only reads rows dated ${FLOOR_STR}..${TODAY_STR}; cadence now depends entirely on new blog posts landing with a fresh Post Date"
     WARN=1
-  elif [[ "$BACKLOG_COUNT" -lt 50 ]]; then
-    warn "Backlog low: $BACKLOG_COUNT unposted pins (fill queue if below 200 for sustained cadence)"
+  elif [[ "$SCHEDULABLE" -lt "$LOW_BACKLOG" ]]; then
+    warn "Schedulable backlog low: $SCHEDULABLE pins in the ${LOOKBACK_DAYS}d window"
     WARN=1
   else
-    ok "Backlog: $BACKLOG_COUNT unposted pins"
+    ok "Schedulable backlog: $SCHEDULABLE pins in the ${LOOKBACK_DAYS}d window"
   fi
+
+  if [[ -n "${STRANDED:-}" && "$STRANDED" -gt 0 ]]; then
+    say "         $STRANDED unposted rows are dated before ${FLOOR_STR} and are unreachable by the poster (re-dating them is a Tier 1 cadence change, not a bug)"
+  fi
+  say "         $UNPOSTED_TOTAL unposted rows in the table in total"
 fi
 
 # ---- 3. Pinterest token validity ------------------------------------------
@@ -272,12 +313,17 @@ fi
 # ---- 5. Catalog pin drain (E1 batch, optional) ----------------------------
 if [[ "$CATALOG" -eq 1 ]]; then
   say ""
-  say "--- 5. Catalog pins (IDs ${CATALOG_ID_MIN}-${CATALOG_ID_MAX}: E1 2026-09-04, makeup-cc/witch-cc 2026-09-07)"
+  say "--- 5. Catalog pins (every queued ${CATALOG_URL_MATCH} row: E1 2026-09-04, makeup-cc/witch-cc 2026-09-07, decor-cc 2026-09-08)"
+
+  CATALOG_MATCH_ENC=$(python3 -c "
+import urllib.parse, sys
+print(urllib.parse.quote('like.' + '''$CATALOG_URL_MATCH''', safe=''))
+" 2>/dev/null)
 
   CATALOG_RESP=$(curl -sf \
     -H "apikey: $SUPABASE_KEY" \
     -H "Authorization: Bearer $SUPABASE_KEY" \
-    "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?id=gte.${CATALOG_ID_MIN}&id=lte.${CATALOG_ID_MAX}&select=id,%22Post%20URL%22,%22Is%20Posted%22,%22Post%20Date%22&order=id.asc" \
+    "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?%22Post%20URL%22=${CATALOG_MATCH_ENC}&select=id,%22Post%20URL%22,%22Is%20Posted%22,%22Post%20Date%22&order=id.asc" \
     2>/dev/null) || { warn "Could not query catalog pins"; WARN=1; }
 
   if [[ -n "${CATALOG_RESP:-}" ]]; then

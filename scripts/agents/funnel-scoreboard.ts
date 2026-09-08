@@ -16,7 +16,8 @@
  *   - Patreon public page: paid patron count per tier, free member count.
  *   - WordPress REST: posts published in the last 30 days.
  *   - Pinner queue (Supabase, creds from ~/java_projects/MHMUtils/.env): last
- *     posted pin timestamp + unposted backlog (write-only pipeline liveness).
+ *     posted pin timestamp + schedulable / stranded / total unposted backlog
+ *     (write-only pipeline liveness).
  *
  * Never prints secrets. Run: npx tsx scripts/agents/funnel-scoreboard.ts
  */
@@ -360,7 +361,28 @@ async function pullWp(): Promise<WpData> {
 }
 
 // ---------------------------------------------------------------- Pinner liveness (Supabase queue)
-interface PinnerData { lastPostedDate: string | null; postedLast7d: number; unpostedBacklog: number; }
+//
+// `unpostedBacklog` counts every `Is Posted = false` row, which is NOT the
+// number of pins that can actually go out. The poster on BigScoots
+// (MHMUtils/supabase_pin_poster_server.py, `fetch_unposted_entries`) only
+// selects rows whose `Post Date` falls inside
+// `[today - BACKLOG_LOOKBACK_DAYS, today]` (lookback = 14). Rows dated before
+// that window are invisible to it forever.
+//
+// On 2026-09-08 all 1,879 unposted rows were stranded outside the window and
+// the drainable backlog was 0 — so the scoreboard was publishing "backlog 1879"
+// as reassurance while the queue had no buffer at all. Report both.
+const PINNER_LOOKBACK_DAYS = 14;
+interface PinnerData {
+  lastPostedDate: string | null;
+  postedLast7d: number;
+  /** Every `Is Posted = false` row. Kept for continuity; do not read it as a buffer. */
+  unpostedBacklog: number;
+  /** Rows the poster can actually pick up today (Post Date inside its lookback window). */
+  drainableBacklog: number;
+  /** Rows dated before the poster's window — queued but unreachable without re-dating. */
+  strandedBacklog: number;
+}
 async function pullPinner(): Promise<PinnerData> {
   // The BigScoots cron uses MHMUtils/config.json (SUPABASE_URL + SUPABASE_KEY); the .env there is stale.
   let base = '';
@@ -389,10 +411,22 @@ async function pullPinner(): Promise<PinnerData> {
   const posted = await q(`select=%22Post%20Date%22&%22Is%20Posted%22=eq.true&order=%22Post%20Date%22.desc&limit=1`);
   const posted7 = await q(`select=id&%22Is%20Posted%22=eq.true&%22Post%20Date%22=gte.${daysAgo(7)}&limit=1`);
   const backlog = await q(`select=id&%22Is%20Posted%22=eq.false&limit=1`);
+  // Mirror of the poster's own query window (Post Date between floor and today).
+  const floor = daysAgo(PINNER_LOOKBACK_DAYS);
+  const drainable = await q(
+    `select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${floor}&%22Post%20Date%22=lte.${iso(new Date())}&limit=1`,
+  );
+  // Queried, not subtracted: future-dated rows are neither drainable today nor
+  // stranded, and must not be folded into either number.
+  const stranded = await q(
+    `select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${floor}&limit=1`,
+  );
   return {
     lastPostedDate: posted.rows[0] ? String(posted.rows[0]['Post Date']).slice(0, 10) : null,
     postedLast7d: posted7.total,
     unpostedBacklog: backlog.total,
+    drainableBacklog: drainable.total,
+    strandedBacklog: stranded.total,
   };
 }
 
@@ -429,7 +463,17 @@ async function main() {
     const last = pinner.data.lastPostedDate;
     const staleDays = last ? Math.floor((Date.now() - new Date(last).getTime()) / 864e5) : 99;
     if (staleDays > 1) flags.push(`🔴 Pinner: last posted pin ${last ?? 'never'} (${staleDays}d ago) — the Pinterest pipeline is stalled`);
-    if (pinner.data.unpostedBacklog === 0) flags.push(`🟡 Pinner: queue empty — nothing scheduled to post`);
+    // The old test (`unpostedBacklog === 0`) could never fire: 1,879 rows sat in
+    // the table on 2026-09-08 and every one of them was dated outside the
+    // poster's 14-day window, so nothing was schedulable and the flag stayed
+    // green. Judge the queue by what the poster can actually reach.
+    if (pinner.data.drainableBacklog === 0) {
+      flags.push(
+        `🟡 Pinner: 0 pins schedulable today — the queue holds ${pinner.data.strandedBacklog} unposted rows but all are dated outside the poster's ${PINNER_LOOKBACK_DAYS}d window, so cadence depends entirely on new blog posts landing`,
+      );
+    } else if (pinner.data.drainableBacklog < 20) {
+      flags.push(`🟡 Pinner: only ${pinner.data.drainableBacklog} pins schedulable in the poster's ${PINNER_LOOKBACK_DAYS}d window`);
+    }
   } else flags.push(`🟡 Pinner liveness unknown: ${errOf(pinner)}`);
   if (ga4.ok && ga4.data.sessionsPrev7d && ga4.data.sessions7d / ga4.data.sessionsPrev7d < 0.9) flags.push(`🔴 GA4 sessions 7d ${pct(ga4.data.sessions7d, ga4.data.sessionsPrev7d)} WoW`);
   if (ga4.ok && Object.keys(ga4.data.captureEvents7d).length === 0) flags.push(`🟡 GA4: no capture events fired in 7d (newsletter_signup/account_signup/patreon_click not instrumented)`);
@@ -486,7 +530,9 @@ async function main() {
 
   md += `## Content & distribution pipelines\n\n`;
   md += wp.ok ? `- Blog posts: ${wp.data.posts7d} in 7d, ${wp.data.posts30d} in 30d · latest: ${wp.data.latestPost ?? '?'}\n` : `- Blog: unavailable (${errOf(wp)})\n`;
-  md += pinner.ok ? `- Pinner: last posted ${pinner.data.lastPostedDate ?? 'never'} · ${pinner.data.postedLast7d} pins in 7d · backlog ${pinner.data.unpostedBacklog}\n` : `- Pinner: unavailable (${errOf(pinner)})\n`;
+  md += pinner.ok
+    ? `- Pinner: last posted ${pinner.data.lastPostedDate ?? 'never'} · ${pinner.data.postedLast7d} pins in 7d · **${pinner.data.drainableBacklog} schedulable** (Post Date inside the poster's ${PINNER_LOOKBACK_DAYS}d window) · ${pinner.data.strandedBacklog} stranded outside it, ${pinner.data.unpostedBacklog} unposted total\n`
+    : `- Pinner: unavailable (${errOf(pinner)})\n`;
   md += `\n_Generated by scripts/agents/funnel-scoreboard.ts. Sections fail independently; "unavailable" means the source, not the site._\n`;
 
   const json = {
