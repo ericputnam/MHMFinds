@@ -52,7 +52,7 @@ function page(
   opts: { status?: number; button?: { e: string; t: string } } = {}
 ) {
   const action = opts.button
-    ? `/api/unsubscribe?e=${encodeURIComponent(opts.button.e)}&t=${encodeURIComponent(opts.button.t)}`
+    ? `/api/unsubscribe/?e=${encodeURIComponent(opts.button.e)}&t=${encodeURIComponent(opts.button.t)}`
     : null;
   const html = `<!DOCTYPE html>
 <html lang="en"><head>

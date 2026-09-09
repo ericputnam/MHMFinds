@@ -91,7 +91,7 @@ describe('unsubscribe tokens', () => {
 
   it('emits List-Unsubscribe with https + mailto, and One-Click only when asserted', () => {
     const optIn = unsubscribeHeaders('reader@example.com', { oneClick: true });
-    expect(optIn['List-Unsubscribe']).toMatch(/^<https:\/\/musthavemods\.com\/api\/unsubscribe\?/);
+    expect(optIn['List-Unsubscribe']).toMatch(/^<https:\/\/musthavemods\.com\/api\/unsubscribe\/\?/);
     expect(optIn['List-Unsubscribe']).toContain('mailto:');
     expect(optIn['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click');
 
@@ -225,7 +225,7 @@ describe('message shape', () => {
     const result = await sendBulk({ recipients: recipients(1), build, dryRun: true });
     const text = result.results[0].preview!.text;
     expect(text).not.toContain('<');
-    expect(text).toContain('/api/unsubscribe?');
+    expect(text).toContain('/api/unsubscribe/?');
   });
 
   it('refuses to render a message whose body omits the unsubscribe link', async () => {
@@ -286,7 +286,7 @@ describe('send safety', () => {
     const [to, subject, html, opts] = send.mock.calls[0];
     expect(to).toBe('sim0@example.com');
     expect(subject).toBe('New Sims 4 finds this week');
-    expect(html).toContain('/api/unsubscribe?');
+    expect(html).toContain('/api/unsubscribe/?');
     expect(opts.headers['List-Unsubscribe']).toBeTruthy();
     expect(opts.text).toBeTruthy();
     expect(opts.skipLog).toBe(true);
