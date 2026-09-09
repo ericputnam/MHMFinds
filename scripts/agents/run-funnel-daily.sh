@@ -86,15 +86,24 @@ mkdir -p "$WT/reports/funnel" "$WT/reports/funnel/drafts" "$WT/logs"
 # --- one worktree per agent ---------------------------------------------------
 # Five agents committing in ONE checkout race on git state: on 2026-09-02 three of five PRs carried other
 # agents' commits and Quinn had to rebuild them by hand. Each agent now gets its own detached checkout of
-# origin/main (deps shared read-mostly with Quinn's install via symlink, secrets copied); Quinn passes the
-# paths down and every agent does all git/build/test/PR work inside its own directory.
+# origin/main with its OWN `npm ci` (secrets copied); Quinn passes the paths down and every agent does all
+# git/build/test/PR work inside its own directory.
+# Why not a symlink into Quinn's node_modules: one shared link is a single point of failure — Quinn's
+# install was emptied mid-run on 2026-09-07 (4 agents reinstalled by hand) and again on 2026-09-08 (Quinn's
+# own `npm install` for a lockfile change killed Nova's build). `--prefer-offline` makes the five installs
+# ~30–60 s each from the npm cache; the log stays under logs/ (gitignored) so it can never ride into a PR.
 export FUNNEL_PRIMARY_WT="$WT"   # deploy-verify.sh mirrors ledger rows + incidents here so Quinn's digest sees them
-AGENT_WT_LINE="AGENT WORKTREES — one per agent, each a clean detached checkout of origin/main with node_modules and .env.local ready. An agent does ALL of its git/branch/build/test/PR/merge/deploy-verify work inside its OWN directory (prefix every Bash command with \`cd <its path> &&\`), never in yours (Quinn: $WT) or another agent's:"
+AGENT_WT_LINE="AGENT WORKTREES — one per agent, each a clean detached checkout of origin/main with its OWN node_modules and .env.local ready. An agent does ALL of its git/branch/build/test/PR/merge/deploy-verify work inside its OWN directory (prefix every Bash command with \`cd <its path> &&\`), never in yours (Quinn: $WT) or another agent's:"
 for a in pip sage nova cass rio; do
   AWT="$WT-$a"
   if git worktree add --detach "$AWT" origin/main >>"$LOG_FILE" 2>&1; then
-    drop_nm_link "$AWT"; ln -s "$WT/node_modules" "$AWT/node_modules"; copy_env "$AWT"
+    drop_nm_link "$AWT"; copy_env "$AWT"
     mkdir -p "$AWT/reports/funnel/incidents" "$AWT/logs"
+    if ( cd "$AWT" && npm ci --prefer-offline --no-audit --no-fund >"$AWT/logs/npm-ci.log" 2>&1 && npx prisma generate >>"$AWT/logs/npm-ci.log" 2>&1 ); then
+      log "npm ci ok in $AWT ($(ls "$AWT/node_modules" 2>/dev/null | wc -l | tr -d ' ') entries)"
+    else
+      log "npm ci FAILED in $AWT — see $AWT/logs/npm-ci.log; the agent must run npm ci itself before building"
+    fi
     AGENT_WT_LINE="$AGENT_WT_LINE $a=$AWT"
   else
     log "worktree for $a failed — that agent must work in Quinn's worktree today"
@@ -115,13 +124,40 @@ if [ ! -f "$WT/scripts/agents/funnel-scoreboard.ts" ]; then
   done
 fi
 # The ledger and incidents live in the operator's tree (they are written by deploy-verify.sh into both);
-# seed the worktree copy so Quinn can read what changed since the last digest.
-[ -f "$PROJECT_DIR/reports/funnel/changelog.md" ] && cp "$PROJECT_DIR/reports/funnel/changelog.md" "$WT/reports/funnel/changelog.md"
-[ -d "$PROJECT_DIR/reports/funnel/incidents" ] && mkdir -p "$WT/reports/funnel/incidents" && cp "$PROJECT_DIR"/reports/funnel/incidents/*.md "$WT/reports/funnel/incidents/" 2>/dev/null
+# seed the worktree copy so Quinn can read what changed since the last digest — APPEND-ONLY. The committed
+# copy on origin/main can be newer than the operator's (resolved incidents, rows folded into a daily PR);
+# a blind `cp` overwrote the resolved 2026-09-07 incident file on 09-08 and again on 09-09.
+if [ -f "$PROJECT_DIR/reports/funnel/changelog.md" ]; then
+  if [ -f "$WT/reports/funnel/changelog.md" ]; then
+    grep -F -x -v -f "$WT/reports/funnel/changelog.md" "$PROJECT_DIR/reports/funnel/changelog.md" | grep -E '^\| 20[0-9]{2}-' >>"$WT/reports/funnel/changelog.md" || true
+  else
+    cp "$PROJECT_DIR/reports/funnel/changelog.md" "$WT/reports/funnel/changelog.md"
+  fi
+fi
+if [ -d "$PROJECT_DIR/reports/funnel/incidents" ]; then
+  mkdir -p "$WT/reports/funnel/incidents"
+  for f in "$PROJECT_DIR"/reports/funnel/incidents/*.md; do
+    [ -f "$f" ] || continue
+    [ -e "$WT/reports/funnel/incidents/$(basename "$f")" ] || cp "$f" "$WT/reports/funnel/incidents/"
+  done
+fi
+
+# --- 0c. catalog ingest (Nova, E28, PR #73) -----------------------------------
+# Incremental, idempotent, <=25 posts/run; a normal day fetches 0–3 pages. Non-fatal: the loop runs either way,
+# and the wrapper's own summary line is copied into this log so "did not run" is never silent.
+log "Catalog ingest (incremental)…"
+if [ -x "$WT/scripts/agents/catalog-ingest-daily.sh" ]; then
+  "$WT/scripts/agents/catalog-ingest-daily.sh" >>"$LOG_FILE" 2>&1 || log "catalog ingest exited non-zero (non-fatal)"
+  [ -f "$WT/logs/catalog-ingest.log" ] && tail -n 1 "$WT/logs/catalog-ingest.log" >>"$LOG_FILE"
+else
+  log "catalog-ingest-daily.sh not present or not executable — skipped"
+fi
 
 # --- 1. scoreboard ----------------------------------------------------------
+# MHM_PROJECT_DIR: the scoreboard writes its dated files to that dir (default: the operator tree). Without it
+# the copy below found nothing and Quinn regenerated the scoreboard by hand on 09-04, 09-08 and 09-09.
 log "Scoreboard…"
-if npx tsx scripts/agents/funnel-scoreboard.ts >"$WT/reports/funnel/scoreboard.out" 2>>"$LOG_FILE"; then
+if MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/funnel-scoreboard.ts >"$WT/reports/funnel/scoreboard.out" 2>>"$LOG_FILE"; then
   cp "$WT/reports/funnel/$TODAY".md "$WT/reports/funnel/$TODAY".json "$PROJECT_DIR/reports/funnel/" 2>/dev/null
   log "Scoreboard written to reports/funnel/$TODAY.md"
 else

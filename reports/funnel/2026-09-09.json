@@ -1,0 +1,160 @@
+{
+  "date": "2026-09-09",
+  "headline": {
+    "ownedAdds7d": 57,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 125,
+    "nonAdTarget": 200,
+    "mediavine28d": 5793.85,
+    "mediavine28dPrev": 5949.39
+  },
+  "flags": [
+    "🟡 Pinner: 0 pins schedulable today — the queue holds 1879 unposted rows but all are dated outside the poster's 14d window, so cadence depends entirely on new blog posts landing"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-01→2026-09-07 vs 2026-08-25→2026-08-31",
+      "sessions7d": 89447,
+      "sessionsPrev7d": 91651,
+      "byChannel7d": {
+        "pinterest": 58782,
+        "bing_organic": 17506,
+        "direct": 4672,
+        "google_organic": 1818,
+        "other_search": 2879,
+        "tumblr": 1095,
+        "other": 2213,
+        "ai_referral": 265,
+        "reddit": 217
+      },
+      "byChannelPrev7d": {
+        "pinterest": 61231,
+        "bing_organic": 18045,
+        "direct": 4445,
+        "other_search": 2796,
+        "google_organic": 1448,
+        "tumblr": 952,
+        "other": 2199,
+        "ai_referral": 307,
+        "reddit": 228
+      },
+      "aiReferral7d": 265,
+      "aiReferralPrev7d": 307,
+      "captureEvents7d": {
+        "affiliate_click": 9,
+        "newsletter_signup": 3
+      },
+      "notSetLanding7d": 4046
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-10→2026-09-06",
+      "clicks28d": 2225,
+      "clicksPrev28d": 2082,
+      "impressions28d": 135117
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-07",
+      "revenue7d": 1509.06,
+      "revenuePrev7d": 1404.22,
+      "rpm7d": 16.65,
+      "rpmPrev7d": 15.48,
+      "sessions7d": 90613,
+      "revenue28d": 5793.85,
+      "revenuePrev28d": 5949.39,
+      "rpm28d": 15.98,
+      "health": {
+        "date": "2026/09/09",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 64
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1579,
+      "users7d": 54,
+      "users30d": 244,
+      "subscribers": 20,
+      "subscribers7d": 3,
+      "subscribers30d": 9,
+      "subscribersBySource": {
+        "collection-page": 1,
+        "footer": 16,
+        "go-interstitial": 2,
+        "sign-in": 1
+      },
+      "favorites": 19910,
+      "favorites7d": 633,
+      "downloadClicks7d": 144,
+      "downloadClicks30d": 1047,
+      "affiliateClicks7d": 12,
+      "affiliateClicks30d": 57,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 15888,
+      "collections": 1559
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 47,
+      "freeMembers": 5315,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5315,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 8,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 39,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 125
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 23,
+      "posts7d": 6,
+      "latestPost": "2026-09-09 sims-4-goth-nails-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-08",
+      "postedLast7d": 120,
+      "unpostedBacklog": 1879,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1879
+    }
+  }
+}
