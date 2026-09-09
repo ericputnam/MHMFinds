@@ -645,3 +645,112 @@ describe('integration: game + contentType detection', () => {
     expect(detectContentTypeFromUrl(url)).toBe('farm-map');
   });
 });
+
+// ============================================
+// Incremental ingest: selectPostsToScrape / normalizePostUrl / parseSitemapLastmod
+// (Nova, 2026-09-09 — catalog ingest had been silent for 31 days because
+// freshness lived only in an untracked CSV in the operator's checkout)
+// ============================================
+
+import {
+  normalizePostUrl,
+  parseSitemapLastmod,
+  selectPostsToScrape,
+} from '@/lib/services/mhmScraperUtils';
+
+describe('normalizePostUrl', () => {
+  it('adds a trailing slash and strips query/hash', () => {
+    expect(normalizePostUrl('https://musthavemods.com/sims-4-goth-nails-cc?utm=x#top')).toBe(
+      'https://musthavemods.com/sims-4-goth-nails-cc/'
+    );
+  });
+
+  it('treats http/https/www variants as the same post', () => {
+    const a = normalizePostUrl('http://www.musthavemods.com/sims-4-gym-lots/');
+    const b = normalizePostUrl('https://MustHaveMods.com/sims-4-gym-lots');
+    expect(a).toBe(b);
+  });
+});
+
+describe('parseSitemapLastmod', () => {
+  it('parses a date-only lastmod as UTC midnight', () => {
+    expect(parseSitemapLastmod('2026-09-09')?.toISOString()).toBe('2026-09-09T00:00:00.000Z');
+  });
+
+  it('parses a full ISO lastmod', () => {
+    expect(parseSitemapLastmod('2026-08-09T22:18:13.929Z')?.getTime()).toBe(
+      Date.UTC(2026, 7, 9, 22, 18, 13, 929)
+    );
+  });
+
+  it('returns undefined for empty or garbage values', () => {
+    expect(parseSitemapLastmod('')).toBeUndefined();
+    expect(parseSitemapLastmod(undefined)).toBeUndefined();
+    expect(parseSitemapLastmod('not a date')).toBeUndefined();
+  });
+});
+
+describe('selectPostsToScrape', () => {
+  const entries = [
+    { url: 'https://musthavemods.com/sims-4-goth-nails-cc/', lastmod: new Date('2026-09-09T00:00:00Z') },
+    { url: 'https://musthavemods.com/sims-4-gym-lots/', lastmod: new Date('2026-09-06T00:00:00Z') },
+    { url: 'https://musthavemods.com/sims-4-plus-size-poses/', lastmod: new Date('2026-08-05T00:00:00Z') },
+    { url: 'https://musthavemods.com/how-to-download-sims-4-cc/' }, // no lastmod
+  ];
+
+  it('with no options returns every unique URL in sitemap order', () => {
+    const r = selectPostsToScrape(entries);
+    expect(r.selected).toEqual(entries.map(e => e.url));
+    expect(r.skippedSince).toBe(0);
+    expect(r.skippedKnown).toBe(0);
+  });
+
+  it('--since drops older posts but keeps entries without a lastmod', () => {
+    const r = selectPostsToScrape(entries, { since: new Date('2026-08-10T00:00:00Z') });
+    expect(r.selected).toEqual([
+      'https://musthavemods.com/sims-4-goth-nails-cc/',
+      'https://musthavemods.com/sims-4-gym-lots/',
+      'https://musthavemods.com/how-to-download-sims-4-cc/',
+    ]);
+    expect(r.skippedSince).toBe(1);
+  });
+
+  it('--new-only skips posts already present as a Mod.sourceUrl, trailing slash or not', () => {
+    const r = selectPostsToScrape(entries, {
+      newOnly: true,
+      knownSourceUrls: ['https://musthavemods.com/sims-4-plus-size-poses', 'https://musthavemods.com/sims-4-gym-lots/'],
+    });
+    expect(r.selected).toEqual([
+      'https://musthavemods.com/sims-4-goth-nails-cc/',
+      'https://musthavemods.com/how-to-download-sims-4-cc/',
+    ]);
+    expect(r.skippedKnown).toBe(2);
+  });
+
+  it('knownSourceUrls are ignored unless newOnly is set', () => {
+    const r = selectPostsToScrape(entries, {
+      knownSourceUrls: ['https://musthavemods.com/sims-4-gym-lots/'],
+    });
+    expect(r.selected).toHaveLength(4);
+    expect(r.skippedKnown).toBe(0);
+  });
+
+  it('--since and --new-only compose, and duplicates are collapsed', () => {
+    const r = selectPostsToScrape([...entries, entries[0]], {
+      since: new Date('2026-08-10T00:00:00Z'),
+      newOnly: true,
+      knownSourceUrls: ['https://musthavemods.com/sims-4-gym-lots/'],
+    });
+    expect(r.selected).toEqual([
+      'https://musthavemods.com/sims-4-goth-nails-cc/',
+      'https://musthavemods.com/how-to-download-sims-4-cc/',
+    ]);
+    expect(r.skippedSince).toBe(1);
+    expect(r.skippedKnown).toBe(1);
+  });
+
+  it('skips blank entries without throwing', () => {
+    const r = selectPostsToScrape([{ url: '' }, entries[1]]);
+    expect(r.selected).toEqual([entries[1].url]);
+  });
+});
