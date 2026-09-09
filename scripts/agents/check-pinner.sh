@@ -188,7 +188,9 @@ else
   fi
 
   if [[ -n "${STRANDED:-}" && "$STRANDED" -gt 0 ]]; then
-    say "         $STRANDED unposted rows are dated before ${FLOOR_STR} and are unreachable by the poster (re-dating them is a Tier 1 cadence change, not a bug)"
+    say "         $STRANDED unposted rows are dated before ${FLOOR_STR} and are unreachable by the poster"
+    say "         Re-dating a capped slice forward is a Tier 1 cadence change, not a bug fix:"
+    say "         scripts/agents/revive-stranded-pins.py (dry run by default, --apply to write)"
   fi
   say "         $UNPOSTED_TOTAL unposted rows in the table in total"
 fi

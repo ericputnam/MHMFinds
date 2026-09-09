@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-09
+- Tried: E26 — `scripts/agents/revive-stranded-pins.py` (T1, PR opens today, 24h veto): re-dates the newest 140 stranded queue rows (unposted, Post Date before the poster's 14d floor) forward at 10/day for 14 days. Dry-run default, `--apply` required, HARD_CAP 200, `Is Posted=false` in the PATCH filter (not just the select), duplicate-image guard against the posted set, HEAD liveness check on every destination and image URL, and a JSON ledger so rollback is one command. Also `--self-test` (6 offline allocator assertions, no network/credentials).
+- Before → after: pinner queue 0 schedulable / 1,879 stranded (2026-09-09 scoreboard), cadence ~19 pins/day all from new blog posts. Dry run selects 140 rows, original dates 2026-02-22 → 2026-05-12, across 14 distinct destinations, 1 dead image URL dropped, 0 duplicate images against the posted set, 0 dead destinations. Planned cadence ~29/day for 14 days against a cron capacity of ~72/day (1 pin / 20 min).
+- Verdict: MORE DATA (read 2026-09-25 — Pinterest sessions 7d, baseline 58,782 for 2026-09-01→09-07)
+- Next time: the stranded slice held only **15 distinct destination URLs across 200 rows**, so the obvious "take the newest 140" would have fired 10 pins at one article in a single morning — the shape Pinterest scores as spam. Volume moves in a pin queue are never just a count; check the *concentration* of destination and board before scheduling, and put the cap in the allocator rather than trusting the input to be diverse. The round-robin version lands exactly 1 pin per destination per day.
+
 ## 2026-09-08
 - Tried: pinner backlog metric corrected to "schedulable" — the poster (MHMUtils/supabase_pin_poster_server.py) only reads rows with Post Date inside [today-14, today]; both the scoreboard and check-pinner.sh were counting every unposted row. Also queued the decor-cc catalog pin (id 11430). (T0, PR #60)
 - Before → after: reported backlog 1,879 with schedulable 0 → "1 schedulable, 1,879 stranded"; check-pinner step 2 [OK] → [WARN]; scoreboard Flags 🟢 none → 🟡. Posted 136 pins/7d, all from new blog posts. All 1,879 stranded rows have images that have never been posted (0 duplicates against the posted set).
