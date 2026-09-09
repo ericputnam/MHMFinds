@@ -7,12 +7,15 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local', override: true });
 import { writeFileSync } from 'fs';
-import { sendBulk } from '../../lib/services/bulkMailer';
+import { sendBulk, resolvePostalAddress } from '../../lib/services/bulkMailer';
 
 const SITE = 'https://musthavemods.com';
 const REPLY_TO = 'simsnews@musthavemods.com';
-// CAN-SPAM requires a valid postal address in every commercial email. Operator must supply before the real send.
-const ADDRESS_LINE = 'MustHaveMods · [postal address required by CAN-SPAM — operator to supply]';
+// CAN-SPAM requires a valid postal address in every commercial email. It comes from
+// EMAIL_POSTAL_ADDRESS; bulkMailer refuses a real send without it. A dry run may render
+// without it so copy can be reviewed — the footer line is simply omitted, never faked.
+const POSTAL_ADDRESS = resolvePostalAddress();
+const ADDRESS_LINE = POSTAL_ADDRESS ? `MustHaveMods · ${POSTAL_ADDRESS}` : '';
 
 const args = process.argv.slice(2);
 const arg = (k: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -161,7 +164,20 @@ ${ADDRESS_LINE}
 }
 
 async function main() {
-  const common = { recipients, dryRun: dry, site: SITE, replyTo: REPLY_TO, fromName: 'MustHaveMods' };
+  if (!POSTAL_ADDRESS) {
+    console.warn(
+      '[warn] EMAIL_POSTAL_ADDRESS is not set: the CAN-SPAM footer line is omitted. ' +
+        'Dry runs still render; a real send will be refused by bulkMailer.'
+    );
+  }
+  const common = {
+    recipients,
+    dryRun: dry,
+    site: SITE,
+    replyTo: REPLY_TO,
+    fromName: 'MustHaveMods',
+    postalAddress: POSTAL_ADDRESS,
+  };
   if (only !== 'repermission') {
     const r = await sendBulk({ ...common, build: ({ unsubscribeUrl }) => ({
       subject: 'Your first MustHaveMods roundup — 6 new CC lists', html: issueHtml(unsubscribeUrl), text: issueText(unsubscribeUrl) }) });
@@ -170,8 +186,9 @@ async function main() {
   }
   if (only !== 'issue') {
     const r = await sendBulk({ ...common, build: ({ email, unsubscribeUrl }) => {
-      // The confirm endpoint (/api/subscribe/confirm) is not built yet; this is a labelled preview link.
-      const confirmUrl = `${SITE}/api/subscribe/confirm?e=${encodeURIComponent(email)}&t=PREVIEW-NOT-LIVE`;
+      // The confirm endpoint is not built yet; this is a labelled preview link. Trailing slash on
+      // purpose: next.config.js `trailingSlash: true` makes the bare path answer 308 (PR #67).
+      const confirmUrl = `${SITE}/api/subscribe/confirm/?e=${encodeURIComponent(email)}&t=PREVIEW-NOT-LIVE`;
       return { subject: 'Do you want the weekly Sims 4 finds email?', html: rePermHtml(confirmUrl, unsubscribeUrl), text: rePermText(confirmUrl) };
     } });
     console.log(`re-permission → attempted ${r.attempted} sent ${r.sent} failed ${r.failed}`, r.results.map((x) => `${x.email}:${x.sent ? 'ok' : x.error ?? 'dry'}`).join(' '));

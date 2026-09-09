@@ -11,6 +11,11 @@
  *  - It must not look like spam: every message carries a per-recipient
  *    `List-Unsubscribe` / `List-Unsubscribe-Post` pair, a visible unsubscribe
  *    link in the body, and a real plain-text alternative.
+ *  - It must be legal: CAN-SPAM (15 U.S.C. §7704(a)(5)) requires a valid
+ *    physical postal address of the sender in every commercial message. The
+ *    address comes from `EMAIL_POSTAL_ADDRESS`; a real send without one throws,
+ *    and a *bracketed placeholder* left in the body throws even on a dry run,
+ *    because the dry run is what a human signs off before the real send.
  *  - Warm up. Never all 1,500 accounts in one day: callers pass a slice, and
  *    `maxMessages` is a hard stop on top of the throttle.
  *
@@ -33,6 +38,35 @@ export const DEFAULT_BATCH_SIZE = 20;
 const HOUR_MS = 60 * 60 * 1000;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** The one place the sender's CAN-SPAM postal address is read from. */
+export const POSTAL_ADDRESS_ENV = 'EMAIL_POSTAL_ADDRESS';
+
+/**
+ * Bracketed stand-ins for the postal address that have actually shipped in our
+ * drafts, e.g. `MustHaveMods · [postal address required by CAN-SPAM — operator
+ * to supply]`. Deliberately narrow: an unrelated bracketed note elsewhere in a
+ * draft body (`[ issue body goes here ]` in the preview script) is not an error.
+ */
+export const POSTAL_PLACEHOLDER_RE =
+  /\[[^\]]{0,160}(postal address|can[-\s]?spam|address required|operator to supply|your address here)[^\]]{0,160}\]/i;
+
+/** Configured postal address, whitespace-normalized. Empty string when unset. */
+export function resolvePostalAddress(explicit?: string): string {
+  const raw = explicit ?? process.env[POSTAL_ADDRESS_ENV] ?? '';
+  return String(raw).trim().replace(/\s+/g, ' ');
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** True when a rendered body carries the address, HTML-escaped or not. */
+export function containsPostalAddress(body: string, address: string): boolean {
+  if (!address) return false;
+  const flat = String(body).replace(/\s+/g, ' ');
+  return flat.includes(address) || flat.includes(escapeHtml(address));
+}
 
 export interface BulkMessage {
   subject: string;
@@ -61,6 +95,12 @@ export interface BulkSendOptions {
   fromName?: string;
   replyTo?: string;
   site?: string;
+  /**
+   * Sender's physical postal address for the CAN-SPAM footer. Defaults to
+   * `EMAIL_POSTAL_ADDRESS`. A real send without one throws; the caller is
+   * responsible for putting it in the rendered body, which is then verified.
+   */
+  postalAddress?: string;
   /**
    * Assert that the unsubscribe URL answers an unauthenticated POST, per
    * RFC 8058. Only then is `List-Unsubscribe-Post` emitted. Default false:
@@ -96,6 +136,8 @@ export interface BulkSendResult {
   deferred: string[];
   batches: number;
   hourlyLimit: number;
+  /** Resolved CAN-SPAM postal address; empty string means a real send is blocked. */
+  postalAddress: string;
   throttleWaitsMs: number[];
   results: BulkRecipientResult[];
 }
@@ -155,6 +197,7 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
   const now = options.now ?? (() => Date.now());
   const send = options.send ?? emailNotifier.send.bind(emailNotifier);
   const transport = emailNotifier.transport();
+  const postalAddress = resolvePostalAddress(options.postalAddress);
 
   const { valid, skipped } = normalizeRecipients(options.recipients);
 
@@ -165,6 +208,14 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
   if (!dryRun && transport === 'none') {
     throw new Error(
       'sendBulk: refusing to send with no transport configured. Set SMTP_HOST (preferred) or run with dryRun.'
+    );
+  }
+
+  if (!dryRun && !postalAddress) {
+    throw new Error(
+      `sendBulk: refusing to send with no postal address. CAN-SPAM requires the sender's ` +
+        `valid physical postal address in every commercial message. Set ${POSTAL_ADDRESS_ENV} ` +
+        '(or pass postalAddress) and render it in the footer, or run with dryRun.'
     );
   }
 
@@ -199,6 +250,24 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
         throw new Error(
           `sendBulk: rendered message for recipient #${index} is missing its unsubscribe link. ` +
             'Every list message must contain a visible per-recipient unsubscribe URL.'
+        );
+      }
+
+      // A placeholder is never acceptable — not even in a preview, because the
+      // preview is what a human approves before the real send.
+      const placeholder =
+        message.html.match(POSTAL_PLACEHOLDER_RE) ?? text.match(POSTAL_PLACEHOLDER_RE);
+      if (placeholder) {
+        throw new Error(
+          `sendBulk: rendered message for recipient #${index} still contains the placeholder ` +
+            `"${placeholder[0]}". Set ${POSTAL_ADDRESS_ENV} to the real postal address.`
+        );
+      }
+
+      if (!dryRun && !containsPostalAddress(`${message.html}\n${text}`, postalAddress)) {
+        throw new Error(
+          `sendBulk: rendered message for recipient #${index} does not contain the postal address ` +
+            `from ${POSTAL_ADDRESS_ENV}. CAN-SPAM requires it in the message body, not just in config.`
         );
       }
 
@@ -243,6 +312,7 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
     deferred,
     batches: batches.length,
     hourlyLimit,
+    postalAddress,
     throttleWaitsMs,
     results,
   };

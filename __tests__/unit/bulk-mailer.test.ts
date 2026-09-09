@@ -8,6 +8,9 @@
  * dry-run-by-default, and the refusal to send with no transport.
  */
 
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/prisma', () => ({
@@ -18,10 +21,14 @@ vi.mock('@/lib/prisma', () => ({
 import {
   DEFAULT_BATCH_SIZE,
   DEFAULT_HOURLY_LIMIT,
+  POSTAL_ADDRESS_ENV,
+  POSTAL_PLACEHOLDER_RE,
   chunk,
+  containsPostalAddress,
   normalizeRecipients,
   previewBulkSend,
   resolveHourlyLimit,
+  resolvePostalAddress,
   sendBulk,
 } from '@/lib/services/bulkMailer';
 import { htmlToPlainText, emailNotifier } from '@/lib/services/emailNotifier';
@@ -35,12 +42,16 @@ import {
 
 const ORIGINAL_ENV = { ...process.env };
 
+/** Stand-in for the operator's real address; never a bracketed placeholder. */
+const POSTAL = 'MustHaveMods, PO Box 1, Testville, ST 00000';
+
 function build({ unsubscribeUrl, email }: { unsubscribeUrl: string; email: string }) {
   return {
     subject: 'New Sims 4 finds this week',
     html:
       `<p>Hi ${email}</p><p>Five new mods.</p>` +
-      `<p><a href="${unsubscribeUrl}">Unsubscribe</a></p>`,
+      `<p><a href="${unsubscribeUrl}">Unsubscribe</a></p>` +
+      `<p>${POSTAL}</p>`,
   };
 }
 
@@ -51,6 +62,7 @@ function recipients(n: number): string[] {
 beforeEach(() => {
   process.env.NEXTAUTH_SECRET = 'test-signing-key-not-a-real-secret';
   process.env.NEXT_PUBLIC_SITE_URL = 'https://musthavemods.com';
+  process.env[POSTAL_ADDRESS_ENV] = POSTAL;
   delete process.env.SMTP_HOST;
   delete process.env.SENDGRID_API_KEY;
   delete process.env.SMTP_HOURLY_LIMIT;
@@ -306,6 +318,121 @@ describe('send safety', () => {
     expect(result.sent).toBe(1);
     expect(result.failed).toBe(1);
     expect(result.results[1].error).toContain('550');
+  });
+});
+
+describe('CAN-SPAM postal address', () => {
+  it('resolves from the env var, normalizes whitespace, and is empty when unset', () => {
+    process.env[POSTAL_ADDRESS_ENV] = '  MustHaveMods,   PO Box 1  ';
+    expect(resolvePostalAddress()).toBe('MustHaveMods, PO Box 1');
+    expect(resolvePostalAddress('Explicit, PO Box 2')).toBe('Explicit, PO Box 2');
+    delete process.env[POSTAL_ADDRESS_ENV];
+    expect(resolvePostalAddress()).toBe('');
+  });
+
+  it('recognizes the placeholder we actually shipped, and leaves unrelated brackets alone', () => {
+    expect(
+      POSTAL_PLACEHOLDER_RE.test(
+        'MustHaveMods · [postal address required by CAN-SPAM — operator to supply]'
+      )
+    ).toBe(true);
+    // newsletter-preview.ts renders this and must keep rendering.
+    expect(POSTAL_PLACEHOLDER_RE.test("[ issue body goes here — built from the week's posts ]")).toBe(
+      false
+    );
+  });
+
+  it('matches the address escaped or raw, and never matches an empty address', () => {
+    expect(containsPostalAddress('<p>MustHaveMods & Co</p>', 'MustHaveMods & Co')).toBe(true);
+    expect(containsPostalAddress('<p>MustHaveMods &amp; Co</p>', 'MustHaveMods & Co')).toBe(true);
+    expect(containsPostalAddress('<p>anything</p>', '')).toBe(false);
+  });
+
+  it('throws on a placeholder even during a dry run — the preview is what a human approves', async () => {
+    await expect(
+      sendBulk({
+        recipients: recipients(1),
+        dryRun: true,
+        build: ({ unsubscribeUrl }) => ({
+          subject: 'issue #1',
+          html:
+            `<p>body</p><p><a href="${unsubscribeUrl}">Unsubscribe</a></p>` +
+            '<p>MustHaveMods · [postal address required by CAN-SPAM — operator to supply]</p>',
+        }),
+      })
+    ).rejects.toThrow(/placeholder/i);
+  });
+
+  it('still renders a dry run with no address configured, and reports the gap', async () => {
+    delete process.env[POSTAL_ADDRESS_ENV];
+    const result = await previewBulkSend({
+      recipients: recipients(1),
+      build: ({ unsubscribeUrl }) => ({
+        subject: 'issue #1',
+        html: `<p>body</p><p><a href="${unsubscribeUrl}">Unsubscribe</a></p>`,
+      }),
+    });
+    expect(result.postalAddress).toBe('');
+    expect(result.results).toHaveLength(1);
+  });
+
+  it('refuses a real send when no postal address is configured', async () => {
+    delete process.env[POSTAL_ADDRESS_ENV];
+    process.env.SMTP_HOST = 'smtp.example.test';
+    emailNotifier.resetTransport();
+    const send = vi.fn().mockResolvedValue(true);
+
+    await expect(
+      sendBulk({ recipients: recipients(1), build, dryRun: false, send })
+    ).rejects.toThrow(/postal address/i);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('refuses a real send when the address is configured but missing from the body', async () => {
+    process.env.SMTP_HOST = 'smtp.example.test';
+    emailNotifier.resetTransport();
+    const send = vi.fn().mockResolvedValue(true);
+
+    await expect(
+      sendBulk({
+        recipients: recipients(1),
+        dryRun: false,
+        send,
+        build: ({ unsubscribeUrl }) => ({
+          subject: 'issue #1',
+          html: `<p>body</p><p><a href="${unsubscribeUrl}">Unsubscribe</a></p>`,
+        }),
+      })
+    ).rejects.toThrow(/does not contain the postal address/i);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('sends once the address is configured and present, and reports it on the result', async () => {
+    process.env.SMTP_HOST = 'smtp.example.test';
+    emailNotifier.resetTransport();
+    const send = vi.fn().mockResolvedValue(true);
+
+    const result = await sendBulk({ recipients: recipients(2), build, dryRun: false, send });
+    expect(result.postalAddress).toBe(POSTAL);
+    expect(result.sent).toBe(2);
+    expect(send.mock.calls[0][2]).toContain(POSTAL);
+  });
+});
+
+describe('the shipped send script', () => {
+  const source = readFileSync(
+    join(process.cwd(), 'scripts/agents/newsletter-send-test.ts'),
+    'utf8'
+  );
+
+  it('takes its postal address from the env var instead of hardcoding a placeholder', () => {
+    expect(source).toContain('resolvePostalAddress()');
+    expect(source).not.toMatch(/const ADDRESS_LINE = 'MustHaveMods · \[/);
+  });
+
+  it('uses a trailing slash on the /api/subscribe/confirm link (trailingSlash: true)', () => {
+    expect(source).toContain('/api/subscribe/confirm/?');
+    expect(source).not.toMatch(/\/api\/subscribe\/confirm\?/);
   });
 });
 
