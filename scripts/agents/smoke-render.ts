@@ -82,6 +82,7 @@ async function main() {
     { path: '/sims-4-cc-finds-2/', kind: 'blog' },
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
+    { path: '/llms-full.txt', kind: 'text' },
   ];
   if (!modId) console.error('[smoke] WARN could not read a mod id from /sitemap-mods.xml — detail + interstitial skipped');
 
