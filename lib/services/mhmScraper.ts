@@ -8,7 +8,13 @@ import {
   detectContentType,
   detectRoomThemes,
 } from './contentTypeDetector';
-import { detectGame, detectContentTypeFromUrl } from './mhmScraperUtils';
+import {
+  detectGame,
+  detectContentTypeFromUrl,
+  parseSitemapLastmod,
+  selectPostsToScrape,
+  type SitemapPostEntry,
+} from './mhmScraperUtils';
 
 // CSV file path for tracking scraped URLs
 const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'mhm-scraped-urls.csv');
@@ -167,8 +173,18 @@ export class MustHaveModsScraper {
    * Supports both WordPress (wp-sitemap-posts-post-*.xml) and Next.js (sitemap-blog-posts.xml) formats
    */
   async getAllBlogPostUrls(): Promise<string[]> {
+    const entries = await this.getAllBlogPostEntries();
+    return entries.map(e => e.url);
+  }
+
+  /**
+   * Same as getAllBlogPostUrls, but keeps each post's sitemap <lastmod> so
+   * callers can do incremental runs (`--since`). Entries without a lastmod
+   * get `lastmod: undefined` and are never filtered out by date.
+   */
+  async getAllBlogPostEntries(): Promise<SitemapPostEntry[]> {
     console.log('🔍 Fetching blog post URLs from sitemap index...');
-    const allUrls: string[] = [];
+    const allEntries: SitemapPostEntry[] = [];
 
     try {
       // Step 1: Fetch the main sitemap index
@@ -211,11 +227,12 @@ export class MustHaveModsScraper {
 
           const $ = cheerio.load(response.data, { xmlMode: true });
 
-          // Extract all post URLs from this sitemap
-          $('url loc').each((_, el) => {
-            const url = $(el).text().trim();
+          // Extract all post URLs (+ lastmod) from this sitemap
+          $('url').each((_, el) => {
+            const url = $(el).find('loc').first().text().trim();
             if (url && url.includes(this.baseUrl)) {
-              allUrls.push(url);
+              const lastmod = parseSitemapLastmod($(el).find('lastmod').first().text());
+              allEntries.push({ url, lastmod });
             }
           });
 
@@ -230,9 +247,11 @@ export class MustHaveModsScraper {
         }
       }
 
-      const uniqueUrls = Array.from(new Set(allUrls));
-      console.log(`\n✅ Total unique blog post URLs: ${uniqueUrls.length}\n`);
-      return uniqueUrls;
+      // De-duplicate on URL, keeping the first (newest) occurrence
+      const seen = new Set<string>();
+      const unique = allEntries.filter(e => (seen.has(e.url) ? false : (seen.add(e.url), true)));
+      console.log(`\n✅ Total unique blog post URLs: ${unique.length}\n`);
+      return unique;
     } catch (error) {
       console.error('Error fetching sitemap index:', error);
       console.log('⚠️  Falling back to empty list');
@@ -1333,8 +1352,10 @@ export class MustHaveModsScraper {
   /**
    * Save mods to database with intelligent content type detection
    */
-  async saveModsToDatabase(mods: ScrapedMod[]): Promise<number> {
+  async saveModsToDatabase(mods: ScrapedMod[], opts: { dryRun?: boolean } = {}): Promise<number> {
     let savedCount = 0;
+    const dryRun = opts.dryRun === true;
+    const verb = dryRun ? 'Would ' : '';
 
     for (const mod of mods) {
       try {
@@ -1385,7 +1406,7 @@ export class MustHaveModsScraper {
             gameNeedsUpdate; // Fix incorrectly tagged game
 
           if (needsUpdate) {
-            await prisma.mod.update({
+            if (!dryRun) await prisma.mod.update({
               where: { id: existing.id },
               data: {
                 // Update fields that are missing or improved
@@ -1406,7 +1427,7 @@ export class MustHaveModsScraper {
             savedCount++;
             this.stats.modsUpdated++;
             const contentTypeInfo = detectedContentType ? ` [${detectedContentType}]` : '';
-            console.log(`   🔄 Updated: ${mod.title}${contentTypeInfo} (added missing data)`);
+            console.log(`   🔄 ${verb}Update${dryRun ? '' : 'd'}: ${mod.title}${contentTypeInfo} (added missing data)`);
           } else {
             console.log(`   ⏭️  Skipping: ${mod.title} (already complete)`);
             this.stats.modsSkipped++;
@@ -1415,7 +1436,7 @@ export class MustHaveModsScraper {
         }
 
         // Create new mod with detected content type
-        await prisma.mod.create({
+        if (!dryRun) await prisma.mod.create({
           data: {
             title: mod.title,
             description: mod.description,
@@ -1441,7 +1462,7 @@ export class MustHaveModsScraper {
         savedCount++;
         this.stats.modsImported++;
         const contentTypeInfo = detectedContentType ? ` [${detectedContentType}]` : ' [unknown type]';
-        console.log(`   ✅ Created: ${mod.title}${contentTypeInfo}`);
+        console.log(`   ✅ ${verb}Create${dryRun ? '' : 'd'}: ${mod.title}${contentTypeInfo}`);
       } catch (error) {
         console.error(`   ❌ Error saving mod "${mod.title}":`, error);
         this.stats.errors++;
@@ -1457,21 +1478,61 @@ export class MustHaveModsScraper {
    * @param options.startIndex - Resume from a specific index (1-based)
    * @param options.forceRescrape - Ignore freshness tracking and rescrape all URLs
    * @param options.limit - Maximum number of posts to scrape
+   * @param options.newOnly - Skip posts that already have a Mod row (DB-based freshness; safe from any checkout)
+   * @param options.since - Only consider posts whose sitemap lastmod is on/after this date
+   * @param options.dryRun - Fetch and parse, report would-create/would-update, write nothing (DB or CSV)
    */
   async runFullScrape(options?: {
     startUrl?: string;
     startIndex?: number;
     forceRescrape?: boolean;
     limit?: number;
+    newOnly?: boolean;
+    since?: Date;
+    dryRun?: boolean;
   }): Promise<void> {
     console.log('🚀 Starting MustHaveMods.com scraper...\n');
     this.resetStats();
+    const dryRun = options?.dryRun === true;
+    if (dryRun) {
+      console.log('🧪 DRY RUN — nothing will be written to the database or the freshness CSV\n');
+    }
 
-    // Step 1: Get all blog post URLs
-    const postUrls = await this.getAllBlogPostUrls();
+    // Step 1: Get all blog post URLs (+ lastmod)
+    const entries = await this.getAllBlogPostEntries();
 
-    if (postUrls.length === 0) {
+    if (entries.length === 0) {
       console.log('❌ No blog posts found. Exiting.');
+      return;
+    }
+
+    // Step 1b: Incremental selection (--new-only / --since)
+    let knownSourceUrls: string[] = [];
+    if (options?.newOnly) {
+      const grouped = await prisma.mod.groupBy({
+        by: ['sourceUrl'],
+        where: { sourceUrl: { startsWith: this.baseUrl } },
+      });
+      knownSourceUrls = grouped.map(g => g.sourceUrl).filter((u): u is string => !!u);
+      console.log(`🗄️  --new-only: ${knownSourceUrls.length} blog posts already have mods in the database`);
+    }
+    if (options?.since) {
+      console.log(`📆 --since: only posts with sitemap lastmod >= ${options.since.toISOString().slice(0, 10)}`);
+    }
+    const selection = selectPostsToScrape(entries, {
+      since: options?.since,
+      newOnly: options?.newOnly,
+      knownSourceUrls,
+    });
+    const postUrls = selection.selected;
+    if (options?.since || options?.newOnly) {
+      console.log(
+        `🎯 Selected ${postUrls.length} of ${entries.length} posts` +
+          ` (skipped ${selection.skippedSince} older than --since, ${selection.skippedKnown} already in DB)\n`
+      );
+    }
+    if (postUrls.length === 0) {
+      console.log('✅ Nothing to do: every matching post already has mods in the database.');
       return;
     }
 
@@ -1540,13 +1601,13 @@ export class MustHaveModsScraper {
       console.log(`   Found ${mods.length} mods in this post`);
 
       if (mods.length > 0) {
-        const saved = await this.saveModsToDatabase(mods);
+        const saved = await this.saveModsToDatabase(mods, { dryRun });
         totalMods += mods.length;
         totalSaved += saved;
       }
 
-      // Save this URL to freshness tracking
-      this.saveScrapedUrlToCsv(postUrl, mods.length);
+      // Save this URL to freshness tracking (never in a dry run)
+      if (!dryRun) this.saveScrapedUrlToCsv(postUrl, mods.length);
 
       // Wait between requests (even though it's our site, be gentle)
       if (i < endPosition - 1) {
@@ -1556,13 +1617,13 @@ export class MustHaveModsScraper {
 
     // Print summary
     console.log('\n' + '='.repeat(60));
-    console.log('✅ Scraping complete!');
+    console.log(dryRun ? '🧪 Dry run complete — nothing written.' : '✅ Scraping complete!');
     console.log('='.repeat(60));
     console.log(`📄 Pages scraped: ${this.stats.pagesScraped}`);
     console.log(`⏭️  Skipped (recently scraped): ${skippedFreshness}`);
     console.log(`🔍 Mods discovered: ${this.stats.modsDiscovered}`);
-    console.log(`✅ Mods imported (new): ${this.stats.modsImported}`);
-    console.log(`🔄 Mods updated: ${this.stats.modsUpdated}`);
+    console.log(`✅ Mods ${dryRun ? 'that would be imported' : 'imported'} (new): ${this.stats.modsImported}`);
+    console.log(`🔄 Mods ${dryRun ? 'that would be updated' : 'updated'}: ${this.stats.modsUpdated}`);
     console.log(`⏭️  Mods skipped (complete): ${this.stats.modsSkipped}`);
     if (this.stats.errors > 0) {
       console.log(`❌ Errors: ${this.stats.errors}`);

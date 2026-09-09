@@ -323,3 +323,105 @@ export function ensureAuthor(ctx: AuthorExtractionContext): string {
 
   return ULTIMATE_FALLBACK_AUTHOR;
 }
+
+// ============================================
+// POST SELECTION (incremental ingest)
+// ============================================
+
+/**
+ * One <url> entry from the blog-posts sitemap. `lastmod` is undefined when the
+ * sitemap did not carry one (older WordPress sitemaps), in which case the entry
+ * is never filtered out by `since` — better to re-check a post than to miss it.
+ */
+export interface SitemapPostEntry {
+  url: string;
+  lastmod?: Date;
+}
+
+export interface SelectPostsOptions {
+  /** Keep only entries whose sitemap lastmod is on/after this date. */
+  since?: Date;
+  /**
+   * When true, skip any post that already has at least one Mod row whose
+   * sourceUrl is this post. This makes freshness a property of the database,
+   * not of the untracked data/mhm-scraped-urls.csv, so the scraper is safe to
+   * run from a fresh worktree or a scheduled job without re-crawling the
+   * whole blog (2026-09-09: 667 posts, 31 days with zero inserts because the
+   * only freshness state lived in the operator's checkout).
+   */
+  newOnly?: boolean;
+  /** Distinct Mod.sourceUrl values already in the DB (any trailing-slash form). */
+  knownSourceUrls?: readonly string[];
+}
+
+export interface SelectPostsResult {
+  selected: string[];
+  skippedSince: number;
+  skippedKnown: number;
+}
+
+/** Normalize a post URL for set membership: lowercase host, single trailing slash, no hash/query. */
+export function normalizePostUrl(url: string): string {
+  let u = url.trim();
+  const hashIdx = u.indexOf('#');
+  if (hashIdx >= 0) u = u.slice(0, hashIdx);
+  const qIdx = u.indexOf('?');
+  if (qIdx >= 0) u = u.slice(0, qIdx);
+  u = u.replace(/^http:\/\//i, 'https://');
+  u = u.replace(/^(https:\/\/)www\./i, '$1');
+  const m = u.match(/^(https:\/\/[^/]+)(\/.*)?$/i);
+  if (m) u = m[1].toLowerCase() + (m[2] ?? '');
+  if (!u.endsWith('/')) u += '/';
+  return u;
+}
+
+/**
+ * Decide which sitemap posts to fetch. Pure: no network, no DB. Order of the
+ * input is preserved (sitemaps list newest first).
+ */
+export function selectPostsToScrape(
+  entries: SitemapPostEntry[],
+  opts: SelectPostsOptions = {}
+): SelectPostsResult {
+  const known = new Set<string>();
+  // forEach, not for…of: tsconfig targets ES5 without downlevelIteration (see PR #19).
+  if (opts.newOnly && opts.knownSourceUrls) {
+    opts.knownSourceUrls.forEach(k => {
+      if (k) known.add(normalizePostUrl(k));
+    });
+  }
+
+  const seen = new Set<string>();
+  const selected: string[] = [];
+  let skippedSince = 0;
+  let skippedKnown = 0;
+
+  for (const entry of entries) {
+    if (!entry?.url) continue;
+    const key = normalizePostUrl(entry.url);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    if (opts.since && entry.lastmod && entry.lastmod.getTime() < opts.since.getTime()) {
+      skippedSince++;
+      continue;
+    }
+    if (opts.newOnly && known.has(key)) {
+      skippedKnown++;
+      continue;
+    }
+    selected.push(entry.url);
+  }
+
+  return { selected, skippedSince, skippedKnown };
+}
+
+/** Parse a sitemap <lastmod> value ("2026-09-09" or full ISO); undefined when absent/invalid. */
+export function parseSitemapLastmod(value: string | undefined | null): Date | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  // Date-only values are UTC midnight per the sitemap protocol (W3C datetime).
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T00:00:00Z` : trimmed);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+}
