@@ -187,13 +187,28 @@ export class EmailNotifier {
   }
 
   /**
+   * Resolve the sender at send time, not at construction. Scripts load dotenv after their
+   * imports (ESM hoists imports), so a value captured in the constructor is the fallback, never
+   * the configured mailbox (2026-09-08: issue #1 test sends went out as noreply@ instead of
+   * simsnews@). Accepts `addr` or `Name <addr>`.
+   */
+  private resolveFrom(): { address: string; name: string } {
+    const raw = process.env.EMAIL_FROM || process.env.FROM_EMAIL || this.fromEmail || 'noreply@musthavemods.com';
+    const m = raw.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
+    return m
+      ? { address: m[2].trim(), name: m[1].trim() || 'MustHaveMods' }
+      : { address: raw.trim(), name: 'MustHaveMods' };
+  }
+
+  /**
    * Send an email. SMTP first, SendGrid as fallback, console otherwise.
    */
   async send(to: string, subject: string, html: string, options: SendOptions = {}): Promise<boolean> {
     const transport = this.transport();
     const text = options.text ?? htmlToPlainText(html);
-    const from = options.from || this.fromEmail;
-    const fromName = options.fromName || 'MustHaveMods';
+    const resolved = this.resolveFrom();
+    const from = options.from || resolved.address;
+    const fromName = options.fromName || resolved.name;
 
     if (transport === 'none') {
       console.log(`[EmailNotifier] Not configured - would send to ${to}:`);
