@@ -202,7 +202,7 @@ _Rio, Product & Revenue — 2026-09-04_
 
 > New perk: skip the download countdown on MustHaveMods.com. Open any download page, tap "Patrons skip the wait", connect your Patreon, and your downloads start instantly while you're signed in.
 
-**$1 "Support Tier":** Unpublish. Existing 8 patrons keep their pledge; nobody new can pick it.
+**$1 "Support Tier":** left published for now (operator, 2026-09-08) — it was Felister's idea and the operator wants to talk to her first. $8/mo, 8 patrons; unpublishing changes nothing for them, so waiting costs nothing. Revisit after that conversation.
 
 **Thank-you post (operator posts, free + paid members):**
 
@@ -217,3 +217,5 @@ If you're a free member and want in, the tip jar is $3.
 — [operator's name]
 
 **Read on 2026-09-22** with `scripts/agents/patreon-relaunch-read.ts`. Baseline 2026-09-08: 47 paid (39×$3, 8×$1), $125/mo gross, 5 site accounts connected Patreon in the first 24h of PR #52, 2 recognised as members.
+
+**Done 2026-09-08 (operator):** $3 tier description updated — confirmed via the Patreon tiers API (edited 2026-09-09 01:35 UTC; perk line + how-to present; name and price unchanged). Thank-you sent as a members post and in the MustHaveMods community chat (screenshot seen). Not yet visible in the v2 posts API at 01:45 UTC (newest listed: "Sims 4 Y2K Belts Lookbook") — re-check on the read.
