@@ -1,0 +1,359 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-07",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 179.10000000000002,
+    "sessions": 12861.5,
+    "rpm": 13.912500000000001
+  },
+  "actualDay": {
+    "date": "2026-09-07",
+    "revenue": 263.17,
+    "sessions": 14059,
+    "rpm": 18.71
+  },
+  "window3": {
+    "actualRevenue": 827.28,
+    "expectedRevenue": 652.135,
+    "actualSessions": 44399,
+    "expectedSessions": 41097.75,
+    "actualRpm": 18.632852091263313,
+    "expectedRpm": 15.861581560552395
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-09T02:35:30.498Z",
+      "ref": "e96ed14",
+      "text": "READY chore: compound learnings from 2026-09-08 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-i6jfx8rrz-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-09T02:31:21.127Z",
+      "ref": "a6585ad",
+      "text": "READY fix(unsubscribe): mailto target defaults to simsnews@; PR #67 ledger row; SMTP readiness r [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-421evavm0-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-09T02:25:13.285Z",
+      "ref": "7a7ed94",
+      "text": "READY fix(unsubscribe): trailing slash on link + form action; ledger row for PR #66 (#67) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-7kp09o6o3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-09T02:16:23.993Z",
+      "ref": "2cfed2d",
+      "text": "READY feat(newsletter): /api/unsubscribe route, send-time From resolution, example-send script ( [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-6diqfddyh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-09T01:57:39.219Z",
+      "ref": "ac0c16a",
+      "text": "READY feat(agents): Patreon relaunch step 1 — staged decision, read script, final copy (#65) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cpvj69hg9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-09T01:29:09.712Z",
+      "ref": "ac0c16a",
+      "text": "READY feat(agents): Patreon relaunch step 1 — staged decision, read script, final copy (#65) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-go84h93km-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-08T11:22:40.611Z",
+      "ref": "5bfa24f",
+      "text": "READY funnel: daily run 2026-09-08 (#64) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-1pkiz2gbn-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-08T11:15:32.606Z",
+      "ref": "458b572",
+      "text": "READY fix(catalog): stop the lighting/curtains mis-tag at the source and re-tag 128 mods (#61) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-nmaotl891-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-08T11:10:16.808Z",
+      "ref": "949c391",
+      "text": "READY feat(email): send the newsletter over BigScoots SMTP, not SendGrid (#49) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cagurhkku-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-08T11:07:09.468Z",
+      "ref": "032543e",
+      "text": "READY fix(membership): read NEXT_PUBLIC_MEMBERSHIP_ENABLED literally so Next.js inlines it into  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-1dh6rnc40-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-08T11:03:01.144Z",
+      "ref": "d67cc51",
+      "text": "READY feat(seo): server-render the homepage shell — h1, collection links, ItemList in first-byte [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-2gdo1cl6j-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:35:24-04:00",
+      "ref": "e96ed14",
+      "text": "chore: compound learnings from 2026-09-08"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:31:15-04:00",
+      "ref": "a6585ad",
+      "text": "fix(unsubscribe): mailto target defaults to simsnews@; PR #67 ledger row; SMTP readiness r"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:25:10-04:00",
+      "ref": "7a7ed94",
+      "text": "fix(unsubscribe): trailing slash on link + form action; ledger row for PR #66 (#67)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:16:20-04:00",
+      "ref": "2cfed2d",
+      "text": "feat(newsletter): /api/unsubscribe route, send-time From resolution, example-send script ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T21:29:06-04:00",
+      "ref": "ac0c16a",
+      "text": "feat(agents): Patreon relaunch step 1 — staged decision, read script, final copy (#65)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:22:36-04:00",
+      "ref": "5bfa24f",
+      "text": "funnel: daily run 2026-09-08 (#64)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:15:29-04:00",
+      "ref": "458b572",
+      "text": "fix(catalog): stop the lighting/curtains mis-tag at the source and re-tag 128 mods (#61)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:10:13-04:00",
+      "ref": "949c391",
+      "text": "feat(email): send the newsletter over BigScoots SMTP, not SendGrid (#49)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:07:05-04:00",
+      "ref": "032543e",
+      "text": "fix(membership): read NEXT_PUBLIC_MEMBERSHIP_ENABLED literally so Next.js inlines it into "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:02:57-04:00",
+      "ref": "d67cc51",
+      "text": "feat(seo): server-render the homepage shell — h1, collection links, ItemList in first-byte"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T06:59:16-04:00",
+      "ref": "b064c48",
+      "text": "docs(capture): send-ready drafts — newsletter issue #1 and the account re-permission email"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T06:55:26-04:00",
+      "ref": "84972b0",
+      "text": "fix(pip): pinner backlog counts what the poster can actually reach (E20) (#60)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T06:52:19-04:00",
+      "ref": "ae37ce0",
+      "text": "fix(agents): deploy-verify promotes the merged build when a rollback has paused auto-promo"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T22:33:59-04:00",
+      "ref": "ae9a670",
+      "text": "chore: compound learnings from 2026-09-07"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:38:18-04:00",
+      "ref": "d4c2e0a",
+      "text": "docs(queue): Q5 — Patreon portal client updated by operator; Connect Patreon end-to-end li"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:21:21-04:00",
+      "ref": "5b7ee43",
+      "text": "fix(agents): smoke-render treats third-party script errors as warnings; close incident 202"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:11:48-04:00",
+      "ref": "5d1b8da",
+      "text": "docs(funnel): record operator approvals — Q5 \"approve 5 A\" shipped (PR #52), Q4 \"approve 4"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T09:06:44-04:00",
+      "ref": "f7820cd",
+      "text": "feat(membership): Patreon OAuth sign-in + /go countdown skip for patrons, behind NEXT_PUBL"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:33:23-04:00",
+      "ref": "ab0823c",
+      "text": "fix(agents): runner preflight tells CLI-too-old apart from auth failure (#54)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:28:54-04:00",
+      "ref": "7458581",
+      "text": "funnel: daily run 2026-09-07 (#53)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:16:50-04:00",
+      "ref": "d790cff",
+      "text": "feat(collections): decor-cc collection page (731 mods) + fix 4 dangling related slugs (#51"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-07T08:16:24-04:00",
+      "ref": "b12ab6b",
+      "text": "feat(agents): Pinterest token-manager port + catalog pins for makeup-cc/witch-cc (#50)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-06T22:33:18-04:00",
+      "ref": "e7bb532",
+      "text": "chore: compound learnings from 2026-09-06"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T22:32:42-04:00",
+      "ref": "dcbc14a",
+      "text": "chore: compound learnings from 2026-09-05"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:52:39-04:00",
+      "ref": "c022917",
+      "text": "docs(funnel): newsletter via BigScoots SMTP not SendGrid; where Patreon/Pinterest keys go "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:46:59-04:00",
+      "ref": "f216a2c",
+      "text": "fix(agents): an un-runnable smoke check is INCONCLUSIVE, never a rollback; retry transient"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T10:26:06-04:00",
+      "ref": "3c53855",
+      "text": "docs(funnel): judged on revenue growth; Fable advises, cheaper models execute (#45)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T09:14:12-04:00",
+      "ref": "8548fb7",
+      "text": "docs(funnel): digest explains the why of every change, board-member style (#44)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T08:33:58-04:00",
+      "ref": "3973e6f",
+      "text": "funnel: daily run 2026-09-05 — scoreboard, guardrail, digest, experiments E10–E14, inciden"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T08:29:53-04:00",
+      "ref": "be21a4a",
+      "text": "feat(pip): pinner liveness check — Supabase staleness/backlog + Pinterest token health (E1"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:56:01-04:00",
+      "ref": "0b80796",
+      "text": "content(nova): W37 writer brief — hospital build, Y2K, decor, dark-academia, teen-pregnanc"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:56-04:00",
+      "ref": "1b2f431",
+      "text": "fix(mods): resolve React #425 hydration errors on /mods/[id] (#41)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:46-04:00",
+      "ref": "b31b1d9",
+      "text": "docs(rio): guardrail diagnosis 2026-09-05 — traffic-side verdict + affiliate hold decision"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-05T06:55:14-04:00",
+      "ref": "11a683b",
+      "text": "feat(capture): add newsletter capture block on mod detail pages (E10) (#38)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T22:55:07-04:00",
+      "ref": "a1674aa",
+      "text": "chore: compound learnings from 2026-09-04 (#37)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T08:08:57-04:00",
+      "ref": "e2dc41d",
+      "text": "funnel: daily run 2026-09-04 — scoreboard, guardrail, digest, experiments E6–E9, Patreon T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T08:01:11-04:00",
+      "ref": "76f7ad4",
+      "text": "docs(sage): Google click collapse diagnosis — two core updates, canonical conflicts, homep"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:58:51-04:00",
+      "ref": "94a9c81",
+      "text": "docs(rio): guardrail diagnosis 2026-09-04 — traffic-side verdict + Patreon tier relaunch d"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:56:53-04:00",
+      "ref": "cbd8079",
+      "text": "feat(capture): add newsletter capture block to all collection pages (E6) (#33)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:56:27-04:00",
+      "ref": "58af131",
+      "text": "feat(content): add makeup-cc collection page — 922 mods, W36 brief cross-link surface (#32"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-04T07:43:47-04:00",
+      "ref": "516fab0",
+      "text": "docs(funnel): daily loop is launched by the mhm-funnel-daily scheduled task (#31)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/09",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $263.17 (46.9%), RPM 18.71 (34.5%), sessions 9.3% vs same weekday, prior 4 weeks · 3-day revenue 26.9%"
+  ]
+}
