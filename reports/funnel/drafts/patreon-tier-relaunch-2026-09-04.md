@@ -1,6 +1,6 @@
 # Patreon Tier Relaunch — Q4 Package
 
-**Status: APPROVED — Option A (operator, 2026-09-07).** Site dependency shipped the same day: PR #52 (`f7820cd`) makes "skip the download countdown" live for $3+ patrons (`PATREON_MEMBER_MIN_CENTS=300`), so the copy below is true on launch. Remaining steps are operator-only: edit the tiers in the Patreon dashboard with the Option A copy (countdown line → "connect Patreon on any download page") and post the announcement. Read date moves to 2026-10-07.
+**Status: DECIDED 2026-09-08 (Quinn, operator delegated) — STAGED. Step 1 only: add the countdown-skip perk to the existing $3 tier (name and price unchanged), unpublish the $1 tier for new joins (8 existing keep it), thank current patrons with a short post. No renames, no $10 tier, no price changes until the 2026-09-22 read.** Why: the Patreon members API (2026-09-08) shows a leaky bucket, not a loyal base — 47 active vs 225 former, 10–16 cancellations/month, median tenure 1.8 months — so retention, not the tier ladder, is the problem; the only perk that runs itself and is used daily is the countdown skip (live since PR #52). Step 1 costs no existing patron anything and is reversible in one minute except the post. The original announcement copy below ("Tip Jar name was embarrassing", "here for months") is retired — it insults the tippers and is factually wrong on tenure. Read: `npx tsx -r dotenv/config scripts/agents/patreon-relaunch-read.ts dotenv_config_path=.env.local`. Decision rule 2026-09-22: proceed to Option A renames + $10 tier only if paid joins run at or above the August pace (17/mo) AND at least a third of paid patrons have connected Patreon on the site; revert the tier copy the same day if cancellations exceed 16/mo pace.
 **Written:** 2026-09-04 by Rio
 **Bet:** B2 — 49 → 90 paid patrons at blended $4/mo ≈ $360/mo gross (from ~$127/mo today)
 **Target live date:** operator's call; recommend before October 1 to capture Q4 engagement
@@ -193,3 +193,27 @@ Rio will track paid count and gross from the daily scoreboard. No further action
 ---
 
 _Rio, Product & Revenue — 2026-09-04_
+
+---
+
+## Step 1 — final copy (paste into Patreon, 2026-09-08)
+
+**$3 tier "Tip Jar - Curious Simmer" — add this at the top of the description (keep the rest, keep name and price):**
+
+> New perk: skip the download countdown on MustHaveMods.com. Open any download page, tap "Patrons skip the wait", connect your Patreon, and your downloads start instantly while you're signed in.
+
+**$1 "Support Tier":** Unpublish. Existing 8 patrons keep their pledge; nobody new can pick it.
+
+**Thank-you post (operator posts, free + paid members):**
+
+Title: A new perk for everyone in the tip jar (thank you)
+
+Quick one. If you're supporting MustHaveMods at $3 or more, you can now skip the download countdown on the site. Open any download page on musthavemods.com, tap "Patrons skip the wait", connect your Patreon, and the timer is gone while you're signed in.
+
+It's a small thank-you for keeping the lookbooks and CC lists coming — the tips genuinely pay for the time they take. Nothing about your pledge changes.
+
+If you're a free member and want in, the tip jar is $3.
+
+— [operator's name]
+
+**Read on 2026-09-22** with `scripts/agents/patreon-relaunch-read.ts`. Baseline 2026-09-08: 47 paid (39×$3, 8×$1), $125/mo gross, 5 site accounts connected Patreon in the first 24h of PR #52, 2 recognised as members.
