@@ -25,9 +25,13 @@ import { createHmac, timingSafeEqual } from 'crypto';
  */
 export const UNSUBSCRIBE_PATH = '/api/unsubscribe/';
 
-/** Mailbox that accepts `mailto:` unsubscribe requests (RFC 2369 fallback). */
+/**
+ * Mailbox that accepts `mailto:` unsubscribe requests (RFC 2369 fallback).
+ * Default is the sending mailbox: it exists on BigScoots (unsubscribe@ does not, 2026-09-08),
+ * so a reader who mails it is never bounced. Override with UNSUBSCRIBE_MAILBOX if one is created.
+ */
 export const UNSUBSCRIBE_MAILBOX =
-  process.env.UNSUBSCRIBE_MAILBOX || 'unsubscribe@musthavemods.com';
+  process.env.UNSUBSCRIBE_MAILBOX || 'simsnews@musthavemods.com';
 
 function base64url(input: Buffer | string): string {
   return Buffer.from(input)
