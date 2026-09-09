@@ -46,6 +46,7 @@ describe('/api/unsubscribe', () => {
     const html = await res.text();
     expect(html).toContain('Yes, unsubscribe me');
     expect(html).toContain('method="POST"');
+    expect(html).toContain('action="/api/unsubscribe/?e=');
     expect(findUnique).toHaveBeenCalledWith({ where: { email: 'reader@example.com' }, select: { id: true } });
     expect(deleteMany).not.toHaveBeenCalled();
   });
@@ -88,10 +89,10 @@ describe('/api/unsubscribe', () => {
 
   it('rejects missing or malformed parameters', async () => {
     for (const url of [
-      'https://musthavemods.com/api/unsubscribe',
-      'https://musthavemods.com/api/unsubscribe?e=&t=',
-      'https://musthavemods.com/api/unsubscribe?e=%3Cscript%3E&t=abc',
-      'https://musthavemods.com/api/unsubscribe?e=bm90LWFuLWVtYWls&t=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      'https://musthavemods.com/api/unsubscribe/',
+      'https://musthavemods.com/api/unsubscribe/?e=&t=',
+      'https://musthavemods.com/api/unsubscribe/?e=%3Cscript%3E&t=abc',
+      'https://musthavemods.com/api/unsubscribe/?e=bm90LWFuLWVtYWls&t=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     ]) {
       const res = await POST(req(url, 'POST'));
       expect(res.status).toBe(400);

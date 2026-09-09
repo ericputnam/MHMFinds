@@ -18,7 +18,12 @@
 
 import { createHmac, timingSafeEqual } from 'crypto';
 
-export const UNSUBSCRIBE_PATH = '/api/unsubscribe';
+/**
+ * Trailing slash on purpose: next.config.js sets `trailingSlash: true`, so the bare path
+ * answers 308 → `/api/unsubscribe/`. Browsers follow that; RFC 8058 one-click POSTs from
+ * Gmail/Yahoo are not guaranteed to (found on the live probe after PR #66, 2026-09-08).
+ */
+export const UNSUBSCRIBE_PATH = '/api/unsubscribe/';
 
 /** Mailbox that accepts `mailto:` unsubscribe requests (RFC 2369 fallback). */
 export const UNSUBSCRIBE_MAILBOX =
