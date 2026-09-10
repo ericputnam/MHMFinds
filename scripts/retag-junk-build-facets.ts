@@ -60,6 +60,7 @@ import './lib/setup-env';
 
 import { prisma } from '../lib/prisma';
 import { detectContentTypeWithConfidence } from '../lib/services/contentTypeDetector';
+import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
 
 /** autonomy.md: catalog scripts touch at most 5,000 rows per run. */
 const MAX_ROWS = 5000;
@@ -68,25 +69,15 @@ const DEFAULT_FACETS = ['lighting', 'curtains'];
 
 /**
  * Hand-audited corrections, keyed by mod id, for rows where title-only
- * detection lands on the wrong facet. Reviewed 2026-09-08. `null` means
- * "clear the content type" — the title does not support any facet.
+ * detection lands on the wrong facet. First reviewed 2026-09-08.
+ * `null` means "clear the content type" — the title does not support any facet.
+ *
+ * Moved to `scripts/lib/hand-audited-content-types.ts` on 2026-09-10 so that
+ * `retag-null-content-types.ts` honours the same audit; without it, that script
+ * re-tagged "Green Lantern - Injustice" as `lighting` — the exact junk this
+ * script had just cleared.
  */
-const OVERRIDES: Record<string, { contentType: string | null; why: string }> = {
-  // detector reads "Crown" (hats rule) out of "Crown Victoria"
-  cmsmclm4800tqoxeu90ps0m8x: { contentType: 'vehicles', why: '2010 Ford Crown Victoria Police Interceptor is a car' },
-  // "Mirror" (furniture rule) outranks "Boots" by rule priority
-  cmmvaqe1h007joxzg06n11j35: { contentType: 'shoes', why: 'Lollipop Mirror Boots are shoes, not a mirror' },
-  // title misspells "Lightning Bolt" as "Lighting Bolt"
-  cmkylj0q00143oxhco3tj9fd5: { contentType: 'jewelry', why: 'Neon Lighting Bolt Earrings are earrings' },
-  // "Lantern" is a real light-fixture keyword; this is a superhero costume
-  cmsmczfbc0115oxeu8gxj9o8h: { contentType: null, why: 'Green Lantern - Injustice is a character costume, not a lantern' },
-  // "Home" (lot rule) matches, but this is a career pack
-  cmsmbyry300hcoxeugu1vn5w0: { contentType: 'career', why: 'Careers - Funeral Home and Cemetery is a career mod' },
-  // "Beauty" (makeup rule) matches; this is a commercial build set
-  cmil0qqyv002goxeeotn4bc55: { contentType: 'furniture', why: 'Mid Century Modern Beauty Salon is a build/buy set' },
-  // "Build" (lot rule) matches; a "build set" is CC, not a downloadable lot
-  cmijocccm00r7oxc8a9nqtzvv: { contentType: null, why: 'Vibe Build Set is CC of unknown type, not a lot' },
-};
+const OVERRIDES = HAND_AUDITED_CONTENT_TYPES;
 
 type Row = { id: string; title: string; contentType: string | null; downloadCount: number };
 type Change = { row: Row; to: string | null; reason: string };
