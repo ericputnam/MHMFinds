@@ -187,7 +187,7 @@ async function main() {
   }
   if (only !== 'issue') {
     const r = await sendBulk({ ...common, build: ({ email, unsubscribeUrl }) => {
-      // Real, per-recipient, HMAC-signed consent link (live since PR #75). The token is
+      // Real, per-recipient, HMAC-signed consent link (live since PR #76). The token is
       // domain-separated from the unsubscribe token, so this link can only ever subscribe.
       // It must be signed with the SAME UNSUBSCRIBE_SECRET that production verifies with,
       // or every link is a 400 — the failure that killed the 09-08 test send's footer links.

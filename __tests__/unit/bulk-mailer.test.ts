@@ -432,7 +432,7 @@ describe('the shipped send script', () => {
 
   it('uses a trailing slash on the /api/subscribe/confirm link (trailingSlash: true)', () => {
     // The URL moved into `lib/services/subscribeConfirm.ts` when the endpoint shipped
-    // (PR #75); the script now signs a real token instead of hand-building a preview link.
+    // (PR #76); the script now signs a real token instead of hand-building a preview link.
     // The slash requirement follows the URL, so the assertion follows it too.
     expect(source).toMatch(/buildConfirmUrl\(/);
     expect(source).not.toMatch(/\/api\/subscribe\/confirm\?/);
