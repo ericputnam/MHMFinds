@@ -564,3 +564,148 @@ export function buildWhereClause(filter: CollectionFacetQuery): Prisma.ModWhereI
 
   return where;
 }
+
+// ============================================================
+// Reverse lookup: which collection(s) does a single mod belong to?
+//
+// Used by /mods/[id] to link each mod-detail page to its collection
+// page(s) — visible breadcrumb + BreadcrumbList JSON-LD (E32,
+// 2026-09-10). Pure, no DB: it mirrors buildWhereClause() in memory
+// so the two never disagree about membership. If you change a filter
+// or a keyword fallback above, change the matching branch here.
+// ============================================================
+
+/** The subset of Mod fields the reverse lookup reads. */
+export type ModFacetInput = {
+  gameVersion?: string | null;
+  isNSFW?: boolean | null;
+  contentType?: string | null;
+  visualStyle?: string | null;
+  themes?: string[] | null;
+  genderOptions?: string[] | null;
+  ageGroups?: string[] | null;
+  occultTypes?: string[] | null;
+  title?: string | null;
+  description?: string | null;
+};
+
+/** A minimal, client-safe link to a collection page. */
+export type CollectionLink = {
+  /** Trailing-slash path, e.g. `/games/sims-4/hair-cc/` */
+  href: string;
+  /** Short title for breadcrumbs / chips, e.g. `Hair CC` */
+  title: string;
+  slug: string;
+  gameSlug: string;
+};
+
+/** Canonical relative path for a collection (trailing slash, see next.config.js). */
+export function collectionHref(c: Pick<CollectionDefinition, 'gameSlug' | 'slug'>): string {
+  return `/games/${c.gameSlug}/${c.slug}/`;
+}
+
+function hasSome(values: string[] | null | undefined, wanted: string[]): boolean {
+  if (!values?.length) return false;
+  return wanted.some((w) => values.includes(w));
+}
+
+function hasEvery(values: string[] | null | undefined, wanted: string[]): boolean {
+  if (!values?.length) return false;
+  return wanted.every((w) => values.includes(w));
+}
+
+function containsCI(haystack: string | null | undefined, needle: string): boolean {
+  return !!haystack && haystack.toLowerCase().includes(needle.toLowerCase());
+}
+
+/**
+ * In-memory equivalent of `buildWhereClause(filter)` applied to one mod.
+ * Exported for tests; most callers want `getCollectionsForMod`.
+ */
+export function modMatchesFilter(mod: ModFacetInput, filter: CollectionFacetQuery): boolean {
+  if (filter.contentType === '__pregnancy_keyword__') {
+    return (
+      mod.contentType === 'pregnancy' ||
+      containsCI(mod.title, 'pregnan') ||
+      containsCI(mod.title, 'maternity') ||
+      containsCI(mod.description, 'pregnan')
+    );
+  }
+
+  if (filter.contentType === '__witch_keyword__') {
+    return (
+      hasSome(mod.themes, ['witch']) ||
+      hasSome(mod.occultTypes, ['witch', 'spellcaster']) ||
+      containsCI(mod.title, 'witch') ||
+      containsCI(mod.title, 'spellcaster') ||
+      containsCI(mod.title, 'cauldron') ||
+      containsCI(mod.title, 'broomstick') ||
+      containsCI(mod.description, 'witch')
+    );
+  }
+
+  // Same precedence as buildWhereClause: contentTypeIn overwrites contentType.
+  if (filter.contentTypeIn?.length) {
+    if (!mod.contentType || !filter.contentTypeIn.includes(mod.contentType)) return false;
+  } else if (filter.contentType) {
+    if (mod.contentType !== filter.contentType) return false;
+  }
+  if (filter.visualStyle && mod.visualStyle !== filter.visualStyle) return false;
+  // themesAny overwrites themesAll in buildWhereClause; mirror that.
+  if (filter.themesAny?.length) {
+    if (!hasSome(mod.themes, filter.themesAny)) return false;
+  } else if (filter.themesAll?.length) {
+    if (!hasEvery(mod.themes, filter.themesAll)) return false;
+  }
+  if (filter.genderOptionsAny?.length && !hasSome(mod.genderOptions, filter.genderOptionsAny)) {
+    return false;
+  }
+  if (filter.ageGroupsAny?.length && !hasSome(mod.ageGroups, filter.ageGroupsAny)) return false;
+  if (filter.occultTypesAny?.length && !hasSome(mod.occultTypes, filter.occultTypesAny)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Specificity used to pick the *primary* collection for a breadcrumb:
+ * a contentType-based collection ("Hair CC") describes what the mod
+ * *is*; a theme/occult collection ("Goth CC") describes a style it
+ * carries. Lower sorts first.
+ */
+function filterSpecificity(filter: CollectionFacetQuery): number {
+  if (filter.contentType === '__pregnancy_keyword__' || filter.contentType === '__witch_keyword__') {
+    return 2; // keyword fallbacks are the loosest match
+  }
+  if (filter.contentType || filter.contentTypeIn?.length) return 0;
+  return 1;
+}
+
+/**
+ * Every collection this mod would appear in, primary first.
+ *
+ * Applies the same safety gates as the collection page
+ * (`gameVersion` must equal the collection's game, `isNSFW` false), so a
+ * mod is only linked to a page that actually lists it. Registry order is
+ * preserved within the same specificity tier.
+ */
+export function getCollectionsForMod(mod: ModFacetInput): CollectionDefinition[] {
+  if (mod.isNSFW) return [];
+  const matches = SIMS4_COLLECTIONS.filter(
+    (c) => c.game === mod.gameVersion && modMatchesFilter(mod, c.filter),
+  );
+  return matches
+    .map((c, i) => ({ c, i, s: filterSpecificity(c.filter) }))
+    .sort((a, b) => a.s - b.s || a.i - b.i)
+    .map((x) => x.c);
+}
+
+/** Client-safe projection of `getCollectionsForMod` (no intro text in the bundle). */
+export function getCollectionLinksForMod(mod: ModFacetInput): CollectionLink[] {
+  return getCollectionsForMod(mod).map((c) => ({
+    href: collectionHref(c),
+    title: c.title,
+    slug: c.slug,
+    gameSlug: c.gameSlug,
+  }));
+}

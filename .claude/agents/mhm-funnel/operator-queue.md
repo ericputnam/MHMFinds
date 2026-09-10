@@ -34,6 +34,14 @@ are dropped and logged.
 - **Rollback:** `python3 scripts/agents/revive-stranded-pins.py --rollback reports/funnel/pin-revival-2026-09-09.json --apply` — puts every row's original date back and leaves anything already posted alone. Not running the script is also a rollback.
 - **Reply:** (say "stop pip-revive" to block it)
 
+### T1 · Sage — every mod page now links to its collection page (breadcrumb + BreadcrumbList) · PR #77 open, green, **not merged** (merges 2026-09-11 unless you say stop)
+- **Finding:** the 16K `/mods/[id]` pages carried **zero** links to the `/games/sims-4/*` collection pages. The breadcrumb's middle crumb was a `<button>` to the homepage category filter (crawlers do not follow buttons, and a `?category=` URL is not a page Google indexes), and the BreadcrumbList JSON-LD pointed at that same query URL plus a mod URL missing its trailing slash (a 308). Meanwhile the collection pages sit at position 24–32 with 1,000–1,900 impressions each (skin-details 1,937 impr / 22 clicks; male-clothes 1,175 / 29; female-clothes 1,126 / 28; body-presets 1,030 / 24; poses 1,077 / 9 — GSC 08-11→09-07). Internal links are the one ranking signal we fully control, and the biggest reservoir of them was pointing nowhere.
+- **Move:** the breadcrumb becomes `Home › Sims 4 › <Collection> › <Mod>` with real links; mods in more than one collection get a one-line "Also in: Goth CC · Hair CC" row under it. Which collection a mod belongs to is worked out in code from the same filter the collection page uses, so a mod is only ever linked to a page that actually lists it (NSFW and non-Sims-4 mods get `Home › Sims 4 › Mod`). Roughly 9–10K of 16,301 Sims 4 mods gain a link. Nothing below the header changes: all four in-content ad blocks, the sidebar `.mv-ads` wrapper and `aside#secondary` are byte-identical and asserted by test.
+- **Tier 1 because:** it is a visible (small) change to the header of the highest-traffic earning page type. It touches no ad anchor. Rio watches mod-page RPM ±5% for 7 days after merge.
+- **Read:** 2026-09-24 first look, 2026-10-08 final — GSC clicks/position on `/games/sims-4/*` (baseline 128 clicks / pos 30.2 per 28d). Keep if ≥160 clicks or position ≤27 with `/mods/*` clicks not down >10%.
+- **Rollback:** `git revert` the squash — one commit, no flag, no env var, no WordPress.
+- **Reply:**
+
 ## Tier 2 — needs your decision
 
 ### Q1 · Merge `feature/premium-intent-test` into `main` (2026-09-01)
