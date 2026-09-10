@@ -69,3 +69,9 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-09 06:55 | after-merge | Sage: PR #71 /llms-full.txt answer-engine surface | 8b5d249 | https://mhm-finds-dw5l-nucbar2ce-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-09 06:59 | after-merge | Rio: PR #72 feat(rio): Patreon churn read + day-0 welcome-note draft (E30) | e5bb6e3 | https://mhm-finds-dw5l-lwdb7az9o-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-09 07:01 | after-merge | Nova: PR #73 incremental scrape:mhm + 486-mod backfill | f28f44e | https://mhm-finds-dw5l-mlfv08k22-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-09 07:13 | after-merge | Quinn: PR #74 funnel: daily run 2026-09-09 | 240358a | https://mhm-finds-dw5l-ppah08vmi-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-10 06:42 | check | Quinn: morning check 2026-09-10 (evening check left no row on 09-09) |  | https://mhm-finds-dw5l-q68rt94i7-ericputnams-projects.vercel.app | PASS | evening/ad-hoc check · 5xx/15m=0  |
+| 2026-09-10 06:46 | after-merge | Pip: PR #69 revive stranded pin inventory (E26, T1 veto expired) | 8a3cbd9 | https://mhm-finds-dw5l-gr7421zgx-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-10 06:52 | after-merge | Pip: PR #75 pin revival applied 2026-09-10 — 140 pins re-dated (E26) | cc2bd89 | https://mhm-finds-dw5l-al7gnivvr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-10 07:03 | after-merge | Rio: PR #78 operator-did probe (E35) | 95f8dc4 | https://mhm-finds-dw5l-eadgyi0l5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-10 07:07 | after-merge | Nova: PR #79 gameplay-mod detector nouns + NULL re-tag (E33) | fd4eb05 | https://mhm-finds-dw5l-9sf99jt9m-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |

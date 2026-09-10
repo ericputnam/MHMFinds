@@ -57,8 +57,11 @@ for arg in "$@"; do
 done
 
 echo "== catalog-ingest $TODAY mode=$MODE since=$SINCE limit=$LIMIT" | tee -a "$RUN_LOG"
+# `${EXTRA[@]+"${EXTRA[@]}"}`: under `set -u`, macOS bash 3.2 treats an EMPTY array expansion as an
+# unbound variable, so the plain live run (no extra args) died before reaching the scraper on
+# 2026-09-10 ("EXTRA[@]: unbound variable"). The dry run had an element and never hit it.
 "$ROOT/node_modules/.bin/tsx" scripts/scrape-musthavemods.ts \
-  --new-only --since "$SINCE" --limit "$LIMIT" "${EXTRA[@]}" 2>&1 | tee -a "$RUN_LOG"
+  --new-only --since "$SINCE" --limit "$LIMIT" ${EXTRA[@]+"${EXTRA[@]}"} 2>&1 | tee -a "$RUN_LOG"
 STATUS=${PIPESTATUS[0]}
 
 pages="$(grep -E '^📄 Pages scraped:' "$RUN_LOG" | tail -1 | grep -oE '[0-9]+$' || echo '?')"

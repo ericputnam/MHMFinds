@@ -1,0 +1,162 @@
+{
+  "date": "2026-09-10",
+  "headline": {
+    "ownedAdds7d": 76,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 128,
+    "nonAdTarget": 200,
+    "mediavine28d": 5802.56,
+    "mediavine28dPrev": 5888.02
+  },
+  "flags": [
+    "🟡 Pinner: 0 pins schedulable today — the queue holds 1853 unposted rows but all are dated outside the poster's 14d window, so cadence depends entirely on new blog posts landing"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-02→2026-09-08 vs 2026-08-26→2026-09-01",
+      "sessions7d": 89688,
+      "sessionsPrev7d": 89559,
+      "byChannel7d": {
+        "pinterest": 58784,
+        "bing_organic": 17605,
+        "direct": 4740,
+        "google_organic": 1826,
+        "other_search": 2882,
+        "tumblr": 1088,
+        "other": 2248,
+        "ai_referral": 293,
+        "reddit": 222
+      },
+      "byChannelPrev7d": {
+        "pinterest": 59477,
+        "bing_organic": 17880,
+        "direct": 4358,
+        "other_search": 2751,
+        "google_organic": 1482,
+        "tumblr": 965,
+        "other": 2148,
+        "ai_referral": 282,
+        "reddit": 216
+      },
+      "aiReferral7d": 293,
+      "aiReferralPrev7d": 282,
+      "captureEvents7d": {
+        "patreon_click": 21,
+        "affiliate_click": 10,
+        "newsletter_signup": 3,
+        "favorite": 1
+      },
+      "notSetLanding7d": 4092
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-11→2026-09-07",
+      "clicks28d": 2250,
+      "clicksPrev28d": 2060,
+      "impressions28d": 126597
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-08",
+      "revenue7d": 1546.14,
+      "revenuePrev7d": 1366.36,
+      "rpm7d": 17.04,
+      "rpmPrev7d": 15.28,
+      "sessions7d": 90732,
+      "revenue28d": 5802.56,
+      "revenuePrev28d": 5888.02,
+      "rpm28d": 16.05,
+      "health": {
+        "date": "2026/09/10",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 63
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1599,
+      "users7d": 72,
+      "users30d": 257,
+      "subscribers": 21,
+      "subscribers7d": 4,
+      "subscribers30d": 10,
+      "subscribersBySource": {
+        "collection-page": 1,
+        "footer": 17,
+        "go-interstitial": 2,
+        "sign-in": 1
+      },
+      "favorites": 20062,
+      "favorites7d": 779,
+      "downloadClicks7d": 251,
+      "downloadClicks30d": 1135,
+      "affiliateClicks7d": 15,
+      "affiliateClicks30d": 59,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16374,
+      "collections": 1578
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 48,
+      "freeMembers": 5329,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5329,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 8,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 40,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 0,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 128
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 23,
+      "posts7d": 6,
+      "latestPost": "2026-09-10 sims-4-travel-mods"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-09",
+      "postedLast7d": 146,
+      "unpostedBacklog": 1853,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1853
+    }
+  }
+}
