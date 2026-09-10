@@ -153,6 +153,20 @@ else
   log "catalog-ingest-daily.sh not present or not executable — skipped"
 fi
 
+# --- 0d. operator-did probe (Rio, E35) ------------------------------------------
+# Read-only: Vercel Production env var NAMES (via the operator tree, the only Vercel-linked checkout), Patreon
+# tier titles/prices/published/patron_count, functions.php markers — diffed against yesterday's snapshot so the
+# digest thanks the operator the same day instead of re-asking. Exit 2 = could not observe (not logged in, no
+# token); non-fatal either way. Its own summary line lands in logs/operator-did.log and is tailed here.
+log "Operator-did probe…"
+if [ -f "$WT/scripts/agents/operator-did-probe.ts" ]; then
+  (cd "$WT" && MHM_OPERATOR_TREE="$PROJECT_DIR" npx tsx scripts/agents/operator-did-probe.ts >"$WT/reports/funnel/operator-did.out" 2>>"$LOG_FILE") \
+    || log "operator-did probe exited non-zero (non-fatal; 2 = could-not-run, 1 = real failure)"
+  [ -f "$WT/logs/operator-did.log" ] && tail -n 1 "$WT/logs/operator-did.log" >>"$LOG_FILE"
+else
+  log "operator-did-probe.ts not present — skipped"
+fi
+
 # --- 1. scoreboard ----------------------------------------------------------
 # MHM_PROJECT_DIR: the scoreboard writes its dated files to that dir (default: the operator tree). Without it
 # the copy below found nothing and Quinn regenerated the scoreboard by hand on 09-04, 09-08 and 09-09.

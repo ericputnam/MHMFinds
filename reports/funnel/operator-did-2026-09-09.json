@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-09",
+  "generatedAt": "2026-09-09T13:00:00.000Z",
+  "reconstructed": true,
+  "reconstructedFrom": "Not a probe run. Hand-built by Rio on 2026-09-10 from documented 09-09 observations so the first real run has a baseline: env names from Quinn's `vercel env ls production` check recorded in operator-queue.md (Cass status 2026-09-09) and the Q5 status of 2026-09-07; tiers from Rio's tiers-API read in playbooks/rio.md (2026-09-09); blog markers from the 06:42 morning deploy-verify PASS in changelog.md. Optional env names and tier ids were not recorded on 09-09 and are left empty.",
+  "env": {
+    "status": "ok",
+    "note": "reconstructed",
+    "present": [
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASS",
+      "EMAIL_FROM",
+      "PATREON_CLIENT_ID",
+      "PATREON_CLIENT_SECRET",
+      "PATREON_CAMPAIGN_ID",
+      "PATREON_MEMBER_MIN_CENTS",
+      "NEXT_PUBLIC_MEMBERSHIP_ENABLED"
+    ],
+    "missing": [
+      "EMAIL_POSTAL_ADDRESS",
+      "UNSUBSCRIBE_SECRET",
+      "NEXT_PUBLIC_SITE_URL"
+    ],
+    "optionalPresent": [],
+    "optionalMissing": [
+      "UNSUBSCRIBE_MAILBOX",
+      "SMTP_HOURLY_LIMIT",
+      "SMTP_MAX_CONNECTIONS",
+      "SMTP_MAX_MESSAGES"
+    ]
+  },
+  "patreon": {
+    "status": "ok",
+    "note": "reconstructed",
+    "campaignId": "13460416",
+    "tiers": [
+      {
+        "id": "reconstructed-100",
+        "title": "Support Tier",
+        "amount_cents": 100,
+        "published": true,
+        "patron_count": 8,
+        "edited_at": null,
+        "published_at": null,
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": false
+      },
+      {
+        "id": "reconstructed-300",
+        "title": "Tip Jar - Curious Simmer",
+        "amount_cents": 300,
+        "published": true,
+        "patron_count": 39,
+        "edited_at": "2026-09-09T01:35:05.499+00:00",
+        "published_at": null,
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": true
+      },
+      {
+        "id": "reconstructed-500",
+        "title": "Extra Support",
+        "amount_cents": 500,
+        "published": true,
+        "patron_count": 0,
+        "edited_at": null,
+        "published_at": null,
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": false
+      }
+    ],
+    "thanksMsgHasMarker": null,
+    "welcomeNoteObservable": false,
+    "welcomeNoteCheckedFields": []
+  },
+  "blog": {
+    "status": "ok",
+    "note": "reconstructed from the 2026-09-09 06:42 morning check PASS",
+    "exitCode": 0
+  }
+}

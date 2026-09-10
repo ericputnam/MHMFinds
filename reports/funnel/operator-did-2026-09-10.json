@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-10",
+  "generatedAt": "2026-09-10T10:57:52.776Z",
+  "env": {
+    "status": "ok",
+    "present": [
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASS",
+      "EMAIL_FROM",
+      "UNSUBSCRIBE_SECRET",
+      "PATREON_CLIENT_ID",
+      "PATREON_CLIENT_SECRET",
+      "PATREON_CAMPAIGN_ID",
+      "PATREON_MEMBER_MIN_CENTS",
+      "NEXT_PUBLIC_MEMBERSHIP_ENABLED"
+    ],
+    "missing": [
+      "EMAIL_POSTAL_ADDRESS",
+      "NEXT_PUBLIC_SITE_URL"
+    ],
+    "optionalPresent": [],
+    "optionalMissing": [
+      "UNSUBSCRIBE_MAILBOX",
+      "SMTP_HOURLY_LIMIT",
+      "SMTP_MAX_CONNECTIONS",
+      "SMTP_MAX_MESSAGES"
+    ]
+  },
+  "patreon": {
+    "status": "ok",
+    "campaignId": "13460416",
+    "tiers": [
+      {
+        "id": "24870826",
+        "title": "Free",
+        "amount_cents": 0,
+        "published": true,
+        "patron_count": 5330,
+        "edited_at": "2025-01-14T19:04:38.578+00:00",
+        "published_at": "2025-01-14T19:04:38.578+00:00",
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": false
+      },
+      {
+        "id": "28300467",
+        "title": "Support Tier",
+        "amount_cents": 100,
+        "published": true,
+        "patron_count": 8,
+        "edited_at": "2026-05-21T04:33:29.792+00:00",
+        "published_at": "2026-04-07T05:53:34.244+00:00",
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": false
+      },
+      {
+        "id": "24880520",
+        "title": "Tip Jar - Curious Simmer",
+        "amount_cents": 300,
+        "published": true,
+        "patron_count": 40,
+        "edited_at": "2026-09-09T01:35:05.499+00:00",
+        "published_at": "2025-01-15T20:52:16.101+00:00",
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": true
+      },
+      {
+        "id": "28300508",
+        "title": "Extra Support",
+        "amount_cents": 500,
+        "published": true,
+        "patron_count": 0,
+        "edited_at": "2026-05-21T04:34:24.360+00:00",
+        "published_at": "2026-04-07T06:02:31.739+00:00",
+        "unpublished_at": null,
+        "descriptionHasMarker": false,
+        "descriptionHasPerk": false
+      }
+    ],
+    "thanksMsgHasMarker": false,
+    "thanksMsgLength": 0,
+    "welcomeNoteObservable": false,
+    "welcomeNoteCheckedFields": [
+      "campaign.thanks_msg",
+      "tier.description"
+    ]
+  },
+  "blog": {
+    "status": "ok",
+    "exitCode": 0
+  }
+}
