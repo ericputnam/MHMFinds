@@ -29,7 +29,11 @@ LOG_FILE="$PROJECT_DIR/logs/funnel-daily.log"
 WORKTREE_ROOT="$HOME/.mhm-worktrees"
 TODAY="$(date '+%Y-%m-%d')"
 WT="$WORKTREE_ROOT/funnel-$TODAY-$$"
-PROMPT_FILE="$PROJECT_DIR/scripts/agents/funnel-daily-prompt.md"
+# Quinn's prompt comes from the clean origin/main worktree ($WT, created below), not from the operator's
+# checkout: the operator tree is on a feature branch where scripts/agents/funnel-*.{md,sh,ts} are UNTRACKED
+# stale copies (09-10: prompt 20 lines behind, runner 55 lines behind — PR #74's fixes never ran).
+# MHM_PROMPT_FILE overrides; the operator-tree copy is only the fallback if main has no prompt.
+PROMPT_FILE="${MHM_PROMPT_FILE:-}"
 MODEL="${FUNNEL_MODEL:-claude-fable-5-1}"   # operator 2026-09-05: Fable is the advisor; specialists get cheaper models per operating-model.md §7
 MAX_TURNS="${FUNNEL_MAX_TURNS:-400}"
 
@@ -262,7 +266,11 @@ EOF
   log "Wrote degraded digest: reports/funnel/digest-$TODAY.md"
   exit 4
 fi
-log "Running Quinn ($MODEL)…"
+if [ -z "$PROMPT_FILE" ]; then
+  if [ -f "$WT/scripts/agents/funnel-daily-prompt.md" ]; then PROMPT_FILE="$WT/scripts/agents/funnel-daily-prompt.md"
+  else PROMPT_FILE="$PROJECT_DIR/scripts/agents/funnel-daily-prompt.md"; log "WARN: origin/main has no funnel-daily-prompt.md — using the operator-tree copy"; fi
+fi
+log "Running Quinn ($MODEL)… prompt=$PROMPT_FILE"
 GUARD_LINE="CIRCUIT BREAKER TODAY: status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" ) — full report: $GUARD_MD. If the runner rolled back, the ledger row and incident file are already written; you are in incident mode."
 if "${CLAUDE_CLEAN[@]}" claude -p "$(cat "$PROMPT_FILE")
 
