@@ -431,8 +431,13 @@ describe('the shipped send script', () => {
   });
 
   it('uses a trailing slash on the /api/subscribe/confirm link (trailingSlash: true)', () => {
-    expect(source).toContain('/api/subscribe/confirm/?');
+    // The URL moved into `lib/services/subscribeConfirm.ts` when the endpoint shipped
+    // (PR #75); the script now signs a real token instead of hand-building a preview link.
+    // The slash requirement follows the URL, so the assertion follows it too.
+    expect(source).toMatch(/buildConfirmUrl\(/);
     expect(source).not.toMatch(/\/api\/subscribe\/confirm\?/);
+    const lib = readFileSync(join(process.cwd(), 'lib/services/subscribeConfirm.ts'), 'utf8');
+    expect(lib).toContain("CONFIRM_PATH = '/api/subscribe/confirm/'");
   });
 });
 
