@@ -430,12 +430,44 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   },
 
   // Gameplay Mod
+  //
+  // 2026-09-10 (Nova): the four "mods" listicles ingested on 09-09
+  // (social-media, phone, funeral, moving) contributed 81 rows with no
+  // content type at all, because this rule had no nouns for the three things
+  // a gameplay mod is usually named after — a career, an aspiration or a
+  // trait. Added those plus the other unambiguous gameplay nouns found by
+  // auditing every title in the catalog (`career` 56 hits / 25 already
+  // gameplay-mod, `trait` 54 / 35, `overhaul` 21 / 16, `aspiration` 7 / 4,
+  // `map replacement` 19, `life mod` 5, `side hustle` 1, `social bunny` 1).
+  //
+  // Three keywords were REMOVED in the same pass:
+  //   - 'realistic' — a bare adjective, and the 09-08 lighting fix ruled
+  //     those out. It appears in 32 titles spanning beards, body presets,
+  //     skins, poses, shorts and houses; because this rule outranks `lot`
+  //     (12), it was actively stealing "Suburban Realistic Houses" from the
+  //     lot rule, and in a description it is pure marketing filler.
+  //   - 'pregnancy' — a duplicate of the priority-103 pregnancy rule, which
+  //     always wins on the same word. It could only ever add a second,
+  //     spurious match to this rule's description count.
+  //   - 'gameplay mod' / 'social interaction' / 'trait mod' / 'career mod' —
+  //     each one contains another keyword in the same rule ('gameplay',
+  //     'interaction', 'trait', 'career'), so one occurrence of the shorter
+  //     word scored twice. Same class of bug as the 'light'/'lights' plural
+  //     double-count (2026-09-08); `matchedKeywordsIn` now collapses these
+  //     generally, and the redundant spellings are gone from the source too.
   {
-    keywords: ['gameplay mod', 'gameplay', 'mod pack', 'social interaction', 'interaction',
-               'trait mod', 'career mod', 'realistic', 'slice of life', 'tradition',
-               'autonomy', 'woohoo', 'pregnancy', 'custom event', 'romance mod',
+    keywords: ['gameplay', 'mod pack', 'interaction', 'career', 'aspiration',
+               'trait', 'overhaul', 'side hustle', 'life mod', 'map replacement',
+               'social bunny', 'slice of life', 'tradition',
+               'autonomy', 'woohoo', 'custom event', 'romance mod',
                'regency mod', 'inspired mod'],
-    // Note: ' mod' alone is too generic - use specific patterns
+    // Note: ' mod' alone is too generic - use specific patterns.
+    // Negatives cover the CC items that are *themed* after a gameplay
+    // concept rather than being one: career-themed build sets and clothing,
+    // trait/career poses, and "portrait" is already excluded by the word
+    // boundary in `keywordToRegex`.
+    negativeKeywords: ['career outfit', 'career dress', 'career wear',
+                       'career set', 'trait pose'],
     contentType: 'gameplay-mod',
     priority: 15,
   },
@@ -561,7 +593,24 @@ function keywordStem(keyword: string): string {
 
 /**
  * Keywords from `rule.keywords` that match `text`, with singular/plural
- * spellings of the same concept collapsed to one entry.
+ * spellings of the same concept collapsed to one entry, and with any keyword
+ * that is contained in another matched keyword of the same rule dropped.
+ *
+ * The second collapse is the compound form of the same bug the stem collapse
+ * fixes (Nova, 2026-09-10). A rule listing BOTH 'interaction' and
+ * 'social interaction' scored TWO matches from the single phrase "social
+ * interactions", and >= 2 description matches is promoted to medium
+ * confidence — so one incidental phrase was enough to relabel a mod, exactly
+ * as 'light' + 'lights' did on 2026-09-08. Stem-collapsing alone does not
+ * catch it, because the two spellings have different stems.
+ *
+ * The pairs that existed in the source when this landed:
+ *   gameplay-mod: 'gameplay mod'/'gameplay', 'social interaction'/'interaction',
+ *                 'trait mod'/'trait', 'career mod'/'career'
+ *   hair:         'bob cut'/'bob'
+ *   lighting:     'ceiling light'/'light fixture'/... (no bare 'light' since 09-08)
+ * The redundant spellings were removed from the gameplay-mod rule as well;
+ * this guard is here so the next author who adds one cannot re-open the hole.
  */
 function matchedKeywordsIn(text: string, keywords: string[]): string[] {
   const bySt = new Map<string, string>();
@@ -572,7 +621,18 @@ function matchedKeywordsIn(text: string, keywords: string[]): string[] {
     const existing = bySt.get(stem);
     if (!existing || kw.length > existing.length) bySt.set(stem, kw);
   }
-  return Array.from(bySt.values());
+
+  const matched = Array.from(bySt.values());
+  // Drop any match whose stem appears inside a longer match's stem, so a
+  // compound keyword and the simple keyword it contains count once.
+  return matched.filter(kw => {
+    const stem = keywordStem(kw);
+    return !matched.some(other => {
+      if (other === kw) return false;
+      const otherStem = keywordStem(other);
+      return otherStem.length > stem.length && otherStem.includes(stem);
+    });
+  });
 }
 
 // ============================================

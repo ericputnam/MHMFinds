@@ -145,4 +145,82 @@ describe('detectContentType', () => {
       expect(detectContentType('Blackout Curtains Set', 'Window curtains in eight swatches.')).toBe('curtains');
     });
   });
+
+  // ── Gameplay mods: careers, aspirations, traits (Nova, 2026-09-10, E33) ──
+  //
+  // The four "mods" listicles ingested on 2026-09-09 (social-media, phone,
+  // funeral, moving) contributed 81 rows with contentType NULL, because the
+  // gameplay-mod rule had no nouns for the three things a gameplay mod is
+  // usually named after. A row with no content type is in no facet, on no
+  // collection page and in no /games/* grid.
+  describe('gameplay mods named after a career / aspiration / trait', () => {
+    it('detects a career mod', () => {
+      expect(detectContentType('Social Media Influencer Career')).toBe('gameplay-mod');
+      expect(detectContentType('Teen Criminal Career')).toBe('gameplay-mod');
+    });
+
+    it('detects an aspiration mod', () => {
+      expect(detectContentType('Social Media Star Aspiration')).toBe('gameplay-mod');
+      expect(detectContentType('Moving Out Custom Aspiration')).toBe('gameplay-mod');
+    });
+
+    it('detects a trait mod', () => {
+      expect(detectContentType('Nonchalant New Trait')).toBe('gameplay-mod');
+      expect(detectContentType('Heartbreaker Trait Pack')).toBe('gameplay-mod');
+    });
+
+    it('detects overhauls, life mods, side hustles and map replacements', () => {
+      expect(detectContentType('Crush Overhaul')).toBe('gameplay-mod');
+      expect(detectContentType('Prison Life Mod')).toBe('gameplay-mod');
+      expect(detectContentType('Fitness Influencer Side Hustle')).toBe('gameplay-mod');
+      expect(detectContentType('Tartosa Map Replacement Mod')).toBe('gameplay-mod');
+      expect(detectContentType('Immersive Social Bunny')).toBe('gameplay-mod');
+    });
+
+    // ── Negative cases ──
+    it('does not read "trait" out of "portrait"', () => {
+      // \b in keywordToRegex already guards this; assert it so a future
+      // author cannot loosen the boundary without a red test.
+      expect(detectContentType('Watercolour Family Portraits')).not.toBe('gameplay-mod');
+    });
+
+    it('leaves career-themed CC to the CAS and build rules', () => {
+      expect(detectContentType('Ultimate Teen Career Set')).not.toBe('gameplay-mod');
+      expect(detectContentType('Doctor Career Outfit')).not.toBe('gameplay-mod');
+      expect(detectContentType('Career Day Dress for Toddlers')).toBe('dresses');
+    });
+
+    it('does not classify anything merely described as "realistic" as a gameplay mod', () => {
+      // 'realistic' was a keyword until 2026-09-10. It is a bare adjective —
+      // the same class of bug as the bare 'light' removed on 2026-09-08 — and
+      // it appears in 32 catalog titles spanning beards, skins, shorts and
+      // houses. Because gameplay-mod (15) outranks lot (12), it was stealing
+      // house builds from the lot rule.
+      expect(detectContentType('Suburban Realistic Houses')).toBe('lot');
+      expect(detectContentType('Realistic Brick Walls')).not.toBe('gameplay-mod');
+      expect(detectContentType('Sims 4 Realistic Beard CC')).toBe('beard');
+    });
+
+    it('does not let a compound keyword and the word it contains count twice', () => {
+      // 'social interaction' + 'interaction' both matched one phrase, and
+      // >= 2 description matches is promoted to medium confidence — the same
+      // hole as 'light' + 'lights'. Both spellings were removed from the rule
+      // AND matchedKeywordsIn now collapses the pair generally.
+      const r = detectContentTypeWithConfidence(
+        'Nettle Bloom',
+        'Adds a new social interaction to the game.'
+      );
+      expect(r.matchedKeywords.length).toBeLessThan(2);
+      expect(r.contentType).not.toBe('gameplay-mod');
+    });
+
+    it('still resolves a genuine gameplay mod from two independent description nouns', () => {
+      expect(
+        detectContentType(
+          'Second Chances',
+          'Adds a new career and a matching aspiration for adult sims.'
+        )
+      ).toBe('gameplay-mod');
+    });
+  });
 });
