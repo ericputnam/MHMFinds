@@ -24,6 +24,9 @@ export async function GET() {
       priority: '0.9',
       changefreq: 'daily',
     })),
+    // /play/ — the daily styling game. changefreq daily because a new
+    // episode is generated every midnight ET.
+    { loc: `${baseUrl}/play/`, priority: '0.6', changefreq: 'daily' },
     { loc: `${baseUrl}/top-creators/`, priority: '0.5', changefreq: 'weekly' },
     { loc: `${baseUrl}/about/`, priority: '0.3', changefreq: 'monthly' },
     { loc: `${baseUrl}/submit-mod/`, priority: '0.3', changefreq: 'monthly' },

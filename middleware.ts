@@ -4,10 +4,16 @@ import { getToken } from 'next-auth/jwt';
 
 // Known Next.js app route prefixes — these are NOT WordPress routes.
 // Any request whose first path segment matches one of these goes to Next.js.
+// IMPORTANT: every new top-level app route MUST be added here. The
+// catch-all at the bottom of getWordPressUrl() proxies any unlisted first
+// segment to WordPress, so a missing entry makes the route unreachable —
+// the visitor gets a WordPress 404, not the Next.js page, and nothing in
+// the build or the type-check catches it. ('play' was missing on first
+// copy-in of /play and the page 404'd against a local production build.)
 const NEXTJS_PREFIXES = new Set([
   'api', 'admin', 'creators', 'mods', 'account', 'sign-in',
   'submit-mod', 'about', 'privacy-policy', 'terms',
-  'games', 'go', 'top-creators', 'simple-main', 'verify-md',
+  'games', 'go', 'play', 'top-creators', 'simple-main', 'verify-md',
   '_next', 'sitemap', 'manifest', 'robots.txt', 'downloads',
 ]);
 
