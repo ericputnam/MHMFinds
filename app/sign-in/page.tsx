@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { signIn, useSession } from 'next-auth/react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
@@ -257,7 +258,17 @@ export default function SignInPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-3">Password</label>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-semibold text-slate-300">Password</label>
+                      {mode === 'signin' && (
+                        <Link
+                          href="/forgot-password"
+                          className="text-xs font-medium text-sims-pink hover:text-sims-pink/80 transition-colors"
+                        >
+                          Forgot password?
+                        </Link>
+                      )}
+                    </div>
                     <input
                       type="password"
                       value={password}
