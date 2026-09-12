@@ -35,6 +35,7 @@ CRITICAL_MARKERS=(
   "mhm_search_form_rewrite_js|Blog Search Form Rewrite"
   "is_from_apex_rewrite|Apex Domain Rewrite Helper"
   "mhm_collection_crosslinks|Collection Cross-links (SEO internal linking)"
+  "mhm_consolidated_post_map|Legacy canonical map (un-consolidated pairs, PR #63)"
 )
 
 FORCE=0
