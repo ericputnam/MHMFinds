@@ -40,6 +40,11 @@ set -euo pipefail
 #   4. Refresh token TTL — decode JWT payload, warn if expiry < REFRESH_WARN_DAYS
 #   5. Catalog pins      — IDs 11421-11429 (E1 batch 2026-09-04 + makeup-cc /
 #                          witch-cc 2026-09-07): report posted count (--catalog)
+#   6. Board sections    — every schedulable row's "Board Section ID" is checked
+#                          against the live board (repair-pin-sections.py
+#                          --check). One dead section = the poster retries that
+#                          row every 20 min and posts nothing (2026-09-10 →
+#                          09-12: 138 retries of entry 8007, 0 pins) → FAIL
 #
 # CREDENTIALS: reads ~/java_projects/MHMUtils/config.json (no fallback to .env;
 # the scoreboard already handles .env fallback — this script is for the runner).
@@ -310,6 +315,42 @@ except Exception:
   else
     ok "Refresh token TTL: $DAYS_LEFT days remaining"
   fi
+fi
+
+# ---- 6. Board sections on schedulable rows --------------------------------
+# The poster posts ONE row per run, oldest first, and neither marks nor skips
+# a row Pinterest rejects. A schedulable row whose "Board Section ID" no
+# longer exists (404 code 2031) is therefore retried every 20 minutes forever
+# while everything behind it waits: 2026-09-10 06:40 → 09-12, 138 retries of
+# entry 8007, 0 pins, valid token, 56 rows in the window. Steps 1–4 all
+# passed on 09-11. This step asks Pinterest whether every schedulable row's
+# section is live, exactly the check the poster does not do (E36).
+say ""
+say "--- 6. Board sections on schedulable rows (a dead section blocks the whole queue)"
+
+SECTION_HELPER="$SCRIPT_DIR/repair-pin-sections.py"
+if command -v python3 >/dev/null 2>&1 && [[ -f "$SECTION_HELPER" ]]; then
+  set +e
+  SECTION_OUT=$(MHM_UTILS_DIR="$MHM_UTILS" MHM_PINTEREST_CONFIG="$CONFIG_JSON" \
+    python3 "$SECTION_HELPER" --check 2>&1)
+  SECTION_RC=$?
+  set -e
+  case "$SECTION_RC" in
+    0)
+      ok "$(printf '%s' "$SECTION_OUT" | head -1)"
+      ;;
+    1)
+      while IFS= read -r line; do fail "$line"; done <<< "$SECTION_OUT"
+      FAIL=1
+      ;;
+    *)
+      warn "Board sections not evaluated: $(printf '%s' "$SECTION_OUT" | head -1)"
+      WARN=1
+      ;;
+  esac
+else
+  warn "repair-pin-sections.py not available alongside this script — board sections not checked"
+  WARN=1
 fi
 
 # ---- 5. Catalog pin drain (E1 batch, optional) ----------------------------

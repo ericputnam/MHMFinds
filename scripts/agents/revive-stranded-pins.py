@@ -37,6 +37,11 @@ SAFETY RAILS (all of these are enforced, not advisory)
       spam
     * destination URLs and image URLs are HEAD-checked; dead ones are dropped
       (--no-verify to skip)
+    * every row's "Board Section ID" is checked against the live board via
+      the Pinterest API (repair-pin-sections.py); rows whose section is gone
+      are dropped, and if sections cannot be validated at all the run stops
+      (exit 2) instead of writing — a revived row with a deleted section
+      blocked the poster for two days on 2026-09-10 → 09-12 (E36)
     * idempotent: re-running selects only rows still dated before the window, so
       rows this script already moved are not picked up again
 
@@ -127,7 +132,8 @@ def q(value):
 
 
 SELECT_COLS = ('select=id,%22Post%20Date%22,%22Post%20Title%22,%22Post%20URL%22,'
-               '%22Image%20URL%22,%22Board%20ID%22,%22Board%20Name%22')
+               '%22Image%20URL%22,%22Board%20ID%22,%22Board%20Name%22,'
+               '%22Board%20Section%22,%22Board%20Section%20ID%22')
 
 
 def fetch_stranded(config, floor_str, limit):
@@ -187,6 +193,58 @@ def url_alive(url, cache, timeout=15):
         alive = False
     cache[url] = alive
     return alive
+
+
+# --------------------------------------------------------------------------
+# Board sections (E36) — a revived row whose section the writer has since
+# deleted blocks the poster: it retries that one row every 20 minutes and
+# posts nothing (2026-09-10 → 09-12, entry 8007, 138 retries, 0 pins). The
+# validation lives in repair-pin-sections.py; this only reuses it.
+# --------------------------------------------------------------------------
+
+def _load_sections_module():
+    import importlib.util
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        'repair-pin-sections.py')
+    if not os.path.isfile(path):
+        return None
+    spec = importlib.util.spec_from_file_location('mhm_repair_pin_sections', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def drop_dead_sections(config, rows):
+    """Return (kept_rows, dropped_count). Fails closed: if sections cannot be
+    validated at all, the run stops with exit 2 rather than re-dating rows the
+    poster may choke on."""
+    sections = _load_sections_module()
+    if sections is None:
+        print('ERROR: repair-pin-sections.py not found next to this script — '
+              'cannot validate board sections (use --no-verify to skip)')
+        sys.exit(2)
+    try:
+        token = sections.obtain_token(config)
+        by_board = sections.sections_for_rows(token, rows)
+    except sections.CouldNotRun as exc:
+        print('ERROR: board sections could not be validated: {} '
+              '(use --no-verify to skip)'.format(exc))
+        sys.exit(2)
+    kept, dropped = [], defaultdict(int)
+    for row in rows:
+        verdict, _new = sections.decide(
+            row.get('Board Section ID'), row.get('Board Section'),
+            by_board.get(str(row.get('Board ID') or '')))
+        if verdict in ('ok', 'none'):
+            kept.append(row)
+        else:
+            dropped[verdict] += 1
+    if dropped:
+        print('  dropped {} row(s) whose board section is dead or unverifiable '
+              '({}); repair them first: scripts/agents/repair-pin-sections.py'.format(
+                  sum(dropped.values()),
+                  ', '.join('{}={}'.format(k, v) for k, v in sorted(dropped.items()))))
+    return kept, sum(dropped.values())
 
 
 # --------------------------------------------------------------------------
@@ -440,6 +498,14 @@ def main():
         live = kept
         print('  image URLs checked: {} live, {} dead'.format(
             len(kept), dead_img))
+
+    # --- filter: board sections (E36) ---------------------------------------
+    if args.no_verify:
+        print('  board-section check SKIPPED (--no-verify)')
+    else:
+        live, _dead_sections = drop_dead_sections(config, live)
+        print('  board sections checked: {} rows keep a live (or no) section'.format(
+            len(live)))
 
     if not live:
         print('\nNo usable rows survived the filters — nothing to do.')
