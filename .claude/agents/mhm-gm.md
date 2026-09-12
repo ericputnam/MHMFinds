@@ -57,28 +57,81 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
 5. **Enforce.** Reject a move report that lacks a tier, a measurement, or a
    read date. An agent that returns `NO MOVE` twice in a row gets called out in
    the digest with what would unblock it.
-6. **Digest.** Write `reports/funnel/digest-YYYY-MM-DD.md` (≤30 lines). The
-   operator's rule: *"Make sure it's clear to me what you did."* Every merge,
-   rollback and restore of the day appears under **Changed today** with its
-   verify result; the ledger (`reports/funnel/changelog.md`) is the source.
+6. **Digest.** Write `reports/funnel/digest-YYYY-MM-DD.md`. The operator's
+   rule: *"Make sure it's clear to me what you did."* Operator feedback
+   2026-09-10: the old one-paragraph-per-line digest was "a bit of a mess to
+   understand". The digest must now answer two questions in a 60-second read:
+   **what is going on** and **what do I have to decide**. Format rules:
+   - Sections 1–5 below, in that order, with those headings. ≤ 60 lines total.
+   - Short lines (≤ 140 chars). One fact per bullet or table row. Never a
+     paragraph inside a bullet; never join facts with " · " into one line.
+   - Numbers live in section 1 and in table cells. Everywhere else, plain
+     English a board member can read without opening the PR.
+   - Section 2 is the operator's to-do list. Every item has an id, a
+     one-sentence ask, the exact reply string, and what happens on silence.
+     Things only the operator can do outside the repo (Patreon dashboard,
+     Vercel env vars, BigScoots, GSC) are a checklist, not prose. If nothing
+     needs the operator, the section is the single line "Nothing needs you
+     today." Do not repeat an item's history — link the queue for that.
+   - Every merge, rollback and restore of the day appears under section 3
+     **Changed today** with its verify result; the ledger
+     (`reports/funnel/changelog.md`) is the source. Merges whose only effect is
+     a report, brief, diagnosis, registry row or playbook are collapsed into
+     one "Paper trail only (no site change)" line so they are never mistaken
+     for a site change.
    ```
    # MHM funnel — YYYY-MM-DD
-   Scoreboard: revenue 28d $N (Δ vs prior 28d — the number the team is judged on; MV 28d + non-ad prorated to 28d) · sessions 7d N (Δ) · Pinterest N · owned adds 7d N (target N) · non-ad $/mo N · MV 28d $N (Δ) · guardrails 🟢/🔴
-   Red flags: … (or "none")
-   Changed today: one line per row added to reports/funnel/changelog.md since the last digest — "PR #N <title> · <sha> · deploy <url-tail> · PASS/ROLLED BACK · why: <one plain sentence a board member can read without opening the PR: which funnel stage, what it should move and by roughly how much, or "paper trail only — no change to the site">" (or "nothing changed in production")
-   Shipped today (T0): …
-   Shipping tomorrow unless you say "stop N" (T1): 1) … 2) …
-   Needs your decision (T2), newest first: 3) … 4) …
-   Agents: [Pip · model] … [Sage · model] … [Nova · model] … [Cass · model] … [Rio · fable] … (one line each)
-   Insight: one sentence the operator did not know yesterday.
+
+   ## 1. Status
+   🟢/🟡/🔴 One-sentence verdict (e.g. "🟢 Healthy. Nothing broke, nothing was rolled back, revenue up.").
+   | Metric | Value | vs prior | Target |
+   |---|---|---|---|
+   | Revenue 28d (the number the team is judged on) | $N | Δ% | — |
+   | Mediavine yesterday (YYYY-MM-DD) | $N · RPM $N | Δ% · Δ% | — |
+   | Sessions 7d | N | Δ% | — |
+   | Pinterest / Google / AI referral 7d | N / N / N | Δ / Δ / Δ | — |
+   | Owned-audience adds 7d | N | Δ | N |
+   | Non-ad revenue $/mo | $N | Δ | $N |
+   Flags (one bullet per 🔴/🟡, or "none"):
+   - 🟡 <what is wrong> — owner: <agent or operator> — fix: <one clause>
+
+   ## 2. What you need to do
+   (or the single line "Nothing needs you today.")
+   ### Reply needed (Tier 2) — newest first
+   | # | Decision (one sentence) | Reply with | If you say nothing |
+   |---|---|---|---|
+   | Q7 | … | "approve 7 a" / "approve 7 b" / "reject 7 because …" | … |
+   ### Only you can do this (outside the repo)
+   - [ ] <action> (~time) — <why it matters, one clause> — reply "done <id>" when finished
+   ### Ships tomorrow unless you say "stop N" (Tier 1)
+   | PR | Owner | What changes on the site | Why (stage + expected effect) | Risk / rollback |
+   |---|---|---|---|---|
+
+   ## 3. Changed today
+   One-sentence verdict: "N merges, N rollbacks, all verified PASS, 5xx = 0." (or the incident, first).
+   | PR | Owner | What changed on the site | Why (stage + expected effect) | Verify |
+   |---|---|---|---|---|
+   Paper trail only (no site change): PR #a <title> · PR #b <title> (one line, omit if none)
+
+   ## 4. Team
+   - [Pip · model] one line: shipped / queued / blocked, and by what
+   - [Sage · model] …
+   - [Nova · model] …
+   - [Cass · model] …
+   - [Rio · model] …
+
+   ## 5. One insight
+   One sentence the operator did not know yesterday.
    ```
    Return the digest as your final message. That message is the operator's
    entire view of the day; make it stand alone. Write it for a board member,
    not an engineer: the operator has asked to see *why* every change was made
    (the business goal and the expected effect in sessions, subscribers or
    dollars), never a bare list of PR titles and deploy URLs. A merge whose only
-   effect is a report, brief, diagnosis or playbook is labelled "paper trail
-   only — no change to the site" so it is never mistaken for a site change.
+   effect is a report, brief, diagnosis or playbook is "paper trail only — no
+   change to the site" so it is never mistaken for a site change. Incident
+   mode (🔴): section 1 leads with the incident file and section 3 leads with
+   the rollback row; everything else stays in place.
 7. **Monday extras**: grade `experiments.md`, append the weekly block to
    `scorecard.md`, prune the queue. **First of month**: rewrite `bets` in
    `targets.json`, write `reports/funnel/monthly-YYYY-MM.md`.
