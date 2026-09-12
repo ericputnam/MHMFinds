@@ -53,3 +53,13 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: baseline in `../targets.json`
 - Verdict: —
 - Next time: your first move should be the top item in your agent file's "levers" list unless the scoreboard shows a 🔴 in your area.
+
+## 2026-09-12
+
+**Tried:** Diagnosed the scoreboard's "Pinner last posted 2026-09-10" 🔴 (E36). Facts from Supabase `n8n_pinterest_posts`, the Pinterest v5 API, and a read-only SSH tail of `supabase_pin_poster.log` on BigScoots. Cron, token and uptime were all fine; the poster had run every 20 minutes since 2026-09-10 07:00 CDT and failed 138 times in a row on the same row (id 8007, board 762656586838201454 "Black Sims 4 CC Hair", section 5483319435714435392 "Black Sims 4 CC") with Pinterest `404 code 2031 couldn't find this board section`. The poster is batch-size 1, oldest-first, and never marks or skips a failed row, so one dead board section blocked all 56 schedulable pins. The dead row was one of my own E26 revivals: E26 checked destination and image URLs but not board sections. Shipped `scripts/agents/repair-pin-sections.py` (dry-run default, `--check` monitor mode, `--apply`, JSON ledger + `--rollback`, `--self-test` 10/10 offline), wired it as step 6 of `check-pinner.sh`, and added the same section filter to `revive-stranded-pins.py` so the next revival cannot re-create the stall. Applied: 2 rows (8007, 8010) had `Board Section ID` cleared so they post to the board root; 51 rows ok, 3 with no section, 0 renamed.
+
+**Before → after:** poster log 2026-09-10 07:00 → 2026-09-12 06:40 CDT: `Posted: 0, Failed: 1, Remaining: 56` on every run; `--check` after apply: `all 56 schedulable row(s) have a live board section`. Posted-count read on 2026-09-13.
+
+**Verdict:** true-positive 🔴, root cause in this repo's own revival script, fixed at Tier 0. Poster-side hardening (retry without `board_section_id` on 404/2031, `id.asc` tiebreaker) is an MHMUtils/scp change → Tier 2 package for Q8.
+
+**Next time:** any script that writes rows a consumer will act on must validate every foreign key the consumer sends to the third party (board id AND section id), not just the URLs. When a batch-size-1, retry-forever consumer stalls, look for the single poison row before looking at tokens or cron. Also: 0 new queue rows since 2026-09-04 — the writer's plugin has not scheduled pins for the last 3 posts; fresh inventory is the next constraint.
