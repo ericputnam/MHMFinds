@@ -76,3 +76,10 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-10 07:03 | after-merge | Rio: PR #78 operator-did probe (E35) | 95f8dc4 | https://mhm-finds-dw5l-eadgyi0l5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-10 07:07 | after-merge | Nova: PR #79 gameplay-mod detector nouns + NULL re-tag (E33) | fd4eb05 | https://mhm-finds-dw5l-9sf99jt9m-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-12 07:10 | after-merge | operator: PR #81 five-section digest + 2026-09-10 approvals | bea6539 | https://mhm-finds-dw5l-q9ovxpfgj-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-10 07:11 | after-merge | Quinn: PR #80 funnel: daily run 2026-09-10 | 0edc041 | https://mhm-finds-dw5l-ak9rrlcrw-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 07:15 | after-merge | operator: PR #82 Q7(a) launcher installed + ledger row for PR #81 | 81db033 | https://mhm-finds-dw5l-3ogiq7q9a-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 07:25 | check | Quinn: morning check 2026-09-12 |  | https://mhm-finds-dw5l-3ogiq7q9a-ericputnams-projects.vercel.app | PASS | evening/ad-hoc check · 5xx/15m=0  |
+| 2026-09-12 07:27 | after-merge | Sage: PR #77 mod-page breadcrumb + BreadcrumbList (E32) | 9ca9674 | https://mhm-finds-dw5l-51e3bvt5p-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 07:32 | after-merge | Cass: PR #76 /api/subscribe/confirm/ consent endpoint (E34) | c1978db | https://mhm-finds-dw5l-amrvt27on-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 07:39 | after-merge | Sage: PR #86 per-collection sitemap lastmod (E37) | be159da | https://mhm-finds-dw5l-5earxv68z-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 07:43 | after-merge | Pip: PR #87 repair dead Pinterest board sections that stall the pinner (E36) | c3c8094 | https://mhm-finds-dw5l-bhynjvnju-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
