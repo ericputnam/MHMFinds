@@ -100,9 +100,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Pregnancy Mods',
     heading: 'Sims 4 Pregnancy Mods & CC',
-    metaTitle: 'Sims 4 Pregnancy Mods — 100+ Maternity CC Finds | MustHaveMods',
+    metaTitle: 'Sims 4 Pregnancy Mod Finder — Browse 100+ Maternity CC | MustHaveMods',
     metaDescription:
-      'Hand-picked Sims 4 pregnancy mods and maternity CC. Realistic belly overlays, maternity clothes, pregnancy gameplay tweaks, and more.',
+      'Browse every Sims 4 pregnancy mod and maternity CC find in one place. Filter belly overlays, maternity clothes, and gameplay tweaks, sorted by downloads.',
     tagline: 'Maternity clothes, gameplay tweaks, and realistic belly CC',
     intro:
       'Vanilla Sims 4 pregnancy is fine for five minutes. After that you notice the morning-sickness animation loops twice and the belly overlay is basically a beach ball. If you want your pregnancy storylines to actually feel like something — morning sickness that changes how your sim moves, a maternity wardrobe that doesn\'t cap out at three recolored tees, or a belly mesh that grows in more than two stages — you need mods.\n\nThis collection pulls together the pregnancy and maternity CC we keep coming back to. Gameplay tweaks like Lumpinou\'s RPO expansion and MC Command Center get most of the attention, but the maternity wardrobe picks are where the collection really earns its place. Belly overlays from creators like NoirSims and Elza rework what pregnancy actually looks like on a sim, and the maternity dresses pull from MM and alpha creators so you can stay in whatever art style you already build around.\n\nEverything here is filtered to Sims 4 only, checked for a working download link, and skipped if it\'s flagged NSFW. Sort by downloads if you want the mods everyone already trusts, or scroll for the smaller finds that the big listicles miss.',
@@ -116,12 +116,12 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 115,
     related: ['female-clothes', 'poses', 'skin-details'],
-    // No blogUrl: the legacy article /sims-4-pregnancy-mods/ 301s to
-    // this page (vercel.json, 2026-07-03). This is the one pair that
-    // was CONSOLIDATED instead of differentiated — Google refused to
-    // index this page as a duplicate of the legacy article, and the
-    // legacy article itself ranked poorly (pos ~43), so the collection
-    // page absorbed it.
+    // Consolidated 2026-07-03 (legacy article 301'd here), un-redirected
+    // 2026-09: Google refused this page as the canonical and indexed the
+    // blog-subdomain copy of the article instead (pos 10.95, 93 clicks
+    // per 28d) while this page sat at pos 33 with 2 clicks. Same call as
+    // body-presets — DIFFERENTIATED pair, reciprocal link below.
+    blogUrl: '/sims-4-pregnancy-mods/',
   },
   {
     slug: 'holidays-cc',
@@ -368,15 +368,19 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Y2K CC',
     heading: 'Sims 4 Y2K CC',
-    metaTitle: 'Sims 4 Y2K CC — 140+ 2000s Fashion Finds | MustHaveMods',
+    metaTitle: 'Sims 4 Y2K CC Finder — Browse 140+ 2000s Fashion Finds | MustHaveMods',
     metaDescription:
-      'The best Sims 4 Y2K CC. Low-rise jeans, baby tees, butterfly clips, and 2000s-era fashion for your throwback sims.',
+      'Browse every Sims 4 Y2K CC find in one place. Filter low-rise jeans, baby tees, butterfly clips, and 2000s-era fashion, sorted by downloads.',
     tagline: 'Low-rise jeans, baby tees, and butterfly clips for 2000s sims',
     intro:
       'Y2K came back everywhere at once — TikTok, the runways, and the Sims CC scene, where creators had been quietly making low-rise jeans and baby tees for years before the revival made them cool again. Base-game Sims 4 has essentially nothing from this era; the game skipped from generic-modern to generic-modern.\n\nThis collection pulls together 140+ Y2K picks: the fashion staples (low-rise everything, cropped baby tees, velour sets, cargo skirts, platform sandals), the accessories that sell the look (butterfly clips, tinted sunglasses, chunky rings, shoulder bags), and the hair — face-framing highlights, crimped textures, and the tiny-clips-everywhere styles that scream 2003.\n\nY2K works best layered with the female-clothes and hair collections for the full wardrobe rebuild. As always: Sims 4 only, links checked, NSFW filtered out.',
     filter: { themesAny: ['y2k'] },
     expectedCount: 147,
     related: ['female-clothes', 'hair-cc', 'poses'],
+    // Un-redirected 2026-09 alongside pregnancy-mods: the legacy article
+    // ranks pos 10.2 on the blog subdomain (20 clicks/28d) vs this page
+    // at pos 29.8 (4 clicks). DIFFERENTIATED pair.
+    blogUrl: '/sims-4-y2k-cc/',
   },
   {
     slug: 'vampire-cc',
