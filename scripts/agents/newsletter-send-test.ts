@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local', override: true });
 import { writeFileSync } from 'fs';
 import { sendBulk, resolvePostalAddress } from '../../lib/services/bulkMailer';
+import { buildConfirmUrl } from '../../lib/services/subscribeConfirm';
 
 const SITE = 'https://musthavemods.com';
 const REPLY_TO = 'simsnews@musthavemods.com';
@@ -186,9 +187,11 @@ async function main() {
   }
   if (only !== 'issue') {
     const r = await sendBulk({ ...common, build: ({ email, unsubscribeUrl }) => {
-      // The confirm endpoint is not built yet; this is a labelled preview link. Trailing slash on
-      // purpose: next.config.js `trailingSlash: true` makes the bare path answer 308 (PR #67).
-      const confirmUrl = `${SITE}/api/subscribe/confirm/?e=${encodeURIComponent(email)}&t=PREVIEW-NOT-LIVE`;
+      // Real, per-recipient, HMAC-signed consent link (live since PR #76). The token is
+      // domain-separated from the unsubscribe token, so this link can only ever subscribe.
+      // It must be signed with the SAME UNSUBSCRIBE_SECRET that production verifies with,
+      // or every link is a 400 — the failure that killed the 09-08 test send's footer links.
+      const confirmUrl = buildConfirmUrl(email, SITE);
       return { subject: 'Do you want the weekly Sims 4 finds email?', html: rePermHtml(confirmUrl, unsubscribeUrl), text: rePermText(confirmUrl) };
     } });
     console.log(`re-permission → attempted ${r.attempted} sent ${r.sent} failed ${r.failed}`, r.results.map((x) => `${x.email}:${x.sent ? 'ok' : x.error ?? 'dry'}`).join(' '));

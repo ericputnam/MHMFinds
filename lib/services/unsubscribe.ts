@@ -67,6 +67,14 @@ export function signUnsubscribeToken(email: string): string {
   );
 }
 
+/** Timing-safe compare of two tokens. False on any length/format mismatch, never throws. */
+function safeEqual(expected: string, actual: string): boolean {
+  const a = Buffer.from(expected);
+  const b = Buffer.from(actual);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
 /** Timing-safe check. Returns false on any malformed input rather than throwing. */
 export function verifyUnsubscribeToken(email: string, token: string): boolean {
   if (!email || !token) return false;
@@ -76,10 +84,48 @@ export function verifyUnsubscribeToken(email: string, token: string): boolean {
   } catch {
     return false;
   }
-  const a = Buffer.from(expected);
-  const b = Buffer.from(token);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
+  return safeEqual(expected, token);
+}
+
+/**
+ * Domain-separated sibling of `signUnsubscribeToken` (Cass, 2026-09-10).
+ *
+ * Same key, different message: the HMAC is taken over `<purpose>:<email>` instead of the
+ * bare address, so a token minted for one purpose can never be replayed as another. That
+ * matters the moment a second endpoint exists: without separation, the token in a
+ * "yes, subscribe me" link would also unsubscribe the reader, and vice versa.
+ *
+ * The unsubscribe token derivation above is deliberately left alone — links already issued
+ * must keep verifying — so `signUnsubscribeToken(e) !== signPurposeToken(p, e)` for every p.
+ * The signing key never leaves this module; callers get tokens, not secrets.
+ */
+export function signPurposeToken(purpose: string, email: string): string {
+  return base64url(
+    createHmac('sha256', signingKey())
+      .update(`${purpose}:${normalizeEmail(email)}`)
+      .digest()
+  );
+}
+
+/** Timing-safe verify for `signPurposeToken`. False on malformed input rather than throwing. */
+export function verifyPurposeToken(
+  purpose: string,
+  email: string,
+  token: string
+): boolean {
+  if (!purpose || !email || !token) return false;
+  let expected: string;
+  try {
+    expected = signPurposeToken(purpose, email);
+  } catch {
+    return false;
+  }
+  return safeEqual(expected, token);
+}
+
+/** base64url of the normalized address — the `e` query parameter of every signed link. */
+export function encodeEmailParam(email: string): string {
+  return base64url(normalizeEmail(email));
 }
 
 export function baseUrl(explicit?: string): string {
@@ -100,7 +146,7 @@ export function buildUnsubscribeUrl(email: string, site?: string): string {
 }
 
 /** Inverse of the `e` parameter. Returns null when the value is not decodable. */
-export function decodeUnsubscribeEmail(e: string): string | null {
+export function decodeEmailParam(e: string): string | null {
   try {
     const decoded = normalizeEmail(fromBase64url(e));
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(decoded) ? decoded : null;
@@ -108,6 +154,9 @@ export function decodeUnsubscribeEmail(e: string): string | null {
     return null;
   }
 }
+
+/** Historical name kept for the unsubscribe route and its tests. */
+export const decodeUnsubscribeEmail = decodeEmailParam;
 
 export function buildUnsubscribeMailto(email: string): string {
   return `mailto:${UNSUBSCRIBE_MAILBOX}?subject=unsubscribe%20${encodeURIComponent(
