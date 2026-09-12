@@ -75,3 +75,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-10 06:52 | after-merge | Pip: PR #75 pin revival applied 2026-09-10 — 140 pins re-dated (E26) | cc2bd89 | https://mhm-finds-dw5l-al7gnivvr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-10 07:03 | after-merge | Rio: PR #78 operator-did probe (E35) | 95f8dc4 | https://mhm-finds-dw5l-eadgyi0l5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-10 07:07 | after-merge | Nova: PR #79 gameplay-mod detector nouns + NULL re-tag (E33) | fd4eb05 | https://mhm-finds-dw5l-9sf99jt9m-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 07:10 | after-merge | operator: PR #81 five-section digest + 2026-09-10 approvals | bea6539 | https://mhm-finds-dw5l-q9ovxpfgj-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
