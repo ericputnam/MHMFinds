@@ -28,6 +28,7 @@ CRITICAL_MARKERS=(
   "is_from_apex_rewrite|Apex Domain Rewrite Helper"
   "mhm_collection_crosslinks|Legacy->collection cross-links (SEO)"
   "mhm_catalog_mod_links|Catalog mod cross-links (SEO internal linking)"
+  "mhm_consolidated_post_map|Legacy canonical map (un-consolidated pairs, PR #63)"
 )
 
 FORCE=0

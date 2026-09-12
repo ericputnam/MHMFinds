@@ -1,0 +1,194 @@
+--- a/supabase_pin_poster_server.py	2026-09-12 13:37:11
++++ b/supabase_pin_poster_server.py	2026-09-12 13:40:04
+@@ -49,7 +49,21 @@
+     return floor.strftime('%Y-%m-%d'), target_date
+ PINTEREST_API_BASE = 'https://api.pinterest.com/v5'
+ 
++# Pinterest API error code returned when board_section_id no longer exists.
++SECTION_NOT_FOUND_CODE = 2031
+ 
++
++def is_section_not_found(resp):
++    """True if Pinterest rejected the pin because the board section is gone
++    (HTTP 404 and/or API error code 2031)."""
++    if resp.status_code == 404:
++        return True
++    try:
++        return resp.json().get('code') == SECTION_NOT_FOUND_CODE
++    except Exception:
++        return False
++
++
+ def load_config(config_path):
+     """Load config.json with Pinterest and Supabase credentials."""
+     with open(config_path, 'r') as f:
+@@ -99,7 +113,9 @@
+             ('Post Date', 'lte.{}'.format(ceil_date)),
+             ('Post Date', 'gte.{}'.format(floor_date)),
+             ('Is Posted', 'eq.false'),
+-            ('order', 'Post Date.asc'),
++            # id.asc tiebreaker: rows sharing a Post Date come back in a
++            # stable insertion order instead of whatever Postgres picks.
++            ('order', 'Post Date.asc,id.asc'),
+             ('limit', str(batch_size)),
+         ]
+         return supabase_query(config, 'n8n_pinterest_posts', params)
+@@ -170,6 +186,21 @@
+         json=pin_payload
+     )
+ 
++    # A queue row can point at a board section that was deleted after it was
++    # scheduled. Pinterest answers 404 / code 2031 and, with batch size 1, that
++    # one row would be re-selected and fail on every run, blocking the whole
++    # queue (entry 8007, Sep 2026). Retry once on the board root instead.
++    if section_id and is_section_not_found(resp):
++        logger.warning('Section {} gone ({} - {}) -> retrying on board root {}'.format(
++            section_id, resp.status_code, resp.text[:200], board_id))
++        retry_payload = dict(pin_payload)
++        retry_payload.pop('board_section_id', None)
++        resp = requests.post(
++            '{}/pins'.format(PINTEREST_API_BASE),
++            headers=headers,
++            json=retry_payload
++        )
++
+     if resp.status_code in (200, 201):
+         return resp.json()
+     else:
+--- a/test_supabase_pin_poster.py	2026-09-12 13:38:51
++++ b/test_supabase_pin_poster.py	2026-09-12 13:38:51
+@@ -9,10 +9,12 @@
+ Run: python3 -m pytest test_supabase_pin_poster.py -v
+ """
+ 
++import json
+ import unittest
+ from unittest.mock import patch, MagicMock
+ 
+-from supabase_pin_poster_server import fetch_unposted_entries, count_remaining
++from supabase_pin_poster_server import (fetch_unposted_entries, count_remaining,
++                                        upload_pin_from_url, is_section_not_found)
+ 
+ 
+ def params_as_pairs(params):
+@@ -44,9 +46,10 @@
+         self.assertIn(('Post Date', 'gte.2026-06-28'), pairs)
+ 
+     def test_oldest_entries_drain_first(self):
+-        """Backlog is ordered by Post Date ascending."""
++        """Backlog is ordered by Post Date ascending, id ascending as tiebreaker."""
+         pairs = self._get_query_params()
+-        self.assertIn(('order', 'Post Date.asc'), pairs)
++        self.assertIn(('order', 'Post Date.asc,id.asc'), pairs)
++        self.assertNotIn(('order', 'Post Date.asc'), pairs)
+ 
+     def test_still_filters_unposted_and_limits_batch(self):
+         pairs = self._get_query_params()
+@@ -71,5 +74,107 @@
+         self.assertNotIn(('Post Date', 'eq.2026-07-12'), pairs)
+ 
+ 
++def fake_response(status, body=None):
++    """Build a minimal requests.Response stand-in."""
++    resp = MagicMock()
++    resp.status_code = status
++    if body is None:
++        resp.text = 'not json'
++        resp.json.side_effect = ValueError('no json')
++    else:
++        resp.text = json.dumps(body)
++        resp.json.return_value = body
++    return resp
++
++
++SECTION_GONE = {'code': 2031, 'message': 'Board section not found.'}
++
++
++class TestIsSectionNotFound(unittest.TestCase):
++
++    def test_404_is_section_not_found(self):
++        self.assertTrue(is_section_not_found(fake_response(404, SECTION_GONE)))
++
++    def test_404_without_json_body_is_section_not_found(self):
++        self.assertTrue(is_section_not_found(fake_response(404)))
++
++    def test_code_2031_with_other_status_is_section_not_found(self):
++        self.assertTrue(is_section_not_found(fake_response(400, SECTION_GONE)))
++
++    def test_other_errors_are_not(self):
++        self.assertFalse(is_section_not_found(
++            fake_response(400, {'code': 1, 'message': 'Invalid image'})))
++        self.assertFalse(is_section_not_found(fake_response(500)))
++        self.assertFalse(is_section_not_found(fake_response(429, {'code': 8})))
++
++
++class TestSectionGoneRetry(unittest.TestCase):
++    """A deleted board section must not block the queue: retry once on the
++    board root, and only for the section-not-found error."""
++
++    CONFIG = {'creator_access_token': 'tok'}
++
++    def _upload(self, responses, section_id='sec-1'):
++        with patch('supabase_pin_poster_server.requests.post',
++                   side_effect=responses) as mock_post:
++            result = upload_pin_from_url(
++                self.CONFIG, 'https://img/x.png', 'Title', 'https://link',
++                'board-1', section_id=section_id, description='desc')
++        return result, mock_post
++
++    def _payloads(self, mock_post):
++        return [c[1]['json'] for c in mock_post.call_args_list]
++
++    def test_section_gone_retries_once_on_board_root(self):
++        result, mock_post = self._upload([
++            fake_response(404, SECTION_GONE),
++            fake_response(201, {'id': 'pin-1'}),
++        ])
++        self.assertEqual(result, {'id': 'pin-1'})
++        self.assertEqual(mock_post.call_count, 2)
++        first, second = self._payloads(mock_post)
++        self.assertEqual(first['board_section_id'], 'sec-1')
++        self.assertNotIn('board_section_id', second)
++        self.assertEqual(second['board_id'], 'board-1')
++        # Everything else about the pin is unchanged on the retry.
++        for key in ('title', 'description', 'link', 'alt_text', 'media_source'):
++            self.assertEqual(first[key], second[key])
++
++    def test_retry_happens_only_once(self):
++        gone = fake_response(404, SECTION_GONE)
++        result, mock_post = self._upload([gone, gone, gone])
++        self.assertIsNone(result)
++        self.assertEqual(mock_post.call_count, 2)
++
++    def test_code_2031_without_404_status_also_retries(self):
++        result, mock_post = self._upload([
++            fake_response(400, SECTION_GONE),
++            fake_response(201, {'id': 'pin-2'}),
++        ])
++        self.assertEqual(result, {'id': 'pin-2'})
++        self.assertEqual(mock_post.call_count, 2)
++
++    def test_no_retry_when_no_section_was_sent(self):
++        result, mock_post = self._upload([fake_response(404, SECTION_GONE)],
++                                         section_id=None)
++        self.assertIsNone(result)
++        self.assertEqual(mock_post.call_count, 1)
++        self.assertNotIn('board_section_id', self._payloads(mock_post)[0])
++
++    def test_no_retry_on_other_errors(self):
++        result, mock_post = self._upload([
++            fake_response(400, {'code': 1, 'message': 'Invalid image'}),
++            fake_response(201, {'id': 'never'}),
++        ])
++        self.assertIsNone(result)
++        self.assertEqual(mock_post.call_count, 1)
++
++    def test_success_with_section_does_not_retry(self):
++        result, mock_post = self._upload([fake_response(201, {'id': 'pin-3'})])
++        self.assertEqual(result, {'id': 'pin-3'})
++        self.assertEqual(mock_post.call_count, 1)
++        self.assertEqual(self._payloads(mock_post)[0]['board_section_id'], 'sec-1')
++
++
+ if __name__ == '__main__':
+     unittest.main()
