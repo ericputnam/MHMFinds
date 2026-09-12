@@ -24,12 +24,19 @@ import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
+import type { CollectionLink } from '@/lib/collections';
+import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 interface ModDetailClientProps {
   initialMod: Mod;
+  /**
+   * Collection page(s) that list this mod, primary first. Resolved on the
+   * server in page.tsx. Empty when the mod matches no collection.
+   */
+  collections?: CollectionLink[];
 }
 
 function InContentAd() {
@@ -42,9 +49,18 @@ function InContentAd() {
   );
 }
 
-export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
+export default function ModDetailClient({ initialMod, collections = [] }: ModDetailClientProps) {
   const router = useRouter();
   const [mod] = useState<Mod>(initialMod);
+
+  // Home › Sims 4 › <Collection> › <Mod>. Same builder feeds the
+  // BreadcrumbList JSON-LD in ModJsonLd, so markup and visible trail agree.
+  const crumbs = buildModBreadcrumb(
+    { id: mod.id, title: mod.title, gameVersion: mod.gameVersion },
+    collections,
+  );
+  const trail = crumbs.slice(0, -1); // all but the current page
+  const alsoIn = collections.slice(1, 4); // secondary collections, max 3
   const [isFavorited, setIsFavorited] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(
     initialMod.thumbnail || initialMod.images?.[0] || null
@@ -65,30 +81,45 @@ export default function ModDetailClient({ initialMod }: ModDetailClientProps) {
       <div className="bg-mhm-card/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-sm mb-2" aria-label="Breadcrumb">
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center gap-1 text-slate-400 hover:text-sims-pink transition-colors"
-            >
-              <Home size={16} />
-              <span>Home</span>
-            </button>
-            <ChevronRight size={16} className="text-slate-500" />
-            {mod && (
-              <>
-                <button
-                  onClick={() => router.push(`/?category=${encodeURIComponent(mod.category)}`)}
-                  className="text-slate-400 hover:text-sims-pink transition-colors"
+          {/*
+            Breadcrumb: real <Link>s (crawlable) to the game hub and the
+            mod's primary collection page — the middle crumb used to be a
+            <button> to the homepage category filter (a query-string URL),
+            which no crawler follows and no page canonicalises to. Each
+            /mods/[id] page is now one internal link
+            into /games/sims-4/<collection>/ (E32, 2026-09-10).
+          */}
+          <nav className="flex items-center gap-2 text-sm mb-2 flex-wrap" aria-label="Breadcrumb">
+            {trail.map((crumb, idx) => (
+              <span key={crumb.href} className="flex items-center gap-2">
+                <Link
+                  href={crumb.href}
+                  className="flex items-center gap-1 text-slate-400 hover:text-sims-pink transition-colors"
                 >
-                  {mod.category}
-                </button>
+                  {idx === 0 && <Home size={16} />}
+                  <span>{crumb.name}</span>
+                </Link>
                 <ChevronRight size={16} className="text-slate-500" />
-                <span className="text-white font-medium truncate max-w-xs">
-                  {mod.title}
-                </span>
-              </>
-            )}
+              </span>
+            ))}
+            <span className="text-white font-medium truncate max-w-xs" aria-current="page">
+              {mod.title}
+            </span>
           </nav>
+          {alsoIn.length > 0 && (
+            <p className="text-xs text-slate-500 mb-2 flex items-center gap-2 flex-wrap">
+              <span>Also in:</span>
+              {alsoIn.map((c) => (
+                <Link
+                  key={c.href}
+                  href={c.href}
+                  className="text-slate-400 hover:text-sims-pink transition-colors underline-offset-2 hover:underline"
+                >
+                  {c.title}
+                </Link>
+              ))}
+            </p>
+          )}
 
           {/* Back Button */}
           <button

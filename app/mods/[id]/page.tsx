@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import type { Mod } from '@/lib/api';
 import { ModJsonLd } from '@/components/ModJsonLd';
+import { getCollectionLinksForMod } from '@/lib/collections';
 import ModDetailClient from './ModDetailClient';
 
 export const revalidate = 3600;
@@ -130,10 +131,17 @@ export default async function ModDetailPage({ params }: PageProps) {
 
   const mod = serializeMod(rawMod);
 
+  // Which /games/sims-4/* collection page(s) list this mod. Resolved here
+  // (server) from the static registry so the breadcrumb links and the
+  // BreadcrumbList JSON-LD point at the collection page instead of the
+  // uncrawlable `/?category=` filter URL, and so the registry's intro
+  // copy never enters the client bundle. (E32, 2026-09-10)
+  const collections = getCollectionLinksForMod(mod);
+
   return (
     <>
-      <ModJsonLd mod={mod} />
-      <ModDetailClient initialMod={mod} />
+      <ModJsonLd mod={mod} collections={collections} />
+      <ModDetailClient initialMod={mod} collections={collections} />
     </>
   );
 }

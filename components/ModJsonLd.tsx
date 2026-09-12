@@ -1,17 +1,30 @@
 'use client';
 
 import { Mod } from '@/lib/api';
+import type { CollectionLink } from '@/lib/collections';
+import {
+  buildBreadcrumbListJsonLd,
+  buildModBreadcrumb,
+  modCanonicalUrl,
+} from '@/lib/seo/modBreadcrumb';
 
 interface ModJsonLdProps {
   mod: Mod;
+  /**
+   * Collections this mod belongs to (primary first), resolved server-side
+   * by `getCollectionLinksForMod`. Drives the BreadcrumbList so it matches
+   * the visible trail in ModDetailClient.
+   */
+  collections?: CollectionLink[];
 }
 
 /**
  * Renders SoftwareApplication + BreadcrumbList JSON-LD structured data
  * for mod detail pages. Improves Google search appearance with rich snippets.
  */
-export function ModJsonLd({ mod }: ModJsonLdProps) {
-  const modUrl = `https://musthavemods.com/mods/${mod.id}`;
+export function ModJsonLd({ mod, collections = [] }: ModJsonLdProps) {
+  // Trailing slash: matches the canonical in app/mods/[id]/page.tsx.
+  const modUrl = modCanonicalUrl(mod.id);
   const image = mod.thumbnail || mod.images?.[0] || 'https://musthavemods.com/og-image.png';
 
   const softwareSchema = {
@@ -52,30 +65,10 @@ export function ModJsonLd({ mod }: ModJsonLdProps) {
       : {}),
   };
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: 'https://musthavemods.com',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: mod.category,
-        item: `https://musthavemods.com/?category=${encodeURIComponent(mod.category)}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: mod.title,
-        item: modUrl,
-      },
-    ],
-  };
+  // Home › Sims 4 › <Collection> › <Mod> — same builder as the visible nav.
+  const breadcrumbSchema = buildBreadcrumbListJsonLd(
+    buildModBreadcrumb({ id: mod.id, title: mod.title, gameVersion: mod.gameVersion }, collections),
+  );
 
   return (
     <>
