@@ -83,3 +83,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-12 07:32 | after-merge | Cass: PR #76 /api/subscribe/confirm/ consent endpoint (E34) | c1978db | https://mhm-finds-dw5l-amrvt27on-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-12 07:39 | after-merge | Sage: PR #86 per-collection sitemap lastmod (E37) | be159da | https://mhm-finds-dw5l-5earxv68z-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-12 07:43 | after-merge | Pip: PR #87 repair dead Pinterest board sections that stall the pinner (E36) | c3c8094 | https://mhm-finds-dw5l-bhynjvnju-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-12 13:37 | after-merge | operator-approved 1a: PR #85 forgot/reset password (E39) | 9f3dc29 | https://mhm-finds-dw5l-pynv7nocr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |

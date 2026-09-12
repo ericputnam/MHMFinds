@@ -8,6 +8,12 @@ replies inline. Quinn processes replies every morning and removes closed items.
 window closes. Tier 2 items older than 7 days get one smaller re-pitch, then
 are dropped and logged.
 
+**Operator directive 2026-09-12:** waiting on a reply is never a reason to skip
+work — ship every Tier 0/1 move regardless of open Tier 2 items; bring only
+board-level decisions and true blockers here (see `autonomy.md`, "Operator
+directive 2026-09-12"). Replies given in chat are recorded and executed the same
+day.
+
 ---
 
 ## Tier 1 — shipping unless you say stop

@@ -81,6 +81,35 @@ conditions. They are enforced by scripts, not by memory:
    only add reports or docs are labelled "paper trail only — no change to the
    site". Decisions are not pushed to the operator; the *why* is.
 
+### Operator directive 2026-09-12 — never stall on the operator
+
+The operator's words (reply to the 2026-09-12 digest): *"I don't like the idea
+of you skipping days because you are waiting on me — your job is clear.
+Critical big moves should probably be presented to the board for decision, but I
+give you full autonomy to do what you need to do to have the team run the
+business so that we make maximum progress as quickly as possible. For blockers
+or big decisions, yep you can bring those up."*
+
+How the team applies it:
+
+- **Waiting is never a move.** An open Tier 2 item blocks only the thing it
+  gates; every agent still ships its best Tier 0/1 move that day. "NO MOVE:
+  waiting on the operator" is not an allowed outcome.
+- **Tier 2 stays for the board-level list above** (money, ad layout /
+  `functions.php`, schema / auth / env / Vercel config, the operator's voice,
+  legal, irreversible). Everything else is Tier 0/1 — when in doubt, ship at
+  Tier 1 with the 24 h veto rather than queue it.
+- **A Tier 2 package is presented once, complete, with the recommendation and
+  the cost of waiting stated** ("silence costs ~N sessions/day"). Re-pitch once
+  at day 7, then drop and log — exactly as written above.
+- **Blockers only the operator can clear** (credentials, dashboards, DNS,
+  money) go in the operator-only checklist with the time it takes; nothing else
+  is parked there.
+- **Replies are applied the same day they arrive.** When the operator replies
+  in chat, the session that receives the reply records it in
+  `operator-queue.md` and executes it through the ship protocol immediately
+  (as on 2026-09-12: 1a, 6, 8) rather than leaving it for the next morning run.
+
 ### Ship protocol (every merge, every tier, no exceptions)
 
 1. Branch from `origin/main` in **your own** worktree (the runner creates one per
