@@ -15,6 +15,7 @@
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { EmailNotifier } from '@/lib/services/emailNotifier';
+import { baseUrl as siteBaseUrl } from '@/lib/services/unsubscribe';
 
 export type PasswordTokenMode = 'invite' | 'reset';
 
@@ -27,10 +28,13 @@ function hashToken(rawToken: string): string {
   return createHash('sha256').update(rawToken).digest('hex');
 }
 
+/**
+ * Same resolution chain as every other link we email
+ * (lib/services/unsubscribe.ts): NEXT_PUBLIC_SITE_URL, then NEXTAUTH_URL,
+ * then production. Review fix 2026-09-12 — the original read NEXTAUTH_URL only.
+ */
 function baseUrl(): string {
-  return (
-    process.env.NEXTAUTH_URL?.replace(/\/$/, '') || 'https://musthavemods.com'
-  );
+  return siteBaseUrl();
 }
 
 /**
@@ -150,6 +154,16 @@ export async function sendPasswordEmail(
   mode: PasswordTokenMode
 ): Promise<boolean> {
   const notifier = new EmailNotifier();
+
+  // Fail closed, quietly: with no transport configured the notifier would
+  // console.log a body preview. Nothing that carries a live reset link may be
+  // printed anywhere, so do not even build the message. The caller already
+  // answers the browser generically, so the user sees no difference.
+  if (!notifier.isConfigured()) {
+    console.warn('[authEmail] no email transport configured; password email not sent');
+    return false;
+  }
+
   const url = `${baseUrl()}/set-password?token=${rawToken}`;
 
   const subject =
@@ -181,5 +195,10 @@ export async function sendPasswordEmail(
            safely ignore this email — your password won't change.`
         );
 
-  return notifier.send(email, subject, html);
+  // skipLog: EmailNotifier.send() otherwise writes the full HTML body — which
+  // contains the RAW token — into notification_logs.body. That would undo the
+  // whole point of storing only the SHA-256 in verification_tokens: a database
+  // read could be replayed against /api/auth/reset-password/ for up to an
+  // hour. Review fix 2026-09-12.
+  return notifier.send(email, subject, html, { skipLog: true });
 }

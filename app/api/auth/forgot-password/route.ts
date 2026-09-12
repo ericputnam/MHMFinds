@@ -60,6 +60,17 @@ export async function POST(request: NextRequest) {
       return genericResponse;
     }
 
+    // The env-var admin account (lib/authOptions.ts) exists as a User row with
+    // an `@admin.local` address and authenticates against ADMIN_PASSWORD, not
+    // a credentials Account. A reset would mint a token for a mailbox that
+    // cannot exist and, if ever consumed, would create a DB credentials row
+    // for the admin — a second password path nobody intended. Never issue
+    // tokens for it. Generic response, same as an unknown address.
+    // Review fix 2026-09-12.
+    if (email.endsWith('@admin.local')) {
+      return genericResponse;
+    }
+
     const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, email: true },

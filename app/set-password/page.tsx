@@ -28,8 +28,9 @@ function SetPasswordForm() {
       return;
     }
     try {
+      // Trailing slash: next.config.js `trailingSlash: true` 308s the bare path.
       const res = await fetch(
-        `/api/auth/reset-password?token=${encodeURIComponent(token)}`
+        `/api/auth/reset-password/?token=${encodeURIComponent(token)}`
       );
       const data = await res.json();
       setTokenValid(Boolean(data.valid));
@@ -60,7 +61,7 @@ function SetPasswordForm() {
 
     setSubmitting(true);
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await fetch('/api/auth/reset-password/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),

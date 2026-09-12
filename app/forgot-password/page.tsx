@@ -15,7 +15,10 @@ export default function ForgotPasswordPage() {
 
     setStatus('submitting');
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      // Trailing slash: next.config.js has `trailingSlash: true`, which 308s
+      // the bare path. Browsers replay the POST, but that is a wasted round
+      // trip and not every client follows a 308 with its body.
+      const res = await fetch('/api/auth/forgot-password/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
