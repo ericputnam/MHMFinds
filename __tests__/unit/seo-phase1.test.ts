@@ -3,6 +3,13 @@ import { NextResponse } from 'next/server'
 import * as fs from 'fs'
 import * as path from 'path'
 
+// sitemap-nextjs.xml reads the DB for per-collection <lastmod> (E37); keep
+// this suite hermetic. Rejecting exercises the template-date fallback.
+vi.mock('@/lib/prisma', () => ({
+  prisma: { mod: { aggregate: () => Promise.reject(new Error('no db in unit tests')) } },
+  default: { mod: { aggregate: () => Promise.reject(new Error('no db in unit tests')) } },
+}));
+
 /**
  * Phase 1 SEO Fixes - Tests
  *

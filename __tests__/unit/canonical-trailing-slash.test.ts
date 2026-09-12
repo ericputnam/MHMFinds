@@ -13,9 +13,16 @@
  * sidebar-sticky-health.test.ts): they catch re-introduction of the
  * bad pattern without needing a running server.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+
+// sitemap-nextjs.xml reads the DB for per-collection <lastmod> (E37); keep
+// this suite hermetic. Rejecting exercises the template-date fallback.
+vi.mock('@/lib/prisma', () => ({
+  prisma: { mod: { aggregate: () => Promise.reject(new Error('no db in unit tests')) } },
+  default: { mod: { aggregate: () => Promise.reject(new Error('no db in unit tests')) } },
+}));
 
 const read = (rel: string) =>
   fs.readFileSync(path.resolve(__dirname, '../../', rel), 'utf-8');
