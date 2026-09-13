@@ -41,6 +41,22 @@ export const PATREON_MEMBERSHIP_URL =
 /** Public Patreon page — the "become a patron" destination. */
 export const PATREON_PAGE_URL = 'https://www.patreon.com/MustHaveModsOfficial';
 
+/**
+ * Direct checkout for the tier that carries the site perk — the $3 tier
+ * (id 24880520; this is the same public join link the Patreon page uses).
+ *
+ * E40 (Rio, 2026-09-12): the /go CTA led with "Connect Patreon", and in four
+ * days 27 site accounts connected while 0 of them were paying patrons — free
+ * members took the first link and got nothing. The CTA now leads with this
+ * checkout link and keeps Connect second, for existing patrons.
+ *
+ * If the operator re-prices or replaces the perk tier, update BOTH constants
+ * (the morning operator-did probe reports tier price/id changes).
+ */
+export const PATREON_MEMBER_TIER_CHECKOUT_URL =
+  'https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24880520';
+export const PATREON_MEMBER_TIER_PRICE_LABEL = '$3/mo';
+
 type Env = Record<string, string | undefined>;
 
 /**

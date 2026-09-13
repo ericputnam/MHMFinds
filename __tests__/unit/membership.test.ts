@@ -7,6 +7,8 @@ import {
   memberMinCents,
   parsePatreonIdentity,
   qualifiesForMembership,
+  PATREON_MEMBER_TIER_CHECKOUT_URL,
+  PATREON_MEMBER_TIER_PRICE_LABEL,
 } from '../../lib/membership'
 
 /**
@@ -164,5 +166,30 @@ describe('source-level guards (no-op until the flag is set)', () => {
     const src = readSource('app/go/[modId]/GoClient.tsx')
     expect(src).toContain('className="mv-ads')
     expect(src).toContain('id="secondary"')
+  })
+})
+
+describe('E40 — /go member CTA leads with the perk tier, not "Connect" (Rio, 2026-09-12)', () => {
+  // 27 site accounts connected Patreon between 09-08 and 09-12 and 0 of them
+  // were paying patrons: the CTA's first link was "Connect Patreon" and free
+  // members took it. The join link must come first and go straight to the
+  // perk tier's checkout; Connect stays for existing patrons.
+  it('the checkout constant is the public $3 perk-tier join link', () => {
+    expect(PATREON_MEMBER_TIER_CHECKOUT_URL).toBe('https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24880520')
+    expect(PATREON_MEMBER_TIER_PRICE_LABEL).toBe('$3/mo')
+  })
+
+  it('/go renders the join link before the connect button and keeps both GA4 source names', () => {
+    const src = readSource('app/go/[modId]/GoClient.tsx')
+    const join = src.indexOf('href={PATREON_MEMBER_TIER_CHECKOUT_URL}')
+    const connect = src.indexOf('onClick={handleConnectPatreon}')
+    expect(join).toBeGreaterThan(-1)
+    expect(connect).toBeGreaterThan(-1)
+    expect(join).toBeLessThan(connect)
+    // Event names unchanged so the E24 read (2026-09-15) stays comparable.
+    expect(src).toContain("source: 'go-member-cta-join'")
+    expect(src).toContain("source: 'go-member-cta-connect'")
+    // The join link no longer points at the campaign landing page.
+    expect(src).not.toContain('href={PATREON_PAGE_URL}')
   })
 })
