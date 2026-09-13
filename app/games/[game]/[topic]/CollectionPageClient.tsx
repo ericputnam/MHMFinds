@@ -22,7 +22,7 @@ import { Footer } from '../../../../components/Footer';
 import { ModGrid } from '../../../../components/ModGrid';
 import { NewsletterSignup } from '../../../../components/NewsletterSignup';
 import { Mod } from '../../../../lib/api';
-import type { CollectionDefinition } from '../../../../lib/collections';
+import { collectionHref, type CollectionDefinition } from '../../../../lib/collections';
 
 interface CollectionPageClientProps {
   collection: CollectionDefinition;
@@ -165,10 +165,14 @@ export default function CollectionPageClient({
                     Related Collections
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* collectionHref() keeps the trailing slash —
+                        next.config.js sets trailingSlash: true, so a bare
+                        path 308s and the internal link stops pointing at
+                        the canonical URL. */}
                     {relatedCollections.map((rel) => (
                       <Link
                         key={rel.slug}
-                        href={`/games/${rel.gameSlug}/${rel.slug}`}
+                        href={collectionHref(rel)}
                         className="group block p-5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-sims-pink/40 rounded-2xl transition-all"
                       >
                         <h3 className="text-lg font-semibold text-white group-hover:text-sims-pink transition-colors mb-1">
