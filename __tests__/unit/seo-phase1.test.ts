@@ -329,11 +329,14 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
     { from: '/sims-4-male-clothes-cc/', to: '/games/sims-4/male-clothes/' },
     { from: '/sims-4-cc-skin-details/', to: '/games/sims-4/skin-details/' },
     { from: '/sims-4-gallery-poses/', to: '/games/sims-4/poses/' },
-    { from: '/sims-4-pregnancy-mods/', to: '/games/sims-4/pregnancy-mods/' },
-    // Theme collections shipped Jul 2026 (goth/cottagecore/y2k)
+    // Theme collections shipped Jul 2026 (goth/cottagecore)
     { from: '/sims-4-goth-cc/', to: '/games/sims-4/goth-cc/' },
     { from: '/sims-4-cottagecore-cc/', to: '/games/sims-4/cottagecore-cc/' },
-    { from: '/sims-4-y2k-cc/', to: '/games/sims-4/y2k-cc/' },
+    // /sims-4-pregnancy-mods/ and /sims-4-y2k-cc/ were un-redirected 2026-09-12
+    // (PR #63, E21): Google rejected the facet canonical and ranked the article
+    // instead (pregnancy 93 clicks @ pos 10.95 vs facet 2 @ 33.0). They are in
+    // keepLivePages below; __tests__/unit/canonical-trailing-slash.test.ts guards
+    // the functions.php + vercel.json + registry layers agreeing.
   ]
 
   // Body-presets consolidation is HYBRID (see reports/rpm-dip-mitigation-2026-07-02.md,
@@ -346,6 +349,9 @@ describe('2.0 - Content cannibalization 301 redirects in vercel.json', () => {
     '/sims-4-male-body-presets-cc',
     '/sims-4-plus-size-body-presets',
     '/sims-4-athletic-body-presets',
+    // Un-redirected 2026-09-12 (PR #63, E21) — see the note in duplicatePairs.
+    '/sims-4-pregnancy-mods',
+    '/sims-4-y2k-cc',
   ]
 
   for (const pair of duplicatePairs) {

@@ -9,6 +9,9 @@ const NEXTJS_PREFIXES = new Set([
   'submit-mod', 'about', 'privacy-policy', 'terms',
   'games', 'go', 'top-creators', 'simple-main', 'verify-md',
   '_next', 'sitemap', 'manifest', 'robots.txt', 'downloads',
+  // /feeds/* are the Next.js mod feeds (E42). WordPress's own RSS stays at
+  // /feed/ (singular) and is still proxied — the two must not collide.
+  'feeds',
 ]);
 
 const WP_ORIGIN = 'https://blog.musthavemods.com';
