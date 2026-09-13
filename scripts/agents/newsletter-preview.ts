@@ -1,8 +1,8 @@
 /**
  * Newsletter preview / SMTP preflight (Cass, 2026-09-07)
  *
- * Renders an issue exactly as `bulkMailer` would send it — headers, HTML and
- * the plain-text alternative — and sends nothing. This is the QA gate the
+ * Renders issue #1 (lib/services/newsletterIssue.ts) exactly as `bulkMailer`
+ * would send it — headers, HTML and the plain-text alternative — and sends nothing. This is the QA gate the
  * operator-queue T1 item asks for before the first real issue.
  *
  *   npx tsx scripts/agents/newsletter-preview.ts               # transport status + a rendered sample
@@ -17,24 +17,11 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local', override: true });
 
-import { previewBulkSend } from '../../lib/services/bulkMailer';
+import { previewBulkSend, resolvePostalAddress } from '../../lib/services/bulkMailer';
 import { emailNotifier } from '../../lib/services/emailNotifier';
+import { ISSUE_01, renderIssue } from '../../lib/services/newsletterIssue';
 
 const SAMPLE_RECIPIENTS = ['preview@example.com'];
-
-function renderSample(unsubscribeUrl: string): string {
-  return `<!DOCTYPE html>
-<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#1f2937;">
-  <h1 style="font-size:22px;margin:0 0 4px;">This week's Sims 4 finds</h1>
-  <p style="color:#6b7280;margin:0 0 20px;">Five things worth downloading, picked by hand.</p>
-  <p>[ issue body goes here — built from the week's posts ]</p>
-  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
-  <p style="font-size:12px;color:#9ca3af;">
-    You are getting this because you signed up at musthavemods.com.
-    <a href="${unsubscribeUrl}" style="color:#9ca3af;">Unsubscribe</a>.
-  </p>
-</body></html>`;
-}
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -58,10 +45,8 @@ async function main(): Promise<void> {
 
   const preview = await previewBulkSend({
     recipients: SAMPLE_RECIPIENTS,
-    build: ({ unsubscribeUrl }) => ({
-      subject: "This week's Sims 4 finds",
-      html: renderSample(unsubscribeUrl),
-    }),
+    build: ({ unsubscribeUrl }) =>
+      renderIssue(ISSUE_01, { unsubscribeUrl, postalAddress: resolvePostalAddress() }),
   });
 
   const sample = preview.results[0];
