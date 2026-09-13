@@ -1,0 +1,162 @@
+{
+  "date": "2026-09-13",
+  "headline": {
+    "ownedAdds7d": 93,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 139,
+    "nonAdTarget": 200,
+    "mediavine28d": 5816.49,
+    "mediavine28dPrev": 5731.67
+  },
+  "flags": [
+    "🔴 Pinner: last posted pin 2026-09-11 (2d ago) — the Pinterest pipeline is stalled"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-05→2026-09-11 vs 2026-08-29→2026-09-04",
+      "sessions7d": 90494,
+      "sessionsPrev7d": 87688,
+      "byChannel7d": {
+        "pinterest": 59533,
+        "bing_organic": 17188,
+        "direct": 4974,
+        "google_organic": 2034,
+        "other_search": 2921,
+        "tumblr": 1119,
+        "ai_referral": 322,
+        "other": 2185,
+        "reddit": 218
+      },
+      "byChannelPrev7d": {
+        "pinterest": 58000,
+        "bing_organic": 17546,
+        "direct": 4238,
+        "google_organic": 1611,
+        "other_search": 2703,
+        "tumblr": 984,
+        "other": 2167,
+        "reddit": 204,
+        "ai_referral": 235
+      },
+      "aiReferral7d": 322,
+      "aiReferralPrev7d": 235,
+      "captureEvents7d": {
+        "patreon_click": 55,
+        "affiliate_click": 15,
+        "newsletter_signup": 4,
+        "favorite": 3
+      },
+      "notSetLanding7d": 3999
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-14→2026-09-10",
+      "clicks28d": 2245,
+      "clicksPrev28d": 2040,
+      "impressions28d": 120681
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-11",
+      "revenue7d": 1602.85,
+      "revenuePrev7d": 1305.76,
+      "rpm7d": 17.71,
+      "rpmPrev7d": 14.9,
+      "sessions7d": 90526,
+      "revenue28d": 5816.49,
+      "revenuePrev28d": 5731.67,
+      "rpm28d": 16.17,
+      "health": {
+        "date": "2026/09/13",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 60
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1637,
+      "users7d": 89,
+      "users30d": 270,
+      "subscribers": 23,
+      "subscribers7d": 4,
+      "subscribers30d": 11,
+      "subscribersBySource": {
+        "collection-page": 2,
+        "footer": 17,
+        "go-interstitial": 3,
+        "sign-in": 1
+      },
+      "favorites": 20404,
+      "favorites7d": 862,
+      "downloadClicks7d": 552,
+      "downloadClicks30d": 1401,
+      "affiliateClicks7d": 22,
+      "affiliateClicks30d": 63,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16409,
+      "collections": 1616
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 51,
+      "freeMembers": 5405,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5405,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 8,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 42,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 1,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 139
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 21,
+      "posts7d": 5,
+      "latestPost": "2026-09-11 sims-4-choker-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-11",
+      "postedLast7d": 102,
+      "unpostedBacklog": 1805,
+      "drainableBacklog": 21,
+      "strandedBacklog": 1684
+    }
+  }
+}

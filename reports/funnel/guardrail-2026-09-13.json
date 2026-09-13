@@ -1,0 +1,339 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-11",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 200.5975,
+    "sessions": 12327,
+    "rpm": 16.265
+  },
+  "actualDay": {
+    "date": "2026-09-11",
+    "revenue": 208.83,
+    "sessions": 11969,
+    "rpm": 17.44
+  },
+  "window3": {
+    "actualRevenue": 579.7,
+    "expectedRevenue": 561.56,
+    "actualSessions": 34462,
+    "expectedSessions": 36136.5,
+    "actualRpm": 16.821426498752253,
+    "expectedRpm": 15.534452656042788
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-13T02:35:38.386Z",
+      "ref": "5c9901e",
+      "text": "READY chore: compound learnings from 2026-09-12 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-gupr6ym4f-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T18:16:19.881Z",
+      "ref": "25a1936",
+      "text": "READY docs(funnel): newsletter mock v2, flat editorial (no gradients) + Cass task reworded (#91) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-966jc18g8-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T18:08:58.903Z",
+      "ref": "30aaadc",
+      "text": "READY docs(funnel): site-styled newsletter issue #1 mock + Cass template task (#90) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-q0uwaly8q-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T17:55:17.354Z",
+      "ref": "e4e66bf",
+      "text": "READY docs(funnel): operator approvals 1a/6/8 executed, never-stall directive, legacy-canonical  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-oezg3hfsv-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T17:40:18.695Z",
+      "ref": "a2834ed",
+      "text": "READY feat(seo): un-consolidate pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, do not merg [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-6d7n4i190-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T17:36:46.871Z",
+      "ref": "9f3dc29",
+      "text": "READY feat(auth): forgot/reset password flow (Q1 a, E39) — Tier 2 merge (#85) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-pynv7nocr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T11:55:49.497Z",
+      "ref": "2be345a",
+      "text": "READY funnel: daily run 2026-09-12 (#88) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-poqsgqw6p-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T11:43:42.128Z",
+      "ref": "c3c8094",
+      "text": "READY fix(distribution): repair dead Pinterest board sections that stall the pinner (E36) (#87) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-bhynjvnju-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-12T11:39:37.396Z",
+      "ref": "be159da",
+      "text": "READY feat(seo): per-collection <lastmod> in sitemap-nextjs.xml from newest mod created (E37) (# [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-5earxv68z-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T22:35:32-04:00",
+      "ref": "5c9901e",
+      "text": "chore: compound learnings from 2026-09-12"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T14:16:15-04:00",
+      "ref": "25a1936",
+      "text": "docs(funnel): newsletter mock v2, flat editorial (no gradients) + Cass task reworded (#91)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T14:08:55-04:00",
+      "ref": "30aaadc",
+      "text": "docs(funnel): site-styled newsletter issue #1 mock + Cass template task (#90)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T13:55:14-04:00",
+      "ref": "e4e66bf",
+      "text": "docs(funnel): operator approvals 1a/6/8 executed, never-stall directive, legacy-canonical "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T13:40:15-04:00",
+      "ref": "a2834ed",
+      "text": "feat(seo): un-consolidate pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, do not merg"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T13:36:43-04:00",
+      "ref": "9f3dc29",
+      "text": "feat(auth): forgot/reset password flow (Q1 a, E39) — Tier 2 merge (#85)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:55:45-04:00",
+      "ref": "2be345a",
+      "text": "funnel: daily run 2026-09-12 (#88)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:43:38-04:00",
+      "ref": "c3c8094",
+      "text": "fix(distribution): repair dead Pinterest board sections that stall the pinner (E36) (#87)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:39:34-04:00",
+      "ref": "be159da",
+      "text": "feat(seo): per-collection <lastmod> in sitemap-nextjs.xml from newest mod created (E37) (#"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:32:14-04:00",
+      "ref": "c1978db",
+      "text": "feat(capture): /api/subscribe/confirm/ — consent endpoint for the re-permission campaign ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:27:53-04:00",
+      "ref": "9ca9674",
+      "text": "feat(seo): link every /mods/[id] page to its collection page — breadcrumb + BreadcrumbList"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:15:26-04:00",
+      "ref": "81db033",
+      "text": "docs(funnel): Q7(a) launcher installed via scheduled-tasks MCP; ledger row for PR #81 (#82"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:10:17-04:00",
+      "ref": "bea6539",
+      "text": "docs(funnel): five-section digest format + operator approvals 2026-09-10 (#81)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-11T22:33:45-04:00",
+      "ref": "6106a47",
+      "text": "chore: compound learnings from 2026-09-11"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-11T09:30:30-04:00",
+      "ref": "abebf63",
+      "text": "chore: compound learnings from 2026-09-10"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-10T07:11:24-04:00",
+      "ref": "0edc041",
+      "text": "funnel: daily run 2026-09-10 (#80)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-10T07:06:43-04:00",
+      "ref": "fd4eb05",
+      "text": "feat(catalog): gameplay-mod detector nouns + NULL re-tag — 455 → 390 NULL (E33) (#79)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-10T07:03:10-04:00",
+      "ref": "95f8dc4",
+      "text": "feat(rio): morning \"operator did\" probe — env var names, Patreon tiers, functions.php mark"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-10T06:52:15-04:00",
+      "ref": "cc2bd89",
+      "text": "chore(pip): pin revival applied 2026-09-10 — 140 pins re-dated (E26) (#75)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-10T06:46:26-04:00",
+      "ref": "8a3cbd9",
+      "text": "feat(pinner): revive stranded pin inventory at 10/day for 14 days (E26) (#69)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-09T22:34:26-04:00",
+      "ref": "62ed3d9",
+      "text": "chore: compound learnings from 2026-09-09"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-09T07:12:55-04:00",
+      "ref": "240358a",
+      "text": "funnel: daily run 2026-09-09 (#74)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-09T07:00:55-04:00",
+      "ref": "f28f44e",
+      "text": "feat(ingest): incremental scrape:mhm (--new-only/--since/--dry-run) + daily wrapper; 486 m"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-09T06:59:45-04:00",
+      "ref": "e5bb6e3",
+      "text": "feat(rio): Patreon churn read — cancel cohort by tenure, first-30-day retention, day-0 wel"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-09T06:55:18-04:00",
+      "ref": "8b5d249",
+      "text": "feat(seo): /llms-full.txt answer-engine surface + llms.txt citation guidance (E27) (#71)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-09T06:51:39-04:00",
+      "ref": "1bdb076",
+      "text": "feat(newsletter): CAN-SPAM postal-address guard in bulkMailer + env.example drift (#70)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:35:24-04:00",
+      "ref": "e96ed14",
+      "text": "chore: compound learnings from 2026-09-08"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:31:15-04:00",
+      "ref": "a6585ad",
+      "text": "fix(unsubscribe): mailto target defaults to simsnews@; PR #67 ledger row; SMTP readiness r"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:25:10-04:00",
+      "ref": "7a7ed94",
+      "text": "fix(unsubscribe): trailing slash on link + form action; ledger row for PR #66 (#67)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T22:16:20-04:00",
+      "ref": "2cfed2d",
+      "text": "feat(newsletter): /api/unsubscribe route, send-time From resolution, example-send script ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T21:29:06-04:00",
+      "ref": "ac0c16a",
+      "text": "feat(agents): Patreon relaunch step 1 — staged decision, read script, final copy (#65)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:22:36-04:00",
+      "ref": "5bfa24f",
+      "text": "funnel: daily run 2026-09-08 (#64)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:15:29-04:00",
+      "ref": "458b572",
+      "text": "fix(catalog): stop the lighting/curtains mis-tag at the source and re-tag 128 mods (#61)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:10:13-04:00",
+      "ref": "949c391",
+      "text": "feat(email): send the newsletter over BigScoots SMTP, not SendGrid (#49)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:07:05-04:00",
+      "ref": "032543e",
+      "text": "fix(membership): read NEXT_PUBLIC_MEMBERSHIP_ENABLED literally so Next.js inlines it into "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T07:02:57-04:00",
+      "ref": "d67cc51",
+      "text": "feat(seo): server-render the homepage shell — h1, collection links, ItemList in first-byte"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T06:59:16-04:00",
+      "ref": "b064c48",
+      "text": "docs(capture): send-ready drafts — newsletter issue #1 and the account re-permission email"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T06:55:26-04:00",
+      "ref": "84972b0",
+      "text": "fix(pip): pinner backlog counts what the poster can actually reach (E20) (#60)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-08T06:52:19-04:00",
+      "ref": "ae37ce0",
+      "text": "fix(agents): deploy-verify promotes the merged build when a rollback has paused auto-promo"
+    },
+    {
+      "kind": "functions.php",
+      "at": "2026-09-12T13:40:15-04:00",
+      "ref": "a2834ed",
+      "text": "feat(seo): un-consolidate pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, do not merg"
+    }
+  ],
+  "health": {
+    "date": "2026/09/13",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $208.83 (4.1%), RPM 17.44 (7.2%), sessions -2.9% vs same weekday, prior 4 weeks · 3-day revenue 3.2%"
+  ]
+}

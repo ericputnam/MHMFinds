@@ -171,6 +171,25 @@ else
   log "operator-did-probe.ts not present — skipped"
 fi
 
+# --- 0e. evening-check audit (Quinn, 2026-09-13) ----------------------------------
+# The 18:30 `mhm-guardrail-evening` task wrote no ledger row from 09-04 to 09-12 and nothing distinguished
+# "did not fire" from "ran and had nothing to say" — the morning check merely annotated the absence for 8 days.
+# Silence must be a row: if yesterday has no evening `check` row (16:00–23:59) and no evening-* worktree, append
+# an explicit MISSED row so the digest's "Changed today" and the ledger both carry it. Idempotent.
+YDAY="$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d 'yesterday' +%Y-%m-%d 2>/dev/null || true)"
+if [ -n "$YDAY" ] && [ -f "$WT/reports/funnel/changelog.md" ]; then
+  if grep -Eq "^\| $YDAY (1[6-9]|2[0-3]):[0-9]{2} \| check \|" "$WT/reports/funnel/changelog.md"; then
+    log "Evening check: ledger row present for $YDAY"
+  elif ls -d "$HOME/.mhm-worktrees/evening-$YDAY-"* >/dev/null 2>&1; then
+    log "Evening check: worktree exists for $YDAY but no ledger row — check its logs/deploy-verify.log"
+  elif grep -Fq "mhm-guardrail-evening: DID NOT FIRE on $YDAY" "$WT/reports/funnel/changelog.md"; then
+    log "Evening check: MISSED row for $YDAY already recorded"
+  else
+    printf '| %s 18:30 | check | mhm-guardrail-evening: DID NOT FIRE on %s — no ledger row 16:00–23:59 and no evening-* worktree |  |  | MISSED | scheduled task never launched; operator: open Scheduled tasks → mhm-guardrail-evening and confirm it is enabled at 18:30 |\n' "$YDAY" "$YDAY" >>"$WT/reports/funnel/changelog.md"
+    log "Evening check: DID NOT FIRE on $YDAY — MISSED row appended to the ledger"
+  fi
+fi
+
 # --- 1. scoreboard ----------------------------------------------------------
 # MHM_PROJECT_DIR: the scoreboard writes its dated files to that dir (default: the operator tree). Without it
 # the copy below found nothing and Quinn regenerated the scoreboard by hand on 09-04, 09-08 and 09-09.
