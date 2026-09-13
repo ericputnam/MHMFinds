@@ -14,6 +14,9 @@
  *   - Production DB via DIRECT_DATABASE_URL (.env.local): users, subscribers,
  *     favorites, download clicks, affiliate clicks/earnings, creators, submissions.
  *   - Patreon public page: paid patron count per tier, free member count.
+ *   - Patreon Members API (creator token in .env.local via scripts/_patreon-auth.ts)
+ *     + production DB: paid-and-connected, $3-tier joins/day, joins/cancels 7d —
+ *     the E40 read (2026-09-19) and Q4 gate (2026-09-22) numbers. Aggregates only.
  *   - WordPress REST: posts published in the last 30 days.
  *   - Pinner queue (Supabase, creds from ~/java_projects/MHMUtils/config.json):
  *     schedulable / stranded / total unposted backlog, plus Pinterest's own
@@ -29,6 +32,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { assessLiveness, summarizePins, type LivenessAssessment, type PinLike } from './pinner-liveness-lib';
+import { E40_ANCHOR, formatPaidByAmount, summarizePatreonMembers, type PatreonMemberAttrs, type PatreonMembersSummary } from './patreon-members-lib';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? '/Users/eputnam/java_projects/MHMFinds';
 const OUT_DIR = join(PROJECT_DIR, 'reports', 'funnel');
@@ -111,6 +115,10 @@ interface Ga4Data {
   aiReferral7d: number;
   aiReferralPrev7d: number;
   captureEvents7d: Record<string, number>;
+  /** distinct users per capture event over the same 7d window (GA4 totalUsers) */
+  captureUsers7d: Record<string, number>;
+  /** patreon_click users ÷ 7 — the E40 revert clause reads this against 50% of the 09-08→09-11 baseline (8.75) */
+  patreonClickUsersPerDay7d: number;
   notSetLanding7d: number;
 }
 
@@ -166,16 +174,22 @@ async function pullGa4(): Promise<Ga4Data> {
     property,
     dateRanges: [{ startDate: start, endDate: end }],
     dimensions: [{ name: 'eventName' }],
-    metrics: [{ name: 'eventCount' }],
+    metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }],
     dimensionFilter: {
       filter: {
         fieldName: 'eventName',
-        inListFilter: { values: ['newsletter_signup', 'account_signup', 'patreon_click', 'premium_intent', 'sign_up', 'generate_lead', 'favorite', 'affiliate_click'] },
+        inListFilter: { values: ['newsletter_signup', 'account_signup', 'patreon_click', 'premium_intent', 'sign_up', 'generate_lead', 'favorite', 'affiliate_click', 'member_skip_countdown'] },
       },
     },
   });
   const captureEvents7d: Record<string, number> = {};
-  for (const row of ev.rows ?? []) captureEvents7d[row.dimensionValues?.[0]?.value ?? '?'] = Number(row.metricValues?.[0]?.value ?? 0);
+  const captureUsers7d: Record<string, number> = {};
+  for (const row of ev.rows ?? []) {
+    const name = row.dimensionValues?.[0]?.value ?? '?';
+    captureEvents7d[name] = Number(row.metricValues?.[0]?.value ?? 0);
+    captureUsers7d[name] = Number(row.metricValues?.[1]?.value ?? 0);
+  }
+  const patreonClickUsersPerDay7d = Math.round(((captureUsers7d.patreon_click ?? 0) / 7) * 100) / 100;
 
   const [ns] = await client.runReport({
     property,
@@ -195,6 +209,8 @@ async function pullGa4(): Promise<Ga4Data> {
     aiReferral7d: curr.ai,
     aiReferralPrev7d: prev.ai,
     captureEvents7d,
+    captureUsers7d,
+    patreonClickUsersPerDay7d,
     notSetLanding7d,
   };
 }
@@ -348,6 +364,66 @@ async function pullPatreon(): Promise<PatreonData> {
   const freeMembers = freeTier ? freeTier.patrons : null;
   const grossMonthlyUsd = paidTiers.length ? paidTiers.reduce((s, t) => s + t.amountUsd * t.patrons, 0) : null;
   return { paidPatrons, freeMembers, tiers, grossMonthlyUsd };
+}
+
+// ---------------------------------------------------------------- Patreon (Members API + DB)
+interface PatreonApiData extends PatreonMembersSummary {
+  /** site accounts with Account.provider = 'patreon' (Patreon OAuth connected) */
+  connectedAccounts: number;
+  /** users the site currently treats as premium (JWT snapshot; see lib/membership.ts) */
+  premiumUsers: number;
+  anchor: string;
+  window: string;
+}
+
+/**
+ * The numbers behind the E40 read (2026-09-19) and the Q4 step-1 gate (2026-09-22),
+ * pulled every morning so neither has to be hand-run. Same arithmetic as
+ * `patreon-relaunch-read.ts` via the shared pure lib; aggregates only —
+ * emails are used solely to intersect the paid set with linked site accounts
+ * and never leave this function.
+ */
+async function pullPatreonApi(): Promise<PatreonApiData> {
+  // The runner invokes this script without dotenv; load only the keys the
+  // Patreon helper needs, and only when the environment does not already have them.
+  const fileEnv = readEnvFile(join(PROJECT_DIR, '.env.local'));
+  for (const k of ['PATREON_CLIENT_ID', 'PATREON_CLIENT_SECRET', 'PATREON_CREATOR_ACCESS_TOKEN', 'PATREON_CREATOR_REFRESH_TOKEN', 'PATREON_CAMPAIGN_ID']) {
+    if (!process.env[k] && fileEnv[k]) process.env[k] = fileEnv[k];
+  }
+  const campaign = process.env.PATREON_CAMPAIGN_ID ?? '13460416';
+  const { patreonGet } = await import('../_patreon-auth');
+  const members: PatreonMemberAttrs[] = [];
+  let url: string | null =
+    `https://www.patreon.com/api/oauth2/v2/campaigns/${campaign}/members?fields%5Bmember%5D=patron_status,pledge_relationship_start,last_charge_date,currently_entitled_amount_cents,email&page%5Bcount%5D=500`;
+  let pages = 0;
+  while (url && pages < 50) {
+    const j: { data?: Array<{ attributes: PatreonMemberAttrs }>; links?: { next?: string } } = await patreonGet(url);
+    members.push(...(j.data ?? []).map((d) => d.attributes));
+    url = j.links?.next ?? null;
+    pages += 1;
+  }
+
+  const dbUrl = fileEnv.DIRECT_DATABASE_URL ?? process.env.DIRECT_DATABASE_URL;
+  if (!dbUrl || !dbUrl.startsWith('postgres')) throw new Error('DIRECT_DATABASE_URL missing from .env.local');
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient({ datasourceUrl: dbUrl, log: ['error'] });
+  try {
+    const [linked, premiumUsers] = await Promise.all([
+      prisma.account.findMany({ where: { provider: 'patreon' }, select: { user: { select: { email: true } } } }),
+      prisma.user.count({ where: { isPremium: true } }),
+    ]);
+    const now = new Date();
+    const summary = summarizePatreonMembers(members, linked.map((a) => a.user.email), { now });
+    return {
+      ...summary,
+      connectedAccounts: linked.length,
+      premiumUsers,
+      anchor: E40_ANCHOR.slice(0, 10),
+      window: `${iso(new Date(now.getTime() - 7 * 864e5))}→${iso(now)}`,
+    };
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 // ---------------------------------------------------------------- WordPress
@@ -528,9 +604,9 @@ async function main() {
   const targetsPath = join(PROJECT_DIR, '.claude', 'agents', 'mhm-funnel', 'targets.json');
   const targets = existsSync(targetsPath) ? JSON.parse(readFileSync(targetsPath, 'utf8')) : null;
 
-  const [ga4, gsc, mv, db, patreon, wp, pinner] = await Promise.all([
+  const [ga4, gsc, mv, db, patreon, patreonApi, wp, pinner] = await Promise.all([
     section('ga4', pullGa4), section('gsc', pullGsc), section('mediavine', pullMediavine),
-    section('db', pullDb), section('patreon', pullPatreon), section('wordpress', pullWp), section('pinner', pullPinner),
+    section('db', pullDb), section('patreon', pullPatreon), section('patreonApi', pullPatreonApi), section('wordpress', pullWp), section('pinner', pullPinner),
   ]);
 
   // --- derived headline numbers
@@ -622,6 +698,22 @@ async function main() {
     md += `- Tiers: ${p.tiers.filter((t) => !t.free).map((t) => `${t.title.trim()} $${t.amountUsd}×${t.patrons}`).join(', ') || 'not parsed'}\n\n`;
   } else md += `_unavailable: ${errOf(patreon)}_\n\n`;
 
+  md += `## Patreon (Members API + site accounts) — E40 read 2026-09-19 · Q4 gate 2026-09-22\n\n`;
+  if (patreonApi.ok) {
+    const a = patreonApi.data;
+    const clickUsersPerDay = ga4.ok ? ga4.data.patreonClickUsersPerDay7d : null;
+    const connectedShare = a.paid ? Math.round((100 * a.paidAndConnected) / a.paid) : 0;
+    md += `| Metric | Value |\n|---|--:|\n`;
+    md += `| Paid patrons (API) | ${a.paid} (${formatPaidByAmount(a.paidByAmount)}) ≈ ${money(a.grossMonthlyUsd)}/mo |\n`;
+    md += `| Paid-and-connected | **${a.paidAndConnected}** of ${a.connectedAccounts} linked accounts (${connectedShare}% of paid; gate needs ≥ 1/3) · premium-flagged users ${a.premiumUsers} |\n`;
+    md += `| $3-tier joins since ${a.anchor} | **${a.joinsSinceAnchorAtPerkTier}** (all tiers ${a.joinsSinceAnchor}) |\n`;
+    md += `| $3-tier joins 7d (${a.window}) | ${a.perkTierJoins7d} → ${a.perkTierJoinsPerDay7d}/day |\n`;
+    md += `| Paid joins / cancels 7d | ${a.joins7d} / ${a.cancels7d} (Aug 2026 pace: 17 / 16 per month) |\n`;
+    md += `| patreon_click users/day (GA4 7d) | ${clickUsersPerDay != null ? clickUsersPerDay : 'unavailable'} (E40 baseline 8.75 over 09-08→09-11) |\n\n`;
+    md += `- E40 keep if: paid-and-connected ≥ 3 OR $3-tier joins 09-13→09-19 ≥ 11, with session RPM within ±5% of $17.55; revert if paid-and-connected still 0 AND joins < 8 AND patreon_click users/day < 4.375 (50% of 8.75).\n`;
+    md += `- Q4 gate (2026-09-22): proceed to renames + $10 tier only if joins ≥ 17/mo pace AND ≥ 1/3 of paid patrons connected; revert copy if cancels > 16/mo pace.\n\n`;
+  } else md += `_unavailable: ${errOf(patreonApi)}_\n\n`;
+
   md += `## Content & distribution pipelines\n\n`;
   md += wp.ok ? `- Blog posts: ${wp.data.posts7d} in 7d, ${wp.data.posts30d} in 30d · latest: ${wp.data.latestPost ?? '?'}\n` : `- Blog: unavailable (${errOf(wp)})\n`;
   if (pinner.ok) {
@@ -638,7 +730,7 @@ async function main() {
   const json = {
     date: today,
     headline: { ownedAdds7d, ownedTargetWeekly: ownedTarget, nonAdRevenueMonthlyGross: nonAdRevenue, nonAdTarget, mediavine28d: mv.ok ? mv.data.revenue28d : null, mediavine28dPrev: mv.ok ? mv.data.revenuePrev28d : null },
-    flags, ga4, gsc, mediavine: mv, db, patreon, wordpress: wp, pinner,
+    flags, ga4, gsc, mediavine: mv, db, patreon, patreonApi, wordpress: wp, pinner,
   };
   writeFileSync(join(OUT_DIR, `${today}.md`), md);
   writeFileSync(join(OUT_DIR, `${today}.json`), JSON.stringify(json, null, 2));
