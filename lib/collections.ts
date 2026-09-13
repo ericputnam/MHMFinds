@@ -251,6 +251,43 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     blogUrl: '/sims-4-skin-overlay/',
   },
   {
+    // Deliberately placed BEFORE male-clothes / female-clothes. Both of
+    // those are composite `contentTypeIn` filters that already include
+    // `shoes`, and `filterSpecificity()` scores all three the same, so
+    // registry order decides which collection a shoe mod gets as its
+    // primary breadcrumb. "Shoes CC" is the more accurate crumb for a
+    // pair of boots than "Female Clothes CC", and it gives the new page
+    // ~633 inbound internal links from mod detail pages on day one.
+    slug: 'shoes-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Shoes CC',
+    heading: 'Sims 4 Shoes CC',
+    metaTitle: 'Sims 4 Shoes CC Finder — Browse 600+ Heels, Sneakers & Boots | MustHaveMods',
+    metaDescription:
+      'Browse 600+ Sims 4 shoes CC in one filterable grid — heels, sneakers, boots, sandals, and kids\' shoes sorted by downloads, with verified download links.',
+    tagline: 'Heels, sneakers, boots, and sandals for every sim',
+    intro:
+      'Shoes are the last thing you pick in CAS and the first thing that ruins an outfit. Base-game Sims 4 footwear is a short list of chunky sandals, two pairs of sneakers that look like the same sneaker, and heels with a mesh that clips through half the community pants CC people actually wear. Once you have a wardrobe built out of downloaded tops and bottoms, EA shoes stop matching anything.\n\nThis collection is every pair of Sims 4 shoes CC in our catalog in one filterable grid — 633 finds as of today. The split is roughly 137 boots, 71 heels, 66 sneakers, and 47 sandals, plus slides, loafers, slippers, and a surprisingly deep bench of toddler and child shoes (86 pairs tagged for kids, which is more than the base game gives you across every age).\n\nThe creators who show up most are the ones who have basically specialised in footwear: Madlen, whose heels and boots are the reason half the Sims fashion screenshots on Tumblr look the way they do, Mermalade for sneakers and everyday shoes, Arltos, Jius-sims, LVNDRCC, and Dissia. Streetwear sneakers — Jordans, Air Force 1s, Converse Run Star Hikes, ASICS Gel-1130s — are their own micro-scene here and consistently sit near the top of the download counts.\n\nA practical note: shoes are the CC category most likely to clip. Alpha-style heels rarely sit right on a maxis-match body preset, and platform boots and wide-leg pants argue with each other constantly. Use the main finder\'s visual-style filter to stay inside one art style, and check the creator\'s notes for a required slider or HQ mod before you install a set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pairs everyone already has installed, or scroll for the single-set releases the big roundups never reach.',
+    filter: {
+      // 633 SFW Sims 4 mods on the `shoes` facet, verified against prod
+      // 2026-09-13. Spot-checked: the top 15 by downloads and a 15-row
+      // sample from the middle of the grid are all genuinely footwear —
+      // unlike `hats` / `glasses` / `accessories`, which are badly
+      // mis-tagged (top `hats` rows include a Coach bag, two hairstyles
+      // and a kitchen set) and are deliberately not paged yet.
+      contentType: 'shoes',
+    },
+    expectedCount: 633,
+    related: ['female-clothes', 'male-clothes', 'hair-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial
+    // "best shoes CC" intent, this page owns browse/filter intent.
+    // /sims-4-shoes-cc/ is live and does not 301 (verified 2026-09-13);
+    // it holds 445 impressions / 1 click at position 37.7 over the 28d
+    // to 2026-09-10, so it is not a page this collection can cannibalise.
+    blogUrl: '/sims-4-shoes-cc/',
+  },
+  {
     slug: 'male-clothes',
     game: 'Sims 4',
     gameSlug: 'sims-4',
@@ -269,7 +306,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       genderOptionsAny: ['masculine'],
     },
     expectedCount: 420,
-    related: ['female-clothes', 'hair-cc', 'tattoos'],
+    related: ['female-clothes', 'shoes-cc', 'hair-cc'],
     // No blogUrl: /sims-4-male-clothes-cc/ 301s here (2026-07-03).
   },
   {
@@ -291,7 +328,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       genderOptionsAny: ['feminine'],
     },
     expectedCount: 1601,
-    related: ['male-clothes', 'hair-cc', 'skin-details'],
+    related: ['male-clothes', 'shoes-cc', 'hair-cc'],
     // No blogUrl: /sims-4-female-clothes-cc/ 301s here (2026-07-03).
   },
   {

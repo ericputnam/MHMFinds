@@ -286,3 +286,47 @@ describe('legacy/collection strategy (lib/collections.ts)', () => {
     }
   });
 });
+
+describe('related-collections strip (CollectionPageClient)', () => {
+  const src = read('app/games/[game]/[topic]/CollectionPageClient.tsx');
+
+  it('links related collections through collectionHref, not a bare path', () => {
+    // A bare `/games/${gameSlug}/${slug}` 308s under trailingSlash:true,
+    // so every one of these internal links pointed at a redirect instead
+    // of the canonical URL until 2026-09-13.
+    expect(src).toContain('href={collectionHref(rel)}');
+    expect(src).not.toContain('href={`/games/${rel.gameSlug}/${rel.slug}`}');
+  });
+});
+
+describe('shoes-cc registry placement (E43, 2026-09-13)', () => {
+  it('precedes male-clothes and female-clothes so shoe mods get "Shoes CC" as the primary crumb', async () => {
+    // male-clothes and female-clothes are composite contentTypeIn filters
+    // that already include `shoes`, and filterSpecificity() scores all
+    // three at 0 — registry order is the only tie-break. If shoes-cc ever
+    // drifts below them, 633 mod pages silently revert to a
+    // "Female Clothes CC" breadcrumb on a pair of boots.
+    const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
+    const idx = (slug: string) => SIMS4_COLLECTIONS.findIndex((c) => c.slug === slug);
+    expect(idx('shoes-cc')).toBeGreaterThan(-1);
+    expect(idx('shoes-cc')).toBeLessThan(idx('male-clothes'));
+    expect(idx('shoes-cc')).toBeLessThan(idx('female-clothes'));
+  });
+
+  it('a shoe mod resolves to Shoes CC first', async () => {
+    const { getCollectionsForMod } = await import('@/lib/collections');
+    const hits = getCollectionsForMod({
+      gameVersion: 'Sims 4',
+      isNSFW: false,
+      contentType: 'shoes',
+      genderOptions: ['feminine'],
+      title: 'Camille Heels',
+      description: null,
+      themes: [],
+      ageGroups: ['adult'],
+      occultTypes: [],
+      visualStyle: null,
+    });
+    expect(hits[0]?.slug).toBe('shoes-cc');
+  });
+});
