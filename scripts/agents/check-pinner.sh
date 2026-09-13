@@ -18,7 +18,18 @@ set -euo pipefail
 #   ./scripts/agents/check-pinner.sh --catalog      # also report catalog pin status
 #
 # WHAT IT CHECKS:
-#   1. Pinner staleness  — last "Is Posted"=true row older than STALE_DAYS → FAIL
+#   1. Pinner staleness  — Pinterest's own `created_at` on the account's newest
+#                          pins (GET /v5/pins, newest first). No pin created in
+#                          the last RED_AFTER_HOURS (36) → FAIL. The queue table
+#                          has NO posted-at column: its "Post Date" is the date
+#                          the writer *scheduled* the row for, and the poster
+#                          drains oldest-first, so max(Post Date) over posted
+#                          rows lags real posting by days. On 2026-09-13 that
+#                          proxy said "last post 09-11, 2 days ago → FAIL" while
+#                          Pinterest showed 47 pins created in 24 h, the newest
+#                          6 minutes before the check (E41). The proxy is still
+#                          printed, labelled, and used only when the API cannot
+#                          be reached — and then it is a WARN, never a FAIL.
 #   2. Backlog drain     — counts the rows the poster can actually reach, not the
 #                          raw unposted total. MHMUtils/supabase_pin_poster_server.py
 #                          (fetch_unposted_entries) selects only rows whose
@@ -94,7 +105,11 @@ if [[ -z "$SUPABASE_URL" || -z "$SUPABASE_KEY" ]]; then
   exit 1
 fi
 
-STALE_DAYS="${PINNER_STALE_DAYS:-1}"
+# Must match DEFAULT_RED_AFTER_HOURS in scripts/agents/pinner-liveness-lib.ts.
+# The poster runs every 20 min against a queue metered at ~10-30 pins/day, so
+# 36 h without a single pin created is a stall, not a lull.
+RED_AFTER_HOURS="${PINNER_RED_AFTER_HOURS:-36}"
+PINS_PAGE_SIZE="${PINNER_PINS_PAGE_SIZE:-100}"
 REFRESH_WARN_DAYS="${PINNER_REFRESH_WARN_DAYS:-30}"
 # Must match BACKLOG_LOOKBACK_DAYS in MHMUtils/supabase_pin_poster_server.py.
 # If that constant changes there, change it here — otherwise this check reports
@@ -110,46 +125,98 @@ CATALOG_URL_MATCH="${PINNER_CATALOG_URL_MATCH:-*/games/sims-4/*}"
 
 say "==> Pinner liveness check ($(date -u +%Y-%m-%dT%H:%M)Z)"
 
-# ---- 1. Last posted date --------------------------------------------------
+# ---- 1. Last pin actually created (Pinterest API) --------------------------
 say ""
-say "--- 1. Pinner staleness (stale if last post > ${STALE_DAYS}d ago)"
+say "--- 1. Pinner staleness (FAIL if Pinterest shows no pin created in ${RED_AFTER_HOURS}h)"
 
+TOKEN_HELPER="$SCRIPT_DIR/pinterest-token-status.py"
+
+# Queue proxy: max(Post Date) over posted rows. Scheduled date, not a posting
+# timestamp — printed for context, used only if the API cannot be reached.
 LAST_POST_RESP=$(curl -sf \
   -H "apikey: $SUPABASE_KEY" \
   -H "Authorization: Bearer $SUPABASE_KEY" \
   "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?select=id,%22Post%20Date%22&%22Is%20Posted%22=eq.true&order=%22Post%20Date%22.desc&limit=1" \
-  2>/dev/null) || { fail "Supabase query failed — check network / key"; FAIL=1; }
-
-if [[ -n "${LAST_POST_RESP:-}" ]]; then
-  LAST_DATE=$(python3 -c "
-import json, sys, datetime
-rows = json.loads(sys.stdin.read())
-if rows:
-    d = str(rows[0].get('Post Date',''))[:10]
-    print(d)
-else:
+  2>/dev/null) || true
+LAST_DATE=$(python3 -c "
+import json, sys
+try:
+    rows = json.loads(sys.stdin.read())
+    print(str(rows[0].get('Post Date',''))[:10] if rows else '')
+except Exception:
     print('')
-" <<< "$LAST_POST_RESP" 2>/dev/null)
+" <<< "${LAST_POST_RESP:-[]}" 2>/dev/null)
 
-  if [[ -z "$LAST_DATE" ]]; then
-    fail "No posted rows in Supabase — pinner has never posted or table is empty"
-    FAIL=1
-  else
-    STALE_INFO=$(python3 -c "
-import datetime, sys
-last = datetime.date.fromisoformat('$LAST_DATE')
-today = datetime.date.today()
-days = (today - last).days
-print(days)
-" 2>/dev/null)
-    if [[ "$STALE_INFO" -gt "$STALE_DAYS" ]]; then
-      fail "Pinner stale: last post $LAST_DATE ($STALE_INFO days ago, threshold ${STALE_DAYS}d) — Pinterest pipeline may be stopped"
-      FAIL=1
-    else
-      ok "Last pin posted: $LAST_DATE ($STALE_INFO days ago)"
-    fi
-  fi
+# Ask the token manager for a token valid *now* (refreshes config.json in
+# place when the stored one has aged out). Output discarded on purpose; the
+# token is read back from config.json by python and never echoed.
+if command -v python3 >/dev/null 2>&1 && [[ -f "$TOKEN_HELPER" ]]; then
+  MHM_UTILS_DIR="$MHM_UTILS" MHM_PINTEREST_CONFIG="$CONFIG_JSON" \
+    python3 "$TOKEN_HELPER" >/dev/null 2>&1 || true
 fi
+
+set +e
+LIVENESS_OUT=$(python3 - "$CONFIG_JSON" "$RED_AFTER_HOURS" "$PINS_PAGE_SIZE" "$LAST_DATE" <<'PY'
+import json, sys, datetime, urllib.request, urllib.error
+cfg_path, red_after, page_size, proxy = sys.argv[1], float(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
+# Exit codes: 0 ok, 1 red (stalled), 2 unverified (API unreachable → caller WARNs)
+try:
+    token = json.load(open(cfg_path)).get('creator_access_token', '')
+except Exception:
+    token = ''
+if not token:
+    print("UNVERIFIED\tcreator_access_token missing from config.json"); sys.exit(2)
+req = urllib.request.Request(f"https://api.pinterest.com/v5/pins?page_size={page_size}",
+                             headers={'Authorization': f'Bearer {token}'})
+try:
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        items = json.loads(resp.read()).get('items', [])
+except urllib.error.HTTPError as e:
+    print(f"UNVERIFIED\tPinterest /v5/pins HTTP {e.code}"); sys.exit(2)
+except Exception as e:
+    print(f"UNVERIFIED\tPinterest /v5/pins unreachable: {type(e).__name__}"); sys.exit(2)
+now = datetime.datetime.now(datetime.timezone.utc)
+def parse(s):
+    if not s: return None
+    s = str(s).strip()
+    if s.endswith('Z'): s = s[:-1] + '+00:00'
+    try:
+        d = datetime.datetime.fromisoformat(s)
+    except ValueError:
+        return None
+    return d if d.tzinfo else d.replace(tzinfo=datetime.timezone.utc)
+stamps = [d for d in (parse(i.get('created_at')) for i in items) if d]
+if not stamps:
+    print("UNVERIFIED\tPinterest returned no pins with created_at"); sys.exit(2)
+last = max(stamps)
+hours = max(0.0, (now - last).total_seconds() / 3600)
+c24 = sum(1 for d in stamps if 0 <= (now - d).total_seconds() <= 86400)
+stamp = last.strftime('%Y-%m-%d %H:%MZ')
+if hours > red_after:
+    print(f"RED\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API; threshold {red_after:.0f} h) — the Pinterest pipeline is stalled. Queue proxy: newest posted row dated {proxy or 'n/a'}")
+    sys.exit(1)
+print(f"OK\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API) · {c24} pins in 24h · queue proxy max(Post Date)={proxy or 'n/a'} (scheduled date, not staleness)")
+sys.exit(0)
+PY
+)
+LIVENESS_RC=$?
+set -e
+LIVENESS_MSG=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f2-)
+
+case "$LIVENESS_RC" in
+  0)
+    ok "$LIVENESS_MSG"
+    ;;
+  1)
+    fail "Pinner stale: $LIVENESS_MSG"
+    fail "Look for a poison row first (step 6), then the poster log: ssh ... 'tail -120 ~/domains/blog.musthavemods.com/supabase_pin_poster.log'"
+    FAIL=1
+    ;;
+  *)
+    warn "Pinner liveness unverified — ${LIVENESS_MSG:-python3 unavailable}; queue proxy: newest posted row dated ${LAST_DATE:-n/a} (scheduled date — a stale proxy is NOT evidence of a stall)"
+    WARN=1
+    ;;
+esac
 
 # ---- 2. Backlog count -----------------------------------------------------
 say ""
@@ -203,8 +270,6 @@ fi
 # ---- 3. Pinterest token validity ------------------------------------------
 say ""
 say "--- 3. Pinterest access token"
-
-TOKEN_HELPER="$SCRIPT_DIR/pinterest-token-status.py"
 
 if command -v python3 >/dev/null 2>&1 && [[ -f "$TOKEN_HELPER" ]]; then
   # Ask the token manager for a token that is valid *now*. It refreshes from

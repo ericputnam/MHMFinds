@@ -15,16 +15,20 @@
  *     favorites, download clicks, affiliate clicks/earnings, creators, submissions.
  *   - Patreon public page: paid patron count per tier, free member count.
  *   - WordPress REST: posts published in the last 30 days.
- *   - Pinner queue (Supabase, creds from ~/java_projects/MHMUtils/.env): last
- *     posted pin timestamp + schedulable / stranded / total unposted backlog
- *     (write-only pipeline liveness).
+ *   - Pinner queue (Supabase, creds from ~/java_projects/MHMUtils/config.json):
+ *     schedulable / stranded / total unposted backlog, plus Pinterest's own
+ *     `created_at` on the account's newest pins (GET /v5/pins) for liveness —
+ *     the queue table has no posted-at column, and its `Post Date` is the
+ *     scheduled date, not when the pin went out (E41, 2026-09-13).
  *
  * Never prints secrets. Run: npx tsx scripts/agents/funnel-scoreboard.ts
  */
 
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { assessLiveness, summarizePins, type LivenessAssessment, type PinLike } from './pinner-liveness-lib';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? '/Users/eputnam/java_projects/MHMFinds';
 const OUT_DIR = join(PROJECT_DIR, 'reports', 'funnel');
@@ -373,9 +377,33 @@ async function pullWp(): Promise<WpData> {
 // the drainable backlog was 0 — so the scoreboard was publishing "backlog 1879"
 // as reassurance while the queue had no buffer at all. Report both.
 const PINNER_LOOKBACK_DAYS = 14;
+// Liveness (E41, 2026-09-13): `n8n_pinterest_posts` has no posted-at column.
+// `Post Date` is the date the writer *scheduled* the row for, and the poster
+// drains oldest-first inside its 14d window, so max(Post Date) over posted
+// rows lags real posting by days whenever a batch is being worked through.
+// On 2026-09-13 that proxy read "2026-09-11, 2d ago → 🔴 stalled" while
+// Pinterest showed 47 pins created in the previous 24 h, the newest 6 minutes
+// before the check. Liveness now comes from Pinterest's `created_at`
+// (GET /v5/pins, newest first); the proxy is kept, labelled, and can only
+// ever downgrade to "unverified", never to 🔴.
+const PINNER_PINS_PAGE_SIZE = 100;
+const PINNER_PINS_MAX_PAGES = 3;
 interface PinnerData {
+  /** max(Post Date) over posted rows — the SCHEDULED date. Proxy only; see assessLiveness. */
   lastPostedDate: string | null;
+  /** Pinterest `created_at` of the newest pin on the account (UTC ISO), or null if the API was unreachable. */
+  lastPinCreatedAt: string | null;
+  /** Pins Pinterest reports created in the last 24 h / 7 d (7 d is a floor when `pinsSampled` hit the page cap). */
+  pinsCreated24h: number | null;
+  pinsCreated7d: number | null;
+  pinsSampled: number;
+  liveness: LivenessAssessment;
+  /** Why the Pinterest read failed, if it did (never a token). */
+  pinterestError: string | null;
+  /** Posted rows whose Post Date is in the last 7 d — scheduled-date proxy, kept for continuity. */
   postedLast7d: number;
+  /** Every `Is Posted = true` row. A day-over-day delta of this is a second liveness signal. */
+  postedTotal: number;
   /** Every `Is Posted = false` row. Kept for continuity; do not read it as a buffer. */
   unpostedBacklog: number;
   /** Rows the poster can actually pick up today (Post Date inside its lookback window). */
@@ -410,6 +438,7 @@ async function pullPinner(): Promise<PinnerData> {
   }
   const posted = await q(`select=%22Post%20Date%22&%22Is%20Posted%22=eq.true&order=%22Post%20Date%22.desc&limit=1`);
   const posted7 = await q(`select=id&%22Is%20Posted%22=eq.true&%22Post%20Date%22=gte.${daysAgo(7)}&limit=1`);
+  const postedAll = await q(`select=id&%22Is%20Posted%22=eq.true&limit=1`);
   const backlog = await q(`select=id&%22Is%20Posted%22=eq.false&limit=1`);
   // Mirror of the poster's own query window (Post Date between floor and today).
   const floor = daysAgo(PINNER_LOOKBACK_DAYS);
@@ -421,13 +450,75 @@ async function pullPinner(): Promise<PinnerData> {
   const stranded = await q(
     `select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${floor}&limit=1`,
   );
+  const lastPostedDate = posted.rows[0] ? String(posted.rows[0]['Post Date']).slice(0, 10) : null;
+
+  // Pinterest's own record of what went out. Fails soft: a Pinterest outage
+  // must not take the queue numbers down with it, and the flag logic knows
+  // how to read "unverified".
+  let pins: PinLike[] = [];
+  let pinterestError: string | null = null;
+  try {
+    pins = await fetchRecentPins(cfgPath);
+  } catch (err) {
+    pinterestError = (err as Error).message;
+  }
+  const summary = summarizePins(pins);
+  const liveness = assessLiveness({ lastCreatedAt: summary.lastCreatedAt, lastPostDateProxy: lastPostedDate });
+
   return {
-    lastPostedDate: posted.rows[0] ? String(posted.rows[0]['Post Date']).slice(0, 10) : null,
+    lastPostedDate,
+    lastPinCreatedAt: summary.lastCreatedAt,
+    pinsCreated24h: pins.length ? summary.created24h : null,
+    pinsCreated7d: pins.length ? summary.created7d : null,
+    pinsSampled: summary.sampled,
+    liveness,
+    pinterestError,
     postedLast7d: posted7.total,
+    postedTotal: postedAll.total,
     unpostedBacklog: backlog.total,
     drainableBacklog: drainable.total,
     strandedBacklog: stranded.total,
   };
+}
+
+/**
+ * Obtain a Pinterest access token that is valid *now* and list the account's
+ * newest pins. The token comes from the same token manager the pinner uses
+ * (scripts/agents/pinterest-token-status.py refreshes config.json in place
+ * when the stored token has aged out); this function never logs it.
+ */
+async function fetchRecentPins(cfgPath: string): Promise<PinLike[]> {
+  if (!existsSync(cfgPath)) throw new Error('MHMUtils config.json not found');
+  const helper = join(PROJECT_DIR, 'scripts', 'agents', 'pinterest-token-status.py');
+  if (existsSync(helper)) {
+    // Output deliberately discarded: it is a status line, but we do not want
+    // any path where a helper change could surface a token in the scoreboard.
+    spawnSync('python3', [helper], {
+      env: { ...process.env, MHM_UTILS_DIR: join(cfgPath, '..'), MHM_PINTEREST_CONFIG: cfgPath },
+      stdio: 'ignore',
+      timeout: 30_000,
+    });
+  }
+  const cfg = JSON.parse(readFileSync(cfgPath, 'utf8')) as Record<string, string>;
+  const token = cfg.creator_access_token ?? '';
+  if (!token) throw new Error('creator_access_token missing from config.json');
+  const headers = { Authorization: `Bearer ${token}` };
+  const out: PinLike[] = [];
+  const sevenDaysAgo = Date.now() - 7 * 864e5;
+  let bookmark: string | null = null;
+  for (let page = 0; page < PINNER_PINS_MAX_PAGES; page += 1) {
+    const url = `https://api.pinterest.com/v5/pins?page_size=${PINNER_PINS_PAGE_SIZE}${bookmark ? `&bookmark=${encodeURIComponent(bookmark)}` : ''}`;
+    const r = await fetch(url, { headers });
+    if (!r.ok) throw new Error(`pinterest /v5/pins HTTP ${r.status}`);
+    const body = (await r.json()) as { items?: PinLike[]; bookmark?: string | null };
+    const items = body.items ?? [];
+    out.push(...items);
+    bookmark = body.bookmark ?? null;
+    const oldest = items[items.length - 1];
+    const oldestTs = oldest?.created_at ? Date.parse(`${oldest.created_at}Z`) : NaN;
+    if (!bookmark || items.length === 0 || (!Number.isNaN(oldestTs) && oldestTs < sevenDaysAgo)) break;
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------- main
@@ -460,9 +551,12 @@ async function main() {
     if (mv.data.tokenDaysLeft != null && mv.data.tokenDaysLeft <= 21) flags.push(`🟡 Mediavine JWT expires in ${mv.data.tokenDaysLeft} days`);
   } else flags.push(`🟡 Mediavine unavailable: ${errOf(mv)}`);
   if (pinner.ok) {
-    const last = pinner.data.lastPostedDate;
-    const staleDays = last ? Math.floor((Date.now() - new Date(last).getTime()) / 864e5) : 99;
-    if (staleDays > 1) flags.push(`🔴 Pinner: last posted pin ${last ?? 'never'} (${staleDays}d ago) — the Pinterest pipeline is stalled`);
+    // Liveness from Pinterest `created_at`, not from the queue's scheduled
+    // `Post Date` (E41): the proxy said "2d ago → 🔴" on 2026-09-13 while the
+    // poster had created 47 pins in 24 h. Proxy-only is 🟡 unverified, never 🔴.
+    const live = pinner.data.liveness;
+    if (live.level === 'red') flags.push(`🔴 Pinner: ${live.message}`);
+    else if (live.level === 'unverified') flags.push(`🟡 Pinner: ${live.message}${pinner.data.pinterestError ? ` (${pinner.data.pinterestError})` : ''}`);
     // The old test (`unpostedBacklog === 0`) could never fire: 1,879 rows sat in
     // the table on 2026-09-08 and every one of them was dated outside the
     // poster's 14-day window, so nothing was schedulable and the flag stayed
@@ -530,9 +624,15 @@ async function main() {
 
   md += `## Content & distribution pipelines\n\n`;
   md += wp.ok ? `- Blog posts: ${wp.data.posts7d} in 7d, ${wp.data.posts30d} in 30d · latest: ${wp.data.latestPost ?? '?'}\n` : `- Blog: unavailable (${errOf(wp)})\n`;
-  md += pinner.ok
-    ? `- Pinner: last posted ${pinner.data.lastPostedDate ?? 'never'} · ${pinner.data.postedLast7d} pins in 7d · **${pinner.data.drainableBacklog} schedulable** (Post Date inside the poster's ${PINNER_LOOKBACK_DAYS}d window) · ${pinner.data.strandedBacklog} stranded outside it, ${pinner.data.unpostedBacklog} unposted total\n`
-    : `- Pinner: unavailable (${errOf(pinner)})\n`;
+  if (pinner.ok) {
+    const p = pinner.data;
+    const posting =
+      p.lastPinCreatedAt
+        ? `${p.liveness.message} · **${p.pinsCreated24h} pins in 24h**, ${p.pinsCreated7d}${p.pinsSampled >= PINNER_PINS_PAGE_SIZE * PINNER_PINS_MAX_PAGES ? '+' : ''} in 7d (Pinterest API)`
+        : `${p.liveness.message} · ${p.postedLast7d} posted rows dated in the last 7d (queue proxy)`;
+    md += `- Pinner: ${posting} · **${p.drainableBacklog} schedulable** (Post Date inside the poster's ${PINNER_LOOKBACK_DAYS}d window) · ${p.strandedBacklog} stranded outside it, ${p.unpostedBacklog} unposted total, ${num(p.postedTotal)} posted rows all-time\n`;
+    md += `  - queue \`Post Date\` is the scheduled date, not a posting timestamp — newest posted row is dated ${p.lastPostedDate ?? 'never'}; do not read it as staleness\n`;
+  } else md += `- Pinner: unavailable (${errOf(pinner)})\n`;
   md += `\n_Generated by scripts/agents/funnel-scoreboard.ts. Sections fail independently; "unavailable" means the source, not the site._\n`;
 
   const json = {
