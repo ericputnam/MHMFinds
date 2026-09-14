@@ -305,12 +305,22 @@ $AGENT_WT_LINE" \
 else
   log "Quinn exited non-zero (see logs)."
 fi
-# The digest is the deliverable; Quinn writes it, we also keep stdout as a fallback.
-if [ -f "$DIGEST" ]; then
+# The digest is the deliverable. Quinn writes it (skeleton before the first merge, full at the end); the fallback
+# script accepts it only if it has the five-section shape, fills the <!-- LEDGER --> placeholder from today's
+# ledger rows, and otherwise SYNTHESIZES a digest from scoreboard + guardrail + ledger + queue. 2026-09-14: Quinn hit
+# --max-turns after PR #101 and the "digest" the operator got was one line of stdout — never again.
+FALLBACK="$WT/scripts/agents/funnel-digest-fallback.py"; [ -f "$FALLBACK" ] || FALLBACK="$PROJECT_DIR/scripts/agents/funnel-digest-fallback.py"
+if [ -f "$FALLBACK" ]; then
+  python3 "$FALLBACK" --today "$TODAY" --wt "$WT" --project-dir "$PROJECT_DIR" \
+    --quinn-out "$WT/reports/funnel/quinn-$TODAY.out" --guard-status "$GUARD_STATUS" --guard-action "$GUARD_ACTION" \
+    --out "$PROJECT_DIR/reports/funnel/digest-$TODAY.md" 2>>"$LOG_FILE" | while IFS= read -r line; do log "$line"; done
+  DIGEST_RC=${PIPESTATUS[0]}
+  [ "$DIGEST_RC" = 3 ] && log "Quinn did not write a usable digest — synthesized one from the day's files."
+elif [ -f "$DIGEST" ]; then
   cp "$DIGEST" "$PROJECT_DIR/reports/funnel/"
 else
   cp "$WT/reports/funnel/quinn-$TODAY.out" "$PROJECT_DIR/reports/funnel/digest-$TODAY.md"
-  log "Quinn did not write the digest file — saved stdout as the digest."
+  log "Quinn did not write the digest file — saved stdout as the digest (no fallback script found)."
 fi
 # Operator-facing files Quinn edited on its branch are on origin/main after its merge; also sync the queue so the operator's tree is current.
 for f in .claude/agents/mhm-funnel/operator-queue.md .claude/agents/mhm-funnel/experiments.md .claude/agents/mhm-funnel/ideas-inbox.md; do
