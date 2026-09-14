@@ -36,7 +36,10 @@ function fakeMod(i: number, extra: Partial<Record<string, unknown>> = {}) {
 
 const wpPosts = [
   { title: { rendered: 'Sims 4 Goth Nails CC &#8211; 20 Finds' }, link: 'https://blog.musthavemods.com/sims-4-goth-nails-cc/', date_gmt: '2026-09-09T10:00:00' },
-  { title: { rendered: 'Redirected legacy post' }, link: 'https://blog.musthavemods.com/sims-4-pregnancy-mods/', date_gmt: '2025-01-01T00:00:00' },
+  // /sims-4-goth-cc/ still 301s to /games/sims-4/goth-cc/ (vercel.json); it must never be cited.
+  { title: { rendered: 'Redirected legacy post' }, link: 'https://blog.musthavemods.com/sims-4-goth-cc/', date_gmt: '2025-01-01T00:00:00' },
+  // /sims-4-pregnancy-mods/ was un-redirected 2026-09-12 (PR #63) and is cite-able again.
+  { title: { rendered: 'Sims 4 Pregnancy Mods' }, link: 'https://blog.musthavemods.com/sims-4-pregnancy-mods/', date_gmt: '2025-02-01T00:00:00' },
 ];
 
 const collectionUrls = SIMS4_COLLECTIONS.map((c) => `https://musthavemods.com/games/${c.gameSlug}/${c.slug}/`);
@@ -101,7 +104,11 @@ describe('/llms-full.txt (long form)', () => {
 
     // guides: apex-rewritten, entities decoded, redirected legacy posts excluded
     expect(text).toContain('Sims 4 Goth Nails CC – 20 Finds (2026-09-09) — https://musthavemods.com/sims-4-goth-nails-cc/');
-    expect(text).not.toContain('/sims-4-pregnancy-mods/');
+    expect(text).not.toContain('Redirected legacy post');
+    expect(text).not.toContain('https://musthavemods.com/sims-4-goth-cc/');
+    // un-redirected 2026-09-12: listed as a guide AND as the pregnancy collection's companion
+    expect(text).toContain('Sims 4 Pregnancy Mods (2025-02-01) — https://musthavemods.com/sims-4-pregnancy-mods/');
+    expect(text).toContain('Editorial companion guide: https://musthavemods.com/sims-4-pregnancy-mods/');
     expect(text).not.toContain('blog.musthavemods.com');
   });
 

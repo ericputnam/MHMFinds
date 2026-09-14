@@ -39,6 +39,10 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://musthavemods.com'),
   alternates: {
     canonical: '/',
+    types: {
+      'application/rss+xml': 'https://musthavemods.com/feeds/mods.xml',
+      'application/feed+json': 'https://musthavemods.com/feeds/mods.json',
+    },
   },
   category: 'Gaming',
   classification: 'Sims 4 Mods Platform',

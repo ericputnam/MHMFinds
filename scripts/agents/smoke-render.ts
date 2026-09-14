@@ -83,6 +83,8 @@ async function main() {
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
     { path: '/llms-full.txt', kind: 'text' },
+    { path: '/feeds/mods.json', kind: 'text' },
+    { path: '/feeds/mods.xml', kind: 'xml' },
   ];
   if (!modId) console.error('[smoke] WARN could not read a mod id from /sitemap-mods.xml — detail + interstitial skipped');
 

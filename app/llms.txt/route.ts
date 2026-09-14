@@ -58,6 +58,12 @@ ${collectionLines}
 - Content is safe-for-work; NSFW submissions are filtered out of all public surfaces.
 - Canonical URLs use the apex domain with a trailing slash, exactly as printed here.
 
+## Feeds (newest mods, refreshed hourly)
+
+- JSON Feed: https://musthavemods.com/feeds/mods.json
+- RSS: https://musthavemods.com/feeds/mods.xml
+- Per-collection RSS: https://musthavemods.com/feeds/sims-4/{collection-slug}/ (e.g. https://musthavemods.com/feeds/sims-4/hair-cc/)
+
 ## Sitemaps
 
 - https://musthavemods.com/sitemap.xml

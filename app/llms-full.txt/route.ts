@@ -28,15 +28,16 @@ const WP_POSTS_URL =
 // Legacy posts whose apex URLs 301 to a collection page (vercel.json). Keep in
 // sync with app/sitemap-blog-posts.xml/route.ts — a cite-able list must not
 // hand an assistant a URL that redirects.
+// /sims-4-pregnancy-mods/ and /sims-4-y2k-cc/ were un-redirected 2026-09-12
+// (PR #63, E21) and are cite-able again — they are the companion guides for
+// their collections.
 const REDIRECTED_POST_PATHS = [
-  '/sims-4-pregnancy-mods/',
   '/sims-4-female-clothes-cc/',
   '/sims-4-male-clothes-cc/',
   '/sims-4-cc-skin-details/',
   '/sims-4-gallery-poses/',
   '/sims-4-goth-cc/',
   '/sims-4-cottagecore-cc/',
-  '/sims-4-y2k-cc/',
 ];
 
 const TOP_PER_COLLECTION = 10;
@@ -255,6 +256,7 @@ ${guidesBlock}
 - Blog: ${SITE}/blog/
 - Short index for assistants: ${SITE}/llms.txt
 - Sitemap: ${SITE}/sitemap.xml
+- Newest mods, JSON Feed: ${SITE}/feeds/mods.json · RSS: ${SITE}/feeds/mods.xml · per collection: ${SITE}/feeds/sims-4/{slug}/
 
 ## Structured data available on-page
 

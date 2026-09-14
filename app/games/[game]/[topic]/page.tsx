@@ -66,7 +66,14 @@ export async function generateMetadata({
   return {
     title: collection.metaTitle,
     description: collection.metaDescription,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      // Per-collection RSS of the newest mods (E42) — feed readers and answer
+      // engines discover it from this <link rel="alternate">.
+      types: {
+        'application/rss+xml': `https://musthavemods.com/feeds/${collection.gameSlug}/${collection.slug}/`,
+      },
+    },
     openGraph: {
       title: collection.metaTitle,
       description: collection.metaDescription,
