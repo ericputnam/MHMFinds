@@ -42,6 +42,12 @@ SAFETY RAILS (all of these are enforced, not advisory)
       are dropped, and if sections cannot be validated at all the run stops
       (exit 2) instead of writing — a revived row with a deleted section
       blocked the poster for two days on 2026-09-10 → 09-12 (E36)
+    * rows whose destination is on an excluded host are dropped — by default
+      `blog.musthavemods.com`, the proxied duplicate of the apex domain. 28 of
+      the 140 rows E26 revived on 2026-09-10 pointed there (an MHMUtils row-
+      generator bug) and their sessions attribute to a URL the rest of the
+      funnel does not optimise. `--skip-host` adds hosts; `--include-all-hosts`
+      disables the filter
     * idempotent: re-running selects only rows still dated before the window, so
       rows this script already moved are not picked up again
 
@@ -89,6 +95,24 @@ MAX_PER_BOARD_PER_DAY = 3
 
 REQUIRED_FIELDS = ('Post Title', 'Post URL', 'Image URL', 'Board ID')
 USER_AGENT = 'Mozilla/5.0 (compatible; MHMFinds-pin-audit/1.0)'
+
+# Destination hosts never worth a pin: the blog subdomain is a proxied duplicate
+# of the apex, so a pin there sends the session to the wrong canonical.
+DEFAULT_SKIP_HOSTS = ('blog.musthavemods.com',)
+
+
+def destination_host(url):
+    """Lower-cased hostname of a destination URL ('' if unparsable)."""
+    try:
+        return (urllib.parse.urlparse(str(url or '')).hostname or '').lower()
+    except ValueError:
+        return ''
+
+
+def on_skipped_host(url, skip_hosts):
+    """True when the URL's host is one of skip_hosts (exact match, no wildcards)."""
+    host = destination_host(url)
+    return bool(host) and host in {h.lower() for h in skip_hosts}
 
 
 # --------------------------------------------------------------------------
@@ -350,7 +374,18 @@ def self_test():
     # 6. An empty input is not an error.
     assert allocate([], start, days=14, per_day=10) == []
 
-    print('self-test: 6/6 assertions passed (allocator, offline)')
+    # 7. Host exclusion is exact-host, case-insensitive, and never matches the
+    #    apex or www — the 2026-09-10 batch sent 28/140 pins to the blog proxy.
+    skip = DEFAULT_SKIP_HOSTS
+    assert on_skipped_host('https://blog.musthavemods.com/sims-4-rugs-cc/', skip)
+    assert on_skipped_host('HTTPS://Blog.MustHaveMods.com/x/', skip)
+    assert not on_skipped_host('https://musthavemods.com/sims-4-rugs-cc/', skip)
+    assert not on_skipped_host('https://www.musthavemods.com/sims-4-rugs-cc/', skip)
+    assert not on_skipped_host('https://musthavemods.com/?ref=blog.musthavemods.com', skip)
+    assert not on_skipped_host('', skip) and not on_skipped_host(None, skip)
+    assert not on_skipped_host('https://blog.musthavemods.com/x/', ())
+
+    print('self-test: 7/7 assertions passed (allocator + host filter, offline)')
     return 0
 
 
@@ -404,6 +439,15 @@ def main():
     parser.add_argument('--days', type=int, default=DEFAULT_DAYS)
     parser.add_argument('--no-verify', action='store_true',
                         help='skip the destination/image URL liveness checks')
+    parser.add_argument('--skip-host', action='append', default=[],
+                        metavar='HOST',
+                        help='drop rows whose destination is on HOST (repeatable; '
+                             'always includes {} unless --include-all-hosts)'.format(
+                                 ', '.join(DEFAULT_SKIP_HOSTS)))
+    parser.add_argument('--include-all-hosts', action='store_true',
+                        help='disable the destination-host exclusion entirely')
+    parser.add_argument('--experiment', default='E26',
+                        help='experiment id recorded in the ledger (default E26)')
     parser.add_argument('--rollback', metavar='LEDGER',
                         help='restore Post Dates from a ledger written by --apply')
     parser.add_argument('--self-test', action='store_true',
@@ -452,6 +496,17 @@ def main():
             missing_fields += 1
     print('  dropped {} row(s) missing one of {}'.format(
         missing_fields, ', '.join(REQUIRED_FIELDS)))
+
+    # --- filter: excluded destination hosts ---------------------------------
+    skip_hosts = () if args.include_all_hosts else tuple(
+        DEFAULT_SKIP_HOSTS) + tuple(args.skip_host)
+    if skip_hosts:
+        before = len(usable)
+        usable = [r for r in usable if not on_skipped_host(r['Post URL'], skip_hosts)]
+        print('  dropped {} row(s) whose destination is on an excluded host ({})'
+              .format(before - len(usable), ', '.join(skip_hosts)))
+    else:
+        print('  destination-host exclusion DISABLED (--include-all-hosts)')
 
     # --- filter: duplicate images ------------------------------------------
     seen, deduped, internal_dupes = set(), [], 0
@@ -588,9 +643,10 @@ def main():
         json.dump({
             'generated': str(today),
             'script': 'scripts/agents/revive-stranded-pins.py',
-            'experiment': 'E26',
+            'experiment': args.experiment,
             'per_day': per_day,
             'days': days,
+            'skip_hosts': list(skip_hosts),
             'updated': updated,
             'entries': ledger_entries,
         }, handle, indent=2)

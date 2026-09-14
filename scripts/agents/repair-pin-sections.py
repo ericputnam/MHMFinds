@@ -481,6 +481,13 @@ def main():
                         help='restore section ids from a ledger written by --apply')
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--ledger-dir', default=os.path.join('reports', 'funnel'))
+    parser.add_argument('--days-ahead', type=int, default=0, metavar='N',
+                        help='also validate unposted rows dated up to N days in the '
+                             'future (default 0 = the poster\'s window only). Use '
+                             'after a revival batch: on 2026-09-14 five E26 rows '
+                             'dated 09-14..09-22 carried a section deleted since '
+                             'February, and the window-only scan could see only '
+                             'the first of them')
     args = parser.parse_args()
 
     if args.self_test:
@@ -493,7 +500,8 @@ def main():
 
         today = date.today()
         floor = today - timedelta(days=LOOKBACK_DAYS)
-        rows = fetch_window_rows(config, str(floor), str(today))
+        ceil = today + timedelta(days=max(0, args.days_ahead))
+        rows = fetch_window_rows(config, str(floor), str(ceil))
         if not rows:
             say('SECTIONS: 0 schedulable rows — nothing to validate')
             return 0
@@ -525,13 +533,14 @@ def main():
             return 1
         unknown = ' ({} unknown: board sections unreachable)'.format(
             counts['unknown']) if counts['unknown'] else ''
-        say('SECTIONS: all {} schedulable row(s) have a live board section{}'.format(
-            len(plan), unknown))
+        ahead = ' incl. {} day(s) ahead'.format(args.days_ahead) if args.days_ahead > 0 else ''
+        say('SECTIONS: all {} schedulable row(s){} have a live board section{}'.format(
+            len(plan), ahead, unknown))
         return 0
 
     say('=== {}: repair dead board sections on schedulable pins ==='.format(
         'APPLY' if args.apply else 'DRY RUN'))
-    dead = print_plan(plan, floor, today, args.apply)
+    dead = print_plan(plan, floor, ceil, args.apply)
     if not dead or not args.apply:
         if dead:
             say('\nDry run — nothing written. Re-run with --apply to repair.')
