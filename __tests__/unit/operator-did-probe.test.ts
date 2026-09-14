@@ -9,6 +9,7 @@ import {
   EXPECTED_REQUIRED,
   parseVercelEnvNames,
   redact,
+  redactError,
   summaryLine,
   tiersFromCampaign,
   WELCOME_NOTE_MARKER,
@@ -129,6 +130,34 @@ describe('redact', () => {
     const out = redact(`token ${jwt} and ${hex}`);
     expect(out).not.toContain(jwt);
     expect(out).not.toContain(hex);
+  });
+});
+
+describe('redactError (scoreboard section() error text)', () => {
+  it('replaces an Accelerate-style datasource URL whose short lowercase api_key redact() alone would keep', () => {
+    const msg = 'Error validating datasource `db`: prisma+postgres://accelerate.prisma-data.net/?api_key=k7short (code P1012)';
+    const out = redactError(msg);
+    expect(out).not.toContain('k7short');
+    expect(out).not.toContain('prisma+postgres://');
+    expect(out).toContain('[url]');
+    expect(out).toContain('(code P1012)');
+    // the general scrub has no rule for a lowercase, sub-32-char query credential
+    expect(redact(msg)).toContain('k7short');
+  });
+
+  it('also strips a classic postgres://user:pass@host URL', () => {
+    const out = redactError("Can't reach database server: postgres://user:pw9x@db.prisma.io:5432/postgres?sslmode=require (P1001)");
+    expect(out).not.toContain('pw9x');
+    expect(out).not.toContain('db.prisma.io');
+    expect(out).toContain('(P1001)');
+  });
+
+  it('still applies every redact() rule and tolerates a non-string', () => {
+    const out = redactError('patreon 401 for user@example.com Bearer abc.def.ghi https://www.patreon.com/api/oauth2/v2/campaigns/1/members?page=2');
+    expect(out).toContain('[email]');
+    expect(out).toContain('Bearer [REDACTED]');
+    expect(out).not.toContain('patreon.com/api');
+    expect(redactError(undefined as unknown as string)).toBe('');
   });
 });
 

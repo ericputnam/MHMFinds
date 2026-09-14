@@ -32,7 +32,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { assessLiveness, summarizePins, type LivenessAssessment, type PinLike } from './pinner-liveness-lib';
-import { E40_ANCHOR, formatPaidByAmount, summarizePatreonMembers, type PatreonMemberAttrs, type PatreonMembersSummary } from './patreon-members-lib';
+import { redactError } from './operator-did-probe-lib';
+import {
+  E40_ANCHOR,
+  E40_CLICK_BASELINE,
+  formatPaidByAmount,
+  ga4DateKey,
+  meanDailyUsers,
+  summarizePatreonMembers,
+  type MeanDailyUsers,
+  type PatreonMemberAttrs,
+  type PatreonMembersSummary,
+} from './patreon-members-lib';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? '/Users/eputnam/java_projects/MHMFinds';
 const OUT_DIR = join(PROJECT_DIR, 'reports', 'funnel');
@@ -88,9 +99,11 @@ async function section<T>(name: string, fn: () => Promise<T>): Promise<Section<T
   try {
     return { ok: true, data: await fn() };
   } catch (err) {
-    const msg = (err as Error).message ?? String(err);
-    console.error(`[scoreboard] ${name}: ${msg.slice(0, 200)}`);
-    return { ok: false, error: msg.slice(0, 200) };
+    // The message is interpolated into the committed .md/.json and the Flags
+    // list; Prisma errors embed the datasource URL, so scrub before it leaves.
+    const msg = redactError((err as Error).message ?? String(err)).slice(0, 200);
+    console.error(`[scoreboard] ${name}: ${msg}`);
+    return { ok: false, error: msg };
   }
 }
 
@@ -115,10 +128,20 @@ interface Ga4Data {
   aiReferral7d: number;
   aiReferralPrev7d: number;
   captureEvents7d: Record<string, number>;
-  /** distinct users per capture event over the same 7d window (GA4 totalUsers) */
+  /** distinct users per capture event over the same 7d window (GA4 totalUsers, deduped across the window) */
   captureUsers7d: Record<string, number>;
-  /** patreon_click users ÷ 7 — the E40 revert clause reads this against 50% of the 09-08→09-11 baseline (8.75) */
+  /**
+   * E40 traffic leg: **mean of daily** distinct `patreon_click` users over the
+   * 7d window — the same arithmetic as the frozen 8.75 baseline (35 users / 4
+   * days, 09-08→09-11). Until 2026-09-14 this was `captureUsers7d.patreon_click / 7`,
+   * a 7-day dedupe ÷ 7, which reads systematically lower than a mean of dailies.
+   */
   patreonClickUsersPerDay7d: number;
+  patreonClick7d: MeanDailyUsers;
+  /** the frozen baseline window re-read from GA4 today, so drift in the source is visible next to the constant */
+  patreonClickBaselineReread: MeanDailyUsers;
+  /** daily distinct users, `YYYY-MM-DD` → users, from the baseline start through the window end */
+  patreonClickUsersByDay: Record<string, number>;
   notSetLanding7d: number;
 }
 
@@ -189,7 +212,24 @@ async function pullGa4(): Promise<Ga4Data> {
     captureEvents7d[name] = Number(row.metricValues?.[0]?.value ?? 0);
     captureUsers7d[name] = Number(row.metricValues?.[1]?.value ?? 0);
   }
-  const patreonClickUsersPerDay7d = Math.round(((captureUsers7d.patreon_click ?? 0) / 7) * 100) / 100;
+  // Daily distinct patreon_click users from the E40 baseline start through the
+  // window end, so the gate's two sides are the same statistic (mean of dailies).
+  const [daily] = await client.runReport({
+    property,
+    dateRanges: [{ startDate: E40_CLICK_BASELINE.start, endDate: end }],
+    dimensions: [{ name: 'date' }],
+    metrics: [{ name: 'totalUsers' }],
+    dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { value: 'patreon_click', matchType: 'EXACT' } } },
+    limit: 400,
+  });
+  const patreonClickUsersByDay: Record<string, number> = {};
+  for (const row of daily.rows ?? []) {
+    const k = ga4DateKey(row.dimensionValues?.[0]?.value ?? '');
+    if (k) patreonClickUsersByDay[k] = Number(row.metricValues?.[0]?.value ?? 0);
+  }
+  const patreonClick7d = meanDailyUsers(patreonClickUsersByDay, start, end);
+  const patreonClickBaselineReread = meanDailyUsers(patreonClickUsersByDay, E40_CLICK_BASELINE.start, E40_CLICK_BASELINE.end);
+  const patreonClickUsersPerDay7d = patreonClick7d.perDay;
 
   const [ns] = await client.runReport({
     property,
@@ -211,6 +251,9 @@ async function pullGa4(): Promise<Ga4Data> {
     captureEvents7d,
     captureUsers7d,
     patreonClickUsersPerDay7d,
+    patreonClick7d,
+    patreonClickBaselineReread,
+    patreonClickUsersByDay,
     notSetLanding7d,
   };
 }
@@ -380,8 +423,10 @@ interface PatreonApiData extends PatreonMembersSummary {
  * The numbers behind the E40 read (2026-09-19) and the Q4 step-1 gate (2026-09-22),
  * pulled every morning so neither has to be hand-run. Same arithmetic as
  * `patreon-relaunch-read.ts` via the shared pure lib; aggregates only —
- * emails are used solely to intersect the paid set with linked site accounts
- * and never leave this function.
+ * the Patreon user id (`relationships.user.data.id`, via `include=user`) and
+ * the email are used solely to intersect the paid set with linked site
+ * accounts (`Account.providerAccountId` / `User.email`) and never leave this
+ * function. The id is the authoritative key (E50); email is the fallback.
  */
 async function pullPatreonApi(): Promise<PatreonApiData> {
   // The runner invokes this script without dotenv; load only the keys the
@@ -394,11 +439,16 @@ async function pullPatreonApi(): Promise<PatreonApiData> {
   const { patreonGet } = await import('../_patreon-auth');
   const members: PatreonMemberAttrs[] = [];
   let url: string | null =
-    `https://www.patreon.com/api/oauth2/v2/campaigns/${campaign}/members?fields%5Bmember%5D=patron_status,pledge_relationship_start,last_charge_date,currently_entitled_amount_cents,email&page%5Bcount%5D=500`;
+    `https://www.patreon.com/api/oauth2/v2/campaigns/${campaign}/members?fields%5Bmember%5D=patron_status,pledge_relationship_start,last_charge_date,currently_entitled_amount_cents,email&include=user&page%5Bcount%5D=500`;
   let pages = 0;
   while (url && pages < 50) {
-    const j: { data?: Array<{ attributes: PatreonMemberAttrs }>; links?: { next?: string } } = await patreonGet(url);
-    members.push(...(j.data ?? []).map((d) => d.attributes));
+    const j: {
+      data?: Array<{ attributes: PatreonMemberAttrs; relationships?: { user?: { data?: { id?: string } | null } } }>;
+      links?: { next?: string };
+    } = await patreonGet(url);
+    // `include=user` puts the Patreon user id on the relationship; we never read
+    // the `included` user objects (no user fields are requested).
+    members.push(...(j.data ?? []).map((d) => ({ ...d.attributes, patreonUserId: d.relationships?.user?.data?.id ?? null })));
     url = j.links?.next ?? null;
     pages += 1;
   }
@@ -409,11 +459,15 @@ async function pullPatreonApi(): Promise<PatreonApiData> {
   const prisma = new PrismaClient({ datasourceUrl: dbUrl, log: ['error'] });
   try {
     const [linked, premiumUsers] = await Promise.all([
-      prisma.account.findMany({ where: { provider: 'patreon' }, select: { user: { select: { email: true } } } }),
+      prisma.account.findMany({ where: { provider: 'patreon' }, select: { providerAccountId: true, user: { select: { email: true } } } }),
       prisma.user.count({ where: { isPremium: true } }),
     ]);
     const now = new Date();
-    const summary = summarizePatreonMembers(members, linked.map((a) => a.user.email), { now });
+    const summary = summarizePatreonMembers(
+      members,
+      linked.map((a) => ({ providerAccountId: a.providerAccountId, email: a.user.email })),
+      { now },
+    );
     return {
       ...summary,
       connectedAccounts: linked.length,
@@ -648,6 +702,12 @@ async function main() {
   if (ga4.ok && ga4.data.sessionsPrev7d && ga4.data.sessions7d / ga4.data.sessionsPrev7d < 0.9) flags.push(`🔴 GA4 sessions 7d ${pct(ga4.data.sessions7d, ga4.data.sessionsPrev7d)} WoW`);
   if (ga4.ok && Object.keys(ga4.data.captureEvents7d).length === 0) flags.push(`🟡 GA4: no capture events fired in 7d (newsletter_signup/account_signup/patreon_click not instrumented)`);
   if (wp.ok && wp.data.posts7d === 0) flags.push(`🟡 No blog posts published in 7 days`);
+  // Two decision gates (E40 read 09-19, Q4 gate 09-22) read this section; an
+  // outage must show where the operator reads first, not only as a body note.
+  if (!patreonApi.ok) flags.push(`🟡 Patreon Members API unavailable: ${errOf(patreonApi)} — E40 / Q4 gate numbers missing today`);
+  else if (patreonApi.data.paid > 0 && patreonApi.data.paidWithUserId === 0) {
+    flags.push(`🟡 Patreon Members API returned no user ids (include=user not honoured) — paid-and-connected fell back to the email-only join`);
+  }
 
   // --- markdown
   let md = `# Funnel scoreboard — ${today}\n\n`;
@@ -701,17 +761,19 @@ async function main() {
   md += `## Patreon (Members API + site accounts) — E40 read 2026-09-19 · Q4 gate 2026-09-22\n\n`;
   if (patreonApi.ok) {
     const a = patreonApi.data;
-    const clickUsersPerDay = ga4.ok ? ga4.data.patreonClickUsersPerDay7d : null;
+    const click = ga4.ok ? ga4.data.patreonClick7d : null;
+    const reread = ga4.ok ? ga4.data.patreonClickBaselineReread : null;
+    const B = E40_CLICK_BASELINE;
     const connectedShare = a.paid ? Math.round((100 * a.paidAndConnected) / a.paid) : 0;
     md += `| Metric | Value |\n|---|--:|\n`;
     md += `| Paid patrons (API) | ${a.paid} (${formatPaidByAmount(a.paidByAmount)}) ≈ ${money(a.grossMonthlyUsd)}/mo |\n`;
-    md += `| Paid-and-connected | **${a.paidAndConnected}** of ${a.connectedAccounts} linked accounts (${connectedShare}% of paid; gate needs ≥ 1/3) · premium-flagged users ${a.premiumUsers} |\n`;
+    md += `| Paid-and-connected | **${a.paidAndConnected}** of ${a.connectedAccounts} linked accounts (${connectedShare}% of paid; gate needs ≥ 1/3) · by Patreon id ${a.paidAndConnectedById}, by email ${a.paidAndConnectedByEmail} (email-only was the pre-09-14 join) · ${a.linkedWithPatreonId} linked accounts carry a Patreon id, ${a.paidWithUserId} of ${a.paid} paid rows carry one · premium-flagged users ${a.premiumUsers} |\n`;
     md += `| $3-tier joins since ${a.anchor} | **${a.joinsSinceAnchorAtPerkTier}** (all tiers ${a.joinsSinceAnchor}) |\n`;
     md += `| $3-tier joins 7d (${a.window}) | ${a.perkTierJoins7d} → ${a.perkTierJoinsPerDay7d}/day |\n`;
     md += `| Paid joins / cancels 7d | ${a.joins7d} / ${a.cancels7d} (Aug 2026 pace: 17 / 16 per month) |\n`;
-    md += `| patreon_click users/day (GA4 7d) | ${clickUsersPerDay != null ? clickUsersPerDay : 'unavailable'} (E40 baseline 8.75 over 09-08→09-11) |\n\n`;
-    md += `- E40 keep if: paid-and-connected ≥ 3 OR $3-tier joins 09-13→09-19 ≥ 11, with session RPM within ±5% of $17.55; revert if paid-and-connected still 0 AND joins < 8 AND patreon_click users/day < 4.375 (50% of 8.75).\n`;
-    md += `- Q4 gate (2026-09-22): proceed to renames + $10 tier only if joins ≥ 17/mo pace AND ≥ 1/3 of paid patrons connected; revert copy if cancels > 16/mo pace.\n\n`;
+    md += `| patreon_click users/day (GA4, mean of daily distinct users${click ? `, ${click.window}` : ''}) | ${click ? `${click.perDay} (${click.users} users / ${click.days} days)` : 'unavailable'} vs E40 baseline ${B.usersPerDay} (${B.users} users / ${B.days} days, ${B.start}→${B.end}, frozen 09-12${reread ? `; GA4 re-reads that window today as ${reread.perDay}` : ''}) |\n\n`;
+    md += `- E40 keep if: paid-and-connected ≥ 3 OR $3-tier joins 09-13→09-19 ≥ 11, with session RPM within ±5% of $17.55; revert if paid-and-connected still 0 AND joins < 8 AND patreon_click users/day (mean of daily distinct users over ${click ? click.window : 'the 7d GA4 window'}) < ${B.revertBelowPerDay} (50% of the ${B.usersPerDay} baseline, mean of daily distinct users ${B.start}→${B.end}). Paid-and-connected is the id join (fallback email); the E40 BEFORE of 0 was email-only.\n`;
+    md += `- Q4 gate (2026-09-22): proceed to renames + $10 tier only if joins ≥ 17/mo pace AND ≥ 1/3 of paid patrons connected (id join); revert copy if cancels > 16/mo pace.\n\n`;
   } else md += `_unavailable: ${errOf(patreonApi)}_\n\n`;
 
   md += `## Content & distribution pipelines\n\n`;
