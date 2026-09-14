@@ -18,6 +18,12 @@ const NEXTJS_PREFIXES = new Set([
   // /feeds/* are the Next.js mod feeds (E42). WordPress's own RSS stays at
   // /feed/ (singular) and is still proxied — the two must not collide.
   'feeds',
+  // Password reset (E39). Shipped 09-12 without these two entries, so both
+  // pages — and the /set-password/?token= link in every reset email — were
+  // proxied to WordPress and served a WP 404 (verified in production
+  // 2026-09-14). __tests__/unit/middleware-route-prefixes.test.ts now asserts
+  // that every routable top-level directory under app/ is listed here.
+  'forgot-password', 'set-password',
 ]);
 
 const WP_ORIGIN = 'https://blog.musthavemods.com';
