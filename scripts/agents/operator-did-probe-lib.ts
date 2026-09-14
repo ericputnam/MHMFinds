@@ -89,6 +89,19 @@ export function redact(input: string): string {
     .replace(TOKEN_RE, '[REDACTED]');
 }
 
+/** Any `scheme://…` run up to whitespace or a quote — Prisma/pg errors embed the full datasource URL, credentials included. */
+const URL_RE = /\b[a-z][a-z0-9+.-]*:\/\/[^\s'"`<>]+/gi;
+
+/**
+ * `redact()` for exception messages that may be interpolated into a committed
+ * report. Additionally replaces every URL with `[url]`: a connection string's
+ * password is often shorter than `TOKEN_RE`'s 32-char floor and is not a
+ * `KEY=value` pair, so the general scrub alone would let it through.
+ */
+export function redactError(message: string): string {
+  return redact(String(message ?? '').replace(URL_RE, '[url]'));
+}
+
 // ---------------------------------------------------------------------------------------------
 // Vercel `env ls` parsing + expected-name diff
 // ---------------------------------------------------------------------------------------------
