@@ -237,4 +237,13 @@ describe('wiring that would otherwise fail silently', () => {
     expect(src).toContain("{ path: '/feeds/mods.json', kind: 'text' }");
     expect(src).toContain("{ path: '/feeds/mods.xml', kind: 'xml' }");
   });
+
+  it('the smoke check also renders one per-collection feed (E52)', () => {
+    // The ~20 per-collection feeds share buildWhereClause(), so one is a fair proxy for the class —
+    // and the two sitewide feeds above would stay green through a regression that broke all of them.
+    const src = read('scripts/agents/smoke-render.ts');
+    expect(src).toContain("{ path: '/feeds/sims-4/hair-cc/', kind: 'xml' }");
+    // The path must be a real registry collection, or the smoke check fails on a 404 forever.
+    expect(SIMS4_COLLECTIONS.some((c) => c.slug === 'hair-cc')).toBe(true);
+  });
 });

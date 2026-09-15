@@ -157,6 +157,28 @@ else
   log "catalog-ingest-daily.sh not present or not executable — skipped"
 fi
 
+# --- 0c2. IndexNow submit (Sage, E47/E52) ---------------------------------------
+# Runs right after ingest so the mods created minutes ago are the ones pushed. --days 2 is deliberate: the
+# 7-day default already exceeds HARD_CAP=500 whenever a backfill lands inside the window, and a daily run only
+# needs yesterday + today. The script is its own safety net — dry-run is the default (so --apply is explicit
+# here), it refuses to POST unless GET /<key>.txt returns 200 with the key body, every URL passes
+# isCanonicalUrl(), and HARD_CAP caps the batch no matter what flags say. Non-fatal by design, honouring the
+# house 0/2/1 convention: 2 = could-not-run (no DATABASE_URL, DB error, key file down), 1 = IndexNow rejected
+# it. Either way the loop continues and the script's own summary line is tailed here, so silence is falsifiable.
+log "IndexNow submit…"
+if [ -f "$WT/scripts/agents/indexnow-submit.ts" ]; then
+  (cd "$WT" && MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/indexnow-submit.ts --apply --days 2 >>"$LOG_FILE" 2>&1)
+  INDEXNOW_RC=$?
+  case "$INDEXNOW_RC" in
+    0) : ;;
+    2) log "IndexNow could-not-run (exit 2, non-fatal) — see the summary line below" ;;
+    *) log "IndexNow submit FAILED (exit $INDEXNOW_RC, non-fatal) — see the summary line below" ;;
+  esac
+  [ -f "$WT/logs/indexnow.log" ] && tail -n 1 "$WT/logs/indexnow.log" >>"$LOG_FILE"
+else
+  log "indexnow-submit.ts not present — skipped"
+fi
+
 # --- 0d. operator-did probe (Rio, E35) ------------------------------------------
 # Read-only: Vercel Production env var NAMES (via the operator tree, the only Vercel-linked checkout), Patreon
 # tier titles/prices/published/patron_count, functions.php markers — diffed against yesterday's snapshot so the

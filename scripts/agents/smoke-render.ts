@@ -17,6 +17,8 @@ import { chromium } from 'playwright';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
+import { INDEXNOW_KEY } from './indexnow-lib';
+
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
 const BASE = (arg('--base') ?? 'https://musthavemods.com').replace(/\/$/, '');
@@ -24,12 +26,18 @@ const JSON_OUT = arg('--json');
 const SETTLE_MS = Number(arg('--settle') ?? 6000);
 
 type Kind = 'catalog' | 'detail' | 'interstitial' | 'blog' | 'xml' | 'text';
-interface Target { path: string; kind: Kind; }
+/**
+ * `expectText`: for a short file whose *content* is the point, not its length —
+ * the IndexNow ownership key is 32 bytes, well under the 50-char "empty response"
+ * floor, so the default check would fail it on every run and roll production back.
+ */
+interface Target { path: string; kind: Kind; expectText?: string; }
 interface Result {
   path: string; kind: Kind; status: number | null; ms: number;
   secondary: number; mvAds: number; mediavineScript: boolean; textLength: number;
   pageErrors: string[]; consoleErrors: number; appError: boolean;
   hydrationErrors: number; thirdPartyErrors: number; failures: string[]; transientErrors?: string[];
+  expectText?: string; bodyText?: string;
 }
 
 const OUR_HOST = new URL(BASE).host;
@@ -69,6 +77,10 @@ function expectations(r: Result): string[] {
     if (r.secondary < 1) f.push('aside#secondary (Mediavine sidebar anchor) missing');
     if (r.kind !== 'blog' && r.mvAds < 1) f.push('.mv-ads in-content anchors missing');
     if (r.textLength < 400) f.push(`page text only ${r.textLength} chars (blank render?)`);
+  } else if (r.expectText) {
+    // Exact-content check. Only the length is reported on failure — never the body, which for a
+    // general-purpose target could be anything. (The IndexNow key itself is public by design.)
+    if (!(r.bodyText ?? '').includes(r.expectText)) f.push(`body does not contain the expected text (${r.bodyText?.length ?? 0} chars served)`);
   } else if (r.textLength < 50) f.push('empty response');
   return f;
 }
@@ -85,6 +97,12 @@ async function main() {
     { path: '/llms-full.txt', kind: 'text' },
     { path: '/feeds/mods.json', kind: 'text' },
     { path: '/feeds/mods.xml', kind: 'xml' },
+    // One per-collection feed stands in for all ~20: they share buildWhereClause(), so a regression that
+    // breaks one breaks the class, and the sitewide feeds above would not catch it.
+    { path: '/feeds/sims-4/hair-cc/', kind: 'xml' },
+    // The IndexNow ownership proof (E47/E52). Without it every submission is a 403 and the only symptom is
+    // `reason=key-file-not-live` in a log nobody reads; a `public/` cleanup that drops it is otherwise silent.
+    { path: `/${INDEXNOW_KEY}.txt`, kind: 'text', expectText: INDEXNOW_KEY },
   ];
   if (!modId) console.error('[smoke] WARN could not read a mod id from /sitemap-mods.xml — detail + interstitial skipped');
 
@@ -112,20 +130,22 @@ async function main() {
         await page.waitForTimeout(SETTLE_MS);
       }
     } catch (e) { pageErrors.push(`navigation: ${String((e as Error).message).slice(0, 160)}`); }
-    let secondary = 0, mvAds = 0, mediavineScript = false, textLength = 0, appError = false;
+    let secondary = 0, mvAds = 0, mediavineScript = false, textLength = 0, appError = false, bodyText = '';
     try {
       const d = await page.evaluate(() => ({
         secondary: document.querySelectorAll('aside#secondary').length,
         mvAds: document.querySelectorAll('.mv-ads').length,
         mediavineScript: !!document.querySelector('script[src*="scripts.mediavine.com"]') || document.documentElement.innerHTML.includes('scripts.mediavine.com'),
         textLength: (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim().length,
+        // Bounded: enough to verify a short exact-content file, never enough to dump a page into the JSON.
+        bodyText: (document.body?.innerText ?? '').trim().slice(0, 200),
         appError: /Application error: a client-side exception/i.test(document.body?.innerText ?? ''),
       }));
-      ({ secondary, mvAds, mediavineScript, textLength, appError } = d);
+      ({ secondary, mvAds, mediavineScript, textLength, appError, bodyText } = d);
     } catch (e) { pageErrors.push(`evaluate: ${String((e as Error).message).slice(0, 160)}`); }
     const hydrationErrors = pageErrors.filter(isHydration).length;
     const thirdPartyErrors = pageErrors.filter((e) => !isHydration(e) && isThirdParty(e)).length;
-    const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, thirdPartyErrors, failures: [] };
+    const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, thirdPartyErrors, failures: [], ...(t.expectText ? { expectText: t.expectText, bodyText } : {}) };
     r.failures = expectations(r);
     await page.close();
     return r;
