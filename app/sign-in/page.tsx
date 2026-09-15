@@ -262,7 +262,7 @@ export default function SignInPage() {
                       <label className="block text-sm font-semibold text-slate-300">Password</label>
                       {mode === 'signin' && (
                         <Link
-                          href="/forgot-password"
+                          href="/forgot-password/"
                           className="text-xs font-medium text-sims-pink hover:text-sims-pink/80 transition-colors"
                         >
                           Forgot password?

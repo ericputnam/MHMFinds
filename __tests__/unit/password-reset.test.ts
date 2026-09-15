@@ -385,7 +385,9 @@ describe('source-level guards', () => {
   });
 
   it('the sign-in page links to /forgot-password', () => {
-    expect(readSource('app/sign-in/page.tsx')).toContain('href="/forgot-password"');
+    // Trailing slash required: `trailingSlash: true` 308s the bare form.
+    expect(readSource('app/sign-in/page.tsx')).toContain('href="/forgot-password/"');
+    expect(readSource('app/sign-in/page.tsx')).not.toContain('href="/forgot-password"');
   });
 
   it('the forgot route stays generic for the admin account and on every branch', () => {

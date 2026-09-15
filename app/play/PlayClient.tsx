@@ -273,7 +273,7 @@ export default function PlayClient() {
                         return (
                           <Link
                             key={slot.slot}
-                            href={`/go/${item.id}`}
+                            href={`/go/${item.id}/`}
                             className="group bg-mhm-elevated rounded-2xl overflow-hidden border border-white/5 hover:border-sims-pink/40 transition"
                           >
                             <div className="relative aspect-square">

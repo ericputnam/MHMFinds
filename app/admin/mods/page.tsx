@@ -334,7 +334,7 @@ export default function ModsManagementPage() {
           <p className="text-slate-400">Manage all mods in the database ({total} total)</p>
         </div>
         <Link
-          href="/admin/mods/new"
+          href="/admin/mods/new/"
           className="flex items-center gap-2 px-6 py-3 bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold rounded-lg transition-all"
         >
           <Plus className="h-5 w-5" />
@@ -765,7 +765,7 @@ export default function ModsManagementPage() {
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-1">
                           <Link
-                            href={`/admin/mods/${mod.id}/edit`}
+                            href={`/admin/mods/${mod.id}/edit/`}
                             className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                             title="Edit"
                           >

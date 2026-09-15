@@ -330,3 +330,95 @@ describe('shoes-cc registry placement (E43, 2026-09-13)', () => {
     expect(hits[0]?.slug).toBe('shoes-cc');
   });
 });
+
+/**
+ * The slashless-href CLASS guard.
+ *
+ * `next.config.js` sets `trailingSlash: true`, so ANY internal href whose
+ * path portion lacks a trailing slash answers 308 before it renders. Five
+ * such links were live on 2026-09-15 — two of them in the site-wide
+ * <Navbar> ("Browse by Game"), one in the collection-page breadcrumb, one
+ * on /play, one in admin — plus 55 plain-string hrefs across app/ and
+ * components/. Each one burns a round trip and dilutes the internal-link
+ * signal to the very collection pages this site ranks on.
+ *
+ * Previous fixes closed single INSTANCES (the related-collections strip,
+ * PR #95) and the class immediately reopened. This asserts the class:
+ * every internal href in app/ and components/, string or template
+ * literal, must have a path that ends in "/".
+ *
+ * Exemptions, and only these two:
+ *   - a dotted last segment (e.g. /feeds/mods.json) — `trailingSlash`
+ *     leaves dotted routes slashless, same rule as isCanonicalUrl() in
+ *     scripts/agents/indexnow-lib.ts.
+ *   - the path portion is exactly "/" (root with a query, e.g.
+ *     `/?search=${tag}`), which is already canonical.
+ */
+describe('internal hrefs never point at a 308 (the slashless-href class)', () => {
+  const ROOTS = ['app', 'components'];
+
+  // The source comments in this repo deliberately contain the bad patterns
+  // they warn about, so strip comments before asserting (house rule).
+  const stripComments = (s: string) =>
+    s
+      .replace(/\{\/\*[\s\S]*?\*\/\}/g, '') // {/* JSX comment */}
+      .replace(/\/\*[\s\S]*?\*\//g, '') // /* block comment */
+      .replace(/^\s*\/\/.*$/gm, ''); // full-line // comment
+
+  const walk = (dir: string): string[] => {
+    const abs = path.resolve(__dirname, '../../', dir);
+    if (!fs.existsSync(abs)) return [];
+    const out: string[] = [];
+    for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+      const rel = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+        out.push(...walk(rel));
+      } else if (entry.name.endsWith('.tsx')) {
+        out.push(rel);
+      }
+    }
+    return out;
+  };
+
+  // href="/x" | href={`/x`} | href={'/x'}
+  const HREF_RE = /href=(?:"([^"]*)"|\{\s*[`'"]([^`'"]*)[`'"]\s*\})/g;
+
+  const isCanonical = (href: string): boolean => {
+    const pathPart = href.split(/[?#]/)[0];
+    if (pathPart === '/') return true; // root with a query
+    if (pathPart.endsWith('/')) return true;
+    const last = pathPart.split('/').pop() || '';
+    return last.includes('.'); // dotted route, e.g. /feeds/mods.json
+  };
+
+  const offenders: string[] = [];
+  for (const file of ROOTS.flatMap(walk)) {
+    const src = stripComments(read(file));
+    for (const m of Array.from(src.matchAll(HREF_RE))) {
+      const href = m[1] ?? m[2];
+      if (!href || !href.startsWith('/')) continue; // external / mailto / anchor
+      if (!isCanonical(href)) {
+        const line = src.slice(0, m.index).split('\n').length;
+        offenders.push(`${file}:${line} href=${href}`);
+      }
+    }
+  }
+
+  it('finds at least one internal href to check (the scanner works)', () => {
+    // Guards against a regex/walk change that silently makes this suite vacuous.
+    let total = 0;
+    for (const file of ROOTS.flatMap(walk)) {
+      const src = stripComments(read(file));
+      for (const m of Array.from(src.matchAll(HREF_RE))) {
+        const href = m[1] ?? m[2];
+        if (href && href.startsWith('/')) total++;
+      }
+    }
+    expect(total).toBeGreaterThan(50);
+  });
+
+  it('no internal href in app/ or components/ omits its trailing slash', () => {
+    expect(offenders).toEqual([]);
+  });
+});

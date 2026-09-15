@@ -231,7 +231,7 @@ function AdminDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <a
-          href="/admin/analytics"
+          href="/admin/analytics/"
           className="bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl p-6 transition-all cursor-pointer"
         >
           <BarChart3 className="h-8 w-8 text-white mb-3" />
@@ -240,7 +240,7 @@ function AdminDashboard() {
         </a>
 
         <a
-          href="/admin/mods/new"
+          href="/admin/mods/new/"
           className="bg-sims-pink hover:bg-sims-pink/90 rounded-xl p-6 transition-all cursor-pointer"
         >
           <Package className="h-8 w-8 text-white mb-3" />
@@ -249,7 +249,7 @@ function AdminDashboard() {
         </a>
 
         <a
-          href="/admin/submissions"
+          href="/admin/submissions/"
           className="bg-sims-blue hover:bg-sims-blue/90 rounded-xl p-6 transition-all cursor-pointer"
         >
           <Upload className="h-8 w-8 text-white mb-3" />
@@ -258,7 +258,7 @@ function AdminDashboard() {
         </a>
 
         <a
-          href="/admin/creators"
+          href="/admin/creators/"
           className="bg-sims-green hover:bg-sims-green/90 rounded-xl p-6 transition-all cursor-pointer"
         >
           <Users className="h-8 w-8 text-white mb-3" />

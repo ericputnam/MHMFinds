@@ -304,7 +304,7 @@ export default function EditModPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/admin/mods"
+            href="/admin/mods/"
             className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
           >
             <ArrowLeft className="h-6 w-6 text-slate-400" />
@@ -952,7 +952,7 @@ export default function EditModPage() {
         {/* Form Actions */}
         <div className="flex items-center justify-end gap-4">
           <Link
-            href="/admin/mods"
+            href="/admin/mods/"
             className="px-6 py-3 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
           >
             Cancel

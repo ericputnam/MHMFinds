@@ -185,6 +185,11 @@ describe('/play scoring is deterministic and offline', () => {
 
   it('"shop the look" links go through the /go interstitial, not straight out', () => {
     // /go/[modId] is the page that carries the download ad units.
-    expect(client).toMatch(/href=\{`\/go\/\$\{item\.id\}`\}/);
+    // Trailing slash is load-bearing: `trailingSlash: true` 308s the bare
+    // form, so a slashless href costs a round trip before the ad units
+    // ever render. Asserted as canonical here rather than as-written, so
+    // this test can never pin the slashless form back in place.
+    expect(client).toMatch(/href=\{`\/go\/\$\{item\.id\}\/`\}/);
+    expect(client).not.toMatch(/href=\{`\/go\/\$\{item\.id\}`\}/);
   });
 });
