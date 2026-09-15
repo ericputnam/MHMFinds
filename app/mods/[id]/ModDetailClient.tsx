@@ -20,6 +20,7 @@ import {
   Home
 } from 'lucide-react';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
@@ -454,8 +455,11 @@ export default function ModDetailClient({ initialMod, collections = [] }: ModDet
             </div>
             {/* end .mv-ads sidebar wrapper */}
 
-            {/* Affiliate Product Recommendations */}
-            {mod.themes && mod.themes.length > 0 && (
+            {/* Affiliate Product Recommendations — off by default since E55
+                (2026-09-15, $0 commissions ever); lib/affiliatePlacements.ts.
+                Sibling of the .mv-ads wrapper above and of aside#secondary
+                below — gating it changes neither. */}
+            {isAffiliatePlacementEnabled('mod_page') && mod.themes && mod.themes.length > 0 && (
               <div className="mt-6">
                 <AffiliateRecommendations
                   modId={mod.id}
