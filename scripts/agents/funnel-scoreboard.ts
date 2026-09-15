@@ -31,7 +31,15 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { assessLiveness, summarizePins, type LivenessAssessment, type PinLike } from './pinner-liveness-lib';
+import {
+  assessLiveness,
+  assessRunway,
+  DEFAULT_RUNWAY_HORIZON_DAYS,
+  summarizePins,
+  type LivenessAssessment,
+  type PinLike,
+  type RunwayAssessment,
+} from './pinner-liveness-lib';
 import { redactError } from './operator-did-probe-lib';
 import {
   E40_ANCHOR,
@@ -67,6 +75,9 @@ function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return iso(d);
+}
+function daysAhead(n: number): string {
+  return daysAgo(-n);
 }
 function pct(curr: number, prev: number): string {
   if (!prev) return 'n/a';
@@ -518,6 +529,11 @@ const PINNER_LOOKBACK_DAYS = 14;
 // ever downgrade to "unverified", never to 🔴.
 const PINNER_PINS_PAGE_SIZE = 100;
 const PINNER_PINS_MAX_PAGES = 3;
+// Runway (E51, 2026-09-15). Must match DEFAULT_RUNWAY_HORIZON_DAYS /
+// DEFAULT_LOW_RUNWAY_DAYS in pinner-liveness-lib.ts and PINNER_RUNWAY_HORIZON_DAYS
+// / PINNER_LOW_RUNWAY_DAYS in check-pinner.sh.
+const PINNER_RUNWAY_HORIZON_DAYS = DEFAULT_RUNWAY_HORIZON_DAYS;
+const PINNER_LOW_RUNWAY_DAYS = 3;
 interface PinnerData {
   /** max(Post Date) over posted rows — the SCHEDULED date. Proxy only; see assessLiveness. */
   lastPostedDate: string | null;
@@ -540,6 +556,14 @@ interface PinnerData {
   drainableBacklog: number;
   /** Rows dated before the poster's window — queued but unreachable without re-dating. */
   strandedBacklog: number;
+  /**
+   * Unposted rows dated inside [today - lookback, today + PINNER_RUNWAY_HORIZON_DAYS]:
+   * what the poster can reach today plus what enters its window over the horizon.
+   * This — not `drainableBacklog` — is the buffer (E51).
+   */
+  inventoryRows: number;
+  /** inventoryRows ÷ observed pins/day. The only queue-depth signal that may flag. */
+  runway: RunwayAssessment;
 }
 async function pullPinner(): Promise<PinnerData> {
   // The BigScoots cron uses MHMUtils/config.json (SUPABASE_URL + SUPABASE_KEY); the .env there is stale.
@@ -580,6 +604,14 @@ async function pullPinner(): Promise<PinnerData> {
   const stranded = await q(
     `select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${floor}&limit=1`,
   );
+  // Inventory ahead of the poster (E51): the queue is drip-dated (E26 10/day,
+  // E46 14/day), so "schedulable today" is only the residue of today's
+  // allotment after the poster has drained most of it — 6 on 09-15 while 39
+  // pins had been created in 24 h. The buffer is everything dated from the
+  // window floor through the look-ahead horizon, divided by the observed rate.
+  const inventory = await q(
+    `select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${floor}&%22Post%20Date%22=lte.${daysAhead(PINNER_RUNWAY_HORIZON_DAYS)}&limit=1`,
+  );
   const lastPostedDate = posted.rows[0] ? String(posted.rows[0]['Post Date']).slice(0, 10) : null;
 
   // Pinterest's own record of what went out. Fails soft: a Pinterest outage
@@ -594,6 +626,14 @@ async function pullPinner(): Promise<PinnerData> {
   }
   const summary = summarizePins(pins);
   const liveness = assessLiveness({ lastCreatedAt: summary.lastCreatedAt, lastPostDateProxy: lastPostedDate });
+  const runway = assessRunway({
+    inventoryRows: inventory.total,
+    schedulableToday: drainable.total,
+    pinsCreated7d: pins.length ? summary.created7d : null,
+    pinsCreated24h: pins.length ? summary.created24h : null,
+    horizonDays: PINNER_RUNWAY_HORIZON_DAYS,
+    lowRunwayDays: PINNER_LOW_RUNWAY_DAYS,
+  });
 
   return {
     lastPostedDate,
@@ -608,6 +648,8 @@ async function pullPinner(): Promise<PinnerData> {
     unpostedBacklog: backlog.total,
     drainableBacklog: drainable.total,
     strandedBacklog: stranded.total,
+    inventoryRows: inventory.total,
+    runway,
   };
 }
 
@@ -687,16 +729,17 @@ async function main() {
     const live = pinner.data.liveness;
     if (live.level === 'red') flags.push(`🔴 Pinner: ${live.message}`);
     else if (live.level === 'unverified') flags.push(`🟡 Pinner: ${live.message}${pinner.data.pinterestError ? ` (${pinner.data.pinterestError})` : ''}`);
-    // The old test (`unpostedBacklog === 0`) could never fire: 1,879 rows sat in
-    // the table on 2026-09-08 and every one of them was dated outside the
-    // poster's 14-day window, so nothing was schedulable and the flag stayed
-    // green. Judge the queue by what the poster can actually reach.
-    if (pinner.data.drainableBacklog === 0) {
-      flags.push(
-        `🟡 Pinner: 0 pins schedulable today — the queue holds ${pinner.data.strandedBacklog} unposted rows but all are dated outside the poster's ${PINNER_LOOKBACK_DAYS}d window, so cadence depends entirely on new blog posts landing`,
-      );
-    } else if (pinner.data.drainableBacklog < 20) {
-      flags.push(`🟡 Pinner: only ${pinner.data.drainableBacklog} pins schedulable in the poster's ${PINNER_LOOKBACK_DAYS}d window`);
+    // Queue depth (E51): flag on inventory runway, not on "schedulable today".
+    // The E20 rule (🟡 at 0 or < 20 schedulable) fired on 09-10, 09-14 and 09-15
+    // over a queue that is drip-dated at 24 rows/day by design — the morning
+    // read only ever sees the residue of today's allotment after the poster
+    // has drained most of it (6 left, 39 created in 24 h). The buffer is rows
+    // dated through the horizon ÷ observed pins/day; 🟡 only when that is
+    // under PINNER_LOW_RUNWAY_DAYS or the inventory is actually empty.
+    // Liveness (above) stays the only 🔴 path.
+    const rw = pinner.data.runway;
+    if (rw.level === 'empty' || rw.level === 'low') {
+      flags.push(`🟡 Pinner: ${rw.message}${rw.level === 'empty' && pinner.data.strandedBacklog > 0 ? ` — ${pinner.data.strandedBacklog} unposted rows are stranded before the poster's ${PINNER_LOOKBACK_DAYS}d window` : ''}`);
     }
   } else flags.push(`🟡 Pinner liveness unknown: ${errOf(pinner)}`);
   if (ga4.ok && ga4.data.sessionsPrev7d && ga4.data.sessions7d / ga4.data.sessionsPrev7d < 0.9) flags.push(`🔴 GA4 sessions 7d ${pct(ga4.data.sessions7d, ga4.data.sessionsPrev7d)} WoW`);
@@ -784,8 +827,8 @@ async function main() {
       p.lastPinCreatedAt
         ? `${p.liveness.message} · **${p.pinsCreated24h} pins in 24h**, ${p.pinsCreated7d}${p.pinsSampled >= PINNER_PINS_PAGE_SIZE * PINNER_PINS_MAX_PAGES ? '+' : ''} in 7d (Pinterest API)`
         : `${p.liveness.message} · ${p.postedLast7d} posted rows dated in the last 7d (queue proxy)`;
-    md += `- Pinner: ${posting} · **${p.drainableBacklog} schedulable** (Post Date inside the poster's ${PINNER_LOOKBACK_DAYS}d window) · ${p.strandedBacklog} stranded outside it, ${p.unpostedBacklog} unposted total, ${num(p.postedTotal)} posted rows all-time\n`;
-    md += `  - queue \`Post Date\` is the scheduled date, not a posting timestamp — newest posted row is dated ${p.lastPostedDate ?? 'never'}; do not read it as staleness\n`;
+    md += `- Pinner: ${posting} · **${p.runway.message}** · ${p.strandedBacklog} stranded before the poster's ${PINNER_LOOKBACK_DAYS}d window, ${p.unpostedBacklog} unposted total, ${num(p.postedTotal)} posted rows all-time\n`;
+    md += `  - queue \`Post Date\` is the scheduled date, not a posting timestamp — newest posted row is dated ${p.lastPostedDate ?? 'never'}; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.\n`;
   } else md += `- Pinner: unavailable (${errOf(pinner)})\n`;
   md += `\n_Generated by scripts/agents/funnel-scoreboard.ts. Sections fail independently; "unavailable" means the source, not the site._\n`;
 
