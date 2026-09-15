@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ExternalLink, ShoppingBag } from 'lucide-react';
 import { trackAndOpenAffiliateLink, AffiliateClickContext } from '@/lib/affiliateClick';
+import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 
 interface AffiliateProduct {
   id: string;
@@ -35,14 +36,18 @@ function headingFor(products: AffiliateProduct[]): string {
 }
 
 export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page' }: AffiliateRecommendationsProps) {
+  // E55 kill switch (lib/affiliatePlacements.ts). Evaluated before the hooks
+  // so a disabled placement never fetches; the early return is after them so
+  // hook order stays stable.
+  const enabled = isAffiliatePlacementEnabled(sourceType);
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      // Don't fetch if no themes provided
-      if (!themes || themes.length === 0) {
+      // Don't fetch if the placement is switched off or no themes provided
+      if (!enabled || !themes || themes.length === 0) {
         setLoading(false);
         return;
       }
@@ -75,7 +80,7 @@ export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page
     };
 
     fetchProducts();
-  }, [themes]);
+  }, [themes, enabled]);
 
   const handleProductClick = async (product: AffiliateProduct) => {
     // Track the click and open the subid-tagged link so the network's
@@ -89,8 +94,8 @@ export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page
     });
   };
 
-  // Don't render if no themes, loading, error, or no products
-  if (!themes || themes.length === 0) {
+  // Don't render if the placement is off, no themes, loading, error, or no products
+  if (!enabled || !themes || themes.length === 0) {
     return null;
   }
 

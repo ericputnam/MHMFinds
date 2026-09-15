@@ -3,6 +3,7 @@
 import { Mod } from '../lib/api';
 import { ModCard } from './ModCard';
 import { AffiliateCard, AffiliateOffer } from './AffiliateCard';
+import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { Loader2, AlertCircle, Package } from 'lucide-react';
 
 export interface ModGridProps {
@@ -80,7 +81,12 @@ export function ModGrid({
     );
   }
 
-  // Build grid items with affiliate offers injected at intervals
+  // Build grid items with affiliate offers injected at intervals.
+  // E55: the grid placement stays ON by default (lib/affiliatePlacements.ts) —
+  // these cells are children of the .mv-ads grid below, so switching them off
+  // is a separate, snapshot-first decision. The switch only exists here so the
+  // env override can turn every placement off in one redeploy.
+  const gridPlacementEnabled = isAffiliatePlacementEnabled('grid');
   const gridItems: Array<{ type: 'mod'; data: Mod } | { type: 'affiliate'; data: AffiliateOffer }> = [];
   let affiliateIndex = 0;
 
@@ -89,6 +95,7 @@ export function ModGrid({
 
     // Inject affiliate after every `affiliateInterval` mods
     if (
+      gridPlacementEnabled &&
       affiliateOffers.length > 0 &&
       (index + 1) % affiliateInterval === 0 &&
       affiliateIndex < affiliateOffers.length
