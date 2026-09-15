@@ -286,3 +286,48 @@ describe('the shipped script', () => {
     expect(src).not.toMatch(/console\.(log|error)\([^)]*DATABASE_URL/);
   });
 });
+
+/**
+ * E52: the script shipped complete and wired to nothing — no scheduled caller anywhere, so the
+ * 09-28 Bing read would have measured a push that never ran. These guard the wiring, not the code.
+ */
+describe('the daily runner calls it', () => {
+  const runner = read('scripts/agents/run-funnel-daily.sh');
+
+  it('submits live with --days 2 from the run worktree, after catalog ingest', () => {
+    expect(runner).toMatch(/indexnow-submit\.ts --apply --days 2/);
+    expect(runner).toMatch(/MHM_PROJECT_DIR="\$WT" npx tsx scripts\/agents\/indexnow-submit\.ts/);
+    // Order matters: the mods created by ingest minutes earlier are the ones worth pushing.
+    expect(runner.indexOf('catalog-ingest-daily.sh')).toBeLessThan(runner.indexOf('indexnow-submit.ts'));
+  });
+
+  it('tails the summary line and never lets a non-zero exit stop the run', () => {
+    expect(runner).toMatch(/tail -n 1 "\$WT\/logs\/indexnow\.log"/);
+    // 0/2/1: could-not-run and failure are both logged, neither aborts. `set -e` is not in force
+    // (`set -uo pipefail`), and the exit code is captured rather than short-circuiting the step.
+    expect(runner).toMatch(/INDEXNOW_RC=\$\?/);
+    expect(runner).toMatch(/IndexNow could-not-run \(exit 2, non-fatal\)/);
+    expect(runner).toMatch(/IndexNow submit FAILED \(exit \$INDEXNOW_RC, non-fatal\)/);
+    expect(runner).not.toMatch(/^set -[a-z]*e[a-z]* /m);
+  });
+});
+
+describe('the post-deploy smoke check watches the ownership proof', () => {
+  const src = read('scripts/agents/smoke-render.ts');
+
+  it('renders /<key>.txt on the target list', () => {
+    expect(src).toContain('{ path: `/${INDEXNOW_KEY}.txt`, kind: \'text\', expectText: INDEXNOW_KEY }');
+    // Built from the constant, never a copy of its value — a re-key moves both together.
+    expect(src).toMatch(/import \{ INDEXNOW_KEY \} from '\.\/indexnow-lib'/);
+  });
+
+  it('checks the body equals the key rather than the 50-char "empty response" floor', () => {
+    // The key is 32 bytes. Without expectText the default non-ad check fails it on every run —
+    // and a smoke failure rolls production back, so this is a false-rollback trap, not a nicety.
+    expect(INDEXNOW_KEY.length).toBeLessThan(50);
+    expect(src).toMatch(/r\.expectText/);
+    expect(src).toMatch(/body does not contain the expected text/);
+    // Reports the length only; it must never print a target's body into the log or the JSON.
+    expect(src).not.toMatch(/expected text[^)]*\$\{r\.bodyText\}/);
+  });
+});
