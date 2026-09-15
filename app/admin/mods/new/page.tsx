@@ -36,7 +36,7 @@ export default function NewModPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/admin/mods"
+            href="/admin/mods/"
             className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
           >
             <ArrowLeft className="h-6 w-6 text-slate-400" />

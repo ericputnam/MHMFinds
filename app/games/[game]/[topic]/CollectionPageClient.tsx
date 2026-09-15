@@ -89,7 +89,7 @@ export default function CollectionPageClient({
             </Link>
             <ChevronRight size={14} className="text-slate-600" />
             <Link
-              href={`/games/${collection.gameSlug}`}
+              href={`/games/${collection.gameSlug}/`}
               className="hover:text-sims-pink transition-colors"
             >
               {collection.game}

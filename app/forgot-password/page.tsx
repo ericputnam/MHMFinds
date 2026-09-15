@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
             <h1 className="text-xl font-bold text-white mb-2">Check your inbox</h1>
             <p className="text-slate-400 text-sm mb-6">{message}</p>
             <Link
-              href="/sign-in?mode=signin"
+              href="/sign-in/?mode=signin"
               className="inline-flex items-center gap-2 text-sm text-sims-pink hover:text-sims-pink/80 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
 
             <div className="mt-6 text-center">
               <Link
-                href="/sign-in?mode=signin"
+                href="/sign-in/?mode=signin"
                 className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />

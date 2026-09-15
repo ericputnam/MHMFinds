@@ -105,7 +105,7 @@ export default function SubscriptionPage() {
                 </a>
 
                 <a
-                  href="/account/subscription/manage"
+                  href="/account/subscription/manage/"
                   className="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-8 rounded-xl transition-all"
                 >
                   Manage Subscription
@@ -134,7 +134,7 @@ export default function SubscriptionPage() {
                 </a>
 
                 <a
-                  href="/sign-in?mode=premium"
+                  href="/sign-in/?mode=premium"
                   className="bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-3 px-8 rounded-xl transition-all"
                 >
                   Try Again
@@ -162,7 +162,7 @@ export default function SubscriptionPage() {
                   </p>
 
                   <a
-                    href="/account/subscription/manage"
+                    href="/account/subscription/manage/"
                     className="inline-block bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-8 rounded-xl transition-all"
                   >
                     Manage Subscription
@@ -177,7 +177,7 @@ export default function SubscriptionPage() {
                   </p>
 
                   <a
-                    href="/sign-in?mode=premium"
+                    href="/sign-in/?mode=premium"
                     className="inline-block bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-3 px-8 rounded-xl transition-all"
                   >
                     Upgrade to Premium

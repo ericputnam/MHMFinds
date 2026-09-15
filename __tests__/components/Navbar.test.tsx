@@ -194,7 +194,8 @@ describe('Navbar Component', () => {
 
       const creatorsLink = screen.getByText('Creators')
       expect(creatorsLink).toBeDefined()
-      expect(creatorsLink.closest('a')?.getAttribute('href')).toBe('/top-creators')
+      // Trailing slash required: `trailingSlash: true` 308s the bare form.
+      expect(creatorsLink.closest('a')?.getAttribute('href')).toBe('/top-creators/')
     })
 
     it('should show Discover link', () => {
@@ -295,9 +296,10 @@ describe('Navbar Component', () => {
       render(<Navbar />)
 
       const creatorLinks = screen.getAllByText('Creator Portal')
-      // Check at least one link points to /creators
+      // Check at least one link points to /creators/
+      // Trailing slash required: `trailingSlash: true` 308s the bare form.
       const hasCorrectLink = creatorLinks.some(
-        el => el.closest('a')?.getAttribute('href') === '/creators'
+        el => el.closest('a')?.getAttribute('href') === '/creators/'
       )
       expect(hasCorrectLink).toBe(true)
     })

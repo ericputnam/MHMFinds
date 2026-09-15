@@ -100,7 +100,7 @@ function SetPasswordForm() {
           we&apos;ll email it right over.
         </p>
         <Link
-          href="/forgot-password"
+          href="/forgot-password/"
           className="inline-block px-5 py-2.5 bg-sims-pink hover:bg-sims-pink/80 text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Send me a new link
@@ -118,7 +118,7 @@ function SetPasswordForm() {
           Your password is saved. Taking you to sign in...
         </p>
         <Link
-          href="/sign-in?mode=signin"
+          href="/sign-in/?mode=signin"
           className="inline-block px-5 py-2.5 bg-sims-pink hover:bg-sims-pink/80 text-white text-sm font-semibold rounded-lg transition-colors"
         >
           Sign in now

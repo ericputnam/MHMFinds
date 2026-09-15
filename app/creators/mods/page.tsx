@@ -18,7 +18,7 @@ export default function MyModsPage() {
         <h2 className="text-xl font-bold text-white mb-2">Coming Soon</h2>
         <p className="text-slate-400 mb-6">
           The ability to view and edit your live mods is coming soon. For now, you can track your submissions on the{' '}
-          <Link href="/creators/submissions" className="text-sims-pink hover:underline">
+          <Link href="/creators/submissions/" className="text-sims-pink hover:underline">
             submissions page
           </Link>
           .

@@ -107,7 +107,7 @@ export const Navbar: React.FC = () => {
                     return (
                       <Link
                         key={game}
-                        href={`/games/${slug}`}
+                        href={`/games/${slug}/`}
                         className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-white/5 transition-all duration-200 group"
                         onClick={() => setShowGamesMenu(false)}
                       >
@@ -138,8 +138,8 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            <a href="/top-creators" className="hover:text-sims-green transition-colors">Creators</a>
-            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
+            <a href="/top-creators/" className="hover:text-sims-green transition-colors">Creators</a>
+            <a href="/blog/" className="hover:text-white transition-colors">Blog</a>
           </div>
 
 
@@ -150,7 +150,7 @@ export const Navbar: React.FC = () => {
           {/* Creator Dashboard Button - Only show for creators */}
           {status === 'authenticated' && session?.user?.isCreator && (
             <a
-              href="/creators"
+              href="/creators/"
               className="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2.5 rounded-full text-sm font-medium text-white transition-all"
             >
               <LayoutDashboard className="h-4 w-4" />
@@ -199,7 +199,7 @@ export const Navbar: React.FC = () => {
                   <div className="py-1">
                     {session.user.isCreator && (
                       <a
-                        href="/creators"
+                        href="/creators/"
                         className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors flex items-center gap-2"
                       >
                         <LayoutDashboard className="h-4 w-4" />
@@ -228,7 +228,7 @@ export const Navbar: React.FC = () => {
             </div>
           ) : (
             /* Sign In Button - Show when not authenticated */
-            <a href="/sign-in" className="hidden md:block bg-white text-mhm-dark hover:bg-slate-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+            <a href="/sign-in/" className="hidden md:block bg-white text-mhm-dark hover:bg-slate-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">
               Sign In
             </a>
           )}
@@ -268,7 +268,7 @@ export const Navbar: React.FC = () => {
                   return (
                     <Link
                       key={game}
-                      href={`/games/${slug}`}
+                      href={`/games/${slug}/`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all"
                       onClick={() => setShowMobileMenu(false)}
                     >
@@ -284,14 +284,14 @@ export const Navbar: React.FC = () => {
             </div>
 
             <a
-              href="/top-creators"
+              href="/top-creators/"
               className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
               onClick={() => setShowMobileMenu(false)}
             >
               Creators
             </a>
             <a
-              href="/blog"
+              href="/blog/"
               className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
               onClick={() => setShowMobileMenu(false)}
             >
@@ -309,7 +309,7 @@ export const Navbar: React.FC = () => {
                   </div>
                   {session.user.isCreator && (
                     <a
-                      href="/creators"
+                      href="/creators/"
                       className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
                       onClick={() => setShowMobileMenu(false)}
                     >
@@ -327,7 +327,7 @@ export const Navbar: React.FC = () => {
                 </div>
               ) : (
                 <a
-                  href="/sign-in"
+                  href="/sign-in/"
                   className="block mx-4 mt-2 text-center bg-white text-mhm-dark hover:bg-slate-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all"
                   onClick={() => setShowMobileMenu(false)}
                 >

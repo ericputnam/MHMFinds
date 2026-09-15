@@ -24,10 +24,10 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Game Mods</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/games/sims-4" className="hover:text-sims-pink transition-colors">Sims 4 Mods</Link></li>
+              <li><Link href="/games/sims-4/" className="hover:text-sims-pink transition-colors">Sims 4 Mods</Link></li>
               <li><a href="/must-have-mods-sims-4/" className="hover:text-sims-pink transition-colors">Must-Have Sims 4 Mods</a></li>
-              <li><Link href="/games/stardew-valley" className="hover:text-sims-pink transition-colors">Stardew Valley Mods</Link></li>
-              <li><Link href="/games/minecraft" className="hover:text-sims-pink transition-colors">Minecraft Mods</Link></li>
+              <li><Link href="/games/stardew-valley/" className="hover:text-sims-pink transition-colors">Stardew Valley Mods</Link></li>
+              <li><Link href="/games/minecraft/" className="hover:text-sims-pink transition-colors">Minecraft Mods</Link></li>
             </ul>
           </div>
 
@@ -35,11 +35,11 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Blog</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href="/blog" className="hover:text-sims-pink transition-colors">All Posts</a></li>
+              <li><a href="/blog/" className="hover:text-sims-pink transition-colors">All Posts</a></li>
               <li><a href="/sims-4/" className="hover:text-sims-pink transition-colors">Sims 4</a></li>
               <li><a href="/stardew-valley/" className="hover:text-sims-pink transition-colors">Stardew Valley</a></li>
               <li><a href="/minecraft/" className="hover:text-sims-pink transition-colors">Minecraft</a></li>
-              <li><Link href="/submit-mod" className="hover:text-sims-pink transition-colors">Submit a Mod</Link></li>
+              <li><Link href="/submit-mod/" className="hover:text-sims-pink transition-colors">Submit a Mod</Link></li>
             </ul>
           </div>
 
@@ -47,9 +47,9 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/about" className="hover:text-sims-pink transition-colors">About</Link></li>
-              <li><Link href="/terms" className="hover:text-sims-pink transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy-policy" className="hover:text-sims-pink transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/about/" className="hover:text-sims-pink transition-colors">About</Link></li>
+              <li><Link href="/terms/" className="hover:text-sims-pink transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy-policy/" className="hover:text-sims-pink transition-colors">Privacy Policy</Link></li>
               <li><a href="mailto:olivia@musthavemods.com" className="hover:text-sims-pink transition-colors">Contact</a></li>
             </ul>
           </div>

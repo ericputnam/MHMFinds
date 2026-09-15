@@ -79,7 +79,7 @@ export default function MonetizationDashboard() {
           <p className="text-slate-400">Revenue optimization and opportunity tracking</p>
         </div>
         <Link
-          href="/admin/monetization/control"
+          href="/admin/monetization/control/"
           className="flex items-center gap-2 px-4 py-2 bg-sims-pink hover:bg-sims-pink/80 rounded-lg transition-colors"
         >
           <Play className="h-4 w-4" />
@@ -139,7 +139,7 @@ export default function MonetizationDashboard() {
       {/* Navigation Cards */}
       <div className="grid grid-cols-3 gap-6">
         <Link
-          href="/admin/monetization/queue"
+          href="/admin/monetization/queue/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-sims-pink/20 rounded-lg w-fit mb-4">
@@ -157,7 +157,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/forecasts"
+          href="/admin/monetization/forecasts/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-blue-500/20 rounded-lg w-fit mb-4">
@@ -170,7 +170,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/history"
+          href="/admin/monetization/history/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-purple-500/20 rounded-lg w-fit mb-4">
@@ -183,7 +183,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/control"
+          href="/admin/monetization/control/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-green-500/20 rounded-lg w-fit mb-4">
@@ -196,7 +196,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/settings"
+          href="/admin/monetization/settings/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-slate-500/20 rounded-lg w-fit mb-4">
@@ -209,7 +209,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/learning"
+          href="/admin/monetization/learning/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-orange-500/20 rounded-lg w-fit mb-4">
@@ -222,7 +222,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/experiments"
+          href="/admin/monetization/experiments/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-pink-500/20 rounded-lg w-fit mb-4">
@@ -235,7 +235,7 @@ export default function MonetizationDashboard() {
         </Link>
 
         <Link
-          href="/admin/monetization/affiliates"
+          href="/admin/monetization/affiliates/"
           className="group bg-slate-800/50 border border-slate-700 hover:border-sims-pink/50 rounded-xl p-6 transition-all"
         >
           <div className="p-3 bg-cyan-500/20 rounded-lg w-fit mb-4">
@@ -274,7 +274,7 @@ export default function MonetizationDashboard() {
             ))}
           </div>
           <Link
-            href="/admin/monetization/history"
+            href="/admin/monetization/history/"
             className="block text-center mt-4 text-sm text-sims-pink hover:underline"
           >
             View all runs →

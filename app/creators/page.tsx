@@ -124,7 +124,7 @@ export default function CreatorDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link href="/creators/submit">
+        <Link href="/creators/submit/">
           <div className="bg-gradient-to-r from-sims-pink to-pink-600 hover:from-pink-600 hover:to-sims-pink text-white p-6 rounded-xl transition-all hover:scale-[1.02] cursor-pointer group">
             <div className="flex items-center justify-between">
               <div>
@@ -138,7 +138,7 @@ export default function CreatorDashboard() {
           </div>
         </Link>
 
-        <Link href="/creators/submissions">
+        <Link href="/creators/submissions/">
           <div className="bg-slate-800/50 hover:bg-slate-800 border border-slate-700 text-white p-6 rounded-xl transition-all hover:scale-[1.02] cursor-pointer group">
             <div className="flex items-center justify-between">
               <div>
@@ -162,7 +162,7 @@ export default function CreatorDashboard() {
               <p className="text-slate-400 text-sm mt-1">Your latest mod submissions</p>
             </div>
             <Link
-              href="/creators/submissions"
+              href="/creators/submissions/"
               className="flex items-center gap-2 text-sims-pink hover:text-pink-400 transition-colors text-sm font-medium"
             >
               View All
@@ -177,7 +177,7 @@ export default function CreatorDashboard() {
               <Package className="h-12 w-12 text-slate-700 mx-auto mb-3" />
               <p className="text-slate-500">No submissions yet</p>
               <Link
-                href="/creators/submit"
+                href="/creators/submit/"
                 className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-sims-pink hover:bg-pink-600 text-white rounded-lg transition-colors text-sm"
               >
                 <Upload className="h-4 w-4" />
