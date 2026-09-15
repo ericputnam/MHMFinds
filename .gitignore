@@ -160,3 +160,7 @@ fixtures/
 .env.example.local
 .vercel.env
 .env*.local
+
+# Python bytecode from agent scripts
+__pycache__/
+*.pyc

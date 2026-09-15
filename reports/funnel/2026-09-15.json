@@ -1,0 +1,232 @@
+{
+  "date": "2026-09-15",
+  "headline": {
+    "ownedAdds7d": 90,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 142,
+    "nonAdTarget": 200,
+    "mediavine28d": 5912.54,
+    "mediavine28dPrev": 5695.12
+  },
+  "flags": [
+    "🟡 Pinner: only 6 pins schedulable in the poster's 14d window"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-07→2026-09-13 vs 2026-08-31→2026-09-06",
+      "sessions7d": 89343,
+      "sessionsPrev7d": 88610,
+      "byChannel7d": {
+        "pinterest": 58978,
+        "bing_organic": 16826,
+        "direct": 4696,
+        "google_organic": 2155,
+        "other_search": 2846,
+        "tumblr": 1095,
+        "ai_referral": 331,
+        "other": 2193,
+        "reddit": 223
+      },
+      "byChannelPrev7d": {
+        "pinterest": 58246,
+        "bing_organic": 17511,
+        "direct": 4488,
+        "google_organic": 1828,
+        "other_search": 2780,
+        "tumblr": 1046,
+        "other": 2248,
+        "reddit": 217,
+        "ai_referral": 246
+      },
+      "aiReferral7d": 331,
+      "aiReferralPrev7d": 246,
+      "captureEvents7d": {
+        "patreon_click": 68,
+        "affiliate_click": 16,
+        "favorite": 6,
+        "newsletter_signup": 3,
+        "member_skip_countdown": 1
+      },
+      "captureUsers7d": {
+        "patreon_click": 47,
+        "affiliate_click": 16,
+        "favorite": 6,
+        "newsletter_signup": 3,
+        "member_skip_countdown": 1
+      },
+      "patreonClickUsersPerDay7d": 6.71,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 47,
+        "perDay": 6.71,
+        "window": "2026-09-07→2026-09-13"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-12": 9,
+        "2026-09-11": 6,
+        "2026-09-10": 3,
+        "2026-09-13": 3
+      },
+      "notSetLanding7d": 3863
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-16→2026-09-12",
+      "clicks28d": 2285,
+      "clicksPrev28d": 2032,
+      "impressions28d": 117790
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-13",
+      "revenue7d": 1604.88,
+      "revenuePrev7d": 1395.97,
+      "rpm7d": 17.83,
+      "rpmPrev7d": 15.67,
+      "sessions7d": 90006,
+      "revenue28d": 5912.54,
+      "revenuePrev28d": 5695.12,
+      "rpm28d": 16.35,
+      "health": {
+        "date": "2026/09/15",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 58
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1649,
+      "users7d": 87,
+      "users30d": 269,
+      "subscribers": 23,
+      "subscribers7d": 3,
+      "subscribers30d": 10,
+      "subscribersBySource": {
+        "collection-page": 2,
+        "footer": 17,
+        "go-interstitial": 3,
+        "sign-in": 1
+      },
+      "favorites": 20480,
+      "favorites7d": 831,
+      "downloadClicks7d": 660,
+      "downloadClicks30d": 1287,
+      "affiliateClicks7d": 21,
+      "affiliateClicks30d": 67,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16428,
+      "collections": 1628
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 52,
+      "freeMembers": 5461,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5461,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 8,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 43,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 1,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 142
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 52,
+      "free": 5273,
+      "former": 229,
+      "grossMonthlyUsd": 144.5,
+      "paidByAmount": {
+        "$3": 43,
+        "$1": 8,
+        "$8": 1
+      },
+      "joins7d": 6,
+      "cancels7d": 0,
+      "joinsSinceAnchor": 7,
+      "joinsSinceAnchorAtPerkTier": 4,
+      "perkTierJoins7d": 4,
+      "perkTierJoinsPerDay7d": 0.57,
+      "paidAndConnected": 0,
+      "paidAndConnectedById": 0,
+      "paidAndConnectedByEmail": 0,
+      "linkedWithPatreonId": 35,
+      "paidWithUserId": 52,
+      "connectedAccounts": 35,
+      "premiumUsers": 2,
+      "anchor": "2026-09-08",
+      "window": "2026-09-08→2026-09-15"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 21,
+      "posts7d": 6,
+      "latestPost": "2026-09-15 sims-4-candle-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-15",
+      "lastPinCreatedAt": "2026-09-15T10:40:04.000Z",
+      "pinsCreated24h": 39,
+      "pinsCreated7d": 162,
+      "pinsSampled": 195,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 0,
+        "message": "last pin created 2026-09-15 10:40Z (0 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 158,
+      "postedTotal": 8149,
+      "unpostedBacklog": 1722,
+      "drainableBacklog": 6,
+      "strandedBacklog": 1468
+    }
+  }
+}

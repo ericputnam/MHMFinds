@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-15
+- Tried: the run that follows a budget-exhausted run (09-14 shipped 6 merges, 0 ledger rows, no digest). Backfilled the missing #101 ledger row, registered E46–E50, then ran today's five as normal: 4 T0 merges serialized (#103 digest fallback, #102 loading-screens, #104 IndexNow live, #105 slashless-href class) plus #106/#108 after re-validating on the moved main; #107 (T1) queued. Every merge got a deploy-verify row before the next was started.
+- Before → after: ledger rows per merge 0/6 (09-14) → 1/1 on every merge today; two 24h-veto items (#94, #96) resolved in the registry 1 day late instead of never.
+- Verdict: KEEP (read on 2026-09-16: the daily PR must be the first thing merged after the agent PRs, not the last, so the digest survives even if the run dies)
+- Next time: three of today's five agent moves were "the number the team was reading was wrong" (pinner 🟡 = threshold, not outage; paid-and-connected 0 of 35 is real, not an email artifact; issue #1 was sent but unrecorded) — when a flag contradicts a second measurement, dispatch the contradiction and budget the agent for a class fix, not a re-read.
+
 ## 2026-09-13
 - Tried: Sunday run, guardrail 🟢 (09-11 revenue $208.83, +4.1%). Merged the two veto-expired Tier 1 PRs (#84 `/play`, #83 `/go` join-first CTA) after re-validating each on the day's `main` — #84 had a real conflict with #86's sitemap `lastmod` change that `gh` showed as CONFLICTING. Handed Pip the 🔴 pinner as a hypothesis ("last posted = max(scheduled Post Date), queue fell 56→21 so pins ARE posting") rather than as an outage; then added runner step 0e so a silent evening check writes its own `MISSED` ledger row.
 - Before → after: veto-expired PRs open 2 → 0 (1 conflict resolved by hand); 🔴 flags this morning 1 → 0 after Pip proved it a false positive (47 pins posted in 24h per Pinterest's own `created_at`); evening-check ledger rows 09-05→09-12: 0 of 8 evenings, and 0 `evening-*` worktrees ever created — the task is not firing, and 8 daily digests annotated the gap without turning it into a row.
