@@ -439,6 +439,23 @@ describe('the shipped send script', () => {
     const lib = readFileSync(join(process.cwd(), 'lib/services/subscribeConfirm.ts'), 'utf8');
     expect(lib).toContain("CONFIRM_PATH = '/api/subscribe/confirm/'");
   });
+
+  it('appends a counts-only ledger line on every run (issue #1 went out on 2026-09-14 with no record)', () => {
+    expect(source).toContain("LEDGER_PATH = 'reports/funnel/newsletter-sends.jsonl'");
+    expect(source).toMatch(/appendFileSync\(path, line\)/);
+    // Both send paths write it, and the ledger carries counts, never `results` (per-address rows).
+    expect(source.match(/writeLedger\(ledgerOf\(/g)?.length).toBe(2);
+    expect(source).not.toMatch(/ledgerOf[\s\S]*?results:/);
+  });
+
+  it('caps the re-permission day-1 batch in code and keeps DB-sourced addresses off the terminal', () => {
+    expect(source).toContain('REPERMISSION_HARD_CAP = 100');
+    expect(source).toMatch(/Math\.min\(REPERMISSION_HARD_CAP,/);
+    // Every per-address console line is gated on the recipients not having come from the DB.
+    const perAddressLines = source.match(/x\.email\}:\$\{x\.sent/g) ?? [];
+    expect(perAddressLines.length).toBeGreaterThan(0);
+    expect(source.match(/const detail = dbSourced\s*\?/g)?.length).toBe(perAddressLines.length);
+  });
 });
 
 describe('transport selection', () => {
