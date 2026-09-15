@@ -502,6 +502,48 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // pair was simply never wired up. Added 2026-09-07.
     blogUrl: '/sims-4-makeup-cc/',
   },
+  {
+    // Placement is free here: neither `loading-screen` nor `cas-background`
+    // appears in any other entry's `contentType` / `contentTypeIn`, so
+    // `filterSpecificity()` has nothing to tie-break and all 269 mod detail
+    // pages get a first-ever collection breadcrumb. Appended at the end.
+    slug: 'loading-screens',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Loading Screens & CAS Backgrounds',
+    heading: 'Sims 4 Loading Screens & CAS Backgrounds',
+    // "Finder — Browse" is the house browse-intent signal for a differentiated
+    // pair; the legacy listicle keeps the "best loading screens" head term.
+    // Asserted by canonical-trailing-slash.test.ts:278.
+    metaTitle: 'Sims 4 Loading Screen Finder — Browse 260+ Screens & CAS Backgrounds | MustHaveMods',
+    metaDescription:
+      'Browse 260+ Sims 4 loading screens and CAS background replacements in one filterable grid — aesthetic, seasonal, and minimalist, sorted by downloads.',
+    tagline: 'Replace the two screens you stare at most',
+    intro:
+      'The loading screen and the CAS background are the two screens you look at more than any build you will ever make, and both of them ship as the same washed-out default you have been staring at since 2014. Every time you travel to a lot, switch households, or open Create-A-Sim, there it is again. Swapping them is a five-minute drop-in that changes the whole feel of a playthrough — no gameplay risk, no conflicts, nothing to update after a patch.\n\nThis collection pulls together 269 picks across both: 169 loading screens and 100 CAS background replacements. The loading screen side runs from clean minimalist gradients and pastel plumbob art to full illustrated scenes, anime-styled panels, and a deep seasonal bench — Halloween, fall, winter, Christmas, and Valentine\'s sets that a lot of people swap in and out through the year. The CAS background side is mostly the two things people actually want: a plain neutral studio backdrop that does not fight the sim you are building, or a properly styled room — bedroom, café, bathroom, greenhouse — that makes CAS screenshots look composed instead of floating in grey.\n\nThe names that come up most on loading screens are cassie1900, ghostlycc, Simmerciara, StarrySimsie, TiniSimsCC and Katverse; on CAS backgrounds it is Ellcrze, Shasims, PILARLEON23 and Katverse again. Most of these are single-file drops: one package into Mods, no script mod required, no CC manager needed.\n\nTwo practical notes. Loading screens and CAS backgrounds both override the same game assets, so pick one of each rather than installing five and wondering which won. And if you use a CAS background with a busy room, keep your sim-preview lighting in mind — the busier backdrops look great in screenshots and make it harder to judge a skin overlay while you are building.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the ones half the community already has installed, or scroll for the seasonal and one-off sets the big roundups never get to.',
+    filter: {
+      // 269 SFW Sims 4 mods: 169 `loading-screen` + 100 `cas-background`,
+      // verified against prod 2026-09-14. Audited before ranking, per the
+      // 09-13 rule: top 15 by downloads + 15 mid-grid rows on each facet
+      // = 29/30 on loading-screen and 29/30 on cas-background. Rejected
+      // alternatives the same day: the builds cluster (`residential` +
+      // `lot` + `commercial` + `builds`, 957 rows) fails at ~53% — the
+      // `lot` top 15 holds five CAS clothing packs and the `residential`
+      // top 15 holds a UI mod, a career mod and an Amazon retail listing;
+      // `nails` (149) passes the audit at 90% but carries only 174 GSC
+      // impressions / 1 click, against 1,609 / 26 for this cluster.
+      contentTypeIn: ['loading-screen', 'cas-background'],
+    },
+    expectedCount: 269,
+    related: ['poses', 'cottagecore-cc', 'y2k-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial
+    // "best loading screens" intent, this page owns browse/filter intent.
+    // /sims-4-loading-screen/ is live and appears in neither
+    // mhm_consolidated_post_map() nor vercel.json (verified 2026-09-14).
+    // It holds 620 impressions / 2 clicks at position 55.7 over the 28d
+    // to 2026-09-11, so there is nothing here to cannibalise.
+    blogUrl: '/sims-4-loading-screen/',
+  },
 ];
 
 /**
