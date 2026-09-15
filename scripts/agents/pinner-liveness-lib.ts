@@ -138,3 +138,107 @@ export function livenessExitCode(level: LivenessLevel): 0 | 1 | 2 {
   if (level === 'unverified') return 2;
   return 0;
 }
+
+// ---------------------------------------------------------------- inventory runway (E51)
+//
+// Why "schedulable today" is the wrong number to flag on (2026-09-15): the
+// queue is drip-dated by design — E26 re-dated 10 rows/day and E46 14 rows/day,
+// so exactly 24 rows carry today's Post Date. The poster runs every 20 min and
+// drains those 24 in ~8 h, then sits idle until midnight when tomorrow's 24
+// enter its window. Any morning read therefore sees only the *residue* of
+// today's allotment (6 on 09-15, 7 on 09-14, 10 on 09-10) and the "< 20
+// schedulable" flag fired on every one of those healthy mornings while
+// Pinterest showed 39 pins created in 24 h. The count is a point-in-time
+// leftover, not a buffer.
+//
+// The buffer is the inventory ahead of the poster divided by the rate it
+// actually posts at: rows unposted and dated inside [today - lookback,
+// today + horizon] ÷ pins/day from Pinterest's own created_at. That reads
+// "≈ 11 days" on 09-15 and will honestly fall below 3 days around 09-25 when
+// the E46 slice thins to 14/day and then ends on 09-27.
+
+export const DEFAULT_RUNWAY_HORIZON_DAYS = 14;
+export const DEFAULT_LOW_RUNWAY_DAYS = 3;
+
+export type RunwayLevel = 'ok' | 'low' | 'empty' | 'unknown';
+
+export interface RunwayAssessment {
+  level: RunwayLevel;
+  /** Unposted rows dated inside the poster's window or the look-ahead horizon. */
+  inventoryRows: number;
+  /** Pins/day the poster is observed to create (7 d mean, else 24 h), or null when Pinterest did not answer. */
+  dailyRate: number | null;
+  /** inventoryRows ÷ dailyRate, one decimal; null when the rate is unknown. */
+  runwayDays: number | null;
+  message: string;
+}
+
+/**
+ * Decide whether the queue has enough inventory ahead of the poster.
+ *
+ * - `inventoryRows === 0` → `empty` (flag). Nothing the poster can reach today
+ *   or on any day inside the horizon; cadence now depends on new rows landing.
+ * - rate unknown (Pinterest unreachable, or 0 pins in 7 d) → `unknown`, no
+ *   flag of its own: liveness already reports the API outage or the stall,
+ *   and a runway computed from a rate of 0 is not a number.
+ * - `runwayDays < lowRunwayDays` → `low` (flag).
+ * - otherwise `ok`.
+ *
+ * `schedulableToday` is reported in the message for continuity but never
+ * decides the level — that is the E20 threshold this replaces.
+ */
+export function assessRunway(input: {
+  inventoryRows: number;
+  schedulableToday: number;
+  pinsCreated7d: number | null;
+  pinsCreated24h: number | null;
+  horizonDays?: number;
+  lowRunwayDays?: number;
+}): RunwayAssessment {
+  const horizon = input.horizonDays ?? DEFAULT_RUNWAY_HORIZON_DAYS;
+  const lowAfter = input.lowRunwayDays ?? DEFAULT_LOW_RUNWAY_DAYS;
+  const inventory = Math.max(0, Math.floor(input.inventoryRows));
+  const sched = Math.max(0, Math.floor(input.schedulableToday));
+
+  let rate: number | null = null;
+  if (input.pinsCreated7d != null && input.pinsCreated7d > 0) rate = input.pinsCreated7d / 7;
+  else if (input.pinsCreated24h != null && input.pinsCreated24h > 0) rate = input.pinsCreated24h;
+  const rateStr = rate == null ? 'rate unknown' : `${Math.round(rate * 10) / 10}/day observed`;
+
+  if (inventory === 0) {
+    return {
+      level: 'empty',
+      inventoryRows: 0,
+      dailyRate: rate,
+      runwayDays: rate == null ? null : 0,
+      message: `queue empty — 0 unposted rows dated within the poster's window or the next ${horizon} days (${rateStr}); cadence now depends entirely on new rows landing`,
+    };
+  }
+  if (rate == null) {
+    return {
+      level: 'unknown',
+      inventoryRows: inventory,
+      dailyRate: null,
+      runwayDays: null,
+      message: `inventory ${inventory} rows dated through +${horizon}d (${sched} still schedulable today); runway not computable — ${rateStr}`,
+    };
+  }
+  const runway = Math.round((inventory / rate) * 10) / 10;
+  const runwayStr = runway > horizon ? `> ${horizon} days` : `≈ ${runway} days`;
+  const base = `inventory runway ${runwayStr} (${inventory} rows dated through +${horizon}d ÷ ${rateStr}; ${sched} still schedulable today)`;
+  if (runway < lowAfter) {
+    return {
+      level: 'low',
+      inventoryRows: inventory,
+      dailyRate: rate,
+      runwayDays: runway,
+      message: `${base} — below the ${lowAfter}-day floor; revive stranded rows or wait for the writer plugin`,
+    };
+  }
+  return { level: 'ok', inventoryRows: inventory, dailyRate: rate, runwayDays: runway, message: base };
+}
+
+/** Exit code for check-pinner.sh step 2: low/empty are WARN (2), never FAIL; unknown is 0 because liveness already covers it. */
+export function runwayExitCode(level: RunwayLevel): 0 | 2 {
+  return level === 'low' || level === 'empty' ? 2 : 0;
+}

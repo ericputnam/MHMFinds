@@ -30,17 +30,24 @@ set -euo pipefail
 #                          6 minutes before the check (E41). The proxy is still
 #                          printed, labelled, and used only when the API cannot
 #                          be reached — and then it is a WARN, never a FAIL.
-#   2. Backlog drain     — counts the rows the poster can actually reach, not the
-#                          raw unposted total. MHMUtils/supabase_pin_poster_server.py
+#   2. Inventory runway  — rows the poster can reach today or on any day inside
+#                          the next RUNWAY_HORIZON_DAYS (14), divided by the
+#                          pins/day Pinterest reports it actually creating
+#                          (step 1's 7d mean). MHMUtils/supabase_pin_poster_server.py
 #                          (fetch_unposted_entries) selects only rows whose
 #                          "Post Date" is inside [today - BACKLOG_LOOKBACK_DAYS, today]
-#                          (lookback = 14). Rows dated before that window are
-#                          invisible to the poster forever. On 2026-09-08 all
-#                          1,879 unposted rows were stranded that way and this
-#                          step reported "Backlog: 1879 unposted pins [OK]" —
-#                          a green light over an empty queue, which is the exact
-#                          failure shape of the July 6 silent outage. 0
-#                          schedulable → WARN.
+#                          (lookback = 14); rows dated before that are stranded
+#                          forever (2026-09-08: all 1,879 unposted rows, reported
+#                          "[OK]"). Rows dated after today enter the window on
+#                          their date. The queue is drip-dated by design (E26
+#                          10/day, E46 14/day), so "schedulable today" is only
+#                          the residue of today's allotment after the poster has
+#                          drained most of it — 6 on 2026-09-15 with 39 pins
+#                          created in 24 h — and the old "< 20 schedulable" WARN
+#                          fired on every healthy metered morning (E20 → E51).
+#                          WARN only when runway < LOW_RUNWAY_DAYS (3) or the
+#                          inventory is actually 0. Never FAIL: liveness (step 1)
+#                          is the only FAIL path for the pipeline.
 #   3. Pinterest token   — asks the token manager (pinterest-token-status.py, which
 #                          prefers MHMUtils/pinterest_token_manager.ensure_valid_token
 #                          and falls back to an embedded stdlib port) for a *valid*
@@ -110,13 +117,22 @@ fi
 # 36 h without a single pin created is a stall, not a lull.
 RED_AFTER_HOURS="${PINNER_RED_AFTER_HOURS:-36}"
 PINS_PAGE_SIZE="${PINNER_PINS_PAGE_SIZE:-100}"
+# Must match PINNER_PINS_MAX_PAGES in funnel-scoreboard.ts. One page of 100
+# saturates inside 7 d at the current ~23 pins/day (2026-09-15: 96 "in 7d" from
+# a page of 100 vs 162 across three pages), which understates the rate and
+# overstates the runway — the wrong direction for a monitor.
+PINS_MAX_PAGES="${PINNER_PINS_MAX_PAGES:-3}"
 REFRESH_WARN_DAYS="${PINNER_REFRESH_WARN_DAYS:-30}"
 # Must match BACKLOG_LOOKBACK_DAYS in MHMUtils/supabase_pin_poster_server.py.
 # If that constant changes there, change it here — otherwise this check reports
 # a buffer the poster cannot see.
 LOOKBACK_DAYS="${PINNER_LOOKBACK_DAYS:-14}"
-# Below this many schedulable pins the queue has no meaningful buffer.
-LOW_BACKLOG="${PINNER_LOW_BACKLOG:-20}"
+# Must match DEFAULT_RUNWAY_HORIZON_DAYS / DEFAULT_LOW_RUNWAY_DAYS in
+# scripts/agents/pinner-liveness-lib.ts (and the scoreboard's mirror). Inventory
+# = unposted rows dated [today - LOOKBACK_DAYS, today + RUNWAY_HORIZON_DAYS];
+# runway = inventory ÷ observed pins/day; WARN below LOW_RUNWAY_DAYS.
+RUNWAY_HORIZON_DAYS="${PINNER_RUNWAY_HORIZON_DAYS:-14}"
+LOW_RUNWAY_DAYS="${PINNER_LOW_RUNWAY_DAYS:-3}"
 # Catalog pins inserted by scripts/agents/insert-catalog-pins.py are matched by
 # URL rather than by an ID range: an ID range has to be widened by hand after
 # every batch, and a range nobody updated silently stops reporting the newest
@@ -156,9 +172,9 @@ if command -v python3 >/dev/null 2>&1 && [[ -f "$TOKEN_HELPER" ]]; then
 fi
 
 set +e
-LIVENESS_OUT=$(python3 - "$CONFIG_JSON" "$RED_AFTER_HOURS" "$PINS_PAGE_SIZE" "$LAST_DATE" <<'PY'
-import json, sys, datetime, urllib.request, urllib.error
-cfg_path, red_after, page_size, proxy = sys.argv[1], float(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
+LIVENESS_OUT=$(python3 - "$CONFIG_JSON" "$RED_AFTER_HOURS" "$PINS_PAGE_SIZE" "$PINS_MAX_PAGES" "$LAST_DATE" <<'PY'
+import json, sys, datetime, urllib.request, urllib.error, urllib.parse
+cfg_path, red_after, page_size, max_pages, proxy = sys.argv[1], float(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
 # Exit codes: 0 ok, 1 red (stalled), 2 unverified (API unreachable → caller WARNs)
 try:
     token = json.load(open(cfg_path)).get('creator_access_token', '')
@@ -166,15 +182,6 @@ except Exception:
     token = ''
 if not token:
     print("UNVERIFIED\tcreator_access_token missing from config.json"); sys.exit(2)
-req = urllib.request.Request(f"https://api.pinterest.com/v5/pins?page_size={page_size}",
-                             headers={'Authorization': f'Bearer {token}'})
-try:
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        items = json.loads(resp.read()).get('items', [])
-except urllib.error.HTTPError as e:
-    print(f"UNVERIFIED\tPinterest /v5/pins HTTP {e.code}"); sys.exit(2)
-except Exception as e:
-    print(f"UNVERIFIED\tPinterest /v5/pins unreachable: {type(e).__name__}"); sys.exit(2)
 now = datetime.datetime.now(datetime.timezone.utc)
 def parse(s):
     if not s: return None
@@ -185,23 +192,57 @@ def parse(s):
     except ValueError:
         return None
     return d if d.tzinfo else d.replace(tzinfo=datetime.timezone.utc)
+# Page newest-first like funnel-scoreboard.ts pullPinner(): up to max_pages,
+# stopping early once a page's oldest pin is older than 7 d. The first page
+# must succeed; a later page failing degrades to the pins already seen.
+seven_days_ago = now - datetime.timedelta(days=7)
+items, bookmark, pages = [], None, 0
+while pages < max_pages:
+    url = f"https://api.pinterest.com/v5/pins?page_size={page_size}"
+    if bookmark:
+        url += "&bookmark=" + urllib.parse.quote(bookmark, safe='')
+    req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if pages == 0:
+            print(f"UNVERIFIED\tPinterest /v5/pins HTTP {e.code}"); sys.exit(2)
+        break
+    except Exception as e:
+        if pages == 0:
+            print(f"UNVERIFIED\tPinterest /v5/pins unreachable: {type(e).__name__}"); sys.exit(2)
+        break
+    page_items = body.get('items', []) or []
+    items.extend(page_items)
+    pages += 1
+    bookmark = body.get('bookmark') or None
+    page_stamps = [d for d in (parse(i.get('created_at')) for i in page_items) if d]
+    if not bookmark or not page_items or (page_stamps and min(page_stamps) < seven_days_ago):
+        break
 stamps = [d for d in (parse(i.get('created_at')) for i in items) if d]
 if not stamps:
     print("UNVERIFIED\tPinterest returned no pins with created_at"); sys.exit(2)
 last = max(stamps)
 hours = max(0.0, (now - last).total_seconds() / 3600)
 c24 = sum(1 for d in stamps if 0 <= (now - d).total_seconds() <= 86400)
+c7 = sum(1 for d in stamps if 0 <= (now - d).total_seconds() <= 7 * 86400)
+sampled = len(items)
+floor_mark = '+' if sampled >= page_size * max_pages else ''
 stamp = last.strftime('%Y-%m-%d %H:%MZ')
+# Fields: STATE<TAB>message<TAB>pins24h<TAB>pins7d — step 2 reads the counts for the runway rate.
 if hours > red_after:
-    print(f"RED\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API; threshold {red_after:.0f} h) — the Pinterest pipeline is stalled. Queue proxy: newest posted row dated {proxy or 'n/a'}")
+    print(f"RED\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API; threshold {red_after:.0f} h) — the Pinterest pipeline is stalled. Queue proxy: newest posted row dated {proxy or 'n/a'}\t{c24}\t{c7}")
     sys.exit(1)
-print(f"OK\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API) · {c24} pins in 24h · queue proxy max(Post Date)={proxy or 'n/a'} (scheduled date, not staleness)")
+print(f"OK\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API) · {c24} pins in 24h, {c7}{floor_mark} in 7d ({sampled} sampled over {pages} page(s)) · queue proxy max(Post Date)={proxy or 'n/a'} (scheduled date, not staleness)\t{c24}\t{c7}")
 sys.exit(0)
 PY
 )
 LIVENESS_RC=$?
 set -e
-LIVENESS_MSG=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f2-)
+LIVENESS_MSG=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f2)
+PINS_24H=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f3 -s)
+PINS_7D=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f4 -s)
 
 case "$LIVENESS_RC" in
   0)
@@ -218,14 +259,18 @@ case "$LIVENESS_RC" in
     ;;
 esac
 
-# ---- 2. Backlog count -----------------------------------------------------
+# ---- 2. Inventory runway --------------------------------------------------
 say ""
-say "--- 2. Queue backlog (schedulable = Post Date within the poster's ${LOOKBACK_DAYS}d window)"
+say "--- 2. Queue inventory runway (rows dated [today-${LOOKBACK_DAYS}d, today+${RUNWAY_HORIZON_DAYS}d] ÷ observed pins/day; WARN below ${LOW_RUNWAY_DAYS}d)"
 
 TODAY_STR=$(date -u +%Y-%m-%d)
 FLOOR_STR=$(python3 -c "
 import datetime
 print(datetime.date.today() - datetime.timedelta(days=$LOOKBACK_DAYS))
+" 2>/dev/null)
+HORIZON_STR=$(python3 -c "
+import datetime
+print(datetime.date.today() + datetime.timedelta(days=$RUNWAY_HORIZON_DAYS))
 " 2>/dev/null)
 
 # Counts a PostgREST query via the exact-count Content-Range header.
@@ -243,21 +288,53 @@ backlog_count() {
 
 UNPOSTED_TOTAL=$(backlog_count 'select=id&%22Is%20Posted%22=eq.false')
 SCHEDULABLE=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${TODAY_STR}")
+INVENTORY=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${HORIZON_STR}")
 STRANDED=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${FLOOR_STR}")
 
-if [[ -z "$SCHEDULABLE" || -z "$UNPOSTED_TOTAL" ]]; then
+if [[ -z "$SCHEDULABLE" || -z "$UNPOSTED_TOTAL" || -z "$INVENTORY" ]]; then
   warn "Could not query backlog counts"
   WARN=1
 else
-  if [[ "$SCHEDULABLE" -eq 0 ]]; then
-    warn "0 pins schedulable — the poster only reads rows dated ${FLOOR_STR}..${TODAY_STR}; cadence now depends entirely on new blog posts landing with a fresh Post Date"
-    WARN=1
-  elif [[ "$SCHEDULABLE" -lt "$LOW_BACKLOG" ]]; then
-    warn "Schedulable backlog low: $SCHEDULABLE pins in the ${LOOKBACK_DAYS}d window"
-    WARN=1
-  else
-    ok "Schedulable backlog: $SCHEDULABLE pins in the ${LOOKBACK_DAYS}d window"
-  fi
+  # Mirror of assessRunway() in pinner-liveness-lib.ts: rate = pins7d/7, else
+  # pins24h, else unknown. empty/low → WARN; unknown → informational only
+  # (step 1 already reported the API outage or the stall); ok → OK.
+  RUNWAY_OUT=$(python3 - "$INVENTORY" "$SCHEDULABLE" "${PINS_7D:-}" "${PINS_24H:-}" "$RUNWAY_HORIZON_DAYS" "$LOW_RUNWAY_DAYS" <<'PY'
+import sys
+inv, sched, p7, p24, horizon, low = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4], int(sys.argv[5]), float(sys.argv[6])
+def n(s):
+    try: return int(s)
+    except (TypeError, ValueError): return None
+p7, p24 = n(p7), n(p24)
+rate = (p7 / 7) if (p7 is not None and p7 > 0) else (float(p24) if (p24 is not None and p24 > 0) else None)
+rate_str = 'rate unknown' if rate is None else f'{rate:.1f}/day observed'
+if inv == 0:
+    print(f"EMPTY\tqueue empty — 0 unposted rows dated within the poster's window or the next {horizon} days ({rate_str}); cadence now depends entirely on new rows landing")
+elif rate is None:
+    print(f"UNKNOWN\tinventory {inv} rows dated through +{horizon}d ({sched} still schedulable today); runway not computable — {rate_str}")
+else:
+    runway = inv / rate
+    rs = f"> {horizon} days" if runway > horizon else f"≈ {runway:.1f} days"
+    base = f"inventory runway {rs} ({inv} rows dated through +{horizon}d ÷ {rate_str}; {sched} still schedulable today)"
+    if runway < low:
+        print(f"LOW\t{base} — below the {low:.0f}-day floor; revive stranded rows or wait for the writer plugin")
+    else:
+        print(f"OK\t{base}")
+PY
+)
+  RUNWAY_STATE=$(printf '%s' "$RUNWAY_OUT" | head -1 | cut -f1)
+  RUNWAY_MSG=$(printf '%s' "$RUNWAY_OUT" | head -1 | cut -f2-)
+  case "$RUNWAY_STATE" in
+    OK)      ok "$RUNWAY_MSG" ;;
+    UNKNOWN) say "         $RUNWAY_MSG" ;;
+    EMPTY|LOW)
+      warn "$RUNWAY_MSG"
+      WARN=1
+      ;;
+    *)
+      warn "Runway not evaluated (python3 unavailable?) — inventory ${INVENTORY} rows, ${SCHEDULABLE} schedulable today"
+      WARN=1
+      ;;
+  esac
 
   if [[ -n "${STRANDED:-}" && "$STRANDED" -gt 0 ]]; then
     say "         $STRANDED unposted rows are dated before ${FLOOR_STR} and are unreachable by the poster"
