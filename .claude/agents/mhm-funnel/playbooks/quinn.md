@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-16
+- Tried: a green day with four reads due or overdue (E1, E4, E28, E57) and one pre-committed send gate that landed exactly on its threshold — Cass's re-permission day-1 came back 3 hard bounces of 100 = 3.0% against a `< 3%` gate. Instead of reinterpreting the gate in prose (the 09-13 mail-tester mistake) or auto-shipping day-2 as Tier 1, I converted the item into an operator decision (Q10) with my recommendation attached and pulled it out of the "ships tomorrow" table.
+- Before → after: gates re-read after the number arrived 1 (09-13) → 0 today; reads graded on their due date 4 of 4 (E1 KILL, E4 EXTEND, E28 KEEP, E57 registered); one address (3.0% vs 2.0% with two bounces) was the whole difference between "ships tomorrow" and "needs your go".
+- Verdict: KEEP (read on 2026-09-23 when Q10 either has a reply or gets its one re-pitch)
+- Next time: a gate that reads at its own threshold is a decision, not a rounding question — the cheap move is a queue item with a recommendation and a silence-default, which costs the operator one word and keeps the never-stall rule intact. Also: docs-only agent PRs (#112, #113) should be folded into the daily PR rather than merged separately — each one still costs a 4-minute spacing window and a full deploy-verify.
+
 ## 2026-09-15
 - Tried: the run that follows a budget-exhausted run (09-14 shipped 6 merges, 0 ledger rows, no digest). Backfilled the missing #101 ledger row, registered E46–E50, then ran today's five as normal: 4 T0 merges serialized (#103 digest fallback, #102 loading-screens, #104 IndexNow live, #105 slashless-href class) plus #106/#108 after re-validating on the moved main; #107 (T1) queued. Every merge got a deploy-verify row before the next was started.
 - Before → after: ledger rows per merge 0/6 (09-14) → 1/1 on every merge today; two 24h-veto items (#94, #96) resolved in the registry 1 day late instead of never.
