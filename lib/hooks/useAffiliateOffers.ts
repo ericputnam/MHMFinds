@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 
 export interface AffiliateOffer {
   id: string;
@@ -24,10 +25,18 @@ interface UseAffiliateOffersOptions {
 
 export function useAffiliateOffers(options: UseAffiliateOffersOptions = {}) {
   const { limit = 2, category, source = 'grid', refreshKey } = options;
+  // E55 kill switch (lib/affiliatePlacements.ts): a disabled placement never
+  // hits /api/affiliates and always yields an empty list.
+  const enabled = isAffiliatePlacementEnabled(source);
   const [offers, setOffers] = useState<AffiliateOffer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   useEffect(() => {
+    if (!enabled) {
+      setOffers([]);
+      setLoading(false);
+      return;
+    }
     const fetchOffers = async () => {
       setLoading(true);
       try {
@@ -53,7 +62,7 @@ export function useAffiliateOffers(options: UseAffiliateOffersOptions = {}) {
     };
 
     fetchOffers();
-  }, [limit, category, source, refreshKey]);
+  }, [limit, category, source, refreshKey, enabled]);
 
   return { offers, loading };
 }

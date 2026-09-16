@@ -8,6 +8,7 @@ import { Download, ArrowLeft, Loader2, Clock, Info, Package, Crown } from 'lucid
 import { useSession, signIn } from 'next-auth/react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
+import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import {
   isMembershipEnabled,
@@ -414,8 +415,11 @@ export default function GoClient() {
               open in a new tab so clicking never interrupts the countdown.
               Deliberately a SIBLING of the mv-ads wrapper above (adding a
               third child inside it would change Mediavine's injection gaps).
+              Off by default since E55 (2026-09-15, $0 commissions ever) —
+              see lib/affiliatePlacements.ts. Gating it leaves the mv-ads
+              wrapper and aside#secondary untouched.
             */}
-            {mod?.themes && mod.themes.length > 0 && (
+            {isAffiliatePlacementEnabled('interstitial') && mod?.themes && mod.themes.length > 0 && (
               <div className="mb-8">
                 <AffiliateRecommendations
                   modId={mod.id}
