@@ -25,7 +25,7 @@ const BASE = (arg('--base') ?? 'https://musthavemods.com').replace(/\/$/, '');
 const JSON_OUT = arg('--json');
 const SETTLE_MS = Number(arg('--settle') ?? 6000);
 
-type Kind = 'catalog' | 'detail' | 'interstitial' | 'blog' | 'xml' | 'text';
+type Kind = 'catalog' | 'detail' | 'interstitial' | 'blog' | 'game' | 'xml' | 'text';
 /**
  * `expectText`: for a short file whose *content* is the point, not its length —
  * the IndexNow ownership key is 32 bytes, well under the 50-char "empty response"
@@ -71,7 +71,10 @@ function expectations(r: Result): string[] {
   const hard = r.pageErrors.filter((e) => !isHydration(e) && !isThirdParty(e));
   if (hard.length) f.push(`${hard.length} uncaught page error(s): ${hard[0].slice(0, 120)}`);
   if (r.appError) f.push('Next.js "Application error" boundary rendered');
-  const adPage = r.kind === 'catalog' || r.kind === 'detail' || r.kind === 'interstitial' || r.kind === 'blog';
+  // `game` (/play/) carries the same ad furniture as a catalog page — loader, empty
+  // aside#secondary, a multi-child .mv-ads — so it gets the same assertions. It is a
+  // separate kind only so a failure line names what broke.
+  const adPage = r.kind === 'catalog' || r.kind === 'detail' || r.kind === 'interstitial' || r.kind === 'blog' || r.kind === 'game';
   if (adPage) {
     if (!r.mediavineScript) f.push('Mediavine loader (scripts.mediavine.com) missing');
     if (r.secondary < 1) f.push('aside#secondary (Mediavine sidebar anchor) missing');
@@ -92,6 +95,13 @@ async function main() {
     { path: '/mods', kind: 'catalog' },
     ...(modId ? [{ path: `/mods/${modId}`, kind: 'detail' as Kind }, { path: `/go/${modId}`, kind: 'interstitial' as Kind }] : []),
     { path: '/sims-4-cc-finds-2/', kind: 'blog' },
+    // /play/ (E38) is a first-party retention surface with its own ad anchors and its own
+    // data path (/api/game/daily). It was outside every runtime check until E58: no smoke
+    // target, so a WordPress-proxy regression, a blank render or a lost ad anchor there was
+    // invisible to deploy-verify. Trailing slash is load-bearing — trailingSlash: true 308s
+    // the bare form. Verified against production 2026-09-16: 200, secondary=1, mv-ads=1,
+    // loader present, 2,846 chars of text, 0 page errors.
+    { path: '/play/', kind: 'game' },
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
     { path: '/llms-full.txt', kind: 'text' },

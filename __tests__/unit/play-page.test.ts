@@ -99,6 +99,33 @@ describe('/play is routed to Next.js, not proxied to WordPress', () => {
   });
 });
 
+describe('/play is covered by the post-deploy runtime checks', () => {
+  // Source-level, same as llms-txt.test.ts: the page can only be verified live
+  // if deploy-verify actually fetches it. Without the target entry a WordPress
+  // proxy regression, a blank render or a lost ad anchor on /play/ is invisible
+  // to every automated check the team relies on (found 2026-09-13, fixed E58).
+  const smoke = read('scripts/agents/smoke-render.ts');
+
+  it('smoke-render.ts fetches /play/ after every deploy', () => {
+    expect(smoke).toContain("{ path: '/play/', kind: 'game' }");
+    // Bare /play would 308 and the check would grade the redirect, not the page.
+    expect(smoke).not.toContain("{ path: '/play', kind:");
+  });
+
+  it("the 'game' kind is asserted as an ad page (loader, aside#secondary, .mv-ads)", () => {
+    expect(smoke).toMatch(/const adPage =[^;]*r\.kind === 'game'/);
+  });
+
+  it('PlayClient is registered in the central sidebar registry', () => {
+    const registry = read('__tests__/unit/sidebar-sticky-health.test.ts');
+    // Slice to the closing `\n]` — the entry names contain literal `[game]`,
+    // so the first `]` is inside a path, not the end of the array.
+    const start = registry.indexOf('const PAGES_WITH_SIDEBAR');
+    const block = registry.slice(start, registry.indexOf('\n]', start));
+    expect(block).toContain('app/play/PlayClient.tsx');
+  });
+});
+
 describe('/play Mediavine ad anchors', () => {
   it('renders an empty <aside id="secondary"> sidebar anchor', () => {
     expect(asideEl).not.toBe('');
