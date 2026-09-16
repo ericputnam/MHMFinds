@@ -1,0 +1,197 @@
+{
+  "start": "2026-09-08",
+  "end": "2026-09-14",
+  "generatedAt": "2026-09-16T11:01:16.578Z",
+  "site": {
+    "revenue": 1523.74,
+    "pageviews": 137215,
+    "sessions": 87631,
+    "pageRpm": 11.1,
+    "sessionRpm": 17.39
+  },
+  "buckets": {
+    "home": {
+      "bucket": "home",
+      "paths": 1,
+      "pageviews": 4658,
+      "revenue": 47.12,
+      "impressions": 52489,
+      "viewableImpressions": 57915,
+      "viewedImpressions": 39358,
+      "rpm": 10.12,
+      "impressionsPerPageview": 11.27,
+      "viewabilityPct": 68
+    },
+    "collection": {
+      "bucket": "collection",
+      "paths": 5,
+      "pageviews": 1899,
+      "revenue": 14.62,
+      "impressions": 17138,
+      "viewableImpressions": 18767,
+      "viewedImpressions": 10610,
+      "rpm": 7.7,
+      "impressionsPerPageview": 9.02,
+      "viewabilityPct": 56.5
+    },
+    "mod": {
+      "bucket": "mod",
+      "paths": 0,
+      "pageviews": 0,
+      "revenue": 0,
+      "impressions": 0,
+      "viewableImpressions": 0,
+      "viewedImpressions": 0,
+      "rpm": null,
+      "impressionsPerPageview": null,
+      "viewabilityPct": null
+    },
+    "go": {
+      "bucket": "go",
+      "paths": 0,
+      "pageviews": 0,
+      "revenue": 0,
+      "impressions": 0,
+      "viewableImpressions": 0,
+      "viewedImpressions": 0,
+      "rpm": null,
+      "impressionsPerPageview": null,
+      "viewabilityPct": null
+    },
+    "play": {
+      "bucket": "play",
+      "paths": 0,
+      "pageviews": 0,
+      "revenue": 0,
+      "impressions": 0,
+      "viewableImpressions": 0,
+      "viewedImpressions": 0,
+      "rpm": null,
+      "impressionsPerPageview": null,
+      "viewabilityPct": null
+    },
+    "blog": {
+      "bucket": "blog",
+      "paths": 136,
+      "pageviews": 60252,
+      "revenue": 781.72,
+      "impressions": 847491,
+      "viewableImpressions": 902502,
+      "viewedImpressions": 504681,
+      "rpm": 12.97,
+      "impressionsPerPageview": 14.07,
+      "viewabilityPct": 55.9
+    },
+    "other": {
+      "bucket": "other",
+      "paths": 0,
+      "pageviews": 0,
+      "revenue": 0,
+      "impressions": 0,
+      "viewableImpressions": 0,
+      "viewedImpressions": 0,
+      "rpm": null,
+      "impressionsPerPageview": null,
+      "viewabilityPct": null
+    }
+  },
+  "ga4Pageviews": {
+    "total": 137215,
+    "home": 5044,
+    "collection": 3208,
+    "mod": 6375,
+    "go": 342,
+    "play": 5
+  },
+  "top": [
+    {
+      "path": "/",
+      "bucket": "home",
+      "pageviews": 4658,
+      "revenue": 47.15,
+      "rpm": 10.12
+    },
+    {
+      "path": "/new-sims-4-mods-2026/",
+      "bucket": "blog",
+      "pageviews": 1847,
+      "revenue": 41.11,
+      "rpm": 22.26
+    },
+    {
+      "path": "/black-sims-4-cc/",
+      "bucket": "blog",
+      "pageviews": 1133,
+      "revenue": 32.61,
+      "rpm": 28.78
+    },
+    {
+      "path": "/sims-4-male-urban-clothes/",
+      "bucket": "blog",
+      "pageviews": 1238,
+      "revenue": 24.32,
+      "rpm": 19.64
+    },
+    {
+      "path": "/sims-4-black-hair/",
+      "bucket": "blog",
+      "pageviews": 937,
+      "revenue": 21.81,
+      "rpm": 23.28
+    },
+    {
+      "path": "/sims-4-melanin-skin/",
+      "bucket": "blog",
+      "pageviews": 984,
+      "revenue": 21.38,
+      "rpm": 21.73
+    },
+    {
+      "path": "/must-have-mods-sims-4/",
+      "bucket": "blog",
+      "pageviews": 946,
+      "revenue": 19.14,
+      "rpm": 20.23
+    },
+    {
+      "path": "/sims-4-cc-furniture/",
+      "bucket": "blog",
+      "pageviews": 1410,
+      "revenue": 17.63,
+      "rpm": 12.5
+    },
+    {
+      "path": "/sims-4-cc-tattoo/",
+      "bucket": "blog",
+      "pageviews": 1232,
+      "revenue": 17.42,
+      "rpm": 14.14
+    },
+    {
+      "path": "/sims-4-skin-overlay/",
+      "bucket": "blog",
+      "pageviews": 1064,
+      "revenue": 15.57,
+      "rpm": 14.63
+    },
+    {
+      "path": "/sims-4-urban-tattoos/",
+      "bucket": "blog",
+      "pageviews": 984,
+      "revenue": 15.42,
+      "rpm": 15.67
+    },
+    {
+      "path": "/sims-4-cc-finds-for-january/",
+      "bucket": "blog",
+      "pageviews": 1078,
+      "revenue": 14.66,
+      "rpm": 13.6
+    }
+  ],
+  "pulls": {
+    "attempted": 14,
+    "ok": 14
+  },
+  "tolerancePct": 3
+}
