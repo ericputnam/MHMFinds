@@ -1,0 +1,348 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-14",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 200.59250000000003,
+    "sessions": 13084.75,
+    "rpm": 15.227500000000001
+  },
+  "actualDay": {
+    "date": "2026-09-14",
+    "revenue": 182.03,
+    "sessions": 11684,
+    "rpm": 15.58
+  },
+  "window3": {
+    "actualRevenue": 748.1700000000001,
+    "expectedRevenue": 705.26,
+    "actualSessions": 41504,
+    "expectedSessions": 42098.75,
+    "actualRpm": 18.02645528141866,
+    "expectedRpm": 16.714992008792162
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T02:38:52.486Z",
+      "ref": "6e01034",
+      "text": "READY chore: compound learnings from 2026-09-14",
+      "url": "https://mhm-finds-dw5l-t9y47tbx5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-14T11:09:06.029Z",
+      "ref": "c891430",
+      "text": "READY fix(rio): paid-and-connected joins on Account.providerAccountId, E40 traffic leg symmetric",
+      "url": "https://mhm-finds-dw5l-2pa6dhx0v-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-14T11:05:34.790Z",
+      "ref": "a8ff3db",
+      "text": "READY feat(pip): second stranded-pin revival 14/day x 14d past the 09-23 cliff, blog.* excluded,",
+      "url": "https://mhm-finds-dw5l-n6wllgc8f-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-14T11:02:18.515Z",
+      "ref": "181ac8c",
+      "text": "READY feat(sage): IndexNow for Bing — public key file + indexnow-submit.ts (E47, Tier 0) (#99)",
+      "url": "https://mhm-finds-dw5l-6pneu3f8t-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-16T02:33:08.190Z",
+      "ref": "488456f",
+      "text": "READY chore: compound learnings from 2026-09-15 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-j9o6ffgk4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T11:20:09.490Z",
+      "ref": "bbec8b1",
+      "text": "READY funnel: daily run 2026-09-15 (#109) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-pgggjmtlp-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T11:16:10.451Z",
+      "ref": "11864e7",
+      "text": "READY feat(cass): issue #1 send verified from the mailbox (sent 09-14, 1 bounce) + counts-only s [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-jl2ip3ptf-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T11:12:11.420Z",
+      "ref": "a455ef6",
+      "text": "READY fix(pip): pinner queue flag reads inventory runway (rows ÷ observed pins/day), not \"schedu [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-lf5pylyws-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T11:08:13.395Z",
+      "ref": "99c83f8",
+      "text": "READY fix(content): close the slashless-href class — 61 internal 308s to 0, plus a repo-wide gua [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-azjbqw3yl-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T11:04:25.487Z",
+      "ref": "18fd756",
+      "text": "READY feat(sage): wire IndexNow into the daily runner + smoke-check the ownership key (E52, Tier [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-hrnmhytzh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T10:59:35.049Z",
+      "ref": "f378468",
+      "text": "READY feat(content): loading-screens collection page — 269 mods, best demand-per-row cluster lef [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-a6xmlsnc6-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-15T10:55:09.879Z",
+      "ref": "a6baab7",
+      "text": "READY fix(funnel): digest skeleton before first merge + synthesized digest fallback when Quinn r [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-119ujllvp-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T22:33:02-04:00",
+      "ref": "488456f",
+      "text": "chore: compound learnings from 2026-09-15"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:20:06-04:00",
+      "ref": "bbec8b1",
+      "text": "funnel: daily run 2026-09-15 (#109)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:16:06-04:00",
+      "ref": "11864e7",
+      "text": "feat(cass): issue #1 send verified from the mailbox (sent 09-14, 1 bounce) + counts-only s"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:12:08-04:00",
+      "ref": "a455ef6",
+      "text": "fix(pip): pinner queue flag reads inventory runway (rows ÷ observed pins/day), not \"schedu"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:08:10-04:00",
+      "ref": "99c83f8",
+      "text": "fix(content): close the slashless-href class — 61 internal 308s to 0, plus a repo-wide gua"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:04:22-04:00",
+      "ref": "18fd756",
+      "text": "feat(sage): wire IndexNow into the daily runner + smoke-check the ownership key (E52, Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T06:59:31-04:00",
+      "ref": "f378468",
+      "text": "feat(content): loading-screens collection page — 269 mods, best demand-per-row cluster lef"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T06:55:06-04:00",
+      "ref": "a6baab7",
+      "text": "fix(funnel): digest skeleton before first merge + synthesized digest fallback when Quinn r"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T22:38:46-04:00",
+      "ref": "6e01034",
+      "text": "chore: compound learnings from 2026-09-14"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T07:09:03-04:00",
+      "ref": "c891430",
+      "text": "fix(rio): paid-and-connected joins on Account.providerAccountId, E40 traffic leg symmetric"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T07:05:31-04:00",
+      "ref": "a8ff3db",
+      "text": "feat(pip): second stranded-pin revival 14/day x 14d past the 09-23 cliff, blog.* excluded,"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T07:02:15-04:00",
+      "ref": "181ac8c",
+      "text": "feat(sage): IndexNow for Bing — public key file + indexnow-submit.ts (E47, Tier 0) (#99)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T06:57:57-04:00",
+      "ref": "ad653fa",
+      "text": "fix(routing): route /forgot-password and /set-password to Next.js, not WordPress; class te"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T06:53:18-04:00",
+      "ref": "4a8774a",
+      "text": "feat(newsletter): site-styled renderIssue() template + mail-tester 8.5/10 from production "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T06:48:51-04:00",
+      "ref": "fb238e2",
+      "text": "feat(seo): JSON Feed + RSS for new mods and per-collection RSS (E42) (#94)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T22:36:48-04:00",
+      "ref": "36f0494",
+      "text": "chore: compound learnings from 2026-09-13"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T07:10:49-04:00",
+      "ref": "5577aeb",
+      "text": "funnel: daily run 2026-09-13 (#97)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T07:04:33-04:00",
+      "ref": "dc6ed98",
+      "text": "feat(rio): Patreon API section on the daily scoreboard — paid-and-connected, $3-tier joins"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T07:00:24-04:00",
+      "ref": "6c30ce5",
+      "text": "feat(content): shoes-cc collection page — 633 mods, largest clean un-paged facet (E43) (#9"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T06:57:12-04:00",
+      "ref": "a8f1f29",
+      "text": "fix(funnel): pinner liveness from Pinterest created_at, not the queue's scheduled Post Dat"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T06:53:19-04:00",
+      "ref": "b0bfe0a",
+      "text": "feat(convert): /go member CTA leads with the $3 perk-tier checkout, Connect second (E40, T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-13T06:49:31-04:00",
+      "ref": "f1fc379",
+      "text": "feat(content): /play — MAIN CHARACTER daily Sims 4 CC styling game (E38, Tier 1, Q1 b) (#8"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T22:35:32-04:00",
+      "ref": "5c9901e",
+      "text": "chore: compound learnings from 2026-09-12"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T14:16:15-04:00",
+      "ref": "25a1936",
+      "text": "docs(funnel): newsletter mock v2, flat editorial (no gradients) + Cass task reworded (#91)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T14:08:55-04:00",
+      "ref": "30aaadc",
+      "text": "docs(funnel): site-styled newsletter issue #1 mock + Cass template task (#90)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T13:55:14-04:00",
+      "ref": "e4e66bf",
+      "text": "docs(funnel): operator approvals 1a/6/8 executed, never-stall directive, legacy-canonical "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T13:40:15-04:00",
+      "ref": "a2834ed",
+      "text": "feat(seo): un-consolidate pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, do not merg"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T13:36:43-04:00",
+      "ref": "9f3dc29",
+      "text": "feat(auth): forgot/reset password flow (Q1 a, E39) — Tier 2 merge (#85)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:55:45-04:00",
+      "ref": "2be345a",
+      "text": "funnel: daily run 2026-09-12 (#88)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:43:38-04:00",
+      "ref": "c3c8094",
+      "text": "fix(distribution): repair dead Pinterest board sections that stall the pinner (E36) (#87)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:39:34-04:00",
+      "ref": "be159da",
+      "text": "feat(seo): per-collection <lastmod> in sitemap-nextjs.xml from newest mod created (E37) (#"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:32:14-04:00",
+      "ref": "c1978db",
+      "text": "feat(capture): /api/subscribe/confirm/ — consent endpoint for the re-permission campaign ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:27:53-04:00",
+      "ref": "9ca9674",
+      "text": "feat(seo): link every /mods/[id] page to its collection page — breadcrumb + BreadcrumbList"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:15:26-04:00",
+      "ref": "81db033",
+      "text": "docs(funnel): Q7(a) launcher installed via scheduled-tasks MCP; ledger row for PR #81 (#82"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-12T07:10:17-04:00",
+      "ref": "bea6539",
+      "text": "docs(funnel): five-section digest format + operator approvals 2026-09-10 (#81)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-11T22:33:45-04:00",
+      "ref": "6106a47",
+      "text": "chore: compound learnings from 2026-09-11"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-11T09:30:30-04:00",
+      "ref": "abebf63",
+      "text": "chore: compound learnings from 2026-09-10"
+    },
+    {
+      "kind": "functions.php",
+      "at": "2026-09-12T13:40:15-04:00",
+      "ref": "a2834ed",
+      "text": "feat(seo): un-consolidate pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, do not merg"
+    }
+  ],
+  "health": {
+    "date": "2026/09/16",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $182.03 (-9.3%), RPM 15.58 (2.3%), sessions -10.7% vs same weekday, prior 4 weeks · 3-day revenue 6.1%"
+  ]
+}
