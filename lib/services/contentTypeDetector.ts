@@ -53,7 +53,12 @@ interface KeywordRule {
 // 20-39 = Generic clothing/CAS
 // 1-19 = Generic fallbacks
 
-const CONTENT_TYPE_RULES: KeywordRule[] = [
+/**
+ * Exported so guard tests can assert against the real rule table rather than
+ * a restated copy of it (house rule: guard the constant, not a copy of its
+ * value). Read-only for every consumer outside this module.
+ */
+export const CONTENT_TYPE_RULES: KeywordRule[] = [
   // ============================================
   // GRANULAR FACE TYPES (Priority 100+)
   // These MUST be checked before generic makeup
@@ -343,10 +348,38 @@ const CONTENT_TYPE_RULES: KeywordRule[] = [
   },
 
   // Jewelry
+  //
+  // Nova 2026-09-18 (E63). Two changes, both measured against all 16,481
+  // catalog titles before landing:
+  //
+  //  1. The rule had no piercing vocabulary beyond the bare word 'piercing',
+  //     so the things a piercing pack is usually *named* after scored nothing
+  //     on the title. Same failure mode as `gameplay-mod` on 2026-09-10 (no
+  //     nouns for career/aspiration/trait). Added: grillz (2 titles, 2 real),
+  //     septum (14, 14 real), gauge (4, 4 real), dermal (1), navel (1),
+  //     bangle (3, all bracelets), amulet (1). 26 titles, 0 false positives.
+  //
+  //  2. Rejected on measurement, recorded so nobody re-proposes them:
+  //     'nose'  — 95 titles, but 48 are nose *presets* / sliders (body-preset,
+  //               preset). A bare noun with a dominant second meaning, exactly
+  //               the `realistic` case removed on 2026-09-10.
+  //     'chain' — 31 titles, only 7 jewelry; the rest are belts, jeans,
+  //               sandals, a fence and a bench.
+  //     'gem'   — 10 titles, 3 jewelry; the rest crowns, nails, tooth gems.
+  //     'charm' — 5 titles, 2 jewelry; the rest a bag, a garden set, a build.
+  //     'grill' — only 2 titles (both teeth grills) and it is the ordinary
+  //               word for a BBQ, which is outdoor furniture.
+  //     'plug'  — 10 titles all ear plugs, but the description pass would hit
+  //               every appliance that says "plug in". Not worth 10 rows.
+  //
+  // Redundant plural spellings removed (necklaces/earrings/bracelets/rings/
+  // piercings): `keywordToRegex` already appends an optional `(?:s|es)?`, so
+  // they were never doing any work — this is the hygiene established by
+  // PR #61 (2026-09-08) and PR #79 (2026-09-10).
   {
-    keywords: ['jewelry', 'jewellery', 'necklace', 'necklaces', 'earring', 'earrings',
-               'bracelet', 'bracelets', 'ring', 'rings', 'piercing', 'piercings',
-               'choker', 'pendant', 'anklet', 'brooch', 'cuff', 'stud', 'hoop'],
+    keywords: ['jewelry', 'jewellery', 'necklace', 'earring', 'bracelet', 'bangle',
+               'ring', 'piercing', 'septum', 'dermal', 'navel', 'gauge', 'grillz',
+               'choker', 'pendant', 'amulet', 'anklet', 'brooch', 'cuff', 'stud', 'hoop'],
     contentType: 'jewelry',
     priority: 30,
   },

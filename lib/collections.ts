@@ -544,6 +544,53 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // to 2026-09-11, so there is nothing here to cannibalise.
     blogUrl: '/sims-4-loading-screen/',
   },
+  {
+    // Placement is free: neither `jewelry` nor `watches` appears in any other
+    // entry's `contentType` / `contentTypeIn`, so `filterSpecificity()` has
+    // nothing to tie-break and all 439 mod detail pages get a first-ever
+    // collection breadcrumb. Appended at the end.
+    slug: 'jewelry-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Jewelry & Piercings',
+    heading: 'Sims 4 Jewelry & Piercings CC',
+    // "Finder — Browse" is the house browse-intent signal for a differentiated
+    // pair; the legacy listicle keeps the "best jewelry cc" head term.
+    metaTitle: 'Sims 4 Jewelry CC Finder — Browse 430+ Piercings, Earrings & Necklaces | MustHaveMods',
+    metaDescription:
+      'Browse 430+ Sims 4 jewelry and piercing CC picks in one filterable grid — septums, nose rings, earrings, necklaces, rings, bracelets and watches, sorted by downloads.',
+    tagline: 'Piercings, earrings, necklaces, rings — the details that finish a sim',
+    intro:
+      'Jewelry is the last five percent of a sim, and the base game is close to useless at it. There are a handful of earrings, one necklace that reads as a necklace, and no piercings at all beyond what a couple of packs added. So the first thing most people do after installing a hair and a skin overlay is go looking for a septum ring.\n\nThis collection pulls together 439 jewelry and piercing picks in one grid: roughly 95 necklaces, pendants and chokers, 92 earring sets from tiny studs to the chunky hoops that turn up in every lookbook, 82 piercing packs — septums, nostril and bridge piercings, lip studs, ear gauges and stretched lobes, belly bars, back dermals — 66 bracelets, bangles and anklets, 56 rings including a deep bench of engagement and wedding sets, and 24 watches.\n\nThe creators who show up most here are the ones who specialise: Feyona has the largest single shelf (43 pieces across two spellings of the name) and owns the fine-jewelry end — diamond settings, pearl duos, engagement rings; Glitterberryfly, Suzue, WisteriaSims and Pitted0live cover the everyday CAS pieces; Pralinesims and Taüve are the names to look for on piercings specifically, and Kosmokhaos\'s Grillz Collection is the single most-downloaded item in this whole grid.\n\nTwo practical notes. Most piercings occupy CAS accessory slots that other CC also wants — a septum and a pair of glasses can fight over the same slot, and the usual symptom is one of them vanishing in-game rather than an error. And jewelry is one of the few CC categories where a mesh with a bad LOD is genuinely noticeable, because the camera spends so much time near the face; if a piece looks blocky at normal zoom, it will look worse in a screenshot.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the pieces half the community already has, or scroll for the small single-set releases the big roundups never reach.',
+    filter: {
+      // 439 SFW Sims 4 mods: 415 `jewelry` + 24 `watches`, verified against
+      // production on 2026-09-18 *after* the same-PR facet repair. Audited
+      // before ranking, per the 09-13 rule: top 20 by downloads is 20/20 real
+      // jewelry, and four 10-row samples at 25/50/75/100% of the grid are
+      // 40/40. Only 6 of 439 titles lack a jewelry word and all six are
+      // hand-audited entries in scripts/lib/hand-audited-content-types.ts
+      // (Goth is Rock, Van Cleef Set, Elara Petite, Circle Of Life, Jayla,
+      // Sacred Metal) — every one verified against its own description.
+      //
+      // Before the repair the facet was 77.0% keyword-clean and would have
+      // shipped a page whose grid held a dining room, a set of walls, a
+      // Samsung TV and "Funeral Home CC". Rejected the same day: `accessories`
+      // (863) is worse — its top rows are 100 Base Game Traits, SimDa Dating
+      // App and MC Command Center, and its mid-grid is freckles and moles;
+      // `nails` (149) passes the audit at ~92% but carries 167 GSC
+      // impressions / 2 clicks against 1,293 / 6 for this cluster.
+      contentTypeIn: ['jewelry', 'watches'],
+    },
+    expectedCount: 439,
+    related: ['tattoos', 'goth-cc', 'makeup-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // jewelry cc" intent, this page owns browse/filter intent.
+    // /sims-4-jewelry-cc/ is live (HTTP 200, no redirect, verified
+    // 2026-09-18) and appears in neither mhm_consolidated_post_map() nor
+    // vercel.json. It holds 61 impressions / 1 click at position 47.3 over
+    // the 28d to 2026-09-15, so there is nothing here to cannibalise.
+    blogUrl: '/sims-4-jewelry-cc/',
+  },
 ];
 
 /**
