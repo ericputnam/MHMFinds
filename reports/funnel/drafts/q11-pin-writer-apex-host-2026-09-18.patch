@@ -1,0 +1,193 @@
+--- a/posts_2_supabase_server.py
++++ b/posts_2_supabase_server.py
+@@ -26,9 +26,53 @@
+ except ImportError:
+     from HTMLParser import HTMLParser
+ 
++try:
++    from urllib.parse import urlparse, urlunparse
++except ImportError:
++    from urlparse import urlparse, urlunparse
++
+ import requests
+ 
+ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
++
++# Canonical public origin for every pin destination.
++#
++# The WordPress REST `link` field returns the blog's own home URL. Depending on
++# which host this box's config.json points at, that is either the apex or
++# https://blog.musthavemods.com/... -- the proxied duplicate of the canonical
++# page. A pin written with the blog host still resolves, but its sessions
++# attribute to a URL nothing else in the funnel optimises, and the poster has
++# to fall back to a second Supabase lookup to find the row again
++# (daily_pin_poster_server.update_supabase_entries). Normalise once, here, so
++# the row is right regardless of how the host is configured.
++CANONICAL_HOST = 'musthavemods.com'
++CANONICAL_HOST_ALIASES = (
++    'musthavemods.com',
++    'www.musthavemods.com',
++    'blog.musthavemods.com',
++    'www.blog.musthavemods.com',
++)
++
++
++def canonicalize_post_url(url):
++    """Rewrite a MustHaveMods post URL onto https://musthavemods.com.
++
++    blog.* / www.* / http:// are normalised; path, query and fragment are kept
++    byte for byte. Any other host, and anything unparseable, is returned
++    unchanged -- this must never touch a third-party link.
++    """
++    if not url:
++        return url
++    try:
++        parts = urlparse(url)
++    except Exception:
++        return url
++    # netloc may carry credentials and/or a port; compare on the bare host.
++    host = (parts.netloc or '').split('@')[-1].split(':')[0].lower()
++    if host not in CANONICAL_HOST_ALIASES:
++        return url
++    return urlunparse(('https', CANONICAL_HOST, parts.path, parts.params,
++                       parts.query, parts.fragment))
+ 
+ # Logging: file + stderr
+ LOG_FILE = os.path.join(SCRIPT_DIR, 'supabase_sync.log')
+@@ -258,7 +302,11 @@
+     slug = post_data.get('slug', '')
+     keyword = slug if slug else re.sub(r'[^a-z0-9-]', '', title.lower().replace(' ', '-'))
+ 
+-    canonical_url = post_data.get('link', '{}/p={}'.format(site_url, post_id))
++    # `link` is whatever host WordPress thinks it lives on; the pin destination
++    # is always the apex. `rest_url` below is deliberately NOT normalised -- it
++    # has to stay on the host that actually serves the REST API.
++    canonical_url = canonicalize_post_url(
++        post_data.get('link', '{}/p={}'.format(site_url, post_id)))
+     content_html = post_data.get('content', {}).get('rendered', '')
+ 
+     if not content_html or len(content_html) < 200:
+diff --git a/test_posts_2_supabase_server.py b/test_posts_2_supabase_server.py
+new file mode 100644
+--- /dev/null
++++ b/test_posts_2_supabase_server.py
+@@ -0,0 +1,119 @@
++"""
++Tests for pin-destination host normalisation in posts_2_supabase_server.py.
++
++Every row this writer inserts into n8n_pinterest_posts becomes a live Pinterest
++pin, so its `Post URL` has to be the canonical apex (https://musthavemods.com).
++The WordPress REST `link` field returns whichever host the blog thinks it lives
++on, which on the BigScoots box is https://blog.musthavemods.com -- the proxied
++duplicate. ~12% of the stranded queue (203 of 1,664 rows, 2026-09-14) carries
++the blog host and is unusable for that reason.
++
++No network, no Supabase, no Pinterest.
++
++Run: python3 -m pytest test_posts_2_supabase_server.py -v
++"""
++
++import unittest
++
++from posts_2_supabase_server import (
++    canonicalize_post_url,
++    extract_post_content,
++    CANONICAL_HOST,
++)
++
++
++def _post(link, post_id=42286, slug='sims-4-candle-cc'):
++    """A minimal WordPress REST post payload with one extractable image."""
++    body = (
++        '<h2>Candle CC</h2>'
++        '<p>' + ('Soft wax and a warm glow for every Sims 4 living room. ' * 4) + '</p>'
++        '<img src="https://blog.musthavemods.com/wp-content/uploads/candle.jpg">'
++    )
++    return {
++        'id': post_id,
++        'slug': slug,
++        'title': {'rendered': 'Sims 4 Candle CC'},
++        'link': link,
++        'content': {'rendered': body},
++    }
++
++
++class TestCanonicalizePostUrl(unittest.TestCase):
++
++    def test_blog_subdomain_is_rewritten_to_apex(self):
++        self.assertEqual(
++            canonicalize_post_url('https://blog.musthavemods.com/sims-4-candle-cc/'),
++            'https://musthavemods.com/sims-4-candle-cc/')
++
++    def test_www_is_rewritten_to_apex(self):
++        self.assertEqual(
++            canonicalize_post_url('https://www.musthavemods.com/sims-4-candle-cc/'),
++            'https://musthavemods.com/sims-4-candle-cc/')
++
++    def test_apex_url_is_returned_unchanged(self):
++        url = 'https://musthavemods.com/sims-4-candle-cc/'
++        self.assertEqual(canonicalize_post_url(url), url)
++
++    def test_http_is_upgraded_to_https(self):
++        self.assertEqual(
++            canonicalize_post_url('http://blog.musthavemods.com/sims-4-candle-cc/'),
++            'https://musthavemods.com/sims-4-candle-cc/')
++
++    def test_path_query_and_fragment_survive(self):
++        self.assertEqual(
++            canonicalize_post_url(
++                'https://blog.musthavemods.com/a/b/?utm_source=pinterest&x=1#gallery'),
++            'https://musthavemods.com/a/b/?utm_source=pinterest&x=1#gallery')
++
++    def test_host_with_port_or_credentials_still_matches(self):
++        self.assertEqual(
++            canonicalize_post_url('https://blog.musthavemods.com:443/candle/'),
++            'https://musthavemods.com/candle/')
++
++    def test_third_party_host_is_never_touched(self):
++        """A download link or a creator's site must pass through untouched."""
++        for url in ('https://www.thesimsresource.com/downloads/1234',
++                    'https://www.patreon.com/posts/99',
++                    'https://musthavemods.com.evil.example/steal/'):
++            self.assertEqual(canonicalize_post_url(url), url)
++
++    def test_empty_and_none_pass_through(self):
++        self.assertEqual(canonicalize_post_url(''), '')
++        self.assertIsNone(canonicalize_post_url(None))
++
++    def test_is_idempotent(self):
++        once = canonicalize_post_url('https://blog.musthavemods.com/candle/')
++        self.assertEqual(canonicalize_post_url(once), once)
++
++
++class TestExtractPostContent(unittest.TestCase):
++
++    def test_blog_link_becomes_apex_in_the_row(self):
++        """This is the value written to the `Post URL` column."""
++        content = extract_post_content(
++            _post('https://blog.musthavemods.com/sims-4-candle-cc/'),
++            'https://blog.musthavemods.com')
++        self.assertIsNotNone(content)
++        self.assertEqual(content['canonical_url'],
++                         'https://musthavemods.com/sims-4-candle-cc/')
++        self.assertNotIn('blog.' + CANONICAL_HOST, content['canonical_url'])
++
++    def test_rest_url_stays_on_the_configured_host(self):
++        """`Wordpress Post Rest URL` must keep pointing at the real REST API."""
++        content = extract_post_content(
++            _post('https://blog.musthavemods.com/sims-4-candle-cc/'),
++            'https://blog.musthavemods.com')
++        self.assertEqual(
++            content['rest_url'],
++            'https://blog.musthavemods.com/wp-json/wp/v2/posts/42286')
++
++    def test_apex_link_is_unaffected(self):
++        content = extract_post_content(
++            _post('https://musthavemods.com/sims-4-candle-cc/'),
++            'https://musthavemods.com')
++        self.assertEqual(content['canonical_url'],
++                         'https://musthavemods.com/sims-4-candle-cc/')
++
++
++if __name__ == '__main__':
++    unittest.main()
