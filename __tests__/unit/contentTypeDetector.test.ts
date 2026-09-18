@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  CONTENT_TYPE_RULES,
   detectContentType,
   detectContentTypeWithConfidence,
 } from '@/lib/services/contentTypeDetector';
@@ -221,6 +222,85 @@ describe('detectContentType', () => {
           'Adds a new career and a matching aspiration for adult sims.'
         )
       ).toBe('gameplay-mod');
+    });
+  });
+  // ── Jewelry & piercings (Nova, 2026-09-18, E63) ──
+  //
+  // The rule had no vocabulary for the things a piercing pack is actually
+  // named after, so title-only re-tagging would have cleared the two
+  // biggest rows in the facet (Grillz Collection, 1,503 downloads; Nose Set
+  // No.02, 742) to NULL. Every keyword below was counted against all 16,481
+  // catalog titles before it landed.
+  describe('jewelry rule — piercing vocabulary', () => {
+    it.each([
+      ['Grillz Collection', 'grillz'],
+      ['Twisted Septum Piercing', 'septum'],
+      ['Sinner Back Dermals', 'dermal'],
+      ['Eve Navel Piercings Set 1', 'navel'],
+      ['Stacked Ear Gauges', 'gauge'],
+      ['Chunky Bangle Bracelets', 'bangle'],
+      ['S Amulet', 'amulet'],
+    ])('%s resolves to jewelry (via "%s")', (title) => {
+      expect(detectContentType(title)).toBe('jewelry');
+    });
+
+    // ── Negative cases: keywords measured and deliberately REJECTED.
+    // Each of these would look like an obvious addition to the jewelry
+    // rule. Each was counted first and each fails on the catalog.
+    it('does not treat "nose" as a jewelry keyword', () => {
+      // 95 catalog titles contain "nose"; 48 of them are nose *presets* and
+      // sliders. A bare noun with a dominant second meaning — the same class
+      // as 'realistic' (removed 09-10) and 'light' (removed 09-08). The
+      // nose-piercing sets are named in hand-audited-content-types.ts instead.
+      expect(detectContentType('Button Nose Preset')).not.toBe('jewelry');
+      expect(detectContentType('Expanded Nose Sliders')).not.toBe('jewelry');
+    });
+
+    it('does not treat "chain", "gem" or "charm" as jewelry keywords', () => {
+      // chain: 31 titles, 7 jewelry — the rest belts, jeans, sandals, a fence.
+      // gem:   10 titles, 3 jewelry — the rest crowns, nails, tooth gems.
+      // charm:  5 titles, 2 jewelry — the rest a bag, a garden set, a build.
+      expect(detectContentType('Chain Link Fence & Gate')).not.toBe('jewelry');
+      expect(detectContentType('Marcus Chain Jeans')).not.toBe('jewelry');
+      expect(detectContentType('4 Carnival Long Stiletto Gem Nails')).toBe('nails');
+      expect(detectContentType("Charm'd - Garden Playtime")).not.toBe('jewelry');
+    });
+
+    it('does not treat "grill" as a jewelry keyword, only "grillz"', () => {
+      // A grill is ordinarily a BBQ, i.e. outdoor furniture. Only 2 catalog
+      // titles use the spelling, so the cost of the false positives is not
+      // worth paying; "grillz" carries the actual jewelry meaning.
+      expect(detectContentType('Outdoor BBQ Grill Set')).not.toBe('jewelry');
+    });
+
+    it('keeps the plural spellings working after the duplicates were removed', () => {
+      // 'necklaces', 'earrings', 'bracelets', 'rings' and 'piercings' were
+      // dropped from the keyword list because keywordToRegex already appends
+      // an optional (?:s|es)?. Assert the plurals still match, so nobody
+      // "restores" them and re-creates the PR #61 double-count.
+      expect(detectContentType('Triple Pearl Necklaces')).toBe('jewelry');
+      expect(detectContentType('Thick Wavy Hoop Earrings')).toBe('jewelry');
+      expect(detectContentType('Stacked Bracelets')).toBe('jewelry');
+      expect(detectContentType('Left Stacked Rings')).toBe('jewelry');
+      expect(detectContentType('Mega Piercings Set')).toBe('jewelry');
+    });
+
+    it('no jewelry keyword is a redundant singular/plural pair of another', () => {
+      // The PR #61 / #79 hygiene rule, asserted against the live rule rather
+      // than a copy of it: two keywords that differ only by a trailing s/es
+      // are one piece of evidence, not two.
+      const jewelry = CONTENT_TYPE_RULES.filter((r) => r.contentType === 'jewelry');
+      expect(jewelry.length).toBe(1);
+      const kws = jewelry[0].keywords;
+      for (const a of kws) {
+        for (const b of kws) {
+          if (a === b) continue;
+          expect(
+            b === `${a}s` || b === `${a}es`,
+            `jewelry rule lists both "${a}" and "${b}"`,
+          ).toBe(false);
+        }
+      }
     });
   });
 });
