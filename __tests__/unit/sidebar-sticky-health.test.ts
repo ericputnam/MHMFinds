@@ -256,3 +256,91 @@ describe('Sidebar safety: no CSS sticky/fixed on ad sidebar', () => {
     })
   }
 })
+
+// ============================================================
+// 6. Mediavine's DOM is Mediavine's (the class, not the instance).
+//
+//    Mediavine Senior Support asked on 2026-09-01 that we remove the /go
+//    "Universal Player relocation" (a MutationObserver that hunted
+//    `.mv-outstream-container` and appendChild'ed it into our slot — moving
+//    their DOM breaks their viewability measurement) and the 8-second "hide
+//    the ad box if empty" timer (which hid an `.mv-ads` container mid-auction,
+//    so ads about to fill were counted as unviewable). PR #18 removed both and
+//    left a "Do NOT re-add" comment in GoClient.tsx. A comment is not a gate:
+//    PR #17, opened 12 days *before* that removal, ported the identical pattern
+//    to /mods/[id] and was still green in this suite on 2026-09-18 when it was
+//    approved for merge (see reports/viewability-fix-2026-09-01.md §1 and the
+//    PR #17 thread). These rules make the re-add fail here, in the suite the
+//    ship protocol runs for every app/ or components/ change.
+//
+//    Rules, comments stripped, scanned across every .ts/.tsx under app/ and
+//    components/ (with a vacuity guard):
+//      a. no source names a Mediavine-created element by selector
+//         (`mv-outstream-container`, `mv-video-player`) — the only reason to
+//         is to move, style or hide it;
+//      b. `window.mediavine.newPageView()` is called from exactly one place,
+//         lib/hooks/useAnalytics.ts (a second call races Mediavine's init and
+//         tears down every slot on the page);
+//      c. no `.mv-ads` element carries a `ref=` (imperative access is how the
+//         8s timer hid it) or a `hidden` token in its className expression
+//         (the declarative way to do the same thing).
+// ============================================================
+describe('Mediavine DOM guard: no player relocation, no timed hiding of ad containers', () => {
+  function sourceFiles(dir: string, out: string[] = []): string[] {
+    const abs = path.resolve(__dirname, '../../', dir)
+    for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue
+      const rel = `${dir}/${entry.name}`
+      if (entry.isDirectory()) sourceFiles(rel, out)
+      else if (/\.(tsx?|jsx?)$/.test(entry.name)) out.push(rel)
+    }
+    return out
+  }
+
+  const files = [...sourceFiles('app'), ...sourceFiles('components')]
+  const sources = files.map((file) => ({ file, src: stripComments(readSource(file)) }))
+  const adContainerFiles = sources.filter(({ src }) => /\bmv-ads\b/.test(src))
+  const NEW_PAGE_VIEW_OWNER = 'lib/hooks/useAnalytics.ts'
+
+  it('the scanner works (guards against a vacuous pass)', () => {
+    expect(files.length).toBeGreaterThanOrEqual(50)
+    // The four files that own an in-content .mv-ads container on 2026-09-18
+    // (the homepage and collection pages get theirs through ModGrid). If one
+    // drops out of this list, rule (c) silently stops looking at it.
+    for (const known of [
+      'app/mods/[id]/ModDetailClient.tsx',
+      'app/go/[modId]/GoClient.tsx',
+      'app/play/PlayClient.tsx',
+      'components/ModGrid.tsx',
+    ]) {
+      expect(adContainerFiles.map(({ file }) => file)).toContain(known)
+    }
+    expect(stripComments(readSource(NEW_PAGE_VIEW_OWNER))).toContain('newPageView(')
+  })
+
+  it('no app/ or components/ source names a Mediavine-created element (mv-outstream-container, mv-video-player)', () => {
+    const offenders = sources
+      .filter(({ src }) => /mv-outstream-container|mv-video-player/.test(src))
+      .map(({ file }) => file)
+    expect(offenders).toEqual([])
+  })
+
+  it(`window.mediavine.newPageView() is called only from ${NEW_PAGE_VIEW_OWNER}`, () => {
+    const offenders = sources.filter(({ src }) => /newPageView\s*\(/.test(src)).map(({ file }) => file)
+    expect(offenders).toEqual([])
+  })
+
+  for (const { file, src } of adContainerFiles) {
+    it(`${file}: no .mv-ads element carries a ref= or a "hidden" class token`, () => {
+      // Every opening tag whose className expression contains the mv-ads token.
+      // [^>]* spans newlines, so multi-line attribute lists are covered.
+      const tags = src.match(/<[A-Za-z][\w.]*\b[^>]*className=\{?[`"'][^`"']*\bmv-ads\b[^>]*>/g) ?? []
+      expect(tags.length).toBeGreaterThan(0)
+      for (const tag of tags) {
+        expect(tag, `ref= on an .mv-ads element in ${file}: ${tag.slice(0, 120)}`).not.toMatch(/\bref=/)
+        const classExpr = tag.match(/className=(\{[^}]*\}|"[^"]*"|'[^']*')/)?.[1] ?? ''
+        expect(classExpr, `"hidden" in the .mv-ads className of ${file}: ${classExpr}`).not.toMatch(/\bhidden\b/)
+      }
+    })
+  }
+})
