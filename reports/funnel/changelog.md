@@ -116,3 +116,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-16 06:54 | after-merge | Nova: PR #110 /play/ in post-deploy checks + sidebar registry scan (E58) | f6c52c5 | https://mhm-finds-dw5l-fz5eordzy-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-16 06:59 | after-merge | Cass: PR #111 re-permission day-1 sent 100/100, day-2 held (E54) | a460566 | https://mhm-finds-dw5l-qghc6y8ar-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-16 07:03 | after-merge | Rio: PR #114 page-RPM baseline by page type + page-rpm-snapshot.ts (E60) | 0e0fa15 | https://mhm-finds-dw5l-2qvrv73tk-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-19 08:12 | after-merge | favicon PR #123 | 497795a | https://mhm-finds-dw5l-hl9snrcfr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
