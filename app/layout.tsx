@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     images: ['/og-image.jpg'],
   },
   metadataBase: new URL('https://musthavemods.com'),
+  manifest: '/site.webmanifest',
   alternates: {
     canonical: '/',
     types: {
