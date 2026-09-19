@@ -780,11 +780,36 @@ run died with `Prompt is too long`.
   in-content injection. Elements *inside* `.mv-ads` change ad geometry; siblings are free.
 - **Spot-check the top rows of any facet before it backs a landing page.** `expectedCount` tells
   you nothing about whether the mods are *right*, and it is also baked into user-visible copy.
+- **A blog post's description is shared by every mod scraped from it, so it contaminates whole
+  facets at once.** `jewelry` is the third facet cleaned of the same description-inference pollution
+  after `lighting` (#61) and `gameplay-mod` (#79): 553 rows, only 77.0% carrying a jewelry word, a
+  dining room and eight hairstyles in the grid. Re-tag from **titles only**, and prefer `NULL` to a
+  guess — NULL drops a mod from every facet, a wrong tag pollutes one.
+- **Measure a candidate keyword against the whole catalog before adding it, and record the
+  *rejections* with their counts in the rule's own comment** so nobody re-proposes them. `nose`
+  matches 95 titles of which 48 are nose *presets*; `chain` 31/7, `gem` 10/3, `grill` is a BBQ.
+  Never list a singular and its plural — `keywordToRegex` already appends `(?:s|es)?`, so the pair
+  double-counts one word's evidence and can push a mod over a confidence threshold on its own.
 - **One git worktree per agent**; copy `.env.local`, never symlink it; give each its own `npm ci`.
 - **Serialize automated merges** (~4 min apart) or Vercel coalesces builds and the ledger loses
   per-PR attribution. Re-validate the second PR on the new `main` when both touch one file.
 - **`npm run type-check` is never optional** — Vercel type-checks every `.ts` under `scripts/`.
-- **A merge without a ledger row did not happen.**
+- **A merge without a ledger row did not happen** — and the row must be written by the step that
+  merges, not by a later step of the same run. #116 and #118 landed on `main` on 09-18; the ledger
+  still ends at 09-16 07:03.
+- **Durable means "on `main`", not "committed".** A commit stranded on an unmerged agent branch is
+  the same loss class as an uncommitted worktree edit — only cheaper to recover.
+- **A "did not fire" detector must not live inside the job it reports on.** The evening-guardrail
+  MISSED row is written by step 0e of the *morning* run, so it went silent for exactly the three
+  evenings the morning run was broken.
+- **Never widen an already approved item to carry an adjacent fix** — queue the fix as a new item.
+  The operator approved the narrower description, not the one you discovered mid-flight.
+- **A dry run only proves the thing it prints.** Confirm the preview actually exercises the field
+  the change alters; a green dry-run that never touches the modified field is a false signal, and
+  needs a separate verification query that reads the changed field.
+- **Canonicalize a host with an exact allowlist on the parsed host**, never a substring or prefix
+  test, or `musthavemods.com.evil.example` gets rewritten too. Normalize only the *outbound public*
+  URL field — an API's own endpoint host must keep pointing at whatever actually serves it.
 
 ### 2026-09-17 — the compound loop ate itself
 
@@ -888,9 +913,52 @@ run died with `Prompt is too long`.
   every line in `auto-compound.log` is doubled the same way. One POST, two identical lines — which
   makes "did this run twice?" unanswerable from the logs.
 
+### 2026-09-18 — the run that merged and left no record
+
+- **The 09-17 fix was applied halfway: the operator's reply got a commit, and the commit never got
+  to `main`.** Yesterday's finding was that human input captured only as a working-tree edit is
+  indistinguishable from work never done. Today Quinn did commit it — `ce7c111`, "capture operator
+  reply 2026-09-17 (approve all #2 items)" — onto `funnel/quinn/daily-2026-09-18`, where it still
+  sits with **no PR and no merge**. `git merge-base --is-ancestor ce7c111 main` → false. The
+  operator's standing approval for every queued #2 item exists only on a side branch. Committing is
+  not the durability property; **landing on `main` is**.
+- **The run merged two PRs and then died before the paper trail, so production changed with no
+  record that it changed.** #116 (`d3ca7a4`, 07:10) and #118 (`c850229`, 07:13) are on `main`;
+  `reports/funnel/changelog.md` still ends at **2026-09-16 07:03**. #118 is not docs — it ships
+  `lib/collections.ts` and `lib/services/contentTypeDetector.ts` and a live route
+  `/games/sims-4/jewelry-cc/` — so there is also no evidence rule 1 (verify after every merge) was
+  satisfied for it. The merge is permanent and atomic; the ledger row is a later step of a
+  multi-step agent turn that can end at any point. **Couple the row to the merge, or the two
+  reliably disagree in the one direction that matters.**
+- **Rio's work is a third artifact in the same state, and nothing flags it.** PR #117 (Mediavine
+  DOM guard, `b5e7cb0`) is still **OPEN** — branch pushed, PR filed, never merged, no digest, no
+  queue entry. Between this, `ce7c111`, and the nine orphan `compound/*` branches already
+  catalogued, the repo now has a standing population of finished agent work that reached `origin`
+  and stopped. An automated run needs a closing check that its own branches are either merged or
+  explicitly deferred with a reason.
+- **The MISSED detector went quiet on precisely the days it was needed.** The evening-guardrail
+  "DID NOT FIRE" rows run 09-12, 09-13, 09-14, 09-15 — and then stop. Nothing for the 09-16, 09-17
+  or 09-18 evenings, because step 0e writes that row from inside the *morning* funnel run, which
+  died on 09-17 and ended early on 09-18. A monitor-of-a-monitor hosted in the same process as the
+  thing that breaks reports health by omission. The evening task itself has now written no `check`
+  row since **2026-09-04 (14 days)**.
+- **Two automations still edit `CLAUDE.md` and push to `main` independently**, and a second
+  compound session was observed live in this window alongside this one. Only `auto-compound.sh`'s
+  no-op has kept them from colliding; the collision is a scheduling accident away.
+- **Packaging beats describing when automation cannot execute the change.** Q11 is the shape to
+  copy for anything outside the Vercel pipeline (here a separate `MHMUtils` repo on an SSH-only
+  BigScoots box): a patch checked with `git apply --check` against a **pinned upstream SHA**
+  (`f534a02`), a runbook printing the *expected output at every step* with explicit "stop here if
+  not" gates, a verification query that reads the field the change actually alters and prints no
+  secrets, and a rollback section stating blast radius in one sentence. Approval-to-applied becomes
+  one SSH session instead of a conversation.
+- **Cron ordering is coupling that is invisible from either script.** The pin writer is scheduled
+  05:30 CDT *because* the 06:00 orchestrator re-dates the rows it inserts; run it after 06:00 and
+  every new post loses a day. Document that ordering next to the crontab, not in the code.
+
 ---
 
-*Last compound review: 2026-09-17*
+*Last compound review: 2026-09-18*
 
 ---
 

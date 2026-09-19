@@ -1320,6 +1320,81 @@ This section is automatically updated by the nightly compound automation system.
 
 ---
 
-*Last compound review: 2026-09-16*
+## 2026-09-18 — content-type facet repair, and the Pinterest apex-host package
+
+### Facet repair (`jewelry`, PR #118)
+
+- **The mechanism is always the same, so treat it as a standing defect class, not a bug.** The MHM
+  scraper attributes a blog post's single shared description to *every* mod pulled from that post,
+  so one "accessories CC" listicle tags its lamps, walls and a Samsung TV as `jewelry`. Third facet
+  repaired for this reason: `lighting` (#61), `gameplay-mod` (#79), `jewelry` (#118). Every
+  remaining un-paged facet should be assumed contaminated until measured.
+- **The repair script is already general — point it, don't rewrite it.**
+  `scripts/retag-junk-build-facets.ts --facets=<name>` was built for `lighting`/`curtains` in #61
+  and reused unchanged here. Procedure: dry run → hand-audit the top rows against their own
+  descriptions and source posts → add exceptions to `scripts/lib/hand-audited-content-types.ts` →
+  dry run again → apply. It re-tags from **titles only** (medium/high confidence → write, low or no
+  match → `NULL`), never from descriptions, because descriptions are what caused the mess.
+- **Fix the rule's vocabulary before you re-tag, or the repair deletes your best rows.** The
+  `jewelry` rule had no word for what a piercing pack is actually named — a title-only re-tag would
+  have nulled the two biggest rows in the facet (Grillz Collection, 1,503 downloads; Nose Set
+  No.02, 742). Added: grillz, septum, dermal, navel, gauge, bangle, amulet — 26 catalog titles, 0
+  measured false positives.
+- **Rejected keywords are documented in the rule comment with their counts** so they are not
+  re-proposed: `nose` (95 titles, 48 of them nose presets), `chain` (31, 7 jewelry), `gem` (10, 3),
+  `charm` (5, 2), `grill` (BBQ), `plug` (description-pass risk).
+- Result: `jewelry` 553 → 415 rows (138 rewritten, 90 cleared to `NULL`), keyword-clean 77.0% →
+  98.6%, and all 6 remaining keyword-less titles are hand-audited. Unit suite 957 → 989 tests
+  (`contentTypeDetector` 30 → 42).
+- **`CONTENT_TYPE_RULES` is now exported** so the hygiene guard asserts against the live rule table
+  instead of a restated copy, and the test opens with `expect(jewelry.length).toBe(1)` — the
+  vacuity guard that stops it passing if the rule is renamed away. The three-part shape is worth
+  copying to every other facet: matches its true positives, explicitly rejects the measured-and-
+  declined keywords, and no two keywords are a singular/plural pair.
+
+### Collection-page checklist (confirmed again by #118)
+
+- `lib/collections.ts` is the single registration point — sitemap, llms.txt and the homepage all
+  derive from it, so no separate wiring is needed. Routes 20 → 21.
+- A contentType-only collection introduces **no new top-level path**, so the `NEXTJS_PREFIXES`
+  gotcha did not apply here — it still must be on the checklist for any collection type that does.
+- Pick `contentTypeIn` values that collide with no other registry entry, so `filterSpecificity()`
+  never has to tie-break and every mod gets a breadcrumb. `['jewelry','watches']` = 439 SFW Sims 4
+  mods, and all 439 detail pages got a first-ever collection breadcrumb.
+- Set `expectedCount` **after** the data repair, not before, and audit ranking before shipping: top
+  20 by downloads was 20/20 real jewelry, plus four 10-row depth samples at 40/40.
+- **Pick the next facet on demand-per-row, not on cleanliness.** `jewelry` (1,293 impressions / 6
+  clicks over 439 rows ≈ 2.24 demand/row) beat `nails` (167/2 over 149 rows ≈ 1.12) despite `nails`
+  measuring cleaner (~92%). `accessories` (863 rows) was rejected outright as dirtier than
+  `jewelry` was *before* repair — Base Game Traits, a dating-app mod and MC Command Center in its
+  top rows.
+
+### Pinterest pin writer (Q11 package, PR #116)
+
+- **A WordPress REST `link` field reports whichever host the blog is configured on — it is not a
+  canonical identity.** `extract_post_content()` took the pin destination straight from it, so
+  **203 of 1,664 stranded queue rows (12%, measured 2026-09-14)** point at the proxied
+  `blog.musthavemods.com` duplicate instead of the apex page: sessions attribute to a URL the
+  funnel does not optimize, and re-finding the row needs a second fallback Supabase query.
+- The patch normalizes only the outbound `Post URL` via `canonicalize_post_url()`, which strips
+  credentials and port and compares the bare host against an exact `CANONICAL_HOST_ALIASES` tuple —
+  `test_third_party_host_is_never_touched` asserts a lookalike like `musthavemods.com.evil.example`
+  is left alone. `rest_url` is deliberately **not** normalized: it must keep pointing at whatever
+  host actually serves the REST API. 12 new mocked tests, no network.
+- **The dry run does not prove this fix.** `--dry-run` logs the *image* URL on its "Would insert"
+  line, not the destination field the patch changes; the runbook says so explicitly and supplies a
+  Supabase verification query (printing no secrets) as the real check.
+- **The cron does not raise pins/day on its own and the package says so at the top.** The writer
+  inserts rows with a placeholder `Post Date` of 2025-01-01, outside the poster's 14-day window; it
+  refills the inventory pool the approved revival script drains (~5 slices of runway left). The
+  one-flag fix that would let the writer date its own rows was queued as **Q12** rather than
+  widened into an already approved Q11.
+- **Silent stall, same class as the standing rule**: the writer plugin had created **0 queue rows
+  since 2026-09-04** — ~2 weeks of zero output found by hand while diagnosing runway, with no
+  monitor row anywhere.
+
+---
+
+*Last compound review: 2026-09-18*
 
 ---
