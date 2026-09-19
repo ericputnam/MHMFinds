@@ -17,12 +17,14 @@ import {
   Mail,
   BarChart3,
   DollarSign,
+  Activity,
 } from 'lucide-react';
 
 // Admin navigation - full access to all features (admin only)
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/admin/funnel', label: 'Funnel', icon: Activity },
   { href: '/admin/monetization', label: 'Monetization', icon: DollarSign },
   { href: '/admin/mods', label: 'Mods', icon: Package },
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },

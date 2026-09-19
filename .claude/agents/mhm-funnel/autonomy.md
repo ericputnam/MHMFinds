@@ -20,7 +20,7 @@ Merged by Quinn via `gh pr merge --squash`, deployed by Vercel from `main`,
 | Metadata & SEO plumbing | titles, metas, canonicals, OG, JSON-LD, breadcrumbs, `llms.txt`, sitemaps, robots directives for AI crawlers, internal links | never `noindex` a page with >50 GSC clicks/28d without Tier 1 |
 | Catalog data | facet backfills, title cleanup, content-type fixes, dedupe, image fixes, collection membership | scripts must have `--dry-run` and be run dry first; ≤5,000 rows per run |
 | Collection & facet pages | new pages from the `lib/collections.ts` registry, copy tweaks | must have ≥20 mods and be in the sitemap |
-| Pins & auto-social | scheduling pins from published posts/collections via the existing pinner and `mhm-social-scheduler` | respect the ~3 pins/hour drain; no new boards without Tier 1 |
+| Pins & auto-social | scheduling pins for *newly published* posts/collections via the existing pinner and `mhm-social-scheduler`; pin SEO (titles, descriptions, board fit); board-section repair | respect the ~3 pins/hour drain; never re-date, bulk-insert or otherwise reshape the queue (`n8n_pinterest_posts`) — that is Tier 2 (SD-10); the writer's scheduled pins are not the team's inventory |
 | Capture surfaces (non-ad zones) | newsletter form / Patreon link / account CTA in a page region that is not an ad anchor | `sidebar-sticky-health` tests pass; never inside `<aside id="secondary">` or between `.mv-ads` children |
 | Drafts | newsletters, Patreon posts, creator outreach, sponsorship decks — written to `reports/funnel/drafts/` | drafts only; sending is Tier 1 or 2 |
 | Analytics & reports | GA4/GSC/Mediavine/Pinterest pulls, DB reads, scoreboard | read-only |
@@ -36,7 +36,7 @@ Quinn merges it. Tier 0 limits still apply.
 |---|---|
 | New non-ad features & pages | a `/lookbooks` hub, creator profile pages, a `/premium` explainer, `/play` variants, RSS/JSON feeds, homepage SSR shell |
 | Email sends to opted-in lists | weekly newsletter (`NEWSLETTER_WEEKLY_ENABLED`), launch emails, re-engagement to registered accounts |
-| Pinterest structure | new boards, new pin formats (video/idea), cadence changes within Pinterest's limits |
+| Pinterest structure | new boards, new pin formats (video/idea) — **not** cadence or queue-volume changes (Tier 2 since 2026-09-19, SD-10) |
 | On-site experiments | A/B of CTA copy/placement, countdown length within 10–15s, membership *messaging* (not price) |
 | Search-facing structural changes | consolidating thin pages, redirects on pages with <50 clicks/28d, hreflang |
 | Creator outreach | sending the human-reviewed template to creators from `hello@`, first 20 per week |
@@ -55,6 +55,7 @@ numbers attached, rollback stated) so approval is one word. Items older than
 | Public posts in the operator's or the writer's voice (Patreon, blog, X main account) | SD-1 / human voice |
 | Creator agreements, revenue-share terms, anything legal or ToS-adjacent | liability |
 | Deleting data, mass redirects (>20 URLs), `noindex` on trafficked pages | irreversibility |
+| Pinterest queue volume, timing or inventory: re-dating rows, bulk inserts into `n8n_pinterest_posts`, cadence, crons that feed the writer's queue (SD-10, 2026-09-19) | Pinterest is ~67 % of sessions and the writer runs his own scheduled queue; the E46/E56 revivals coincided with Pinterest sessions falling every day and were rolled back by the operator |
 
 ## Never
 

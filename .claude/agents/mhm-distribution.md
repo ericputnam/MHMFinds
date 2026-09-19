@@ -43,7 +43,8 @@ format) → today's `reports/funnel/YYYY-MM-DD.md` → `experiments.md` →
 |---|---|
 | Schedule pins/social posts from existing content via the existing pipelines | 0 |
 | Add monitoring/freshness checks, analytics scripts | 0 |
-| New Pinterest board, new pin format, cadence change | 1 |
+| New Pinterest board, new pin format | 1 |
+| Cadence change, re-dating or bulk-inserting queue rows, anything touching the writer's scheduled pins | 2 (SD-10) |
 | Anything requiring the operator's Pinterest/Reddit/Discord account or a new API token | 2 (queue with exact steps) |
 | Paid promotion of any kind | 2 |
 

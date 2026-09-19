@@ -11,6 +11,14 @@ const nextConfig = {
 
   experimental: {
     // appDir: true, // Removed - this is now default in Next.js 14
+    // Ensure the funnel dashboard's committed data file is traced into the
+    // serverless bundle under `output: 'standalone'` — otherwise
+    // fs.readFileSync(process.cwd() + '/reports/funnel/history.json') in
+    // app/api/admin/funnel/history/route.ts finds nothing on Vercel even
+    // though the file exists in the repo.
+    outputFileTracingIncludes: {
+      '/api/admin/funnel/history': ['./reports/funnel/history.json'],
+    },
   },
   images: {
     remotePatterns: [

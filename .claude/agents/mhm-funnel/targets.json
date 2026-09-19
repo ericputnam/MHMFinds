@@ -1,11 +1,11 @@
 {
   "_comment": "Funnel team targets. Baselines are REAL numbers pulled 2026-09-01 (sources noted). The scoreboard script (scripts/agents/funnel-scoreboard.ts) reports actuals against these daily. Quinn rewrites `bets` monthly. All currency USD.",
-  "lastUpdated": "2026-09-01",
+  "lastUpdated": "2026-09-19",
   "autonomy": "tiered",
   "_autonomyNote": "\"tiered\" = Tier 0 ships, Tier 1 ships after a 24h veto window, Tier 2 queues for the operator (see autonomy.md). Set to \"ask\" to make everything queue.",
-  "successCriterion": "Total revenue growth: Mediavine + non-ad revenue, 28d rolling vs prior 28d (and vs same 28d a year earlier once available). Operator decision 2026-09-05; leads the digest Scoreboard line. Owned-audience adds and non-ad revenue below are the levers, not the verdict.",
+  "successCriterion": "Total revenue growth AND sessions growth, judged together: Mediavine + non-ad revenue 28d rolling vs prior 28d, and Mediavine sessions 28d rolling vs prior 28d. Operator decision 2026-09-19: RPM gains with falling sessions do not count as growth; a day is graded green only when both revenue and sessions are >= 97% of the expectation line in targets.monthly.sessions / reports/funnel/history.json (see /admin/funnel/). Owned-audience adds and non-ad revenue below are the levers, not the verdict.",
   "quarterEnd": "2026-12-31",
-  "quarterTest": "Owned-audience net adds/week must be >= 3x the September baseline AND non-ad revenue >= $1,000/mo, or the team is replaced.",
+  "quarterTest": "Owned-audience net adds/week must be >= 3x the September baseline AND non-ad revenue >= $1,000/mo AND Mediavine sessions 28d >= the December expectation (450,000/mo pace), or the team is replaced.",
   "baseline": {
     "establishedOn": "2026-09-01",
     "sessions": {
@@ -49,7 +49,10 @@
     },
     "ownedAudience": {
       "emailSubscribers": 17,
-      "emailSubscribersBySource": { "footer": 16, "sign-in": 1 },
+      "emailSubscribersBySource": {
+        "footer": 16,
+        "sign-in": 1
+      },
       "emailAddsLast30d": 7,
       "patreonFreeMembers": 5144,
       "patreonPaidMembers": 49,
@@ -86,7 +89,11 @@
       "blogPostsPerMonth": 20,
       "blogPostsTotal": 670,
       "collectionPages": "see lib/collections.ts registry",
-      "firstPartyMods": ["main-character-energy", "lookbook-camera", "mhm-roadster (in build)"],
+      "firstPartyMods": [
+        "main-character-energy",
+        "lookbook-camera",
+        "mhm-roadster (in build)"
+      ],
       "source": "WP REST + repo"
     },
     "costs": {
@@ -100,15 +107,30 @@
   },
   "targets": {
     "weekly": {
-      "ownedAudienceNetAdds": { "2026-09": 120, "2026-10": 200, "2026-11": 300, "2026-12": 400 },
+      "ownedAudienceNetAdds": {
+        "2026-09": 120,
+        "2026-10": 200,
+        "2026-11": 300,
+        "2026-12": 400
+      },
       "_basis": "Baseline ~63/wk. Instrumentation + 5 capture surfaces at 0.3% of page sessions on the top-10 pages ≈ +100/wk by end of Sept; newsletter + Patreon module + account re-engagement compound from there. 3x = 190/wk is the quarter floor; 400 is the stretch."
     },
     "monthly": {
-      "nonAdRevenue": { "2026-09": 200, "2026-10": 450, "2026-11": 750, "2026-12": 1000 },
+      "nonAdRevenue": {
+        "2026-09": 200,
+        "2026-10": 450,
+        "2026-11": 750,
+        "2026-12": 1000
+      },
       "_basis": "Patreon tier relaunch (49 → 90 paid at blended $4) ≈ $360; membership via Patreon OAuth 60 members × $3–5 ≈ $250; one sponsor ≈ $300; premium mod editions ≈ $100.",
       "mediavineRevenueGuardrail": "28-day rolling revenue >= 95% of the prior 28 days, adjusted for the seasonal pattern in the fact base (Q4 rises). Below 90% = 🔴 and the team's first move is diagnosis.",
-      "sessions": { "2026-12": 450000 },
-      "_sessionsBasis": "+13% vs Aug. Not the headline metric; Pinterest read-back + catalog pins + AI referrals + search recovery. Excludes Bing/(not set) once filtered."
+      "sessions": {
+        "2026-09": 400000,
+        "2026-10": 415000,
+        "2026-11": 432000,
+        "2026-12": 450000
+      },
+      "_sessionsBasis": "Co-equal headline metric with revenue (operator, 2026-09-19). Straight ramp from the Aug baseline 401,901 to 450,000 (+12%) by Dec. Grown by Pinterest impressions/clicks (measured, not blasted), catalog + collection pages, AI referrals, search recovery, newsletter. Excludes Bing/(not set) once filtered. Bulk pin-queue changes are Tier 2."
     },
     "yearly": {
       "nonAdRevenue2027": 60000,
