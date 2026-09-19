@@ -86,7 +86,8 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
    🟢/🟡/🔴 One-sentence verdict (e.g. "🟢 Healthy. Nothing broke, nothing was rolled back, revenue up.").
    | Metric | Value | vs prior | Target |
    |---|---|---|---|
-   | Revenue 28d (the number the team is judged on) | $N | Δ% | — |
+   | Revenue 28d (judged, with sessions) | $N | Δ% | $N (expectation line) |
+   | Sessions 28d (judged, with revenue) | N | Δ% | N (expectation line) |
    | Mediavine yesterday (YYYY-MM-DD) | $N · RPM $N | Δ% · Δ% | — |
    | Sessions 7d | N | Δ% | — |
    | Pinterest / Google / AI referral 7d | N / N / N | Δ / Δ / Δ | — |

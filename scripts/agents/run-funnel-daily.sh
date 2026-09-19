@@ -222,6 +222,13 @@ if MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/funnel-scoreboard.ts >"$WT/repor
 else
   log "Scoreboard FAILED — Quinn will run with partial data"
 fi
+# --- 1a. funnel history (feeds /admin/funnel/) -------------------------------
+# Non-fatal: the dashboard just shows stale data until the next successful run.
+if MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/funnel-history.ts >>"$LOG_FILE" 2>&1; then
+  log "history: ok"
+else
+  log "history: FAILED (non-fatal)"
+fi
 # --- 1b. circuit breaker (operator's rule #2) --------------------------------
 GUARD_MD="reports/funnel/guardrail-$TODAY.md"; GUARD_JSON="reports/funnel/guardrail-$TODAY.json"
 GUARD_STATUS="unknown"; GUARD_ACTION="none"; GUARD_ROLLBACK_TO=""
@@ -364,4 +371,6 @@ with open(dst,'a') as f:
 PY
 fi
 [ -d "$WT/reports/funnel/incidents" ] && mkdir -p "$PROJECT_DIR/reports/funnel/incidents" && cp -n "$WT"/reports/funnel/incidents/*.md "$PROJECT_DIR/reports/funnel/incidents/" 2>/dev/null
+# Dashboard data file (/admin/funnel/) — always overwrite with this run's freshly-computed copy.
+[ -f "$WT/reports/funnel/history.json" ] && cp "$WT/reports/funnel/history.json" "$PROJECT_DIR/reports/funnel/history.json" && log "synced reports/funnel/history.json"
 log "Done. Digest: reports/funnel/digest-$TODAY.md"

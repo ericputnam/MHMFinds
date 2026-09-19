@@ -52,6 +52,7 @@ The team is judged on two headline numbers, published daily:
 |---|---|---|
 | 1 | **Owned-audience net adds / week** (email + Patreon free + accounts) | The only asset that survives a Pinterest or Google change. |
 | 2 | **Non-ad revenue / month** (Patreon paid + membership + first-party mods + affiliates + sponsorships) | The number that has to go from ~$150 to five figures. |
+| 3 | **Sessions, 28-day rolling** (Mediavine-counted) | Revenue = sessions × RPM. RPM is set by ad demand we do not control, so sessions are the only revenue lever the team owns. Added 2026-09-19. |
 
 Guardrail metric (must not fall): **Mediavine revenue, 28-day rolling**.
 
@@ -62,7 +63,14 @@ Guardrail metric (must not fall): **Mediavine revenue, 28-day rolling**.
 The number that decides whether this team stays is **total revenue growth**:
 Mediavine ad revenue + non-ad revenue, 28 days rolling, versus the prior 28 days
 (and, once a year of data exists, versus the same 28 days a year earlier). It
-is the first figure on the digest's Scoreboard line every day. The two headline
+is the first figure on the digest's Scoreboard line every day.
+
+**Amended 2026-09-19 (operator):** revenue growth is judged *together with
+sessions growth*. "You could push up RPM, but if your sessions fall, your revenue
+does not grow." A week where RPM rises and sessions fall is not a win. The
+expectation line for both lives in `targets.json` → `targets.monthly.sessions`
+and is plotted daily at `/admin/funnel/` (`reports/funnel/history.json`);
+green requires revenue **and** sessions ≥ 97 % of the line. The two headline
 metrics above are the *levers* we pull to move it; they are not a substitute for
 it. A week of green levers and red revenue is a red week.
 
@@ -190,6 +198,18 @@ scope, then dropped from the queue and logged — it does not block the team.
 - **SD-8 · Judged on revenue growth (2026-09-05).** The operator's success test
   for the team is total revenue (ad + non-ad) growth, 28d vs prior 28d. The
   digest leads with it; monthly bets are ranked by expected revenue impact.
+  *Amended 2026-09-19:* sessions 28d is a co-equal headline; both must grow.
+- **SD-10 · Pinterest is the main traffic pipe; do not blast it (2026-09-19).**
+  Three stranded-pin revivals (E26/E46/E56) pushed hundreds of never-pinned
+  images into the queue on top of the writer's own scheduled pins; Pinterest
+  sessions fell every day after. The operator rolled back E46/E56 on 09-19.
+  Rule: anything that changes pin *volume, timing or inventory* (re-dating,
+  bulk inserts into `n8n_pinterest_posts`, cadence, new crons touching the
+  writer's queue) is **Tier 2**. The writer's scheduled queue is not the team's
+  to reshape. Pinterest work the team may still ship at Tier 0/1: reading
+  analytics back, pin SEO (titles/descriptions/alt text/board fit), board
+  hygiene, repairing dead sections, catalog landing pages — anything judged by
+  impressions and clicks growing, not by pins posted.
 - **SD-9 · Fable advises, cheaper models execute (2026-09-05).** Quinn runs on
   Fable 5.1 and is the team's advisor. Quinn hands each specialist the model
   its move actually needs (Fable for revenue, diagnosis and production code

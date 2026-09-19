@@ -8,7 +8,7 @@ target · 🟡 within 10% · 🔴 more than 10% below. Silence is not green.
 ```markdown
 ## Week of <YYYY-MM-DD>
 
-**Headline:** owned-audience net adds N/wk vs target N (🟢/🟡/🔴) · non-ad revenue $N/mo vs $N (🟢/🟡/🔴) · MV 28d $N vs prior $N (guardrail 🟢/🔴)
+**Headline:** total revenue 28d $N vs expectation $N (🟢/🟡/🔴) · sessions 28d N vs expectation N (🟢/🟡/🔴) · owned-audience net adds N/wk vs target N (🟢/🟡/🔴) · non-ad revenue $N/mo vs $N (🟢/🟡/🔴)
 
 | Agent | KPI | Target | Actual | Grade | Moves shipped (T0/T1) | Note |
 |---|---|---|---|---|---|---|

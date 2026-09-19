@@ -1,0 +1,1955 @@
+{
+  "generatedAt": "2026-09-19T11:56:35.534Z",
+  "expectation": {
+    "startDate": "2026-08-31",
+    "endDate": "2026-12-31",
+    "revenue28dStart": 5569.43,
+    "revenue28dEnd": 7036.58,
+    "sessions28dStart": 363007,
+    "sessions28dEnd": 406452,
+    "basis": "Straight ramp from the 2026-08 baseline (Mediavine $6066.16/mo + non-ad $100/mo at 401901 sessions/mo) to the 2026-12 targets in targets.json targets.monthly (450000 sessions/mo at the baseline RPM $15.09, non-ad $1000/mo), each prorated to a 28-day window."
+  },
+  "days": [
+    {
+      "date": "2026-06-01",
+      "revenue": 220.38,
+      "sessions": 12278,
+      "rpm": 17.94,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-02",
+      "revenue": 236.36,
+      "sessions": 11890,
+      "rpm": 19.87,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-03",
+      "revenue": 228.49,
+      "sessions": 11860,
+      "rpm": 19.26,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-04",
+      "revenue": 241.43,
+      "sessions": 12696,
+      "rpm": 19.01,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-05",
+      "revenue": 249.55,
+      "sessions": 12843,
+      "rpm": 19.43,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-06",
+      "revenue": 309.22,
+      "sessions": 14141,
+      "rpm": 21.86,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-07",
+      "revenue": 305.5,
+      "sessions": 14541,
+      "rpm": 21.01,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-08",
+      "revenue": 264.48,
+      "sessions": 12816,
+      "rpm": 20.63,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-09",
+      "revenue": 291.85,
+      "sessions": 13275,
+      "rpm": 21.98,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-10",
+      "revenue": 283.29,
+      "sessions": 12915,
+      "rpm": 21.93,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-11",
+      "revenue": 275.09,
+      "sessions": 12261,
+      "rpm": 22.43,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-12",
+      "revenue": 272.54,
+      "sessions": 12510,
+      "rpm": 21.78,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-13",
+      "revenue": 302.11,
+      "sessions": 13901,
+      "rpm": 21.73,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-14",
+      "revenue": 327.52,
+      "sessions": 15093,
+      "rpm": 21.7,
+      "expectedRevenue": null,
+      "expectedSessions": null,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-15",
+      "revenue": 270.14,
+      "sessions": 13499,
+      "rpm": 20.01,
+      "expectedRevenue": 242.43,
+      "expectedSessions": 12547,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-16",
+      "revenue": 283.65,
+      "sessions": 13288,
+      "rpm": 21.34,
+      "expectedRevenue": 264.11,
+      "expectedSessions": 12583,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-17",
+      "revenue": 281.12,
+      "sessions": 12815,
+      "rpm": 21.93,
+      "expectedRevenue": 255.89,
+      "expectedSessions": 12388,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-18",
+      "revenue": 318.72,
+      "sessions": 12478,
+      "rpm": 25.54,
+      "expectedRevenue": 258.26,
+      "expectedSessions": 12479,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-19",
+      "revenue": 317.83,
+      "sessions": 13038,
+      "rpm": 24.37,
+      "expectedRevenue": 261.05,
+      "expectedSessions": 12677,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-20",
+      "revenue": 336.54,
+      "sessions": 13540,
+      "rpm": 24.85,
+      "expectedRevenue": 305.67,
+      "expectedSessions": 14021,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-21",
+      "revenue": 351.67,
+      "sessions": 14354,
+      "rpm": 24.5,
+      "expectedRevenue": 316.51,
+      "expectedSessions": 14817,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-22",
+      "revenue": 308.96,
+      "sessions": 14052,
+      "rpm": 21.98,
+      "expectedRevenue": 251.67,
+      "expectedSessions": 12864,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-23",
+      "revenue": 347.57,
+      "sessions": 13384,
+      "rpm": 25.96,
+      "expectedRevenue": 270.62,
+      "expectedSessions": 12818,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-24",
+      "revenue": 306.98,
+      "sessions": 13163,
+      "rpm": 23.32,
+      "expectedRevenue": 264.3,
+      "expectedSessions": 12530,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-25",
+      "revenue": 295.67,
+      "sessions": 12432,
+      "rpm": 23.78,
+      "expectedRevenue": 278.41,
+      "expectedSessions": 12478,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-26",
+      "revenue": 293.23,
+      "sessions": 12455,
+      "rpm": 23.54,
+      "expectedRevenue": 279.97,
+      "expectedSessions": 12797,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-27",
+      "revenue": 331.53,
+      "sessions": 13357,
+      "rpm": 24.82,
+      "expectedRevenue": 315.96,
+      "expectedSessions": 13861,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-28",
+      "revenue": 332.42,
+      "sessions": 14106,
+      "rpm": 23.56,
+      "expectedRevenue": 328.23,
+      "expectedSessions": 14663,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-29",
+      "revenue": 263.31,
+      "sessions": 13340,
+      "rpm": 19.73,
+      "expectedRevenue": 265.99,
+      "expectedSessions": 13161,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-06-30",
+      "revenue": 229.59,
+      "sessions": 13456,
+      "rpm": 17.06,
+      "expectedRevenue": 289.86,
+      "expectedSessions": 12959,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-01",
+      "revenue": 191.34,
+      "sessions": 13451,
+      "rpm": 14.22,
+      "expectedRevenue": 274.97,
+      "expectedSessions": 12688,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-02",
+      "revenue": 194.21,
+      "sessions": 13092,
+      "rpm": 14.83,
+      "expectedRevenue": 282.73,
+      "expectedSessions": 12467,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-03",
+      "revenue": 210.77,
+      "sessions": 13063,
+      "rpm": 16.13,
+      "expectedRevenue": 283.29,
+      "expectedSessions": 12712,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-04",
+      "revenue": 206.74,
+      "sessions": 13012,
+      "rpm": 15.88,
+      "expectedRevenue": 319.85,
+      "expectedSessions": 13735,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-05",
+      "revenue": 234.89,
+      "sessions": 14336,
+      "rpm": 16.38,
+      "expectedRevenue": 329.28,
+      "expectedSessions": 14524,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-06",
+      "revenue": 206.82,
+      "sessions": 13771,
+      "rpm": 15.01,
+      "expectedRevenue": 276.72,
+      "expectedSessions": 13427,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-07",
+      "revenue": 224.11,
+      "sessions": 13304,
+      "rpm": 16.84,
+      "expectedRevenue": 288.16,
+      "expectedSessions": 13351,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-08",
+      "revenue": 220.1,
+      "sessions": 13611,
+      "rpm": 16.17,
+      "expectedRevenue": 265.68,
+      "expectedSessions": 13086,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-09",
+      "revenue": 239.65,
+      "sessions": 13633,
+      "rpm": 17.57,
+      "expectedRevenue": 270.92,
+      "expectedSessions": 12566,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-10",
+      "revenue": 241.81,
+      "sessions": 13294,
+      "rpm": 18.18,
+      "expectedRevenue": 273.59,
+      "expectedSessions": 12767,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-11",
+      "revenue": 261.57,
+      "sessions": 13835,
+      "rpm": 18.9,
+      "expectedRevenue": 294.23,
+      "expectedSessions": 13453,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-12",
+      "revenue": 296.64,
+      "sessions": 14906,
+      "rpm": 19.9,
+      "expectedRevenue": 311.63,
+      "expectedSessions": 14472,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-13",
+      "revenue": 234.21,
+      "sessions": 13959,
+      "rpm": 16.77,
+      "expectedRevenue": 262.31,
+      "expectedSessions": 13666,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-14",
+      "revenue": 248.53,
+      "sessions": 13730,
+      "rpm": 18.1,
+      "expectedRevenue": 271.23,
+      "expectedSessions": 13358,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-15",
+      "revenue": 241.29,
+      "sessions": 13186,
+      "rpm": 18.29,
+      "expectedRevenue": 249.89,
+      "expectedSessions": 13260,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-16",
+      "revenue": 235.7,
+      "sessions": 13160,
+      "rpm": 17.91,
+      "expectedRevenue": 262.06,
+      "expectedSessions": 12909,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-17",
+      "revenue": 245.13,
+      "sessions": 13242,
+      "rpm": 18.51,
+      "expectedRevenue": 265.91,
+      "expectedSessions": 12963,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-18",
+      "revenue": 248.17,
+      "sessions": 13851,
+      "rpm": 17.91,
+      "expectedRevenue": 284.09,
+      "expectedSessions": 13436,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-19",
+      "revenue": 258.47,
+      "sessions": 14457,
+      "rpm": 17.87,
+      "expectedRevenue": 303.91,
+      "expectedSessions": 14426,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-20",
+      "revenue": 207.38,
+      "sessions": 13623,
+      "rpm": 15.22,
+      "expectedRevenue": 253.33,
+      "expectedSessions": 13781,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-21",
+      "revenue": 205.94,
+      "sessions": 13299,
+      "rpm": 15.48,
+      "expectedRevenue": 262.45,
+      "expectedSessions": 13469,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-22",
+      "revenue": 205.66,
+      "sessions": 13076,
+      "rpm": 15.72,
+      "expectedRevenue": 239.93,
+      "expectedSessions": 13353,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-23",
+      "revenue": 211.98,
+      "sessions": 12964,
+      "rpm": 16.35,
+      "expectedRevenue": 241.31,
+      "expectedSessions": 13079,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-24",
+      "revenue": 209.02,
+      "sessions": 12702,
+      "rpm": 16.45,
+      "expectedRevenue": 247.74,
+      "expectedSessions": 13014,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-25",
+      "revenue": 239.93,
+      "sessions": 13291,
+      "rpm": 18.05,
+      "expectedRevenue": 262,
+      "expectedSessions": 13514,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-26",
+      "revenue": 229.68,
+      "sessions": 14411,
+      "rpm": 15.93,
+      "expectedRevenue": 280.61,
+      "expectedSessions": 14451,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-27",
+      "revenue": 201.65,
+      "sessions": 14169,
+      "rpm": 14.23,
+      "expectedRevenue": 227.93,
+      "expectedSessions": 13673,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-28",
+      "revenue": 222.88,
+      "sessions": 14149,
+      "rpm": 15.75,
+      "expectedRevenue": 227.04,
+      "expectedSessions": 13447,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-29",
+      "revenue": 212.33,
+      "sessions": 13972,
+      "rpm": 15.19,
+      "expectedRevenue": 214.6,
+      "expectedSessions": 13331,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-30",
+      "revenue": 204.3,
+      "sessions": 13190,
+      "rpm": 15.48,
+      "expectedRevenue": 220.39,
+      "expectedSessions": 13212,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-07-31",
+      "revenue": 189.9,
+      "sessions": 12869,
+      "rpm": 14.75,
+      "expectedRevenue": 226.68,
+      "expectedSessions": 13075,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-01",
+      "revenue": 202.02,
+      "sessions": 21001,
+      "rpm": 9.61,
+      "expectedRevenue": 239.1,
+      "expectedSessions": 13497,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-02",
+      "revenue": 200.87,
+      "sessions": 14289,
+      "rpm": 14.05,
+      "expectedRevenue": 254.92,
+      "expectedSessions": 14528,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-03",
+      "revenue": 181.48,
+      "sessions": 13451,
+      "rpm": 13.49,
+      "expectedRevenue": 212.52,
+      "expectedSessions": 13881,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-04",
+      "revenue": 187.37,
+      "sessions": 12916,
+      "rpm": 14.5,
+      "expectedRevenue": 225.37,
+      "expectedSessions": 13621,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-05",
+      "revenue": 173.23,
+      "sessions": 13902,
+      "rpm": 12.46,
+      "expectedRevenue": 219.85,
+      "expectedSessions": 13461,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-06",
+      "revenue": 179.45,
+      "sessions": 13186,
+      "rpm": 13.6,
+      "expectedRevenue": 222.91,
+      "expectedSessions": 13237,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-07",
+      "revenue": 192.25,
+      "sessions": 13324,
+      "rpm": 14.42,
+      "expectedRevenue": 221.46,
+      "expectedSessions": 13027,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-08",
+      "revenue": 222.6,
+      "sessions": 12828,
+      "rpm": 17.35,
+      "expectedRevenue": 237.92,
+      "expectedSessions": 15495,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-09",
+      "revenue": 214.98,
+      "sessions": 14401,
+      "rpm": 14.92,
+      "expectedRevenue": 246.42,
+      "expectedSessions": 14516,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-10",
+      "revenue": 177.2,
+      "sessions": 13166,
+      "rpm": 13.45,
+      "expectedRevenue": 206.18,
+      "expectedSessions": 13801,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-11",
+      "revenue": 187.16,
+      "sessions": 12671,
+      "rpm": 14.77,
+      "expectedRevenue": 216.18,
+      "expectedSessions": 13524,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-12",
+      "revenue": 190.59,
+      "sessions": 12266,
+      "rpm": 15.53,
+      "expectedRevenue": 208.13,
+      "expectedSessions": 13534,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-13",
+      "revenue": 177.18,
+      "sessions": 12099,
+      "rpm": 14.64,
+      "expectedRevenue": 207.86,
+      "expectedSessions": 13125,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-14",
+      "revenue": 198,
+      "sessions": 12040,
+      "rpm": 16.44,
+      "expectedRevenue": 209.08,
+      "expectedSessions": 13034,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-15",
+      "revenue": 244.67,
+      "sessions": 13426,
+      "rpm": 18.22,
+      "expectedRevenue": 228.18,
+      "expectedSessions": 15243,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-16",
+      "revenue": 225.42,
+      "sessions": 14451,
+      "rpm": 15.59,
+      "expectedRevenue": 226,
+      "expectedSessions": 14390,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-17",
+      "revenue": 183.44,
+      "sessions": 12932,
+      "rpm": 14.18,
+      "expectedRevenue": 191.93,
+      "expectedSessions": 13602,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-18",
+      "revenue": 183.97,
+      "sessions": 12614,
+      "rpm": 14.58,
+      "expectedRevenue": 200.84,
+      "expectedSessions": 13259,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-19",
+      "revenue": 176.74,
+      "sessions": 12104,
+      "rpm": 14.6,
+      "expectedRevenue": 195.45,
+      "expectedSessions": 13304,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-20",
+      "revenue": 182.38,
+      "sessions": 12106,
+      "rpm": 15.06,
+      "expectedRevenue": 193.23,
+      "expectedSessions": 12860,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-21",
+      "revenue": 214.77,
+      "sessions": 12790,
+      "rpm": 16.79,
+      "expectedRevenue": 197.29,
+      "expectedSessions": 12734,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-22",
+      "revenue": 254.49,
+      "sessions": 14002,
+      "rpm": 18.17,
+      "expectedRevenue": 227.31,
+      "expectedSessions": 15137,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-23",
+      "revenue": 256.08,
+      "sessions": 14978,
+      "rpm": 17.09,
+      "expectedRevenue": 217.74,
+      "expectedSessions": 14388,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-24",
+      "revenue": 205.68,
+      "sessions": 12801,
+      "rpm": 16.06,
+      "expectedRevenue": 185.94,
+      "expectedSessions": 13430,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-25",
+      "revenue": 196.65,
+      "sessions": 12825,
+      "rpm": 15.33,
+      "expectedRevenue": 195.35,
+      "expectedSessions": 13088,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-26",
+      "revenue": 200.47,
+      "sessions": 12176,
+      "rpm": 16.46,
+      "expectedRevenue": 188.22,
+      "expectedSessions": 13061,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-27",
+      "revenue": 191.97,
+      "sessions": 11997,
+      "rpm": 16,
+      "expectedRevenue": 185.83,
+      "expectedSessions": 12645,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-28",
+      "revenue": 191.15,
+      "sessions": 12300,
+      "rpm": 15.54,
+      "expectedRevenue": 198.73,
+      "expectedSessions": 12756,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-29",
+      "revenue": 240.35,
+      "sessions": 13960,
+      "rpm": 17.21,
+      "expectedRevenue": 230.95,
+      "expectedSessions": 15314,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-30",
+      "revenue": 233.55,
+      "sessions": 14899,
+      "rpm": 15.67,
+      "expectedRevenue": 224.34,
+      "expectedSessions": 14530,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-08-31",
+      "revenue": 150.08,
+      "sessions": 12547,
+      "rpm": 11.96,
+      "expectedRevenue": 186.95,
+      "expectedSessions": 13088,
+      "nonAdMonthly": 100,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-01",
+      "revenue": 158.79,
+      "sessions": 11546,
+      "rpm": 13.75,
+      "expectedRevenue": 188.79,
+      "expectedSessions": 12757,
+      "nonAdMonthly": 129,
+      "ownedAdds7d": 62,
+      "pinterestSessions7d": 61048
+    },
+    {
+      "date": "2026-09-02",
+      "revenue": 160.2,
+      "sessions": 11269,
+      "rpm": 14.21,
+      "expectedRevenue": 185.26,
+      "expectedSessions": 12612,
+      "nonAdMonthly": 122,
+      "ownedAdds7d": 61,
+      "pinterestSessions7d": 61231
+    },
+    {
+      "date": "2026-09-03",
+      "revenue": 164.32,
+      "sessions": 11221,
+      "rpm": 14.64,
+      "expectedRevenue": 182.75,
+      "expectedSessions": 12347,
+      "nonAdMonthly": 122,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-04",
+      "revenue": 198.47,
+      "sessions": 12178,
+      "rpm": 16.29,
+      "expectedRevenue": 199.04,
+      "expectedSessions": 12614,
+      "nonAdMonthly": 127,
+      "ownedAdds7d": 55,
+      "pinterestSessions7d": 57859
+    },
+    {
+      "date": "2026-09-05",
+      "revenue": 269.49,
+      "sessions": 14925,
+      "rpm": 18.05,
+      "expectedRevenue": 240.53,
+      "expectedSessions": 13554,
+      "nonAdMonthly": 127,
+      "ownedAdds7d": 51,
+      "pinterestSessions7d": 57351
+    },
+    {
+      "date": "2026-09-06",
+      "revenue": 294.62,
+      "sessions": 15415,
+      "rpm": 19.11,
+      "expectedRevenue": 232.51,
+      "expectedSessions": 14682,
+      "nonAdMonthly": 127,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-07",
+      "revenue": 263.17,
+      "sessions": 14059,
+      "rpm": 18.71,
+      "expectedRevenue": 179.1,
+      "expectedSessions": 12862,
+      "nonAdMonthly": 127,
+      "ownedAdds7d": 44,
+      "pinterestSessions7d": 57522
+    },
+    {
+      "date": "2026-09-08",
+      "revenue": 195.87,
+      "sessions": 11665,
+      "rpm": 16.79,
+      "expectedRevenue": 181.64,
+      "expectedSessions": 12414,
+      "nonAdMonthly": 126,
+      "ownedAdds7d": 46,
+      "pinterestSessions7d": 58246
+    },
+    {
+      "date": "2026-09-09",
+      "revenue": 185.59,
+      "sessions": 11256,
+      "rpm": 16.48,
+      "expectedRevenue": 182,
+      "expectedSessions": 11954,
+      "nonAdMonthly": 125,
+      "ownedAdds7d": 57,
+      "pinterestSessions7d": 58782
+    },
+    {
+      "date": "2026-09-10",
+      "revenue": 185.28,
+      "sessions": 11237,
+      "rpm": 16.48,
+      "expectedRevenue": 178.96,
+      "expectedSessions": 11856,
+      "nonAdMonthly": 128,
+      "ownedAdds7d": 76,
+      "pinterestSessions7d": 58784
+    },
+    {
+      "date": "2026-09-11",
+      "revenue": 208.83,
+      "sessions": 11969,
+      "rpm": 17.44,
+      "expectedRevenue": 200.6,
+      "expectedSessions": 12327,
+      "nonAdMonthly": 128,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-12",
+      "revenue": 281.07,
+      "sessions": 14478,
+      "rpm": 19.41,
+      "expectedRevenue": 252.25,
+      "expectedSessions": 14078,
+      "nonAdMonthly": 133,
+      "ownedAdds7d": 86,
+      "pinterestSessions7d": 60204
+    },
+    {
+      "date": "2026-09-13",
+      "revenue": 285.07,
+      "sessions": 15342,
+      "rpm": 18.58,
+      "expectedRevenue": 252.42,
+      "expectedSessions": 14936,
+      "nonAdMonthly": 139,
+      "ownedAdds7d": 93,
+      "pinterestSessions7d": 59533
+    },
+    {
+      "date": "2026-09-14",
+      "revenue": 182.03,
+      "sessions": 11684,
+      "rpm": 15.58,
+      "expectedRevenue": 200.59,
+      "expectedSessions": 13085,
+      "nonAdMonthly": 139,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-15",
+      "revenue": 173.24,
+      "sessions": 11303,
+      "rpm": 15.32,
+      "expectedRevenue": 183.82,
+      "expectedSessions": 12163,
+      "nonAdMonthly": 142,
+      "ownedAdds7d": 90,
+      "pinterestSessions7d": 58978
+    },
+    {
+      "date": "2026-09-16",
+      "revenue": 176.57,
+      "sessions": 10882,
+      "rpm": 16.22,
+      "expectedRevenue": 180.75,
+      "expectedSessions": 11701,
+      "nonAdMonthly": 142,
+      "ownedAdds7d": 80,
+      "pinterestSessions7d": 56575
+    },
+    {
+      "date": "2026-09-17",
+      "revenue": 183.74,
+      "sessions": 10786,
+      "rpm": 17.03,
+      "expectedRevenue": 180.99,
+      "expectedSessions": 11640,
+      "nonAdMonthly": 142,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-18",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 203.31,
+      "expectedSessions": 12309,
+      "nonAdMonthly": 142,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-19",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 261.35,
+      "expectedSessions": 14341,
+      "nonAdMonthly": 142,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-09-01",
+      "kind": "merge",
+      "label": "operator: PR #18 merged by Eric (remove Mediavine player relocation on /go)",
+      "commit": "fa6e2e0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Quinn: PR 19 funnel framework + autonomy rules",
+      "commit": "428384d",
+      "result": "BUILD ERROR"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Quinn: PR 20 fix scoreboard build error",
+      "commit": "4fb45b6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Quinn: PR #21 runner auth preflight + prisma-aware node_modules",
+      "commit": "4a8ace1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Pip: PR #23 Pinterest read-back decisions",
+      "commit": "9ec85ca",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Rio: PR #25 guardrail diagnosis 2026-09-02",
+      "commit": "1bf37ba",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Sage: PR #24 AI crawler allow rules in robots.txt",
+      "commit": "01cdf27",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Nova: PR #22 witch-cc collection + W36 writer brief",
+      "commit": "f4892bd",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Cass: PR #26 GA4 newsletter_signup + /go email capture",
+      "commit": "a467367",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Quinn: PR #27 witch-cc keyword fallback fix",
+      "commit": "90ece59",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Quinn: PR #28 funnel: daily run 2026-09-02",
+      "commit": "5ddbf8f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "merge",
+      "label": "Quinn: PR #29 runner per-agent worktrees + untrack node_modules",
+      "commit": "053b7f0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-02",
+      "kind": "incident",
+      "label": "Incident: build ERROR",
+      "commit": "428384d"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "merge",
+      "label": "Quinn: PR #31 docs: mhm-funnel-daily task id",
+      "commit": "516fab0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "merge",
+      "label": "Nova: PR #32 makeup-cc collection page",
+      "commit": "58af131",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "merge",
+      "label": "Cass: PR #33 collection-page newsletter capture",
+      "commit": "cbd8079",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "merge",
+      "label": "Rio: PR #34 guardrail diagnosis 2026-09-04 + Patreon draft",
+      "commit": "94a9c81",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "merge",
+      "label": "Sage: PR #35 google-collapse-diagnosis",
+      "commit": "76f7ad4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "merge",
+      "label": "Quinn: PR #36 funnel: daily run 2026-09-04",
+      "commit": "e2dc41d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "rollback",
+      "label": "evening-check",
+      "result": "ROLLED BACK, STILL FAILING"
+    },
+    {
+      "date": "2026-09-04",
+      "kind": "incident",
+      "label": "Incident: still failing after rollback"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Cass: PR #38 feat(capture): add newsletter capture block on mod detail pages (E10)",
+      "commit": "11a683b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Sage: PR #41 fix(mods): resolve React #425 hydration errors on /mods/[id]",
+      "commit": "0b80796",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Rio: PR #39 guardrail diagnosis 2026-09-05",
+      "commit": "1b2f431",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Nova: PR #40 W37 writer brief (row backfilled by Quinn)",
+      "commit": "0b80796",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Quinn: promoted main HEAD (PRs #38/#39/#41/#40) — 09-04 rollback had paused Vercel auto-promotion",
+      "commit": "0b80796",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Pip: PR #42 feat(pip): pinner liveness check (E14, finished by Quinn)",
+      "commit": "be21a4a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Quinn: PR #43 funnel: daily run 2026-09-05",
+      "commit": "3973e6f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Quinn: PR #44 digest carries the why of every change (board-member optics)",
+      "commit": "8548fb7",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "rollback",
+      "label": "Quinn: PR #45 judged on revenue growth; Fable advises, cheaper models execute",
+      "commit": "3c53855",
+      "result": "ROLLED BACK, STILL FAILING"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "check",
+      "label": "Quinn: PR #45 verify was a FALSE ALARM",
+      "commit": "3c53855",
+      "result": "PASS · promoted back"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Quinn: PR #46 un-runnable smoke is INCONCLUSIVE, not a rollback; retry transient page errors",
+      "commit": "f216a2c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "merge",
+      "label": "Quinn: PR #47 newsletter via BigScoots SMTP; where Patreon/Pinterest keys go",
+      "commit": "c022917",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-05",
+      "kind": "incident",
+      "label": "Incident: still failing after rollback",
+      "commit": "3c53855"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "Pip: PR #50 Pinterest token-manager port + catalog pins",
+      "commit": "b12ab6b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "Nova: PR #51 decor-cc collection page + dangling related slug fixes",
+      "commit": "d790cff",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "Quinn: PR #53 funnel: daily run 2026-09-07",
+      "commit": "7458581",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "ops: PR #54 runner preflight diagnosis",
+      "commit": "ab0823c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "Rio: PR #52 Patreon OAuth membership (approved 5 A)",
+      "commit": "f7820cd",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "rollback",
+      "label": "Quinn: PR #55 record approvals 5 A / 4 option A, close Q2",
+      "commit": "5d1b8da",
+      "result": "ROLLED BACK -> https://mhm-finds-dw5l-k0sjsbndt-ericputnams-projects.vercel.app"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "Quinn: PR #56 smoke-render third-party errors warn; close incident 091150",
+      "commit": "5b7ee43",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "merge",
+      "label": "Quinn: PR #57 Q5 Patreon portal client updated (operator)",
+      "commit": "d4c2e0a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-07",
+      "kind": "incident",
+      "label": "Incident: verification failed; rolled back",
+      "commit": "5d1b8da"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Quinn: PR #58 deploy-verify promotes merged build after rollback pause",
+      "commit": "ae37ce0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Pip: PR #60 pinner backlog counts what the poster can actually reach",
+      "commit": "84972b0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Cass: PR #59 newsletter issue #1 + re-permission drafts",
+      "commit": "b064c48",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Sage: PR #48 homepage SSR shell (E18, T1 veto expired)",
+      "commit": "d67cc51",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Rio: PR #62 fix(membership): read NEXT_PUBLIC_MEMBERSHIP_ENABLED literally (E24)",
+      "commit": "032543e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Cass: PR #49 newsletter SMTP transport (E16, T1 veto expired; inert until SMTP_* vars)",
+      "commit": "949c391",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Nova: PR #61 fix(catalog): stop the lighting/curtains mis-tag at the source and re-tag 128 mods",
+      "commit": "458b572",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Quinn: PR #64 daily run 2026-09-08",
+      "commit": "5bfa24f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Quinn: PR #65 Patreon relaunch step 1 (staged decision + read script)",
+      "commit": "ac0c16a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Cass: PR #66 /api/unsubscribe route + send-time From fix",
+      "commit": "2cfed2d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Cass: PR #67 unsubscribe trailing-slash link contract + PR #66 ledger row",
+      "commit": "7a7ed94",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-08",
+      "kind": "merge",
+      "label": "Cass: PR #68 unsubscribe mailto fallback + PR #67 ledger + SMTP readiness report",
+      "commit": "a6585ad",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-09",
+      "kind": "merge",
+      "label": "Cass: PR #70 CAN-SPAM postal-address guard in bulkMailer",
+      "commit": "1bdb076",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-09",
+      "kind": "merge",
+      "label": "Sage: PR #71 /llms-full.txt answer-engine surface",
+      "commit": "8b5d249",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-09",
+      "kind": "merge",
+      "label": "Rio: PR #72 feat(rio): Patreon churn read + day-0 welcome-note draft (E30)",
+      "commit": "e5bb6e3",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-09",
+      "kind": "merge",
+      "label": "Nova: PR #73 incremental scrape:mhm + 486-mod backfill",
+      "commit": "f28f44e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-09",
+      "kind": "merge",
+      "label": "Quinn: PR #74 funnel: daily run 2026-09-09",
+      "commit": "240358a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-10",
+      "kind": "merge",
+      "label": "Pip: PR #69 revive stranded pin inventory (E26, T1 veto expired)",
+      "commit": "8a3cbd9",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-10",
+      "kind": "merge",
+      "label": "Pip: PR #75 pin revival applied 2026-09-10 — 140 pins re-dated (E26)",
+      "commit": "cc2bd89",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-10",
+      "kind": "merge",
+      "label": "Rio: PR #78 operator-did probe (E35)",
+      "commit": "95f8dc4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-10",
+      "kind": "merge",
+      "label": "Nova: PR #79 gameplay-mod detector nouns + NULL re-tag (E33)",
+      "commit": "fd4eb05",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-10",
+      "kind": "merge",
+      "label": "Quinn: PR #80 funnel: daily run 2026-09-10",
+      "commit": "0edc041",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "operator: PR #81 five-section digest + 2026-09-10 approvals",
+      "commit": "bea6539",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "operator: PR #82 Q7(a) launcher installed + ledger row for PR #81",
+      "commit": "81db033",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Sage: PR #77 mod-page breadcrumb + BreadcrumbList (E32)",
+      "commit": "9ca9674",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Cass: PR #76 /api/subscribe/confirm/ consent endpoint (E34)",
+      "commit": "c1978db",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Sage: PR #86 per-collection sitemap lastmod (E37)",
+      "commit": "be159da",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Pip: PR #87 repair dead Pinterest board sections that stall the pinner (E36)",
+      "commit": "c3c8094",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "operator-approved 1a: PR #85 forgot/reset password (E39)",
+      "commit": "9f3dc29",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "operator-approved 6: PR #63 un-consolidate pregnancy-mods + y2k-cc (E21)",
+      "commit": "a2834ed",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "operator",
+      "label": "operator-approved 6: post-#63 functions.php pushed to prod by push-blog-functions-prod.sh (backup functions.php.bak.1789235397)",
+      "commit": "a2834ed",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Quinn: PR #89 operator approvals 1a/6/8 paper trail + legacy-canonical marker guard",
+      "commit": "e4e66bf",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Quinn: PR #90 site-styled newsletter mock + Cass template task",
+      "commit": "30aaadc",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "merge",
+      "label": "Quinn: PR #91 newsletter mock v2, flat editorial (no gradients) + Cass task reworded",
+      "commit": "25a1936",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-12",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-12 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "merge",
+      "label": "Quinn: PR #84 /play MAIN CHARACTER daily styling game (E38, Nova)",
+      "commit": "f1fc379",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "merge",
+      "label": "Quinn: PR #83 /go member CTA join-first, $3 perk-tier checkout (E40, Rio)",
+      "commit": "b0bfe0a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "merge",
+      "label": "Quinn: PR #92 pinner liveness from Pinterest created_at (E41, Pip)",
+      "commit": "a8f1f29",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "merge",
+      "label": "Quinn: PR #95 shoes-cc collection page, 633 mods (E43, Nova)",
+      "commit": "6c30ce5",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "merge",
+      "label": "Quinn: PR #93 Patreon API section on the daily scoreboard (E45, Rio)",
+      "commit": "dc6ed98",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "merge",
+      "label": "Quinn: PR #97 daily run 2026-09-13 (5577aeb; Vercel missed the push webhook, deployed by vercel deploy --prod from a clean checkout of 5577aeb)",
+      "commit": "5577aeb",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-13",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-13 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "merge",
+      "label": "Quinn: PR #94 JSON Feed + RSS for new mods and per-collection RSS (E42, Sage)",
+      "commit": "fb238e2",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "merge",
+      "label": "Quinn: PR #96 site-styled newsletter template + issue #1 send path (E44, Cass)",
+      "commit": "4a8774a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "merge",
+      "label": "Quinn: PR #98 /forgot-password + /set-password routed to Next.js, NEXTJS_PREFIXES class test (E49, Cass)",
+      "commit": "ad653fa",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "merge",
+      "label": "Quinn: PR #99 IndexNow for Bing — public key file + indexnow-submit.ts (E47, Sage)",
+      "commit": "181ac8c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "merge",
+      "label": "Quinn: PR #100 second stranded-pin revival 14/day x 14d, blog.* excluded, 5 dead sections repaired (E46, Pip)",
+      "commit": "a8ff3db",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "merge",
+      "label": "Quinn: PR #101 paid-and-connected joins on Account.providerAccountId, E40 leg symmetric, Patreon API outage flagged (E50, Rio)",
+      "commit": "c891430",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-14",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-14 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Quinn: PR #103 digest skeleton + synthesized digest fallback",
+      "commit": "a6baab7",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Nova: PR #102 loading-screens collection (E48)",
+      "commit": "f378468",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Sage: PR #104 IndexNow wired into runner + smoke targets (E52)",
+      "commit": "18fd756",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Nova: PR #105 slashless-href class closed (E53)",
+      "commit": "99c83f8",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Pip: PR #106 pinner queue flag = inventory runway, check-pinner mirrors (E51)",
+      "commit": "a455ef6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Cass: PR #108 newsletter send ledger + capped re-permission path (E54)",
+      "commit": "11864e7",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "merge",
+      "label": "Quinn: PR #109 daily run 2026-09-15",
+      "commit": "bbec8b1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-15",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-15 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-16",
+      "kind": "merge",
+      "label": "Rio: PR #107 affiliate placement kill switch (E55)",
+      "commit": "bd1d40b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-16",
+      "kind": "merge",
+      "label": "Nova: PR #110 /play/ in post-deploy checks + sidebar registry scan (E58)",
+      "commit": "f6c52c5",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-16",
+      "kind": "merge",
+      "label": "Cass: PR #111 re-permission day-1 sent 100/100, day-2 held (E54)",
+      "commit": "a460566",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-16",
+      "kind": "merge",
+      "label": "Rio: PR #114 page-RPM baseline by page type + page-rpm-snapshot.ts (E60)",
+      "commit": "0e0fa15",
+      "result": "PASS"
+    }
+  ]
+}
