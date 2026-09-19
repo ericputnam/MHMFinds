@@ -10,11 +10,7 @@ import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
-import {
-  isMembershipEnabled,
-  PATREON_MEMBER_TIER_CHECKOUT_URL,
-  PATREON_MEMBER_TIER_PRICE_LABEL,
-} from '@/lib/membership';
+import { isMembershipEnabled, PATREON_PAGE_URL } from '@/lib/membership';
 
 type Gtag = (...args: unknown[]) => void;
 const gtag = (...args: unknown[]) =>
@@ -312,30 +308,17 @@ export default function GoClient() {
                     {membershipOn && !loading && (
                       <p className="mt-3 text-xs text-slate-500 text-center">
                         {/*
-                          E40 (Rio, 2026-09-12): lead with the paid tier, not
-                          "Connect". 27 accounts connected Patreon in 4 days and
-                          0 were paying — free members took the Connect link and
-                          got nothing. The join link goes straight to the perk
-                          tier's checkout; Connect stays second for existing
-                          patrons. A signed-in non-member is told that a fresh
-                          connect is what refreshes status after joining, because
-                          membership is a snapshot taken at Patreon sign-in.
-                          GA4 source names are unchanged so the E24 read stays
-                          comparable.
+                          E40 REVERTED (Rio, 2026-09-19) per its own pre-committed
+                          rule. The 09-13 variant led with a "$3/mo" checkout link
+                          and put Connect second; over 09-13→09-18 it produced
+                          0 paid-and-connected patrons (of 41 linked), 1 perk-tier
+                          join, and patreon_click fell from 8.75 to 3.57 users/day
+                          (GA4). This is the pre-#83 CTA: Connect first, the
+                          campaign landing page second. GA4 source names are the
+                          same two as before so every read stays comparable.
+                          Keep this a sibling of the mv-ads wrapper, never inside it.
                         */}
-                        {session?.user ? 'Not a patron yet? ' : 'Patrons skip the wait — '}
-                        <a
-                          href={PATREON_MEMBER_TIER_CHECKOUT_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() =>
-                            gtag('event', 'patreon_click', { source: 'go-member-cta-join', mod_id: String(params.modId) })
-                          }
-                          className="text-sims-pink hover:underline font-semibold"
-                        >
-                          Join for {PATREON_MEMBER_TIER_PRICE_LABEL}
-                        </a>
-                        {session?.user ? ' to skip the wait · Already a patron (or just joined)? ' : ' · Already a patron? '}
+                        Patrons skip the wait.{' '}
                         <button
                           type="button"
                           onClick={handleConnectPatreon}
@@ -343,6 +326,18 @@ export default function GoClient() {
                         >
                           Connect Patreon
                         </button>
+                        {' · '}
+                        <a
+                          href={PATREON_PAGE_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() =>
+                            gtag('event', 'patreon_click', { source: 'go-member-cta-join', mod_id: String(params.modId) })
+                          }
+                          className="text-sims-pink hover:underline font-semibold"
+                        >
+                          Become a patron
+                        </a>
                       </p>
                     )}
                   </div>

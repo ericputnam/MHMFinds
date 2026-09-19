@@ -169,27 +169,58 @@ describe('source-level guards (no-op until the flag is set)', () => {
   })
 })
 
-describe('E40 — /go member CTA leads with the perk tier, not "Connect" (Rio, 2026-09-12)', () => {
-  // 27 site accounts connected Patreon between 09-08 and 09-12 and 0 of them
-  // were paying patrons: the CTA's first link was "Connect Patreon" and free
-  // members took it. The join link must come first and go straight to the
-  // perk tier's checkout; Connect stays for existing patrons.
-  it('the checkout constant is the public $3 perk-tier join link', () => {
+describe('E65 — E40 reverted per its rule: /go member CTA is Connect first, landing page second (Rio, 2026-09-19)', () => {
+  // E40 (PR #83, 2026-09-13) led with a "$3/mo" checkout link and put Connect
+  // second. Its pre-committed revert rule fired on the 09-19 read: paid-and-
+  // connected 0 of 41 linked, perk-tier joins 09-13→09-19 = 1 (< 8), and
+  // patreon_click 3.57 users/day (< 4.375 = 50% of the 8.75 baseline). This
+  // block pins the pre-#83 CTA so the revert cannot be half-applied.
+  it('the perk-tier constants still exist (tier id is documented, not re-derived) but /go does not use them', () => {
     expect(PATREON_MEMBER_TIER_CHECKOUT_URL).toBe('https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24880520')
     expect(PATREON_MEMBER_TIER_PRICE_LABEL).toBe('$3/mo')
+    const src = readSource('app/go/[modId]/GoClient.tsx')
+    expect(src).not.toContain('PATREON_MEMBER_TIER_CHECKOUT_URL')
+    expect(src).not.toContain('PATREON_MEMBER_TIER_PRICE_LABEL')
   })
 
-  it('/go renders the join link before the connect button and keeps both GA4 source names', () => {
+  it('/go renders the Connect button before the join link, and the join link is the campaign landing page', () => {
     const src = readSource('app/go/[modId]/GoClient.tsx')
-    const join = src.indexOf('href={PATREON_MEMBER_TIER_CHECKOUT_URL}')
     const connect = src.indexOf('onClick={handleConnectPatreon}')
-    expect(join).toBeGreaterThan(-1)
+    const join = src.indexOf('href={PATREON_PAGE_URL}')
     expect(connect).toBeGreaterThan(-1)
-    expect(join).toBeLessThan(connect)
-    // Event names unchanged so the E24 read (2026-09-15) stays comparable.
+    expect(join).toBeGreaterThan(-1)
+    expect(connect).toBeLessThan(join)
+    expect(src).toContain('Patrons skip the wait.')
+    expect(src).toContain('Become a patron')
+  })
+
+  it('both GA4 source names survive the revert so E24/E40 reads stay comparable', () => {
+    const src = readSource('app/go/[modId]/GoClient.tsx')
     expect(src).toContain("source: 'go-member-cta-join'")
     expect(src).toContain("source: 'go-member-cta-connect'")
-    // The join link no longer points at the campaign landing page.
-    expect(src).not.toContain('href={PATREON_PAGE_URL}')
+    expect(src).toContain("gtag('event', 'member_skip_countdown'")
+  })
+
+  it('the revert touches only the CTA: mv-ads wrapper, empty aside#secondary and the 10s countdown are unchanged', () => {
+    const src = readSource('app/go/[modId]/GoClient.tsx')
+    expect(src).toContain('className="mv-ads')
+    // Strip JSX comments first: the comment above the real <aside> quotes
+    // `<aside id="secondary" ...>` as documentation, and a naive match would
+    // capture the documentation instead of the element (house rule).
+    // Strip every /* */ block comment (JSX `{/* */}` included): the CRITICAL
+    // first-paint comment quotes `<aside id="secondary">` too. A `//` line
+    // comment mentions a bare `<aside>`, so also anchor on the id.
+    const code = src
+      .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '') // JSX comment, braces included
+      .replace(/\/\*[\s\S]*?\*\//g, '') // plain block comments
+    const asides = code.match(/<aside\s+id="secondary"[^>]*>[\s\S]*?<\/aside>/g) ?? []
+    expect(asides).toHaveLength(1)
+    // The aside must stay empty: nothing but whitespace between the tags.
+    const inner = (asides[0] ?? '').replace(/^<aside\s+id="secondary"[^>]*>/, '').replace(/<\/aside>$/, '')
+    expect(inner.trim()).toBe('')
+    expect(src).toContain('useState(10)')
+    expect(src).toContain('((10 - countdown) / 10) * 100')
+    // The CTA is a sibling of the mv-ads wrapper (it renders before it), never a child.
+    expect(src.indexOf('onClick={handleConnectPatreon}')).toBeLessThan(src.indexOf('className="mv-ads'))
   })
 })
