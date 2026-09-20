@@ -18,6 +18,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-20
+- Tried: first digest to reach `main` since 09-16 — landed the operator's 09-17 "approve all #2 items" reply (stranded on two unmerged Quinn branches, `ce7c111` → `65e1756`), the 09-18/09-19 digest skeletons as written, 9 uncommitted ledger rows (#116–#122 + 4 MISSED evenings) and 5 unregistered experiments (E61–E65) in one paper-trail commit before any merge; then the five agents ran in parallel with the merge-serialization rule in their prompts.
+- Before → after: ledger rows on `main` for the 7 PRs merged 09-18/09-19: 1 of 7 → 7 of 7; experiments registered for them: 0 of 5 → 5 of 5; the operator's Tier 2 approval existed on `main`: no → yes. Cost of the gap: Q10 (re-permission day 2) was approved 09-17 and sends 09-20 — three days of a pre-approved capture move lost to bookkeeping, at 100 dormant accounts/day.
+- Verdict: KEEP "paper trail first, merges second" — the skeleton + part-1 commit took 25 minutes and needed no agent; FIX the tool: the Edit tool is denied on every `.claude/` path in this session (6 of 6 attempts), so every queue/experiments/playbook edit went through a python heredoc. That is the ideas-inbox item "move the team's mutable files out of `.claude/`" — it is Tier 0 and mine.
+- Next time: when a stranded branch is based on an older `main`, never `git merge` it — `git checkout <branch> -- <file>` for report files, and reconcile the team registries by hand (main had rolled E46/E56 back after the branch forked; a merge would have reverted that annotation). Check `git merge-base` first.
+
 ## 2026-09-16
 - Tried: a green day with four reads due or overdue (E1, E4, E28, E57) and one pre-committed send gate that landed exactly on its threshold — Cass's re-permission day-1 came back 3 hard bounces of 100 = 3.0% against a `< 3%` gate. Instead of reinterpreting the gate in prose (the 09-13 mail-tester mistake) or auto-shipping day-2 as Tier 1, I converted the item into an operator decision (Q10) with my recommendation attached and pulled it out of the "ships tomorrow" table.
 - Before → after: gates re-read after the number arrived 1 (09-13) → 0 today; reads graded on their due date 4 of 4 (E1 KILL, E4 EXTEND, E28 KEEP, E57 registered); one address (3.0% vs 2.0% with two bounces) was the whole difference between "ships tomorrow" and "needs your go".

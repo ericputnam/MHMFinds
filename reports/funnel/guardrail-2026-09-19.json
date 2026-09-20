@@ -1,0 +1,244 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-17",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 180.9875,
+    "sessions": 11640.25,
+    "rpm": 15.545000000000002
+  },
+  "actualDay": {
+    "date": "2026-09-17",
+    "revenue": 183.74,
+    "sessions": 10786,
+    "rpm": 17.03
+  },
+  "window3": {
+    "actualRevenue": 533.55,
+    "expectedRevenue": 545.5575,
+    "actualSessions": 32971,
+    "expectedSessions": 35504,
+    "actualRpm": 16.182402717539656,
+    "expectedRpm": 15.365539896115235
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-17T02:32:49.353Z",
+      "ref": "bde92c1",
+      "text": "READY chore: compound learnings from 2026-09-16",
+      "url": "https://mhm-finds-dw5l-34vthwy0d-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-16T11:08:39.196Z",
+      "ref": "1538800",
+      "text": "READY funnel: daily run 2026-09-16 (#115)",
+      "url": "https://mhm-finds-dw5l-8bxr8cjsl-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-16T11:03:20.143Z",
+      "ref": "0e0fa15",
+      "text": "READY feat(rio): page-RPM baseline by page type — homepage $10.12, blog $12.97, unseen remainder",
+      "url": "https://mhm-finds-dw5l-2qvrv73tk-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-16T10:59:31.336Z",
+      "ref": "a460566",
+      "text": "READY docs(cass): re-permission day-1 batch sent (100/100, 3.0% hard bounce at T+1m, day-2 HELD ",
+      "url": "https://mhm-finds-dw5l-qghc6y8ar-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-16T10:54:26.857Z",
+      "ref": "f6c52c5",
+      "text": "READY fix(content): /play/ enters the post-deploy checks, and the sidebar registry gains a compl",
+      "url": "https://mhm-finds-dw5l-fz5eordzy-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-16T10:50:02.735Z",
+      "ref": "bd1d40b",
+      "text": "READY feat(rio): affiliate placement kill switch — mod_page + interstitial off, $0 commissions o",
+      "url": "https://mhm-finds-dw5l-rnqdvrodk-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T04:08:29.067Z",
+      "ref": "7bbe00d",
+      "text": "READY chore: compound learnings from 2026-09-18 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fxh0okgj4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-18T11:13:05.318Z",
+      "ref": "c850229",
+      "text": "READY feat(content): jewelry-cc collection page (439 mods) + repair the junk jewelry facet (#118 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-5o6aj939a-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-18T11:10:40.332Z",
+      "ref": "d3ca7a4",
+      "text": "READY docs(pip): Q11 pin-writer cron + apex-host patch package (operator-ready, Tier 0 paper tra [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ibot6cjmf-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-18T05:06:41.636Z",
+      "ref": "7d8736c",
+      "text": "READY chore: compound learnings from 2026-09-17 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-q1rakj710-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T00:08:22-04:00",
+      "ref": "7bbe00d",
+      "text": "chore: compound learnings from 2026-09-18"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T07:13:02-04:00",
+      "ref": "c850229",
+      "text": "feat(content): jewelry-cc collection page (439 mods) + repair the junk jewelry facet (#118"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T07:10:36-04:00",
+      "ref": "d3ca7a4",
+      "text": "docs(pip): Q11 pin-writer cron + apex-host patch package (operator-ready, Tier 0 paper tra"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T01:06:33-04:00",
+      "ref": "7d8736c",
+      "text": "chore: compound learnings from 2026-09-17"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T22:32:45-04:00",
+      "ref": "bde92c1",
+      "text": "chore: compound learnings from 2026-09-16"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T07:08:35-04:00",
+      "ref": "1538800",
+      "text": "funnel: daily run 2026-09-16 (#115)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T07:03:17-04:00",
+      "ref": "0e0fa15",
+      "text": "feat(rio): page-RPM baseline by page type — homepage $10.12, blog $12.97, unseen remainder"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:59:28-04:00",
+      "ref": "a460566",
+      "text": "docs(cass): re-permission day-1 batch sent (100/100, 3.0% hard bounce at T+1m, day-2 HELD "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:54:23-04:00",
+      "ref": "f6c52c5",
+      "text": "fix(content): /play/ enters the post-deploy checks, and the sidebar registry gains a compl"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:49:58-04:00",
+      "ref": "bd1d40b",
+      "text": "feat(rio): affiliate placement kill switch — mod_page + interstitial off, $0 commissions o"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T22:33:02-04:00",
+      "ref": "488456f",
+      "text": "chore: compound learnings from 2026-09-15"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:20:06-04:00",
+      "ref": "bbec8b1",
+      "text": "funnel: daily run 2026-09-15 (#109)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:16:06-04:00",
+      "ref": "11864e7",
+      "text": "feat(cass): issue #1 send verified from the mailbox (sent 09-14, 1 bounce) + counts-only s"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:12:08-04:00",
+      "ref": "a455ef6",
+      "text": "fix(pip): pinner queue flag reads inventory runway (rows ÷ observed pins/day), not \"schedu"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:08:10-04:00",
+      "ref": "99c83f8",
+      "text": "fix(content): close the slashless-href class — 61 internal 308s to 0, plus a repo-wide gua"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:04:22-04:00",
+      "ref": "18fd756",
+      "text": "feat(sage): wire IndexNow into the daily runner + smoke-check the ownership key (E52, Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T06:59:31-04:00",
+      "ref": "f378468",
+      "text": "feat(content): loading-screens collection page — 269 mods, best demand-per-row cluster lef"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T06:55:06-04:00",
+      "ref": "a6baab7",
+      "text": "fix(funnel): digest skeleton before first merge + synthesized digest fallback when Quinn r"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T22:38:46-04:00",
+      "ref": "6e01034",
+      "text": "chore: compound learnings from 2026-09-14"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T07:09:03-04:00",
+      "ref": "c891430",
+      "text": "fix(rio): paid-and-connected joins on Account.providerAccountId, E40 traffic leg symmetric"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T07:05:31-04:00",
+      "ref": "a8ff3db",
+      "text": "feat(pip): second stranded-pin revival 14/day x 14d past the 09-23 cliff, blog.* excluded,"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T07:02:15-04:00",
+      "ref": "181ac8c",
+      "text": "feat(sage): IndexNow for Bing — public key file + indexnow-submit.ts (E47, Tier 0) (#99)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-14T06:57:57-04:00",
+      "ref": "ad653fa",
+      "text": "fix(routing): route /forgot-password and /set-password to Next.js, not WordPress; class te"
+    }
+  ],
+  "health": {
+    "date": "2026/09/19",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $183.74 (1.5%), RPM 17.03 (9.6%), sessions -7.3% vs same weekday, prior 4 weeks · 3-day revenue -2.2%"
+  ]
+}

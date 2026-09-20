@@ -1,0 +1,256 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-18",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 203.305,
+    "sessions": 12309.25,
+    "rpm": 16.515
+  },
+  "actualDay": {
+    "date": "2026-09-18",
+    "revenue": 208,
+    "sessions": 11728,
+    "rpm": 17.73
+  },
+  "window3": {
+    "actualRevenue": 568.31,
+    "expectedRevenue": 565.0425,
+    "actualSessions": 33396,
+    "expectedSessions": 35650.75,
+    "actualRpm": 17.01730746197149,
+    "expectedRpm": 15.854560001785652
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-18T11:13:05.318Z",
+      "ref": "c850229",
+      "text": "READY feat(content): jewelry-cc collection page (439 mods) + repair the junk jewelry facet (#118",
+      "url": "https://mhm-finds-dw5l-5o6aj939a-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-18T11:10:40.332Z",
+      "ref": "d3ca7a4",
+      "text": "READY docs(pip): Q11 pin-writer cron + apex-host patch package (operator-ready, Tier 0 paper tra",
+      "url": "https://mhm-finds-dw5l-ibot6cjmf-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T02:36:27.653Z",
+      "ref": "41e176a",
+      "text": "READY chore: compound learnings from 2026-09-19 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-i40jbf31l-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T12:16:19.309Z",
+      "ref": "1291bb7",
+      "text": "READY docs(funnel): ledger row — favicon PR #123 deployed and verified [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fuyrlz35z-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T12:12:32.545Z",
+      "ref": "497795a",
+      "text": "READY fix(seo): add site favicon so Google SERP shows the brand mark (#123) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-hl9snrcfr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T12:07:37.860Z",
+      "ref": "b815c42",
+      "text": "READY feat(admin): funnel scoreboard dashboard at /admin/funnel + sessions as co-equal headline  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-rboy91qtv-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T11:17:40.731Z",
+      "ref": "32abcaf",
+      "text": "READY docs(pip): Pinterest read-back — blog.* host is 31.7% of pin sessions and all of the WoW d [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-j9jf18qsw-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T11:09:12.966Z",
+      "ref": "9d741bc",
+      "text": "READY revert(rio): E40 /go member CTA back to Connect-first + landing page, per E40's own rule ( [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-k12mfju4k-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T11:00:39.580Z",
+      "ref": "28814c1",
+      "text": "READY test(ads): guard against Mediavine player relocation + timed hiding of .mv-ads (the class  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-83mresi8w-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-19T04:08:29.067Z",
+      "ref": "7bbe00d",
+      "text": "READY chore: compound learnings from 2026-09-18 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fxh0okgj4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T22:36:19-04:00",
+      "ref": "41e176a",
+      "text": "chore: compound learnings from 2026-09-19"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T08:16:15-04:00",
+      "ref": "1291bb7",
+      "text": "docs(funnel): ledger row — favicon PR #123 deployed and verified"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T08:12:29-04:00",
+      "ref": "497795a",
+      "text": "fix(seo): add site favicon so Google SERP shows the brand mark (#123)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T08:07:35-04:00",
+      "ref": "b815c42",
+      "text": "feat(admin): funnel scoreboard dashboard at /admin/funnel + sessions as co-equal headline "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T07:17:37-04:00",
+      "ref": "32abcaf",
+      "text": "docs(pip): Pinterest read-back — blog.* host is 31.7% of pin sessions and all of the WoW d"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T07:09:09-04:00",
+      "ref": "9d741bc",
+      "text": "revert(rio): E40 /go member CTA back to Connect-first + landing page, per E40's own rule ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T07:00:36-04:00",
+      "ref": "28814c1",
+      "text": "test(ads): guard against Mediavine player relocation + timed hiding of .mv-ads (the class "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T00:08:22-04:00",
+      "ref": "7bbe00d",
+      "text": "chore: compound learnings from 2026-09-18"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T07:13:02-04:00",
+      "ref": "c850229",
+      "text": "feat(content): jewelry-cc collection page (439 mods) + repair the junk jewelry facet (#118"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T07:10:36-04:00",
+      "ref": "d3ca7a4",
+      "text": "docs(pip): Q11 pin-writer cron + apex-host patch package (operator-ready, Tier 0 paper tra"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T01:06:33-04:00",
+      "ref": "7d8736c",
+      "text": "chore: compound learnings from 2026-09-17"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T22:32:45-04:00",
+      "ref": "bde92c1",
+      "text": "chore: compound learnings from 2026-09-16"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T07:08:35-04:00",
+      "ref": "1538800",
+      "text": "funnel: daily run 2026-09-16 (#115)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T07:03:17-04:00",
+      "ref": "0e0fa15",
+      "text": "feat(rio): page-RPM baseline by page type — homepage $10.12, blog $12.97, unseen remainder"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:59:28-04:00",
+      "ref": "a460566",
+      "text": "docs(cass): re-permission day-1 batch sent (100/100, 3.0% hard bounce at T+1m, day-2 HELD "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:54:23-04:00",
+      "ref": "f6c52c5",
+      "text": "fix(content): /play/ enters the post-deploy checks, and the sidebar registry gains a compl"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:49:58-04:00",
+      "ref": "bd1d40b",
+      "text": "feat(rio): affiliate placement kill switch — mod_page + interstitial off, $0 commissions o"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T22:33:02-04:00",
+      "ref": "488456f",
+      "text": "chore: compound learnings from 2026-09-15"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:20:06-04:00",
+      "ref": "bbec8b1",
+      "text": "funnel: daily run 2026-09-15 (#109)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:16:06-04:00",
+      "ref": "11864e7",
+      "text": "feat(cass): issue #1 send verified from the mailbox (sent 09-14, 1 bounce) + counts-only s"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:12:08-04:00",
+      "ref": "a455ef6",
+      "text": "fix(pip): pinner queue flag reads inventory runway (rows ÷ observed pins/day), not \"schedu"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:08:10-04:00",
+      "ref": "99c83f8",
+      "text": "fix(content): close the slashless-href class — 61 internal 308s to 0, plus a repo-wide gua"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T07:04:22-04:00",
+      "ref": "18fd756",
+      "text": "feat(sage): wire IndexNow into the daily runner + smoke-check the ownership key (E52, Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T06:59:31-04:00",
+      "ref": "f378468",
+      "text": "feat(content): loading-screens collection page — 269 mods, best demand-per-row cluster lef"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-15T06:55:06-04:00",
+      "ref": "a6baab7",
+      "text": "fix(funnel): digest skeleton before first merge + synthesized digest fallback when Quinn r"
+    }
+  ],
+  "health": {
+    "date": "2026/09/20",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $208.00 (2.3%), RPM 17.73 (7.4%), sessions -4.7% vs same weekday, prior 4 weeks · 3-day revenue 0.6%"
+  ]
+}

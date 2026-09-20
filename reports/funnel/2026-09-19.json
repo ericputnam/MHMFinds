@@ -1,0 +1,239 @@
+{
+  "date": "2026-09-19",
+  "headline": {
+    "ownedAdds7d": 55,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 146,
+    "nonAdTarget": 200,
+    "mediavine28d": 5901.59,
+    "mediavine28dPrev": 5590.69
+  },
+  "flags": [],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-11→2026-09-17 vs 2026-09-04→2026-09-10",
+      "sessions7d": 85397,
+      "sessionsPrev7d": 91181,
+      "byChannel7d": {
+        "pinterest": 55318,
+        "bing_organic": 16042,
+        "direct": 4963,
+        "google_organic": 2759,
+        "other_search": 2622,
+        "tumblr": 1047,
+        "ai_referral": 329,
+        "other": 2090,
+        "reddit": 227
+      },
+      "byChannelPrev7d": {
+        "pinterest": 60204,
+        "bing_organic": 17310,
+        "direct": 4930,
+        "google_organic": 1944,
+        "other_search": 2921,
+        "tumblr": 1115,
+        "ai_referral": 302,
+        "other": 2230,
+        "reddit": 225
+      },
+      "aiReferral7d": 329,
+      "aiReferralPrev7d": 302,
+      "captureEvents7d": {
+        "patreon_click": 33,
+        "affiliate_click": 12,
+        "favorite": 5,
+        "newsletter_signup": 1
+      },
+      "captureUsers7d": {
+        "patreon_click": 25,
+        "affiliate_click": 12,
+        "favorite": 5,
+        "newsletter_signup": 1
+      },
+      "patreonClickUsersPerDay7d": 3.57,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 25,
+        "perDay": 3.57,
+        "window": "2026-09-11→2026-09-17"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-12": 9,
+        "2026-09-11": 6,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3
+      },
+      "notSetLanding7d": 3703
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-20→2026-09-16",
+      "clicks28d": 2360,
+      "clicksPrev28d": 2001,
+      "impressions28d": 110524
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-17",
+      "revenue7d": 1490.55,
+      "revenuePrev7d": 1592.49,
+      "rpm7d": 17.24,
+      "rpmPrev7d": 17.55,
+      "sessions7d": 86444,
+      "revenue28d": 5901.59,
+      "revenuePrev28d": 5590.69,
+      "rpm28d": 16.55,
+      "health": {
+        "date": "2026/09/19",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 54
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1672,
+      "users7d": 52,
+      "users30d": 251,
+      "subscribers": 25,
+      "subscribers7d": 3,
+      "subscribers30d": 12,
+      "subscribersBySource": {
+        "re-permission": 1,
+        "collection-page": 2,
+        "footer": 17,
+        "go-interstitial": 4,
+        "sign-in": 1
+      },
+      "favorites": 20591,
+      "favorites7d": 362,
+      "downloadClicks7d": 401,
+      "downloadClicks30d": 1296,
+      "affiliateClicks7d": 14,
+      "affiliateClicks30d": 66,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16481,
+      "collections": 1651
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 54,
+      "freeMembers": 5543,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5543,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 9,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 44,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 1,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 146
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 54,
+      "free": 5354,
+      "former": 230,
+      "grossMonthlyUsd": 148.5,
+      "paidByAmount": {
+        "$3": 44,
+        "$1": 9,
+        "$8": 1
+      },
+      "joins7d": 3,
+      "cancels7d": 0,
+      "joinsSinceAnchor": 9,
+      "joinsSinceAnchorAtPerkTier": 5,
+      "perkTierJoins7d": 2,
+      "perkTierJoinsPerDay7d": 0.29,
+      "paidAndConnected": 0,
+      "paidAndConnectedById": 0,
+      "paidAndConnectedByEmail": 0,
+      "linkedWithPatreonId": 41,
+      "paidWithUserId": 54,
+      "connectedAccounts": 41,
+      "premiumUsers": 2,
+      "anchor": "2026-09-08",
+      "window": "2026-09-12→2026-09-19"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 21,
+      "posts7d": 4,
+      "latestPost": "2026-09-19 sims-4-cardigan-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-19",
+      "lastPinCreatedAt": "2026-09-19T10:40:03.000Z",
+      "pinsCreated24h": 38,
+      "pinsCreated7d": 279,
+      "pinsSampled": 279,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 0.3,
+        "message": "last pin created 2026-09-19 10:40Z (0.3 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 273,
+      "postedTotal": 8340,
+      "unpostedBacklog": 1531,
+      "drainableBacklog": 20,
+      "strandedBacklog": 1219,
+      "inventoryRows": 312,
+      "runway": {
+        "level": "ok",
+        "inventoryRows": 312,
+        "dailyRate": 39.857142857142854,
+        "runwayDays": 7.8,
+        "message": "inventory runway ≈ 7.8 days (312 rows dated through +14d ÷ 39.9/day observed; 20 still schedulable today)"
+      }
+    }
+  }
+}
