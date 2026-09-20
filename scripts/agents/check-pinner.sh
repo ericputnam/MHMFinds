@@ -316,7 +316,7 @@ else:
     rs = f"> {horizon} days" if runway > horizon else f"≈ {runway:.1f} days"
     base = f"inventory runway {rs} ({inv} rows dated through +{horizon}d ÷ {rate_str}; {sched} still schedulable today)"
     if runway < low:
-        print(f"LOW\t{base} — below the {low:.0f}-day floor; revive stranded rows or wait for the writer plugin")
+        print(f"LOW\t{base} — below the {low:.0f}-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)")
     else:
         print(f"OK\t{base}")
 PY
@@ -338,8 +338,8 @@ PY
 
   if [[ -n "${STRANDED:-}" && "$STRANDED" -gt 0 ]]; then
     say "         $STRANDED unposted rows are dated before ${FLOOR_STR} and are unreachable by the poster"
-    say "         Re-dating a capped slice forward is a Tier 1 cadence change, not a bug fix:"
-    say "         scripts/agents/revive-stranded-pins.py (dry run by default, --apply to write)"
+    say "         Re-dating a slice forward is a Tier 2 queue change (SD-10, 2026-09-19) — package it for the operator, never --apply it:"
+    say "         scripts/agents/revive-stranded-pins.py (dry run by default; --apply only on the operator's written approval)"
   fi
   say "         $UNPOSTED_TOTAL unposted rows in the table in total"
 fi
