@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-19T11:56:35.534Z",
+  "generatedAt": "2026-09-20T10:41:49.671Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -1211,9 +1211,9 @@
     },
     {
       "date": "2026-09-18",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 208,
+      "sessions": 11728,
+      "rpm": 17.73,
       "expectedRevenue": 203.31,
       "expectedSessions": 12309,
       "nonAdMonthly": 142,
@@ -1230,6 +1230,17 @@
       "nonAdMonthly": 142,
       "ownedAdds7d": null,
       "pinterestSessions7d": null
+    },
+    {
+      "date": "2026-09-20",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 267.33,
+      "expectedSessions": 15159,
+      "nonAdMonthly": 148,
+      "ownedAdds7d": 46,
+      "pinterestSessions7d": 55376
     }
   ],
   "events": [
@@ -1407,7 +1418,7 @@
     {
       "date": "2026-09-05",
       "kind": "merge",
-      "label": "Quinn: promoted main HEAD (PRs #38/#39/#41/#40) — 09-04 rollback had paused Vercel auto-promotion",
+      "label": "Quinn: promoted main HEAD (PRs #38/#39/#41/#40) \u2014 09-04 rollback had paused Vercel auto-promotion",
       "commit": "0b80796",
       "result": "PASS"
     },
@@ -1444,7 +1455,7 @@
       "kind": "check",
       "label": "Quinn: PR #45 verify was a FALSE ALARM",
       "commit": "3c53855",
-      "result": "PASS · promoted back"
+      "result": "PASS \u00b7 promoted back"
     },
     {
       "date": "2026-09-05",
@@ -1657,7 +1668,7 @@
     {
       "date": "2026-09-10",
       "kind": "merge",
-      "label": "Pip: PR #75 pin revival applied 2026-09-10 — 140 pins re-dated (E26)",
+      "label": "Pip: PR #75 pin revival applied 2026-09-10 \u2014 140 pins re-dated (E26)",
       "commit": "cc2bd89",
       "result": "PASS"
     },
@@ -1769,7 +1780,7 @@
     {
       "date": "2026-09-12",
       "kind": "check",
-      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-12 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-12 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
       "result": "MISSED"
     },
     {
@@ -1817,7 +1828,7 @@
     {
       "date": "2026-09-13",
       "kind": "check",
-      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-13 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-13 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
       "result": "MISSED"
     },
     {
@@ -1844,7 +1855,7 @@
     {
       "date": "2026-09-14",
       "kind": "merge",
-      "label": "Quinn: PR #99 IndexNow for Bing — public key file + indexnow-submit.ts (E47, Sage)",
+      "label": "Quinn: PR #99 IndexNow for Bing \u2014 public key file + indexnow-submit.ts (E47, Sage)",
       "commit": "181ac8c",
       "result": "PASS"
     },
@@ -1865,7 +1876,7 @@
     {
       "date": "2026-09-14",
       "kind": "check",
-      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-14 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-14 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
       "result": "MISSED"
     },
     {
@@ -1920,7 +1931,7 @@
     {
       "date": "2026-09-15",
       "kind": "check",
-      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-15 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-15 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
       "result": "MISSED"
     },
     {
@@ -1950,6 +1961,79 @@
       "label": "Rio: PR #114 page-RPM baseline by page type + page-rpm-snapshot.ts (E60)",
       "commit": "0e0fa15",
       "result": "PASS"
+    },
+    {
+      "date": "2026-09-16",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-16 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-17",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-17 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-18",
+      "kind": "merge",
+      "label": "Pip: PR #116 Q11 pin-writer cron + apex-host patch package (operator-ready, T0 paper trail)",
+      "commit": "d3ca7a4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-18",
+      "kind": "merge",
+      "label": "Nova: PR #118 jewelry-cc collection page (439 mods) + jewelry facet repair",
+      "commit": "c850229",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-18",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-18 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-09-19",
+      "kind": "merge",
+      "label": "favicon PR #123",
+      "commit": "497795a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-19",
+      "kind": "merge",
+      "label": "Quinn: PR #117 Mediavine DOM guard test + Q9 before-snapshot (Rio, T0; re-validated on 09-19 main)",
+      "commit": "28814c1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-19",
+      "kind": "merge",
+      "label": "Rio: PR #119 revert(rio): E40 /go member CTA back to Connect-first, per its own rule (E65, Tier 0)",
+      "commit": "9d741bc",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-19",
+      "kind": "merge",
+      "label": "Pip: PR #121 Pinterest read-back \u2014 blog.* host is 31.7% of pin sessions (E61, T0 paper trail, no site change)",
+      "commit": "32abcaf",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-19",
+      "kind": "merge",
+      "label": "operator / PR #122 funnel dashboard",
+      "commit": "b815c42",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-19",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-19 \u2014 no ledger row 16:00\u201323:59 and no evening-* worktree",
+      "result": "MISSED"
     }
   ]
 }

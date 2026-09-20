@@ -1,0 +1,243 @@
+{
+  "date": "2026-09-20",
+  "headline": {
+    "ownedAdds7d": 46,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 148,
+    "nonAdTarget": 200,
+    "mediavine28d": 5894.82,
+    "mediavine28dPrev": 5596.44
+  },
+  "flags": [
+    "🟡 Pinner: inventory runway ≈ 0.8 days (30 rows dated through +14d ÷ 39.9/day observed; 0 still schedulable today) — below the 3-day floor; revive stranded rows or wait for the writer plugin"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-12→2026-09-18 vs 2026-09-05→2026-09-11",
+      "sessions7d": 85127,
+      "sessionsPrev7d": 90494,
+      "byChannel7d": {
+        "pinterest": 55376,
+        "bing_organic": 15759,
+        "direct": 5010,
+        "google_organic": 2677,
+        "other_search": 2599,
+        "tumblr": 1056,
+        "ai_referral": 316,
+        "other": 2109,
+        "reddit": 225
+      },
+      "byChannelPrev7d": {
+        "pinterest": 59533,
+        "bing_organic": 17188,
+        "direct": 4974,
+        "google_organic": 2034,
+        "other_search": 2921,
+        "tumblr": 1119,
+        "ai_referral": 322,
+        "other": 2185,
+        "reddit": 218
+      },
+      "aiReferral7d": 316,
+      "aiReferralPrev7d": 322,
+      "captureEvents7d": {
+        "patreon_click": 28,
+        "affiliate_click": 9,
+        "favorite": 5,
+        "newsletter_signup": 2
+      },
+      "captureUsers7d": {
+        "patreon_click": 24,
+        "affiliate_click": 9,
+        "favorite": 5,
+        "newsletter_signup": 2
+      },
+      "patreonClickUsersPerDay7d": 3.43,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 24,
+        "perDay": 3.43,
+        "window": "2026-09-12→2026-09-18"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-12": 9,
+        "2026-09-11": 6,
+        "2026-09-18": 5,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3
+      },
+      "notSetLanding7d": 3653
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-21→2026-09-17",
+      "clicks28d": 2391,
+      "clicksPrev28d": 1979,
+      "impressions28d": 107061
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-18",
+      "revenue7d": 1489.72,
+      "revenuePrev7d": 1602.85,
+      "rpm7d": 17.28,
+      "rpmPrev7d": 17.71,
+      "sessions7d": 86203,
+      "revenue28d": 5894.82,
+      "revenuePrev28d": 5596.44,
+      "rpm28d": 16.59,
+      "health": {
+        "date": "2026/09/20",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 53
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1681,
+      "users7d": 44,
+      "users30d": 252,
+      "subscribers": 25,
+      "subscribers7d": 2,
+      "subscribers30d": 12,
+      "subscribersBySource": {
+        "re-permission": 1,
+        "collection-page": 2,
+        "footer": 17,
+        "go-interstitial": 4,
+        "sign-in": 1
+      },
+      "favorites": 20591,
+      "favorites7d": 187,
+      "downloadClicks7d": 290,
+      "downloadClicks30d": 1258,
+      "affiliateClicks7d": 10,
+      "affiliateClicks30d": 65,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16511,
+      "collections": 1660
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 54,
+      "freeMembers": 5570,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5570,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 9,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 43,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 2,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 148
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 54,
+      "free": 5387,
+      "former": 230,
+      "grossMonthlyUsd": 150.5,
+      "paidByAmount": {
+        "$3": 43,
+        "$1": 9,
+        "$5": 1,
+        "$8": 1
+      },
+      "joins7d": 3,
+      "cancels7d": 0,
+      "joinsSinceAnchor": 10,
+      "joinsSinceAnchorAtPerkTier": 5,
+      "perkTierJoins7d": 1,
+      "perkTierJoinsPerDay7d": 0.14,
+      "paidAndConnected": 0,
+      "paidAndConnectedById": 0,
+      "paidAndConnectedByEmail": 0,
+      "linkedWithPatreonId": 47,
+      "paidWithUserId": 54,
+      "connectedAccounts": 47,
+      "premiumUsers": 2,
+      "anchor": "2026-09-08",
+      "window": "2026-09-13→2026-09-20"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 20,
+      "posts7d": 4,
+      "latestPost": "2026-09-19 sims-4-cardigan-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-20",
+      "lastPinCreatedAt": "2026-09-20T08:00:05.000Z",
+      "pinsCreated24h": 40,
+      "pinsCreated7d": 279,
+      "pinsSampled": 279,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 2.7,
+        "message": "last pin created 2026-09-20 08:00Z (2.7 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 307,
+      "postedTotal": 8384,
+      "unpostedBacklog": 1487,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1457,
+      "inventoryRows": 30,
+      "runway": {
+        "level": "low",
+        "inventoryRows": 30,
+        "dailyRate": 39.857142857142854,
+        "runwayDays": 0.8,
+        "message": "inventory runway ≈ 0.8 days (30 rows dated through +14d ÷ 39.9/day observed; 0 still schedulable today) — below the 3-day floor; revive stranded rows or wait for the writer plugin"
+      }
+    }
+  }
+}
