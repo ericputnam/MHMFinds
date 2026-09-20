@@ -275,6 +275,22 @@ describe('legacy/collection strategy (lib/collections.ts)', () => {
     }
   });
 
+  // Nova, 2026-09-20 (E67). The link-graph invariants this page has to satisfy
+  // (>= 2 inbound related edges, exactly 3 outbound, sources that are
+  // themselves linked) are asserted for the whole registry by
+  // `collection-link-graph.test.ts` (#120) — a scanner beats a per-page
+  // assertion, so this one deliberately checks only what is specific to the
+  // new row and cannot be scanned for: that it exists, that it sits on the
+  // facet it claims, and that it clears the Tier 0 size floor.
+  it('nails-cc is in the registry, on the nails facet, above the size floor', async () => {
+    const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
+    const nails = SIMS4_COLLECTIONS.find((c) => c.slug === 'nails-cc');
+    expect(nails, 'nails-cc is missing from the registry').toBeTruthy();
+    expect(nails!.filter.contentType).toBe('nails');
+    // autonomy.md Tier 0: a collection page must have >= 20 mods.
+    expect(nails!.expectedCount).toBeGreaterThanOrEqual(20);
+  });
+
   it('differentiated collections signal browse intent, distinct from legacy listicles', async () => {
     const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
     for (const c of SIMS4_COLLECTIONS) {

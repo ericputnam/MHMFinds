@@ -394,7 +394,13 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'EA\'s idea of goth is one black dress and the Goth family. If your sim\'s whole personality is dark eyeliner, silver jewelry, and a wardrobe with no colors in it, base-game CAS runs out of options in about ninety seconds. The community\'s alt scene, on the other hand, has been dressing goth sims properly for a decade.\n\nThis collection rounds up 150+ goth picks across the full look: black-heavy clothing from fishnets to platform boots, dramatic makeup (dark lips, heavy liner, pale skin overlays), alt hairstyles, chokers and silver jewelry, and the darker build/buy pieces — candelabras, ouija coffee tables, the works — that turn a build from "modern farmhouse" into something with actual atmosphere.\n\nGoth CC overlaps heavily with the tattoo and skin-detail categories, so if you\'re building a full alt sim, hit those collections next. Everything here is filtered to Sims 4, link-checked, and SFW.',
     filter: { themesAny: ['goth'] },
     expectedCount: 157,
-    related: ['vampire-cc', 'skin-details', 'hair-cc'],
+    // 'nails-cc' takes 'hair-cc''s slot here 2026-09-20 rather than being
+    // appended: #120 fixed outbound degree at exactly 3, so a new page is
+    // wired in by *repointing* an edge that led to a hub, never by growing an
+    // array. 'hair-cc' is one of the two 7-inbound hubs and loses nothing;
+    // 5 of the 145 nail sets carry the goth theme tag and the goth-nails
+    // article is the best-positioned page in the nail cluster (position 6.3).
+    related: ['vampire-cc', 'skin-details', 'nails-cc'],
   },
   {
     slug: 'cottagecore-cc',
@@ -509,7 +515,12 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['makeup', 'eyebrows', 'eyeliner', 'blush', 'lipstick', 'eyes'],
     },
     expectedCount: 922,
-    related: ['skin-details', 'hair-cc', 'jewelry-cc'],
+    // 'nails-cc' takes 'skin-details''s slot here 2026-09-20 — makeup is the
+    // nearest neighbour to nails in CAS, and 'skin-details' is the other
+    // 7-inbound hub, so the edge is worth more pointed at the new page. With
+    // goth-cc that gives nails-cc the two inbound links #120's graph test
+    // requires, from sources that are themselves linked.
+    related: ['nails-cc', 'hair-cc', 'jewelry-cc'],
     // Missing since this collection shipped (PR #32, 2026-09-04) — the
     // legacy article is live and does not 301 here, so the differentiated
     // pair was simply never wired up. Added 2026-09-07.
@@ -603,6 +614,62 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // vercel.json. It holds 61 impressions / 1 click at position 47.3 over
     // the 28d to 2026-09-15, so there is nothing here to cannibalise.
     blogUrl: '/sims-4-jewelry-cc/',
+  },
+  {
+    // Placement is free: `nails` appears in no other entry's `contentType` /
+    // `contentTypeIn`, so `filterSpecificity()` has nothing to tie-break and
+    // all 145 mod detail pages get a first-ever collection breadcrumb.
+    // Appended at the end.
+    slug: 'nails-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Nails CC',
+    heading: 'Sims 4 Nails CC',
+    // "Finder — Browse" is the house browse-intent signal for a differentiated
+    // pair; the legacy listicle keeps the "best nails cc" head term.
+    metaTitle: 'Sims 4 Nails CC Finder — Browse 140+ Nail Sets | MustHaveMods',
+    metaDescription:
+      'Browse 140+ Sims 4 nails CC sets in one filterable grid — stiletto, coffin, almond, french, and press-on nail packs sorted by downloads, links checked.',
+    tagline: 'Stiletto, coffin, almond, and french sets for every hand',
+    intro:
+      'Nails are the CAS slot nobody thinks about until they zoom in. The base game gives you a handful of flat polish swatches painted onto the default hand mesh — no length, no shape, no art — so the moment you install a good skin overlay and a decent hair, the hands are the thing that still looks like 2014.\n\nThis collection is every Sims 4 nail set in our catalog in one grid: 145 finds, sorted by downloads. Shape is the thing most people filter for and it is well covered here — long stiletto, coffin and ballerina, almond, square, and the shorter natural sets for sims who are not supposed to look like they just left a salon. Around a dozen sets are built specifically around an aesthetic (y2k, goth, coquette), there is a small bench of french-tip and solid-polish packs for the ones you want to be invisible, and a handful of seasonal sets — Valentine\'s, Christmas, summer — that people swap in and out through the year.\n\nThe creators who show up most are the ones who basically only make nails: LVNDRCC has the biggest single shelf here, Feyona covers the fine, realistic end, and VICCS, WisteriaSims, VELYSEA, Joliebean and frenchiesimgirl fill in the everyday CAS sets. The single most-downloaded item in the grid is a striped Hello Kitty set, which tells you roughly everything about what this category is for.\n\nTwo practical notes. Nail CC is split between sets that live in the nail-polish slot and sets that ship as a glove or ring accessory to get the length — the accessory kind will fight with bracelets and with some gloves, and the usual symptom is one of them disappearing in-game. And long nails clip through a lot of animations and hand poses; if you are shooting screenshots with a pose pack, a shorter set almost always renders cleaner than the XL claws.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the sets half the community already has installed, or scroll for the single-pack releases the big roundups never reach.',
+    filter: {
+      // 145 SFW Sims 4 mods on the `nails` facet, verified against production
+      // 2026-09-20 *after* the same-PR repair of six junk rows. Audited before
+      // ranking, per the 09-13 rule: the top 12 by downloads are 12/12 real
+      // nail sets and two 8-row mid-grid samples are 16/16; 141 of 145 titles
+      // carry a nail word (97.2%), up from 92.7% before the repair, and the
+      // four that do not were each read against their own description.
+      //
+      // Before the repair the second card on this grid was "Feet 1V Remaster",
+      // a feet body mod with 121 downloads; two villas, a pair of wedge
+      // sandals and two ring sets sat further down. All six are now on their
+      // right facet (see scripts/lib/hand-audited-content-types.ts, 09-20).
+      //
+      // Rejected the same day, with reasons, so they are not re-proposed:
+      // `gameplay-mod` + `script-mod` + `career` (511 rows, by far the biggest
+      // un-paged cluster and the biggest head term) — the top 20 by downloads
+      // includes WickedWhims, MC WooHoo, a prostitution mod, Basemental Drugs
+      // and two body sliders, and Phase 0 already dropped "Woohoo mods" from
+      // the topic list for ad-policy risk; kids/toddler/infant via
+      // `ageGroupsAny` (752 rows, and the best demand left at 1,795 GSC
+      // impressions across 22 articles) — only 45.9% of titles carry a kid
+      // word and the age tags are visibly blanket-applied ("Nike Af1" tagged
+      // infant+elder, a vampire choker tagged toddler), so it needs an
+      // ageGroups repair first; `hats` (202) at 51.5% and `workout` + `gym`
+      // (194) at 42.8% are junk-tagged the same way.
+      contentType: 'nails',
+    },
+    expectedCount: 145,
+    related: ['makeup-cc', 'jewelry-cc', 'skin-details'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best nails
+    // cc" intent, this page owns browse/filter intent. /sims-4-nails-cc/ is
+    // live (HTTP 200, no redirect, verified 2026-09-20) and appears in neither
+    // mhm_consolidated_post_map() nor vercel.json. It holds 66 impressions /
+    // 0 clicks at position 40.5 over the 28d to 2026-09-17, so there is
+    // nothing here to cannibalise. (/sims-4-cc-nails/, 72 impressions at
+    // position 36.1, is the second article in the cluster and also live.)
+    blogUrl: '/sims-4-nails-cc/',
   },
 ];
 
