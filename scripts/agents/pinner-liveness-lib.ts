@@ -232,7 +232,7 @@ export function assessRunway(input: {
       inventoryRows: inventory,
       dailyRate: rate,
       runwayDays: runway,
-      message: `${base} — below the ${lowAfter}-day floor; revive stranded rows or wait for the writer plugin`,
+      message: `${base} — below the ${lowAfter}-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)`,
     };
   }
   return { level: 'ok', inventoryRows: inventory, dailyRate: rate, runwayDays: runway, message: base };
