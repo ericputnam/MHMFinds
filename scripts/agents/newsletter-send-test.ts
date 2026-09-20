@@ -29,6 +29,7 @@ import { PrismaClient } from '@prisma/client';
 import { sendBulk, resolvePostalAddress } from '../../lib/services/bulkMailer';
 import { buildConfirmUrl } from '../../lib/services/subscribeConfirm';
 import { ISSUE_01, renderIssue } from '../../lib/services/newsletterIssue';
+import { partitionExcluded, EXCLUDED_RECIPIENT_HASHES } from '../../lib/services/sendExclusions';
 
 const SITE = 'https://musthavemods.com';
 const REPLY_TO = 'simsnews@musthavemods.com';
@@ -45,6 +46,19 @@ const LOG_PATH = 'logs/newsletter-send.log';
 const REPERMISSION_HARD_CAP = 100;
 /** Day-1 segment: engaged accounts created within this many days. */
 const REPERMISSION_ENGAGED_DAYS = 90;
+/**
+ * The segment is frozen at the moment the day-1 batch went out (the live ledger
+ * line in reports/funnel/newsletter-sends.jsonl). Both the 90-day window and the
+ * "already in waitlist" exclusion are evaluated as of this instant, so --offset N
+ * on any later day pages through the SAME ordered list day-1 was cut from.
+ * Without the anchor the window slides a day per day and every consent since
+ * drops a row out of the front of the list, shifting every index and silently
+ * skipping accounts that were never attempted. Accounts that consented AFTER the
+ * anchor are still removed from the slice (they said yes; never ask twice), and
+ * hard-bounced accounts are removed by EXCLUDED_RECIPIENT_HASHES — but both are
+ * removed from the slice, not from the list, so the paging stays aligned.
+ */
+const REPERMISSION_ANCHOR_AT = new Date('2026-09-16T10:51:19.626Z');
 
 const args = process.argv.slice(2);
 const arg = (k: string) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -81,36 +95,86 @@ async function loadRecipients(): Promise<string[]> {
   }
 }
 
+/** Counts from the last re-permission selection, for the ledger line. Never addresses. */
+let repermissionCounts: {
+  segment: number;
+  consentedSince: number;
+  excludedInSlice: number;
+  excludedInSegment: number;
+  excludedBeforeOffset: number;
+  exclusionList: number;
+} | undefined;
+
 /**
- * Re-permission day-1 segment. Deterministic order (oldest first) so --offset pages
- * without overlap across days; anyone already in `waitlist` is excluded because they
- * have consented (or, via re-permission, already said yes). Never printed.
+ * Re-permission segment, frozen at REPERMISSION_ANCHOR_AT. Deterministic order
+ * (oldest first) so --offset pages without overlap across days. Anyone in `waitlist`
+ * at the anchor was excluded from the list on day-1 and still is; anyone who joined
+ * `waitlist` since (consented, by re-permission or any other surface) and anyone on
+ * the hard-bounce exclusion list is dropped from the SLICE. Never printed.
  */
 async function loadAccounts(): Promise<string[]> {
   const prisma = directPrisma();
   try {
-    const optedIn = new Set(
-      (await prisma.waitlist.findMany({ select: { email: true } })).map((r) => r.email.trim().toLowerCase())
+    const waitlistRows = await prisma.waitlist.findMany({ select: { email: true, createdAt: true } });
+    const norm = (e: string) => e.trim().toLowerCase();
+    const optedInAtAnchor = new Set(
+      waitlistRows.filter((r) => r.createdAt < REPERMISSION_ANCHOR_AT).map((r) => norm(r.email))
     );
-    const since = new Date(Date.now() - REPERMISSION_ENGAGED_DAYS * 24 * 60 * 60 * 1000);
+    const optedInSince = new Set(
+      waitlistRows.filter((r) => r.createdAt >= REPERMISSION_ANCHOR_AT).map((r) => norm(r.email))
+    );
+    const since = new Date(REPERMISSION_ANCHOR_AT.getTime() - REPERMISSION_ENGAGED_DAYS * 24 * 60 * 60 * 1000);
     const users = await prisma.user.findMany({
-      where: { createdAt: { gte: since }, favorites: { some: {} } },
+      where: { createdAt: { gte: since, lt: REPERMISSION_ANCHOR_AT }, favorites: { some: {} } },
       select: { email: true },
       orderBy: { createdAt: 'asc' },
     });
-    const eligible = Array.from(
+    const segment = Array.from(
       new Set(
         users
-          .map((u) => u.email.trim().toLowerCase())
-          .filter((e) => e.includes('@') && !e.endsWith('@admin.local') && !optedIn.has(e))
+          .map((u) => norm(u.email))
+          .filter((e) => e.includes('@') && !e.endsWith('@admin.local') && !optedInAtAnchor.has(e))
       )
     );
     const cap = Math.min(REPERMISSION_HARD_CAP, limitArg > 0 ? Math.floor(limitArg) : REPERMISSION_HARD_CAP);
-    const list = eligible.slice(offsetArg, offsetArg + cap);
+    const slice = segment.slice(offsetArg, offsetArg + cap);
+    // Vacuity guard on the exclusion list: if none of its hashes matches anyone in the
+    // segment, the hashes are wrong (or the segment is), and the run must not pretend
+    // the dead addresses are handled.
+    const { kept: segmentKept } = partitionExcluded(segment);
+    const excludedInSegment = segment.length - segmentKept.length;
+    if (EXCLUDED_RECIPIENT_HASHES.length > 0 && excludedInSegment === 0) {
+      throw new Error(
+        `re-permission: EXCLUDED_RECIPIENT_HASHES has ${EXCLUDED_RECIPIENT_HASHES.length} entries but none ` +
+          'matches an account in the segment — refusing to run on an exclusion list that excludes nobody'
+      );
+    }
+    // How many of the matches sit before this offset, i.e. inside batches already sent.
+    // On day-2 that number must equal the whole list: every hash came from day-1's DSNs,
+    // so if the frozen segment reproduces day-1 they are all in [0, 100).
+    const beforeOffset = segment.slice(0, offsetArg);
+    const excludedBeforeOffset = beforeOffset.length - partitionExcluded(beforeOffset).kept.length;
+    const { kept: notExcluded, excluded } = partitionExcluded(slice);
+    const list = notExcluded.filter((e) => !optedInSince.has(e));
+    const consentedSince = notExcluded.length - list.length;
+    repermissionCounts = {
+      segment: segment.length,
+      consentedSince,
+      excludedInSlice: excluded.length,
+      excludedInSegment,
+      excludedBeforeOffset,
+      exclusionList: EXCLUDED_RECIPIENT_HASHES.length,
+    };
     console.log(
-      `recipients: ${list.length} of ${eligible.length} eligible accounts ` +
-        `(>=1 favourite, created <=${REPERMISSION_ENGAGED_DAYS}d, not in waitlist; offset ${offsetArg}, cap ${cap})`
+      `segment (frozen ${REPERMISSION_ANCHOR_AT.toISOString()}): ${segment.length} accounts ` +
+        `(>=1 favourite, created <=${REPERMISSION_ENGAGED_DAYS}d before the anchor, not in waitlist at the anchor)`
     );
+    console.log(
+      `exclusion list: ${EXCLUDED_RECIPIENT_HASHES.length} hashes → matched ${excludedInSegment} in the segment ` +
+        `(${excludedBeforeOffset} before offset ${offsetArg}, ${excluded.length} in this slice); ` +
+        `consented since the anchor and dropped from this slice: ${consentedSince}`
+    );
+    console.log(`recipients: ${list.length} (offset ${offsetArg}, cap ${cap}, slice ${slice.length})`);
     return list;
   } finally {
     await prisma.$disconnect();
@@ -220,6 +284,7 @@ async function main() {
     batches: r.batches,
     hourlyLimit: r.hourlyLimit,
     offset: accountsFromDb ? offsetArg : undefined,
+    ...(accountsFromDb && repermissionCounts ? { anchor: REPERMISSION_ANCHOR_AT.toISOString(), ...repermissionCounts } : {}),
     cwd: process.cwd(),
   });
   if (only !== 'repermission') {
