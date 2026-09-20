@@ -73,7 +73,20 @@ export type CollectionDefinition = {
   filter: CollectionFacetQuery;
   /** Expected floor mod count from Phase 0 Gate 0 audit */
   expectedCount: number;
-  /** Slugs of related collections for internal linking */
+  /**
+   * Slugs of related collections for internal linking — exactly three, and
+   * this is a *graph*, not a per-page list. `related` is the only topical
+   * link between collection pages (the homepage block, the `/games/[game]/`
+   * hub and the `/mods/[id]` breadcrumbs link to all of them equally), and
+   * until 2026-09-19 it was only ever maintained outbound: `female-clothes`
+   * had collected 12 of the 63 edges while `body-presets`, `witch-cc`,
+   * `loading-screens` and `jewelry-cc` had **zero** inbound links.
+   *
+   * When you add a collection or edit this array, add the new page to the
+   * `related` of a topically adjacent collection too.
+   * `__tests__/unit/collection-link-graph.test.ts` enforces the inbound side
+   * (min 2, max 8, no tail hanging off an under-linked source).
+   */
   related: string[];
   /**
    * Optional cross-link to the legacy blog article covering the same
@@ -115,7 +128,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentType: '__pregnancy_keyword__',
     },
     expectedCount: 115,
-    related: ['female-clothes', 'poses', 'skin-details'],
+    related: ['body-presets', 'poses', 'skin-details'],
     // Consolidated 2026-07-03 (legacy article 301'd here), un-redirected
     // 2026-09: Google refused this page as the canonical and indexed the
     // blog-subdomain copy of the article instead (pos 10.95, 93 clicks
@@ -144,7 +157,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 926,
     // 'furniture' was a dangling slug until 2026-09-07 (the real slug is
     // 'furniture-cc'); the renderer silently dropped it.
-    related: ['clutter', 'furniture-cc', 'female-clothes'],
+    related: ['clutter', 'furniture-cc', 'witch-cc'],
     blogUrl: '/sims-4-holiday-mods/',
   },
   {
@@ -226,7 +239,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Sims 4 ships with a handful of tattoos that haven\'t been updated since 2014. They look it. If you want ink that actually reads as a real design at CAS distance — a fine-line flower on the collarbone, a sleeve that wraps properly, a single small piece that doesn\'t pixelate when you zoom in — you need community tattoo CC.\n\nThis collection is smaller than the hair or clothing grids (about a hundred mods) because tattoo CC is a narrower niche, but it\'s one of the categories where the drop in quality between vanilla and community content is most obvious. Creators like Pralinesims, Sims3Melancholic, and remussirion have basically carried the scene for years.\n\nYou\'ll find sleeves, back pieces, small minimalist ink, and a handful of full-body sets. If you build story-heavy sims, tattoos are one of the cheapest character-building details you can add — a single well-chosen piece communicates more about a sim than half the traits panel.',
     filter: { contentType: 'tattoos' },
     expectedCount: 107,
-    related: ['skin-details', 'male-clothes', 'female-clothes'],
+    related: ['skin-details', 'jewelry-cc', 'female-clothes'],
     blogUrl: '/sims-4-tattoos/',
   },
   {
@@ -245,7 +258,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Skin details are the CAS layer most people skip and then wonder why their sims look slightly uncanny. Vanilla skin is flat. No freckles, no moles, no cheek blush that actually sits on the face, no body hair that looks like anything other than a shadow. Community skin overlays fix all of this with a few CAS clicks.\n\nWe\'ve pulled together about 275 skin detail picks: full skin overlays that replace the base texture, freckle maps, mole placement sets, nose bridge details, cheek blushes, body hair, pregnancy stretch marks, and the specialty stuff like aging details and sunspots. Pralinesims and Obscurus-Sims turn up a lot here because they\'ve been shipping realistic skin overlays for years, but there\'s a long tail of smaller skin creators doing great work on specific features.\n\nMost of these stack — you can layer a skin overlay, freckles, a blush, and a nose detail all on one sim. The trick is stopping before you over-CAS them into looking like a different art style than the hair and clothes you\'re using.',
     filter: { contentType: 'skin' },
     expectedCount: 276,
-    related: ['hair-cc', 'tattoos', 'female-clothes'],
+    related: ['hair-cc', 'tattoos', 'body-presets'],
     // NOT /sims-4-cc-skin-details/ — that article 301s here. The
     // skin-overlay article is the still-live editorial companion.
     blogUrl: '/sims-4-skin-overlay/',
@@ -279,7 +292,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentType: 'shoes',
     },
     expectedCount: 633,
-    related: ['female-clothes', 'male-clothes', 'hair-cc'],
+    related: ['y2k-cc', 'male-clothes', 'hair-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial
     // "best shoes CC" intent, this page owns browse/filter intent.
     // /sims-4-shoes-cc/ is live and does not 301 (verified 2026-09-13);
@@ -362,7 +375,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'CAS sliders will only take a sim\'s body so far. Vanilla Sims 4 bodies converge on the same two or three silhouettes no matter how long you drag, because the sliders move a handful of regions and leave the rest alone. Body presets fix this at the mesh level: one click in CAS and the whole body shape changes — hip-to-waist ratios the sliders can\'t reach, shoulders that actually vary, soft bodies that look like people instead of mannequins.\n\nThis collection pulls together 130+ body presets across the full range: curvy and plus-size presets (consistently the most-downloaded category), athletic and muscular builds, male body presets — chronically under-served in CAS content — and the subtle "slightly more realistic than vanilla" presets that you\'ll end up applying to half your saves. Presets are also the cheapest diversity tool in the game: a household where every sim shares the same body reads as generated; one where bodies actually vary reads as written.\n\nTwo tips before you download: presets stack with skin details (a body preset plus a skin overlay is the standard realism combo — see the skin details collection), and most presets are found under the body type icons in CAS, not in a catalog category, so check the creator\'s install note if you can\'t find one in-game.',
     filter: { contentType: 'body-preset' },
     expectedCount: 139,
-    related: ['skin-details', 'female-clothes', 'male-clothes'],
+    related: ['skin-details', 'pregnancy-mods', 'male-clothes'],
     // The four legacy body-preset listicles were un-redirected (2026-07
     // revert — they outrank this page) and are now DIFFERENTIATED pairs.
     blogUrl: '/sims-4-body-presets/',
@@ -381,7 +394,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'EA\'s idea of goth is one black dress and the Goth family. If your sim\'s whole personality is dark eyeliner, silver jewelry, and a wardrobe with no colors in it, base-game CAS runs out of options in about ninety seconds. The community\'s alt scene, on the other hand, has been dressing goth sims properly for a decade.\n\nThis collection rounds up 150+ goth picks across the full look: black-heavy clothing from fishnets to platform boots, dramatic makeup (dark lips, heavy liner, pale skin overlays), alt hairstyles, chokers and silver jewelry, and the darker build/buy pieces — candelabras, ouija coffee tables, the works — that turn a build from "modern farmhouse" into something with actual atmosphere.\n\nGoth CC overlaps heavily with the tattoo and skin-detail categories, so if you\'re building a full alt sim, hit those collections next. Everything here is filtered to Sims 4, link-checked, and SFW.',
     filter: { themesAny: ['goth'] },
     expectedCount: 157,
-    related: ['tattoos', 'skin-details', 'hair-cc'],
+    related: ['vampire-cc', 'skin-details', 'hair-cc'],
   },
   {
     slug: 'cottagecore-cc',
@@ -397,7 +410,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Cottage Living gave us the setting; it didn\'t give us nearly enough stuff. If your sim\'s aesthetic is linen dresses, a kitchen full of dried herbs, and a garden that looks lived-in rather than landscaped, you burn through the pack\'s catalog fast. Cottagecore is one of the biggest CC aesthetics in the community, and it shows in the depth available.\n\nThe 270+ picks here cover both halves of the aesthetic: CAS (prairie and milkmaid dresses, knit cardigans, braided hair, soft floral everything) and build/buy (farmhouse kitchens, quilted bedding, canned-goods clutter, cottage garden decor). It pairs naturally with the clutter and furniture collections — most cottagecore builds are really clutter-density projects wearing a floral apron.\n\nEverything is Sims 4 only, link-checked, and SFW. Sort by downloads for the staples, or dig into the long tail where single-set creators do some of the best cottage clutter in the community.',
     filter: { themesAny: ['cottagecore'] },
     expectedCount: 276,
-    related: ['clutter', 'furniture-cc', 'female-clothes'],
+    related: ['witch-cc', 'furniture-cc', 'female-clothes'],
   },
   {
     slug: 'y2k-cc',
@@ -413,7 +426,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Y2K came back everywhere at once — TikTok, the runways, and the Sims CC scene, where creators had been quietly making low-rise jeans and baby tees for years before the revival made them cool again. Base-game Sims 4 has essentially nothing from this era; the game skipped from generic-modern to generic-modern.\n\nThis collection pulls together 140+ Y2K picks: the fashion staples (low-rise everything, cropped baby tees, velour sets, cargo skirts, platform sandals), the accessories that sell the look (butterfly clips, tinted sunglasses, chunky rings, shoulder bags), and the hair — face-framing highlights, crimped textures, and the tiny-clips-everywhere styles that scream 2003.\n\nY2K works best layered with the female-clothes and hair collections for the full wardrobe rebuild. As always: Sims 4 only, links checked, NSFW filtered out.',
     filter: { themesAny: ['y2k'] },
     expectedCount: 147,
-    related: ['female-clothes', 'hair-cc', 'poses'],
+    related: ['loading-screens', 'hair-cc', 'makeup-cc'],
     // Un-redirected 2026-09 alongside pregnancy-mods: the legacy article
     // ranks pos 10.2 on the blog subdomain (20 clicks/28d) vs this page
     // at pos 29.8 (4 clicks). DIFFERENTIATED pair.
@@ -475,7 +488,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together nearly 600 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',
     filter: { contentType: 'poses' },
     expectedCount: 573,
-    related: ['female-clothes', 'male-clothes', 'pregnancy-mods'],
+    related: ['female-clothes', 'loading-screens', 'pregnancy-mods'],
     // NOT /sims-4-gallery-poses/ — that article 301s here. The
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
@@ -496,7 +509,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['makeup', 'eyebrows', 'eyeliner', 'blush', 'lipstick', 'eyes'],
     },
     expectedCount: 922,
-    related: ['skin-details', 'hair-cc', 'female-clothes'],
+    related: ['skin-details', 'hair-cc', 'jewelry-cc'],
     // Missing since this collection shipped (PR #32, 2026-09-04) — the
     // legacy article is live and does not 301 here, so the differentiated
     // pair was simply never wired up. Added 2026-09-07.
