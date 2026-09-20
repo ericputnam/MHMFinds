@@ -132,3 +132,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-20 07:02 | after-merge | Cass: PR #125 hashed hard-bounce exclusion + day-1-anchored re-permission segment + mailbox DSN counter (E68, Tier 0) | 4b8fffe | https://mhm-finds-dw5l-one0rkeov-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-20 07:06 | after-merge | Nova: PR #127 nails-cc collection page | 5279ea4 | https://mhm-finds-dw5l-3e9jtedm9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-20 07:10 | after-merge | Rio: PR #126 Q4 gate pre-read (E69, Tier 0) | c78936e | https://mhm-finds-dw5l-5xqcgp632-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-20 07:15 | after-merge | Nova: PR #128 playbook entry 2026-09-20 (docs) | 4211b17 | https://mhm-finds-dw5l-cdtdi4lbo-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
