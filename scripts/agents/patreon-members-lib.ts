@@ -51,6 +51,13 @@ export interface PatreonMembersSummary {
   /** paid joins since the fixed anchor, total and for the $3 perk tier */
   joinsSinceAnchor: number;
   joinsSinceAnchorAtPerkTier: number;
+  /**
+   * former patrons whose last successful charge fell on/after the anchor.
+   * Patreon charges most patrons on the 1st, so between billing runs this
+   * only sees people who joined after the anchor and left again — it is a
+   * floor on cancels, not a count, until the next 1st-of-month charge run.
+   */
+  cancelsSinceAnchor: number;
   /** paid joins at the perk tier inside the trailing window, and per day */
   perkTierJoins7d: number;
   perkTierJoinsPerDay7d: number;
@@ -138,6 +145,7 @@ export function summarizePatreonMembers(
   const joins7d = active.filter((m) => inWindow(m.pledge_relationship_start)).length;
   const cancels7d = former.filter((m) => inWindow(m.last_charge_date)).length;
   const joinedSince = active.filter((m) => sinceAnchor(m.pledge_relationship_start));
+  const cancelsSinceAnchor = former.filter((m) => sinceAnchor(m.last_charge_date)).length;
   const joinsSinceAnchorAtPerkTier = joinedSince.filter((m) => (m.currently_entitled_amount_cents ?? 0) === perk).length;
   const perkTierJoins7d = active.filter(
     (m) => inWindow(m.pledge_relationship_start) && (m.currently_entitled_amount_cents ?? 0) === perk,
@@ -173,6 +181,7 @@ export function summarizePatreonMembers(
     cancels7d,
     joinsSinceAnchor: joinedSince.length,
     joinsSinceAnchorAtPerkTier,
+    cancelsSinceAnchor,
     perkTierJoins7d,
     perkTierJoinsPerDay7d: Math.round((perkTierJoins7d / WINDOW_DAYS) * 100) / 100,
     paidAndConnected,
@@ -189,6 +198,119 @@ export function formatPaidByAmount(byAmount: Record<string, number>): string {
     .sort((a, b) => Number(a[0].slice(1)) - Number(b[0].slice(1)))
     .map(([k, v]) => `${v}×${k}`)
     .join(', ');
+}
+
+// ---------------------------------------------------------------------------
+// Who are the linked accounts? (E69, 2026-09-20)
+// ---------------------------------------------------------------------------
+
+/**
+ * Every `Account.provider='patreon'` row sorted into exactly one class by
+ * looking its Patreon user id up in the campaign's full member list (active,
+ * free and former rows all carry `relationships.user.data.id`). This is the
+ * "why is paid-and-connected 0" question: a linked account that is a *free*
+ * member took the Connect link and got nothing; one that is *not in the
+ * campaign* is a Patreon user who never followed us at all; one that is
+ * *former* was a patron once. Counts only — no id or email leaves here.
+ */
+export interface LinkedAccountClasses {
+  total: number;
+  /** linked rows with no providerAccountId — cannot be classified */
+  noId: number;
+  activePatron: number;
+  freeMember: number;
+  formerPatron: number;
+  /** `declined_patron` — a pledge whose payment failed */
+  declinedPatron: number;
+  /** id present but no member row of any status in this campaign */
+  notInCampaign: number;
+}
+
+export function classifyLinkedAccounts(
+  members: PatreonMemberAttrs[],
+  linkedAccounts: LinkedPatreonAccount[],
+): LinkedAccountClasses {
+  const statusById = new Map<string, string>();
+  for (const m of members) {
+    const id = normalizeId(m.patreonUserId);
+    if (!id) continue;
+    const status = m.patron_status ?? 'free';
+    // An id can appear once per campaign; if it somehow appears twice, an
+    // active row wins so a paying patron is never demoted by a stale row.
+    const prev = statusById.get(id);
+    if (!prev || status === 'active_patron') statusById.set(id, status);
+  }
+  const out: LinkedAccountClasses = { total: linkedAccounts.length, noId: 0, activePatron: 0, freeMember: 0, formerPatron: 0, declinedPatron: 0, notInCampaign: 0 };
+  for (const a of linkedAccounts) {
+    const id = normalizeId(a.providerAccountId);
+    if (!id) { out.noId += 1; continue; }
+    const status = statusById.get(id);
+    if (status === undefined) out.notInCampaign += 1;
+    else if (status === 'active_patron') out.activePatron += 1;
+    else if (status === 'former_patron') out.formerPatron += 1;
+    else if (status === 'declined_patron') out.declinedPatron += 1;
+    else out.freeMember += 1;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Q4 gate (operator-queue Q4, decided 2026-09-08; read 2026-09-22)
+// ---------------------------------------------------------------------------
+
+/**
+ * The rule as written on 2026-09-08, before any reading: proceed to the tier
+ * renames + $10 tier only if paid joins run at ≥ 17/month pace since the
+ * anchor AND ≥ 1/3 of paid patrons have connected Patreon on the site (id
+ * join); revert the perk copy if cancels run > 16/month pace. Constants live
+ * here so the pre-read, the read and the tests all import the same numbers.
+ */
+export const Q4_GATE = {
+  readDate: '2026-09-22',
+  anchor: E40_ANCHOR,
+  joinsPerMonthMin: 17,
+  connectedShareMin: 1 / 3,
+  cancelsPerMonthMax: 16,
+  /** mean Gregorian month, used to turn "N in D days" into a monthly pace */
+  daysPerMonth: 30.44,
+} as const;
+
+export interface Q4GateInput {
+  now: Date;
+  anchor?: string;
+  paid: number;
+  joinsSinceAnchor: number;
+  cancelsSinceAnchor: number;
+  paidAndConnectedById: number;
+}
+
+export interface Q4GateDecision {
+  daysSinceAnchor: number;
+  joinsPerMonthPace: number;
+  joinsLeg: boolean;
+  connectedShare: number;
+  connectedLeg: boolean;
+  cancelsPerMonthPace: number;
+  revertCopy: boolean;
+  decision: 'PROCEED' | 'HOLD' | 'REVERT_COPY';
+}
+
+/** Pure. `daysSinceAnchor` is floored at 1 so a same-day read never divides by zero. */
+export function q4GateDecision(i: Q4GateInput): Q4GateDecision {
+  const anchor = new Date(i.anchor ?? Q4_GATE.anchor).getTime();
+  const days = Math.max(1, Math.round(((i.now.getTime() - anchor) / 864e5) * 10) / 10);
+  const pace = (n: number) => Math.round((n / days) * Q4_GATE.daysPerMonth * 10) / 10;
+  const joinsPerMonthPace = pace(i.joinsSinceAnchor);
+  const cancelsPerMonthPace = pace(i.cancelsSinceAnchor);
+  // Compare the leg on the exact ratio; the rounded share is for printing only
+  // (18 of 54 is exactly 1/3 and must pass, 0.333 < 0.3333… would not).
+  const shareExact = i.paid > 0 ? i.paidAndConnectedById / i.paid : 0;
+  const connectedShare = Math.round(shareExact * 1000) / 1000;
+  const joinsLeg = joinsPerMonthPace >= Q4_GATE.joinsPerMonthMin;
+  const connectedLeg = i.paid > 0 && shareExact >= Q4_GATE.connectedShareMin;
+  const revertCopy = cancelsPerMonthPace > Q4_GATE.cancelsPerMonthMax;
+  const decision: Q4GateDecision['decision'] = revertCopy ? 'REVERT_COPY' : joinsLeg && connectedLeg ? 'PROCEED' : 'HOLD';
+  return { daysSinceAnchor: days, joinsPerMonthPace, joinsLeg, connectedShare, connectedLeg, cancelsPerMonthPace, revertCopy, decision };
 }
 
 // ---------------------------------------------------------------------------

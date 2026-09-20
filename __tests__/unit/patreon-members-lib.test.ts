@@ -10,12 +10,15 @@ import {
   E40_ANCHOR,
   E40_CLICK_BASELINE,
   PERK_TIER_CENTS,
+  Q4_GATE,
+  classifyLinkedAccounts,
   dateKeysInclusive,
   formatPaidByAmount,
   ga4DateKey,
   meanDailyUsers,
   normalizeEmail,
   normalizeId,
+  q4GateDecision,
   summarizePatreonMembers,
   type PatreonMemberAttrs,
 } from '../../scripts/agents/patreon-members-lib';
@@ -90,6 +93,20 @@ describe('summarizePatreonMembers', () => {
       { now: NOW },
     );
     expect(s.cancels7d).toBe(1);
+  });
+
+  it('cancelsSinceAnchor counts a former patron only when the last charge is on/after the anchor', () => {
+    const s = summarizePatreonMembers(
+      [
+        m({ patron_status: 'former_patron', last_charge_date: '2026-09-08T00:00:00Z' }), // on the anchor
+        m({ patron_status: 'former_patron', last_charge_date: '2026-09-07T23:59:59Z' }), // before
+        m({ patron_status: 'former_patron', last_charge_date: null }),
+        m({ patron_status: 'active_patron', last_charge_date: '2026-09-10T00:00:00Z' }), // active, never a cancel
+      ],
+      [],
+      { now: NOW },
+    );
+    expect(s.cancelsSinceAnchor).toBe(1);
   });
 
   it('a missing or unparseable date never counts as a join or cancel (fail closed on the perk metric)', () => {
@@ -208,6 +225,119 @@ describe('paid-and-connected (E50): Patreon user id is the key, email is the fal
     const s = summarizePatreonMembers([m({}), m({})], [{ providerAccountId: '1' }], { now: NOW });
     expect(s.paid).toBe(2);
     expect(s.paidWithUserId).toBe(0);
+  });
+});
+
+describe('classifyLinkedAccounts (E69): every linked account lands in exactly one class', () => {
+  const members = [
+    m({ patreonUserId: '1' }), // active
+    m({ patreonUserId: '2', patron_status: null }), // free
+    m({ patreonUserId: '3', patron_status: 'former_patron' }),
+    m({ patreonUserId: '4', patron_status: 'declined_patron' }),
+    m({ patreonUserId: '5', patron_status: null }), // free, never linked
+    m({ patreonUserId: null }), // active row without an id — cannot match anything
+  ];
+
+  it('classifies active / free / former / declined / not-in-campaign / no-id and the classes sum to the total', () => {
+    const c = classifyLinkedAccounts(members, [
+      { providerAccountId: '1' },
+      { providerAccountId: ' 2 ' }, // trimmed like normalizeId
+      { providerAccountId: '3' },
+      { providerAccountId: '4' },
+      { providerAccountId: '999' }, // not in campaign
+      { providerAccountId: '2' }, // a second account for the same free member still counts as an account
+      { providerAccountId: null },
+      { providerAccountId: '' },
+    ]);
+    expect(c).toEqual({ total: 8, noId: 2, activePatron: 1, freeMember: 2, formerPatron: 1, declinedPatron: 1, notInCampaign: 1 });
+    expect(c.noId + c.activePatron + c.freeMember + c.formerPatron + c.declinedPatron + c.notInCampaign).toBe(c.total);
+  });
+
+  it('an active row wins over a stale row for the same id, and an unknown status reads as free', () => {
+    const c = classifyLinkedAccounts(
+      [m({ patreonUserId: '7', patron_status: 'former_patron' }), m({ patreonUserId: '7' }), m({ patreonUserId: '8', patron_status: 'something_new' })],
+      [{ providerAccountId: '7' }, { providerAccountId: '8' }],
+    );
+    expect(c.activePatron).toBe(1);
+    expect(c.freeMember).toBe(1);
+  });
+
+  it('empty inputs are an all-zero classification', () => {
+    expect(classifyLinkedAccounts([], [])).toEqual({ total: 0, noId: 0, activePatron: 0, freeMember: 0, formerPatron: 0, declinedPatron: 0, notInCampaign: 0 });
+    expect(classifyLinkedAccounts(members, []).total).toBe(0);
+  });
+});
+
+describe('q4GateDecision: the 2026-09-08 rule, applied and never re-chosen', () => {
+  // 12 days after the anchor, like the 2026-09-20 pre-read.
+  const now = new Date('2026-09-20T00:00:00Z');
+
+  it('the constants are the rule as written in operator-queue Q4', () => {
+    expect(Q4_GATE).toMatchObject({ readDate: '2026-09-22', anchor: E40_ANCHOR, joinsPerMonthMin: 17, cancelsPerMonthMax: 16 });
+    expect(Q4_GATE.connectedShareMin).toBeCloseTo(1 / 3, 6);
+  });
+
+  it('HOLD when joins pace passes but fewer than 1/3 of paid are connected (today\'s shape: 10 joins / 12 d, 0 of 54 connected)', () => {
+    const g = q4GateDecision({ now, paid: 54, joinsSinceAnchor: 10, cancelsSinceAnchor: 0, paidAndConnectedById: 0 });
+    expect(g.daysSinceAnchor).toBe(12);
+    expect(g.joinsPerMonthPace).toBeCloseTo(25.4, 1);
+    expect(g.joinsLeg).toBe(true);
+    expect(g.connectedShare).toBe(0);
+    expect(g.connectedLeg).toBe(false);
+    expect(g.revertCopy).toBe(false);
+    expect(g.decision).toBe('HOLD');
+  });
+
+  it('HOLD when connected passes but joins pace is below 17/mo', () => {
+    const g = q4GateDecision({ now, paid: 54, joinsSinceAnchor: 6, cancelsSinceAnchor: 0, paidAndConnectedById: 20 });
+    expect(g.joinsPerMonthPace).toBeCloseTo(15.2, 1);
+    expect(g.joinsLeg).toBe(false);
+    expect(g.connectedLeg).toBe(true);
+    expect(g.decision).toBe('HOLD');
+  });
+
+  it('PROCEED only when both legs pass; exactly 1/3 connected passes', () => {
+    const g = q4GateDecision({ now, paid: 54, joinsSinceAnchor: 7, cancelsSinceAnchor: 0, paidAndConnectedById: 18 });
+    expect(g.joinsPerMonthPace).toBeCloseTo(17.8, 1);
+    expect(g.connectedShare).toBeCloseTo(0.333, 3);
+    expect(g.decision).toBe('PROCEED');
+  });
+
+  it('REVERT_COPY overrides PROCEED when cancels run above 16/mo pace', () => {
+    const g = q4GateDecision({ now, paid: 54, joinsSinceAnchor: 10, cancelsSinceAnchor: 7, paidAndConnectedById: 30 });
+    expect(g.cancelsPerMonthPace).toBeCloseTo(17.8, 1);
+    expect(g.revertCopy).toBe(true);
+    expect(g.decision).toBe('REVERT_COPY');
+  });
+
+  it('a same-day read floors days at 1 and zero paid patrons never passes the connected leg', () => {
+    const g = q4GateDecision({ now: new Date(E40_ANCHOR), paid: 0, joinsSinceAnchor: 0, cancelsSinceAnchor: 0, paidAndConnectedById: 0 });
+    expect(g.daysSinceAnchor).toBe(1);
+    expect(g.connectedShare).toBe(0);
+    expect(g.connectedLeg).toBe(false);
+    expect(g.decision).toBe('HOLD');
+  });
+});
+
+describe('the Q4 pre-read entrypoint is wired to the lib and prints counts only', () => {
+  const src = readFileSync(join(__dirname, '..', '..', 'scripts', 'agents', 'patreon-q4-gate-preread.ts'), 'utf8');
+
+  it('uses the shared lib for every number and the id join (include=user)', () => {
+    expect(src).toMatch(/summarizePatreonMembers\(/);
+    expect(src).toMatch(/classifyLinkedAccounts\(/);
+    expect(src).toMatch(/q4GateDecision\(/);
+    expect(src).toMatch(/members\?[^`]*include=user/);
+    expect(src).toMatch(/relationships\?\.user\?\.data\?\.id/);
+    expect(src).toMatch(/Q4_GATE\.readDate/);
+  });
+
+  it('never interpolates an email, a Patreon id or a raw member row into output, and redacts errors', () => {
+    expect(src).not.toMatch(/\$\{[^}]*\bemail\b[^}]*\}/i);
+    expect(src).not.toMatch(/\$\{[^}]*providerAccountId[^}]*\}/);
+    expect(src).not.toMatch(/\$\{[^}]*patreonUserId[^}]*\}/);
+    expect(src).not.toMatch(/JSON\.stringify\((members|linked|rows)\b/);
+    expect(src).toMatch(/redactError\(/);
+    expect(src).toMatch(/returned 0 rows — refusing to write/); // vacuity guard
   });
 });
 
