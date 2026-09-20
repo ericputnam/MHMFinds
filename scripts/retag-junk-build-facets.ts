@@ -53,6 +53,7 @@
  *   npx tsx scripts/retag-junk-build-facets.ts                  # dry run
  *   npx tsx scripts/retag-junk-build-facets.ts --apply
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=lighting --limit=50
+ *   npx tsx scripts/retag-junk-build-facets.ts --facets=nails --ids=id1,id2   # only those rows
  */
 
 // CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
@@ -88,10 +89,19 @@ function parseArgs() {
   const verbose = argv.includes('--verbose');
   const facetsArg = argv.find(a => a.startsWith('--facets='));
   const limitArg = argv.find(a => a.startsWith('--limit='));
+  const idsArg = argv.find(a => a.startsWith('--ids='));
   const facets = facetsArg ? facetsArg.slice('--facets='.length).split(',').filter(Boolean) : DEFAULT_FACETS;
   const parsedLimit = limitArg ? Number.parseInt(limitArg.slice('--limit='.length), 10) : MAX_ROWS;
   const limit = Number.isFinite(parsedLimit) ? Math.min(Math.max(parsedLimit, 0), MAX_ROWS) : MAX_ROWS;
-  return { apply, verbose, facets, limit };
+  // `--ids=` narrows the run to specific rows. A facet-wide re-tag is the
+  // right tool when the detector is wrong about a whole *class* (lighting,
+  // curtains, jewelry); it is the wrong tool when a handful of individual
+  // rows are wrong for a handful of different reasons, because every other
+  // row in the facet is then re-decided by title alone for no reason. The
+  // facet filter still applies on top of this, so an id in another facet is
+  // ignored rather than rewritten.
+  const ids = idsArg ? idsArg.slice('--ids='.length).split(',').map(s => s.trim()).filter(Boolean) : null;
+  return { apply, verbose, facets, limit, ids };
 }
 
 /** Decide the new content type for one row. Exported shape kept simple for testing. */
@@ -110,15 +120,16 @@ function decide(row: Row): Change {
 }
 
 async function main() {
-  const { apply, verbose, facets, limit } = parseArgs();
+  const { apply, verbose, facets, limit, ids } = parseArgs();
 
   console.log('='.repeat(72));
   console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}`);
   console.log(`Facets: ${facets.join(', ')} · row cap: ${limit}`);
+  if (ids) console.log(`Restricted to ${ids.length} id(s): ${ids.join(', ')}`);
   console.log('='.repeat(72));
 
   const rows: Row[] = await prisma.mod.findMany({
-    where: { contentType: { in: facets } },
+    where: { contentType: { in: facets }, ...(ids ? { id: { in: ids } } : {}) },
     select: { id: true, title: true, contentType: true, downloadCount: true },
     orderBy: { downloadCount: 'desc' },
     take: limit,

@@ -73,6 +73,43 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmohiywpn000foxrbnyrlkt3z: { contentType: 'jewelry', why: 'Elara Petite Set — desc: "a delicate bracelet… tiny star-like charms" (source: sims-4-bracelet-cc)' },
   // Not jewelry at all, and NULL would be a worse answer than the right facet.
   cmsmclvgy00ttoxeutfy4452i: { contentType: 'gameplay-mod', why: 'Law and Disorder is a Lumpinou crime-and-justice gameplay mod (source: sims-4-police-mods)' },
+
+  // ── Audited 2026-09-20 (Nova, E67) while clearing the six junk rows out of
+  //    the `nails` facet ahead of the nails-cc collection page. 151 rows,
+  //    140 of them carrying a nail word in the title (92.7%); every one of
+  //    the 11 that do not was read against its own description.
+  //
+  //    NOT fixed at the detector level, deliberately: the six wrong rows are
+  //    six different rules winning on six different words, not one class bug.
+  //    A facet-wide `--facets=nails` re-tag was dry-run first and rejected —
+  //    it proposed 21 changes, 15 of them wrong, because rule priority beats
+  //    the literal word "nails" in the title ("S-Club Nails Art Accessories"
+  //    -> accessories, "Nails N1 - Solid + Chipped Overlay" -> skin, "Sims 4
+  //    Toenail Recolors in 7 Palettes" -> makeup, "Sponge Bob Summer Set" ->
+  //    hair on "bob"). Raising the nails rule's priority is a whole-catalog
+  //    change and gets its own PR with its own before/after diff.
+  //
+  //    Keyword candidates measured against the whole catalog and REJECTED so
+  //    nobody re-proposes them: `claw` matches 12 titles and only 4 are nail
+  //    sets (3 jewelry — Witch Claw Ring, Honey Claw Earrings — 3 hair
+  //    — Kayla Claw Clip, Wolverine's Claw Fade — 1 pose pack, 1 gameplay
+  //    mod). `pedicure` is clean (2 of 2) but is worth 2 rows, both of which
+  //    are already tagged `nails`.
+  //
+  //    The five `nails` entries below are no-ops today — they exist so that a
+  //    future facet-wide run cannot clear a real nail set whose title happens
+  //    to name no nail (the exact failure mode PR #79 hit on "Green Lantern").
+  cmim8t9ug006soxy8n3xl4lzi: { contentType: 'body-preset', why: 'Feet 1V Remaster — desc: "another feet body mod… this preset pack"; 121 downloads, it was the 2nd card on the nails grid' },
+  cmim9sgo9004pox56w8vh1i9u: { contentType: 'shoes', why: 'Sims 4 Wedge Sandals are shoes (detector agrees on the title: "sandals")' },
+  cmijpe0nl010doxc83xqarcd0: { contentType: 'lot', why: 'Mediterranean Sunrise — desc: "a four-story villa… rustic stone exteriors"; title alone gives no facet' },
+  cmijpewy3010soxc8wgaq5w7t: { contentType: 'lot', why: 'E&R Gilmore\'s Villa — desc: "a grand traditional villa… two-story home"' },
+  cmil1j9cx00exoxeeta6tj96x: { contentType: 'jewelry', why: 'Bruna Ring Set — desc: "a stunning collection of sleek, gold-toned rings"' },
+  cmil1lba500g1oxeelar7nglh: { contentType: 'jewelry', why: 'WM Rings 202001 — desc: "a sparkling ring for your engagement or wedding"' },
+  cmttzglfn000loxfeho9mpzqr: { contentType: 'nails', why: 'Black Tips in 5 Shapes — desc: "a dark twist on classic French tips"; title names no nail' },
+  cmmvaq23l0078oxzgntho5ivo: { contentType: 'nails', why: 'Brina B Set — desc: "a bold, ultra-feminine nail set… long coffin"' },
+  cmikaak6d00knoxk737aiohf7: { contentType: 'nails', why: 'Sponge Bob Summer Set — desc: "the extra-long ballerina" nails; the detector reads "bob" as hair' },
+  cmmvaq1da0072oxzgzieaj6cx: { contentType: 'nails', why: 'Ashley Set — desc: "a fierce XL nail collection… the extra-long claws"' },
+  cmim9r2rz0025ox56q059m13i: { contentType: 'nails', why: 'Sims 4 Default Pedicure — desc: "a gorgeous toenail polish set"' },
 };
 
 /**
