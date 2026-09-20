@@ -1320,6 +1320,110 @@ This section is automatically updated by the nightly compound automation system.
 
 ---
 
+## 2026-09-17 — the compound loop ate itself
+
+- **A file auto-loaded into every agent invocation is a per-call tax, and an automation that
+  appends to it nightly is a compounding one.** `CLAUDE.md` grew 126 KB → 206 KB between 09-11 and
+  09-16 (~+13 KB/day, 85% of it the Compound Learnings section). On 2026-09-17 at 06:42 the funnel
+  runner launched Quinn; it died 2 m 47 s later having done nothing (the 09-16 run took 27 m 30 s):
+  `Prompt is too long · automatic compaction failed: API Error: Fable 5.1's safeguards flagged this message`.
+  Zero PRs, zero merges, zero ledger rows.
+- **The daily preflight was already measuring the problem and nobody was reading it.**
+  `claude_preflight()` sends the literal prompt `"Reply with exactly: ok"` with no tools and
+  `--strict-mcp-config`, and writes `logs/funnel-preflight-<date>.json`. Its
+  `cache_creation_input_tokens` is therefore a pure measurement of *baseline context* — and it
+  reads 74,404 → 81,828 → 86,298 → **91,391** on 09-14…09-17. Those day-over-day deltas track
+  CLAUDE.md's byte growth at a near-constant **2.44 / 2.68 / 2.65 bytes per token** across three
+  independent pairs, i.e. essentially *all* of the daily baseline growth is this file.
+  Extrapolating at 2.59 B/token, CLAUDE.md alone was **≈79k of the 91k-token baseline (87%)**,
+  leaving ~12k for the CLI's own system prompt and tool schemas. **A cheap fixed-prompt preflight
+  that reports its token usage is a free size gauge for everything auto-loaded into the session —
+  thresholding it is one `grep` away and would have flagged this a week out.**
+- **Then the day's real prompt lands on top of that.** `funnel-daily-prompt.md` is only 8 KB, but
+  it *instructs Quinn to read* 12 files: `experiments.md` (62,143 B), `operator-queue.md` (31,270),
+  `changelog.md` (26,615), `playbooks/quinn.md` (20,107), `ideas-inbox.md` (15,311), the two agent
+  charters, the scoreboard and guardrail — **219,985 B ≈ 55–63k tokens**. 91k baseline + ~58k
+  reading list ≈ **150k of a 200k window committed before the first unit of work**, with five
+  sub-agents still to spawn and stream back. `experiments.md` has the same disease as CLAUDE.md:
+  1,034 B on 09-02 → 62,143 B on 09-16, append-only, no pruning rule anywhere. **Count the size of
+  what a prompt tells an agent to read, not the size of the prompt.**
+- **The preflight cannot catch this class, by construction — it is not a missing grep pattern.**
+  `preflight_diagnosis()` enumerates exactly two classes, `CLI_TOO_OLD` and `AUTH`, and everything
+  else is `OTHER`. But on 09-17 it never ran: the preflight *passed* (`is_error:false`), because a
+  5-word single-turn probe with no tools cannot exercise a failure that arises from an accumulating
+  multi-turn conversation being compacted. The real Quinn invocation has **no diagnosis step at
+  all** — its entire failure handling is `log "Quinn exited non-zero (see logs)."`. Fifth entry in
+  the standing "enumerate your failure classes" pattern, with a twist: here the rich diagnosis
+  machinery exists but is wired only to the trivial check, not to the call that does the work.
+- **The runner exits 0, so the scheduler saw a successful run.** No `exit` propagates from the
+  Quinn branch; no incident file is written (that path belongs to `deploy-verify.sh`); no ledger
+  row is written (`grep 09-17 reports/funnel/changelog.md` → 0 hits); there is no notification of
+  any kind. The only evidence of a dead day is prose inside a digest nobody is paged to read.
+  **A wrapper that catches a failure and keeps going must still fail its own exit code, or the
+  outer scheduler learns nothing.**
+- **The synthesized-digest fallback (PR #103) paid for itself on its first real failure — and
+  misattributed the cause.** It correctly rejected Quinn's output ("1 non-empty lines, sections
+  missing"), built a complete five-section digest from scoreboard + guardrail + ledger, and quoted
+  the error verbatim. But its hardcoded banner reads *"usually --max-turns ran out after the last
+  merge"* — the 09-14 hypothesis — when this was a hard failure at launch with 0 merges. **A
+  fallback that names one cause will confidently name the wrong one**; state the observed symptom
+  and let the quoted line speak. Note also the error is two things stacked — compaction failure
+  *and* a safety-classifier flag carrying Anthropic's own "this sometimes happens with safe, normal
+  conversations" caveat — so a diagnosis that greps for only one of them mislabels it.
+- **Everything except the agent worked, which is what makes this expensive.** Steps 0a–0e all
+  completed: 5×`npm ci`, catalog ingest (0 of 674 posts new), IndexNow **live, 50 URLs, HTTP 200**,
+  the operator-did probe (`env=12/13`, still missing `NEXT_PUBLIC_SITE_URL`), the 09-16 evening
+  MISSED row, the scoreboard, and a green circuit breaker (revenue $173.24 −5.8%, RPM 15.32 +1.4%).
+  Only the step that opens the PR died — so the day's entire paper trail exists **only as untracked
+  files in the operator tree**, on a branch that does not track `reports/funnel/` at all. One
+  `git clean -fd` erases it.
+- **Durability has to be a property of the step that produces an artifact, not of a later step.**
+  Tracing what survived the ephemeral worktree's `trap cleanup EXIT`: the scoreboard, guardrail and
+  digest survived because the runner `cp`s them to the operator tree unconditionally, and the
+  MISSED ledger row survived because the changelog merge runs regardless of Quinn's exit status.
+  What is **gone** is `operator-did-2026-09-17.{json,md}` — the probe writes to a *relative*
+  `reports/funnel/` resolved against the worktree, and it is the one artifact class with **no
+  `cp`-back line in the runner**; on healthy days it reaches git only because Quinn's PR happens to
+  carry it. Its env-var and Patreon-tier diffs are unrecoverable; only a one-line stdout summary
+  survived. Quinn's own `quinn-2026-09-17.out` transcript is gone the same way, which is why the
+  exact triggering turn cannot be reconstructed.
+- **The daily run is the sole executor for everything with a date on it, so one dead run silently
+  defers all of it.** Four experiment gates went unread because their read-on dates were 09-12
+  through 09-17 and grading happens inside the run (E14 pinner liveness, E15 token manager, E58
+  `/play` checks, and — with some irony — E35, the operator-did probe, whose own grading day *was*
+  2026-09-17). Worse, the operator's chat instruction that day ("approve all #2 items") was written
+  into `operator-queue.md` in a side worktree and is still sitting there as an **uncommitted,
+  unstaged diff** — no commit, no branch on the remote, no PR. **Human input captured only as a
+  working-tree edit in a worktree is indistinguishable from work never done**; capture it with a
+  commit at the moment it arrives, not at the end of a pipeline that can die. Same class as the
+  09-10 finding that a 24h veto whose only executor is a job that can fail to run is a promise the
+  system cannot keep.
+- **A task loop that reads a status file cannot tell "all done" from "never started".**
+  `scripts/compound/loop.sh` selects tasks where `status == "pending"`; finding none it logs
+  `All tasks complete! Summary: 20 completed, 0 pending, 0 blocked` and exits **successfully in 0
+  seconds**. `scripts/compound/prd.json` is dated **May 1** with 20 tasks all `completed`, from a
+  finished cleanup job ("Delete orphaned app/privacy/page.tsx") — the PRD step's claim *"Wrote
+  scripts/compound/prd.json — 21 atomic tasks"* never landed. This has run every night for at least
+  **9 consecutive nights**: `origin` carries 9 orphan `compound/*` branches dated 09-08…09-16 with
+  an identical slug, each pushed with no commits and each failing `pull request create failed: No
+  commits between main and compound/…`. The falsifiable signal was in the log the whole time — the
+  PRD said 21 tasks, the summary said 20. **Seed the work list in the same run that consumes it,
+  and treat an empty queue as `could-not-run` (exit 2), never success.**
+- **Two nightly automations edit `CLAUDE.md` and push to `main` independently** —
+  `scripts/daily-compound-review.sh` and `scripts/compound/auto-compound.sh` — and were observed
+  running concurrently on 09-17. Only the second one's no-op has kept them from colliding.
+- **The evening `mhm-guardrail-evening` check has now written no `check` row since 2026-09-04
+  (13 days).** Its task definition is correct and current, so this is a launch failure, not a config
+  bug; step 0e's MISSED detector fires correctly every morning. Detection shipping is not the
+  monitor working — this needs the operator to confirm the task is enabled at 18:30 with model Auto.
+- **Duplicated log lines are a real diagnostic tax**: the IndexNow and catalog-ingest summaries each
+  appear twice in `funnel-daily.log` because the script both `console.log`s (captured by the shell
+  redirect) and `appendFileSync`s to its own log, which the runner then `tail`s into the same file;
+  every line in `auto-compound.log` is doubled the same way. One POST, two identical lines — which
+  makes "did this run twice?" unanswerable from the logs.
+
+---
+
 ## 2026-09-18 — content-type facet repair, and the Pinterest apex-host package
 
 ### Facet repair (`jewelry`, PR #118)
@@ -1398,3 +1502,113 @@ This section is automatically updated by the nightly compound automation system.
 *Last compound review: 2026-09-18*
 
 ---
+
+## 2026-09-19 — the funnel dashboard, the E40 revert, and the ledger's real defect
+
+Seven PRs merged (#116–#123). Detail behind the rules distilled into `CLAUDE.md`.
+
+### The ledger defect, located (`deploy-verify.sh:157-166`)
+
+`ledger()` iterates `"$ROOT/reports/funnel"`, `"${FUNNEL_PRIMARY_WT:-}/reports/funnel"` and
+`"$OPERATOR_DIR/reports/funnel"`, creating the table header if absent and `printf`-appending one
+row to each. There is no `git add`, `commit` or `push` anywhere in `deploy-verify.sh` or in
+`run-funnel-daily.sh` (which only merges the file back to `PROJECT_DIR` at line 359-361). The
+file's own header says rows are "Appended automatically by `scripts/agents/deploy-verify.sh` on
+every production deploy" — true, and irrelevant, because the append lands in a working tree.
+
+Evidence on 09-19: `changelog.md` runs `2026-09-16 07:03` → `2026-09-19 08:12`. The single 09-19
+row (#123, `497795a`) arrived via a *hand-written follow-up commit* `1291bb7`
+("docs(funnel): ledger row"), not via the automation. #116, #117, #118, #119, #121, #122 have no
+row at all. Three consecutive days of loss in the same artifact class:
+
+| date | artifact lost | why |
+|---|---|---|
+| 09-17 | `operator-did-2026-09-17.{json,md}` | written to a relative path in the ephemeral worktree, no `cp`-back line |
+| 09-18 | `ce7c111` (operator's "approve all #2 items") | committed to a branch, never PR'd |
+| 09-19 | six ledger rows | appended to working trees, never committed |
+
+`ce7c111` was cherry-picked on 09-19 to `65e1756` on `funnel/quinn/daily-2026-09-19`.
+`git merge-base --is-ancestor` returns 1 for **both**. `main`'s `operator-queue.md` still shows
+the un-annotated `Reply:` lines for Q9/Q10/Q11.
+
+### `/admin/funnel` dashboard (#122, `b815c42`)
+
+- `lib/funnel/dashboardMath.ts` is deliberately dependency-free and side-effect-free so the page
+  and `__tests__/unit/funnel-dashboard-math.test.ts` (24 tests) import the same functions; the
+  page-render test only has to mock `fetch`.
+- `computeRolling28d` returns `null` for the first 27 days and for any window containing a null
+  day (`hasGap`); `latestFinalizedRolling28d` walks backward past trailing unfinalized days. All
+  three behaviours are tested.
+- `next.config.js:12-22` adds `experimental.outputFileTracingIncludes:
+  { '/api/admin/funnel/history': ['./reports/funnel/history.json'] }`. Under `output: 'standalone'`
+  a file read through `fs` rather than `import` is not traced into the bundle, so without this the
+  route 404s on Vercel only. `app/api/admin/funnel/history/route.ts` is currently the *only*
+  `fs`-reading route under `app/`, so the class is complete as of today.
+- Admin auth is correct: `getServerSession(authOptions)` + `!session?.user?.isAdmin` → 401, plus
+  `export const dynamic = 'force-dynamic'`.
+- Gap worth remembering: `gradeVerdict`'s divide-by-zero guards
+  (`expectedRevenue28d > 0 ? … : 0`) have no test that drives `expected` to 0 — defensive code
+  with no regression coverage.
+- `targets.json`, `charter.md` and `gradeVerdict` all encode the same AND (both revenue and
+  sessions ≥ 97% for green) in matching language. Operator's amendment: "A week where RPM rises
+  and sessions fall is not a win."
+
+### Mediavine DOM guard (#117, `28814c1`)
+
+Section 6 of `__tests__/unit/sidebar-sticky-health.test.ts`. Walks `app/` and `components/`
+recursively, strips comments, asserts `files.length >= 50` **and** that the four known
+`.mv-ads`-owning files (`ModDetailClient.tsx`, `GoClient.tsx`, `PlayClient.tsx`, `ModGrid.tsx`)
+are all still in the scanned set — a vacuity guard that catches the scanner silently narrowing.
+Origin: Mediavine Senior Support asked on 2026-09-01 that the `/go` Universal Player relocation
+(a `MutationObserver` that `appendChild`'ed `.mv-outstream-container` into our slot) and the
+8-second "hide the empty ad box" timer both be removed. PR #18 removed them and left a comment;
+PR #17, opened 12 days earlier, had already ported the same pattern to `/mods/[id]`.
+
+### E40 revert (#119, `9d741bc`)
+
+Kill rule, written at merge time on 09-13 (`experiments.md:102`): *"revert if paid-and-connected
+still 0 AND joins < 8 AND patreon_click users/day < 50% of 8.75."* The 09-19 read:
+paid-and-connected 0 of 41 linked; perk-tier joins 09-13→09-19 = 1; `patreon_click` 3.57/day
+(25/7) vs the 4.375 threshold. All three legs tripped. Post-merge the CTA drew 2.5 users/day vs
+8.8 before — leading with a checkout link cut engagement ~70% and produced no joins.
+`membership.test.ts` went 22 → 24 tests, the E40 block replaced by an E65 block pinning
+Connect-first ordering, the `PATREON_PAGE_URL` href, both GA4 source names, `useState(10)`, and a
+single empty `aside#secondary` *after stripping comments* — the CRITICAL first-paint comment
+quotes the tag.
+
+Fragility inherited from the suite, worth not copying further: the ordering assertion
+`src.indexOf('onClick={handleConnectPatreon}') < src.indexOf('className="mv-ads')` proves textual
+order in the source, not DOM sibling-hood.
+
+### Pinterest read-back (#121, `32abcaf`)
+
+- Apex −10.2% WoW, `blog.*` +1.8%; `blog.*` is 31.7% of pin sessions. The channel aggregate hid
+  that 100% of the decline sat on one host. Matched-path comparison (the 10 paths live on both
+  hosts) isolates host from page mix: `blog.*` worse on 10/10, −19.5% weighted.
+- `revive-stranded-pins.py` selects the 600 newest stranded rows and round-robins 14/day. Dry run
+  (196 rows, 22 destinations) joined to 7-day Pinterest sessions: the top-3 allocated
+  destinations (63 pins, 32% of the slice) earned 69 sessions (2.8%); the two best
+  (`/sims-4-wedges-cc/` 773, `/sims-4-urban-tattoos/` 586 — 55% of sessions) got 28 pins (14%).
+  Decision: select by observed sessions per destination, drop 0-session destinations, prefer
+  ≥50/7d; keep the 1-pin-per-destination-per-day and per-board anti-spam caps.
+- The `(not set)` landing-page block (3.9% of Pinterest sessions) shows 0.0 pageviews/session; a
+  prior read had called it real traffic.
+
+### Favicon (#123, `497795a`)
+
+Root cause was plain absence: no `app/favicon.ico` / `app/icon.png` / `app/apple-icon.png`, no
+`metadata.manifest`, and `public/site.webmanifest` had `"icons": []`. Not a middleware/proxy bug —
+`middleware.ts:65` skips first segments containing a dot and the matcher at line 332 excludes
+`favicon\.ico`. One line added to `app/layout.tsx`: `manifest: '/site.webmanifest'`. Manifest now
+carries 192×192 and 512×512 PNGs, `purpose: "any"`. Zero build-time signal either way.
+
+### Housekeeping
+
+- `origin` carries 19 `compound/*` branches; 16 are 0 commits ahead of `main` (09-02→09-16 plus
+  09-18, one per night, none on 09-17 when the run died). Three others carry real unmerged work:
+  `clean-up-dead-code-and-unused-imports…20260427`, `compound-learnings-20260904`,
+  `learnings-20260902`.
+- `logs/` is gitignored, so the `funnel-preflight-*.json` token gauge described in the 09-17 entry
+  cannot be read from a worktree — the measurement that would catch context bloat early is itself
+  ephemeral.
+- `experiments.md` growth has essentially stopped: 62,143 B (09-16) → 62,724 B (09-19).

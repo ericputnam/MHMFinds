@@ -705,8 +705,9 @@ Updated by the nightly compound automation (`scripts/daily-compound-review.sh`).
 
 > **📁 The full historical log lives in [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md).**
 > On 2026-09-17 this section was 172 KB of a 206 KB `CLAUDE.md` and was breaking the funnel
-> agents before they could start (see "The compound loop ate itself" below). All 292 historical
-> entries were moved there **verbatim** — nothing was deleted. Read the archive when you touch
+> agents before they could start (see "2026-09-17 — the compound loop ate itself" in the archive).
+> All 292 historical entries were moved there **verbatim** — nothing was deleted, and dated
+> entries continue to rotate out of this file as they age. Read the archive when you touch
 > the subsystem it covers (Mediavine/ads, Pinterest queue, newsletter/SMTP, Patreon, the
 > content-type detector, collection pages, the funnel runner). What stayed here are the rules
 > that apply to *every* change.
@@ -732,6 +733,12 @@ run died with `Prompt is too long`.
   while `forgot-password` and `set-password` were already broken the same way. Prefer a scanner
   that walks the filesystem/registry over a list you maintain by hand, and give it a **vacuity
   guard** (assert it found >N items) so it cannot pass by finding nothing.
+- **A `// Do NOT re-add` comment is not a gate — encode the removal as a test in the same PR.**
+  A comment only protects the file it is written in, and it cannot reach a PR that was opened
+  *before* the removal merged. PR #18 removed the Mediavine player relocation and the 8-second
+  ad-hiding timer from `GoClient.tsx` and left exactly such a comment; PR #17 — opened 12 days
+  earlier — had already ported the identical pattern to `/mods/[id]`, stayed green in the suite,
+  and was approved for merge on 09-18 with no signal. Prose loses races; a scanner does not.
 - **Strip comments before a source-level guard test asserts anything.** Comments in this repo
   deliberately quote the bad patterns they warn about, so a naive `indexOf` matches the
   documentation instead of the code.
@@ -750,6 +757,19 @@ run died with `Prompt is too long`.
 - **Print the decision rule before you take the reading.** A threshold chosen after seeing the
   printout is not a pre-committed gate. Guardrails on a must-not-fall metric are **one-sided**
   (≥95% of baseline), never a symmetric ±band — a +13.8% RPM result once flagged as a breach.
+- **Segment a channel by serving host before concluding the channel is declining.** This site
+  serves the same content on the apex and on `blog.*`, so a channel total sums two hosts and can
+  hide that all of the movement sits on one: Pinterest read −10.2% WoW in aggregate while `blog.*`
+  (31.7% of pin sessions) was *up* 1.8% and the entire decline was on the apex. When comparing two
+  duplicate-content hosts, restrict to **paths that exist on both** and compare per-path, or page
+  mix confounds the host effect.
+- **Rank a scarce repeatable action by the outcome you want to move, never by input recency.**
+  An allocator that takes "the N newest rows" is blind to earning power and can be anti-correlated
+  with value by construction: the three destinations getting the most revival pins (32% of the
+  slice) earned 2.8% of its sessions, while the two best (55% of sessions) got 14% of the pins.
+  Prove recency and value correlate before letting recency stand in for value.
+- **A session with zero `page_view` events is not traffic**, whatever the engagement-rate field
+  says — audit for zero-pageview slices before quoting a channel's "real traffic" share.
 - **Verify what a logged-out visitor is served, not what the pipeline says about itself.** A check
   that only asks the deploy pipeline about the deploy pipeline stays green through a full outage.
   Confirm a runner change actually executed by grepping its log for a string unique to the new
@@ -759,6 +779,19 @@ run died with `Prompt is too long`.
   follow the 308; RFC 8058 one-click POSTs do not.
 - **Any new top-level `app/` directory needs a `NEXTJS_PREFIXES` entry in the same PR**, or
   middleware proxies it to WordPress and the visitor gets a 404. Invisible to `next build`.
+  Paths whose first segment contains a dot are exempt by construction (`middleware.ts:65` skips
+  them and the matcher excludes `favicon.ico`), so icon/manifest/static files need no entry.
+- **`output: 'standalone'` only ships files it has traced, and it cannot see an `fs` read.** Any
+  route that reads a repo-committed file via `fs.readFileSync(process.cwd() + …)` instead of
+  `import` needs a matching `experimental.outputFileTracingIncludes` entry in `next.config.js`
+  (see `/api/admin/funnel/history` → `./reports/funnel/history.json`). Without it the route works
+  in `npm run dev`, passes `next build`, and then 404s **only in production**. Read such files at
+  request time, not import time, so a not-yet-generated file is a clean runtime 404 rather than a
+  build failure.
+- **App Router auto-links `app/favicon.ico`, `app/icon.png` and `app/apple-icon.png` from file
+  presence alone, but `public/site.webmanifest` is never auto-linked** — it needs an explicit
+  `metadata.manifest` in `app/layout.tsx`. Missing icons emit zero build-time signal; Google
+  resolves one favicon per hostname from the site root, so the blog subdomain's icon never counts.
 - **Next.js only inlines `NEXT_PUBLIC_*` when the literal `process.env.NEXT_PUBLIC_X` expression is
   physically in the source.** A computed key or a helper defaulting to `process.env` evaluates
   `undefined` in the browser while every server-side check passes.
@@ -778,6 +811,14 @@ run died with `Prompt is too long`.
   the loading state resolves *and* in the error state. Mediavine scans the DOM once. Never call
   `mediavine.newPageView()` from a page component. `.mv-ads` needs ≥2 children to get an
   in-content injection. Elements *inside* `.mv-ads` change ad geometry; siblings are free.
+- **Mediavine's DOM is Mediavine's — never move, hide or re-init it.** Three specific bans, all
+  scanned by section 6 of `__tests__/unit/sidebar-sticky-health.test.ts`: no source may name a
+  Mediavine-created element by selector (`mv-outstream-container`, `mv-video-player`) — the only
+  reason to is to relocate it, and moving their node breaks their viewability measurement; no
+  `.mv-ads` element may carry a `ref=` or a `hidden` token in its `className` (that is how a timed
+  "hide the empty ad box" check hid a container mid-auction, counting ads about to fill as
+  unviewable); and `mediavine.newPageView()` has exactly one caller, `lib/hooks/useAnalytics.ts`
+  (a second call races their init and tears down every slot).
 - **Spot-check the top rows of any facet before it backs a landing page.** `expectedCount` tells
   you nothing about whether the mods are *right*, and it is also baked into user-visible copy.
 - **A blog post's description is shared by every mod scraped from it, so it contaminates whole
@@ -790,15 +831,32 @@ run died with `Prompt is too long`.
   matches 95 titles of which 48 are nose *presets*; `chain` 31/7, `gem` 10/3, `grill` is a BBQ.
   Never list a singular and its plural — `keywordToRegex` already appends `(?:s|es)?`, so the pair
   double-counts one word's evidence and can push a mod over a confidence threshold on its own.
+- **Write a negative result into the comment on the constant it concerns, and keep the constant.**
+  When an experiment is reverted, delete the *behaviour*, not the hard-won lookups behind it:
+  `PATREON_MEMBER_TIER_CHECKOUT_URL` stayed exported with no site consumer, its comment rewritten
+  to record that leading `/go` with a checkout link produced 0 paid-and-connected and cut
+  `patreon_click` from 8.75 to 3.57 users/day. The next agent then finds the tier id *and* the
+  reason not to re-propose it in the same place, instead of re-deriving one and repeating the other.
 - **One git worktree per agent**; copy `.env.local`, never symlink it; give each its own `npm ci`.
 - **Serialize automated merges** (~4 min apart) or Vercel coalesces builds and the ledger loses
   per-PR attribution. Re-validate the second PR on the new `main` when both touch one file.
 - **`npm run type-check` is never optional** — Vercel type-checks every `.ts` under `scripts/`.
 - **A merge without a ledger row did not happen** — and the row must be written by the step that
-  merges, not by a later step of the same run. #116 and #118 landed on `main` on 09-18; the ledger
-  still ends at 09-16 07:03.
+  merges, not by a later step of the same run. On 09-19 seven PRs landed on `main` and **one**
+  (#123) has a row; #116, #117, #118, #119, #121 and #122 have none.
+- **Appending to a file in a working tree is not a record — only a commit on `main` is.**
+  `ledger()` in `deploy-verify.sh` writes its row into *three* trees (`$ROOT`,
+  `$FUNNEL_PRIMARY_WT`, `$OPERATOR_DIR`) and never runs `git add`/`commit`/`push`, so all three
+  copies are uncommitted edits that reach `main` only if some later agent's PR happens to carry
+  them. Three copies of a non-durable write is not redundancy — it is three chances to lose the
+  same row. Same shape as `history.json`, whose only path to `main` is a natural-language
+  instruction in `funnel-daily-prompt.md` telling the agent to remember to `git add` it.
 - **Durable means "on `main`", not "committed".** A commit stranded on an unmerged agent branch is
-  the same loss class as an uncommitted worktree edit — only cheaper to recover.
+  the same loss class as an uncommitted worktree edit — only cheaper to recover. **Cherry-picking
+  stranded work onto another unmerged branch is not recovery** — it doubles the bookkeeping and
+  changes nothing: `ce7c111` (the operator's blanket "approve all #2 items") was copied to
+  `65e1756` on the next day's branch and *both* are still off `main`, so the approval does not
+  exist as far as the repo is concerned. Land it or it is not real.
 - **A "did not fire" detector must not live inside the job it reports on.** The evening-guardrail
   MISSED row is written by step 0e of the *morning* run, so it went silent for exactly the three
   evenings the morning run was broken.
@@ -810,108 +868,6 @@ run died with `Prompt is too long`.
 - **Canonicalize a host with an exact allowlist on the parsed host**, never a substring or prefix
   test, or `musthavemods.com.evil.example` gets rewritten too. Normalize only the *outbound public*
   URL field — an API's own endpoint host must keep pointing at whatever actually serves it.
-
-### 2026-09-17 — the compound loop ate itself
-
-- **A file auto-loaded into every agent invocation is a per-call tax, and an automation that
-  appends to it nightly is a compounding one.** `CLAUDE.md` grew 126 KB → 206 KB between 09-11 and
-  09-16 (~+13 KB/day, 85% of it the Compound Learnings section). On 2026-09-17 at 06:42 the funnel
-  runner launched Quinn; it died 2 m 47 s later having done nothing (the 09-16 run took 27 m 30 s):
-  `Prompt is too long · automatic compaction failed: API Error: Fable 5.1's safeguards flagged this message`.
-  Zero PRs, zero merges, zero ledger rows.
-- **The daily preflight was already measuring the problem and nobody was reading it.**
-  `claude_preflight()` sends the literal prompt `"Reply with exactly: ok"` with no tools and
-  `--strict-mcp-config`, and writes `logs/funnel-preflight-<date>.json`. Its
-  `cache_creation_input_tokens` is therefore a pure measurement of *baseline context* — and it
-  reads 74,404 → 81,828 → 86,298 → **91,391** on 09-14…09-17. Those day-over-day deltas track
-  CLAUDE.md's byte growth at a near-constant **2.44 / 2.68 / 2.65 bytes per token** across three
-  independent pairs, i.e. essentially *all* of the daily baseline growth is this file.
-  Extrapolating at 2.59 B/token, CLAUDE.md alone was **≈79k of the 91k-token baseline (87%)**,
-  leaving ~12k for the CLI's own system prompt and tool schemas. **A cheap fixed-prompt preflight
-  that reports its token usage is a free size gauge for everything auto-loaded into the session —
-  thresholding it is one `grep` away and would have flagged this a week out.**
-- **Then the day's real prompt lands on top of that.** `funnel-daily-prompt.md` is only 8 KB, but
-  it *instructs Quinn to read* 12 files: `experiments.md` (62,143 B), `operator-queue.md` (31,270),
-  `changelog.md` (26,615), `playbooks/quinn.md` (20,107), `ideas-inbox.md` (15,311), the two agent
-  charters, the scoreboard and guardrail — **219,985 B ≈ 55–63k tokens**. 91k baseline + ~58k
-  reading list ≈ **150k of a 200k window committed before the first unit of work**, with five
-  sub-agents still to spawn and stream back. `experiments.md` has the same disease as CLAUDE.md:
-  1,034 B on 09-02 → 62,143 B on 09-16, append-only, no pruning rule anywhere. **Count the size of
-  what a prompt tells an agent to read, not the size of the prompt.**
-- **The preflight cannot catch this class, by construction — it is not a missing grep pattern.**
-  `preflight_diagnosis()` enumerates exactly two classes, `CLI_TOO_OLD` and `AUTH`, and everything
-  else is `OTHER`. But on 09-17 it never ran: the preflight *passed* (`is_error:false`), because a
-  5-word single-turn probe with no tools cannot exercise a failure that arises from an accumulating
-  multi-turn conversation being compacted. The real Quinn invocation has **no diagnosis step at
-  all** — its entire failure handling is `log "Quinn exited non-zero (see logs)."`. Fifth entry in
-  the standing "enumerate your failure classes" pattern, with a twist: here the rich diagnosis
-  machinery exists but is wired only to the trivial check, not to the call that does the work.
-- **The runner exits 0, so the scheduler saw a successful run.** No `exit` propagates from the
-  Quinn branch; no incident file is written (that path belongs to `deploy-verify.sh`); no ledger
-  row is written (`grep 09-17 reports/funnel/changelog.md` → 0 hits); there is no notification of
-  any kind. The only evidence of a dead day is prose inside a digest nobody is paged to read.
-  **A wrapper that catches a failure and keeps going must still fail its own exit code, or the
-  outer scheduler learns nothing.**
-- **The synthesized-digest fallback (PR #103) paid for itself on its first real failure — and
-  misattributed the cause.** It correctly rejected Quinn's output ("1 non-empty lines, sections
-  missing"), built a complete five-section digest from scoreboard + guardrail + ledger, and quoted
-  the error verbatim. But its hardcoded banner reads *"usually --max-turns ran out after the last
-  merge"* — the 09-14 hypothesis — when this was a hard failure at launch with 0 merges. **A
-  fallback that names one cause will confidently name the wrong one**; state the observed symptom
-  and let the quoted line speak. Note also the error is two things stacked — compaction failure
-  *and* a safety-classifier flag carrying Anthropic's own "this sometimes happens with safe, normal
-  conversations" caveat — so a diagnosis that greps for only one of them mislabels it.
-- **Everything except the agent worked, which is what makes this expensive.** Steps 0a–0e all
-  completed: 5×`npm ci`, catalog ingest (0 of 674 posts new), IndexNow **live, 50 URLs, HTTP 200**,
-  the operator-did probe (`env=12/13`, still missing `NEXT_PUBLIC_SITE_URL`), the 09-16 evening
-  MISSED row, the scoreboard, and a green circuit breaker (revenue $173.24 −5.8%, RPM 15.32 +1.4%).
-  Only the step that opens the PR died — so the day's entire paper trail exists **only as untracked
-  files in the operator tree**, on a branch that does not track `reports/funnel/` at all. One
-  `git clean -fd` erases it.
-- **Durability has to be a property of the step that produces an artifact, not of a later step.**
-  Tracing what survived the ephemeral worktree's `trap cleanup EXIT`: the scoreboard, guardrail and
-  digest survived because the runner `cp`s them to the operator tree unconditionally, and the
-  MISSED ledger row survived because the changelog merge runs regardless of Quinn's exit status.
-  What is **gone** is `operator-did-2026-09-17.{json,md}` — the probe writes to a *relative*
-  `reports/funnel/` resolved against the worktree, and it is the one artifact class with **no
-  `cp`-back line in the runner**; on healthy days it reaches git only because Quinn's PR happens to
-  carry it. Its env-var and Patreon-tier diffs are unrecoverable; only a one-line stdout summary
-  survived. Quinn's own `quinn-2026-09-17.out` transcript is gone the same way, which is why the
-  exact triggering turn cannot be reconstructed.
-- **The daily run is the sole executor for everything with a date on it, so one dead run silently
-  defers all of it.** Four experiment gates went unread because their read-on dates were 09-12
-  through 09-17 and grading happens inside the run (E14 pinner liveness, E15 token manager, E58
-  `/play` checks, and — with some irony — E35, the operator-did probe, whose own grading day *was*
-  2026-09-17). Worse, the operator's chat instruction that day ("approve all #2 items") was written
-  into `operator-queue.md` in a side worktree and is still sitting there as an **uncommitted,
-  unstaged diff** — no commit, no branch on the remote, no PR. **Human input captured only as a
-  working-tree edit in a worktree is indistinguishable from work never done**; capture it with a
-  commit at the moment it arrives, not at the end of a pipeline that can die. Same class as the
-  09-10 finding that a 24h veto whose only executor is a job that can fail to run is a promise the
-  system cannot keep.
-- **A task loop that reads a status file cannot tell "all done" from "never started".**
-  `scripts/compound/loop.sh` selects tasks where `status == "pending"`; finding none it logs
-  `All tasks complete! Summary: 20 completed, 0 pending, 0 blocked` and exits **successfully in 0
-  seconds**. `scripts/compound/prd.json` is dated **May 1** with 20 tasks all `completed`, from a
-  finished cleanup job ("Delete orphaned app/privacy/page.tsx") — the PRD step's claim *"Wrote
-  scripts/compound/prd.json — 21 atomic tasks"* never landed. This has run every night for at least
-  **9 consecutive nights**: `origin` carries 9 orphan `compound/*` branches dated 09-08…09-16 with
-  an identical slug, each pushed with no commits and each failing `pull request create failed: No
-  commits between main and compound/…`. The falsifiable signal was in the log the whole time — the
-  PRD said 21 tasks, the summary said 20. **Seed the work list in the same run that consumes it,
-  and treat an empty queue as `could-not-run` (exit 2), never success.**
-- **Two nightly automations edit `CLAUDE.md` and push to `main` independently** —
-  `scripts/daily-compound-review.sh` and `scripts/compound/auto-compound.sh` — and were observed
-  running concurrently on 09-17. Only the second one's no-op has kept them from colliding.
-- **The evening `mhm-guardrail-evening` check has now written no `check` row since 2026-09-04
-  (13 days).** Its task definition is correct and current, so this is a launch failure, not a config
-  bug; step 0e's MISSED detector fires correctly every morning. Detection shipping is not the
-  monitor working — this needs the operator to confirm the task is enabled at 18:30 with model Auto.
-- **Duplicated log lines are a real diagnostic tax**: the IndexNow and catalog-ingest summaries each
-  appear twice in `funnel-daily.log` because the script both `console.log`s (captured by the shell
-  redirect) and `appendFileSync`s to its own log, which the runner then `tail`s into the same file;
-  every line in `auto-compound.log` is doubled the same way. One POST, two identical lines — which
-  makes "did this run twice?" unanswerable from the logs.
 
 ### 2026-09-18 — the run that merged and left no record
 
@@ -956,9 +912,44 @@ run died with `Prompt is too long`.
   05:30 CDT *because* the 06:00 orchestrator re-dates the rows it inserts; run it after 06:00 and
   every new post loses a day. Document that ordering next to the crontab, not in the code.
 
+### 2026-09-19 — a good day for shipping, a third bad day for the paper trail
+
+- **The agents shipped well and recorded almost none of it.** Seven PRs landed (#116–#123):
+  a Mediavine DOM scanner, the E40 revert, the Pinterest read-back, the `/admin/funnel`
+  dashboard, the favicon. Every one of the code changes is defensible on its own. The ledger has
+  **one** row for the lot. The gap is now three days old and no longer explicable as "the run
+  died" — the 09-19 run clearly worked.
+- **The mechanism is finally pinned down, and it is not agent forgetfulness.** `ledger()` in
+  `deploy-verify.sh:157-166` `printf`s the row into up to three working trees and stops. Nothing
+  in `run-funnel-daily.sh` commits. So the ledger is structurally a working-tree edit, i.e. the
+  exact artifact class this log has now lost three times (`operator-did-*` on 09-17, `ce7c111` on
+  09-18, the ledger rows on 09-19). Writing it to more places made it look safer without making
+  it durable. **The fix is one `git commit` in the function that already knows the row is true**,
+  not another reminder in a prompt.
+- **`/admin/funnel` reintroduces the same dependency at a new spot.** `history.json` is generated
+  by `funnel-history.ts` inside the ephemeral worktree, `cp`d to the operator's local checkout,
+  and reaches `main` only because `funnel-daily-prompt.md` *asks the agent* to include it in the
+  day's commit. When that instruction is missed, the dashboard silently serves yesterday's data
+  with no alert — a stale-data failure with no error anywhere. Note what the route did get right:
+  `fs` read at request time (missing file → clean 404, not a build failure) and a real vacuity
+  guard in the generator (`dayMap.size === 0` → `process.exit`, never an empty history).
+- **The monitor-of-the-monitor is now also dark.** The evening `mhm-guardrail-evening` check has
+  written no real `check` row since **2026-09-04 (15 days)**, and the MISSED rows that were
+  supposed to make that silence visible stop at **09-15** — because step 0e writes them from
+  inside the morning run. Two layers of detection, both hosted in the thing they watch, both
+  silent, and the silence reads identically to health. This needs the operator to confirm the
+  task is enabled at 18:30.
+- **16 empty `compound/*` branches on `origin`, one per night.** The nightly loop finds an
+  all-`completed` PRD from May, logs "All tasks complete!", exits 0 in zero seconds, and pushes a
+  branch with no commits. An empty queue is still being reported as success.
+- **The one unambiguous win: a pre-committed kill rule fired on its own date and was obeyed.**
+  E40's revert condition was written down at merge time on 09-13; on the 09-19 read all three
+  legs tripped and Rio reverted rather than re-arguing the threshold. That is the process working
+  exactly as designed, and it is worth noticing on a day otherwise spent cataloguing leaks.
+
 ---
 
-*Last compound review: 2026-09-18*
+*Last compound review: 2026-09-19*
 
 ---
 
