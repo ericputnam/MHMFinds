@@ -128,7 +128,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentType: '__pregnancy_keyword__',
     },
     expectedCount: 115,
-    related: ['body-presets', 'poses', 'skin-details'],
+    // skin-details -> kids-cc (2026-09-21): pregnancy is the one topic whose
+    // visitors reliably need the *next* thing, and skin-details was the most
+    // linked page in the graph at 7 inbound.
+    related: ['body-presets', 'poses', 'kids-cc'],
     // Consolidated 2026-07-03 (legacy article 301'd here), un-redirected
     // 2026-09: Google refused this page as the canonical and indexed the
     // blog-subdomain copy of the article instead (pos 10.95, 93 clicks
@@ -222,7 +225,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Hair is where most Sims 4 CC journeys start, and for good reason — the base game has maybe six hairstyles you can look at without flinching. Everything else gets a recolor pass and that\'s the wardrobe.\n\nThe 1,700+ hair CC picks in this collection split roughly in half between alpha (Simpliciaty, Anto, Stealthic territory — shiny, high-detail, the aesthetic most gameplay YouTubers use) and maxis match (Sentate, SimStrouds, Aharris00britney — matches EA\'s art style without sticking out). We also pulled in the curly and textured hair creators worth knowing by name — NaevysSims and Ebonix come up constantly because they\'re some of the few people shipping hair that actually looks like Black hair instead of a texture slapped on a straight mesh.\n\nSort by downloads for the known quantities and scroll for the less-obvious picks. Every hair in the collection is Sims 4 specifically — no cross-game mixups — and the grid is filtered to verified, SFW mods only.',
     filter: { contentType: 'hair' },
     expectedCount: 1780,
-    related: ['skin-details', 'female-clothes', 'male-clothes'],
+    // skin-details -> kids-cc (2026-09-21): hair is the biggest category
+    // inside the kids grid (164 of 686), so this is the strongest topical
+    // edge available, and skin-details keeps 5 inbound without it.
+    related: ['kids-cc', 'female-clothes', 'male-clothes'],
     blogUrl: '/sims-4-hairstyles-cc/',
   },
   {
@@ -358,7 +364,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'If you\'ve ever tried to build a cohesive living room with just base-game furniture, you already know the problem: every sofa looks like every other sofa, and the "design" options are a color swatch. Furniture CC is what turns Sims 4 Build mode from a chore into the reason people actually play.\n\nThis is a 900+ mod collection covering the full stack: sofas and armchairs, beds, dining sets, shelves, desks, kitchen islands, vanities, outdoor seating, and the statement pieces (clawfoot tubs, chesterfield couches, old-world wardrobes) that anchor a whole room. The heavy hitters here are the build CC creators everyone knows — Felixandre, Pierisim, HarrieCC, Myshunosun, and Syboubou — because they\'ve been shipping cohesive sets for long enough that you can build an entire house from a single creator\'s catalog.\n\nSort by downloads for the already-popular picks, or scroll for smaller sets that pair well with the staples. Everything here is Sims 4 specifically, verified, and SFW — grab what you want and go build.',
     filter: { contentType: 'furniture' },
     expectedCount: 901,
-    related: ['clutter', 'holidays-cc', 'decor-cc'],
+    // holidays-cc -> kids-cc (2026-09-21): nurseries, cribs and kid bedrooms
+    // are 39 of the kids grid and 58 of it is furniture. holidays-cc keeps 2
+    // inbound (clutter, decor-cc), the floor.
+    related: ['clutter', 'kids-cc', 'decor-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -670,6 +679,55 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // nothing here to cannibalise. (/sims-4-cc-nails/, 72 impressions at
     // position 36.1, is the second article in the cluster and also live.)
     blogUrl: '/sims-4-nails-cc/',
+  },
+  {
+    // Appended last on purpose. This is the registry's first `ageGroupsAny`
+    // entry, so `filterSpecificity()` scores it 1 (a style/axis, not a thing
+    // the mod *is*) — it sorts behind every contentType collection and, on the
+    // `i` tie-break, behind every existing specificity-1 entry too. No mod
+    // loses the breadcrumb it has today; 686 mods gain a second one.
+    slug: 'kids-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Kids CC',
+    heading: 'Sims 4 Kids CC',
+    metaTitle: 'Sims 4 Kids CC Finder — Browse 680+ Toddler, Child & Infant Finds | MustHaveMods',
+    metaDescription:
+      'Browse 680+ Sims 4 kids CC finds in one filterable grid — toddler, child and infant hair, clothes, shoes, furniture and poses, sorted by downloads, links checked.',
+    tagline: 'Toddler, child, and infant finds in one grid',
+    intro:
+      "Kid sims age out of the base game fast. Toddlers get a handful of outfits and about four hairstyles, children get hand-me-down meshes that look like shrunken adult clothes, and infants — added years after launch — got almost nothing at all. So the moment you play a household with children in it, the kids are the ones who look unfinished while the adults look great.\n\nThis collection is every kid find in our catalog in one grid: 686 mods across all three young ages, sorted by downloads. Toddlers are the deepest shelf by a wide margin (362), children next (266), and infants the thinnest (81) for the obvious reason — that age is the newest and creators are still catching up. Hair is the single biggest category here at 164 sets, which tracks: it is the slot with the worst base-game coverage and the one people notice first. After that it is everyday clothing (92 full outfits, 61 tops, 31 dresses, 17 bottoms), 46 pairs of shoes, 58 furniture pieces, and 59 pose packs — the poses being mostly family and sibling shots, which is what people actually photograph kids for.\n\nA few creators basically live in this category. casteru has the largest single shelf (toddler swimwear, formalwear and CAS poses), PowLuna makes matched toddler outfit sets, RavenSim and Lewbertsn00tles do the hair — including child and infant conversions of hairs you already have for adults — Flystone covers child shoes, and Madlen and Talarian fill in the school-uniform-and-tee end of the wardrobe.\n\nTwo things worth knowing before you download. Ages are separate meshes in this game, so a set made for children is not automatically available to toddlers, and a lot of the packs here say so in the title (\"Child and Toddler\") precisely because converting takes extra work. And infant CC needs the infant update installed; if a download looks empty in CAS, check the age it was actually built for before assuming the file is broken.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link — 562 of the 686 are free. Sort by downloads for the sets most households already run, or scroll for the single releases the big roundups skip.",
+    filter: {
+      // 686 SFW Sims 4 mods on infant / toddler / child, verified against
+      // production 2026-09-21 *after* the same-PR repair of the column.
+      //
+      // The 09-20 entry rejected this cluster: 752 rows, only 45.6% of titles
+      // carrying a kid word, "Nike Af1" tagged infant+elder. The cause was a
+      // single class bug, not heterogeneous junk — `extractFacetsFromKeywords`
+      // matched `'ya' -> young-adult` and `'tot' -> toddler` as bare
+      // substrings over title + description + tags. That is now fixed at the
+      // source (`lib/ageGroupRules.ts`, imported by the extractor) and the
+      // column re-derived from titles only: 362 added, 428 stripped, 35
+      // rewritten. 686 of 686 titles now support their tag.
+      //
+      // Audited before ranking, per the 09-13 rule: the top 40 by downloads
+      // are 40/40 real kid content, four 12-row mid-grid samples are 48/48,
+      // and the 90 rows whose only evidence is the bare word "child" are
+      // 90/90. Two rows were caught in the simulation and excluded by name:
+      // "Baby Face Kit" (2,878 downloads, an adult lips preset) and "Child
+      // Birth Mod" (1,383) would each have been card #1.
+      ageGroupsAny: ['infant', 'toddler', 'child'],
+    },
+    expectedCount: 686,
+    related: ['hair-cc', 'pregnancy-mods', 'furniture-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best kids
+    // cc" intent, this page owns browse/filter intent. /sims-4-kids-cc/ is
+    // live (HTTP 200, no redirect, verified 2026-09-21) and appears in neither
+    // mhm_consolidated_post_map() nor vercel.json. It holds 153 impressions /
+    // 0 clicks at position 43.3 over the 28d to 2026-09-18 — the cluster's 23
+    // articles together take ~1,836 impressions and 12 clicks at positions
+    // 21.9-52.3, so there is demand and nothing here to cannibalise.
+    blogUrl: '/sims-4-kids-cc/',
   },
 ];
 

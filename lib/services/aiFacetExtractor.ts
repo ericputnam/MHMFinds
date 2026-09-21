@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { AGE_TITLE_PATTERNS, AGE_NEGATIVE_TITLE_CONTEXTS } from '../ageGroupRules';
 
 // ============================================
 // FACET VALUE DEFINITIONS
@@ -275,16 +276,21 @@ const VISUAL_STYLE_KEYWORDS: Record<string, VisualStyle> = {
   'semi-maxis': 'semi-maxis', 'semi maxis': 'semi-maxis',
 };
 
-const AGE_KEYWORDS: Record<string, AgeGroup> = {
-  'infant': 'infant', 'baby': 'infant',
-  'toddler': 'toddler', 'tot': 'toddler',
-  'child': 'child', 'kid': 'child', 'kids': 'child',
-  'teen': 'teen', 'teenager': 'teen', 'adolescent': 'teen',
-  'young adult': 'young-adult', 'ya': 'young-adult',
-  'adult': 'adult',
-  'elder': 'elder', 'elderly': 'elder', 'senior': 'elder',
-  'all ages': 'all-ages', 'all-ages': 'all-ages',
-};
+/**
+ * Age groups are extracted from the TITLE only, with whole-word patterns, by
+ * the shared rules in `lib/ageGroupRules.ts`. Do not re-add a `Record<string,
+ * AgeGroup>` here and do not feed it `description`:
+ *
+ *  - the old map matched with a bare `text.includes(keyword)`, so `'ya'` fired
+ *    on Ra**ya**n / To**nya** / ro**ya**l and `'tot'` on **tot**al / pho**tot**;
+ *  - it ran over `title + description + tags`, and in this repo one scraped
+ *    blog post's description is copied onto every mod lifted from it, so a
+ *    single boilerplate sentence tagged a whole post's worth of rows.
+ *
+ * Between them those two bugs left the infant/toddler/child facet 45.6 %
+ * title-supported (2026-09-21 measurement, 752 rows). See that file's header
+ * for the full keyword audit and the list of rejected candidates with counts.
+ */
 
 const GENDER_KEYWORDS: Record<string, GenderOption> = {
   'male': 'masculine', 'masculine': 'masculine', 'men': 'masculine', 'man': 'masculine',
@@ -403,12 +409,15 @@ export class AIFacetExtractor {
       }
     }
 
-    // Extract age groups (multiple allowed)
-    const seenAges = new Set<AgeGroup>();
-    for (const [keyword, age] of Object.entries(AGE_KEYWORDS)) {
-      if (text.includes(keyword) && !seenAges.has(age)) {
-        seenAges.add(age);
-        result.ageGroups.push(age);
+    // Extract age groups — title only, whole words, shared rules.
+    // (`text` above deliberately is not used here; see the AGE note above.)
+    if (!AGE_NEGATIVE_TITLE_CONTEXTS.test(title)) {
+      const seenAges = new Set<AgeGroup>();
+      for (const [age, pattern] of AGE_TITLE_PATTERNS) {
+        if (pattern.test(title) && !seenAges.has(age as AgeGroup)) {
+          seenAges.add(age as AgeGroup);
+          result.ageGroups.push(age as AgeGroup);
+        }
       }
     }
 
