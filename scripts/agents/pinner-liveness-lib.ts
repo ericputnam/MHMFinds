@@ -242,3 +242,145 @@ export function assessRunway(input: {
 export function runwayExitCode(level: RunwayLevel): 0 | 2 {
   return level === 'low' || level === 'empty' ? 2 : 0;
 }
+
+// ---------------------------------------------------------------- writer liveness (2026-09-21)
+//
+// Everything above assumes the queue has inventory. It stopped having any on
+// 2026-09-04: `mhm-pin-scheduler` on the blog only queues rows when a human
+// presses the admin button, so `n8n_pinterest_posts` gained 0 new rows for 17
+// days straight while three revival slices (E26/E46/E56) fed the poster on
+// borrowed inventory. Runway (above) only goes low once that borrowed
+// inventory is nearly gone — by the time it fires, the writer has often been
+// dead for a week or more. This section watches the *upstream* cause: is
+// `posts_2_supabase_server.py` still inserting rows at all. Q11 (queued
+// 2026-09-16, approved 2026-09-17) is a BigScoots cron line for that script;
+// this is the in-repo half so a dead writer never again waits on someone
+// noticing the queue thin out.
+//
+// Writer rows are distinguished from every other inserter into this table by
+// the `Wordpress Post ID` column: the writer always sets it (observed as the
+// string `"0"` — a separate upstream bug, but never `null`), while every
+// script in *this* repo that inserts rows (`insert-catalog-pins.py`,
+// `revive-stranded-pins.py`'s rollback re-insert path) leaves it unset →
+// `null`. `revive-stranded-pins.py`'s normal path PATCHes `Post Date` on
+// existing rows and never INSERTs, so it cannot appear here at all. Filtering
+// on `"Wordpress Post ID"=not.is.null` therefore isolates the writer's own
+// inserts from this repo's own queue tooling — without it, Pip's own catalog
+// pins (E1/E7/E15/E20) would read as "the writer ran".
+//
+// "The newest source post" is reported as the newest writer-attributed row's
+// `created_at` plus its `Wordpress Keyword`/`Post Title` — the closest proxy
+// available. The table has no publish-date column for the underlying blog
+// post; `Post Date` on a fresh writer row is a hardcoded placeholder
+// (`2025-01-01`, "so n8n doesn't pick up entries prematurely" — the writer's
+// own comment) and is never the source post's date.
+
+export const DEFAULT_WRITER_WARN_HOURS = 26;
+export const DEFAULT_WRITER_RED_HOURS = 72;
+export const DEFAULT_WRITER_RUNWAY_RED_DAYS = 3;
+
+export type WriterLivenessLevel = 'ok' | 'warn' | 'red';
+
+export interface WriterLivenessAssessment {
+  level: WriterLivenessLevel;
+  /** Hours since the newest writer-attributed row was created; null if none has ever been seen. */
+  hoursSinceLastInsert: number | null;
+  message: string;
+}
+
+/**
+ * Decide whether the writer (the thing that fills the queue, not the thing
+ * that drains it) is still alive.
+ *
+ * - Inventory runway < `runwayRedDays` → 🔴, unconditionally. A low runway is
+ *   the thing that actually breaks the pipeline; it overrides everything else
+ *   below even if a writer row landed an hour ago, because a fresh single
+ *   insert does not refill a queue that is about to run out.
+ * - `duplicatesDetected === true` → 🟢. Not wired to a live signal in this PR
+ *   (the source would be the writer's own cron log on BigScoots — out of
+ *   reach while Q11 installs that cron and the operator asked that nothing
+ *   else touch the server this run). Kept as a typed hook: "Inserted 0,
+ *   Duplicates > 0" (the writer's own log line shape) means the cron *ran* and
+ *   found nothing new to queue, which is not the same failure as a cron that
+ *   never fired, and a future PR can wire a real detector without changing
+ *   this function's contract.
+ * - No writer row ever observed → 🔴 (freshness cannot be established).
+ * - `hoursSinceLastInsert > redAfterHours` (72) → 🔴.
+ * - `hoursSinceLastInsert > warnAfterHours` (26) → 🟡.
+ * - otherwise → 🟢.
+ */
+export function assessWriterLiveness(input: {
+  lastWriterInsertAt: string | null;
+  inserted24h: number | null;
+  inserted7d: number | null;
+  /** From `RunwayAssessment.runwayDays`; null when the rate is unknown. */
+  runwayDays: number | null;
+  now?: Date;
+  warnAfterHours?: number;
+  redAfterHours?: number;
+  runwayRedDays?: number;
+  duplicatesDetected?: boolean | null;
+}): WriterLivenessAssessment {
+  const now = input.now ?? new Date();
+  const warnAfter = input.warnAfterHours ?? DEFAULT_WRITER_WARN_HOURS;
+  const redAfter = input.redAfterHours ?? DEFAULT_WRITER_RED_HOURS;
+  const runwayRedDays = input.runwayRedDays ?? DEFAULT_WRITER_RUNWAY_RED_DAYS;
+
+  const last = parsePinterestTimestamp(input.lastWriterInsertAt);
+  const hours = last ? Math.max(0, (now.getTime() - last.getTime()) / 3600e3) : null;
+  const rounded = hours == null ? null : Math.round(hours * 10) / 10;
+
+  const stampMsg = last
+    ? `newest writer-attributed row queued ${last.toISOString().slice(0, 16).replace('T', ' ')}Z (${rounded} h ago)`
+    : 'no writer-attributed row found in the queryable history';
+  const countsMsg = `${input.inserted24h ?? 0} inserted in 24h, ${input.inserted7d ?? 0} in 7d`;
+  const runwayLow = input.runwayDays != null && input.runwayDays < runwayRedDays;
+  const runwayMsg = input.runwayDays == null ? '' : ` · runway ${input.runwayDays}d`;
+
+  if (runwayLow) {
+    const staleClause = hours != null && hours > redAfter ? ` and no insert in ${rounded}h` : '';
+    return {
+      level: 'red',
+      hoursSinceLastInsert: rounded,
+      message: `${stampMsg} · ${countsMsg}${runwayMsg} — runway below the ${runwayRedDays}-day floor${staleClause}; Q11 (writer cron) is the fix`,
+    };
+  }
+  if (input.duplicatesDetected === true) {
+    return {
+      level: 'ok',
+      hoursSinceLastInsert: rounded,
+      message: `${stampMsg} · ${countsMsg}${runwayMsg} — 0 new rows but duplicates confirmed the writer ran`,
+    };
+  }
+  if (hours == null) {
+    return {
+      level: 'red',
+      hoursSinceLastInsert: null,
+      message: `${stampMsg} · ${countsMsg}${runwayMsg}`,
+    };
+  }
+  if (hours > redAfter) {
+    return {
+      level: 'red',
+      hoursSinceLastInsert: rounded,
+      message: `${stampMsg} · ${countsMsg}${runwayMsg} — over the ${redAfter}h floor, the writer looks dead`,
+    };
+  }
+  if (hours > warnAfter) {
+    return {
+      level: 'warn',
+      hoursSinceLastInsert: rounded,
+      message: `${stampMsg} · ${countsMsg}${runwayMsg} — between ${warnAfter}-${redAfter}h, watch it`,
+    };
+  }
+  return {
+    level: 'ok',
+    hoursSinceLastInsert: rounded,
+    message: `${stampMsg} · ${countsMsg}${runwayMsg}`,
+  };
+}
+
+/** Exit code for check-pinner.sh: red is WARN (2), never FAIL — the fix (Q11) is Tier 2/operator-owned, not something this repo can act on. */
+export function writerLivenessExitCode(level: WriterLivenessLevel): 0 | 2 {
+  return level === 'red' || level === 'warn' ? 2 : 0;
+}

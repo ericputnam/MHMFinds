@@ -48,6 +48,18 @@ set -euo pipefail
 #                          WARN only when runway < LOW_RUNWAY_DAYS (3) or the
 #                          inventory is actually 0. Never FAIL: liveness (step 1)
 #                          is the only FAIL path for the pipeline.
+#   2b. Writer liveness  — rows in n8n_pinterest_posts attributable to the writer
+#                          plugin itself (posts_2_supabase_server.py — identified
+#                          by "Wordpress Post ID" being set, which this repo's own
+#                          tooling never sets), by their own created_at. Watches
+#                          the queue's INFLOW, separate from step 2's depth: a
+#                          dead writer can hide behind borrowed inventory for a
+#                          week or more before runway ever flags it — this is
+#                          exactly what happened 2026-09-04 → 2026-09-21 (Q11).
+#                          WARN at 26-72h since the last writer-attributed
+#                          insert or runway < 3d; WARN (not FAIL, never) beyond
+#                          72h or with no writer row ever seen — the fix is Q11
+#                          (a BigScoots cron line), Tier 2/operator-owned.
 #   3. Pinterest token   — asks the token manager (pinterest-token-status.py, which
 #                          prefers MHMUtils/pinterest_token_manager.ensure_valid_token
 #                          and falls back to an embedded stdlib port) for a *valid*
@@ -290,6 +302,7 @@ UNPOSTED_TOTAL=$(backlog_count 'select=id&%22Is%20Posted%22=eq.false')
 SCHEDULABLE=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${TODAY_STR}")
 INVENTORY=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${HORIZON_STR}")
 STRANDED=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${FLOOR_STR}")
+RUNWAY_DAYS_NUM=""
 
 if [[ -z "$SCHEDULABLE" || -z "$UNPOSTED_TOTAL" || -z "$INVENTORY" ]]; then
   warn "Could not query backlog counts"
@@ -308,21 +321,22 @@ p7, p24 = n(p7), n(p24)
 rate = (p7 / 7) if (p7 is not None and p7 > 0) else (float(p24) if (p24 is not None and p24 > 0) else None)
 rate_str = 'rate unknown' if rate is None else f'{rate:.1f}/day observed'
 if inv == 0:
-    print(f"EMPTY\tqueue empty — 0 unposted rows dated within the poster's window or the next {horizon} days ({rate_str}); cadence now depends entirely on new rows landing")
+    print(f"EMPTY\t0\tqueue empty — 0 unposted rows dated within the poster's window or the next {horizon} days ({rate_str}); cadence now depends entirely on new rows landing")
 elif rate is None:
-    print(f"UNKNOWN\tinventory {inv} rows dated through +{horizon}d ({sched} still schedulable today); runway not computable — {rate_str}")
+    print(f"UNKNOWN\t\tinventory {inv} rows dated through +{horizon}d ({sched} still schedulable today); runway not computable — {rate_str}")
 else:
     runway = inv / rate
     rs = f"> {horizon} days" if runway > horizon else f"≈ {runway:.1f} days"
     base = f"inventory runway {rs} ({inv} rows dated through +{horizon}d ÷ {rate_str}; {sched} still schedulable today)"
     if runway < low:
-        print(f"LOW\t{base} — below the {low:.0f}-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)")
+        print(f"LOW\t{runway:.1f}\t{base} — below the {low:.0f}-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)")
     else:
-        print(f"OK\t{base}")
+        print(f"OK\t{runway:.1f}\t{base}")
 PY
 )
   RUNWAY_STATE=$(printf '%s' "$RUNWAY_OUT" | head -1 | cut -f1)
-  RUNWAY_MSG=$(printf '%s' "$RUNWAY_OUT" | head -1 | cut -f2-)
+  RUNWAY_DAYS_NUM=$(printf '%s' "$RUNWAY_OUT" | head -1 | cut -f2)
+  RUNWAY_MSG=$(printf '%s' "$RUNWAY_OUT" | head -1 | cut -f3-)
   case "$RUNWAY_STATE" in
     OK)      ok "$RUNWAY_MSG" ;;
     UNKNOWN) say "         $RUNWAY_MSG" ;;
@@ -343,6 +357,106 @@ PY
   fi
   say "         $UNPOSTED_TOTAL unposted rows in the table in total"
 fi
+
+# ---- 2b. Writer liveness ---------------------------------------------------
+# The queue's *inflow*, not its depth. mhm-pin-scheduler/posts_2_supabase_server.py
+# is what inserts rows into n8n_pinterest_posts in the first place; it has no
+# cron of its own (Q11, queued 2026-09-16) and sat idle for 17 days
+# (2026-09-04 → 2026-09-21) before anyone noticed, because runway (step 2)
+# only flags once three manual revival slices of borrowed inventory ran out —
+# which lagged the writer's actual death by well over a week. Must match
+# DEFAULT_WRITER_WARN_HOURS / DEFAULT_WRITER_RED_HOURS / DEFAULT_WRITER_RUNWAY_RED_DAYS
+# in scripts/agents/pinner-liveness-lib.ts and the same constants' mirror in
+# funnel-scoreboard.ts.
+say ""
+say "--- 2b. Writer liveness (rows this repo can attribute to the writer plugin, by created_at)"
+
+WRITER_WARN_HOURS="${PINNER_WRITER_WARN_HOURS:-26}"
+WRITER_RED_HOURS="${PINNER_WRITER_RED_HOURS:-72}"
+WRITER_RUNWAY_RED_DAYS="${PINNER_WRITER_RUNWAY_RED_DAYS:-3}"
+
+# Writer rows always set "Wordpress Post ID" (observed as the string "0");
+# every insert this repo's own tooling makes (insert-catalog-pins.py) leaves
+# it null, so filtering on not-null isolates true writer activity.
+WRITER_FILTER='%22Wordpress%20Post%20ID%22=not.is.null'
+CUTOFF_24H=$(python3 -c "
+import datetime
+print((datetime.datetime.utcnow()-datetime.timedelta(hours=24)).strftime('%Y-%m-%dT%H:%M:%SZ'))
+" 2>/dev/null)
+CUTOFF_7D=$(python3 -c "
+import datetime
+print((datetime.datetime.utcnow()-datetime.timedelta(hours=24*7)).strftime('%Y-%m-%dT%H:%M:%SZ'))
+" 2>/dev/null)
+
+WRITER_NEWEST_JSON=$(curl -sf \
+  -H "apikey: $SUPABASE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_KEY" \
+  "${SUPABASE_URL}/rest/v1/n8n_pinterest_posts?select=created_at,%22Wordpress%20Keyword%22&${WRITER_FILTER}&order=created_at.desc&limit=1" \
+  2>/dev/null) || WRITER_NEWEST_JSON="[]"
+WRITER_24H=$(backlog_count "select=id&${WRITER_FILTER}&created_at=gte.${CUTOFF_24H}")
+WRITER_7D=$(backlog_count "select=id&${WRITER_FILTER}&created_at=gte.${CUTOFF_7D}")
+
+WRITER_OUT=$(python3 - "$WRITER_NEWEST_JSON" "${WRITER_24H:-0}" "${WRITER_7D:-0}" "${RUNWAY_DAYS_NUM:-}" "$WRITER_WARN_HOURS" "$WRITER_RED_HOURS" "$WRITER_RUNWAY_RED_DAYS" <<'PY'
+import sys, json, datetime
+raw, c24, c7, runway_raw, warn_h, red_h, runway_red_days = sys.argv[1:8]
+warn_h, red_h, runway_red_days = float(warn_h), float(red_h), float(runway_red_days)
+def n(s):
+    try: return int(s)
+    except (TypeError, ValueError): return 0
+c24, c7 = n(c24), n(c7)
+try:
+    runway_days = float(runway_raw) if runway_raw not in ('', None) else None
+except ValueError:
+    runway_days = None
+try:
+    rows = json.loads(raw) if raw else []
+except ValueError:
+    rows = []
+last = rows[0].get('created_at') if rows else None
+label = rows[0].get('Wordpress Keyword') if rows else None
+hours = None
+if last:
+    ts = last.replace('Z', '+00:00')
+    try:
+        dt = datetime.datetime.fromisoformat(ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        hours = (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds() / 3600
+    except ValueError:
+        hours = None
+stamp = f"newest writer-attributed row queued {last[:16].replace('T',' ')}Z ({hours:.1f} h ago)" if (last and hours is not None) else "no writer-attributed row found in the queryable history"
+counts = f"{c24} inserted in 24h, {c7} in 7d"
+runway_msg = f" · runway {runway_days:.1f}d" if runway_days is not None else ""
+runway_low = runway_days is not None and runway_days < runway_red_days
+if runway_low:
+    stale = f" and no insert in {hours:.1f}h" if (hours is not None and hours > red_h) else ""
+    print(f"RED\t{stamp} · {counts}{runway_msg} — runway below the {runway_red_days:.0f}-day floor{stale}; Q11 (writer cron) is the fix\t{label or ''}")
+elif hours is None:
+    print(f"RED\t{stamp} · {counts}{runway_msg}\t{label or ''}")
+elif hours > red_h:
+    print(f"RED\t{stamp} · {counts}{runway_msg} — over the {red_h:.0f}h floor, the writer looks dead\t{label or ''}")
+elif hours > warn_h:
+    print(f"WARN\t{stamp} · {counts}{runway_msg} — between {warn_h:.0f}-{red_h:.0f}h, watch it\t{label or ''}")
+else:
+    print(f"OK\t{stamp} · {counts}{runway_msg}\t{label or ''}")
+PY
+)
+WRITER_STATE=$(printf '%s' "$WRITER_OUT" | head -1 | cut -f1)
+WRITER_MSG=$(printf '%s' "$WRITER_OUT" | head -1 | cut -f2)
+WRITER_LABEL=$(printf '%s' "$WRITER_OUT" | head -1 | cut -f3)
+case "$WRITER_STATE" in
+  OK)   ok "$WRITER_MSG${WRITER_LABEL:+ — \"$WRITER_LABEL\"}" ;;
+  WARN)
+    warn "$WRITER_MSG${WRITER_LABEL:+ — \"$WRITER_LABEL\"}"
+    WARN=1
+    ;;
+  RED|*)
+    # WARN (2), never FAIL: the fix (Q11 — a BigScoots cron line) is Tier
+    # 2/operator-owned, the same reason runway (step 2) never FAILs.
+    warn "${WRITER_MSG:-writer liveness not evaluated (python3 unavailable?)}${WRITER_LABEL:+ — \"$WRITER_LABEL\"}"
+    WARN=1
+    ;;
+esac
 
 # ---- 3. Pinterest token validity ------------------------------------------
 say ""

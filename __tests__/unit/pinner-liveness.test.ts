@@ -4,12 +4,17 @@ import { join } from 'node:path';
 import {
   assessLiveness,
   assessRunway,
+  assessWriterLiveness,
   DEFAULT_LOW_RUNWAY_DAYS,
   DEFAULT_RUNWAY_HORIZON_DAYS,
+  DEFAULT_WRITER_RED_HOURS,
+  DEFAULT_WRITER_RUNWAY_RED_DAYS,
+  DEFAULT_WRITER_WARN_HOURS,
   livenessExitCode,
   parsePinterestTimestamp,
   runwayExitCode,
   summarizePins,
+  writerLivenessExitCode,
 } from '../../scripts/agents/pinner-liveness-lib';
 
 const ROOT = join(__dirname, '..', '..');
@@ -164,6 +169,113 @@ describe('assessRunway (E51)', () => {
   });
 });
 
+describe('assessWriterLiveness (Q11, 2026-09-21)', () => {
+  // The real before-snapshot, captured by running check-pinner.sh for real on
+  // 2026-09-21: the writer plugin has not inserted a row since 2026-09-04.
+  const WRITER_NOW = new Date('2026-09-21T11:57:00Z');
+  const IDLE_SINCE_0904 = {
+    lastWriterInsertAt: '2026-09-04T08:46:31.894735+00:00',
+    inserted24h: 0,
+    inserted7d: 0,
+  };
+
+  it('today (2026-09-21): idle 17 days, 0/0 inserts, low runway → red on both triggers', () => {
+    const a = assessWriterLiveness({ ...IDLE_SINCE_0904, runwayDays: 0.5, now: WRITER_NOW });
+    expect(a.level).toBe('red');
+    expect(a.hoursSinceLastInsert).toBeCloseTo(411.2, 0);
+    expect(a.message).toContain('runway below the 3-day floor');
+    expect(a.message).toContain('no insert in');
+    expect(writerLivenessExitCode(a.level)).toBe(2); // WARN, never FAIL — Q11 is Tier 2/operator-owned
+  });
+
+  it('a fresh insert with healthy runway is ok', () => {
+    const a = assessWriterLiveness({
+      lastWriterInsertAt: '2026-09-21T07:00:00Z',
+      inserted24h: 3,
+      inserted7d: 40,
+      runwayDays: 12,
+      now: WRITER_NOW,
+    });
+    expect(a.level).toBe('ok');
+    expect(a.hoursSinceLastInsert).toBeCloseTo(4.95, 1);
+    expect(writerLivenessExitCode(a.level)).toBe(0);
+  });
+
+  it('respects the 26h/72h default boundaries', () => {
+    const base = { inserted24h: 0, inserted7d: 1, runwayDays: 10, now: WRITER_NOW };
+    const okEdge = assessWriterLiveness({ ...base, lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 25.99 * 3600e3).toISOString() });
+    const warnEdge = assessWriterLiveness({ ...base, lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 26.01 * 3600e3).toISOString() });
+    const warnStillEdge = assessWriterLiveness({ ...base, lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 71.99 * 3600e3).toISOString() });
+    const redEdge = assessWriterLiveness({ ...base, lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 72.01 * 3600e3).toISOString() });
+    expect(okEdge.level).toBe('ok');
+    expect(warnEdge.level).toBe('warn');
+    expect(warnStillEdge.level).toBe('warn');
+    expect(redEdge.level).toBe('red');
+    expect(DEFAULT_WRITER_WARN_HOURS).toBe(26);
+    expect(DEFAULT_WRITER_RED_HOURS).toBe(72);
+  });
+
+  it('low runway overrides to red even with a very recent insert', () => {
+    const a = assessWriterLiveness({
+      lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 2 * 3600e3).toISOString(),
+      inserted24h: 5,
+      inserted7d: 30,
+      runwayDays: 1.5,
+      now: WRITER_NOW,
+    });
+    expect(a.level).toBe('red');
+    expect(a.message).toContain('runway below the 3-day floor');
+    // A fresh insert should not be described as if the writer had gone dark.
+    expect(a.message).not.toContain('no insert in');
+    expect(DEFAULT_WRITER_RUNWAY_RED_DAYS).toBe(3);
+  });
+
+  it('never observing a writer row is red (cannot establish freshness), even with healthy runway', () => {
+    const a = assessWriterLiveness({ lastWriterInsertAt: null, inserted24h: 0, inserted7d: 0, runwayDays: 12, now: WRITER_NOW });
+    expect(a.level).toBe('red');
+    expect(a.hoursSinceLastInsert).toBeNull();
+    expect(a.message).toContain('no writer-attributed row found');
+  });
+
+  it('duplicatesDetected=true is a documented escape hatch: 0 inserts reads ok if runway is healthy', () => {
+    const a = assessWriterLiveness({
+      lastWriterInsertAt: '2026-09-04T08:46:31.894735+00:00',
+      inserted24h: 0,
+      inserted7d: 0,
+      runwayDays: 12,
+      duplicatesDetected: true,
+      now: WRITER_NOW,
+    });
+    expect(a.level).toBe('ok');
+    expect(a.message).toContain('duplicates confirmed the writer ran');
+  });
+
+  it('duplicatesDetected=true does not override a genuinely low runway', () => {
+    const a = assessWriterLiveness({
+      lastWriterInsertAt: '2026-09-04T08:46:31.894735+00:00',
+      inserted24h: 0,
+      inserted7d: 0,
+      runwayDays: 1,
+      duplicatesDetected: true,
+      now: WRITER_NOW,
+    });
+    expect(a.level).toBe('red');
+  });
+
+  it('runwayDays null (rate unknown) does not by itself force red or ok — hours since insert still decides', () => {
+    const a = assessWriterLiveness({ ...IDLE_SINCE_0904, runwayDays: null, now: WRITER_NOW });
+    expect(a.level).toBe('red'); // still red: 411h since last insert > 72h floor
+    const fresh = assessWriterLiveness({
+      lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 2 * 3600e3).toISOString(),
+      inserted24h: 2,
+      inserted7d: 20,
+      runwayDays: null,
+      now: WRITER_NOW,
+    });
+    expect(fresh.level).toBe('ok');
+  });
+});
+
 describe('the shipped consumers use the Pinterest signal', () => {
   it('funnel-scoreboard.ts imports the lib and no longer flags red on the Post Date proxy', () => {
     const src = read('scripts/agents/funnel-scoreboard.ts');
@@ -208,6 +320,24 @@ describe('the shipped consumers use the Pinterest signal', () => {
     // Runway can WARN (empty/low) but never FAIL.
     expect(src).toMatch(/EMPTY\|LOW\)\s*\n\s*warn/);
     expect(src).not.toMatch(/fail "\$RUNWAY_MSG"/);
+  });
+  it('funnel-scoreboard.ts wires assessWriterLiveness and never FAILs on it', () => {
+    const src = read('scripts/agents/funnel-scoreboard.ts');
+    expect(src).toMatch(/assessWriterLiveness\(/);
+    expect(src).toMatch(/%22Wordpress%20Post%20ID%22=not\.is\.null/);
+    expect(src).toMatch(/writerLiveness/);
+    // Pushed as a flag when red/warn, styled 🔴/🟡 — never silently dropped.
+    expect(src).toMatch(/wl\.level === 'red' \? '🔴' : '🟡'/);
+  });
+  it('check-pinner.sh step 2b queries writer-attributed created_at and only ever WARNs', () => {
+    const src = read('scripts/agents/check-pinner.sh');
+    expect(src).toMatch(/2b\. Writer liveness/);
+    expect(src).toMatch(/WORDPRESS_POST_ID|Wordpress%20Post%20ID/i);
+    expect(src).toMatch(/WRITER_WARN_HOURS/);
+    expect(src).toMatch(/WRITER_RED_HOURS/);
+    // Never fails: the fix is Tier 2 (Q11 / operator's BigScoots cron).
+    expect(src).not.toMatch(/RED\)\s*\n\s*fail/);
+    expect(src).toMatch(/RED\|\*\)/);
   });
   it('the three consumers agree on the runway constants', () => {
     const sh = read('scripts/agents/check-pinner.sh');
