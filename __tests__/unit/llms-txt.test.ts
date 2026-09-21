@@ -112,6 +112,92 @@ describe('/llms-full.txt (long form)', () => {
     expect(text).not.toContain('blog.musthavemods.com');
   });
 
+  /**
+   * E71: the file published 20 of 682 guides, and the most-cited AI-referral
+   * landing page on the site (`/sims-4-elf-cc/`, 40 sessions/28d to 09-18) was
+   * not one of them. The complete index is the point of the section; a
+   * regression back to "latest N" must fail here.
+   */
+  it('publishes the complete A–Z guide index, not just the newest page of guides', async () => {
+    findManyMock.mockResolvedValue([]);
+    const many = Array.from({ length: 230 }, (_, i) => ({
+      title: { rendered: `Zed Guide ${String(i).padStart(3, '0')}` },
+      link: `https://blog.musthavemods.com/zed-guide-${String(i).padStart(3, '0')}/`,
+      date_gmt: '2024-01-01T00:00:00',
+    }));
+    // An old guide that would never appear in a "latest 20" slice.
+    many.push({
+      title: { rendered: 'Sims 4 Elf CC' },
+      link: 'https://blog.musthavemods.com/sims-4-elf-cc/',
+      date_gmt: '2023-05-05T00:00:00',
+    });
+    const pages = [many.slice(0, 100), many.slice(100, 200), many.slice(200)];
+    let call = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        const body = pages[call++] ?? [];
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: (k: string) => (k === 'X-WP-TotalPages' ? '3' : null) },
+          json: async () => body,
+        };
+      }),
+    );
+
+    const { GET } = await import('@/app/llms-full.txt/route');
+    const text = await (await GET()).text();
+
+    expect(text).toContain('## Complete guide index (A–Z by topic, 231 guides)');
+    expect(text).toContain('https://musthavemods.com/sims-4-elf-cc/');
+    for (const g of [0, 99, 100, 199, 200, 229]) {
+      expect(text).toContain(`https://musthavemods.com/zed-guide-${String(g).padStart(3, '0')}/`);
+    }
+    // the freshness block stays capped at 20 lines
+    const recent = text.split('## Recent guides from the MustHaveMods blog')[1].split('## Complete')[0];
+    expect(recent.trim().split('\n')).toHaveLength(20);
+    // A–Z by topic (URL slug), so /sims-4-elf-cc/ precedes /zed-guide-000/
+    // even though both titles would sort the other way under numeric rules.
+    const index = text.split('## Complete guide index')[1];
+    expect(index.indexOf('/sims-4-elf-cc/')).toBeLessThan(index.indexOf('/zed-guide-000/'));
+    expect(index.indexOf('/zed-guide-000/')).toBeLessThan(index.indexOf('/zed-guide-100/'));
+    expect(text).not.toContain('index may be partial');
+  });
+
+  it('says so instead of silently truncating when the guide fetch is incomplete', async () => {
+    findManyMock.mockResolvedValue([]);
+    let call = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        call++;
+        if (call === 1) {
+          return {
+            ok: true,
+            status: 200,
+            headers: { get: (k: string) => (k === 'X-WP-TotalPages' ? '9' : null) },
+            json: async () =>
+              Array.from({ length: 100 }, (_, i) => ({
+                title: { rendered: `Guide ${i}` },
+                link: `https://blog.musthavemods.com/guide-${i}/`,
+                date_gmt: '2026-01-01T00:00:00',
+              })),
+          };
+        }
+        return { ok: false, status: 500, headers: { get: () => null }, json: async () => [] };
+      }),
+    );
+
+    const { GET } = await import('@/app/llms-full.txt/route');
+    const res = await GET();
+    const text = await res.text();
+
+    expect(res.status).toBe(200);
+    expect(text).toContain('## Complete guide index (A–Z by topic, 100 guides)');
+    expect(text).toContain('index may be partial');
+  });
+
   it('never credits a Patreon id as the creator', async () => {
     findManyMock.mockResolvedValue([
       fakeMod(1, { author: '75940181', creator: null }),
