@@ -51,12 +51,37 @@ SAFETY RAILS (all of these are enforced, not advisory)
     * idempotent: re-running selects only rows still dated before the window, so
       rows this script already moved are not picked up again
 
+TIER (SD-10, 2026-09-19)
+    Re-dating rows changes pin volume, timing and inventory — that is Tier 2.
+    The dry run, --self-test and --rollback are the team's; `--apply` on a
+    revival runs only on the operator's written approval of a specific package
+    (operator-queue Q12 for E66). The E46/E56 slices, chosen newest-first, were
+    rolled back by the operator on 2026-09-19.
+
+SELECTION MODES
+    default        newest stranded rows first (E26/E46/E56). Recency is not
+                   value: the 2026-09-19 read found the 3 most-pinned revived
+                   destinations earned 2.8% of the slice's sessions.
+    --ids-from F   only the row ids listed in F, in F's order. F is the JSON
+                   package an analysis wrote (E66-A: `destinations[].ids`,
+                   sessions-ranked), or `{"ids": [...]}`, or a bare list. The
+                   allocator then honours F's order instead of group size, so a
+                   high-value destination with one stranded row is placed on
+                   day 1 rather than never. Ids that are already posted, already
+                   re-dated into the window, or missing are reported and skipped;
+                   a non-empty file that matches nothing is exit 2, not a quiet
+                   "nothing to do". Every other filter still applies.
+    --max-per-url  per-destination-per-day cap (default 2; E66-A proposes 1).
+
 USAGE
     python3 scripts/agents/revive-stranded-pins.py                 # dry run
     python3 scripts/agents/revive-stranded-pins.py --apply
     python3 scripts/agents/revive-stranded-pins.py --self-test     # offline
     python3 scripts/agents/revive-stranded-pins.py \
         --rollback reports/funnel/pin-revival-YYYY-MM-DD.json --apply
+    python3 scripts/agents/revive-stranded-pins.py \
+        --ids-from reports/funnel/pin-revival-package-2026-09-20.json \
+        --per-day 7 --days 14 --max-per-url 1 --experiment E66    # dry run
 
 ENV
     MHM_PINTEREST_CONFIG  path to the pinner config.json holding SUPABASE_URL /
@@ -168,6 +193,89 @@ def fetch_stranded(config, floor_str, limit):
     return supabase(config, 'GET', query)
 
 
+# --------------------------------------------------------------------------
+# --ids-from: an explicit, ordered id list (pure parsing covered by --self-test)
+# --------------------------------------------------------------------------
+
+def parse_ids_file(obj):
+    """Return the ordered, de-duplicated list of integer row ids in a parsed
+    id file. Accepts the E66-A package shape (`destinations[].ids`), an object
+    with a top-level `ids`, or a bare list. Raises ValueError on an empty list
+    or on anything that is not an integer id — a malformed file must never
+    degrade into "nothing to do"."""
+    if isinstance(obj, dict):
+        if 'destinations' in obj:
+            raw = []
+            for dest in obj['destinations'] or []:
+                raw.extend((dest or {}).get('ids') or [])
+        elif 'ids' in obj:
+            raw = obj['ids'] or []
+        else:
+            raise ValueError('id file has neither "destinations" nor "ids"')
+    elif isinstance(obj, list):
+        raw = obj
+    else:
+        raise ValueError('id file must be a JSON object or list')
+    ids, seen = [], set()
+    for value in raw:
+        if isinstance(value, bool) or not isinstance(value, int):
+            if isinstance(value, str) and value.strip().isdigit():
+                value = int(value.strip())
+            else:
+                raise ValueError('non-integer id in id file: {!r}'.format(value))
+        if value in seen:
+            continue
+        seen.add(value)
+        ids.append(value)
+    if not ids:
+        raise ValueError('id file lists no ids')
+    return ids
+
+
+def load_ids_file(path):
+    with open(path) as handle:
+        return parse_ids_file(json.load(handle))
+
+
+def fetch_by_ids(config, ids, floor_str, chunk=100):
+    """Rows for `ids` that are still unposted AND still dated before the
+    poster's window — the same two predicates the default selection uses, so a
+    row this script already moved is not moved twice."""
+    rows = []
+    for i in range(0, len(ids), chunk):
+        batch = ids[i:i + chunk]
+        query = ('{cols}&id=in.({ids})&%22Is%20Posted%22=eq.false'
+                 '&%22Post%20Date%22=lt.{floor}').format(
+                     cols=SELECT_COLS, ids=','.join(str(v) for v in batch),
+                     floor=q(floor_str))
+        rows.extend(supabase(config, 'GET', query))
+    return rows
+
+
+def classify_missing(config, ids, floor_str, chunk=100):
+    """Explain why requested ids were not selectable: already posted, already
+    inside the poster window (re-dated earlier), or not in the table."""
+    found = {}
+    for i in range(0, len(ids), chunk):
+        batch = ids[i:i + chunk]
+        query = ('select=id,%22Is%20Posted%22,%22Post%20Date%22&id=in.({})'
+                 .format(','.join(str(v) for v in batch)))
+        for row in supabase(config, 'GET', query):
+            found[int(row['id'])] = row
+    reasons = defaultdict(list)
+    for value in ids:
+        row = found.get(value)
+        if row is None:
+            reasons['not in table'].append(value)
+        elif row.get('Is Posted'):
+            reasons['already posted'].append(value)
+        elif str(row.get('Post Date') or '')[:10] >= floor_str:
+            reasons['already inside the poster window'].append(value)
+        else:
+            reasons['unexplained'].append(value)
+    return reasons
+
+
 def posted_image_urls(config, image_urls, chunk=40):
     """Return the subset of image_urls that already exist on a posted row."""
     found = set()
@@ -276,19 +384,37 @@ def drop_dead_sections(config, rows):
 # --------------------------------------------------------------------------
 
 def allocate(rows, start, days, per_day,
-             max_per_url=MAX_PER_URL_PER_DAY, max_per_board=MAX_PER_BOARD_PER_DAY):
+             max_per_url=MAX_PER_URL_PER_DAY, max_per_board=MAX_PER_BOARD_PER_DAY,
+             priority=None):
     """Spread rows over `days` days, at most `per_day` each.
 
-    Round-robins across destination URLs (largest group first) so a single
-    article never dominates a day, and caps per URL and per board within a day.
+    Round-robins across destination URLs so a single article never dominates a
+    day, and caps per URL and per board within a day. Without `priority` the
+    largest group picks first each round (the E26 behaviour). With `priority`
+    (a dict row-id -> rank, lower first, as an --ids-from file orders them) a
+    group's rank is its best row's rank and groups pick in rank order — so a
+    high-value destination with one stranded row lands on day 1 instead of
+    being starved by the biggest groups for the whole run.
     Returns a list of (row, date) pairs; rows that do not fit are left out.
     """
     groups = defaultdict(list)
     for row in rows:
         groups[row.get('Post URL')].append(row)
-    # Newest first inside a group; biggest groups get first pick each round.
+    # Newest first inside a group (or file order when a priority is given).
     for url in groups:
-        groups[url].sort(key=lambda r: str(r.get('Post Date') or ''), reverse=True)
+        if priority is None:
+            groups[url].sort(key=lambda r: str(r.get('Post Date') or ''), reverse=True)
+        else:
+            groups[url].sort(key=lambda r: priority.get(r.get('id'), float('inf')))
+    if priority is None:
+        def group_order(u):
+            return -len(groups[u])
+    else:
+        best = {u: min(priority.get(r.get('id'), float('inf')) for r in rs)
+                for u, rs in groups.items()}
+
+        def group_order(u):
+            return (best[u], -len(groups[u]))
 
     plan = []
     for offset in range(days):
@@ -299,7 +425,7 @@ def allocate(rows, start, days, per_day,
         progress = True
         while placed < per_day and progress:
             progress = False
-            for url in sorted(groups, key=lambda u: -len(groups[u])):
+            for url in sorted(groups, key=group_order):
                 if placed >= per_day:
                     break
                 if not groups[url] or per_url[url] >= max_per_url:
@@ -385,7 +511,53 @@ def self_test():
     assert not on_skipped_host('', skip) and not on_skipped_host(None, skip)
     assert not on_skipped_host('https://blog.musthavemods.com/x/', ())
 
-    print('self-test: 7/7 assertions passed (allocator + host filter, offline)')
+    # 8. parse_ids_file: package shape, {"ids"} shape, bare list; order kept,
+    #    duplicates collapsed, numeric strings accepted, junk and empty rejected.
+    pkg = {'destinations': [{'path': '/a/', 'ids': [30, 10]},
+                            {'path': '/b/', 'ids': [20, 10, '40']}]}
+    assert parse_ids_file(pkg) == [30, 10, 20, 40], parse_ids_file(pkg)
+    assert parse_ids_file({'ids': [5, 5, 6]}) == [5, 6]
+    assert parse_ids_file([7, 8]) == [7, 8]
+    for bad in ({'ids': []}, [], {'destinations': []}, {'x': 1}, {'ids': [1, 'a']},
+                {'ids': [True]}, 'nope'):
+        try:
+            parse_ids_file(bad)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('parse_ids_file accepted {!r}'.format(bad))
+
+    # 9. With a priority, a one-row top-ranked destination is placed on day 1
+    #    even though a 60-row group exists; without it, size wins (E26 shape).
+    big = make(60, 'https://big/', 'B1')
+    small = [{'id': 'top', 'Post URL': 'https://small/', 'Board ID': 'B2',
+              'Post Date': '2026-01-01'}]
+    prio = {'top': 0}
+    prio.update({r['id']: i + 1 for i, r in enumerate(big)})
+    plan = allocate(big + small, start, days=14, per_day=1, priority=prio)
+    assert plan[0][0]['id'] == 'top' and plan[0][1] == start, plan[0]
+    plan = allocate(big + small, start, days=14, per_day=1)
+    assert plan[0][0]['Post URL'] == 'https://big/', plan[0]
+
+    # 10. max_per_url=1 holds and the E66-A cap is expressible: 7/day across
+    #     25 destinations of mixed size places 7 *distinct* destinations a day.
+    rows = []
+    for k, n in enumerate([1, 7, 23, 2, 6, 33, 2, 23, 16, 1, 6, 1, 1, 4, 8, 16,
+                           31, 25, 1, 1, 7, 8, 17, 23, 8]):
+        rows += [{'id': 'd{}-{}'.format(k, i), 'Post URL': 'https://d{}/'.format(k),
+                  'Board ID': 'B{}'.format(k % 6), 'Post Date': '2026-02-01'}
+                 for i in range(n)]
+    prio = {r['id']: i for i, r in enumerate(rows)}
+    plan = allocate(rows, start, days=14, per_day=7, max_per_url=1, priority=prio)
+    assert len(plan) == 98, len(plan)
+    per_day_url = defaultdict(set)
+    for row, day in plan:
+        assert row['Post URL'] not in per_day_url[day], (day, row['Post URL'])
+        per_day_url[day].add(row['Post URL'])
+    assert all(len(v) == 7 for v in per_day_url.values()), per_day_url
+    assert plan[0][0]['Post URL'] == 'https://d0/', plan[0]  # 1-row, rank 0, day 1
+
+    print('self-test: 10/10 assertions passed (allocator + host filter + id file, offline)')
     return 0
 
 
@@ -446,6 +618,14 @@ def main():
                                  ', '.join(DEFAULT_SKIP_HOSTS)))
     parser.add_argument('--include-all-hosts', action='store_true',
                         help='disable the destination-host exclusion entirely')
+    parser.add_argument('--ids-from', metavar='FILE',
+                        help='select only the row ids listed in FILE (a package '
+                             'JSON with destinations[].ids, {"ids": [...]}, or a '
+                             'bare list), in FILE order, instead of newest-first')
+    parser.add_argument('--max-per-url', type=int, default=MAX_PER_URL_PER_DAY,
+                        metavar='N',
+                        help='max pins per destination URL per day (default {}; '
+                             'the E66-A package proposes 1)'.format(MAX_PER_URL_PER_DAY))
     parser.add_argument('--experiment', default='E26',
                         help='experiment id recorded in the ledger (default E26)')
     parser.add_argument('--rollback', metavar='LEDGER',
@@ -465,6 +645,7 @@ def main():
 
     per_day = max(1, args.per_day)
     days = max(1, args.days)
+    max_per_url = max(1, args.max_per_url)
     target = min(per_day * days, HARD_CAP)
     if per_day * days > HARD_CAP:
         print('NOTE: {}x{} = {} exceeds the hard cap; capping at {}'.format(
@@ -477,15 +658,47 @@ def main():
         'APPLY' if args.apply else 'DRY RUN'))
     print('Poster window is [{} .. {}]; anything unposted and dated before {} is '
           'unreachable.'.format(floor, today, floor))
-    print('Target: {} rows over {} days at {}/day (hard cap {}).'.format(
-        target, days, per_day, HARD_CAP))
+    print('Target: {} rows over {} days at {}/day, <= {}/destination/day '
+          '(hard cap {}).'.format(target, days, per_day, max_per_url, HARD_CAP))
 
-    # Over-fetch so the filters below still leave enough to fill the plan.
-    candidates = fetch_stranded(config, str(floor), min(HARD_CAP * 3, 600))
-    print('\nFetched {} newest stranded rows.'.format(len(candidates)))
-    if not candidates:
-        print('Nothing stranded — nothing to do.')
-        return 0
+    priority = None
+    if args.ids_from:
+        # --- selection: an explicit, ordered id list --------------------------
+        try:
+            wanted = load_ids_file(args.ids_from)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print('ERROR: cannot use --ids-from {}: {}'.format(args.ids_from, exc))
+            return 2
+        priority = {value: rank for rank, value in enumerate(wanted)}
+        candidates = fetch_by_ids(config, wanted, str(floor))
+        for row in candidates:
+            row['id'] = int(row['id'])
+        got = {row['id'] for row in candidates}
+        missing = [value for value in wanted if value not in got]
+        print('\nSelection: {} ids from {} (file order kept); {} still stranded and '
+              'unposted, {} not selectable.'.format(
+                  len(wanted), args.ids_from, len(candidates), len(missing)))
+        if missing:
+            for reason, values in sorted(classify_missing(
+                    config, missing, str(floor)).items()):
+                print('  {:>4}  {}: {}{}'.format(
+                    len(values), reason,
+                    ', '.join(str(v) for v in values[:12]),
+                    ' …' if len(values) > 12 else ''))
+        if not candidates:
+            print('ERROR: the id file lists {} ids and none is selectable — a '
+                  'non-empty selection that matches nothing is a failure, not '
+                  '"nothing to do" (stale package? already applied?)'.format(
+                      len(wanted)))
+            return 2
+        candidates.sort(key=lambda r: priority[r['id']])
+    else:
+        # Over-fetch so the filters below still leave enough to fill the plan.
+        candidates = fetch_stranded(config, str(floor), min(HARD_CAP * 3, 600))
+        print('\nFetched {} newest stranded rows.'.format(len(candidates)))
+        if not candidates:
+            print('Nothing stranded — nothing to do.')
+            return 0
 
     # --- filter: required fields ------------------------------------------
     usable, missing_fields = [], 0
@@ -538,8 +751,13 @@ def main():
         print('  destination URLs checked: {} live, {} dead'.format(
             len(dest_urls) - len(dead_dest), len(dead_dest)))
 
-        # Only verify as many images as we could plausibly need.
-        budget = min(len(live), int(target * 1.4) + 10)
+        # Only verify as many images as we could plausibly need — except in
+        # --ids-from mode, where the list is ordered by destination value and a
+        # budget cut would silently drop the lower-ranked destinations before
+        # the allocator ever sees them (first E66-A dry run: 15 of 25
+        # destinations reached, tail days under-filled). Verify them all.
+        budget = len(live) if priority is not None else min(
+            len(live), int(target * 1.4) + 10)
         checked, dead_img = 0, 0
         kept = []
         for row in live:
@@ -566,11 +784,18 @@ def main():
         print('\nNo usable rows survived the filters — nothing to do.')
         return 0
 
-    plan = allocate(live[:HARD_CAP * 2], today, days, per_day)
+    plan = allocate(live[:HARD_CAP * 2], today, days, per_day,
+                    max_per_url=max_per_url, priority=priority)
     plan = plan[:target]
     if not plan:
         print('\nAllocator produced nothing — nothing to do.')
         return 0
+    if priority is not None:
+        placed_ids = {row['id'] for row, _ in plan}
+        left = [r['id'] for r in live if r['id'] not in placed_ids]
+        print('  allocator placed {} of {} usable rows; {} left unscheduled by the '
+              'per-day/per-destination caps (a later slice can take them)'.format(
+                  len(plan), len(live), len(left)))
 
     # --- report -------------------------------------------------------------
     by_day = defaultdict(list)
@@ -606,7 +831,11 @@ def main():
           'norms.'.format(daily, len(by_day)))
 
     if not args.apply:
-        print('\nDRY RUN — nothing written. Re-run with --apply to schedule.')
+        print('\nDRY RUN — nothing written.')
+        print('Re-running with --apply re-dates these rows: that is a Tier 2 queue '
+              'change under SD-10 (2026-09-19) and runs only on the operator\'s '
+              'written approval of this exact slice (operator-queue.md) — never '
+              'on an agent\'s own judgement.')
         return 0
 
     # --- apply --------------------------------------------------------------
@@ -646,6 +875,8 @@ def main():
             'experiment': args.experiment,
             'per_day': per_day,
             'days': days,
+            'max_per_url': max_per_url,
+            'ids_from': args.ids_from,
             'skip_hosts': list(skip_hosts),
             'updated': updated,
             'entries': ledger_entries,
