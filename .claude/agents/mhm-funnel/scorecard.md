@@ -26,6 +26,24 @@ target · 🟡 within 10% · 🔴 more than 10% below. Silence is not green.
 
 ---
 
+## Week of 2026-09-21 (covers 2026-09-14 → 2026-09-20, judged on data to 09-19)
+
+**Headline:** total revenue 28d $6,051 vs expectation $5,798 (🟢 104.4%; Mediavine $5,916 +5.4%) · sessions 28d 355,780 vs expectation 369,773 (🟡 96.2%, floor 97%) · owned-audience net adds 52/wk vs target 120 (🔴 43%) · non-ad revenue $148/mo ($150.50 API) vs $200 (🔴 74%)
+
+| Agent | KPI | Target | Actual (7d to 09-19) | Grade | Moves shipped (T0/T1) | Note |
+|---|---|---|---|---|---|---|
+| Pip | sessions by channel 7d | hold ≥ Aug run-rate (~92K/7d) | 86,391 (−3.7%); Pinterest 56,542 (−4.5%) | 🟡 | 3 T0 (E61 host read-back, E66 decline read + Q12 package, E70 `--ids-from` mode); E56 revival rolled back by operator 09-19 | Runway 0.5 d, 10 pins/24h; every refill is Tier 2 (SD-10) and sits with the operator (Q12 or Q8+Q11 scp). 58% of the WoW drop was Labor Day. |
+| Sage | organic + AI-referral sessions | +25% AI-referral by 09-30 (≥385/7d) | google_organic 2,660 (+34.3%); ai_referral 304 (−9.0%); GSC clicks 28d 2,408 (+20.6%) | 🟡 | 2 T0 (E62 link graph, E71 llms-full 20→676 guides) | Google recovering on collection pages; AI referral flat-to-noisy (chatgpt weekly 282). E18 homepage SSR grades 09-22: neither leg met, impressions −31% on brand queries. |
+| Nova | pages shipped / creators onboarded | ≥1 page + 1 brief per week | 3 collection pages (jewelry-cc 439, nails-cc 145, kids-cc 686) + 1 facet class bug fixed; creators 0; brief adoption 0/15 | 🟢 pages · 🔴 briefs | 3 T0 (E67, E72 + ageGroups repair, E38 /play KILL) | Brief format KILLED: the writer publishes celebrity/aesthetic/single-item posts, briefs proposed head terms. |
+| Cass | owned-audience net adds 7d | 120 | 52 (accounts +49, email +3) | 🔴 | 2 T0 (E68 bounce exclusion + DSN counter, E73 homepage strip); day-2 send held on its 7.0% gate (Q10) | E6/E10 bottom-of-page blocks KILLED (0.31 and 0/1K); footer still 17 of 26 subscribers. Patreon free +150/wk is not in the headline count (proposal open). |
+| Rio | non-ad revenue / mo | $200 by 09-30 | $148 public / $150.50 API (54 paid) | 🔴 | 1 T0 (E69 Q4 gate pre-read) + 1 T1 queued (E74 /go post-connect, merges 09-22) | Q4 gate reads HOLD tomorrow: joins 22.5/mo pace PASS, paid-and-connected 0/54 FAIL. 48 of 52 linked accounts never followed the campaign. |
+
+**Experiments graded:** KEEP E14, E15 (token), E16, E23 (issue-01), E29, E35, E44 · KILL E6, E10, E15 (pins), E3 (brief format) · EXTEND E23 re-permission leg → 09-30 · CLOSED (operator rollback 09-19) E46, E56 · pending tomorrow E18, E69.
+**Biggest risk:** the pin queue is 0.5 days from empty and under SD-10 nobody on the team may refill it — Pinterest is 65% of sessions and sessions 28d are already below the 97% floor. Second: `deploy-verify.sh` graded PASS against the wrong build on 2 of today's 7 merges (it matches deployments by timing, not commit) — production was briefly behind `main` twice with no runner signal.
+**Top 3 bets next week:** 1) Q12 approval → 98 sessions-ranked pins at 7/day in one command (Pip, built). 2) E74 `/go` "follow free first" — the first move aimed at the actual population (Rio, T1 merges 09-22). 3) E73 homepage capture strip read 09-28/10-05, and count Patreon free members in the headline adds (Quinn, scoreboard).
+**Operator queue:** 3 open T2 decisions (Q12 1 day, Q10 5 days, Q9 31 days — closes 09-22 by its own rule) + 4 approved items waiting on operator hands (Q4 step 1, Q8+Q11 scp, evening task, `NEXT_PUBLIC_SITE_URL`).
+**Missing block:** the Week of 2026-09-14 block was never written (the 09-14 run's grades live in `digest-2026-09-14.md` → `digest-2026-09-20.md`); not reconstructed here to avoid re-deriving numbers after the fact.
+
 ## Week of 2026-09-07 (covers 2026-09-01 → 2026-09-07, first graded week)
 
 **Headline:** owned-audience net adds 44/wk vs target 120 (🔴, 37% of target; baseline was 63) · non-ad revenue $127/mo vs $200 (🔴, 64%) · MV 28d $5,628 vs prior $6,088 (guardrail 🟡 at 92.4%; circuit breaker 🟢 on 09-07 — 09-05 was +12% vs same-weekday avg) · **total revenue 28d ≈ $5,745 vs ≈ $6,207 prior (−7.4%) — the SD-8 number, 🔴**

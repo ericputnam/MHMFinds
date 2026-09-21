@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-20T11:19:23.345Z",
+  "generatedAt": "2026-09-21T10:41:47.191Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -1222,9 +1222,9 @@
     },
     {
       "date": "2026-09-19",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 276.15,
+      "sessions": 14354,
+      "rpm": 19.23,
       "expectedRevenue": 261.35,
       "expectedSessions": 14341,
       "nonAdMonthly": 146,
@@ -1241,6 +1241,17 @@
       "nonAdMonthly": 148,
       "ownedAdds7d": 46,
       "pinterestSessions7d": 55376
+    },
+    {
+      "date": "2026-09-21",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 200.24,
+      "expectedSessions": 12773,
+      "nonAdMonthly": 148,
+      "ownedAdds7d": 52,
+      "pinterestSessions7d": 56542
     }
   ],
   "events": [
@@ -2076,6 +2087,12 @@
       "label": "Nova: PR #128 playbook entry 2026-09-20 (docs)",
       "commit": "4211b17",
       "result": "PASS"
+    },
+    {
+      "date": "2026-09-20",
+      "kind": "check",
+      "label": "mhm-guardrail-evening: DID NOT FIRE on 2026-09-20 — no ledger row 16:00–23:59 and no evening-* worktree",
+      "result": "MISSED"
     }
   ]
 }

@@ -95,3 +95,10 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: baseline in `../targets.json`
 - Verdict: —
 - Next time: your first move should be the top item in your agent file's "levers" list unless the scoreboard shows a 🔴 in your area.
+
+## 2026-09-21
+- Tried: five agents shipping in parallel with a 4-minute merge-serialization rule stated in the prompt; 7 PRs merged in 24 minutes (#130–#137), 5 of them Tier 0 site or script changes.
+- Before → after: ledger rows 7 of 7 merges (all PASS, 5xx = 0), but `deploy-verify.sh` graded PASS against a build that did not contain the merged sha on 2 of 7 (#132 at 07:05, #136 at 07:09) — production served the previous homepage ~5 min and a 404 kids-cc page ~2 min; two agents caught it by curling the changed surface, not by the runner.
+- Verdict: a post-merge check that matches a deployment by timing is decoration once merges overlap; the prose rule ("wait 4 min") was chained into the same command as `gh pr merge` by one agent and could not gate. Monday grading closed 12 rows (7 KEEP, 4 KILL, 1 EXTEND) only because every agent was told the exact rows and rules in its prompt — reads came back with sources on first pass.
+- Next time: `deploy-verify.sh --after-merge` compares the alias build's sha to `origin/main` HEAD and promotes HEAD's build (Tier 0, 09-22); the serialization check becomes its own command that exits non-zero. Keep the "list the due rows in the prompt" habit — it turned Monday grading from a Quinn query session into a merge of five reports.
+
