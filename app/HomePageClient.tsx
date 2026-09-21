@@ -20,6 +20,7 @@ import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { ModGrid } from '../components/ModGrid';
 import { Footer } from '../components/Footer';
+import { HomeCapture } from '../components/HomeCapture';
 import { FacetedSidebar } from '../components/FacetedSidebar';
 import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
@@ -331,6 +332,11 @@ export default function HomePageClient({ collectionsSlot }: HomePageClientProps)
             occupied; self-contained block above the grid/sidebar row, so it
             does not touch ad layout. */}
         {collectionsSlot}
+
+        {/* Capture strip (E73) — email + free-account CTA above the grid.
+            Self-contained block, sibling of the grid/sidebar row below and
+            of aside#secondary; never inside a .mv-ads container. */}
+        <HomeCapture />
 
         {/* Creator Filter Banner */}
         {creatorParam && (
