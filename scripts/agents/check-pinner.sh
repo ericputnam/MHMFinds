@@ -339,7 +339,7 @@ PY
   if [[ -n "${STRANDED:-}" && "$STRANDED" -gt 0 ]]; then
     say "         $STRANDED unposted rows are dated before ${FLOOR_STR} and are unreachable by the poster"
     say "         Re-dating a slice forward is a Tier 2 queue change (SD-10, 2026-09-19) — package it for the operator, never --apply it:"
-    say "         scripts/agents/revive-stranded-pins.py (dry run by default; --apply only on the operator's written approval)"
+    say "         scripts/agents/revive-stranded-pins.py --ids-from <package.json> (dry run by default; --apply only on the operator's written approval of that package)"
   fi
   say "         $UNPOSTED_TOTAL unposted rows in the table in total"
 fi
