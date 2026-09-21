@@ -17,6 +17,8 @@ import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 
+import { REDIRECTED_POST_PATHS, isRedirectedPostUrl } from '@/lib/seo/wpGuides';
+
 // sitemap-nextjs.xml reads the DB for per-collection <lastmod> (E37); keep
 // this suite hermetic. Rejecting exercises the template-date fallback.
 vi.mock('@/lib/prisma', () => ({
@@ -90,8 +92,12 @@ describe('sitemap <loc> entries use trailing slashes', () => {
     expect(src).toContain('/mods/${m.id}/</loc>');
   });
 
+  // E71: these two assert the *behaviour* of the shared constant
+  // (lib/seo/wpGuides.ts), not a copy of its literal in one route's source.
+  // The previous version grepped app/sitemap-blog-posts.xml/route.ts for the
+  // strings; when the constant moved, the first test failed loudly and the
+  // second passed vacuously (it sliced on a marker that no longer existed).
   it('sitemap-blog-posts.xml excludes every legacy post that 301s to a collection page', () => {
-    const src = read('app/sitemap-blog-posts.xml/route.ts');
     const consolidatedPaths = [
       '/sims-4-female-clothes-cc/',
       '/sims-4-male-clothes-cc/',
@@ -100,9 +106,15 @@ describe('sitemap <loc> entries use trailing slashes', () => {
       '/sims-4-goth-cc/',
       '/sims-4-cottagecore-cc/',
     ];
+    expect(REDIRECTED_POST_PATHS.length).toBeGreaterThanOrEqual(consolidatedPaths.length);
     for (const p of consolidatedPaths) {
-      expect(src, `${p} missing from REDIRECTED_POST_PATHS`).toContain(`'${p}'`);
+      expect(
+        isRedirectedPostUrl(`https://musthavemods.com${p}`),
+        `${p} missing from REDIRECTED_POST_PATHS`,
+      ).toBe(true);
     }
+    // the sitemap must actually apply it
+    expect(read('app/sitemap-blog-posts.xml/route.ts')).toContain('isRedirectedPostUrl(url)');
   });
 
   it('sitemap-blog-posts.xml keeps every un-redirected legacy post (they are live 200s)', () => {
@@ -110,12 +122,13 @@ describe('sitemap <loc> entries use trailing slashes', () => {
     // y2k): these articles serve 200 on the apex again and must be
     // listed. Excluding a live page from the sitemap is a silent
     // ranking-signal loss, not a build error.
-    const src = read('app/sitemap-blog-posts.xml/route.ts');
-    const listStart = src.indexOf('const REDIRECTED_POST_PATHS');
-    const listEnd = src.indexOf('];', listStart);
-    const list = src.slice(listStart, listEnd);
-    for (const p of ['/sims-4-pregnancy-mods/', '/sims-4-y2k-cc/', '/sims-4-body-presets/']) {
-      expect(list, `${p} must not be in REDIRECTED_POST_PATHS`).not.toContain(`'${p}'`);
+    const live = ['/sims-4-pregnancy-mods/', '/sims-4-y2k-cc/', '/sims-4-body-presets/'];
+    expect(live.length).toBeGreaterThan(0);
+    for (const p of live) {
+      expect(
+        isRedirectedPostUrl(`https://musthavemods.com${p}`),
+        `${p} must not be in REDIRECTED_POST_PATHS`,
+      ).toBe(false);
     }
   });
 });

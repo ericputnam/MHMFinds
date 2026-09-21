@@ -109,6 +109,14 @@ export default function SignInPage() {
         return;
       }
 
+      // GA4 conversion event — the account was created (Cass, E73). Analytics
+      // only; `ref` names the surface that sent the visitor (e.g. home-hero).
+      (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+        'event',
+        'sign_up',
+        { method: 'credentials', ref: searchParams?.get('ref') || 'direct' }
+      );
+
       // Auto sign in after signup
       const result = await signIn('credentials', {
         email,

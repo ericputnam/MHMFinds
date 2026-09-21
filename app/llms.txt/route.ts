@@ -35,8 +35,9 @@ homepage search covers the full database.
 
 Long form: [llms-full.txt](https://musthavemods.com/llms-full.txt) carries every
 collection's editorial intro, its top mods by downloads with creator credit and
-canonical URLs, the site-wide most-downloaded mods, and recent guides —
-enough to answer a "best Sims 4 X mods" question without crawling.
+canonical URLs, the site-wide most-downloaded mods, and a complete A–Z index of
+every guide on the blog — enough to answer a "best Sims 4 X mods" question
+without crawling.
 
 ## Mod Collections (curated, filterable, updated continuously)
 

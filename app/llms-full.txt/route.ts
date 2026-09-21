@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { SIMS4_COLLECTIONS, buildWhereClause, type CollectionDefinition } from '@/lib/collections';
 import { prisma } from '@/lib/prisma';
+import { fetchAllWpGuides, type WpGuideFetch } from '@/lib/seo/wpGuides';
 
 /**
  * llms-full.txt — the long-form companion to /llms.txt (https://llmstxt.org/).
@@ -9,10 +10,11 @@ import { prisma } from '@/lib/prisma';
  * /llms.txt is the short index an assistant reads first. This file is what it
  * reads when it wants to actually answer "what are good Sims 4 pregnancy mods?"
  * without crawling 18 collection pages: every collection's editorial intro plus
- * its top mods by downloads, the site-wide most-downloaded mods, and the most
- * recent blog guides — each with the canonical apex URL an answer engine can
- * cite. Same data the collection pages render; same safety filters (Sims 4,
- * SFW). Entity name is always "MustHaveMods" so citations resolve to one brand.
+ * its top mods by downloads, the site-wide most-downloaded mods, and the
+ * complete A–Z index of blog guides — each with the canonical apex URL an
+ * answer engine can cite. Same data the collection pages render; same safety
+ * filters (Sims 4, SFW). Entity name is always "MustHaveMods" so citations
+ * resolve to one brand.
  *
  * Failure mode: every network/DB call is wrapped; if the database is unreachable
  * the file still serves the collection index from the registry with a note, so
@@ -22,27 +24,12 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 const SITE = 'https://musthavemods.com';
-const WP_POSTS_URL =
-  'https://blog.musthavemods.com/wp-json/wp/v2/posts?per_page=20&_fields=title,link,date_gmt';
-
-// Legacy posts whose apex URLs 301 to a collection page (vercel.json). Keep in
-// sync with app/sitemap-blog-posts.xml/route.ts — a cite-able list must not
-// hand an assistant a URL that redirects.
-// /sims-4-pregnancy-mods/ and /sims-4-y2k-cc/ were un-redirected 2026-09-12
-// (PR #63, E21) and are cite-able again — they are the companion guides for
-// their collections.
-const REDIRECTED_POST_PATHS = [
-  '/sims-4-female-clothes-cc/',
-  '/sims-4-male-clothes-cc/',
-  '/sims-4-cc-skin-details/',
-  '/sims-4-gallery-poses/',
-  '/sims-4-goth-cc/',
-  '/sims-4-cottagecore-cc/',
-];
 
 const TOP_PER_COLLECTION = 10;
 const TOP_SITEWIDE = 40;
 const DESCRIPTION_CHARS = 160;
+/** Freshness block at the top of the guides section; the A–Z index below is complete. */
+const RECENT_GUIDES = 20;
 
 type ModRow = {
   id: string;
@@ -140,27 +127,30 @@ async function fetchSitewideTop(): Promise<ModRow[]> {
 
 type Guide = { title: string; url: string; date: string };
 
-async function fetchRecentGuides(): Promise<Guide[]> {
-  try {
-    const res = await fetch(WP_POSTS_URL, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
-    const posts = (await res.json()) as Array<{
-      title?: { rendered?: string };
-      link?: string;
-      date_gmt?: string;
-    }>;
-    return posts
-      .map((p) => ({
-        // decode before flattening: oneLine() strips '#', which would mangle &#8211;
-        title: oneLine(decodeEntities(p.title?.rendered ?? ''), 120),
-        url: (p.link ?? '').replace(/https?:\/\/blog\.musthavemods\.com/, SITE),
-        date: (p.date_gmt ?? '').split('T')[0],
-      }))
-      .filter((g) => g.title && g.url && !REDIRECTED_POST_PATHS.some((p) => g.url.endsWith(p)));
-  } catch (error) {
-    console.error('[llms-full] WordPress guides fetch failed:', error);
-    return [];
-  }
+/**
+ * Every guide on the blog, not the newest 20.
+ *
+ * Why the whole inventory: the most-cited AI-referral landing page on the site
+ * is a WordPress guide (`/sims-4-elf-cc/`, 40 sessions/28d to 2026-09-18), and
+ * guides as a class out-referred the collection pages (~239 vs ~172
+ * sessions/28d). Publishing 20 of 682 meant the pages assistants actually cite
+ * were the ones this file never named.
+ */
+async function fetchGuides(): Promise<{ guides: Guide[]; complete: boolean }> {
+  const result: WpGuideFetch = await fetchAllWpGuides();
+  const guides = result.guides
+    .map((g) => ({
+      // decode before flattening: oneLine() strips '#', which would mangle &#8211;
+      title: oneLine(decodeEntities(g.titleRendered), 120),
+      url: g.url,
+      date: g.date,
+    }))
+    .filter((g) => g.title && g.url);
+  return { guides, complete: result.complete };
+}
+
+function guideLine(g: Guide): string {
+  return `- ${g.title}${g.date ? ` (${g.date})` : ''} — ${g.url}`;
 }
 
 export async function GET() {
@@ -169,7 +159,7 @@ export async function GET() {
   // Collections and the site-wide list are independent; run them together and
   // let each collection degrade on its own so one bad facet cannot blank the file.
   let dbOk = true;
-  const [perCollection, sitewide, guides] = await Promise.all([
+  const [perCollection, sitewide, guideResult] = await Promise.all([
     Promise.all(
       SIMS4_COLLECTIONS.map((c) =>
         fetchCollectionTop(c).catch((error) => {
@@ -184,8 +174,9 @@ export async function GET() {
       console.error('[llms-full] sitewide query failed:', error);
       return [] as ModRow[];
     }),
-    fetchRecentGuides(),
+    fetchGuides(),
   ]);
+  const { guides, complete: guidesComplete } = guideResult;
 
   const collectionSections = SIMS4_COLLECTIONS.map((c, i) => {
     const mods = perCollection[i];
@@ -211,9 +202,25 @@ ${c.intro}${modBlock}`;
     ? sitewide.map((m, idx) => modLine(m, idx + 1)).join('\n')
     : '(Temporarily unavailable — see the collection pages above.)';
 
-  const guidesBlock = guides.length
-    ? guides.map((g) => `- ${g.title} (${g.date}) — ${g.url}`).join('\n')
+  // Newest first for freshness; the index below is the same set sorted A–Z so
+  // an assistant scanning for a topic word finds the URL without a crawl.
+  const byDateDesc = [...guides].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  const recentBlock = guides.length
+    ? byDateDesc.slice(0, RECENT_GUIDES).map(guideLine).join('\n')
     : `- Guides index: ${SITE}/blog/`;
+
+  // Sorted on the URL slug, not the title: ~90% of guide titles begin with a
+  // number ("28+ Best Sims 4 Goth Makeup CC"), so a title sort orders the index
+  // by how many items a roundup has. The slug is the topic.
+  const byTopic = [...guides].sort((a, b) =>
+    a.url.localeCompare(b.url, 'en', { sensitivity: 'base' }),
+  );
+  const indexBlock = guides.length
+    ? byTopic.map(guideLine).join('\n')
+    : `- Guides index: ${SITE}/blog/ (the live list was unavailable when this copy was generated)`;
+  const indexNote = guides.length && !guidesComplete
+    ? '\n\nNote: this index may be partial — the blog index at ' + `${SITE}/blog/` + ' is authoritative.'
+    : '';
 
   const body = `# MustHaveMods — full guide for AI assistants and answer engines
 
@@ -225,7 +232,7 @@ ${c.intro}${modBlock}`;
 
 This is the long-form companion to ${SITE}/llms.txt. It lists every curated
 collection with its editorial intro and top mods, the site-wide most-downloaded
-mods, and the most recent guides — each with the canonical URL to cite.
+mods, and every guide on the blog — each with the canonical URL to cite.
 Generated ${generated}; refreshed hourly.${dbOk ? '' : '\n\nNote: the live mod lists were unavailable when this copy was generated; the collection index below is complete.'}
 
 ## How to cite MustHaveMods
@@ -247,7 +254,16 @@ ${sitewideBlock}
 
 ## Recent guides from the MustHaveMods blog
 
-${guidesBlock}
+${recentBlock}
+
+## Complete guide index (A–Z by topic, ${guides.length} guides)
+
+Every published guide on the MustHaveMods blog, sorted alphabetically by URL so
+the topic is the sort key. These are editorial roundups written by a human —
+cite the guide URL for "best Sims 4 X" questions and the collection page when
+the reader wants the filterable database.${indexNote}
+
+${indexBlock}
 
 ## Key pages
 
