@@ -9,6 +9,11 @@ import {
   qualifiesForMembership,
   PATREON_MEMBER_TIER_CHECKOUT_URL,
   PATREON_MEMBER_TIER_PRICE_LABEL,
+  PATREON_FREE_TIER_CHECKOUT_URL,
+  POST_CONNECT_PARAM,
+  POST_CONNECT_VALUE,
+  withPostConnectMarker,
+  hasPostConnectMarker,
 } from '../../lib/membership'
 
 /**
@@ -222,5 +227,98 @@ describe('E65 — E40 reverted per its rule: /go member CTA is Connect first, la
     expect(src).toContain('((10 - countdown) / 10) * 100')
     // The CTA is a sibling of the mv-ads wrapper (it renders before it), never a child.
     expect(src.indexOf('onClick={handleConnectPatreon}')).toBeLessThan(src.indexOf('className="mv-ads'))
+  })
+})
+
+describe('E74 — /go post-connect state: follow free first (Rio, 2026-09-21)', () => {
+  // The E69 pre-read (2026-09-21) classified all 52 Patreon-linked site
+  // accounts against the campaign member list: 48 not in the campaign, 4 free,
+  // 0 paying. Connect is a follow funnel, and after OAuth those visitors saw
+  // the same "Connect Patreon" line again. This block pins the mechanism:
+  // a query marker on the OAuth callbackUrl (no JWT/session change — auth is
+  // Tier 2), a free-tier join link first, the $3 perk in prose only.
+  const strip = (src: string) =>
+    src.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+
+  it('the free tier join link is the campaign FREE tier, not the $3 tier', () => {
+    expect(PATREON_FREE_TIER_CHECKOUT_URL).toBe('https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24870826')
+    expect(PATREON_FREE_TIER_CHECKOUT_URL).not.toBe(PATREON_MEMBER_TIER_CHECKOUT_URL)
+  })
+
+  it('withPostConnectMarker adds ?patreon=connected and keeps path, query and hash', () => {
+    expect(withPostConnectMarker('https://musthavemods.com/go/abc123/')).toBe(
+      `https://musthavemods.com/go/abc123/?${POST_CONNECT_PARAM}=${POST_CONNECT_VALUE}`,
+    )
+    expect(withPostConnectMarker('https://musthavemods.com/go/abc123/?ref=pin#top')).toBe(
+      'https://musthavemods.com/go/abc123/?ref=pin&patreon=connected#top',
+    )
+  })
+
+  it('withPostConnectMarker is idempotent (a reconnect does not double the marker)', () => {
+    const once = withPostConnectMarker('https://musthavemods.com/go/abc123/')
+    expect(withPostConnectMarker(once)).toBe(once)
+    expect((once.match(/patreon=connected/g) ?? []).length).toBe(1)
+  })
+
+  it('withPostConnectMarker never throws on a non-URL (returns the input)', () => {
+    expect(withPostConnectMarker('not a url')).toBe('not a url')
+  })
+
+  it('hasPostConnectMarker reads location.search exactly', () => {
+    expect(hasPostConnectMarker('?patreon=connected')).toBe(true)
+    expect(hasPostConnectMarker('?ref=pin&patreon=connected')).toBe(true)
+    expect(hasPostConnectMarker('?patreon=1')).toBe(false)
+    expect(hasPostConnectMarker('?connected=patreon')).toBe(false)
+    expect(hasPostConnectMarker('')).toBe(false)
+    expect(hasPostConnectMarker(null)).toBe(false)
+    expect(hasPostConnectMarker(undefined)).toBe(false)
+  })
+
+  it('/go sends the marker on BOTH Patreon sign-in paths and reads it back from location.search', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    const calls = code.match(/signIn\('patreon',\s*\{\s*callbackUrl:\s*withPostConnectMarker\(window\.location\.href\)\s*\}\)/g) ?? []
+    expect(calls).toHaveLength(2)
+    expect(code).not.toMatch(/callbackUrl:\s*window\.location\.href\s*\}/)
+    expect(code).toContain('hasPostConnectMarker(window.location.search)')
+  })
+
+  it('the post-connect state is gated on flag AND marker AND an authenticated non-member session', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    expect(code).toMatch(
+      /const showPostConnect = membershipOn && postConnect && sessionStatus === 'authenticated' && !isMember/,
+    )
+    // The standard CTA yields to it (never both lines at once).
+    expect(code).toContain('{membershipOn && !loading && !showPostConnect && (')
+    expect(code).toContain('{showPostConnect && !loading && (')
+  })
+
+  it('the post-connect state leads with the FREE follow link and states the $3 perk in prose, never the $3 checkout', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    expect(code).toContain('href={PATREON_FREE_TIER_CHECKOUT_URL}')
+    expect(code).toContain('Follow free on Patreon')
+    expect(code).toContain('$3/mo patrons skip this wait')
+    expect(code).toContain('Already a patron? Reconnect')
+    expect(code).not.toContain('PATREON_MEMBER_TIER_CHECKOUT_URL')
+    // Free link before the reconnect button inside the state.
+    expect(code.indexOf('href={PATREON_FREE_TIER_CHECKOUT_URL}')).toBeLessThan(code.indexOf('onClick={handleReconnectPatreon}'))
+  })
+
+  it('GA4: patreon_click keeps exactly its two E24/E40 sources; the new state uses its own event names', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    const clicks = code.match(/gtag\('event',\s*'patreon_click'/g) ?? []
+    expect(clicks).toHaveLength(2)
+    expect(code).toContain("source: 'go-member-cta-connect'")
+    expect(code).toContain("source: 'go-member-cta-join'")
+    expect(code).toContain("gtag('event', 'patreon_post_connect_view'")
+    expect(code).toContain("gtag('event', 'patreon_follow_click'")
+    expect(code).toContain("gtag('event', 'patreon_reconnect_click'")
+  })
+
+  it('the post-connect state is a sibling of the mv-ads wrapper (renders before it) and outside the aside', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    const state = code.indexOf('{showPostConnect && !loading && (')
+    expect(state).toBeGreaterThan(-1)
+    expect(state).toBeLessThan(code.indexOf('className="mv-ads'))
+    expect(state).toBeLessThan(code.indexOf('id="secondary"'))
   })
 })

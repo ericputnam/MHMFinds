@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,7 +10,13 @@ import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
-import { isMembershipEnabled, PATREON_PAGE_URL } from '@/lib/membership';
+import {
+  isMembershipEnabled,
+  PATREON_PAGE_URL,
+  PATREON_FREE_TIER_CHECKOUT_URL,
+  withPostConnectMarker,
+  hasPostConnectMarker,
+} from '@/lib/membership';
 
 type Gtag = (...args: unknown[]) => void;
 const gtag = (...args: unknown[]) =>
@@ -56,14 +62,45 @@ export default function GoClient() {
   // off, isMember is always false and this page behaves exactly as before.
   // The layout (mv-ads wrapper, empty aside#secondary) is untouched either
   // way — members just get the Continue button without the 10s wait.
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const membershipOn = isMembershipEnabled();
   const isMember = membershipOn && !!session?.user?.isPremium;
 
+  // E74 (Rio, 2026-09-21) — the post-connect state. The Connect button sends
+  // people through Patreon OAuth and back to this exact URL; before this
+  // change a signed-in, Patreon-linked NON-member landed on the same
+  // countdown and the same "Connect Patreon" line they had just clicked.
+  // The E69 pre-read showed why that mattered: 48 of 52 linked accounts were
+  // never in the campaign at all (not even free followers), 4 free, 0 paying
+  // — Connect is a follow funnel. So the callbackUrl carries a query marker
+  // (`?patreon=connected`, lib/membership.ts) and, when it is present and the
+  // session is authenticated but not premium, the CTA becomes "follow free
+  // first". No JWT/session change (auth is Tier 2); no ad anchor moves.
+  const [postConnect, setPostConnect] = useState(false);
+  useEffect(() => {
+    setPostConnect(hasPostConnectMarker(window.location.search));
+  }, []);
+  const showPostConnect = membershipOn && postConnect && sessionStatus === 'authenticated' && !isMember;
+
   const handleConnectPatreon = useCallback(() => {
     gtag('event', 'patreon_click', { source: 'go-member-cta-connect', mod_id: String(params.modId) });
-    signIn('patreon', { callbackUrl: window.location.href });
+    signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
   }, [params.modId]);
+
+  // A second connect from the post-connect state (a $3+ patron whose status
+  // did not take, or someone who just followed/joined). Its own event name so
+  // the E65 `patreon_click` read (09-26) is not diluted by re-connects.
+  const handleReconnectPatreon = useCallback(() => {
+    gtag('event', 'patreon_reconnect_click', { source: 'go-post-connect', mod_id: String(params.modId) });
+    signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
+  }, [params.modId]);
+
+  const postConnectViewFired = useRef(false);
+  useEffect(() => {
+    if (!showPostConnect || postConnectViewFired.current) return;
+    postConnectViewFired.current = true;
+    gtag('event', 'patreon_post_connect_view', { mod_id: String(params.modId) });
+  }, [showPostConnect, params.modId]);
 
   // Fetch mod details + related mods
   useEffect(() => {
@@ -305,7 +342,7 @@ export default function GoClient() {
                       Lives inside the mod card (a sibling of the mv-ads wrapper
                       below, never inside it or the aside), per SD-3.
                     */}
-                    {membershipOn && !loading && (
+                    {membershipOn && !loading && !showPostConnect && (
                       <p className="mt-3 text-xs text-slate-500 text-center">
                         {/*
                           E40 REVERTED (Rio, 2026-09-19) per its own pre-committed
@@ -341,6 +378,38 @@ export default function GoClient() {
                       </p>
                     )}
                   </div>
+                )}
+                {/*
+                  E74 post-connect state — replaces the Connect line only when
+                  the visitor has just come back from Patreon OAuth signed in
+                  and is not a member. Outlives the countdown (it is the one
+                  moment the person is looking for what to do next). Same
+                  place as the CTA: inside the mod card, a sibling of the
+                  mv-ads wrapper below, never inside it or the aside (SD-3).
+                */}
+                {showPostConnect && !loading && (
+                  <p className="mt-3 text-xs text-slate-400 text-center">
+                    Patreon connected, but this account isn&apos;t a MustHaveMods member yet.{' '}
+                    <a
+                      href={PATREON_FREE_TIER_CHECKOUT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        gtag('event', 'patreon_follow_click', { source: 'go-post-connect-follow', mod_id: String(params.modId) })
+                      }
+                      className="text-sims-pink hover:underline font-semibold"
+                    >
+                      Follow free on Patreon
+                    </a>
+                    {' '}for early drops — $3/mo patrons skip this wait.{' '}
+                    <button
+                      type="button"
+                      onClick={handleReconnectPatreon}
+                      className="text-slate-300 hover:underline"
+                    >
+                      Already a patron? Reconnect
+                    </button>
+                  </p>
                 )}
               </div>
             </div>

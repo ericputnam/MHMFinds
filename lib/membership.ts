@@ -57,6 +57,53 @@ export const PATREON_MEMBER_TIER_CHECKOUT_URL =
   'https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24880520';
 export const PATREON_MEMBER_TIER_PRICE_LABEL = '$3/mo';
 
+/**
+ * Public join link for the campaign's FREE tier (id 24870826, "Free", from
+ * `GET /campaigns/{id}?include=tiers&fields[tier]=url`, 2026-09-21).
+ *
+ * E74 (Rio, 2026-09-21): the E69 pre-read classified every Patreon-linked
+ * site account against the campaign's member list — 48 of 52 were not in
+ * the campaign at all (never followed, not even free), 4 free, 0 paying. So
+ * the /go "Connect Patreon" click is a *follow* funnel reaching non-followers,
+ * and after OAuth those people came back to the same countdown and the same
+ * "Connect Patreon" line. The post-connect state asks for the free follow
+ * first (this link); the $3 perk is stated in prose, not linked — leading
+ * with the $3 checkout is the E40 kill above.
+ */
+export const PATREON_FREE_TIER_CHECKOUT_URL =
+  'https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24870826';
+
+/**
+ * Query marker appended to the OAuth `callbackUrl` by the /go Connect button,
+ * so the page can tell "just came back from Patreon" apart from a fresh visit
+ * without touching the JWT/session (auth is Tier 2). The session itself only
+ * carries `isPremium`; a linked-but-not-a-member visitor is indistinguishable
+ * from a credentials user otherwise.
+ */
+export const POST_CONNECT_PARAM = 'patreon';
+export const POST_CONNECT_VALUE = 'connected';
+
+/** Pure: `href` with `?patreon=connected` added (idempotent; keeps query + hash). */
+export function withPostConnectMarker(href: string): string {
+  try {
+    const u = new URL(href);
+    u.searchParams.set(POST_CONNECT_PARAM, POST_CONNECT_VALUE);
+    return u.toString();
+  } catch {
+    return href;
+  }
+}
+
+/** Pure: does a `location.search` string carry the post-connect marker? */
+export function hasPostConnectMarker(search: string | null | undefined): boolean {
+  if (!search) return false;
+  try {
+    return new URLSearchParams(search).get(POST_CONNECT_PARAM) === POST_CONNECT_VALUE;
+  } catch {
+    return false;
+  }
+}
+
 type Env = Record<string, string | undefined>;
 
 /**
