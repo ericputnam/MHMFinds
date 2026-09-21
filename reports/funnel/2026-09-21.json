@@ -1,0 +1,245 @@
+{
+  "date": "2026-09-21",
+  "headline": {
+    "ownedAdds7d": 52,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 148,
+    "nonAdTarget": 200,
+    "mediavine28d": 5916.48,
+    "mediavine28dPrev": 5611
+  },
+  "flags": [
+    "🟡 Pinner: inventory runway ≈ 0.5 days (20 rows dated through +14d ÷ 38.9/day observed; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-13→2026-09-19 vs 2026-09-06→2026-09-12",
+      "sessions7d": 86391,
+      "sessionsPrev7d": 89747,
+      "byChannel7d": {
+        "pinterest": 56542,
+        "bing_organic": 15836,
+        "direct": 5163,
+        "google_organic": 2660,
+        "other_search": 2591,
+        "tumblr": 1042,
+        "ai_referral": 304,
+        "other": 2043,
+        "reddit": 210
+      },
+      "byChannelPrev7d": {
+        "pinterest": 59187,
+        "bing_organic": 17032,
+        "direct": 4814,
+        "google_organic": 1980,
+        "other_search": 2907,
+        "tumblr": 1113,
+        "ai_referral": 334,
+        "other": 2165,
+        "reddit": 215
+      },
+      "aiReferral7d": 304,
+      "aiReferralPrev7d": 334,
+      "captureEvents7d": {
+        "patreon_click": 28,
+        "affiliate_click": 7,
+        "favorite": 4,
+        "newsletter_signup": 2
+      },
+      "captureUsers7d": {
+        "patreon_click": 24,
+        "affiliate_click": 7,
+        "favorite": 4,
+        "newsletter_signup": 2
+      },
+      "patreonClickUsersPerDay7d": 3.43,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 24,
+        "perDay": 3.43,
+        "window": "2026-09-13→2026-09-19"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-12": 9,
+        "2026-09-19": 9,
+        "2026-09-11": 6,
+        "2026-09-18": 5,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3
+      },
+      "notSetLanding7d": 3740
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-22→2026-09-18",
+      "clicks28d": 2408,
+      "clicksPrev28d": 1997,
+      "impressions28d": 105184
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-19",
+      "revenue7d": 1484.8,
+      "revenuePrev7d": 1614.43,
+      "rpm7d": 17.25,
+      "rpmPrev7d": 17.92,
+      "sessions7d": 86079,
+      "revenue28d": 5916.48,
+      "revenuePrev28d": 5611,
+      "rpm28d": 16.63,
+      "health": {
+        "date": "2026/09/21",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 52
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1693,
+      "users7d": 49,
+      "users30d": 256,
+      "subscribers": 26,
+      "subscribers7d": 3,
+      "subscribers30d": 13,
+      "subscribersBySource": {
+        "re-permission": 1,
+        "collection-page": 3,
+        "footer": 17,
+        "go-interstitial": 4,
+        "sign-in": 1
+      },
+      "favorites": 20979,
+      "favorites7d": 499,
+      "downloadClicks7d": 208,
+      "downloadClicks30d": 1245,
+      "affiliateClicks7d": 11,
+      "affiliateClicks30d": 68,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16511,
+      "collections": 1672
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 54,
+      "freeMembers": 5600,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5600,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 9,
+          "title": "Support Tier",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 43,
+          "title": "Tip Jar - Curious Simmer ",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 2,
+          "title": "Extra Support",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 148
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 54,
+      "free": 5409,
+      "former": 230,
+      "grossMonthlyUsd": 150.5,
+      "paidByAmount": {
+        "$3": 43,
+        "$1": 9,
+        "$5": 1,
+        "$8": 1
+      },
+      "joins7d": 3,
+      "cancels7d": 0,
+      "joinsSinceAnchor": 10,
+      "joinsSinceAnchorAtPerkTier": 5,
+      "cancelsSinceAnchor": 1,
+      "perkTierJoins7d": 1,
+      "perkTierJoinsPerDay7d": 0.14,
+      "paidAndConnected": 0,
+      "paidAndConnectedById": 0,
+      "paidAndConnectedByEmail": 0,
+      "linkedWithPatreonId": 52,
+      "paidWithUserId": 54,
+      "connectedAccounts": 52,
+      "premiumUsers": 2,
+      "anchor": "2026-09-08",
+      "window": "2026-09-14→2026-09-21"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 20,
+      "posts7d": 5,
+      "latestPost": "2026-09-21 sims-4-fall-cc-clothes"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-21",
+      "lastPinCreatedAt": "2026-09-21T08:00:03.000Z",
+      "pinsCreated24h": 10,
+      "pinsCreated7d": 272,
+      "pinsSampled": 282,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 2.7,
+        "message": "last pin created 2026-09-21 08:00Z (2.7 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 287,
+      "postedTotal": 8394,
+      "unpostedBacklog": 1477,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1457,
+      "inventoryRows": 20,
+      "runway": {
+        "level": "low",
+        "inventoryRows": 20,
+        "dailyRate": 38.857142857142854,
+        "runwayDays": 0.5,
+        "message": "inventory runway ≈ 0.5 days (20 rows dated through +14d ÷ 38.9/day observed; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)"
+      }
+    }
+  }
+}

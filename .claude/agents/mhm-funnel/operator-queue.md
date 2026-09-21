@@ -20,7 +20,7 @@ day.
 
 | Tier 1 | Owner | What | Reply to block |
 |---|---|---|---|
-| _(none open)_ | | #107 shipped 09-16 (see Closed). The re-permission day-2 batch is **not** auto-shipping — it is held on its own bounce gate, see Q10 below. | |
+| E74 · PR #131 | Rio | `/go` post-connect state ("follow free first"): after Patreon OAuth returns, a signed-in non-member sees "Follow free on Patreon — $3/mo patrons skip this wait" + Reconnect instead of the same Connect line. Copy-only, behind the existing membership flag; no price, no tier, no auth change; ad anchors untouched. Why: 48 of 52 Patreon-linked accounts never followed the campaign, so the Connect click is a follow funnel. Read 2026-10-06. **Merges 2026-09-22 unless you say "stop 74".** | "stop 74" |
 
 ## Tier 2 — needs your decision
 
@@ -30,6 +30,8 @@ day.
 - **Why it is yours:** pin queue volume/timing/inventory is Tier 2 under SD-10 (your 09-19 rollback of E46/E56).
 - **Reply:** **approve E66 7/day** (98 rows over 14 d, recommended) · **approve E66 14/day** · **reject E66** · **E66 after Q11** (park until the scp is done). Pip ships the `--ids-from` selection mode T0, dry-run first, then applies only the approved cadence. Reading: Pinterest sessions Tue–Fri same-weekday holiday-free mean, baseline 8,003/day, first read 2026-09-28.
 - **If you say nothing:** nothing is pinned by the team; the queue empties on 09-24 and the digest keeps flagging runway.
+
+- **Status 2026-09-21 (Pip, PR #130):** the `--ids-from` mode shipped and the dry run is clean — 271/271 ids selectable, 98 rows at 7/day 09-21→10-04 across 16 destinations (the 4 largest high-value groups hold 4 of 7 daily slots by design; 9 of 25 destinations wait for slice two). Approval runs as one command; the 2 `/black-sims-4-cc/` rows on the dead E36 section get `repair-pin-sections.py --apply` first under the same approval. Runway today 0.5 d, 10 pins/24h; silence costs ~7 pins/day of the only refill that does not need the scp.
 
 ### Q11 · The Pinterest pin *writer* has been idle since 09-04 — it was never scheduled (Pip, E56, 2026-09-16)
 - **What Pip found:** the queue table `n8n_pinterest_posts` has gained 0 new rows since 2026-09-04. No crontab entry and no server log has ever run `MHMUtils/posts_2_supabase_server.py`; the `mhm-pin-scheduler` only queues rows when someone presses the admin button. The poster is healthy (47 pins/24h) and is being fed entirely by revived old inventory — three slices so far (E26, E46, E56), ≈1,000 reachable rows ≈ five more slices, then the queue is empty for good.

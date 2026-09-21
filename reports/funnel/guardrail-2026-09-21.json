@@ -1,0 +1,242 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-19",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 261.35,
+    "sessions": 14341.25,
+    "rpm": 18.21
+  },
+  "actualDay": {
+    "date": "2026-09-19",
+    "revenue": 276.15,
+    "sessions": 14354,
+    "rpm": 19.23
+  },
+  "window3": {
+    "actualRevenue": 667.89,
+    "expectedRevenue": 645.6425,
+    "actualSessions": 36868,
+    "expectedSessions": 38290.75,
+    "actualRpm": 18.11571010090051,
+    "expectedRpm": 16.86614618837779
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-21T02:33:31.553Z",
+      "ref": "e07008f",
+      "text": "READY chore: compound learnings from 2026-09-20 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-803u65y1m-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T11:21:37.881Z",
+      "ref": "431e2cf",
+      "text": "READY funnel: daily run 2026-09-20 (#129) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-c00sp0jwj-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T11:15:24.255Z",
+      "ref": "4211b17",
+      "text": "READY docs(nova): playbook entry 2026-09-20 — nails-cc (#127), the rejected facet-wide retag, E3 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cdtdi4lbo-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T11:10:53.859Z",
+      "ref": "c78936e",
+      "text": "READY feat(rio): Q4 gate pre-read — 43 of 47 Patreon-linked accounts are not in the campaign; ga [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-5xqcgp632-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T11:06:47.873Z",
+      "ref": "5279ea4",
+      "text": "READY feat(collections): nails-cc collection page (145 mods) + repair the six junk rows in the n [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-3e9jtedm9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T11:02:44.329Z",
+      "ref": "4b8fffe",
+      "text": "READY feat(capture): hashed hard-bounce exclusion + day-1-anchored re-permission segment + read- [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-one0rkeov-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T10:58:33.960Z",
+      "ref": "aca0219",
+      "text": "READY docs(pip): E66 apex Pinterest decline read — 58% of the WoW drop is Labor Day, revived des [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-gzfbo6ur4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-20T10:52:09.602Z",
+      "ref": "27138a0",
+      "text": "READY fix(seo): repair the collection-page internal-link graph (8 pages had 0-1 inbound links) ( [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cvbfjybe3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T22:33:25-04:00",
+      "ref": "e07008f",
+      "text": "chore: compound learnings from 2026-09-20"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T07:21:34-04:00",
+      "ref": "431e2cf",
+      "text": "funnel: daily run 2026-09-20 (#129)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T07:15:21-04:00",
+      "ref": "4211b17",
+      "text": "docs(nova): playbook entry 2026-09-20 — nails-cc (#127), the rejected facet-wide retag, E3"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T07:10:51-04:00",
+      "ref": "c78936e",
+      "text": "feat(rio): Q4 gate pre-read — 43 of 47 Patreon-linked accounts are not in the campaign; ga"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T07:06:44-04:00",
+      "ref": "5279ea4",
+      "text": "feat(collections): nails-cc collection page (145 mods) + repair the six junk rows in the n"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T07:02:41-04:00",
+      "ref": "4b8fffe",
+      "text": "feat(capture): hashed hard-bounce exclusion + day-1-anchored re-permission segment + read-"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T06:58:30-04:00",
+      "ref": "aca0219",
+      "text": "docs(pip): E66 apex Pinterest decline read — 58% of the WoW drop is Labor Day, revived des"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-20T06:52:05-04:00",
+      "ref": "27138a0",
+      "text": "fix(seo): repair the collection-page internal-link graph (8 pages had 0-1 inbound links) ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T22:36:19-04:00",
+      "ref": "41e176a",
+      "text": "chore: compound learnings from 2026-09-19"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T08:16:15-04:00",
+      "ref": "1291bb7",
+      "text": "docs(funnel): ledger row — favicon PR #123 deployed and verified"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T08:12:29-04:00",
+      "ref": "497795a",
+      "text": "fix(seo): add site favicon so Google SERP shows the brand mark (#123)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T08:07:35-04:00",
+      "ref": "b815c42",
+      "text": "feat(admin): funnel scoreboard dashboard at /admin/funnel + sessions as co-equal headline "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T07:17:37-04:00",
+      "ref": "32abcaf",
+      "text": "docs(pip): Pinterest read-back — blog.* host is 31.7% of pin sessions and all of the WoW d"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T07:09:09-04:00",
+      "ref": "9d741bc",
+      "text": "revert(rio): E40 /go member CTA back to Connect-first + landing page, per E40's own rule ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T07:00:36-04:00",
+      "ref": "28814c1",
+      "text": "test(ads): guard against Mediavine player relocation + timed hiding of .mv-ads (the class "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-19T00:08:22-04:00",
+      "ref": "7bbe00d",
+      "text": "chore: compound learnings from 2026-09-18"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T07:13:02-04:00",
+      "ref": "c850229",
+      "text": "feat(content): jewelry-cc collection page (439 mods) + repair the junk jewelry facet (#118"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T07:10:36-04:00",
+      "ref": "d3ca7a4",
+      "text": "docs(pip): Q11 pin-writer cron + apex-host patch package (operator-ready, Tier 0 paper tra"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-18T01:06:33-04:00",
+      "ref": "7d8736c",
+      "text": "chore: compound learnings from 2026-09-17"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T22:32:45-04:00",
+      "ref": "bde92c1",
+      "text": "chore: compound learnings from 2026-09-16"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T07:08:35-04:00",
+      "ref": "1538800",
+      "text": "funnel: daily run 2026-09-16 (#115)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T07:03:17-04:00",
+      "ref": "0e0fa15",
+      "text": "feat(rio): page-RPM baseline by page type — homepage $10.12, blog $12.97, unseen remainder"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:59:28-04:00",
+      "ref": "a460566",
+      "text": "docs(cass): re-permission day-1 batch sent (100/100, 3.0% hard bounce at T+1m, day-2 HELD "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:54:23-04:00",
+      "ref": "f6c52c5",
+      "text": "fix(content): /play/ enters the post-deploy checks, and the sidebar registry gains a compl"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-16T06:49:58-04:00",
+      "ref": "bd1d40b",
+      "text": "feat(rio): affiliate placement kill switch — mod_page + interstitial off, $0 commissions o"
+    }
+  ],
+  "health": {
+    "date": "2026/09/21",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $276.15 (5.7%), RPM 19.23 (5.6%), sessions 0.1% vs same weekday, prior 4 weeks · 3-day revenue 3.4%"
+  ]
+}
