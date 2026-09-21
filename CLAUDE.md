@@ -868,88 +868,108 @@ run died with `Prompt is too long`.
 - **Canonicalize a host with an exact allowlist on the parsed host**, never a substring or prefix
   test, or `musthavemods.com.evil.example` gets rewritten too. Normalize only the *outbound public*
   URL field — an API's own endpoint host must keep pointing at whatever actually serves it.
+- **Run a new guard test against the pre-fix tree before you trust it.** A test written after the
+  fix and never seen red proves only that it compiles. PR #120 stated in its body *which* cases
+  fail against pre-fix `origin/main` (3 of 7); without that line a guard is decoration.
+- **A minimum-count invariant must also encode the second-order case.** "Every page has ≥1 inbound
+  link" passes on the exact bug it was written for, because the one link can come from a page that
+  is itself an orphan. Require at least one inbound source that clears the threshold *itself*
+  (`__tests__/unit/collection-link-graph.test.ts`). Derive such thresholds from the registry where
+  you can — `MIN_INBOUND`/`MAX_INBOUND` are hand-tuned to today's 21 collections and will drift.
+- **Diagnose on the population, not on the count.** "0 of 54 paid patrons connected" read as
+  confirmation of the standing diagnosis; classifying all 47 Patreon-linked accounts showed 43
+  (91.5%) were never in the campaign at all — so `/go` Connect is a *follow* funnel and no tier
+  rename could ever have moved that number. Before acting on a zero, classify the rows producing it.
+- **Compare exact fractions at a gate boundary; round only for print.** 18/54 is exactly 1/3 and
+  must pass, while `0.333 < 0.3333…` fails. Rounding before comparing flips a gate at its own
+  boundary (`patreon-members-lib.ts` keeps `shareExact` separate from the displayed share).
+- **Heterogeneous failures are not a class bug.** Six wrong rows failing for six *different* reasons
+  do not justify the class-wide tool: the `--facets=nails` retag dry run proposed 21 changes, **15
+  of them wrong** (rule priority beat the literal word — "Sponge Bob Summer Set" → hair). Reach for
+  a facet-wide retag only when one rule is uniformly wrong for one class; otherwise hand-fix the
+  individuals and give the tool an `--ids=` mode so the narrow fix is expressible at all. Pin
+  correct-but-ambiguous rows in `scripts/lib/hand-audited-content-types.ts` as explicit no-ops with
+  a `why`, so a later automated pass cannot re-break them.
+- **Segment a WoW read by calendar *and* by treatment before calling a channel declined.** One US
+  holiday Monday was 58% of a −3,542-session week-over-week drop (−7.0% naive → −2.7% ex-Monday),
+  and the pages that received the intervention read +0.5% while everything else read −3.2% — so the
+  rollback premise was unproven. Same-weekday-match or drop holidays, and split treated from
+  untreated, before attributing a drop to a change.
+- **Freeze the anchor of a multi-day batched send, and slice from the frozen list.** A `now`-relative
+  eligibility window re-sorts between runs, so `--offset 100` on day 2 is not the row you think:
+  every new consent drops a row off the front and silently skips an account that was never
+  attempted. Remove exclusions and post-anchor consents from the *slice*, never from the list. An
+  exclusion list that is non-empty but matches nobody is a hard failure, not a quiet pass.
+- **Store the hash, never the address — and assert that in a test on the source file.**
+  `lib/services/sendExclusions.ts` keeps only `sha256(lower(trim(email)))`, and
+  `__tests__/unit/send-exclusions.test.ts` asserts the file contains no email-shaped string, so a
+  future paste fails CI rather than review. Keep the exclusion check in the library
+  (`partitionExcluded`) so every send path inherits it.
+- **A runbook or health-check message must name the tier and the approval gate at the point of
+  suggestion.** "revive stranded rows" reads to an autonomous agent as clearance; "operator-approved
+  revival slice (Tier 2, SD-10) — never `--apply` it" does not. A policy living in a separate doc
+  never reaches the agent reading the message.
+- **A zero-rows vacuity guard does not cover a truncated fetch.** A paginated read capped at N pages
+  can return a plausible, wrong population with no error at all. Guard completeness (`links.next`
+  exhausted, page cap not hit), not just non-emptiness — and keep a self-diagnosing signal for a
+  silent join failure (`paid > 0` with `paidWithUserId === 0` means `include=user` did not take).
+- **Enforce read-only-ness of an external read at the call, and expect it to be copied.** The
+  mailbox DSN counter is safe only because of two lines — `select(..., readonly=True)` and
+  `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
+  one of them; wrap it before writing the second consumer.
 
-### 2026-09-18 — the run that merged and left no record
+### 2026-09-20 — the paper trail was repaired by hand, and the defect that ate it is still there
 
-- **The 09-17 fix was applied halfway: the operator's reply got a commit, and the commit never got
-  to `main`.** Yesterday's finding was that human input captured only as a working-tree edit is
-  indistinguishable from work never done. Today Quinn did commit it — `ce7c111`, "capture operator
-  reply 2026-09-17 (approve all #2 items)" — onto `funnel/quinn/daily-2026-09-18`, where it still
-  sits with **no PR and no merge**. `git merge-base --is-ancestor ce7c111 main` → false. The
-  operator's standing approval for every queued #2 item exists only on a side branch. Committing is
-  not the durability property; **landing on `main` is**.
-- **The run merged two PRs and then died before the paper trail, so production changed with no
-  record that it changed.** #116 (`d3ca7a4`, 07:10) and #118 (`c850229`, 07:13) are on `main`;
-  `reports/funnel/changelog.md` still ends at **2026-09-16 07:03**. #118 is not docs — it ships
-  `lib/collections.ts` and `lib/services/contentTypeDetector.ts` and a live route
-  `/games/sims-4/jewelry-cc/` — so there is also no evidence rule 1 (verify after every merge) was
-  satisfied for it. The merge is permanent and atomic; the ledger row is a later step of a
-  multi-step agent turn that can end at any point. **Couple the row to the merge, or the two
-  reliably disagree in the one direction that matters.**
-- **Rio's work is a third artifact in the same state, and nothing flags it.** PR #117 (Mediavine
-  DOM guard, `b5e7cb0`) is still **OPEN** — branch pushed, PR filed, never merged, no digest, no
-  queue entry. Between this, `ce7c111`, and the nine orphan `compound/*` branches already
-  catalogued, the repo now has a standing population of finished agent work that reached `origin`
-  and stopped. An automated run needs a closing check that its own branches are either merged or
-  explicitly deferred with a reason.
-- **The MISSED detector went quiet on precisely the days it was needed.** The evening-guardrail
-  "DID NOT FIRE" rows run 09-12, 09-13, 09-14, 09-15 — and then stop. Nothing for the 09-16, 09-17
-  or 09-18 evenings, because step 0e writes that row from inside the *morning* funnel run, which
-  died on 09-17 and ended early on 09-18. A monitor-of-a-monitor hosted in the same process as the
-  thing that breaks reports health by omission. The evening task itself has now written no `check`
-  row since **2026-09-04 (14 days)**.
-- **Two automations still edit `CLAUDE.md` and push to `main` independently**, and a second
-  compound session was observed live in this window alongside this one. Only `auto-compound.sh`'s
-  no-op has kept them from colliding; the collision is a scheduling accident away.
-- **Packaging beats describing when automation cannot execute the change.** Q11 is the shape to
-  copy for anything outside the Vercel pipeline (here a separate `MHMUtils` repo on an SSH-only
-  BigScoots box): a patch checked with `git apply --check` against a **pinned upstream SHA**
-  (`f534a02`), a runbook printing the *expected output at every step* with explicit "stop here if
-  not" gates, a verification query that reads the field the change actually alters and prints no
-  secrets, and a rollback section stating blast radius in one sentence. Approval-to-applied becomes
-  one SSH session instead of a conversation.
-- **Cron ordering is coupling that is invisible from either script.** The pin writer is scheduled
-  05:30 CDT *because* the 06:00 orchestrator re-dates the rows it inserts; run it after 06:00 and
-  every new post loses a day. Document that ordering next to the crontab, not in the code.
-
-### 2026-09-19 — a good day for shipping, a third bad day for the paper trail
-
-- **The agents shipped well and recorded almost none of it.** Seven PRs landed (#116–#123):
-  a Mediavine DOM scanner, the E40 revert, the Pinterest read-back, the `/admin/funnel`
-  dashboard, the favicon. Every one of the code changes is defensible on its own. The ledger has
-  **one** row for the lot. The gap is now three days old and no longer explicable as "the run
-  died" — the 09-19 run clearly worked.
-- **The mechanism is finally pinned down, and it is not agent forgetfulness.** `ledger()` in
-  `deploy-verify.sh:157-166` `printf`s the row into up to three working trees and stops. Nothing
-  in `run-funnel-daily.sh` commits. So the ledger is structurally a working-tree edit, i.e. the
-  exact artifact class this log has now lost three times (`operator-did-*` on 09-17, `ce7c111` on
-  09-18, the ledger rows on 09-19). Writing it to more places made it look safer without making
-  it durable. **The fix is one `git commit` in the function that already knows the row is true**,
-  not another reminder in a prompt.
-- **`/admin/funnel` reintroduces the same dependency at a new spot.** `history.json` is generated
-  by `funnel-history.ts` inside the ephemeral worktree, `cp`d to the operator's local checkout,
-  and reaches `main` only because `funnel-daily-prompt.md` *asks the agent* to include it in the
-  day's commit. When that instruction is missed, the dashboard silently serves yesterday's data
-  with no alert — a stale-data failure with no error anywhere. Note what the route did get right:
-  `fs` read at request time (missing file → clean 404, not a build failure) and a real vacuity
-  guard in the generator (`dayMap.size === 0` → `process.exit`, never an empty history).
-- **The monitor-of-the-monitor is now also dark.** The evening `mhm-guardrail-evening` check has
-  written no real `check` row since **2026-09-04 (15 days)**, and the MISSED rows that were
-  supposed to make that silence visible stop at **09-15** — because step 0e writes them from
-  inside the morning run. Two layers of detection, both hosted in the thing they watch, both
-  silent, and the silence reads identically to health. This needs the operator to confirm the
-  task is enabled at 18:30.
-- **16 empty `compound/*` branches on `origin`, one per night.** The nightly loop finds an
-  all-`completed` PRD from May, logs "All tasks complete!", exits 0 in zero seconds, and pushes a
-  branch with no commits. An empty queue is still being reported as success.
-- **The one unambiguous win: a pre-committed kill rule fired on its own date and was obeyed.**
-  E40's revert condition was written down at merge time on 09-13; on the 09-19 read all three
-  legs tripped and Rio reverted rather than re-arguing the threshold. That is the process working
-  exactly as designed, and it is worth noticing on a day otherwise spent cataloguing leaks.
-
+- **The gap closed: 7 of 7 merges have a ledger row, up from 1 of 7.** Six Tier 0 PRs shipped
+  (#120, #124, #125, #126, #127, #128) and every one verified PASS with 5xx/15m=0. Quinn also
+  backfilled ten missing rows, the 09-18 and 09-19 digests, and the operator's 09-17 approval.
+- **The recovery pattern is worth keeping: `git checkout <stranded-branch> -- <paths>` onto today's
+  branch, never `git merge`.** The three-day gap lived on two branches that were never going to be
+  merged (`ce7c111`'s blanket approval and a day-skeleton branch). Lifting only the *files* onto the
+  current PR lands the content on `main` without dragging an abandoned branch's history with it —
+  and it is the correct answer to the 09-19 note that cherry-picking onto *another* unmerged branch
+  is not recovery.
+- **None of that was a fix.** `ledger()` in `scripts/agents/deploy-verify.sh:157` still `printf`s
+  into three working trees and runs no `git add`/`commit`/`push`; the file's last commit is PR #58,
+  weeks before the defect was identified. The 09-19 entry named the one-line fix — *commit the row
+  in the function that already knows it is true* — and the 09-20 run instead paid the cost by hand.
+  **A defect remediated by hand is a defect with a scheduled recurrence.** Corollary visible in the
+  file: because rows are appended in three trees and merged later, `changelog.md` is now out of
+  chronological order (a 09-19 08:12 row sits above 09-16 rows), so anything reading it must sort,
+  not assume append order.
+- **The diagnosis that a whole experiment was built on was wrong about its population.** E40 was
+  read as "free Patreon members click Connect on `/go` and get nothing." The Q4 pre-read classified
+  all 47 linked accounts against the campaign's 5,671 member rows: 4 free members, **43 not in the
+  campaign at all**, 0 active. 43 of 47 are Patreon-only accounts created *by the Connect click
+  itself*. So the CTA is a follow funnel and no tier rename, $10 tier, or copy change could have
+  moved paid-and-connected. The gate reads HOLD; the next move is "follow free → $3 skips the wait."
+- **The gate that produced HOLD was pre-committed on 09-08 and is imported, not restated.** `Q4_GATE`
+  lives in `scripts/agents/patreon-members-lib.ts` with a comment saying it was written before any
+  reading, and both the pre-read and its test import the same object rather than re-typing `17`.
+  The library extraction itself closed a real divergence: three callers were each computing
+  paid/free/former/joins/cancels independently, so the gate and the daily scoreboard could disagree.
+  Remaining hole: one leg is a *floor, not a count* (Patreon bills on the 1st, so cancels since an
+  anchor can only see join-and-leave-inside-the-window), and that caveat lives in prose — the
+  returned type is `'PROCEED' | 'HOLD' | 'REVERT_COPY'` with no provisional state.
+- **`skipLog: true` bought privacy and cost all bounce observability, and the bill came due.**
+  `notification_logs` is 0 rows all-time, so the only place a hard bounce exists is the mailbox —
+  hence a whole read-only IMAP counter had to be written to learn that the re-permission day-1 hard
+  bounce was **7.0%, not the 3% the operator's approval was given against**. The send was correctly
+  held. The privacy rule stands; budget for the observability you are giving up when you apply it.
+- **Even a 92.7%-clean facet needs a top-N spot-check before it backs a landing page.** `nails` is
+  the fourth facet cleaned of description-inference pollution after `lighting`, `gameplay-mod` and
+  `jewelry` — only 6 junk rows this time, but one of them was a feet body mod sitting as card #2.
+  `expectedCount` and a clean *percentage* both say nothing about the rows a visitor actually sees.
+- **The nightly compound loop still pushes an empty branch per night: 16 of 20 `compound/*` branches
+  on `origin` are 0 commits ahead of `main`** (09-02→09-16, 09-18), one more than at the 09-19 read.
+  An all-`completed` PRD from May still exits 0 in zero seconds and reports success. An empty queue
+  is not a successful run.
+- **The evening guardrail has now MISSED 8 nights (09-12→09-19) and written no real `check` row
+  since 09-04 (16 days).** Unchanged from the last two reviews, and still only fixable by the
+  operator enabling the scheduled task — the detector lives inside the morning run it watches.
 ---
 
-*Last compound review: 2026-09-19*
+*Last compound review: 2026-09-20*
 
 ---
 

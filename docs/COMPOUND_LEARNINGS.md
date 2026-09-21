@@ -1612,3 +1612,85 @@ carries 192×192 and 512×512 PNGs, `purpose: "any"`. Zero build-time signal eit
   cannot be read from a worktree — the measurement that would catch context bloat early is itself
   ephemeral.
 - `experiments.md` growth has essentially stopped: 62,143 B (09-16) → 62,724 B (09-19).
+
+---
+
+## 2026-09-18 — the run that merged and left no record (rotated from CLAUDE.md 2026-09-20)
+
+- **The 09-17 fix was applied halfway: the operator's reply got a commit, and the commit never got
+  to `main`.** Yesterday's finding was that human input captured only as a working-tree edit is
+  indistinguishable from work never done. Today Quinn did commit it — `ce7c111`, "capture operator
+  reply 2026-09-17 (approve all #2 items)" — onto `funnel/quinn/daily-2026-09-18`, where it still
+  sits with **no PR and no merge**. `git merge-base --is-ancestor ce7c111 main` → false. The
+  operator's standing approval for every queued #2 item exists only on a side branch. Committing is
+  not the durability property; **landing on `main` is**.
+- **The run merged two PRs and then died before the paper trail, so production changed with no
+  record that it changed.** #116 (`d3ca7a4`, 07:10) and #118 (`c850229`, 07:13) are on `main`;
+  `reports/funnel/changelog.md` still ends at **2026-09-16 07:03**. #118 is not docs — it ships
+  `lib/collections.ts` and `lib/services/contentTypeDetector.ts` and a live route
+  `/games/sims-4/jewelry-cc/` — so there is also no evidence rule 1 (verify after every merge) was
+  satisfied for it. The merge is permanent and atomic; the ledger row is a later step of a
+  multi-step agent turn that can end at any point. **Couple the row to the merge, or the two
+  reliably disagree in the one direction that matters.**
+- **Rio's work is a third artifact in the same state, and nothing flags it.** PR #117 (Mediavine
+  DOM guard, `b5e7cb0`) is still **OPEN** — branch pushed, PR filed, never merged, no digest, no
+  queue entry. Between this, `ce7c111`, and the nine orphan `compound/*` branches already
+  catalogued, the repo now has a standing population of finished agent work that reached `origin`
+  and stopped. An automated run needs a closing check that its own branches are either merged or
+  explicitly deferred with a reason.
+- **The MISSED detector went quiet on precisely the days it was needed.** The evening-guardrail
+  "DID NOT FIRE" rows run 09-12, 09-13, 09-14, 09-15 — and then stop. Nothing for the 09-16, 09-17
+  or 09-18 evenings, because step 0e writes that row from inside the *morning* funnel run, which
+  died on 09-17 and ended early on 09-18. A monitor-of-a-monitor hosted in the same process as the
+  thing that breaks reports health by omission. The evening task itself has now written no `check`
+  row since **2026-09-04 (14 days)**.
+- **Two automations still edit `CLAUDE.md` and push to `main` independently**, and a second
+  compound session was observed live in this window alongside this one. Only `auto-compound.sh`'s
+  no-op has kept them from colliding; the collision is a scheduling accident away.
+- **Packaging beats describing when automation cannot execute the change.** Q11 is the shape to
+  copy for anything outside the Vercel pipeline (here a separate `MHMUtils` repo on an SSH-only
+  BigScoots box): a patch checked with `git apply --check` against a **pinned upstream SHA**
+  (`f534a02`), a runbook printing the *expected output at every step* with explicit "stop here if
+  not" gates, a verification query that reads the field the change actually alters and prints no
+  secrets, and a rollback section stating blast radius in one sentence. Approval-to-applied becomes
+  one SSH session instead of a conversation.
+- **Cron ordering is coupling that is invisible from either script.** The pin writer is scheduled
+  05:30 CDT *because* the 06:00 orchestrator re-dates the rows it inserts; run it after 06:00 and
+  every new post loses a day. Document that ordering next to the crontab, not in the code.
+
+---
+
+## 2026-09-19 — a good day for shipping, a third bad day for the paper trail (CLAUDE.md summary, rotated 2026-09-20)
+
+- **The agents shipped well and recorded almost none of it.** Seven PRs landed (#116–#123):
+  a Mediavine DOM scanner, the E40 revert, the Pinterest read-back, the `/admin/funnel`
+  dashboard, the favicon. Every one of the code changes is defensible on its own. The ledger has
+  **one** row for the lot. The gap is now three days old and no longer explicable as "the run
+  died" — the 09-19 run clearly worked.
+- **The mechanism is finally pinned down, and it is not agent forgetfulness.** `ledger()` in
+  `deploy-verify.sh:157-166` `printf`s the row into up to three working trees and stops. Nothing
+  in `run-funnel-daily.sh` commits. So the ledger is structurally a working-tree edit, i.e. the
+  exact artifact class this log has now lost three times (`operator-did-*` on 09-17, `ce7c111` on
+  09-18, the ledger rows on 09-19). Writing it to more places made it look safer without making
+  it durable. **The fix is one `git commit` in the function that already knows the row is true**,
+  not another reminder in a prompt.
+- **`/admin/funnel` reintroduces the same dependency at a new spot.** `history.json` is generated
+  by `funnel-history.ts` inside the ephemeral worktree, `cp`d to the operator's local checkout,
+  and reaches `main` only because `funnel-daily-prompt.md` *asks the agent* to include it in the
+  day's commit. When that instruction is missed, the dashboard silently serves yesterday's data
+  with no alert — a stale-data failure with no error anywhere. Note what the route did get right:
+  `fs` read at request time (missing file → clean 404, not a build failure) and a real vacuity
+  guard in the generator (`dayMap.size === 0` → `process.exit`, never an empty history).
+- **The monitor-of-the-monitor is now also dark.** The evening `mhm-guardrail-evening` check has
+  written no real `check` row since **2026-09-04 (15 days)**, and the MISSED rows that were
+  supposed to make that silence visible stop at **09-15** — because step 0e writes them from
+  inside the morning run. Two layers of detection, both hosted in the thing they watch, both
+  silent, and the silence reads identically to health. This needs the operator to confirm the
+  task is enabled at 18:30.
+- **16 empty `compound/*` branches on `origin`, one per night.** The nightly loop finds an
+  all-`completed` PRD from May, logs "All tasks complete!", exits 0 in zero seconds, and pushes a
+  branch with no commits. An empty queue is still being reported as success.
+- **The one unambiguous win: a pre-committed kill rule fired on its own date and was obeyed.**
+  E40's revert condition was written down at merge time on 09-13; on the 09-19 read all three
+  legs tripped and Rio reverted rather than re-arguing the threshold. That is the process working
+  exactly as designed, and it is worth noticing on a day otherwise spent cataloguing leaks.
