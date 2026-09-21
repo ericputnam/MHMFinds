@@ -1,27 +1,16 @@
 import { NextResponse } from 'next/server';
 
+import { isRedirectedPostUrl, toApexUrl } from '@/lib/seo/wpGuides';
+
 interface WordPressPost {
   id: number;
   link: string;
   modified_gmt: string;
 }
 
-// Legacy posts whose apex URLs 301 to a Next.js collection page
-// (vercel.json). A sitemap must not list URLs that redirect, so they
-// are skipped here. Keep in sync with the consolidation redirects in
-// vercel.json and reports/legacy-vs-collection-strategy-2026-07-03.md.
-const REDIRECTED_POST_PATHS = [
-  '/sims-4-female-clothes-cc/',
-  '/sims-4-male-clothes-cc/',
-  '/sims-4-cc-skin-details/',
-  '/sims-4-gallery-poses/',
-  // The four body-preset listicles were un-redirected (2026-07 revert:
-  // they outranked the collection page) and must stay in the sitemap.
-  // /sims-4-pregnancy-mods/ and /sims-4-y2k-cc/ were un-redirected for
-  // the same reason (2026-09) and must stay in the sitemap too.
-  '/sims-4-goth-cc/',
-  '/sims-4-cottagecore-cc/',
-];
+// The exclusion list (legacy posts whose apex URLs 301 to a collection page)
+// lives in lib/seo/wpGuides.ts so this sitemap and /llms-full.txt cannot
+// drift apart. A sitemap must not list URLs that redirect.
 
 async function fetchAllWordPressPosts(): Promise<string[]> {
   const entries: string[] = [];
@@ -55,8 +44,8 @@ async function fetchAllWordPressPosts(): Promise<string[]> {
 
       for (const post of posts) {
         // Rewrite blog.musthavemods.com → musthavemods.com
-        const url = post.link.replace(/https?:\/\/blog\.musthavemods\.com/g, 'https://musthavemods.com');
-        if (REDIRECTED_POST_PATHS.some((p) => url.endsWith(p))) {
+        const url = toApexUrl(post.link);
+        if (isRedirectedPostUrl(url)) {
           continue;
         }
         const lastmod = post.modified_gmt ? `${post.modified_gmt.split('T')[0]}` : '';
