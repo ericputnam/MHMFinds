@@ -31,6 +31,21 @@ const CANONICAL_ORIGIN = 'https://musthavemods.com';
 const BLOG_ORIGIN_REGEX = /https:\/\/blog\.musthavemods\.com/g;
 const BLOG_ORIGIN_ENCODED_REGEX = /https%3A%2F%2Fblog\.musthavemods\.com/g;
 
+// Q13 (2026-09-21, reports/funnel/drafts/host-split-301-2026-09-21.md): 31.7%
+// of Pinterest sessions land on blog.musthavemods.com instead of the apex
+// (−19.5% pageviews/session on matched paths). The BigScoots-side fix is a
+// 301 from blog.* to the apex for direct/bot visitors — but this proxy's own
+// server-to-server fetch to blog.* must be exempt, or every proxied page
+// starts 301-ing to musthavemods.com, which Vercel routes right back into
+// this same middleware (WP catch-all), which fetches blog.* again, which
+// 301s again — an infinite loop bounded only by fetch's max-redirect count,
+// surfacing as 502s on every article. `X-MHM-Proxy` is sent on every
+// server-side fetch this middleware makes to blog.*; the BigScoots rule (not
+// yet applied — queued as Q13) must redirect only when this header is
+// absent. Do not remove this header without removing the 301 rule first.
+const MHM_PROXY_HEADER = 'X-MHM-Proxy';
+const MHM_PROXY_HEADER_VALUE = 'nextjs-edge';
+
 /**
  * Determine if a pathname should be proxied to WordPress.
  * Returns the full WordPress URL, or null for Next.js routes.
@@ -142,6 +157,9 @@ async function proxyAndRewriteWordPress(
     'Accept': request.headers.get('accept') || '',
     'Accept-Language': request.headers.get('accept-language') || '',
     'X-Forwarded-Host': 'musthavemods.com',
+    // Identifies this request as coming from our own proxy fetch, not a
+    // direct/bot visitor — see the Q13 comment above the constant definition.
+    [MHM_PROXY_HEADER]: MHM_PROXY_HEADER_VALUE,
   };
   const cookie = request.headers.get('cookie');
   if (cookie) forwardHeaders['Cookie'] = cookie;
@@ -151,6 +169,11 @@ async function proxyAndRewriteWordPress(
   const fetchOptions: RequestInit = {
     method: request.method,
     headers: forwardHeaders,
+    // 'follow' is safe today because blog.* never redirects proxied
+    // requests. Once Q13's host-split rule ships, it MUST honour
+    // X-MHM-Proxy — otherwise this follows the 301 back to the apex host,
+    // which Vercel routes into this same middleware, which fetches blog.*
+    // again: an infinite loop, not a single retry.
     redirect: 'follow',
   };
 
