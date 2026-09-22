@@ -5,6 +5,25 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 `experiments.md` when it ships.
 
 Format: `- [ ] <idea> — <why / what you've seen>`
+## Operator watch 2026-09-22 — BELOW LINE (sessions)
+
+Launcher read of `reports/funnel/history.json` after the 2026-09-22 run (28 measured days 2026-08-24 → 2026-09-20; today's history.json is synced to the operator tree, origin/main's copy still ends 09-19):
+
+| 28d | Actual | Ramp line | Ratio |
+|---|--:|--:|--:|
+| Sessions | 356,270 | 367,303 | 96.996 % (gap 11,033 sessions, ≈394/day) |
+| Ad revenue | $5,925.63 | $5,730.30 | 103.4 % |
+
+Sessions ratio, rolling 28d, last 7 measured days: 09-14 96.95 % · 09-15 96.88 % · 09-16 96.97 % · 09-17 96.94 % · 09-18 96.76 % · 09-19 97.07 % · 09-20 96.996 % — **flat**, oscillating just under the 97 % floor; below 97 % on four consecutive runs (09-19 → 09-22 digests). Revenue is on line, so this is a traffic gap, not an RPM gap.
+
+**Verdict: BELOW LINE on sessions.** Re-weighting Quinn must apply on the next run (autonomy.md operator directive 2026-09-21):
+- Pip and Sage each ship **two AUDIENCE moves**; Pip's first is the pin-queue runway (2.4 d, 0 schedulable on 09-22) — the queue must not run dry.
+- Nova's move must be a **traffic page** (collection/landing page with a search or Pinterest demand read), not a memo.
+- Cass and Rio ship **one move each**; **no Tier 1 merge that is not AUDIENCE** until the 28d sessions ratio is back ≥ 97 % on two consecutive runs.
+- Not a recommendation: Quinn may not decline this in the digest. Say in section 1 which two moves each of Pip/Sage shipped and their expected daily-session effect.
+
+Context from the 09-22 run: Quinn's subagents were killed at the 600 s background ceiling (`Background tasks still running after 600s; terminating` in `logs/funnel-daily.log`), so the digest stayed a skeleton and no agent move shipped; only Tier 0 script PRs #147 and #142 merged, neither with a ledger row or `deploy-verify` run. Quinn: ledger both, and set `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS` (or run agents in the foreground) so the five agents can finish.
+
 
 - [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01
 - [ ] Gaming catalog beyond Sims 4: which game has Pinterest-shaped demand and no good mod finder? — operator, 2026-09-01
