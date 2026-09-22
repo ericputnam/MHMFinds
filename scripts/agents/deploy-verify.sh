@@ -206,27 +206,41 @@ case "$MODE" in
   after-merge)
     PREV="$(current_prod)"; log "production before: ${PREV:-unknown} · waiting for deploy of ${SHA:-newest} (≤${WAIT_MIN}m)"
     START=$(date +%s); DEPLOY_URL=""
-    while :; do
-      read -r STATE URL <<<"$(find_deploy "$SHA")"
-      if [ -n "${URL:-}" ] && { [ -n "$SHA" ] || [ "$URL" != "$PREV" ]; }; then
-        case "$STATE" in
-          READY) DEPLOY_URL="$URL"; break ;;
-          ERROR|CANCELED)
-            DEPLOY_URL="$URL"; ledger "BUILD $STATE" "never promoted; production still $PREV"
-            FAILS="Vercel build $STATE for ${SHA:-newest} ($URL)"; incident "build $STATE" "Nothing to roll back — the build failed before promotion. Production still serves $PREV. Fix the build (vercel inspect $URL --logs)."; exit 2 ;;
-        esac
-      fi
-      if [ $(( $(date +%s) - START )) -ge $(( WAIT_MIN * 60 )) ]; then
-        ledger "TIMEOUT" "no READY production deploy for ${SHA:-newest} within ${WAIT_MIN}m; production still $PREV"; exit 2
-      fi
-      sleep 30
-    done
+    wait_ready() {  # sets DEPLOY_URL to the READY production build of $SHA; exits 2 on build error / timeout
+      while :; do
+        read -r STATE URL <<<"$(find_deploy "$SHA")"
+        if [ -n "${URL:-}" ] && { [ -n "$SHA" ] || [ "$URL" != "$PREV" ]; }; then
+          case "$STATE" in
+            READY) DEPLOY_URL="$URL"; return 0 ;;
+            ERROR|CANCELED)
+              DEPLOY_URL="$URL"; ledger "BUILD $STATE" "never promoted; production still $PREV"
+              FAILS="Vercel build $STATE for ${SHA:-newest} ($URL)"; incident "build $STATE" "Nothing to roll back — the build failed before promotion. Production still serves $PREV. Fix the build (vercel inspect $URL --logs)."; exit 2 ;;
+          esac
+        fi
+        if [ $(( $(date +%s) - START )) -ge $(( WAIT_MIN * 60 )) ]; then
+          ledger "TIMEOUT" "no READY production deploy for ${SHA:-newest} within ${WAIT_MIN}m; production still $PREV"; exit 2
+        fi
+        sleep 30
+      done
+    }
+    wait_ready
+    # 2026-09-21 incident: two merges 5 s apart → the alias went to whichever build finished last, and this script
+    # graded PASS against the caller's sha while production served its parent. Production must serve origin/main
+    # HEAD, so if main moved past the caller's sha while we waited, re-target: wait for HEAD's build, promote and
+    # verify THAT, and say so in the ledger row. The caller's sha is a lower bound, never the thing we certify.
+    HEAD_NOTE=""
+    HEAD_SHA="$( (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1 && git rev-parse origin/main) 2>/dev/null)"
+    if [ -n "$HEAD_SHA" ] && [ -n "$SHA" ] && [ "${HEAD_SHA#"${SHA:0:7}"}" = "$HEAD_SHA" ]; then
+      log "origin/main moved past ${SHA:0:7} → ${HEAD_SHA:0:7} while waiting; verifying HEAD's build instead (the alias must serve main HEAD)"
+      HEAD_NOTE="main moved past caller ${SHA:0:7}; graded HEAD ${HEAD_SHA:0:7} · "
+      SHA="$HEAD_SHA"; wait_ready
+    fi
     log "deployment READY: $DEPLOY_URL"; sleep 15
     if ! ensure_promoted "$DEPLOY_URL"; then
-      ledger "NOT PROMOTED" "build READY but production still serves $PREV after vercel promote; nothing to roll back — promote by hand: vercel promote $DEPLOY_URL --yes"
+      ledger "NOT PROMOTED" "${HEAD_NOTE}build READY but production still serves $PREV after vercel promote; nothing to roll back — promote by hand: vercel promote $DEPLOY_URL --yes"
       exit 2
     fi
-    if smoke; then ledger "$(verdict)" "$(vnotes "verified live · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
+    if smoke; then ledger "$(verdict)" "$(vnotes "${HEAD_NOTE}verified live · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
     fail_and_fix "$PREV" ;;
   check)
     DEPLOY_URL="$(current_prod)"; PREV="$(previous_ready "$DEPLOY_URL")"
