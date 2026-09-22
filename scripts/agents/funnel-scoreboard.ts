@@ -22,7 +22,12 @@
  *     schedulable / stranded / total unposted backlog, plus Pinterest's own
  *     `created_at` on the account's newest pins (GET /v5/pins) for liveness —
  *     the queue table has no posted-at column, and its `Post Date` is the
- *     scheduled date, not when the pin went out (E41, 2026-09-13).
+ *     scheduled date, not when the pin went out (E41, 2026-09-13). Also the
+ *     *writer's* own liveness (Q11, 2026-09-16): rows in `n8n_pinterest_posts`
+ *     attributable to the writer plugin (`Wordpress Post ID` set) by their own
+ *     `created_at`, separate from queue depth — a low-runway flag only fires
+ *     once borrowed inventory runs out, which can lag the writer's actual
+ *     death by a week or more.
  *
  * Never prints secrets. Run: npx tsx scripts/agents/funnel-scoreboard.ts
  */
@@ -34,11 +39,13 @@ import { join } from 'node:path';
 import {
   assessLiveness,
   assessRunway,
+  assessWriterLiveness,
   DEFAULT_RUNWAY_HORIZON_DAYS,
   summarizePins,
   type LivenessAssessment,
   type PinLike,
   type RunwayAssessment,
+  type WriterLivenessAssessment,
 } from './pinner-liveness-lib';
 import { redactError } from './operator-did-probe-lib';
 import {
@@ -78,6 +85,10 @@ function daysAgo(n: number): string {
 }
 function daysAhead(n: number): string {
   return daysAgo(-n);
+}
+/** ISO timestamp N hours before now, for `created_at=gte.` filters (timestamp, not date-only). */
+function hoursAgoIso(n: number): string {
+  return new Date(Date.now() - n * 3600e3).toISOString();
 }
 function pct(curr: number, prev: number): string {
   if (!prev) return 'n/a';
@@ -564,6 +575,13 @@ interface PinnerData {
   inventoryRows: number;
   /** inventoryRows ÷ observed pins/day. The only queue-depth signal that may flag. */
   runway: RunwayAssessment;
+  /** created_at of the newest row this repo can attribute to the writer plugin (Wordpress Post ID set); null if none found. "Queued at", not "published at" — see pinner-liveness-lib.ts. */
+  lastWriterInsertAt: string | null;
+  /** Wordpress Keyword / Post Title on that row, for a human-readable "newest source post" in the digest. */
+  lastWriterInsertLabel: string | null;
+  writerInserted24h: number;
+  writerInserted7d: number;
+  writerLiveness: WriterLivenessAssessment;
 }
 async function pullPinner(): Promise<PinnerData> {
   // The BigScoots cron uses MHMUtils/config.json (SUPABASE_URL + SUPABASE_KEY); the .env there is stale.
@@ -614,6 +632,21 @@ async function pullPinner(): Promise<PinnerData> {
   );
   const lastPostedDate = posted.rows[0] ? String(posted.rows[0]['Post Date']).slice(0, 10) : null;
 
+  // Writer liveness (Q11, 2026-09-16): rows the writer plugin itself inserted,
+  // distinguished from this repo's own catalog-pin/revival tooling by
+  // `Wordpress Post ID`, which the writer always sets (observed as the string
+  // "0") and everything in this repo leaves null. See pinner-liveness-lib.ts.
+  const writerFilter = `%22Wordpress%20Post%20ID%22=not.is.null`;
+  const writerNewest = await q(
+    `select=id,created_at,%22Wordpress%20Keyword%22,%22Post%20Title%22&${writerFilter}&order=created_at.desc&limit=1`,
+  );
+  const writer24h = await q(`select=id&${writerFilter}&created_at=gte.${hoursAgoIso(24)}&limit=1`);
+  const writer7d = await q(`select=id&${writerFilter}&created_at=gte.${hoursAgoIso(24 * 7)}&limit=1`);
+  const lastWriterInsertAt = writerNewest.rows[0] ? String(writerNewest.rows[0].created_at) : null;
+  const lastWriterInsertLabel = writerNewest.rows[0]
+    ? String(writerNewest.rows[0]['Wordpress Keyword'] ?? writerNewest.rows[0]['Post Title'] ?? '') || null
+    : null;
+
   // Pinterest's own record of what went out. Fails soft: a Pinterest outage
   // must not take the queue numbers down with it, and the flag logic knows
   // how to read "unverified".
@@ -634,6 +667,12 @@ async function pullPinner(): Promise<PinnerData> {
     horizonDays: PINNER_RUNWAY_HORIZON_DAYS,
     lowRunwayDays: PINNER_LOW_RUNWAY_DAYS,
   });
+  const writerLiveness = assessWriterLiveness({
+    lastWriterInsertAt,
+    inserted24h: writer24h.total,
+    inserted7d: writer7d.total,
+    runwayDays: runway.runwayDays,
+  });
 
   return {
     lastPostedDate,
@@ -650,6 +689,11 @@ async function pullPinner(): Promise<PinnerData> {
     strandedBacklog: stranded.total,
     inventoryRows: inventory.total,
     runway,
+    lastWriterInsertAt,
+    lastWriterInsertLabel,
+    writerInserted24h: writer24h.total,
+    writerInserted7d: writer7d.total,
+    writerLiveness,
   };
 }
 
@@ -741,6 +785,17 @@ async function main() {
     if (rw.level === 'empty' || rw.level === 'low') {
       flags.push(`🟡 Pinner: ${rw.message}${rw.level === 'empty' && pinner.data.strandedBacklog > 0 ? ` — ${pinner.data.strandedBacklog} unposted rows are stranded before the poster's ${PINNER_LOOKBACK_DAYS}d window` : ''}`);
     }
+    // Writer liveness (Q11, 2026-09-16): the queue's *inflow*, not its depth.
+    // Idle since 2026-09-04 with no cron scheduled — runway alone only flags
+    // once the borrowed inventory (three manual revival slices) runs out,
+    // which can be a week or more after the writer actually died. Never 🔴
+    // exit-code (writerLivenessExitCode is WARN-only): the fix is Q11
+    // (BigScoots cron), which is Tier 2/operator-owned, not something this
+    // repo can act on — but it must still be loud in the Flags section.
+    const wl = pinner.data.writerLiveness;
+    if (wl.level === 'red' || wl.level === 'warn') {
+      flags.push(`${wl.level === 'red' ? '🔴' : '🟡'} Pinner writer: ${wl.message}`);
+    }
   } else flags.push(`🟡 Pinner liveness unknown: ${errOf(pinner)}`);
   if (ga4.ok && ga4.data.sessionsPrev7d && ga4.data.sessions7d / ga4.data.sessionsPrev7d < 0.9) flags.push(`🔴 GA4 sessions 7d ${pct(ga4.data.sessions7d, ga4.data.sessionsPrev7d)} WoW`);
   if (ga4.ok && Object.keys(ga4.data.captureEvents7d).length === 0) flags.push(`🟡 GA4: no capture events fired in 7d (newsletter_signup/account_signup/patreon_click not instrumented)`);
@@ -829,6 +884,8 @@ async function main() {
         : `${p.liveness.message} · ${p.postedLast7d} posted rows dated in the last 7d (queue proxy)`;
     md += `- Pinner: ${posting} · **${p.runway.message}** · ${p.strandedBacklog} stranded before the poster's ${PINNER_LOOKBACK_DAYS}d window, ${p.unpostedBacklog} unposted total, ${num(p.postedTotal)} posted rows all-time\n`;
     md += `  - queue \`Post Date\` is the scheduled date, not a posting timestamp — newest posted row is dated ${p.lastPostedDate ?? 'never'}; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.\n`;
+    const writerIcon = p.writerLiveness.level === 'red' ? '🔴' : p.writerLiveness.level === 'warn' ? '🟡' : '🟢';
+    md += `- ${writerIcon} Pinner writer (Q11): ${p.writerLiveness.message}${p.lastWriterInsertLabel ? ` — "${p.lastWriterInsertLabel}"` : ''}\n`;
   } else md += `- Pinner: unavailable (${errOf(pinner)})\n`;
   md += `\n_Generated by scripts/agents/funnel-scoreboard.ts. Sections fail independently; "unavailable" means the source, not the site._\n`;
 
