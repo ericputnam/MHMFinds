@@ -18,13 +18,14 @@ import {
   User,
   X,
 } from 'lucide-react';
-import FunnelLineChart, { ChartBand, ChartEventMarker, ChartPoint, EVENT_COLORS } from '@/components/admin/FunnelLineChart';
+import FunnelLineChart, { ChartArea, ChartBand, ChartEventMarker, ChartPoint, EVENT_COLORS } from '@/components/admin/FunnelLineChart';
 import {
   FunnelDayRecord,
   FunnelEvent,
   FunnelHistory,
   addDaysUTC,
   computeRolling28d,
+  counterChange,
   eventActor,
   expectedRevenueAt,
   expectedSessionsAt,
@@ -37,9 +38,17 @@ import {
   latestFinalizedRolling28d,
   pctChange,
   resultTone,
+  Rolling28dPoint,
   sliceLastNDays,
+  StatusPoint,
+  StatusScorecard,
+  statusScorecard,
+  statusSeries,
+  summarizeRange,
   summarizeWindow,
   Verdict,
+  VERDICT_GATES,
+  VerdictColor,
   weeklySummary,
 } from '@/lib/funnel/dashboardMath';
 
@@ -285,17 +294,27 @@ function FunnelDashboard({
     [events, kinds]
   );
 
-  // 28d rolling vs ramp — always the full commitment window, so the ramp end is visible.
-  const rollingInWindow = rolling.filter((p) => p.date >= expectation.startDate && p.date <= expectation.endDate);
+  // Every finalized day re-graded against the ramp — the history behind the verdict.
+  const status = useMemo(() => statusSeries(expectation, rolling), [expectation, rolling]);
+  const scorecard = useMemo(() => statusScorecard(status, expectation.startDate), [status, expectation.startDate]);
+
+  // 28d rolling vs ramp — follows the range; optionally extends the ramp to the end date.
+  const [showFullRamp, setShowFullRamp] = useState(false);
+  const rollingInRange = useMemo(() => {
+    const firstFull = rolling.find((p) => p.actualRevenue28d !== null)?.date ?? null;
+    return rolling.filter((p) => (!rangeStart || p.date >= rangeStart) && (!firstFull || p.date >= firstFull));
+  }, [rolling, rangeStart]);
   const rampDates = useMemo(() => {
-    const out: string[] = [];
-    for (let d = expectation.startDate; d <= expectation.endDate; d = addDaysUTC(d, 1)) out.push(d);
+    const out = rollingInRange.map((p) => p.date);
+    if (showFullRamp && lastDate) {
+      for (let d = addDaysUTC(lastDate, 1); d <= expectation.endDate; d = addDaysUTC(d, 1)) out.push(d);
+    }
     return out;
-  }, [expectation.startDate, expectation.endDate]);
-  const revenueExpectedPoints: ChartPoint[] = rampDates.map((d) => ({ x: d, y: expectedRevenueAt(expectation, d) }));
-  const sessionsExpectedPoints: ChartPoint[] = rampDates.map((d) => ({ x: d, y: expectedSessionsAt(expectation, d) }));
-  const revenueActualPoints: ChartPoint[] = rollingInWindow.map((p) => ({ x: p.date, y: p.actualRevenue28d }));
-  const sessionsActualPoints: ChartPoint[] = rollingInWindow.map((p) => ({ x: p.date, y: p.actualSessions28d }));
+  }, [rollingInRange, showFullRamp, lastDate, expectation.endDate]);
+  const preCommitmentBands: ChartBand[] =
+    rampDates.length > 0 && rampDates[0] < expectation.startDate
+      ? [{ start: rampDates[0], end: expectation.startDate, color: '#64748b', opacity: 0.08 }]
+      : [];
 
   // Explorer chart for the selected metric over the selected range.
   const m = METRICS[metric];
@@ -384,9 +403,21 @@ function FunnelDashboard({
 
       <VerdictBanner verdict={verdict} expectation={expectation} days={days} lastDate={lastDay?.date ?? null} />
 
+      <OnTrackSection
+        expectation={expectation}
+        status={status}
+        scorecard={scorecard}
+        rangeDates={rangeDaysRows.map((d) => d.date)}
+        hoverDate={hoverDate}
+        onHoverDate={setHoverDate}
+        selectedDate={selectedDate}
+        onSelectDate={selectDate}
+      />
+
       {/* ---- KPI tiles — click one to open it in the explorer ---- */}
       <KpiTiles
         days={days}
+        rangeDays={rangeDays}
         rangeRows={rangeDaysRows}
         lastDay={lastDay}
         verdict={verdict}
@@ -453,54 +484,62 @@ function FunnelDashboard({
         />
       )}
 
-      {/* ---- the commitment: 28d rolling vs the ramp ---- */}
-      <div className="grid gap-6 xl:grid-cols-2">
-        <ChartCard title="28-day rolling revenue" subtitle="Mediavine + pro-rated non-ad, vs the ramp committed to through the end date">
-          <FunnelLineChart
-            ariaLabel="28 day rolling revenue, actual versus expectation"
-            height={240}
-            yFormatter={(v) => formatCurrency(v)}
+      {/* ---- the commitment: 28d rolling vs the ramp, with the 90% / 97% gates drawn ---- */}
+      <div className="space-y-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white">The commitment, in 28-day totals</h2>
+            <p className="text-sm text-slate-400">
+              Green line = {formatPercent(VERDICT_GATES.green)} of the ramp (at or above is on track). Red line ={' '}
+              {formatPercent(VERDICT_GATES.red)} (below is off track). The shaded band between them is behind pace.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowFullRamp((v) => !v)}
+            aria-pressed={showFullRamp}
+            className={`self-start rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors sm:self-auto ${
+              showFullRamp ? 'border-slate-500 bg-slate-800 text-white' : 'border-slate-700 text-slate-400 hover:text-white'
+            }`}
+          >
+            {showFullRamp ? 'Hide' : 'Show'} ramp through {expectation.endDate}
+          </button>
+        </div>
+        <div className="grid gap-6 xl:grid-cols-2">
+          <RollingCommitmentChart
+            title="28-day rolling revenue"
+            subtitle="Mediavine + pro-rated non-ad over the trailing 28 days"
+            color="#ec4899"
+            fmt={formatCurrency}
+            rolling={rollingInRange}
+            get={(p) => p.actualRevenue28d}
+            expectedAt={(d) => expectedRevenueAt(expectation, d)}
+            rampDates={rampDates}
+            rampEndLabel={`Ramp to ${formatCurrency(expectation.revenue28dEnd)} by ${expectation.endDate}`}
+            bands={preCommitmentBands}
             events={chartEvents}
             hoverDate={hoverDate}
             onHoverDate={setHoverDate}
             selectedDate={selectedDate}
             onSelectDate={selectDate}
-            compare={{ actual: 'actual', expected: 'expected' }}
-            series={[
-              { id: 'actual', label: 'Actual', color: '#22c55e', points: revenueActualPoints },
-              { id: 'expected', label: 'Expected', color: '#94a3b8', points: revenueExpectedPoints, dashed: true },
-            ]}
           />
-          <ChartLegend
-            items={[
-              { color: '#22c55e', label: 'Actual (finalized 28d total)' },
-              { color: '#94a3b8', label: `Ramp to ${formatCurrency(expectation.revenue28dEnd)} by ${expectation.endDate}`, dashed: true },
-            ]}
-          />
-        </ChartCard>
-        <ChartCard title="28-day rolling sessions" subtitle="GA4 sessions vs the ramp committed to through the end date">
-          <FunnelLineChart
-            ariaLabel="28 day rolling sessions, actual versus expectation"
-            height={240}
-            yFormatter={(v) => formatCompactNumber(v)}
+          <RollingCommitmentChart
+            title="28-day rolling sessions"
+            subtitle="GA4 sessions over the trailing 28 days"
+            color="#38bdf8"
+            fmt={formatCompactNumber}
+            rolling={rollingInRange}
+            get={(p) => p.actualSessions28d}
+            expectedAt={(d) => expectedSessionsAt(expectation, d)}
+            rampDates={rampDates}
+            rampEndLabel={`Ramp to ${formatCompactNumber(expectation.sessions28dEnd)} by ${expectation.endDate}`}
+            bands={preCommitmentBands}
             events={chartEvents}
             hoverDate={hoverDate}
             onHoverDate={setHoverDate}
             selectedDate={selectedDate}
             onSelectDate={selectDate}
-            compare={{ actual: 'actual', expected: 'expected' }}
-            series={[
-              { id: 'actual', label: 'Actual', color: '#38bdf8', points: sessionsActualPoints },
-              { id: 'expected', label: 'Expected', color: '#94a3b8', points: sessionsExpectedPoints, dashed: true },
-            ]}
           />
-          <ChartLegend
-            items={[
-              { color: '#38bdf8', label: 'Actual (finalized 28d total)' },
-              { color: '#94a3b8', label: `Ramp to ${formatCompactNumber(expectation.sessions28dEnd)} by ${expectation.endDate}`, dashed: true },
-            ]}
-          />
-        </ChartCard>
+        </div>
       </div>
 
       <WeeklyTable weeks={weeks} onPick={(d) => setSelectedDate(d)} />
@@ -519,7 +558,9 @@ function FunnelDashboard({
         </summary>
         <ul className="mt-3 list-disc list-inside space-y-1">
           <li>Solid marks are what actually happened (finalized Mediavine days only); dashed lines are expectations.</li>
-          <li>The verdict only reads &quot;on track&quot; once both revenue AND sessions clear 97% of the ramp — rising RPM on falling traffic is graded behind pace, not ahead.</li>
+          <li>The verdict only reads &quot;on track&quot; once both revenue AND sessions clear 97% of the ramp — rising RPM on falling traffic is graded behind pace, not ahead. The day-by-day section re-applies that same rule to every finalized day, so the green/yellow/red counts are the team&apos;s record against its commitment.</li>
+          <li>On the 28-day charts, the green line is 97% of the ramp and the red line is 90%. Above green is on track, between the lines is behind pace, below red is off track. Event ticks sit on the x axis; hover a day to read them.</li>
+          <li>The KPI tiles total the selected range (finalized days only) and compare it with the equal period before it; &quot;All&quot; compares with what the ramp expected.</li>
           <li>Hover any chart for exact values; all charts share one crosshair. Click a day (or press Enter on a focused chart) to pin it and see every metric and event for that day.</li>
           <li>The range and event filters in the bar at the top scope every chart, tile and table below them.</li>
           <li>{expectation.basis}</li>
@@ -649,6 +690,7 @@ function formatSignedPercent(pctOfExpected: number): string {
 
 function KpiTiles({
   days,
+  rangeDays,
   rangeRows,
   lastDay,
   verdict,
@@ -656,32 +698,38 @@ function KpiTiles({
   onPick,
 }: {
   days: FunnelDayRecord[];
+  rangeDays: number;
   rangeRows: FunnelDayRecord[];
   lastDay: FunnelDayRecord | null;
   verdict: Verdict | null;
   active: MetricKey;
   onPick: (k: MetricKey) => void;
 }) {
+  // Revenue / sessions / RPM: totals over the selected range, ending at the last finalized day,
+  // compared with the equal-length period before it. "All" has no prior period, so it compares
+  // with what the ramp expected instead.
   const end = lastDay?.date ?? null;
-  const cur = end ? summarizeWindow(days, end, 7) : null;
-  const prev = end ? summarizeWindow(days, addDaysUTC(end, -7), 7) : null;
+  const range = end ? summarizeRange(days, end, rangeDays) : null;
+  const cur = range?.current ?? null;
+  const prev = range?.prior ?? null;
+  const rangeName = rangeDays > 0 ? `last ${rangeDays}d` : 'all time';
+  // With no complete prior period (the "All" range, or a range reaching past the start of the
+  // history) the honest comparison is with what the ramp expected over the same days.
+  const priorLabel = prev ? `vs prior ${rangeDays}d` : 'vs expected';
+  const vsExpected = (a: number | undefined, e: number | undefined) => (a !== undefined && e ? a / e - 1 : null);
 
-  // Scoreboard fields (trailing-7d counters) can be populated on days Mediavine hasn't finalized.
-  const latestOf = (get: (d: FunnelDayRecord) => number | null) => {
-    for (let i = days.length - 1; i >= 0; i--) {
-      const v = get(days[i]);
-      if (v !== null) return { value: v, date: days[i].date };
-    }
-    return null;
-  };
-  const valueOn = (get: (d: FunnelDayRecord) => number | null, date: string) => {
-    const d = days.find((x) => x.date === date);
-    return d ? get(d) : null;
-  };
+  // Scoreboard counters (already trailing-7d values) show the latest reading and how it moved across the range.
+  const rangeStart = rangeRows.length > 0 ? rangeRows[0].date : null;
+  const rangeEnd = rangeRows.length > 0 ? rangeRows[rangeRows.length - 1].date : null;
+  const change = (get: (d: FunnelDayRecord) => number | null) =>
+    rangeStart && rangeEnd ? counterChange(days, get, rangeStart, rangeEnd) : null;
+  const owned = change((d) => d.ownedAdds7d);
+  const pin = change((d) => d.pinterestSessions7d);
+  const nonAd = change((d) => d.nonAdMonthly);
+  const counterDelta = (c: ReturnType<typeof change>) => (c && c.first.date !== c.last.date ? pctChange(c.last.value, c.first.value) : null);
+  const counterLabel = (c: ReturnType<typeof change>) => (c && c.first.date !== c.last.date ? `since ${c.first.date.slice(5)}` : '');
 
-  const owned = latestOf((d) => d.ownedAdds7d);
-  const pin = latestOf((d) => d.pinterestSessions7d);
-  const nonAd = latestOf((d) => d.nonAdMonthly);
+  const pctOf = (a: number, e: number) => (e > 0 ? `${formatPercent(a / e)} of expected` : '');
 
   const tiles: Array<{
     key: MetricKey;
@@ -695,103 +743,449 @@ function KpiTiles({
   }> = [
     {
       key: 'revenue',
-      label: 'Revenue, last 7d',
-      value: cur ? formatCurrency(cur.revenue) : '—',
-      sub: cur && cur.expectedRevenue > 0 ? `${formatPercent(cur.revenue / cur.expectedRevenue)} of expected` : '',
-      delta: pctChange(cur?.revenue, prev?.revenue),
-      deltaLabel: 'vs prior 7d',
+      label: `Revenue, ${rangeName}`,
+      value: cur && cur.days > 0 ? formatCurrency(cur.revenue) : '—',
+      sub: cur && cur.days > 0 ? `${formatCurrency(cur.revenue / cur.days)}/day · ${pctOf(cur.revenue, cur.expectedRevenue)}` : '',
+      delta: prev ? pctChange(cur?.revenue, prev.revenue) : vsExpected(cur?.revenue, cur?.expectedRevenue),
+      deltaLabel: priorLabel,
       spark: rangeRows.map((d) => d.revenue),
       color: METRICS.revenue.color,
     },
     {
       key: 'sessions',
-      label: 'Sessions, last 7d',
-      value: cur ? formatCompactNumber(cur.sessions) : '—',
-      sub: cur && cur.expectedSessions > 0 ? `${formatPercent(cur.sessions / cur.expectedSessions)} of expected` : '',
-      delta: pctChange(cur?.sessions, prev?.sessions),
-      deltaLabel: 'vs prior 7d',
+      label: `Sessions, ${rangeName}`,
+      value: cur && cur.days > 0 ? formatCompactNumber(cur.sessions) : '—',
+      sub: cur && cur.days > 0 ? `${formatCompactNumber(cur.sessions / cur.days)}/day · ${pctOf(cur.sessions, cur.expectedSessions)}` : '',
+      delta: prev ? pctChange(cur?.sessions, prev.sessions) : vsExpected(cur?.sessions, cur?.expectedSessions),
+      deltaLabel: priorLabel,
       spark: rangeRows.map((d) => d.sessions),
       color: METRICS.sessions.color,
     },
     {
       key: 'rpm',
-      label: 'Session RPM, last 7d',
+      label: `Session RPM, ${rangeName}`,
       value: cur?.rpm != null ? formatCurrency2(cur.rpm) : '—',
       sub: verdict ? `28d: ${formatCurrency2((verdict.actualRevenue28d / verdict.actualSessions28d) * 1000)}` : '',
-      delta: pctChange(cur?.rpm, prev?.rpm),
-      deltaLabel: 'vs prior 7d',
+      delta: prev ? pctChange(cur?.rpm, prev.rpm) : null,
+      deltaLabel: priorLabel,
       spark: rangeRows.map((d) => d.rpm),
       color: METRICS.rpm.color,
     },
     {
       key: 'ownedAdds7d',
-      label: 'Owned adds, 7d',
-      value: owned ? formatInt(owned.value) : '—',
-      sub: owned ? `as of ${owned.date}` : 'no scoreboard data',
-      delta: owned ? pctChange(owned.value, valueOn((d) => d.ownedAdds7d, addDaysUTC(owned.date, -7))) : null,
-      deltaLabel: 'vs a week earlier',
+      label: 'Owned adds, trailing 7d',
+      value: owned ? formatInt(owned.last.value) : '—',
+      sub: owned ? `as of ${owned.last.date}` : 'no scoreboard data in range',
+      delta: counterDelta(owned),
+      deltaLabel: counterLabel(owned),
       spark: rangeRows.map((d) => d.ownedAdds7d),
       color: METRICS.ownedAdds7d.color,
     },
     {
       key: 'pinterestSessions7d',
-      label: 'Pinterest sessions, 7d',
-      value: pin ? formatCompactNumber(pin.value) : '—',
-      sub: pin ? `as of ${pin.date}` : 'no scoreboard data',
-      delta: pin ? pctChange(pin.value, valueOn((d) => d.pinterestSessions7d, addDaysUTC(pin.date, -7))) : null,
-      deltaLabel: 'vs a week earlier',
+      label: 'Pinterest sessions, trailing 7d',
+      value: pin ? formatCompactNumber(pin.last.value) : '—',
+      sub: pin ? `as of ${pin.last.date}` : 'no scoreboard data in range',
+      delta: counterDelta(pin),
+      deltaLabel: counterLabel(pin),
       spark: rangeRows.map((d) => d.pinterestSessions7d),
       color: METRICS.pinterestSessions7d.color,
     },
     {
       key: 'nonAdMonthly',
-      label: 'Non-ad, monthly',
-      value: nonAd ? formatCurrency(nonAd.value) : '—',
-      sub: nonAd ? `as of ${nonAd.date}` : '',
-      delta: nonAd ? pctChange(nonAd.value, valueOn((d) => d.nonAdMonthly, addDaysUTC(nonAd.date, -7))) : null,
-      deltaLabel: 'vs a week earlier',
+      label: 'Non-ad, monthly run-rate',
+      value: nonAd ? formatCurrency(nonAd.last.value) : '—',
+      sub: nonAd ? `as of ${nonAd.last.date}` : 'no scoreboard data in range',
+      delta: counterDelta(nonAd),
+      deltaLabel: counterLabel(nonAd),
       spark: rangeRows.map((d) => d.nonAdMonthly),
       color: METRICS.nonAdMonthly.color,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-      {tiles.map((t) => {
-        const up = t.delta !== null && t.delta >= 0;
-        return (
-          <button
-            key={t.key}
-            onClick={() => onPick(t.key)}
-            aria-pressed={active === t.key}
-            className={`group flex flex-col rounded-xl border p-3 text-left transition-colors ${
-              active === t.key ? 'border-slate-500 bg-slate-800/80' : 'border-slate-800 bg-slate-900 hover:border-slate-700'
-            }`}
-          >
-            <span className="flex items-center gap-1.5 text-xs text-slate-400">
-              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
-              {t.label}
-            </span>
-            <span className="mt-1 text-xl font-semibold text-white tabular-nums">{t.value}</span>
-            <span className="min-h-[1rem] text-xs text-slate-500">{t.sub}</span>
-            <Sparkline values={t.spark} color={t.color} />
-            <span className="mt-1 flex items-center gap-1 text-xs">
-              {t.delta === null ? (
-                <span className="text-slate-600">no comparison</span>
-              ) : (
-                <>
-                  {up ? <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" /> : <ArrowDownRight className="h-3.5 w-3.5 text-red-400" />}
-                  <span className="tabular-nums text-slate-200">
-                    {up ? '+' : '−'}
-                    {formatPercent(Math.abs(t.delta), 1)}
-                  </span>
-                  <span className="text-slate-500">{t.deltaLabel}</span>
-                </>
-              )}
-            </span>
-          </button>
-        );
-      })}
+    <div>
+      <p className="mb-2 text-xs text-slate-500">
+        {cur && cur.days > 0 && end ? (
+          <>
+            Tiles cover the <span className="text-slate-300">{cur.days} finalized days</span> through {end}
+            {prev ? (
+              <> and compare with the {prev.days} before them</>
+            ) : (
+              <> and compare with what the ramp expected{rangeDays > 0 ? ' (the history does not reach a full prior period)' : ''}</>
+            )}
+            . Change the range in the bar above.
+          </>
+        ) : (
+          'No finalized days in this range yet.'
+        )}
+      </p>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        {tiles.map((t) => {
+          const up = t.delta !== null && t.delta >= 0;
+          return (
+            <button
+              key={t.key}
+              onClick={() => onPick(t.key)}
+              aria-pressed={active === t.key}
+              className={`group flex flex-col rounded-xl border p-3 text-left transition-colors ${
+                active === t.key ? 'border-slate-500 bg-slate-800/80' : 'border-slate-800 bg-slate-900 hover:border-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: t.color }} />
+                {t.label}
+              </span>
+              <span className="mt-1 text-xl font-semibold text-white tabular-nums">{t.value}</span>
+              <span className="min-h-[1rem] text-xs text-slate-500">{t.sub}</span>
+              <Sparkline values={t.spark} color={t.color} />
+              <span className="mt-1 flex items-center gap-1 text-xs">
+                {t.delta === null ? (
+                  <span className="text-slate-600">no comparison</span>
+                ) : (
+                  <>
+                    {up ? <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" /> : <ArrowDownRight className="h-3.5 w-3.5 text-red-400" />}
+                    <span className="tabular-nums text-slate-200">
+                      {up ? '+' : '−'}
+                      {formatPercent(Math.abs(t.delta), 1)}
+                    </span>
+                    <span className="text-slate-500">{t.deltaLabel}</span>
+                  </>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---- "is the team on track?" -----------------------------------------------------
+
+const STATUS_COLOR: Record<VerdictColor, { hex: string; text: string; name: string }> = {
+  green: { hex: '#34d399', text: 'text-emerald-400', name: 'Green' },
+  yellow: { hex: '#facc15', text: 'text-yellow-400', name: 'Yellow' },
+  red: { hex: '#f87171', text: 'text-red-400', name: 'Red' },
+};
+
+const STATUS_PILL: Record<VerdictColor, string> = {
+  green: 'bg-emerald-500/15 text-emerald-300',
+  yellow: 'bg-yellow-500/15 text-yellow-300',
+  red: 'bg-red-500/15 text-red-300',
+};
+
+function formatPp(delta: number | null): string {
+  if (delta === null) return '—';
+  const pp = delta * 100;
+  return `${pp >= 0 ? '+' : '−'}${Math.abs(pp).toFixed(1)} pp`;
+}
+
+function OnTrackSection({
+  expectation,
+  status,
+  scorecard,
+  rangeDates,
+  hoverDate,
+  onHoverDate,
+  selectedDate,
+  onSelectDate,
+}: {
+  expectation: FunnelHistory['expectation'];
+  status: StatusPoint[];
+  scorecard: StatusScorecard;
+  rangeDates: string[];
+  hoverDate: string | null;
+  onHoverDate: (d: string | null) => void;
+  selectedDate: string | null;
+  onSelectDate: (d: string) => void;
+}) {
+  const byDate = useMemo(() => new Map(status.map((p) => [p.date, p])), [status]);
+  const inRange = rangeDates.filter((d) => byDate.has(d));
+  const firstGraded = inRange[0] ?? null;
+  // The status strip covers every day of the range the rolling window can grade.
+  const stripDates = firstGraded ? rangeDates.filter((d) => d >= firstGraded) : [];
+
+  const pts = inRange.map((d) => byDate.get(d)!);
+  // Tight, 5-point-aligned domain that always shows both gates.
+  const values = pts.flatMap((p) => [p.revenuePct, p.sessionsPct]);
+  const yDomain: [number, number] = [
+    Math.floor((Math.min(VERDICT_GATES.red - 0.02, ...values) + 1e-9) * 20) / 20,
+    Math.ceil((Math.max(1.02, ...values) - 1e-9) * 20) / 20,
+  ];
+
+  const bands: ChartBand[] =
+    firstGraded && firstGraded < expectation.startDate
+      ? [{ start: firstGraded, end: expectation.startDate, color: '#64748b', opacity: 0.1 }]
+      : [];
+
+  const { total, green, yellow, red, streak } = scorecard;
+  const share = (n: number) => (total > 0 ? `${(n / total) * 100}%` : '0%');
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-white">Is the team on track? Day by day</h2>
+        <p className="text-sm text-slate-400">
+          Every finalized day re-graded against the ramp. A day is green only when revenue <em>and</em> sessions are at or above{' '}
+          {formatPercent(VERDICT_GATES.green)} of the ramp; red when either is below {formatPercent(VERDICT_GATES.red)}.
+        </p>
+      </div>
+
+      {/* scorecard */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+          <div className="text-xs text-slate-400">Days graded since {expectation.startDate}</div>
+          <div className="mt-1 flex items-baseline gap-3 text-sm tabular-nums">
+            <span><span className="text-xl font-semibold text-white">{green}</span> <span className="text-emerald-400">green</span></span>
+            <span><span className="text-xl font-semibold text-white">{yellow}</span> <span className="text-yellow-400">yellow</span></span>
+            <span><span className="text-xl font-semibold text-white">{red}</span> <span className="text-red-400">red</span></span>
+          </div>
+          <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-slate-800" aria-hidden>
+            <div style={{ width: share(green), backgroundColor: STATUS_COLOR.green.hex }} />
+            <div style={{ width: share(yellow), backgroundColor: STATUS_COLOR.yellow.hex }} />
+            <div style={{ width: share(red), backgroundColor: STATUS_COLOR.red.hex }} />
+          </div>
+        </div>
+        <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+          <div className="text-xs text-slate-400">Current streak</div>
+          {streak ? (
+            <div className="mt-1 text-sm">
+              <span className={`text-xl font-semibold ${STATUS_COLOR[streak.color].text}`}>{STATUS_COLOR[streak.color].name}</span>{' '}
+              <span className="text-slate-300 tabular-nums">
+                {streak.days} day{streak.days === 1 ? '' : 's'} running
+              </span>
+            </div>
+          ) : (
+            <div className="mt-1 text-sm text-slate-500">No graded days yet</div>
+          )}
+          <div className="mt-1 text-xs text-slate-500">
+            {scorecard.lastGreen
+              ? scorecard.daysSinceGreen === 0
+                ? 'Green today'
+                : `Last green ${scorecard.lastGreen} (${scorecard.daysSinceGreen}d ago)`
+              : 'Never green yet'}
+          </div>
+        </div>
+        <TrendCell label="Revenue, % of ramp" latest={pts.length ? pts[pts.length - 1].revenuePct : null} trend={scorecard.revenueTrend7d} />
+        <TrendCell label="Sessions, % of ramp" latest={pts.length ? pts[pts.length - 1].sessionsPct : null} trend={scorecard.sessionsTrend7d} />
+      </div>
+
+      {/* % of ramp over time with the gates as reference lines */}
+      <div className="mt-5">
+        <FunnelLineChart
+          ariaLabel="Revenue and sessions as a percent of the ramp, with the 90, 97 and 100 percent gates"
+          height={240}
+          yDomain={yDomain}
+          yFormatter={(v) => formatPercent(v)}
+          markers="none"
+          bands={bands}
+          yZones={[
+            { from: 0, to: VERDICT_GATES.red, color: STATUS_COLOR.red.hex, opacity: 0.12 },
+            { from: VERDICT_GATES.red, to: VERDICT_GATES.green, color: STATUS_COLOR.yellow.hex, opacity: 0.14 },
+            { from: VERDICT_GATES.green, to: 10, color: STATUS_COLOR.green.hex, opacity: 0.07 },
+          ]}
+          refLines={[
+            { y: 1, label: '100% · ramp', color: '#94a3b8', dashed: true, labelSide: 'left' },
+            { y: VERDICT_GATES.green, label: `${formatPercent(VERDICT_GATES.green)} · on-track gate`, color: STATUS_COLOR.green.hex },
+            { y: VERDICT_GATES.red, label: `${formatPercent(VERDICT_GATES.red)} · off-track gate`, color: STATUS_COLOR.red.hex },
+          ]}
+          series={[
+            { id: 'rev', label: 'Revenue', color: METRICS.revenue.color, points: inRange.map((d) => ({ x: d, y: byDate.get(d)!.revenuePct })) },
+            { id: 'ses', label: 'Sessions', color: METRICS.sessions.color, points: inRange.map((d) => ({ x: d, y: byDate.get(d)!.sessionsPct })) },
+          ]}
+          tooltipExtra={(d) => {
+            const p = byDate.get(d);
+            if (!p) return null;
+            return (
+              <div className={`mt-1 font-medium ${STATUS_COLOR[p.color].text}`}>
+                {STATUS_COLOR[p.color].name} day{d < expectation.startDate ? ' (before the commitment, graded vs baseline)' : ''}
+              </div>
+            );
+          }}
+          hoverDate={hoverDate}
+          onHoverDate={onHoverDate}
+          selectedDate={selectedDate}
+          onSelectDate={onSelectDate}
+        />
+        <ChartLegend
+          items={[
+            { color: METRICS.revenue.color, label: 'Revenue 28d ÷ ramp' },
+            { color: METRICS.sessions.color, label: 'Sessions 28d ÷ ramp' },
+            { color: STATUS_COLOR.green.hex, label: `${formatPercent(VERDICT_GATES.green)} gate` },
+            { color: STATUS_COLOR.red.hex, label: `${formatPercent(VERDICT_GATES.red)} gate` },
+            ...(bands.length ? [{ color: '#64748b', label: 'Before the commitment', swatch: true, faint: true }] : []),
+          ]}
+        />
+      </div>
+
+      {/* one cell per day: the at-a-glance record */}
+      {stripDates.length > 0 && (
+        <div className="mt-4">
+          <div className="mb-1 flex justify-between text-xs text-slate-500">
+            <span>Daily status · {stripDates[0]}</span>
+            <span>{stripDates[stripDates.length - 1]}</span>
+          </div>
+          <div className="flex h-5 gap-px" role="list" aria-label="Daily status">
+            {stripDates.map((d) => {
+              const p = byDate.get(d);
+              const isSel = d === selectedDate;
+              const isHover = d === hoverDate;
+              return (
+                <button
+                  key={d}
+                  role="listitem"
+                  title={p ? `${d}: ${STATUS_COLOR[p.color].name} — revenue ${formatPercent(p.revenuePct, 1)}, sessions ${formatPercent(p.sessionsPct, 1)} of ramp` : `${d}: settling`}
+                  aria-label={p ? `${d} ${STATUS_COLOR[p.color].name}` : `${d} settling`}
+                  onClick={() => onSelectDate(d)}
+                  onMouseEnter={() => onHoverDate(d)}
+                  onMouseLeave={() => onHoverDate(null)}
+                  className={`min-w-0 flex-1 rounded-[2px] ${isSel ? 'ring-2 ring-pink-400' : isHover ? 'ring-1 ring-slate-300' : ''}`}
+                  style={{
+                    backgroundColor: p ? STATUS_COLOR[p.color].hex : '#1e293b',
+                    opacity: p ? (d < expectation.startDate ? 0.4 : 0.85) : 1,
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TrendCell({ label, latest, trend }: { label: string; latest: number | null; trend: number | null }) {
+  const color = latest === null ? null : latest < VERDICT_GATES.red ? 'red' : latest < VERDICT_GATES.green ? 'yellow' : 'green';
+  const up = trend !== null && trend >= 0;
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+      <div className="text-xs text-slate-400">{label}</div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className={`text-xl font-semibold tabular-nums ${color ? STATUS_COLOR[color].text : 'text-slate-500'}`}>
+          {latest === null ? '—' : formatPercent(latest, 1)}
+        </span>
+        {trend !== null && (
+          <span className="inline-flex items-center gap-0.5 text-xs">
+            {up ? <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" /> : <ArrowDownRight className="h-3.5 w-3.5 text-red-400" />}
+            <span className="tabular-nums text-slate-200">{formatPp(trend)}</span>
+            <span className="text-slate-500">in 7d</span>
+          </span>
+        )}
+      </div>
+      <div className="mt-1 text-xs text-slate-500">
+        {latest === null
+          ? ''
+          : latest >= VERDICT_GATES.green
+            ? `${formatPp(latest - VERDICT_GATES.green)} above the on-track gate`
+            : `${formatPp(VERDICT_GATES.green - latest).replace('+', '')} short of the on-track gate`}
+      </div>
+    </div>
+  );
+}
+
+// ---- 28d rolling vs the ramp -------------------------------------------------------
+
+function RollingCommitmentChart({
+  title,
+  subtitle,
+  color,
+  fmt,
+  rolling,
+  get,
+  expectedAt,
+  rampDates,
+  rampEndLabel,
+  bands,
+  events,
+  hoverDate,
+  onHoverDate,
+  selectedDate,
+  onSelectDate,
+}: {
+  title: string;
+  subtitle: string;
+  color: string;
+  fmt: (v: number) => string;
+  rolling: Rolling28dPoint[];
+  get: (p: Rolling28dPoint) => number | null;
+  expectedAt: (date: string) => number;
+  rampDates: string[];
+  rampEndLabel: string;
+  bands: ChartBand[];
+  events: ChartEventMarker[];
+  hoverDate: string | null;
+  onHoverDate: (d: string | null) => void;
+  selectedDate: string | null;
+  onSelectDate: (d: string) => void;
+}) {
+  const actual: ChartPoint[] = rolling.map((p) => ({ x: p.date, y: get(p) }));
+  const ramp: ChartPoint[] = rampDates.map((d) => ({ x: d, y: expectedAt(d) }));
+  const gate = (k: number): ChartPoint[] => ramp.map((p) => ({ x: p.x, y: p.y === null ? null : p.y * k }));
+  const green = gate(VERDICT_GATES.green);
+  const red = gate(VERDICT_GATES.red);
+  const areas: ChartArea[] = [
+    { upper: gate(10), lower: green, color: STATUS_COLOR.green.hex, opacity: 0.07 },
+    { upper: green, lower: red, color: STATUS_COLOR.yellow.hex, opacity: 0.16 },
+    { upper: red, lower: 'floor', color: STATUS_COLOR.red.hex, opacity: 0.12 },
+  ];
+
+  let latest: { date: string; value: number } | null = null;
+  for (let i = rolling.length - 1; i >= 0; i--) {
+    const v = get(rolling[i]);
+    if (v !== null) {
+      latest = { date: rolling[i].date, value: v };
+      break;
+    }
+  }
+  const exp = latest ? expectedAt(latest.date) : null;
+  const pct = latest && exp ? latest.value / exp : null;
+  const tone = pct === null ? null : pct < VERDICT_GATES.red ? 'red' : pct < VERDICT_GATES.green ? 'yellow' : 'green';
+  const gap = latest && exp ? latest.value - exp * VERDICT_GATES.green : null;
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <h3 className="text-lg font-bold text-white">{title}</h3>
+      <p className="text-sm text-slate-400">{subtitle}</p>
+      {latest && pct !== null && tone && gap !== null && (
+        <div className="mt-3 mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="text-2xl font-semibold text-white tabular-nums">{fmt(latest.value)}</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${STATUS_PILL[tone]}`}>{formatPercent(pct, 1)} of ramp</span>
+          <span className="text-xs text-slate-400">
+            {fmt(Math.abs(gap))} {gap >= 0 ? 'above' : 'short of'} the 97% gate · as of {latest.date}
+          </span>
+        </div>
+      )}
+      <FunnelLineChart
+        ariaLabel={`${title}, actual versus the ramp with the 90 and 97 percent gates`}
+        height={240}
+        yFormatter={fmt}
+        zeroBased={false}
+        markers="ticks"
+        events={events}
+        bands={bands}
+        areas={areas}
+        hoverDate={hoverDate}
+        onHoverDate={onHoverDate}
+        selectedDate={selectedDate}
+        onSelectDate={onSelectDate}
+        compare={{ actual: 'actual', expected: 'ramp' }}
+        tooltipOrder={['actual', 'ramp', 'green', 'red']}
+        series={[
+          { id: 'green', label: `${formatPercent(VERDICT_GATES.green)} gate`, color: STATUS_COLOR.green.hex, points: green, strokeWidth: 1.25 },
+          { id: 'red', label: `${formatPercent(VERDICT_GATES.red)} gate`, color: STATUS_COLOR.red.hex, points: red, strokeWidth: 1.25 },
+          { id: 'ramp', label: 'Ramp (100%)', color: '#94a3b8', points: ramp, dashed: true, strokeWidth: 1.5 },
+          { id: 'actual', label: 'Actual', color, points: actual, strokeWidth: 2.5 },
+        ]}
+      />
+      <ChartLegend
+        items={[
+          { color, label: 'Actual 28d total' },
+          { color: '#94a3b8', label: rampEndLabel, dashed: true },
+          { color: STATUS_COLOR.green.hex, label: `${formatPercent(VERDICT_GATES.green)} on-track gate` },
+          { color: STATUS_COLOR.red.hex, label: `${formatPercent(VERDICT_GATES.red)} off-track gate` },
+        ]}
+      />
     </div>
   );
 }
