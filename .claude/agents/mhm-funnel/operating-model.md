@@ -20,7 +20,7 @@ Triggered by the `mhm-funnel-daily` scheduled task. Five steps in order:
 | 3. Moves | Pip, Sage, Nova, Cass, Rio, Rowan, Ops in parallel (Ops capped ≤20% of merges, SD-11) | Each reads charter → autonomy → own playbook → today's scoreboard → `experiments.md`, then **executes one move** at the highest tier it is allowed, or advances an in-flight experiment. Returns the 4-line move report. | Shipped / queued moves |
 | 4. Digest | Quinn | Scoreboard line, guardrails, **Changed today** (one line per ledger row: PR, commit, deploy, verify result), what shipped, what ships tomorrow (T1), what needs a decision (T2), one insight. ≤30 lines. Written to `reports/funnel/digest-YYYY-MM-DD.md` and returned to the operator. | The two-minute read |
 | 5. Veto-window merges | Quinn | Tier 1 PRs whose 24h window expired with no "stop" are merged — each through the ship protocol (`deploy-verify.sh --after-merge`). | Deploys + ledger rows |
-| 6. Evening check | script (`mhm-guardrail-evening`, ~18:30) | `deploy-verify.sh --check`: re-renders production, re-checks the blog markers and 5xx. Catches slow failures (a WordPress plugin update, a Vercel env change, an ad-script change) and rolls back / restores on its own. | Ledger row; incident file if it acted |
+| 6. Production check | script (runner step 0e, every morning before the scoreboard; the evening task was retired 2026-09-22) | `deploy-verify.sh --check`: re-renders production, re-checks the blog markers and 5xx. Catches slow failures (a WordPress plugin update, a Vercel env change, an ad-script change) and rolls back / restores on its own. | Ledger row; incident file if it acted |
 
 **Every merge, every tier:** branch → checks → PR → squash merge →
 `deploy-verify.sh --after-merge --sha <sha>` → ledger row in
@@ -99,7 +99,7 @@ Pip turns her posts and lookbooks into pins and social copy automatically
 | Clean-worktree runner | `scripts/agents/run-funnel-daily.sh` | one worktree per agent (2026-09-02); own `npm ci`, `.env.local` copied not linked; never touches the operator's node_modules |
 | Scoreboard | `scripts/agents/funnel-scoreboard.ts` | new |
 | Circuit breaker | `scripts/agents/revenue-guardrail.ts` | new; runs before Quinn; can trigger rollback |
-| Deploy verifier / rollback / ledger | `scripts/agents/deploy-verify.sh` (+ `smoke-render.ts`, Playwright) | new; after every merge and every evening (`mhm-guardrail-evening`) |
+| Deploy verifier / rollback / ledger | `scripts/agents/deploy-verify.sh` (+ `smoke-render.ts`, Playwright) | new; after every merge and every morning (runner step 0e) |
 | Ledger + incidents | `reports/funnel/changelog.md`, `reports/funnel/incidents/` | new; the operator's record of every production change |
 | functions.php restore | `scripts/staging/push-blog-functions-prod.sh --yes` | new flag; non-interactive re-push from git |
 | Guardrail tests | `__tests__/unit/sidebar-sticky-health.test.ts`, `scripts/agents/check-blog-sidebar.sh` | existing, required |

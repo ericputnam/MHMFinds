@@ -19,7 +19,7 @@
 #   --after-merge [--sha <commit>] [--label "<who / PR>"] [--wait-min 25]
 #         wait for the production deploy of <sha> (default: the newest), promote it if the alias still serves an
 #         older build (a rollback pauses Vercel auto-promotion), verify, roll back on failure
-#   --check [--label "<who>"]        verify what is live now (evening check); roll back / restore on failure
+#   --check [--label "<who>"]        verify what is live now (morning check, runner step 0e); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
 # Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back.
@@ -180,11 +180,11 @@ ledger() {  # $1 result, $2 notes
   local row dir f seen=" "
   row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$2" | tr '|' '/' | tr '\n' ' ')")"
   for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
-    [ -n "$dir" ] || continue
+    [ "$dir" = "/reports/funnel" ] && continue  # FUNNEL_PRIMARY_WT unset (manual / standalone run)
     case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
     mkdir -p "$dir" 2>/dev/null
     f="$dir/changelog.md"
-    [ -f "$f" ] || printf '# Production change ledger\n\nAppended automatically by `scripts/agents/deploy-verify.sh` on every production deploy, evening check and rollback, so the operator can see exactly what changed and whether it was verified. Newest at the bottom.\n\n| when | mode | who / what | commit | deployment | result | notes |\n|---|---|---|---|---|---|---|\n' >"$f"
+    [ -f "$f" ] || printf '# Production change ledger\n\nAppended automatically by `scripts/agents/deploy-verify.sh` on every production deploy, morning check and rollback, so the operator can see exactly what changed and whether it was verified. Newest at the bottom.\n\n| when | mode | who / what | commit | deployment | result | notes |\n|---|---|---|---|---|---|---|\n' >"$f"
     grep -qF -- "$row" "$f" 2>/dev/null || printf '%s\n' "$row" >>"$f"
   done
   # DURABLE landing: a working-tree append is not a record — only a commit on main is (CLAUDE.md). This is
@@ -286,7 +286,7 @@ case "$MODE" in
   check)
     DEPLOY_URL="$(current_prod)"; PREV="$(previous_ready "$DEPLOY_URL")"
     log "checking live production $DEPLOY_URL (rollback target if needed: ${PREV:-none})"
-    if smoke; then ledger "$(verdict)" "$(vnotes "evening/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
+    if smoke; then ledger "$(verdict)" "$(vnotes "scheduled/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
     fail_and_fix "$PREV" ;;
   rollback)
     CUR="$(current_prod)"; TARGET="${TO:-$(previous_ready "$CUR")}"; DEPLOY_URL="$TARGET"
