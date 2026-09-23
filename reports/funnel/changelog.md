@@ -155,3 +155,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-22 21:22 | after-merge | operator session / PR #151 funnel thresholds | 24171f4 | https://mhm-finds-dw5l-bxwvhcga4-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-22 22:05 | after-merge | Ops / PR #153 team restructure | 5988fb9 | https://mhm-finds-dw5l-ohss7umtk-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-22 22:09 | after-merge | Ops / PR #154 morning-only check | a9ff3c6 | https://mhm-finds-dw5l-1s1e28grc-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-23 06:35 | check | morning-check |  | https://mhm-finds-dw5l-3ka8yhnj7-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
