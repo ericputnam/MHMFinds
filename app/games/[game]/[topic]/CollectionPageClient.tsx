@@ -21,13 +21,17 @@ import { Navbar } from '../../../../components/Navbar';
 import { Footer } from '../../../../components/Footer';
 import { ModGrid } from '../../../../components/ModGrid';
 import { NewsletterSignup } from '../../../../components/NewsletterSignup';
+import { CollectionMoreLinks } from '../../../../components/CollectionMoreLinks';
 import { Mod } from '../../../../lib/api';
 import { collectionHref, type CollectionDefinition } from '../../../../lib/collections';
+import type { ModLink } from '../../../../lib/seo/collectionMoreLinks';
 
 interface CollectionPageClientProps {
   collection: CollectionDefinition;
   initialMods: Mod[];
   totalCount: number;
+  /** Mods ranked just below the grid, rendered as crawlable text links (E84). */
+  moreLinks?: ModLink[];
   relatedCollections: CollectionDefinition[];
 }
 
@@ -35,6 +39,7 @@ export default function CollectionPageClient({
   collection,
   initialMods,
   totalCount,
+  moreLinks = [],
   relatedCollections,
 }: CollectionPageClientProps) {
   const [mods] = useState<Mod[]>(initialMods);
@@ -156,6 +161,11 @@ export default function CollectionPageClient({
                 favorites={favorites}
                 gridColumns={3}
               />
+
+              {/* Crawlable links to the next 60 mods of this collection
+                  (E84). Sibling of the grid inside the main column —
+                  never inside or beside <aside id="secondary">. */}
+              <CollectionMoreLinks title={collection.title} links={moreLinks} />
 
               {/* Related collections — internal linking for SEO +
                   scroll depth */}

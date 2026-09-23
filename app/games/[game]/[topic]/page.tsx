@@ -31,10 +31,15 @@ import { prisma } from '../../../../lib/prisma';
 import { getGameFromSlug } from '../../../../lib/gameRoutes';
 import CollectionPageClient from './CollectionPageClient';
 import type { Mod } from '../../../../lib/api';
-
-// Initial page size — enough to fill the viewport and exceed the
-// Pinterest "is this page legit?" content threshold.
-const INITIAL_PAGE_SIZE = 48;
+// INITIAL_PAGE_SIZE (48) fills the viewport and exceeds the Pinterest
+// "is this page legit?" content threshold; MORE_LINKS_COUNT is the slice
+// below it that gets plain crawl links (E84). Both live in one module so
+// the test guards the real constants.
+import {
+  INITIAL_PAGE_SIZE,
+  MORE_LINKS_COUNT,
+  type ModLink,
+} from '../../../../lib/seo/collectionMoreLinks';
 
 interface CollectionPageProps {
   params: Promise<{ game: string; topic: string }>;
@@ -104,10 +109,12 @@ async function fetchCollectionMods(collection: CollectionDefinition) {
     isNSFW: false,
   };
 
-  const [mods, totalCount] = await Promise.all([
+  const orderBy = [{ downloadCount: 'desc' as const }, { createdAt: 'desc' as const }];
+
+  const [mods, totalCount, moreLinks] = await Promise.all([
     prisma.mod.findMany({
       where,
-      orderBy: [{ downloadCount: 'desc' }, { createdAt: 'desc' }],
+      orderBy,
       take: INITIAL_PAGE_SIZE,
       include: {
         _count: {
@@ -117,9 +124,21 @@ async function fetchCollectionMods(collection: CollectionDefinition) {
       },
     }),
     prisma.mod.count({ where }),
+    // The next slice of the same ordering, as id + title only, for the
+    // crawlable "More <collection>" link list (E84). A crawler surface
+    // degrades to an empty list, never to a failed page.
+    prisma.mod
+      .findMany({
+        where,
+        orderBy,
+        skip: INITIAL_PAGE_SIZE,
+        take: MORE_LINKS_COUNT,
+        select: { id: true, title: true },
+      })
+      .catch((): ModLink[] => []),
   ]);
 
-  return { mods, totalCount };
+  return { mods, totalCount, moreLinks: moreLinks as ModLink[] };
 }
 
 /**
@@ -238,7 +257,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
     notFound();
   }
 
-  const { mods: rawMods, totalCount } = await fetchCollectionMods(collection);
+  const { mods: rawMods, totalCount, moreLinks } = await fetchCollectionMods(collection);
   const mods = serializeMods(rawMods);
 
   // Pull sibling collections for the "related" grid at the bottom.
@@ -261,6 +280,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         collection={collection}
         initialMods={mods}
         totalCount={totalCount}
+        moreLinks={moreLinks}
         relatedCollections={relatedCollections}
       />
     </>
