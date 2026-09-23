@@ -165,6 +165,12 @@ export function latestFinalizedRolling28d(points: Rolling28dPoint[]): Rolling28d
 
 export type VerdictColor = 'green' | 'yellow' | 'red';
 
+/**
+ * The two gates every status on the funnel page is graded against, as a share of the ramp.
+ * gradeVerdict, the threshold lines on the charts, and the tests all read this one object.
+ */
+export const VERDICT_GATES = { red: 0.9, green: 0.97 } as const;
+
 export interface Verdict {
   color: VerdictColor;
   revenuePct: number; // actual / expected, e.g. 0.93
@@ -197,9 +203,9 @@ export function gradeVerdict(
   const sessionsPct = expectedSessions28d > 0 ? point.actualSessions28d / expectedSessions28d : 0;
 
   let color: VerdictColor;
-  if (revenuePct < 0.9 || sessionsPct < 0.9) {
+  if (revenuePct < VERDICT_GATES.red || sessionsPct < VERDICT_GATES.red) {
     color = 'red';
-  } else if (revenuePct < 0.97 || sessionsPct < 0.97) {
+  } else if (revenuePct < VERDICT_GATES.green || sessionsPct < VERDICT_GATES.green) {
     color = 'yellow';
   } else {
     color = 'green';
@@ -240,6 +246,9 @@ export function formatCurrency(value: number): string {
 }
 
 export function formatCompactNumber(value: number): string {
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(2)}M`;
+  }
   if (Math.abs(value) >= 1000) {
     return `${(value / 1000).toFixed(1)}k`;
   }
@@ -392,4 +401,121 @@ export function resultTone(result: string | undefined): 'ok' | 'bad' | 'other' {
   if (/\b(FAIL|MISSED|RED|ROLLED BACK|ERROR)\b/.test(r)) return 'bad';
   if (/\b(PASS|OK|GREEN|DONE|APPLIED)\b/.test(r)) return 'ok';
   return 'other';
+}
+
+// ---- range + status helpers (range-driven tiles, "is the team on track?" section) --------
+
+/** Grade one ratio against VERDICT_GATES. */
+export function gradePct(pct: number): VerdictColor {
+  if (pct < VERDICT_GATES.red) return 'red';
+  if (pct < VERDICT_GATES.green) return 'yellow';
+  return 'green';
+}
+
+export interface RangeSummary {
+  /** Calendar days in the window (n, or every day since the first record when n <= 0). */
+  n: number;
+  current: WindowSummary;
+  /** The equal-length window immediately before, or null when it has no finalized days (e.g. "All"). */
+  prior: WindowSummary | null;
+}
+
+/** Totals over the last n calendar days ending at endDate, plus the prior equal-length window. */
+export function summarizeRange(days: FunnelDayRecord[], endDate: string, n: number): RangeSummary {
+  const len = n > 0 ? n : days.length > 0 ? daysBetweenUTC(days[0].date, endDate) + 1 : 0;
+  const current = summarizeWindow(days, endDate, len);
+  const prior = summarizeWindow(days, addDaysUTC(endDate, -len), len);
+  // A prior period that the history only partly covers (e.g. 90d when the data starts 110 days
+  // back) would compare ~20 days with 90 and print a +200% "change" — so it counts only when
+  // it has at least as many finalized days as the current one.
+  return { n: len, current, prior: prior.days > 0 && prior.days >= current.days ? prior : null };
+}
+
+/** First and last non-null value of a (sparse) counter inside [startDate, endDate]. */
+export function counterChange(
+  days: FunnelDayRecord[],
+  get: (d: FunnelDayRecord) => number | null,
+  startDate: string,
+  endDate: string
+): { first: { date: string; value: number }; last: { date: string; value: number } } | null {
+  let first: { date: string; value: number } | null = null;
+  let last: { date: string; value: number } | null = null;
+  for (const d of days) {
+    if (d.date < startDate || d.date > endDate) continue;
+    const v = get(d);
+    if (v === null) continue;
+    if (!first) first = { date: d.date, value: v };
+    last = { date: d.date, value: v };
+  }
+  return first && last ? { first, last } : null;
+}
+
+export interface StatusPoint {
+  date: string;
+  revenuePct: number;
+  sessionsPct: number;
+  color: VerdictColor;
+}
+
+/** The verdict re-graded for every finalized rolling day — the history of "were we on track?". */
+export function statusSeries(expectation: FunnelExpectation, rolling: Rolling28dPoint[]): StatusPoint[] {
+  const out: StatusPoint[] = [];
+  for (const p of rolling) {
+    const v = gradeVerdict(expectation, p);
+    if (v) out.push({ date: v.date, revenuePct: v.revenuePct, sessionsPct: v.sessionsPct, color: v.color });
+  }
+  return out;
+}
+
+export interface StatusScorecard {
+  /** Graded days on or after sinceDate. */
+  total: number;
+  green: number;
+  yellow: number;
+  red: number;
+  /** Consecutive days, ending at the latest graded day, with the latest day's color. */
+  streak: { color: VerdictColor; days: number } | null;
+  lastGreen: string | null;
+  /** Days between the latest graded day and the last green one (0 when today is green). */
+  daysSinceGreen: number | null;
+  /** Change in % of ramp over the last 7 days, in ratio points (0.012 = +1.2 pp). */
+  revenueTrend7d: number | null;
+  sessionsTrend7d: number | null;
+}
+
+export function statusScorecard(points: StatusPoint[], sinceDate: string): StatusScorecard {
+  const graded = points.filter((p) => p.date >= sinceDate);
+  const card: StatusScorecard = {
+    total: graded.length,
+    green: 0,
+    yellow: 0,
+    red: 0,
+    streak: null,
+    lastGreen: null,
+    daysSinceGreen: null,
+    revenueTrend7d: null,
+    sessionsTrend7d: null,
+  };
+  for (const p of graded) card[p.color]++;
+  if (graded.length === 0) return card;
+
+  const latest = graded[graded.length - 1];
+  let n = 0;
+  for (let i = graded.length - 1; i >= 0 && graded[i].color === latest.color; i--) n++;
+  card.streak = { color: latest.color, days: n };
+
+  for (let i = points.length - 1; i >= 0; i--) {
+    if (points[i].color === 'green') {
+      card.lastGreen = points[i].date;
+      card.daysSinceGreen = daysBetweenUTC(points[i].date, latest.date);
+      break;
+    }
+  }
+
+  const weekAgo = points.find((p) => p.date === addDaysUTC(latest.date, -7));
+  if (weekAgo) {
+    card.revenueTrend7d = latest.revenuePct - weekAgo.revenuePct;
+    card.sessionsTrend7d = latest.sessionsPct - weekAgo.sessionsPct;
+  }
+  return card;
 }

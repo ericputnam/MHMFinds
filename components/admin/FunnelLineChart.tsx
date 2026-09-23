@@ -14,6 +14,8 @@ export interface ChartSeries {
   points: ChartPoint[];
   dashed?: boolean;
   type?: 'line' | 'bar';
+  /** Stroke width for line series (default 2). Threshold lines use a thinner stroke. */
+  strokeWidth?: number;
 }
 
 export interface ChartEventMarker {
@@ -26,6 +28,33 @@ export interface ChartBand {
   start: string; // YYYY-MM-DD, inclusive
   end: string; // YYYY-MM-DD, exclusive edge (one day past the last shaded day)
   color?: string;
+  opacity?: number;
+}
+
+/** A horizontal reference line (e.g. the 90% / 97% / 100% gates on a %-of-expected chart). */
+export interface ChartRefLine {
+  y: number;
+  label: string;
+  color: string;
+  dashed?: boolean;
+  /** Which end of the line carries the label (default right) — for lines too close to share one. */
+  labelSide?: 'left' | 'right';
+}
+
+/** A horizontal y-range fill (e.g. "below 90% is red"). Clamped to the visible domain. */
+export interface ChartYZone {
+  from: number;
+  to: number;
+  color: string;
+  opacity?: number;
+}
+
+/** A filled area between two point lists (or down to the axis floor) — used for sloping threshold zones. */
+export interface ChartArea {
+  upper: ChartPoint[];
+  lower: ChartPoint[] | 'floor';
+  color: string;
+  opacity?: number;
 }
 
 interface FunnelLineChartProps {
@@ -45,6 +74,17 @@ interface FunnelLineChartProps {
   compare?: { actual: string; expected: string };
   /** Include y = 0 in the scale (default true); false fits the axis to the data. */
   zeroBased?: boolean;
+  /** Explicit y domain; overrides zeroBased and the fitted top. */
+  yDomain?: [number, number];
+  refLines?: ChartRefLine[];
+  yZones?: ChartYZone[];
+  areas?: ChartArea[];
+  /** 'full' = hairline + dot per event; 'ticks' = a small tick on the x axis only; 'none' hides them. */
+  markers?: 'full' | 'ticks' | 'none';
+  /** Extra tooltip content for the hovered day (e.g. that day's status). */
+  tooltipExtra?: (date: string) => React.ReactNode;
+  /** Series ids in the order the tooltip lists them (default: draw order). */
+  tooltipOrder?: string[];
 }
 
 export const EVENT_COLORS: Record<ChartEventMarker['kind'], string> = {
@@ -71,6 +111,14 @@ function niceTop(max: number): number {
   const raw = max * 1.08;
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));
   const step = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((s) => s * mag >= raw) ?? 10;
+  return step * mag;
+}
+
+/** A 1 / 2 / 2.5 / 5 × 10^n step at least as large as raw. */
+function niceStep(raw: number): number {
+  if (raw <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].find((s) => s * mag >= raw) ?? 10;
   return step * mag;
 }
 
@@ -109,6 +157,13 @@ export default function FunnelLineChart({
   onSelectDate,
   compare,
   zeroBased = true,
+  yDomain,
+  refLines = [],
+  yZones = [],
+  areas = [],
+  markers = 'full',
+  tooltipExtra,
+  tooltipOrder,
 }: FunnelLineChartProps) {
   const [wrapRef, WIDTH] = useContainerWidth();
   const [pointerInside, setPointerInside] = useState(false);
@@ -148,11 +203,21 @@ export default function FunnelLineChart({
   const xMax = parseDateUTC(sortedUniqueDates[sortedUniqueDates.length - 1]);
   const xSpan = Math.max(xMax - xMin, 1);
 
-  const allYValues = series.flatMap((s) => s.points.map((p) => p.y)).filter((v): v is number => v !== null);
+  const allYValues = series
+    .flatMap((s) => s.points.map((p) => p.y))
+    .concat(refLines.map((r) => r.y))
+    .filter((v): v is number => v !== null);
   const dataMax = allYValues.length > 0 ? Math.max(...allYValues) : 1;
   const dataMin = allYValues.length > 0 ? Math.min(...allYValues) : 0;
-  const yTop = niceTop(dataMax);
-  const yMin = zeroBased ? 0 : Math.max(0, Math.floor((dataMin - (dataMax - dataMin) * 0.15) / (yTop / 20)) * (yTop / 20));
+  const yTicks = 4;
+  // Fitted (non-zero) axes snap to a round step so ticks read $5,000 / $5,500, not $5,300 / $6,200.
+  const fitStep = niceStep(((dataMax - dataMin) * 1.3 || Math.abs(dataMax) || 1) / yTicks);
+  const yTop = yDomain ? yDomain[1] : zeroBased ? niceTop(dataMax) : Math.ceil((dataMax + (dataMax - dataMin) * 0.08) / fitStep) * fitStep;
+  const yMin = yDomain
+    ? yDomain[0]
+    : zeroBased
+      ? 0
+      : Math.max(0, Math.floor((dataMin - (dataMax - dataMin) * 0.08) / fitStep) * fitStep);
 
   const hasBars = series.some((s) => s.type === 'bar');
   const plotW = Math.max(WIDTH - PAD_LEFT - PAD_RIGHT, 50);
@@ -164,8 +229,16 @@ export default function FunnelLineChart({
   const xScale = (dateStr: string) => PAD_LEFT + edge + ((parseDateUTC(dateStr) - xMin) / xSpan) * (plotW - 2 * edge);
   const yScale = (value: number) => PAD_TOP + plotH - ((value - yMin) / (yTop - yMin || 1)) * plotH;
 
-  const yTicks = 4;
-  const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) => yMin + ((yTop - yMin) / yTicks) * i);
+  // Explicit domains keep their bounds but still tick on round multiples inside them.
+  const domainStep = yDomain ? niceStep((yTop - yMin) / yTicks) : 0;
+  const yTickValues = yDomain
+    ? Array.from(
+        { length: Math.floor((yTop - Math.ceil(yMin / domainStep - 1e-9) * domainStep) / domainStep + 1e-9) + 1 },
+        (_, i) => Math.ceil(yMin / domainStep - 1e-9) * domainStep + domainStep * i
+      )
+    : !zeroBased
+      ? Array.from({ length: Math.round((yTop - yMin) / fitStep) + 1 }, (_, i) => yMin + fitStep * i)
+      : Array.from({ length: yTicks + 1 }, (_, i) => yMin + ((yTop - yMin) / yTicks) * i);
 
   const xTickCount = Math.max(2, Math.min(WIDTH < 500 ? 4 : 7, sortedUniqueDates.length));
   const xTickDates =
@@ -187,6 +260,22 @@ export default function FunnelLineChart({
       started = true;
     }
     return d.trim();
+  }
+
+  const clampY = (v: number) => Math.min(yTop, Math.max(yMin, v));
+  function areaPath(a: ChartArea): string {
+    const up = a.upper.filter((p): p is { x: string; y: number } => p.y !== null);
+    if (up.length < 2) return '';
+    const lowerAt = new Map<string, number | null>();
+    if (a.lower !== 'floor') for (const p of a.lower) lowerAt.set(p.x, p.y);
+    const pts = up.filter((p) => a.lower === 'floor' || typeof lowerAt.get(p.x) === 'number');
+    if (pts.length < 2) return '';
+    const top = pts.map((p) => `${xScale(p.x).toFixed(2)},${yScale(clampY(p.y)).toFixed(2)}`);
+    const bottom = pts
+      .slice()
+      .reverse()
+      .map((p) => `${xScale(p.x).toFixed(2)},${yScale(a.lower === 'floor' ? yMin : clampY(lowerAt.get(p.x) as number)).toFixed(2)}`);
+    return `M${top.join(' L')} L${bottom.join(' L')} Z`;
   }
 
   const barSeries = series.filter((s) => s.type === 'bar');
@@ -274,12 +363,47 @@ export default function FunnelLineChart({
           </text>
         ))}
 
-        {/* threshold bands (e.g. actual < 80% of expected) */}
-        {bands.map((b, i) => {
-          const x0 = xScale(b.start) - (hasBars ? slot / 2 : 0);
-          const x1 = hasBars ? xScale(b.end) - slot / 2 : xScale(b.end);
+        {/* horizontal zones (e.g. below the 90% gate) */}
+        {yZones.map((z, i) => {
+          const lo = clampY(Math.min(z.from, z.to));
+          const hi = clampY(Math.max(z.from, z.to));
+          if (hi <= lo) return null;
           return (
-            <rect key={i} x={x0} y={PAD_TOP} width={Math.max(1, x1 - x0)} height={plotH} fill={b.color || '#ef4444'} opacity={0.12} />
+            <rect key={`z${i}`} x={PAD_LEFT} y={yScale(hi)} width={plotW} height={yScale(lo) - yScale(hi)} fill={z.color} opacity={z.opacity ?? 0.08} pointerEvents="none" />
+          );
+        })}
+
+        {/* areas between two lines (sloping threshold zones) */}
+        {areas.map((a, i) => {
+          const d = areaPath(a);
+          return d ? <path key={`a${i}`} d={d} fill={a.color} opacity={a.opacity ?? 0.1} pointerEvents="none" /> : null;
+        })}
+
+        {/* x-range bands (e.g. actual < 80% of expected, or "before the commitment") */}
+        {bands.map((b, i) => {
+          const x0 = Math.max(PAD_LEFT, xScale(b.start) - (hasBars ? slot / 2 : 0));
+          const x1 = Math.min(WIDTH - PAD_RIGHT, hasBars ? xScale(b.end) - slot / 2 : xScale(b.end));
+          if (x1 <= x0) return null;
+          return (
+            <rect key={i} x={x0} y={PAD_TOP} width={Math.max(1, x1 - x0)} height={plotH} fill={b.color || '#ef4444'} opacity={b.opacity ?? 0.12} />
+          );
+        })}
+
+        {/* horizontal reference lines */}
+        {refLines.map((r, i) => {
+          if (r.y < yMin || r.y > yTop) return null;
+          const y = yScale(r.y);
+          return (
+            <g key={`r${i}`} pointerEvents="none">
+              <line x1={PAD_LEFT} x2={WIDTH - PAD_RIGHT} y1={y} y2={y} stroke={r.color} strokeWidth={1.5} strokeDasharray={r.dashed ? '4 4' : undefined} strokeOpacity={0.9} />
+              <text
+                x={r.labelSide === 'left' ? PAD_LEFT + 4 : WIDTH - PAD_RIGHT - 4}
+                y={y - 4}
+                textAnchor={r.labelSide === 'left' ? 'start' : 'end'}
+                fontSize={10} fill="currentColor" opacity={0.75}>
+                {r.label}
+              </text>
+            </g>
           );
         })}
 
@@ -312,7 +436,7 @@ export default function FunnelLineChart({
               d={pathFor(s.points)}
               fill="none"
               stroke={s.color}
-              strokeWidth={2}
+              strokeWidth={s.strokeWidth ?? 2}
               strokeLinejoin="round"
               strokeLinecap="round"
               strokeDasharray={s.dashed ? '6 4' : undefined}
@@ -320,16 +444,22 @@ export default function FunnelLineChart({
           ))}
 
         {/* event markers */}
-        {eventsInRange.map((e, i) => {
-          const x = xScale(e.date);
-          const color = EVENT_COLORS[e.kind];
-          return (
-            <g key={i} pointerEvents="none">
-              <line x1={x} x2={x} y1={PAD_TOP} y2={PAD_TOP + plotH} stroke={color} strokeOpacity={0.35} strokeWidth={1} />
-              <circle cx={x} cy={PAD_TOP - 4} r={3} fill={color} />
-            </g>
-          );
-        })}
+        {markers !== 'none' &&
+          eventsInRange.map((e, i) => {
+            const x = xScale(e.date);
+            const color = EVENT_COLORS[e.kind];
+            if (markers === 'ticks') {
+              return (
+                <line key={i} x1={x} x2={x} y1={PAD_TOP + plotH + 1} y2={PAD_TOP + plotH + 6} stroke={color} strokeWidth={1.5} pointerEvents="none" />
+              );
+            }
+            return (
+              <g key={i} pointerEvents="none">
+                <line x1={x} x2={x} y1={PAD_TOP} y2={PAD_TOP + plotH} stroke={color} strokeOpacity={0.35} strokeWidth={1} />
+                <circle cx={x} cy={PAD_TOP - 4} r={3} fill={color} />
+              </g>
+            );
+          })}
 
         {/* pinned day */}
         {selectedX !== null && (
@@ -389,8 +519,12 @@ export default function FunnelLineChart({
           <div className="mb-1 font-medium text-slate-300">
             {weekdayOf(activeHover)} {activeHover}
           </div>
-          {series.map((s) => {
+          {(tooltipOrder
+            ? tooltipOrder.map((id) => series.find((s) => s.id === id)).filter((s): s is ChartSeries => !!s)
+            : series
+          ).map((s) => {
             const v = valueAt.get(s.id)?.get(activeHover);
+            if (v === undefined) return null; // series doesn't cover this day (e.g. ramp-only dates)
             return (
               <div key={s.id} className="flex items-center gap-2">
                 <span
@@ -406,6 +540,7 @@ export default function FunnelLineChart({
             );
           })}
           {compareLine && <div className="mt-1 text-slate-300">{compareLine}</div>}
+          {tooltipExtra && tooltipExtra(activeHover)}
           {hoverEvents.length > 0 && (
             <div className="mt-2 space-y-1 border-t border-slate-800 pt-2">
               {hoverEvents.slice(0, 4).map((e, i) => (
