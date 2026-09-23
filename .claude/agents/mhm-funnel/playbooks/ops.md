@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-09-23 — E91
+- Tried: incident forensics for the 09-22 run (T0) + PR: `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS` exported in the runner (default 2 h), secondary-URL navigation retry in smoke-render, empty `check-blog-sidebar` → INCONCLUSIVE, curl failure → `[WARN]` + exit 2. Landed #147 + #142 rows and `incidents/2026-09-22-0655.md` on `main` via `ledger-commit.sh` before the PR.
+- Before → after: runs killed at the 600 s ceiling 3 of the last 5 (09-18, 09-19, 09-22) → 0 expected; ledger rows on `main` for 09-22 morning merges 0 of 2 → 2 of 2; false-alarm rollbacks 1 (09-22 07:10, harmless: identical app code, functions.php re-push failed on a missing path).
+- Verdict: MORE DATA (read on 2026-09-30: `grep -c "Background tasks still running" logs/funnel-daily.log` unchanged at 3, run success 14d ≥ 85%, 0 rollbacks whose "was" is a secondary-URL timeout or an empty blog check).
+- Next time: the deleted-worktree orphan is the real lesson — `cleanup()` removes trees while children may run; and deploy-verify still runs whichever `smoke-render.ts` sits in the first tree with playwright (the operator tree's stale 7-target copy on 09-22). Both filed as `[ops]`.
+
 ## 2026-09-21
 - Tried: five agents shipping in parallel with a 4-minute merge-serialization rule stated in the prompt; 7 PRs merged in 24 minutes (#130–#137), 5 of them Tier 0 site or script changes.
 - Before → after: ledger rows 7 of 7 merges (all PASS, 5xx = 0), but `deploy-verify.sh` graded PASS against a build that did not contain the merged sha on 2 of 7 (#132 at 07:05, #136 at 07:09) — produ…

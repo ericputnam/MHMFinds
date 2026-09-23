@@ -352,7 +352,15 @@ if [ -z "$PROMPT_FILE" ]; then
   if [ -f "$WT/scripts/agents/funnel-daily-prompt.md" ]; then PROMPT_FILE="$WT/scripts/agents/funnel-daily-prompt.md"
   else PROMPT_FILE="$PROJECT_DIR/scripts/agents/funnel-daily-prompt.md"; log "WARN: origin/main has no funnel-daily-prompt.md — using the operator-tree copy"; fi
 fi
-log "Running Quinn ($MODEL)… prompt=$PROMPT_FILE"
+# `claude -p` terminates background tasks 600 s after the main turn ends ("Background tasks still running after
+# 600s; terminating. Set CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 to wait indefinitely."). Quinn's turn ends once
+# the seven specialists are dispatched via the Agent tool, so every agent needing > 10 min (build + type-check +
+# PR + merge-gate + a 6–10 min deploy-verify) was killed mid-flight on 09-18, 09-19 and 09-22 — on 09-22 an
+# orphaned deploy-verify then rolled production back from a worktree cleanup() had already deleted (incident
+# 2026-09-22-0655.md, E91). 2 h is the default (Quinn's longest full run was 51 min); a finite cap is deliberate
+# so a hung subagent can never wedge the scheduled task forever. Guarded by __tests__/unit/funnel-runner-bg-ceiling.test.ts.
+export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS="${FUNNEL_BG_WAIT_CEILING_MS:-7200000}"
+log "Running Quinn ($MODEL)… prompt=$PROMPT_FILE bg-wait-ceiling=${CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS}ms"
 GUARD_LINE="CIRCUIT BREAKER TODAY: status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" ) — full report: $GUARD_MD. If the runner rolled back, the ledger row and incident file are already written; you are in incident mode."
 if "${CLAUDE_CLEAN[@]}" claude -p "$(cat "$PROMPT_FILE")
 
