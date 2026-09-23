@@ -34,6 +34,7 @@ CRITICAL_MARKERS=(
 )
 
 FAIL=0
+COULD_NOT_RUN=0   # exit 2: a page could not be fetched at all — says nothing about the markers (0 ok · 2 WARN · 1 FAIL)
 
 for url in "${TEST_URLS[@]}"; do
   [ "$QUIET" -eq 0 ] && echo "==> Checking: $url"
@@ -41,8 +42,17 @@ for url in "${TEST_URLS[@]}"; do
   TMP_HTML="$(mktemp -t blog_check_XXXXXX.html)"
   trap 'rm -f "$TMP_HTML"' EXIT
 
-  HTTP_CODE=$(curl -sL -A "Mozilla/5.0 (compatible; mhm-sidebar-check/1.0)" \
-    -o "$TMP_HTML" -w "%{http_code}" "$url")
+  # `|| HTTP_CODE="000"`: under set -e a curl error (reset, DNS, timeout) used to kill the script before any
+  # line printed, and deploy-verify graded that silence as FAIL (2026-09-22 06:55 false-alarm rollback, E91).
+  HTTP_CODE=$(curl -sL --max-time 60 -A "Mozilla/5.0 (compatible; mhm-sidebar-check/1.0)" \
+    -o "$TMP_HTML" -w "%{http_code}" "$url") || HTTP_CODE="000"
+
+  if [ "$HTTP_CODE" = "000" ]; then
+    echo "  [WARN] could not fetch $url (curl failed — network/origin, not a marker verdict)"
+    COULD_NOT_RUN=1
+    rm -f "$TMP_HTML"
+    continue
+  fi
 
   if [ "$HTTP_CODE" != "200" ]; then
     echo "  [FAIL] HTTP $HTTP_CODE on $url"
@@ -83,5 +93,6 @@ if [ "$FAIL" -ne 0 ]; then
   exit 1
 fi
 
+[ "$COULD_NOT_RUN" -ne 0 ] && exit 2
 [ "$QUIET" -eq 0 ] && echo "" && echo "==> All blog sidebar markers present. Healthy."
 exit 0

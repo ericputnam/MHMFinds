@@ -18,6 +18,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { INDEXNOW_KEY } from './indexnow-lib';
+import { shouldRetryRender, type SmokeKind } from './smoke-render-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -25,7 +26,7 @@ const BASE = (arg('--base') ?? 'https://musthavemods.com').replace(/\/$/, '');
 const JSON_OUT = arg('--json');
 const SETTLE_MS = Number(arg('--settle') ?? 6000);
 
-type Kind = 'catalog' | 'detail' | 'interstitial' | 'blog' | 'game' | 'xml' | 'text';
+type Kind = SmokeKind;
 /**
  * `expectText`: for a short file whose *content* is the point, not its length —
  * the IndexNow ownership key is 32 bytes, well under the 50-char "empty response"
@@ -165,10 +166,13 @@ async function main() {
     // A single uncaught page error on one load (third-party script, race) must not roll production back by
     // itself (2026-09-05: 1 of 7 homepage loads threw a circular-JSON error nobody could reproduce). Render the
     // page once more; the failure counts only if it reproduces. Structural failures (HTTP, ad anchors, blank
-    // render, Application error) are deterministic and are not retried.
-    if (r.failures.length && r.failures.every((f) => /uncaught page error/.test(f))) {
+    // render, Application error) are deterministic and are not retried — EXCEPT a navigation failure on a
+    // secondary target (xml/text: sitemaps, llms.txt, feeds), which also gets one fresh page: on 2026-09-22
+    // a single 45 s timeout on the prerendered /sitemap.xml (561 ms four minutes later) rolled production back
+    // by itself (incident 2026-09-22-0655.md, E91). Decision in smoke-render-lib.ts so it is unit-tested.
+    if (shouldRetryRender(t.kind, r.failures, r.pageErrors)) {
       const again = await render(t);
-      if (!again.failures.length) { again.transientErrors = r.pageErrors; console.log(`  ↻ ${t.path}: page error did not reproduce on a second load — recorded as transient, not a failure`); }
+      if (!again.failures.length) { again.transientErrors = r.pageErrors; console.log(`  ↻ ${t.path}: ${r.failures[0]} did not reproduce on a second load — recorded as transient, not a failure`); }
       r = again;
     }
     results.push(r);

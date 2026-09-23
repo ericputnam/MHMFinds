@@ -114,9 +114,14 @@ smoke() {
   fi
   [ -n "$INCONCLUSIVE" ] && log "WARN: $INCONCLUSIVE — a check that cannot run is INCONCLUSIVE, never a rollback trigger"
   log "check: WordPress critical markers…"
-  local blog_out
+  local blog_out blog_fails
   if ! blog_out="$("$ROOT/scripts/agents/check-blog-sidebar.sh" --quiet 2>&1)"; then
-    addfail "check-blog-sidebar: $(echo "$blog_out" | grep FAIL | head -3 | tr '\n' ' ')"
+    # Only a printed [FAIL] line is evidence about the site. A non-zero exit with NO such line means the check
+    # itself could not run (curl failure, exit 2) — on 2026-09-22 that empty string was graded FAIL twice and
+    # produced "ROLLED BACK, STILL FAILING" while Chromium saw the markers in the same minute (E91).
+    blog_fails="$(echo "$blog_out" | grep FAIL | head -3 | tr '\n' ' ')"
+    if [ -n "$blog_fails" ]; then addfail "check-blog-sidebar: $blog_fails"
+    else INCONCLUSIVE="${INCONCLUSIVE:+$INCONCLUSIVE · }check-blog-sidebar could not run (non-zero exit, no FAIL line: $(echo "$blog_out" | grep -m1 WARN | cut -c1-120 || true)) — markers NOT judged"; fi
   fi
   local n5
   n5="$( (cd "$ROOT" && vercel logs --no-branch --environment production --status-code 5xx --since 15m 2>/dev/null) | grep -cE '^[0-9]{2}:[0-9]{2}:[0-9]{2}' || true)"
