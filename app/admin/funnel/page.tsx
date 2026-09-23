@@ -51,6 +51,7 @@ import {
   VerdictColor,
   weeklySummary,
 } from '@/lib/funnel/dashboardMath';
+import { DEFAULT_METRIC_OWNERS } from '@/lib/funnel/metricOwners';
 
 /*
  * /admin/funnel — the operator's scoreboard for the automated funnel team.
@@ -427,6 +428,10 @@ function FunnelDashboard({
           document.getElementById('funnel-explorer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }}
       />
+
+      {/* ---- long-range health + team health ---- */}
+      <LongRangeHealth lastDay={lastDay} rangeRows={rangeDaysRows} />
+      <TeamHealth lastDay={lastDay} rangeRows={rangeDaysRows} />
 
       {/* ---- metric explorer ---- */}
       <div id="funnel-explorer" className="scroll-mt-20 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
@@ -856,6 +861,226 @@ function KpiTiles({
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// ---- long-range health -----------------------------------------------------------
+
+const LONG_RANGE_REASONS: Record<string, string> = {
+  returningShare7d: 'GA4 newVsReturning query unavailable for this day',
+  nonPinterestShare7d: 'Needs GA4 channel + landing-page data for this day',
+  pagesPerSession7d: 'GA4 engagement query unavailable for this day',
+  engagementRate7d: 'GA4 engagement query unavailable for this day',
+  favorites7d: 'DB pull unavailable for this day',
+  downloadClicks7d: 'DB pull unavailable for this day',
+  newMods7d: 'DB pull unavailable for this day',
+  catalogTotal: 'DB pull unavailable for this day',
+  captureRatePer1k: 'Needs owned adds and sessions for this day',
+  creatorsOnboarded: 'DB pull unavailable for this day',
+  creatorSubmissions7d: 'DB pull unavailable for this day',
+};
+
+function HealthTile({
+  label,
+  owner,
+  value,
+  sub,
+  spark,
+  color,
+  reason,
+}: {
+  label: string;
+  owner: string;
+  value: string | null;
+  sub?: string;
+  spark?: Array<number | null>;
+  color: string;
+  reason?: string;
+}) {
+  const missing = value === null;
+  return (
+    <div className="flex flex-col rounded-lg border border-slate-800 bg-slate-950/40 p-3" title={missing ? reason ?? 'No data for this metric' : undefined}>
+      <span className="flex items-center justify-between gap-1.5 text-xs text-slate-400">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: color }} />
+          {label}
+        </span>
+        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">{owner}</span>
+      </span>
+      <span className="mt-1 text-xl font-semibold text-white tabular-nums">{missing ? '—' : value}</span>
+      {sub ? <span className="min-h-[1rem] text-xs text-slate-500">{sub}</span> : null}
+      {spark ? <Sparkline values={spark} color={color} /> : null}
+    </div>
+  );
+}
+
+function LongRangeHealth({ lastDay, rangeRows }: { lastDay: FunnelDayRecord | null; rangeRows: FunnelDayRecord[] }) {
+  const owners = DEFAULT_METRIC_OWNERS;
+  const tiles: Array<{ key: string; label: string; value: string | null; sub?: string; spark: Array<number | null>; color: string }> = [
+    {
+      key: 'returningShare7d',
+      label: 'Returning visitors, 7d',
+      value: lastDay?.returningShare7d != null ? formatPercent(lastDay.returningShare7d, 1) : null,
+      spark: rangeRows.map((d) => d.returningShare7d ?? null),
+      color: '#38bdf8',
+    },
+    {
+      key: 'nonPinterestShare7d',
+      label: 'Non-Pinterest share, 7d',
+      value: lastDay?.nonPinterestShare7d != null ? formatPercent(lastDay.nonPinterestShare7d, 1) : null,
+      sub: 'Bing + (not set) excluded both sides',
+      spark: rangeRows.map((d) => d.nonPinterestShare7d ?? null),
+      color: '#a78bfa',
+    },
+    {
+      key: 'pagesPerSession7d',
+      label: 'Pages / session, 7d',
+      value: lastDay?.pagesPerSession7d != null ? lastDay.pagesPerSession7d.toFixed(2) : null,
+      spark: rangeRows.map((d) => d.pagesPerSession7d ?? null),
+      color: '#fb923c',
+    },
+    {
+      key: 'engagementRate7d',
+      label: 'Engagement rate, 7d',
+      value: lastDay?.engagementRate7d != null ? formatPercent(lastDay.engagementRate7d, 1) : null,
+      spark: rangeRows.map((d) => d.engagementRate7d ?? null),
+      color: '#fb923c',
+    },
+    {
+      key: 'favorites7d',
+      label: 'Favorites, trailing 7d',
+      value: lastDay?.favorites7d != null ? formatInt(lastDay.favorites7d) : null,
+      spark: rangeRows.map((d) => d.favorites7d ?? null),
+      color: '#34d399',
+    },
+    {
+      key: 'downloadClicks7d',
+      label: 'Download clicks, trailing 7d',
+      value: lastDay?.downloadClicks7d != null ? formatInt(lastDay.downloadClicks7d) : null,
+      spark: rangeRows.map((d) => d.downloadClicks7d ?? null),
+      color: '#34d399',
+    },
+    {
+      key: 'newMods7d',
+      label: 'New mods, trailing 7d',
+      value: lastDay?.newMods7d != null ? formatInt(lastDay.newMods7d) : null,
+      sub: lastDay?.catalogTotal != null ? `${formatCompactNumber(lastDay.catalogTotal)} in catalog` : undefined,
+      spark: rangeRows.map((d) => d.newMods7d ?? null),
+      color: '#facc15',
+    },
+    {
+      key: 'captureRatePer1k',
+      label: 'Capture rate / 1K sessions',
+      value: lastDay?.captureRatePer1k != null ? lastDay.captureRatePer1k.toFixed(2) : null,
+      spark: rangeRows.map((d) => d.captureRatePer1k ?? null),
+      color: '#f472b6',
+    },
+    {
+      key: 'creatorsOnboarded',
+      label: 'Creators onboarded',
+      value: lastDay?.creatorsOnboarded != null ? formatInt(lastDay.creatorsOnboarded) : null,
+      sub: lastDay?.creatorSubmissions7d != null ? `${formatInt(lastDay.creatorSubmissions7d)} submissions, 7d` : undefined,
+      spark: rangeRows.map((d) => d.creatorsOnboarded ?? null),
+      color: '#60a5fa',
+    },
+  ];
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-white">Long-range health</h2>
+        <p className="text-sm text-slate-400">
+          Metrics that move slower than the daily KPI tiles. Latest finalized day{lastDay ? ` (${lastDay.date})` : ''}; hover a card for why it
+          reads &ldquo;—&rdquo;.
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        {tiles.map((t) => (
+          <HealthTile
+            key={t.key}
+            label={t.label}
+            owner={owners[t.key] ?? 'Unowned'}
+            value={t.value}
+            sub={t.sub}
+            spark={t.spark}
+            color={t.color}
+            reason={LONG_RANGE_REASONS[t.key]}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---- team health ------------------------------------------------------------------
+
+function TeamHealth({ lastDay, rangeRows }: { lastDay: FunnelDayRecord | null; rangeRows: FunnelDayRecord[] }) {
+  const owners = DEFAULT_METRIC_OWNERS;
+  const mergesByOwner = lastDay?.mergesByOwner7d ?? null;
+  const mergeEntries = mergesByOwner ? Object.entries(mergesByOwner).sort((a, b) => b[1] - a[1]) : [];
+  const opsShare = lastDay?.opsMergeShare7d ?? null;
+  const opsOverCap = opsShare != null && opsShare > 0.2;
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-white">Team health</h2>
+        <p className="text-sm text-slate-400">
+          Is the automated funnel team actually running, and is Ops carrying too much of the merge load (cap: 20%)?
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <HealthTile
+          label="Run success, 14d"
+          owner={owners.runSuccess14d ?? 'Ops'}
+          value={lastDay?.runSuccess14d != null ? formatPercent(lastDay.runSuccess14d, 0) : null}
+          sub="mornings with a scoreboard + digest"
+          spark={rangeRows.map((d) => d.runSuccess14d ?? null)}
+          color="#38bdf8"
+          reason="No scoreboard/digest history for this day"
+        />
+        <HealthTile
+          label="Ops merge share, 7d"
+          owner={owners.opsMergeShare7d ?? 'Ops'}
+          value={opsShare != null ? formatPercent(opsShare, 0) : null}
+          sub={opsShare != null ? (opsOverCap ? 'over the 20% cap' : 'within the 20% cap') : undefined}
+          spark={rangeRows.map((d) => d.opsMergeShare7d ?? null)}
+          color={opsOverCap ? '#f87171' : '#34d399'}
+          reason="No merges recorded in changelog.md for this window"
+        />
+        <HealthTile
+          label="Paper-only merges, 7d"
+          owner={owners.paperOnlyMerges7d ?? 'Ops'}
+          value={lastDay?.paperOnlyMerges7d != null ? formatInt(lastDay.paperOnlyMerges7d) : null}
+          sub="ledger rows with no commit/deploy"
+          spark={rangeRows.map((d) => d.paperOnlyMerges7d ?? null)}
+          color="#facc15"
+          reason="No merges recorded in changelog.md for this window"
+        />
+        <div className="flex flex-col rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+          <span className="flex items-center justify-between gap-1.5 text-xs text-slate-400">
+            <span>Merges by owner, 7d</span>
+            <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+              {owners.mergesByOwner7d ?? 'Quinn'}
+            </span>
+          </span>
+          {mergeEntries.length === 0 ? (
+            <span className="mt-1 text-sm text-slate-500" title="No merges recorded in changelog.md for this window">
+              —
+            </span>
+          ) : (
+            <ul className="mt-1 space-y-0.5 text-xs text-slate-300">
+              {mergeEntries.map(([who, n]) => (
+                <li key={who} className="flex items-center justify-between tabular-nums">
+                  <span>{who}</span>
+                  <span>{n}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

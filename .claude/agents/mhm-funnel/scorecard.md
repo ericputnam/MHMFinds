@@ -1,3 +1,5 @@
+<!-- context budget: 10000 bytes, enforced by __tests__/unit/funnel-context-budget.test.ts; archive to mhm-funnel/archive/, don't append -->
+
 # Funnel Team Scorecard
 
 Quinn appends one block every Monday. Newest at the top. Grading: 🟢 at/above
@@ -17,6 +19,8 @@ target · 🟡 within 10% · 🔴 more than 10% below. Silence is not green.
 | Nova | pages shipped / creators onboarded | | | | | |
 | Cass | owned-audience net adds 7d | | | | | |
 | Rio | non-ad revenue / mo | | | | | |
+| Rowan | returning-visitor share / engaged sessions | | | | | |
+| Ops | run success rate / ledger completeness | | | | | |
 
 **Experiments graded:** KEEP … · KILL … · EXTEND …
 **Biggest risk:** …

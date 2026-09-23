@@ -1,3 +1,4 @@
+<!-- context budget: 10000 bytes, enforced by __tests__/unit/funnel-context-budget.test.ts; archive to mhm-funnel/archive/, don't append -->
 # Sage — Search & AI — Playbook
 
 Your memory across runs. Append one dated entry per run, newest at the top,
@@ -18,95 +19,10 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
-## 2026-09-16
-- Tried: decompose the scoreboard's google_organic 7d **2,404 (+32.2%)** and ai_referral **323 (+21.9%)** against GSC and GA4 (E57, Tier 0, report-only — `reports/funnel/search-read-2026-09-16.md`). **The +32.2% does not corroborate.** GA4 google/organic sessions/day rose 262.6 → 326.7 (+24.4%) between 09-01–09-07 and 09-08–09-13, while GSC clicks/day (`type=web` + `type=image`) *fell* 144.9 → 139.7 (−3.6%). The GA4:GSC ratio moved **1.81 → 2.34 (+29%)**. Ruled out Discover as the benign explanation: the growth is **desktop** (homepage desktop 19.0 → 23.8/day, homepage mobile dead flat 5.7 → 5.6) and diffuse across **1,302 landing-page rows**, whereas Discover is ~95% mobile and concentrates on one or two articles. Applied the house Bing rule to Google: do not spend an unverified channel number.
-- Two wins that *are* in GSC, both small: (a) the 09-12 un-consolidation — 09-12 and 09-13 are the **two highest click days in the 21-day window** (122, 107 vs a 08-24–09-06 range of 66–110), `/sims-4-pregnancy-mods/` 18 → 37 clicks (+106%), blog subdomain top-40 107 → 154 (+44%); (b) E32 — `/games/sims-4/*` 33 → 43 clicks (+30%) on impressions 1,280 → 1,582. Together ~+45 clicks/week, not +580 sessions/week. Homepage GSC clicks **fell** 130 → 84 on *rising* impressions (1,934 → 2,191) and better position (37.9 → 36.0) — cause is brand demand, not ranking: `musthavemods` impressions halved 74 → 36 at an unchanged position 1.03. Not an SEO problem.
-- Plumbing: no gap. `shoes-cc` (shipped 09-13, crawled 09-13T15:31Z) and `loading-screens` (shipped 09-15, crawled 09-15T16:30Z — **indexed within hours of ship**) are both "Submitted and indexed" with our canonical accepted. E52's own 09-16 gate **passes**: runner log has `indexnow mode=live status=OK urls=69 mods=47 collections=22 http=200` — and `http=200`, up from `202` on the first run, means the key file is now validated. 09-28 Bing read is valid.
-- Before → after: new metric **GA4:GSC ratio for Google organic**, baseline **1.81** (09-01–09-07), current **2.34** (09-08–09-13) → read **2026-09-23** (window 09-14–09-20). Conclude real if ≤ 2.00; artifact if ≥ 2.20 (then google_organic is marked unverified and excluded from B3); escalate if ≥ 2.20 *and* GSC clicks/day < 130.
-- Verdict: MORE DATA (read 2026-09-23). No code shipped — all three candidate Tier 0 fixes in the brief were closed by the data.
-- Next time: wire the ratio into `funnel-scoreboard.ts` so a GA4/GSC divergence flags itself (its own run — Pip and Rio collided on that file on 09-13). The facet-page titles/metas lever is **closed**, not pending: skin-details/male-clothes/female-clothes/poses/body-presets already carry hand-written head-term metas, and ~1.6% CTR at positions 27–30 is normal for that position — the constraint is rank, not the snippet. `/play/` is still absent from `smoke-render.ts`; do not add it in a run where you cannot do a real render first, because a smoke failure auto-rollbacks production.
-
----
-
-## 2026-09-15
-- Tried: wire IndexNow into the daily loop and make its ownership proof falsifiable (E52, Tier 0, PR). E47 shipped 09-14 complete and **called by nothing** — `grep -c indexnow scripts/agents/run-funnel-daily.sh` returned **0**, so the 09-28 Bing read was scheduled to measure a push that had never run. Fixed all three legs: (1) **first live submission ever** — key file confirmed at `https://musthavemods.com/ee78fbc844f5b753a61535eed78c41d0.txt` (HTTP 200, 32 bytes, exact key), dry run clean (40 URLs, 0 dropped, exit 0), then `--apply --days 2` → `status=OK urls=40 mods=19 collections=21 dropped=0 http=202 reason=accepted-key-pending-validation`, exit 0. (2) New runner step **0c2**, immediately after catalog ingest so the mods created minutes earlier are the ones pushed: `MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/indexnow-submit.ts --apply --days 2`, exit code captured into `INDEXNOW_RC` and branched 0/2/1 (2 = could-not-run, 1 = rejected — both logged, neither aborts; the runner is `set -uo pipefail`, no `-e`), summary line tailed from gitignored `logs/indexnow.log` into the runner log. `--days 2` not the 7-day default: the 7d window already exceeds `HARD_CAP=500` whenever a backfill sits inside it. (3) `/<key>.txt` + `/feeds/sims-4/hair-cc/` added to `smoke-render.ts`.
-- **Trap found and closed before it could fire**: adding the key file as a plain `kind: 'text'` target would have failed *every* deploy-verify run — the non-ad branch of `expectations()` fails anything under 50 chars as `empty response`, and the key is 32 bytes. A smoke failure triggers automatic `vercel rollback`, so the obvious one-line version of this task was a daily false-rollback machine. Added an optional `Target.expectText` that checks the body *contains* the expected string instead of measuring length, built from the imported `INDEXNOW_KEY` constant (not a copy of its value), reporting only the served length on failure, never the body. Also picked one per-collection feed as a class proxy: all ~20 share `buildWhereClause()`, and the two sitewide feeds stay green through a regression that breaks every collection feed. Both verified live before shipping: hair-cc feed 200 `application/rss+xml` 37,407 bytes, key file 200/32 bytes.
-- Before → after: bing_organic sessions 7d **16,826** (GA4 2026-09-06→09-12 read 2026-09-15, −3.9% WoW; E47 baseline was 17,032) → read **2026-09-28** (7d 09-20→09-26). IndexNow submissions before today: 0. Today: 1 live run, 40 URLs, HTTP 202. From tomorrow: 1/day from the runner.
-- Verdict: MORE DATA — decision rule unchanged from E47, written before the read: KEEP if bing_organic 7d ≥ 17,032 on 09-28 with `logs/indexnow.log` showing `status=OK` on ≥ 10 of 14 days; also KEEP on flat sessions if `status=OK` every day (a zero-cost push is not worth killing on one seasonal week); KILL only if IndexNow returns 4xx three runs in a row with the key file confirmed live, or Bing sessions fall > 10% *and* Google/Pinterest do not. E52's own gate is narrower and checkable on 09-16: the runner log must contain an `indexnow mode=live` line; if it does not, the wiring did not execute and the 09-28 read is void.
-- Next time: verify the wiring ran by grepping the runner log for `indexnow mode=live` on 09-16 — the house rule is that a file on disk proves nothing. HTTP **202** is IndexNow's normal success for a first submission ("accepted, key pending validation"), not a soft failure; 200 comes later once the key is validated. Bing Webmaster Tools is still not required for submission (the key file is the proof) — only to *see* the submissions report, which remains an operator click. My remaining T0/T1 surface list is empty; everything left is reads (E18 09-22, E32 09-24, E37 09-26, E2/E27/E42 09-30, E47/E52 09-28) plus the catalog-quality lever (facet-page titles/metas at positions 23–33) and `Dataset` schema, which is T2.
-
----
-
-## 2026-09-14
-- Tried: IndexNow for Bing/Yandex/Seznam/Naver (E47, Tier 0, PR #99) — the first move ever aimed at Bing, which is 17,032 sessions/7d (GA4 09-06→09-12), 8.6× Google and the #2 channel, −3.9% WoW. Public key `ee78fbc844f5b753a61535eed78c41d0` served from `public/<key>.txt` (a dotted first segment bypasses the WordPress catch-all in `middleware.ts` — asserted behaviourally with a mocked `fetch`; local `next start` of the PR build serves `/<key>.txt` 200 with the key body, `/<key>.txt/` 308 back to it, and the dot-free control path proxies; prod already serves `/site.webmanifest` the same way). `scripts/agents/indexnow-submit.ts` + pure `indexnow-lib.ts`: dry-run default, `--apply` to send, `HARD_CAP = 500` code-only, selection mirrors `/sitemap-mods.xml` (`isNSFW:false, isVerified:true`, `createdAt ≥ now−days`), homepage/hubs/collections first, every URL through `isCanonicalUrl()` (https, apex, trailing slash), live mode refuses to POST unless `GET /<key>.txt` returns 200 with the key body (`reason=key-file-not-live`, exit 2), one summary line to `logs/indexnow.log` on every path, 0/2/1 exits. No env var: the key is public by design. Bing Webmaster Tools is NOT required for IndexNow (the key file is the ownership proof) — it is only needed to *see* the IndexNow submissions report; BWT's one-click GSC import is the operator step if we want that view.
-- Before → after: bing_organic sessions 7d 17,032 (GA4 2026-09-06→09-12; prev 17,720) → read 2026-09-28 (7d 09-20→09-26). First dry run 2026-09-14: 500 URLs (21 collection/hub + 479 mods from 7d, cap hit, 0 dropped). First live `--apply` happens the morning after the key file is live on prod (verify: `curl -s https://musthavemods.com/ee78fbc844f5b753a61535eed78c41d0.txt`), then daily from the runner.
-- Verdict: MORE DATA (decision rule written before the read: KEEP if bing_organic 7d ≥ 17,032 on 09-28 with the live log showing `status=OK` ≥ 10 of 14 days; also KEEP on flat sessions if `status=OK` every day — a 0-cost push is not worth killing on one seasonal week; KILL only if IndexNow returns 4xx three runs in a row after the key file is confirmed live, or Bing sessions fall >10% *and* Google/Pinterest do not).
-- Next time: wire `indexnow-submit.ts --apply --days 2` into `run-funnel-daily.sh` as a step after catalog ingest (Tier 0, one line), and add `/<key>.txt` to `smoke-render.ts`'s target list. `$pipestatus` (lowercase) in zsh, not `${PIPESTATUS[0]}`. The 7-day window already exceeds the 500 cap because the 09-09 backfill (+486) is inside it — `--days 2` is the right daily setting.
-
----
-
-## 2026-09-13
-- Tried: JSON Feed + RSS for new mods (E42, Tier 1, PR — see experiments.md): `/feeds/mods.json` (JSON Feed 1.1), `/feeds/mods.xml` (RSS 2.0), `/feeds/{game}/{slug}/` per-collection RSS built from the collection page's exact where-clause (unknown slug → 404). Pure builders in `lib/feeds.ts`; routes are `force-dynamic`, CDN s-maxage 3600, DB failure → empty valid feed with a 200. `<link rel="alternate">` on the homepage (both feeds) and every collection page (its own RSS); llms.txt + llms-full.txt point at them; both sitewide feeds added to `smoke-render.ts`. **Path is `/feeds/` (plural) on purpose**: `/feed/` is WordPress's own RSS (live, 200, rss+xml) proxied by the middleware — `feeds` was added to `NEXTJS_PREFIXES`, otherwise the routes would have proxied to WP and 404'd exactly like `/play` did. Served build: 50 items each, newest mod 2026-09-12, creator "Glitterberryfly" not a Patreon id, XML well-formed.
-- Also fixed (same PR, T0): two test files were red on `origin/main` since PR #63 merged 09-12 — `llms-txt.test.ts` (llms-full still listed `/sims-4-pregnancy-mods/` + `/sims-4-y2k-cc/` as redirected, so it hid two live companion guides) and `seo-phase1.test.ts` (asserted the removed `vercel.json` redirects). `REDIRECTED_POST_PATHS` in llms-full now matches the sitemap route (6 entries); the two slugs moved to `keepLivePages`. 765 → 769 passing.
-- E37/E32 follow-up (1 day in, no signal expected): hair-cc `index_inspect` unchanged — "Crawled - currently not indexed", lastCrawl 2026-04-29; it already has the homepage "Browse by collection" link + 6 `related` entries, so the structural-link escalation stays gated on 09-26. Top two `/mods/*` pages last crawled 09-06 / 09-08 — *before* E32 went live 09-12 — rich result still shows the old "Unnamed item" breadcrumb. First real E32 read stays 09-24.
-- Before → after: ai_referral sessions 7d 322 (GA4 2026-09-05→09-11; prev 235) → read 2026-09-30 with E2/E27 (B3 target ≥385). Feed fetches themselves are not in GA4 (no JS) — the only direct read is Vercel request logs for `/feeds/`, which I cannot pull; ask Quinn/Rio for a `/feeds/` request count on 09-30 if the ai_referral number is ambiguous.
-- Verdict: MORE DATA (read on 2026-09-30). Keep if ai_referral 7d ≥ 385 or chatgpt.com 28d share not falling; kill only if a feed route errors in smoke-render or a cited mod URL 404s — a text feed has no plausible downside path.
-- Next time: the remaining unshipped item in my lever list is `Dataset` schema on the collection pages (T2 — schema is operator-owned). With feeds done, the T0/T1 surface list is complete; future moves are reads (E18 09-22, E32 09-24, E37 09-26, E2/E27/E42 09-30) plus the catalog-quality lever (facet-page titles/metas at positions 23–33 with 1K–2K impressions each: skin-details, male-clothes, female-clothes, poses, body-presets).
-
----
-
-## 2026-09-12
-- Tried: per-collection `<lastmod>` in `/sitemap-nextjs.xml` (E37, Tier 0, PR #86, merged be159da, deploy-verify PASS). New `lib/sitemapLastmod.ts`: lastmod = later of the template date (2026-07-03) and `max(createdAt)` over the collection page's exact where-clause; route is `force-dynamic`, game hubs + homepage roll up to their newest collection, DB error → template date (never a 500), CDN s-maxage 3600. **createdAt, not updatedAt**: a daily job bumps ~500 rows so `max(updatedAt)` was "today" for 17/18 collections — using it would have been the same worthless constant in a different costume. Live prod: 28 URLs, 6 distinct lastmods, hair-cc 2026-09-10.
-- Finding: 16-URL `index_inspect` sweep — every collection page + `/games/sims-4/` is "Submitted and indexed" (crawled 09-02→09-12) **except `/games/sims-4/hair-cc/`** (largest collection, ~2,000 mods, target "sims 4 hair cc"): "Crawled - currently not indexed", lastCrawlTime **2026-04-29**, Google's recorded userCanonical still the slashless pre-July URL, 1 referring URL (male-clothes). It gets 22 chatgpt.com sessions/28d but 4 Google impressions/28d. The sitemap gave Google no reason to come back: one constant `<lastmod>2026-07-03</lastmod>` for all 28 URLs since July, and `sitemap.xml` last submitted 2026-04-22. E32's ~2,000 new breadcrumb links to hair-cc (PR #77, live 09-12) are the other recrawl signal.
-- Before → after: hair-cc coverageState "Crawled - currently not indexed", lastCrawl 2026-04-29, GSC 08-13→09-09 4 impr / 0 clicks / pos 12 (2026-09-12, post-ship snapshot identical) → read 2026-09-26 (coverage), 2026-10-10 (impressions).
-- Verdict: MORE DATA (decision rule written before the read: KEEP if hair-cc = "Submitted and indexed" with lastCrawlTime > 2026-09-12 by 09-26; secondary impressions 28d ≥ 200 by 10-10. Still unindexed on 09-26 → escalate to a T1 structural internal-link move, e.g. hair-cc in the homepage "Browse by collection" first row + every hair-adjacent collection's `related`).
-- Next time: `mcp__gsc__submit_sitemap` returns "Insufficient Permission" — the GSC credential is read-only for sitemaps, so resubmission and "Request indexing" are operator clicks, not API calls; put them in the ask, don't plan on them. `npx tsx` does not load `.env.local` — `set -a; source .env.local; set +a` first. Next.js rejects non-HTTP exports from a `route.ts` at build time — put constants/helpers in `lib/`. Any test that calls a DB-backed route's `GET()` needs a `vi.mock('@/lib/prisma')` or it silently builds a real client. Feeds (`/feed/mods.json` + RSS) remain the T1 follow-up.
-
-## 2026-09-10
-- Tried: internal links from every `/mods/[id]` page to its collection page(s) (E32, Tier 1, PR #77, QUEUED with the 24h veto). Finding first: the 16K mod-detail pages carried **zero** links to `/games/sims-4/*` — the breadcrumb's middle crumb was a `<button>` to the homepage `?category=` filter (no crawler follows a button; no page canonicalises to a query URL), and the `BreadcrumbList` JSON-LD pointed at that same query URL plus a slash-less mod URL (a 308). New pure reverse lookup `getCollectionsForMod()` in `lib/collections.ts` mirrors `buildWhereClause()` in memory (incl. the pregnancy/witch keyword fallbacks, composite clothes/makeup filters, `isNSFW`/`gameVersion` gates); `lib/seo/modBreadcrumb.ts` is the one builder for both the visible `Home › Sims 4 › <Collection> › <Mod>` nav (real `<Link>`s) and the JSON-LD, so markup and trail cannot drift. Secondary matches render as an "Also in:" chip row (max 3). ~9–10K of 16,301 Sims 4 SFW mods resolve to ≥1 collection (hair 2,004; clothes types ~4,200; furniture 984; holidays 926; poses 884; makeup group ~930). Nav sits in the sticky header above every `.mv-ads` and the `aside#secondary` — 4 `<InContentAd />` + sidebar wrapper asserted unchanged by the new test. 41 tests, incl. one that builds a mod from each registry where-clause and proves the in-memory matcher agrees.
-- Before → after: GSC 28d (08-11→09-07) `/games/sims-4/*` 128 clicks / 8,052 impr / pos 30.2 (skin-details 22 / 1,937 / 32.3; male-clothes 29 / 1,175 / 30.8; female-clothes 28 / 1,126 / 26.1; body-presets 24 / 1,030 / 24.1; poses 9 / 1,077 / 31.3); `/mods/*` 438 / 15,207 / 23.3 → first read 2026-09-24, final 2026-10-08.
-- Verdict: MORE DATA (read on 2026-10-08). Keep if collection-page clicks ≥160/28d (+25%) or avg position ≤27 (−3), with `/mods/*` clicks ≥394 (−10% floor). Kill/revert if `/mods/*` clicks fall >10% or Rio sees mod-page RPM outside ±5% in the 7-day watch.
-- Next time: the mod pages are the site's biggest link reservoir (16K URLs); this is the first time they pass equity anywhere but the homepage. Remaining E8 items are all Tier 2 or Q6-blocked: ItemList schema on the top-20 WP posts needs `functions.php`; the canonical-conflict fix is Q6 (PR #63). The open T1 follow-up is feeds (`/feed/mods.json` + per-collection RSS). Gotcha: a source-level guard that forbids a literal (`/?category=`) also forbids it in *comments* — describe the old behaviour without quoting the string.
-
-## 2026-09-09
-- Tried: AI answer-engine surface (E27, Tier 0) — new `/llms-full.txt` route (`app/llms-full.txt/route.ts`, force-dynamic, CDN s-maxage 3600): all 18 collections with editorial intro, related links, companion guide, and top-10 mods by downloads (creator credit, free/paid, canonical `/mods/{id}/` URL, one-line description); site-wide top-40 Sims 4 mods; latest 20 WP guides (apex-rewritten, 8 redirected legacy slugs excluded); "How to cite" block with consistent entity name "MustHaveMods". `/llms.txt` now links to it and carries the naming/canonical guidance. Every DB/WP call is wrapped so the file serves the collection index with a note instead of a 500 (tested). Added to `smoke-render.ts` targets. Feeds (RSS/JSON) are Tier 1 per autonomy.md — deliberately not bundled.
-- Before → after: ai_referral sessions 7d 265 (GA4 2026-09-01→09-07; chatgpt.com 233, gemini 15, copilot 10, claude.ai 5, perplexity 2) and 28d ~1,045 (08-11→09-07; chatgpt.com 925, copilot 43, gemini 39, claude.ai 29, perplexity 9) → read 2026-09-30. Top AI-referral landing pages 28d: 8 of top 25 are `/games/sims-4/*` collection pages (furniture-cc 25, skin-details 25, hair-cc 23, male-clothes 23, goth-cc 16, female-clothes 15, y2k-cc 13); homepage only 8 — the collection pages are already what assistants cite, so that is what the file is built around.
-- Verdict: MORE DATA (read on 2026-09-30 against B3's +25% target = ≥331/7d; final 2026-10-07). Keep if ai_referral 7d ≥ 300 on 09-30 with chatgpt.com share not falling; kill only if the route errors or a cited mod URL turns out to 404 — there is no plausible downside path for a text file.
-- Next time: feeds are the T1 follow-up (`/feed/mods.json` + RSS for new mods and per-collection; queue for a green day with the 24h veto). Do not read single-week AI-referral swings as signal (09-07 lesson); the 28d chatgpt.com line is the one that matters. Gotcha: `oneLine()` strips `#` so it must run *after* `decodeEntities()` or `&#8211;` becomes `&8211;`.
-
-## 2026-09-08
-- Tried: un-consolidate the pregnancy-mods and y2k-cc legacy pairs (E21, Tier 2, PR #63 open, NOT merged — needs operator: vercel.json + functions.php). Mirrors the 2026-07-31 body-presets revert (1be3289).
-- Finding: the "canonical conflict" in the E8 diagnosis is NOT a middleware bug. WP already emits apex canonicals; the facet-pointing canonicals come from mhm_consolidated_post_map() in functions.php (RankMath filter, priority 20) and the 308s come from vercel.json, which runs before middleware. Google rejected the facet canonical for both pairs and indexed the blog-subdomain copy: blog pregnancy 93 clicks / pos 10.95 vs facet 2 / pos 33.0; blog y2k 20 / pos 10.2 vs facet 4 / pos 29.8 (GSC 2026-08-09→09-05). The other 6 consolidated pairs did not show the blog-copy-outranking pattern in the 28d window — leave them alone.
-- Also found: GA4 7d hostName blog.musthavemods.com = 19,730 sessions (22% of all), 17,276 from Pinterest. Not fixable in functions.php (BigScoots cache leak); Pip lever + BigScoots nginx ticket.
-- Before → after: pregnancy pair clicks 28d (apex article + facet) 95 (2026-09-05) → read 2026-10-06
-- Verdict: MORE DATA (read on 2026-10-06, after operator merges #63 and runs push-blog-functions-prod.sh)
-- Next time: T0 middleware move — extend the /homepage/ → /blog/ self-canonical fix (middleware.ts ~168–177) to /blog/all/ ("Crawled - currently not indexed"); then ItemList/CollectionPage schema on the top-20 blog posts.
-
-## 2026-09-07
-- Tried: Homepage SSR shell (T1, PR #48) — `app/page.tsx` became a `force-dynamic` server component wrapping the former client page (now `app/HomePageClient.tsx`), plus a server-rendered "Browse by collection" block (17 links from `lib/collections.ts`) and an ItemList JSON-LD. Ad anchors untouched; no loading guard; no second `newPageView()`. Queued for the 24h veto, merges 2026-09-08.
-- Before → after: served `/` HTML 20,350 bytes / 0 `<h1>` / 0 `aside#secondary` / 0 collection links (prod, 2026-09-07) → 51,188 bytes / 1 `<h1>` / 1 `aside#secondary` / 17 collection links / 1 ItemList (local `next start` of the PR build). GSC homepage 28d to 2026-09-04: 512 clicks, 14,314 impressions, pos 42.2 → read 2026-09-22, final 2026-10-06.
-- Verdict: MORE DATA (read on 2026-09-22 / 2026-10-06). E11 (hydration fix, PR #41) read today: prod smoke-render 0 hydration errors on /mods/[id] (was ~8/pageview) → KEEP.
-- Next time: Vercel preview deployments are behind SSO ("all_except_custom_domains", no bypass secret), so `smoke-render --base <preview>` gets a 302 — verify a PR by `next start` on the built tree instead, and note that Mediavine's optable script throws "Failed to fetch" on a localhost origin (environment noise, not a page failure). ai_referral −33.7% WoW was chatgpt.com 279 → 198 (demand side; robots rules cannot move it) — do not react to single-week AI-referral swings.
-
-## 2026-09-02
-- Tried: Google-collapse diagnosis (T0 analysis); AI crawler allow rules in robots.txt (T0, PR #_) — GPTBot, ChatGPT-User, ClaudeBot, Claude-Web, PerplexityBot, cohere-ai, Applebot-Extended, Google-Extended
-- Collapse finding: Single-day cliff Jul 7->8 2025. Clicks 1,400->570 in one day; impressions 28K->11K simultaneously. ALL templates (blog posts, homepage, /mods/[id], /games/ collections) lost ranking, not indexing. GSC PASS on all 8 spot-checked URLs. "0 indexed" sitemap claim is a GSC sitemap-index API artifact — child sitemaps not counted in that field. Root cause: Google Jul 2025 core update demoted helpful-content-adjacent content. Top pages went from positions 8-18 to 25-45. Homepage went from pos 25 to 44 (largest single click-driver lost). No recovery through Sep 2026 — stabilized at 70-150 clicks/day (was 1,200-1,500/day).
-- Before -> after: ai_referral 307/7d (2026-09-02) -> read 2026-09-30
-- Verdict: MORE DATA (read on 2026-09-30)
-- Next time: Homepage SSR shell (T1) is the highest-leverage remaining move; queue it for the next non-yellow day. The robots.txt crawlers are costless but chatgpt.com was already crawling — don't overweight this fix.
-
-## 2026-09-01
-- Tried: nothing yet — team chartered today. Read `../charter.md`, `../autonomy.md`, `../operating-model.md`, `../targets.json`, and `reports/growth/fact-base-2026-09-01.md` before your first move.
-- Before → after: baseline in `../targets.json`
-- Verdict: —
-- Next time: your first move should be the top item in your agent file's "levers" list unless the scoreboard shows a 🔴 in your area.
-
 ## 2026-09-21 — the AI surface was publishing 3% of the blog, and nobody had counted
-
 **Shipped (E71, Tier 0, PR #134):** `/llms-full.txt` now carries a complete A–Z-by-topic
 index of all 676 cite-able guides. It had been publishing **20 of 682** — one page of
 `wp-json/wp/v2/posts?per_page=20`. Live: 209,498 bytes (from ~99K), verify PASS, 5xx/15m=0.
-
 - **The file that tells answer engines what to cite did not contain the page they cite
   most.** `/sims-4-elf-cc/` is the largest AI-referral landing page on the site (40
   sessions/28d, 08-22→09-18) and is dated 2026-03-09, so a "latest 20" slice could never
@@ -133,7 +49,6 @@ index of all 676 cite-able guides. It had been publishing **20 of 682** — one 
   a constant, the test that grepped for it does not fail — it goes blind.**
 - **Guards were run red first:** 3 of 43 fail against pre-fix `origin/main` (the
   complete-index assertion, the partial-fetch note, the import guard). Stated in the PR body.
-
 **E18 pre-read (Tier 1 homepage SSR shell, PR #48, grades 09-22):** baseline 08-08→09-04 =
 512 clicks / 14,314 impressions / pos 42.22 / CTR 3.58%. Read 08-22→09-18 = **491 / 9,880 /
 pos 41.17 / CTR 4.97%**. Keep rule (pos ≤37 **or** clicks ≥589) — **neither met**. But the
@@ -142,11 +57,63 @@ homepage is brand-dominated (`musthavemods` 195 clicks at pos 1.04 on 226 impres
 `sims 4 mods` 425 impressions at pos 43.8). **Falling impressions on a brand-dominated URL is
 demand, not ranking** — consistent with E57. Do not read a homepage clicks target as a
 verdict on the template.
-
 **Also true and worth not re-litigating:** ai_referral read −9.0% WoW today, and that is
 noise — chatgpt.com weekly sessions ran 86 → 147 → 243 → 279 → 198 → 301 → 282 across
 W27–W38. And JSON-LD is **Tier 0**, not Tier 2: the "schema" in autonomy.md's Tier 2 list
 means DB schema migrations. I had that wrong in an earlier entry.
-
 **Next:** the GA4:GSC ratio on the scoreboard (owed from 09-20), then `/games/*` facet titles
 sitting at position ~25 on 5–6K impressions each.
+
+## 2026-09-16
+- Tried: decompose the scoreboard's google_organic 7d **2,404 (+32.2%)** and ai_referral **323 (+21.9%)** against GSC and GA4 (E57, Tier 0,…
+- Two wins that *are* in GSC, both small: (a) the 09-12 un-consolidation — 09-12 and 09-13 are the **two highest click days in the 21-day wi…
+- Plumbing: no gap. `shoes-cc` (shipped 09-13, crawled 09-13T15:31Z) and `loading-screens` (shipped 09-15, crawled 09-15T16:30Z — **indexed…
+- Before → after: new metric **GA4:GSC ratio for Google organic**, baseline **1.81** (09-01–09-07), current **2.34** (09-08–09-13) → read **…
+- Verdict: MORE DATA (read 2026-09-23). No code shipped — all three candidate Tier 0 fixes in the brief were closed by the data.
+- Next time: wire the ratio into `funnel-scoreboard.ts` so a GA4/GSC divergence flags itself (its own run — Pip and Rio collided on that fil…
+---
+
+## 2026-09-15
+- Tried: wire IndexNow into the daily loop and make its ownership proof falsifiable (E52, Tier 0, PR). E47 shipped 09-14 complete and **call…
+- **Trap found and closed before it could fire**: adding the key file as a plain `kind: 'text'` target would have failed *every* deploy-veri…
+- Before → after: bing_organic sessions 7d **16,826** (GA4 2026-09-06→09-12 read 2026-09-15, −3.9% WoW; E47 baseline was 17,032) → read **20…
+- Verdict: MORE DATA — decision rule unchanged from E47, written before the read: KEEP if bing_organic 7d ≥ 17,032 on 09-28 with `logs/index…
+- Next time: verify the wiring ran by grepping the runner log for `indexnow mode=live` on 09-16 — the house rule is that a file on disk prov…
+---
+
+## 2026-09-14
+- Tried: IndexNow for Bing/Yandex/Seznam/Naver (E47, Tier 0, PR #99) — the first move ever aimed at Bing, which is 17,032 sessions/7d (GA4 0…
+- Before → after: bing_organic sessions 7d 17,032 (GA4 2026-09-06→09-12; prev 17,720) → read 2026-09-28 (7d 09-20→09-26). First dry run 2026…
+- Verdict: MORE DATA (decision rule written before the read: KEEP if bing_organic 7d ≥ 17,032 on 09-28 with the live log showing `status=OK`…
+- Next time: wire `indexnow-submit.ts --apply --days 2` into `run-funnel-daily.sh` as a step after catalog ingest (Tier 0, one line), and ad…
+---
+
+## 2026-09-13
+- Tried: JSON Feed + RSS for new mods (E42, Tier 1, PR — see experiments.md): `/feeds/mods.json` (JSON Feed 1.1), `/feeds/mods.xml` (RSS 2.0…
+- Also fixed (same PR, T0): two test files were red on `origin/main` since PR #63 merged 09-12 — `llms-txt.test.ts` (llms-full still listed…
+- E37/E32 follow-up (1 day in, no signal expected): hair-cc `index_inspect` unchanged — "Crawled - currently not indexed", lastCrawl 2026-04…
+- Before → after: ai_referral sessions 7d 322 (GA4 2026-09-05→09-11; prev 235) → read 2026-09-30 with E2/E27 (B3 target ≥385). Feed fetches…
+- Verdict: MORE DATA (read on 2026-09-30). Keep if ai_referral 7d ≥ 385 or chatgpt.com 28d share not falling; kill only if a feed route erro…
+- Next time: the remaining unshipped item in my lever list is `Dataset` schema on the collection pages (T2 — schema is operator-owned). With…
+---
+
+## 2026-09-12
+- Tried: per-collection `<lastmod>` in `/sitemap-nextjs.xml` (E37, Tier 0, PR #86, merged be159da, deploy-verify PASS). New `lib/sitemapLast…
+- Finding: 16-URL `index_inspect` sweep — every collection page + `/games/sims-4/` is "Submitted and indexed" (crawled 09-02→09-12) **except…
+- Before → after: hair-cc coverageState "Crawled - currently not indexed", lastCrawl 2026-04-29, GSC 08-13→09-09 4 impr / 0 clicks / pos 12…
+- Verdict: MORE DATA (decision rule written before the read: KEEP if hair-cc = "Submitted and indexed" with lastCrawlTime > 2026-09-12 by 09…
+- Next time: `mcp__gsc__submit_sitemap` returns "Insufficient Permission" — the GSC credential is read-only for sitemaps, so resubmission an…
+
+## 2026-09-10
+- Tried: internal links from every `/mods/[id]` page to its collection page(s) (E32, Tier 1, PR #77, QUEUED with the 24h veto). Finding firs…
+- Before → after: GSC 28d (08-11→09-07) `/games/sims-4/*` 128 clicks / 8,052 impr / pos 30.2 (skin-details 22 / 1,937 / 32.3; male-clothes 2…
+- Verdict: MORE DATA (read on 2026-10-08). Keep if collection-page clicks ≥160/28d (+25%) or avg position ≤27 (−3), with `/mods/*` clicks ≥3…
+- Next time: the mod pages are the site's biggest link reservoir (16K URLs); this is the first time they pass equity anywhere but the homepa…
+
+## 2026-09-09
+- Tried: AI answer-engine surface (E27, Tier 0) — new `/llms-full.txt` route (`app/llms-full.txt/route.ts`, force-dynamic, CDN s-maxage 3600…
+- Before → after: ai_referral sessions 7d 265 (GA4 2026-09-01→09-07; chatgpt.com 233, gemini 15, copilot 10, claude.ai 5, perplexity 2) and…
+- Verdict: MORE DATA (read on 2026-09-30 against B3's +25% target = ≥331/7d; final 2026-10-07). Keep if ai_referral 7d ≥ 300 on 09-30 with c…
+- Next time: feeds are the T1 follow-up (`/feed/mods.json` + RSS for new mods and per-collection; queue for a green day with the 24h veto).…
+
+_Older/fuller entries moved to `archive/playbooks/sage-2026-09.md` verbatim; nothing deleted, only truncated above._

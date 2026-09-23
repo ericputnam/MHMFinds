@@ -155,6 +155,7 @@ sessions/
 # Test Data
 test-data/
 fixtures/
+!__tests__/fixtures/
 
 # Environment-specific
 .env.example.local

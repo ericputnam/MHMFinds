@@ -150,22 +150,57 @@ ensure_promoted() {  # $1 = READY deployment for the merged sha. A `vercel rollb
   done
   log "production still serves $cur after promote"; return 1
 }
+is_ledger_only_commit() {  # $1 sha — true if it's an autonomous ledger-commit.sh commit (message
+  # "funnel(ledger): ..." AND touches only reports/funnel/**). Such a commit changes no application
+  # code and needs no build/smoke verification of its own — without this guard, deploy-verify's own
+  # ledger()->ledger-commit.sh push (which lands a NEW commit on main right after this run) would be
+  # picked up by the very next after-merge run's "did main move past my sha" check below, causing it
+  # to chase its own tail waiting for a Vercel build that a docs-only commit never produces.
+  local sha="$1" msg files f
+  msg="$(cd "$ROOT" && git log -1 --format=%s "$sha" 2>/dev/null)"
+  case "$msg" in funnel\(ledger\):*) ;; *) return 1 ;; esac
+  files="$(cd "$ROOT" && git diff-tree --no-commit-id --name-only -r "$sha" 2>/dev/null)"
+  [ -n "$files" ] || return 1
+  while IFS= read -r f; do
+    case "$f" in reports/funnel/*) ;; *) return 1 ;; esac
+  done <<<"$files"
+  return 0
+}
 restore_functions_php() {
   log "blog markers missing → re-pushing functions.php from git (this tree's copy = origin/main in the runner)"
   if "$ROOT/scripts/staging/push-blog-functions-prod.sh" --yes >>"$LOG" 2>&1; then log "functions.php re-pushed"; else log "functions.php re-push FAILED — see $LOG"; fi
 }
-ledger() {  # $1 result, $2 notes — written to this checkout, Quinn's primary worktree (if set) and the operator's tree
-  local dir f seen=" "
-  for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel" "$OPERATOR_DIR/reports/funnel"; do
-    [ "$dir" = "/reports/funnel" ] && continue
+# LAST_INCIDENT_FILE: set by incident() so a caller that writes the incident BEFORE calling ledger()
+# can hand the same file to ledger-commit.sh and land both in one durable commit on main.
+LAST_INCIDENT_FILE=""
+ledger() {  # $1 result, $2 notes
+  # LOCAL append (for this run's own digest / same-run reads): $ROOT and Quinn's primary worktree only.
+  # $OPERATOR_DIR is deliberately NOT written here any more — that tree carries untracked reports/
+  # junk from interactive sessions, and a working-tree copy was never durable anyway (see below).
+  local row dir f seen=" "
+  row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$2" | tr '|' '/' | tr '\n' ' ')")"
+  for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
+    [ -n "$dir" ] || continue
     case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
-    [ -d "$dir" ] || continue
+    mkdir -p "$dir" 2>/dev/null
     f="$dir/changelog.md"
     [ -f "$f" ] || printf '# Production change ledger\n\nAppended automatically by `scripts/agents/deploy-verify.sh` on every production deploy, evening check and rollback, so the operator can see exactly what changed and whether it was verified. Newest at the bottom.\n\n| when | mode | who / what | commit | deployment | result | notes |\n|---|---|---|---|---|---|---|\n' >"$f"
-    printf '| %s | %s | %s | %s | %s | %s | %s |\n' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$2" | tr '|' '/' | tr '\n' ' ')" >>"$f"
+    grep -qF -- "$row" "$f" 2>/dev/null || printf '%s\n' "$row" >>"$f"
   done
+  # DURABLE landing: a working-tree append is not a record — only a commit on main is (CLAUDE.md). This is
+  # the actual fix for "a merge without a ledger row did not happen" being true 6 of 7 times in practice.
+  # Never fails the caller: ledger-commit exits 2 (WARN) and queues the row in ledger-pending.jsonl instead.
+  if [ -x "$ROOT/scripts/agents/ledger-commit.sh" ]; then
+    "$ROOT/scripts/agents/ledger-commit.sh" --row "$row" --label "$MODE: $LABEL" ${LAST_INCIDENT_FILE:+--incident "$LAST_INCIDENT_FILE"} >>"$LOG" 2>&1
+    local rc=$?
+    [ "$rc" -eq 0 ] || log "WARN: ledger-commit.sh could not land the row on main (exit $rc) — queued in reports/funnel/ledger-pending.jsonl, will be flushed next run"
+  else
+    log "WARN: scripts/agents/ledger-commit.sh not found — row recorded locally only (not durable)"
+  fi
 }
-incident() {  # $1 title, $2 action taken
+incident() {  # $1 title, $2 action taken — writes the file and records it in LAST_INCIDENT_FILE so a
+  # ledger() call made AFTER this one (see fail_and_fix / wait_ready / rollback below, all call incident()
+  # before ledger()) commits the incident file in the SAME push as its ledger row.
   local f="$INC_DIR/$STAMP.md"
   {
     echo "# Incident $TS — $1"; echo
@@ -178,27 +213,28 @@ incident() {  # $1 title, $2 action taken
     echo "- Smoke output: $SMOKE_JSON"
   } >"$f"
   log "incident written: $f"
-  local d
-  for d in "${FUNNEL_PRIMARY_WT:-}" "$OPERATOR_DIR"; do
-    [ -n "$d" ] && [ "$d" != "$ROOT" ] && { mkdir -p "$d/reports/funnel/incidents"; cp "$f" "$d/reports/funnel/incidents/" 2>/dev/null; }
-  done
+  LAST_INCIDENT_FILE="$f"
+  # Same-run mirror for Quinn's digest only; durable landing on main happens via ledger()'s ledger-commit call.
+  [ -n "${FUNNEL_PRIMARY_WT:-}" ] && [ "$FUNNEL_PRIMARY_WT" != "$ROOT" ] && { mkdir -p "$FUNNEL_PRIMARY_WT/reports/funnel/incidents"; cp "$f" "$FUNNEL_PRIMARY_WT/reports/funnel/incidents/" 2>/dev/null; }
 }
 fail_and_fix() {  # $1 = rollback target (may be empty)
   local first="$FAILS"
   if [ "${FUNNEL_NO_ROLLBACK:-0}" = "1" ]; then
-    ledger "FAIL (no-rollback mode)" "$first"; incident "verification failed" "FUNNEL_NO_ROLLBACK=1 — nothing rolled back. Operator must act."; exit 2
+    incident "verification failed" "FUNNEL_NO_ROLLBACK=1 — nothing rolled back. Operator must act."
+    ledger "FAIL (no-rollback mode)" "$first"; exit 2
   fi
   if echo "$first" | grep -q "smoke-render\|5xx"; then
     if [ -n "$1" ]; then do_rollback "$1"; else log "no rollback target known"; fi
   fi
   if echo "$first" | grep -q "check-blog-sidebar"; then restore_functions_php; fi
   if smoke; then
-    FAILS="$first"; ledger "ROLLED BACK -> ${1:-functions.php restored}" "$(vnotes "was: $first")"
-    incident "verification failed; rolled back" "Rolled production back to ${1:-(unchanged)}${first##*check-blog-sidebar*} and/or re-pushed functions.php. Re-check PASSES."; exit 2
+    FAILS="$first"
+    incident "verification failed; rolled back" "Rolled production back to ${1:-(unchanged)}${first##*check-blog-sidebar*} and/or re-pushed functions.php. Re-check PASSES."
+    ledger "ROLLED BACK -> ${1:-functions.php restored}" "$(vnotes "was: $first")"; exit 2
   fi
   local second="$FAILS"; FAILS="$first"
-  ledger "ROLLED BACK, STILL FAILING" "was: $first / now: $second"
-  incident "still failing after rollback" "Rolled back to ${1:-(no target)}; re-check STILL fails: $second. Escalate to the operator: Vercel dashboard, BigScoots backup restore."; exit 3
+  incident "still failing after rollback" "Rolled back to ${1:-(no target)}; re-check STILL fails: $second. Escalate to the operator: Vercel dashboard, BigScoots backup restore."
+  ledger "ROLLED BACK, STILL FAILING" "was: $first / now: $second"; exit 3
 }
 
 # ---------------------------------------------------------------- modes
@@ -213,8 +249,9 @@ case "$MODE" in
           case "$STATE" in
             READY) DEPLOY_URL="$URL"; return 0 ;;
             ERROR|CANCELED)
-              DEPLOY_URL="$URL"; ledger "BUILD $STATE" "never promoted; production still $PREV"
-              FAILS="Vercel build $STATE for ${SHA:-newest} ($URL)"; incident "build $STATE" "Nothing to roll back — the build failed before promotion. Production still serves $PREV. Fix the build (vercel inspect $URL --logs)."; exit 2 ;;
+              DEPLOY_URL="$URL"; FAILS="Vercel build $STATE for ${SHA:-newest} ($URL)"
+              incident "build $STATE" "Nothing to roll back — the build failed before promotion. Production still serves $PREV. Fix the build (vercel inspect $URL --logs)."
+              ledger "BUILD $STATE" "never promoted; production still $PREV"; exit 2 ;;
           esac
         fi
         if [ $(( $(date +%s) - START )) -ge $(( WAIT_MIN * 60 )) ]; then
@@ -231,9 +268,13 @@ case "$MODE" in
     HEAD_NOTE=""
     HEAD_SHA="$( (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1 && git rev-parse origin/main) 2>/dev/null)"
     if [ -n "$HEAD_SHA" ] && [ -n "$SHA" ] && [ "${HEAD_SHA#"${SHA:0:7}"}" = "$HEAD_SHA" ]; then
-      log "origin/main moved past ${SHA:0:7} → ${HEAD_SHA:0:7} while waiting; verifying HEAD's build instead (the alias must serve main HEAD)"
-      HEAD_NOTE="main moved past caller ${SHA:0:7}; graded HEAD ${HEAD_SHA:0:7} · "
-      SHA="$HEAD_SHA"; wait_ready
+      if is_ledger_only_commit "$HEAD_SHA"; then
+        log "origin/main moved to a ledger-only commit ${HEAD_SHA:0:7} (funnel(ledger): ...) while waiting — exempt from its own verify/ledger row; keeping target ${SHA:0:7}"
+      else
+        log "origin/main moved past ${SHA:0:7} → ${HEAD_SHA:0:7} while waiting; verifying HEAD's build instead (the alias must serve main HEAD)"
+        HEAD_NOTE="main moved past caller ${SHA:0:7}; graded HEAD ${HEAD_SHA:0:7} · "
+        SHA="$HEAD_SHA"; wait_ready
+      fi
     fi
     log "deployment READY: $DEPLOY_URL"; sleep 15
     if ! ensure_promoted "$DEPLOY_URL"; then
@@ -252,7 +293,8 @@ case "$MODE" in
     [ -n "$TARGET" ] || { log "no rollback target"; exit 2; }
     do_rollback "$TARGET" || exit 2
     if smoke; then ledger "ROLLED BACK from $CUR" "$(vnotes "requested by $LABEL · re-check passes")"; exit 0; fi
-    ledger "ROLLED BACK from $CUR, STILL FAILING" "$FAILS"; incident "rollback did not clear the failure" "Rolled back $CUR → $TARGET; still failing: $FAILS"; exit 3 ;;
+    incident "rollback did not clear the failure" "Rolled back $CUR → $TARGET; still failing: $FAILS"
+    ledger "ROLLED BACK from $CUR, STILL FAILING" "$FAILS"; exit 3 ;;
   smoke-only)
     DEPLOY_URL="$(current_prod)"
     if smoke; then ledger "$(verdict)" "$(vnotes "smoke-only · 5xx/15m=$FIVEXX")"; exit 0; fi

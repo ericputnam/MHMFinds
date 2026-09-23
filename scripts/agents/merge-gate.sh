@@ -24,10 +24,38 @@ while [ $# -gt 0 ]; do
   shift
 done
 say() { [ "$QUIET" = 1 ] || echo "$*"; }
+# An autonomous `funnel(ledger): ...` commit (scripts/agents/ledger-commit.sh) that touches only
+# reports/funnel/** ships no application code and needs no serialization against a real Vercel build —
+# it is exempt from needing its own ledger row / deploy-verify (see deploy-verify.sh's
+# is_ledger_only_commit()). Find the newest commit that ISN'T one of those and gate on its age, so a
+# docs-only ledger push landing between two real merges doesn't hold the gate closed for MIN_AGE
+# for no reason.
+is_ledger_only_commit() {  # $1 sha
+  local sha="$1" msg files f
+  msg="$(cd "$ROOT" && git log -1 --format=%s "$sha" 2>/dev/null)"
+  case "$msg" in funnel\(ledger\):*) ;; *) return 1 ;; esac
+  files="$(cd "$ROOT" && git diff-tree --no-commit-id --name-only -r "$sha" 2>/dev/null)"
+  [ -n "$files" ] || return 1
+  while IFS= read -r f; do
+    case "$f" in reports/funnel/*) ;; *) return 1 ;; esac
+  done <<<"$files"
+  return 0
+}
+newest_gateable_commit() {  # walks origin/main back past any ledger-only commits, prints "ct sha"
+  local n=0 line sha
+  while [ "$n" -lt 20 ]; do
+    line="$( (cd "$ROOT" && git log -1 --format='%ct %h' --skip="$n" origin/main) 2>/dev/null)"
+    [ -n "$line" ] || { echo ""; return; }
+    sha="${line#* }"
+    if is_ledger_only_commit "$sha"; then n=$((n + 1)); continue; fi
+    echo "$line"; return
+  done
+  echo ""
+}
 START=$(date +%s)
 while :; do
   if ! (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1); then say "merge-gate: could not fetch origin/main"; exit 2; fi
-  read -r TS SHA <<<"$( (cd "$ROOT" && git log -1 --format='%ct %h' origin/main) 2>/dev/null)"
+  read -r TS SHA <<<"$(newest_gateable_commit)"
   [ -n "${TS:-}" ] || { say "merge-gate: could not read origin/main"; exit 2; }
   AGE=$(( $(date +%s) - TS ))
   if [ "$AGE" -ge "$MIN_AGE" ]; then say "merge-gate: OPEN — newest commit on origin/main ($SHA) is ${AGE}s old (≥${MIN_AGE}s)"; exit 0; fi

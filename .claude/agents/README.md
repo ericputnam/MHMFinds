@@ -1,23 +1,26 @@
 # Agent Governance
 
-## The business team (2026-09-01): the funnel team
+## The business team (2026-09-01, restructured 2026-09-22): the funnel team
 
 The agents that run the MustHaveMods *business* (as opposed to codebase chores) are the
-six funnel-team personas. Start with `mhm-funnel/charter.md`; it explains why the previous
+seven funnel-team personas. Start with `mhm-funnel/charter.md`; it explains why the previous
 exec team was retired and what this one is judged on.
 
 | Agent file | Persona | Owns |
 |---|---|---|
 | `mhm-gm.md` | Quinn | The loop: scoreboard, digest, guardrails, experiments, operator queue |
-| `mhm-distribution.md` | Pip | Pinterest scale + read-back, Tumblr/X/FB, launch amplification, next channel |
-| `mhm-search-ai.md` | Sage | SEO recovery, AI/LLM discoverability, indexing |
-| `mhm-content-creators.md` | Nova | Collection pages, writer briefs, creator program, first-party mods, /play |
+| `mhm-distribution.md` | Pip | Traffic: sessions 28d (headline), Pinterest, Bing/direct/"(not set)"/referral |
+| `mhm-search-ai.md` | Sage | SEO recovery, AI/LLM discoverability, indexing — feeds Pip's sessions number |
+| `mhm-content-creators.md` | Nova | Creator recruiting & hosting (primary), first-party mods, /play |
 | `mhm-capture.md` | Cass | Email / Patreon-free / account capture, sends, re-engagement |
 | `mhm-product-revenue.md` | Rio | Patreon paid tiers, membership, premium mods, sponsorships, ad guardrail |
+| `mhm-catalog-product.md` | Rowan | Catalog data/freshness, collection pages, on-site search, mod-page + /go flow |
+| `mhm-platform-ops.md` | Ops | Runner/ledger/deploy-verify/monitors/context budget — plumbing, ≤20% of merges (SD-11) |
 
 Shared state lives in `mhm-funnel/`: `charter.md`, `autonomy.md` (Tier 0/1/2 rules),
 `operating-model.md`, `targets.json`, `scorecard.md`, `experiments.md`,
-`operator-queue.md`, `ideas-inbox.md`, `playbooks/`. Daily numbers come from
+`operator-queue.md`, `ideas-inbox.md`, `playbooks/`, `archive/` (context-budget
+overflow, moved verbatim — see SD-12). Daily numbers come from
 `scripts/agents/funnel-scoreboard.ts`; the headless loop is
 `scripts/agents/run-funnel-daily.sh` (scheduled task `mhm-funnel-daily`).
 

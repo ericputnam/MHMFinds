@@ -13,6 +13,27 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
+# status_row(): a "did not fire" / "ran with nothing to do" run must become a row, not a
+# sentence buried in logs/auto-compound.log (CLAUDE.md SD: "Silence from a scheduled job
+# must become a row, not a sentence in a digest"). Written to $PROJECT_DIR (the operator's
+# own tree, not the ephemeral detached worktree this script runs in, which is deleted on EXIT).
+status_row() {  # $1 result  $2 branch-or-empty  $3 priority_item-or-empty  $4 commits_ahead
+    mkdir -p "$PROJECT_DIR/reports/compound"
+    python3 - "$PROJECT_DIR/reports/compound/status.jsonl" "$1" "${2:-}" "${3:-}" "${4:-0}" <<'PY'
+import json, sys, datetime
+path, result, branch, item, ahead = sys.argv[1:6]
+rec = {
+    "ts": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "result": result,
+    "branch": branch or None,
+    "priority_item": item or None,
+    "commits_ahead": int(ahead) if str(ahead).lstrip("-").isdigit() else 0,
+}
+with open(path, "a") as f:
+    f.write(json.dumps(rec) + "\n")
+PY
+}
+
 cd "$PROJECT_DIR"
 
 log "Starting auto-compound pipeline..."
@@ -73,7 +94,8 @@ BRANCH_NAME=$(echo "$ANALYSIS" | jq -r '.branch_name')
 
 if [ -z "$PRIORITY_ITEM" ] || [ "$PRIORITY_ITEM" = "null" ]; then
     log "No actionable priority items found. Exiting."
-    exit 0
+    status_row "no-op: empty queue" "" "" 0
+    exit 2
 fi
 
 log "Top priority: $PRIORITY_ITEM"
@@ -82,6 +104,9 @@ log "Branch name: $BRANCH_NAME"
 # Create feature branch
 log "Creating feature branch: $BRANCH_NAME"
 git checkout -b "$BRANCH_NAME" || git checkout "$BRANCH_NAME"
+# BASE_SHA anchors "did tonight's run actually produce anything" — see the commits-ahead
+# check below. It is origin/main's HEAD at fetch time (this branch was just cut from it).
+BASE_SHA="$(git rev-parse HEAD)"
 
 # Create PRD using Claude Code
 log "Creating PRD..."
@@ -125,11 +150,28 @@ Break the PRD into small, atomic tasks that can be completed one at a time." --d
 log "Starting execution loop..."
 "$PROJECT_DIR/scripts/compound/loop.sh" 25
 
-# Check if we have changes to commit
-if git diff --quiet && git diff --staged --quiet; then
-    log "No changes to commit. Worktree is discarded on exit."
-    exit 0
+# Check whether tonight's run actually produced anything durable. A working-tree diff
+# check is not enough: every task in loop.sh's prompt instructs Claude to commit its own
+# change, so by the time we get here any real work is ALREADY committed and `git diff
+# --quiet` on the working tree passes trivially whether 0 or 20 commits were made. What
+# distinguishes "ran and shipped" from "ran with an all-completed prd.json / a PRD step
+# that silently failed to write pending tasks / a report with no actionable items" is
+# commits ahead of the branch's own base — so count those instead.
+AHEAD="$(git rev-list --count "$BASE_SHA"..HEAD 2>/dev/null || echo 0)"
+
+if [ "${AHEAD:-0}" -eq 0 ]; then
+    log "0 commits ahead of origin/main on $BRANCH_NAME — nothing to ship tonight. Not pushing; deleting local branch."
+    status_row "no-op: empty queue" "$BRANCH_NAME" "$PRIORITY_ITEM" 0
+    # Detach before deleting — the branch is currently checked out in this worktree, and
+    # branch refs are shared with $PROJECT_DIR (same repo), so it must be deletable from
+    # here without another worktree holding it.
+    git checkout --detach "$BASE_SHA" >/dev/null 2>&1
+    git branch -D "$BRANCH_NAME" >/dev/null 2>&1 || log "WARN: could not delete local branch $BRANCH_NAME"
+    log "Auto-compound pipeline: no-op (empty queue). Exiting 2 (WARN) — 'ran' and 'ran with nothing to do' must not both read as success."
+    exit 2
 fi
+
+log "$AHEAD commit(s) ahead of origin/main on $BRANCH_NAME — pushing."
 
 # Push and create PR
 log "Pushing branch and creating PR..."
@@ -150,4 +192,5 @@ This PR was automatically created by the compound automation system.
 *Review the changes carefully before merging.*" \
     --base main
 
+status_row "shipped" "$BRANCH_NAME" "$PRIORITY_ITEM" "$AHEAD"
 log "Auto-compound pipeline complete!"
