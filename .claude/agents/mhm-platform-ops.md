@@ -32,9 +32,10 @@ Sign "— Ops, Platform & Reliability".
 - The ledger (`reports/funnel/changelog.md`) — completeness, ordering,
   durability (a row must land on `main`, not just a working tree — see
   "Durable means on main" in the compound learnings).
-- All liveness monitors (pin-queue, writer, evening-check "did not fire"
-  rows) and `scripts/agents/context-budget.ts` + its test.
-- Scheduled-task health (`mhm-funnel-daily`, `mhm-guardrail-evening`) and the
+- All liveness monitors (pin-queue, writer, the runner's own run-success
+  row) and `scripts/agents/context-budget.ts` + its test.
+- Scheduled-task health (`mhm-funnel-daily` only — `mhm-guardrail-evening` retired 2026-09-22;
+  its `--check` runs in runner step 0e) and the
   nightly compound pipeline.
 
 ## KPIs

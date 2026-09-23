@@ -27,8 +27,8 @@ overflow, moved verbatim — see SD-12). Daily numbers come from
 The team may commit and merge to `main` under the operator's three rules (2026-09-01;
 `mhm-funnel/autonomy.md` → "The operator's three rules"). Enforcement:
 `scripts/agents/revenue-guardrail.ts` (circuit breaker, runs first every morning),
-`scripts/agents/deploy-verify.sh` (renders production after every merge and every evening
-via `mhm-guardrail-evening`; rolls Vercel back / restores `functions.php` on failure), and
+`scripts/agents/deploy-verify.sh` (renders production after every merge and every morning
+(runner step 0e); rolls Vercel back / restores `functions.php` on failure), and
 the ledger `reports/funnel/changelog.md` + `reports/funnel/incidents/`, which the digest's
 "Changed today" section summarises.
 

@@ -226,23 +226,24 @@ else
   log "operator-did-probe.ts not present — skipped"
 fi
 
-# --- 0e. evening-check audit (Quinn, 2026-09-13) ----------------------------------
-# The 18:30 `mhm-guardrail-evening` task wrote no ledger row from 09-04 to 09-12 and nothing distinguished
-# "did not fire" from "ran and had nothing to say" — the morning check merely annotated the absence for 8 days.
-# Silence must be a row: if yesterday has no evening `check` row (16:00–23:59) and no evening-* worktree, append
-# an explicit MISSED row so the digest's "Changed today" and the ledger both carry it. Idempotent.
-YDAY="$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d 'yesterday' +%Y-%m-%d 2>/dev/null || true)"
-if [ -n "$YDAY" ] && [ -f "$WT/reports/funnel/changelog.md" ]; then
-  if grep -Eq "^\| $YDAY (1[6-9]|2[0-3]):[0-9]{2} \| check \|" "$WT/reports/funnel/changelog.md"; then
-    log "Evening check: ledger row present for $YDAY"
-  elif ls -d "$HOME/.mhm-worktrees/evening-$YDAY-"* >/dev/null 2>&1; then
-    log "Evening check: worktree exists for $YDAY but no ledger row — check its logs/deploy-verify.log"
-  elif grep -Fq "mhm-guardrail-evening: DID NOT FIRE on $YDAY" "$WT/reports/funnel/changelog.md"; then
-    log "Evening check: MISSED row for $YDAY already recorded"
-  else
-    printf '| %s 18:30 | check | mhm-guardrail-evening: DID NOT FIRE on %s — no ledger row 16:00–23:59 and no evening-* worktree |  |  | MISSED | scheduled task never launched; operator: open Scheduled tasks → mhm-guardrail-evening and confirm it is enabled at 18:30 |\n' "$YDAY" "$YDAY" >>"$WT/reports/funnel/changelog.md"
-    log "Evening check: DID NOT FIRE on $YDAY — MISSED row appended to the ledger"
-  fi
+# --- 0e. morning production check (operator 2026-09-22: "I don't think we need an evening check") ----
+# The 18:30 `mhm-guardrail-evening` task is disabled; it MISSED ~17 of 21 nights anyway. Its job — re-render
+# live production and catch slow failures nobody merged (a WordPress edit, a Vercel env change, an expired
+# cert) — now runs here, once, before the scoreboard, so anything broken overnight is rolled back / restored
+# before the team ships on top of it and the digest's "Changed today" carries the ledger row.
+# deploy-verify.sh --check exits 0 ok · 2 rolled back / could not run · 3 rolled back and STILL FAILING.
+# It never aborts the run: Quinn reads the ledger row and the digest leads with any incident.
+MORNING_CHECK_RC=""
+if [ -x "$WT/scripts/agents/deploy-verify.sh" ]; then
+  (cd "$WT" && mkdir -p reports/funnel/incidents logs && ./scripts/agents/deploy-verify.sh --check --label "morning-check") >>"$LOG_FILE" 2>&1
+  MORNING_CHECK_RC=$?
+  case "$MORNING_CHECK_RC" in
+    0) log "Morning production check: PASS" ;;
+    3) log "Morning production check: ROLLED BACK AND STILL FAILING (exit 3) — see reports/funnel/incidents/" ;;
+    *) log "Morning production check: exit $MORNING_CHECK_RC (2 = rolled back or could not run) — see $WT/logs/deploy-verify.log" ;;
+  esac
+else
+  log "deploy-verify.sh not executable in the worktree — morning production check skipped"
 fi
 
 # --- 1. scoreboard ----------------------------------------------------------
@@ -335,12 +336,12 @@ if ! claude_preflight; then
   cat >"$PROJECT_DIR/reports/funnel/digest-$TODAY.md" <<EOF
 # Funnel digest — $TODAY (DEGRADED: Quinn did not run)
 
-🔴 **Quinn could not start.** $CAUSE, then run \`npm run funnel:daily\` or wait for tomorrow's pulse. No agent can fix this. Reminder: the 06:30 / 18:30 routines only fire while the Claude desktop app is open on this Mac.
+🔴 **Quinn could not start.** $CAUSE, then run \`npm run funnel:daily\` or wait for tomorrow's pulse. No agent can fix this. Reminder: the 06:30 routine only fires while the Claude desktop app is open on this Mac.
 
 What still ran today (deterministic scripts, no LLM):
 - Scoreboard: reports/funnel/$TODAY.md
 - Circuit breaker: $GUARD_MD — $GUARD_SUMMARY
-- Ledger: reports/funnel/changelog.md (the 18:30 evening deploy check still runs on its own)
+- Ledger: reports/funnel/changelog.md (the morning production check ran before Quinn — see its ledger row)
 
 Changed today: nothing merged by the team (Quinn did not run).
 EOF

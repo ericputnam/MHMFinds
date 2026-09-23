@@ -5,7 +5,7 @@
  * client-side crashes, and that the page has real content.
  *
  * This is the structural half of Rule 2 ("a deploy must never hurt RPM"):
- * run right after every production deploy (deploy-verify.sh) and every evening.
+ * run right after every production deploy (deploy-verify.sh) and every morning (runner step 0e).
  *
  * Usage:
  *   npx tsx scripts/agents/smoke-render.ts                 # against https://musthavemods.com

@@ -19,7 +19,7 @@
 #   --after-merge [--sha <commit>] [--label "<who / PR>"] [--wait-min 25]
 #         wait for the production deploy of <sha> (default: the newest), promote it if the alias still serves an
 #         older build (a rollback pauses Vercel auto-promotion), verify, roll back on failure
-#   --check [--label "<who>"]        verify what is live now (evening check); roll back / restore on failure
+#   --check [--label "<who>"]        verify what is live now (morning check, runner step 0e); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
 # Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back.
@@ -286,7 +286,7 @@ case "$MODE" in
   check)
     DEPLOY_URL="$(current_prod)"; PREV="$(previous_ready "$DEPLOY_URL")"
     log "checking live production $DEPLOY_URL (rollback target if needed: ${PREV:-none})"
-    if smoke; then ledger "$(verdict)" "$(vnotes "evening/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
+    if smoke; then ledger "$(verdict)" "$(vnotes "scheduled/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
     fail_and_fix "$PREV" ;;
   rollback)
     CUR="$(current_prod)"; TARGET="${TO:-$(previous_ready "$CUR")}"; DEPLOY_URL="$TARGET"
