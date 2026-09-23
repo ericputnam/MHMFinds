@@ -53,6 +53,7 @@ Notes on the copy:
 - **Read:** 7 days after the post date (post on D → read D+7; if posted 09-22, read 2026-09-29 with the E55/E60 reads).
 - **Keep / proceed:** paid-and-connected ≥ 18 of 54 (exactly 1/3, compare the exact fraction) → the Q4 gate's failing leg turns and the renames + $10 tier proceed on the pre-committed rule. ≥ 1 and < 18 → the channel works; keep the countdown-skip as the $3 perk and put the welcome note (E30) in as the second touch. **0 after 7 days** → the perk is not wanted by the people who pay; drop "skip the countdown" as the headline $3 perk and re-pitch Q4 around early lookbooks instead. Guardrail: session RPM ≥ 95% of the same-weekday 4-wk mean, one-sided.
 - **Ad risk, bounded with a source:** the whole `/go/[modId]/` page type earned at most **$2.05 in 09-14→09-20** (GA4 187 pv × site page RPM $10.97; `reports/funnel/page-rpm-snapshot-2026-09-22-w0914-0920.md`). Even if every `/go` view became a member skip, the ceiling is under $9/mo. The Mediavine 28-day guardrail cannot see it.
+- **If nothing happens (silence default):** nothing is posted by the team, nothing changes on the site; the re-pitch is dropped and logged on 2026-09-29 per the 7-day rule, and Q4 stays HOLD on the connected leg with the $3 perk unannounced.
 - **Cost of waiting:** 0.69 paid patrons/day keep joining with no day-0 handover of the perk; 59% of all past cancels left after at most two charges (E30 churn read, 2026-09-09). The 10-01 charge run is the next churn event.
 
 ## Rollback
