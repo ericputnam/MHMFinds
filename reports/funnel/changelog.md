@@ -164,3 +164,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-23 06:58 | after-merge | Cass: PR #155 default-off newsletter opt-in on sign-up (E86) | 33c2106 | https://mhm-finds-dw5l-mrz1l110u-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-23 06:59 | after-merge | Ops: PR #161 runner bg-wait ceiling + false-alarm guards (E91) | 33c2106 | https://mhm-finds-dw5l-mrz1l110u-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-23 07:03 | after-merge | Rowan: PR #156 halloween-cc collection page + halloween theme repair (E90) | b7449b1 | https://mhm-finds-dw5l-903bz4rpd-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-23 07:07 | after-merge | Rio: PR #158 sponsorship media kit (E89) | aa75137 | https://mhm-finds-dw5l-531f7elmh-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
