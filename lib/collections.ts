@@ -160,7 +160,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 926,
     // 'furniture' was a dangling slug until 2026-09-07 (the real slug is
     // 'furniture-cc'); the renderer silently dropped it.
-    related: ['clutter', 'furniture-cc', 'witch-cc'],
+    related: ['clutter', 'halloween-cc', 'witch-cc'],
     blogUrl: '/sims-4-holiday-mods/',
   },
   {
@@ -409,7 +409,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // array. 'hair-cc' is one of the two 7-inbound hubs and loses nothing;
     // 5 of the 145 nail sets carry the goth theme tag and the goth-nails
     // article is the best-positioned page in the nail cluster (position 6.3).
-    related: ['vampire-cc', 'skin-details', 'nails-cc'],
+    related: ['vampire-cc', 'halloween-cc', 'nails-cc'],
   },
   {
     slug: 'cottagecore-cc',
@@ -728,6 +728,53 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // articles together take ~1,836 impressions and 12 clicks at positions
     // 21.9-52.3, so there is demand and nothing here to cannibalise.
     blogUrl: '/sims-4-kids-cc/',
+  },
+  {
+    // Appended last on purpose: a `themesAny` entry scores specificity 1 in
+    // `filterSpecificity()`, so it sorts behind every contentType collection
+    // (125 of its 190 mods keep `holidays-cc` as their first breadcrumb) and
+    // gains a second one. Seasonal page shipped five weeks before its peak.
+    slug: 'halloween-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Halloween CC',
+    heading: 'Sims 4 Halloween CC',
+    metaTitle: 'Sims 4 Halloween CC Finder — Browse 190 Spooky Finds | MustHaveMods',
+    metaDescription:
+      'Browse 190 Sims 4 Halloween CC finds in one filterable grid — costumes, spooky makeup, haunted houses, Simblreen gifts, decor and loading screens, links checked.',
+    tagline: 'Costumes, haunted houses, and Simblreen gifts in one grid',
+    intro:
+      "Spooky Day is the one holiday the base game actually commits to, and it still runs out of ideas by the second October. You get a handful of costumes, a few pumpkins to carve and a party that looks the same every year — so the moment your households start celebrating it more than once, everything Halloween in your game is coming from custom content.\n\nThis collection is every Halloween find in our catalog in one grid: 190 mods, sorted by downloads, and every one of them says Halloween (or spooky, haunted, zombie, trick-or-treat, Simblreen) in its own title. That last part is deliberate. Seasonal tags are the easiest facet to get wrong — a generic witch mod or a pair of sneakers that happened to appear in a Halloween roundup is not Halloween CC — so this grid only holds items whose creator called them that.\n\nThe shelf splits roughly three ways. Costumes and CAS: full Halloween outfits (adult and toddler), face paint and zombie makeup, Halloween eyes, lashes and nails, and a stack of Simblreen gifts — the fandom's October gift-exchange event, which is where a lot of the best free sets come from. Build and decor: carved pumpkins, porch clutter, candles, framed posters and full decor sets, plus more than a dozen haunted-house lots ready to drop into a world. And the finishing touches: Halloween loading screens and CAS backgrounds, trick-or-treat and zombie pose packs for the screenshots.\n\nTwo practical notes. Plenty of these are dated sets (\"Halloween 2022\", \"Halloween 2025\") that creators re-release every year — the older ones generally still work, but check the creator page for a newer version before you install both. And costume sets marked for toddlers or children are separate meshes, so an adult costume will not show up on a kid sim.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link — 182 of the 190 are free. Sort by downloads for the sets everyone already runs, or scroll for the one-off Simblreen gifts the big roundups never reach.",
+    filter: {
+      // 190 SFW Sims 4 mods on the `halloween` theme, verified against
+      // production 2026-09-23 *after* the same-PR repair of the theme.
+      //
+      // Before the repair the theme had 547 rows and only 190 said Halloween
+      // in the title (34.7%): the top two cards would have been "Infatuated
+      // Pose Pack" and "Cannibalism", with "Nike Air Force 1s" and "Vince
+      // T-shirt" in the top 25. Cause: THEME_KEYWORDS mapped witch / vampire /
+      // ghost / pumpkin to `halloween` over title + description. Fixed at the
+      // source (`lib/halloweenThemeRules.ts`, imported by the extractor) and
+      // re-derived from titles only: 53 added, 410 stripped
+      // (`scripts/retag-halloween-theme.ts`, backup in
+      // reports/catalog/halloween-theme-retag-2026-09-23.csv).
+      //
+      // Audited before ranking: 190 of 190 titles carry Halloween evidence;
+      // the top 40 by downloads read 38/40 as Halloween content, the two
+      // arguable ones being a zombie-survival gameplay mod and a "Horror
+      // Games Override".
+      themesAny: ['halloween'],
+    },
+    expectedCount: 190,
+    related: ['holidays-cc', 'witch-cc', 'goth-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // halloween cc" intent, this page owns browse/filter intent.
+    // /sims-4-halloween-cc/ is live (HTTP 200, no redirect, verified
+    // 2026-09-23) and is not in vercel.json. It holds 180 impressions / 0
+    // clicks at position 39.3 over the 28d to 2026-09-20; the nine Halloween
+    // articles together take ~519 impressions and 4 clicks (eyes 138 at 21.9,
+    // makeup 50 at 23.4) — before the October peak.
+    blogUrl: '/sims-4-halloween-cc/',
   },
 ];
 
