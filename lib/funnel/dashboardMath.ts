@@ -263,3 +263,133 @@ export function formatDateUTC(ms: number): string {
 export function addDaysUTC(dateStr: string, n: number): string {
   return formatDateUTC(parseDateUTC(dateStr) + n * MS_PER_DAY);
 }
+
+// ---- interactive-dashboard helpers ----------------------------------------
+// Everything below is derived from the same history.json fields; nothing here
+// changes the schema the daily runner writes (scripts/agents/funnel-history.ts).
+
+/** The last day with finalized Mediavine revenue AND GA4 sessions, or null. */
+export function lastFinalizedDay(days: FunnelDayRecord[]): FunnelDayRecord | null {
+  for (let i = days.length - 1; i >= 0; i--) {
+    if (days[i].revenue !== null && days[i].sessions !== null) return days[i];
+  }
+  return null;
+}
+
+/** Days on or after `lastDate - (n - 1)`. `n <= 0` returns every day. */
+export function sliceLastNDays<T extends { date: string }>(rows: T[], n: number, lastDate?: string): T[] {
+  if (n <= 0 || rows.length === 0) return rows;
+  const end = lastDate ?? rows[rows.length - 1].date;
+  const start = addDaysUTC(end, -(n - 1));
+  return rows.filter((r) => r.date >= start && r.date <= end);
+}
+
+export interface WindowSummary {
+  days: number; // finalized days that contributed
+  revenue: number;
+  sessions: number;
+  expectedRevenue: number; // over the same finalized days only, so the ratio is like-for-like
+  expectedSessions: number;
+  rpm: number | null; // revenue / sessions * 1000
+}
+
+/**
+ * Sum the finalized days among the `n` calendar days ending at `endDate`.
+ * Expected totals only count the days that have an actual, so a settling day
+ * never drags the "% of expected" down.
+ */
+export function summarizeWindow(days: FunnelDayRecord[], endDate: string, n: number): WindowSummary {
+  const start = addDaysUTC(endDate, -(n - 1));
+  const out: WindowSummary = { days: 0, revenue: 0, sessions: 0, expectedRevenue: 0, expectedSessions: 0, rpm: null };
+  for (const d of days) {
+    if (d.date < start || d.date > endDate) continue;
+    if (d.revenue === null || d.sessions === null) continue;
+    out.days++;
+    out.revenue += d.revenue;
+    out.sessions += d.sessions;
+    out.expectedRevenue += d.expectedRevenue ?? 0;
+    out.expectedSessions += d.expectedSessions ?? 0;
+  }
+  out.rpm = out.sessions > 0 ? (out.revenue / out.sessions) * 1000 : null;
+  return out;
+}
+
+/** (a - b) / b, or null when b is missing/zero. */
+export function pctChange(a: number | null | undefined, b: number | null | undefined): number | null {
+  if (a === null || a === undefined || b === null || b === undefined || b === 0) return null;
+  return (a - b) / b;
+}
+
+export interface WeekRow {
+  weekStart: string; // Monday, YYYY-MM-DD
+  finalizedDays: number;
+  revenue: number;
+  sessions: number;
+  expectedRevenue: number;
+  expectedSessions: number;
+  rpm: number | null;
+  merges: number;
+  rollbacks: number;
+  incidents: number;
+}
+
+/** Monday of the UTC week containing `dateStr`. */
+export function weekStartUTC(dateStr: string): string {
+  const dow = new Date(parseDateUTC(dateStr)).getUTCDay(); // 0 = Sun
+  return addDaysUTC(dateStr, -((dow + 6) % 7));
+}
+
+/** Mon–Sun weekly roll-up of finalized days plus the events that landed in each week, newest first. */
+export function weeklySummary(days: FunnelDayRecord[], events: FunnelEvent[]): WeekRow[] {
+  const byWeek = new Map<string, WeekRow>();
+  const row = (weekStart: string): WeekRow => {
+    let r = byWeek.get(weekStart);
+    if (!r) {
+      r = {
+        weekStart, finalizedDays: 0, revenue: 0, sessions: 0, expectedRevenue: 0, expectedSessions: 0,
+        rpm: null, merges: 0, rollbacks: 0, incidents: 0,
+      };
+      byWeek.set(weekStart, r);
+    }
+    return r;
+  };
+  for (const d of days) {
+    const r = row(weekStartUTC(d.date));
+    if (d.revenue === null || d.sessions === null) continue;
+    r.finalizedDays++;
+    r.revenue += d.revenue;
+    r.sessions += d.sessions;
+    r.expectedRevenue += d.expectedRevenue ?? 0;
+    r.expectedSessions += d.expectedSessions ?? 0;
+  }
+  const firstDay = days.length > 0 ? days[0].date : null;
+  for (const e of events) {
+    if (firstDay && e.date < firstDay) continue;
+    const r = row(weekStartUTC(e.date));
+    if (e.kind === 'merge') r.merges++;
+    else if (e.kind === 'rollback') r.rollbacks++;
+    else if (e.kind === 'incident') r.incidents++;
+  }
+  const rows = Array.from(byWeek.values());
+  for (const r of rows) r.rpm = r.sessions > 0 ? (r.revenue / r.sessions) * 1000 : null;
+  return rows.sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1));
+}
+
+/**
+ * The agent/actor an event label is attributed to — the changelog convention is
+ * "Name: what happened" (e.g. "Cass: PR #125 …"). Falls back to the prefix before
+ * the first colon for tool rows ("mhm-guardrail-evening: …"), else null.
+ */
+export function eventActor(label: string): string | null {
+  const m = /^\s*([A-Za-z][\w.-]{1,40}):\s/.exec(label);
+  return m ? m[1] : null;
+}
+
+/** "PASS" / "FAIL" / "MISSED" … bucketed for colouring: ok | bad | other. */
+export function resultTone(result: string | undefined): 'ok' | 'bad' | 'other' {
+  if (!result) return 'other';
+  const r = result.toUpperCase();
+  if (/\b(FAIL|MISSED|RED|ROLLED BACK|ERROR)\b/.test(r)) return 'bad';
+  if (/\b(PASS|OK|GREEN|DONE|APPLIED)\b/.test(r)) return 'ok';
+  return 'other';
+}

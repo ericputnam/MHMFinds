@@ -1,22 +1,61 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Activity, AlertTriangle, CheckCircle2, GitCommit, RotateCcw, Siren, User } from 'lucide-react';
-import FunnelLineChart, { ChartBand, ChartEventMarker, ChartPoint } from '@/components/admin/FunnelLineChart';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Activity,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  GitCommit,
+  Info,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Siren,
+  User,
+  X,
+} from 'lucide-react';
+import FunnelLineChart, { ChartBand, ChartEventMarker, ChartPoint, EVENT_COLORS } from '@/components/admin/FunnelLineChart';
+import {
+  FunnelDayRecord,
+  FunnelEvent,
   FunnelHistory,
   addDaysUTC,
   computeRolling28d,
+  eventActor,
+  expectedRevenueAt,
+  expectedSessionsAt,
   formatCurrency,
   formatCompactNumber,
   formatPercent,
   gradeVerdict,
   isBelowThreshold,
+  lastFinalizedDay,
   latestFinalizedRolling28d,
+  pctChange,
+  resultTone,
+  sliceLastNDays,
+  summarizeWindow,
   Verdict,
+  weeklySummary,
 } from '@/lib/funnel/dashboardMath';
 
-const EVENT_ICONS: Record<ChartEventMarker['kind'], React.ComponentType<{ className?: string }>> = {
+/*
+ * /admin/funnel — the operator's scoreboard for the automated funnel team.
+ *
+ * Read-only view over reports/funnel/history.json, which the daily runner
+ * (scripts/agents/funnel-history.ts) owns. Everything interactive here is
+ * derived client-side from that file; the page never writes anything and the
+ * JSON schema is a contract we do not change from this side.
+ */
+
+type EventKind = FunnelEvent['kind'];
+const EVENT_KINDS: EventKind[] = ['merge', 'rollback', 'incident', 'check', 'operator'];
+
+const EVENT_ICONS: Record<EventKind, React.ComponentType<{ className?: string }>> = {
   merge: GitCommit,
   rollback: RotateCcw,
   incident: Siren,
@@ -24,38 +63,122 @@ const EVENT_ICONS: Record<ChartEventMarker['kind'], React.ComponentType<{ classN
   operator: User,
 };
 
-const EVENT_LABEL_COLOR: Record<ChartEventMarker['kind'], string> = {
-  merge: 'text-slate-400',
+const EVENT_LABEL_COLOR: Record<EventKind, string> = {
+  merge: 'text-slate-300',
   rollback: 'text-red-400',
   incident: 'text-red-400',
   check: 'text-sky-400',
   operator: 'text-blue-400',
 };
 
-const VERDICT_STYLES: Record<Verdict['color'], { bg: string; border: string; text: string; label: string }> = {
-  green: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', label: 'On track' },
-  yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400', label: 'Behind pace' },
-  red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', label: 'Off track' },
+const VERDICT_STYLES: Record<Verdict['color'], { bg: string; border: string; text: string; bar: string; label: string }> = {
+  green: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', bar: 'bg-emerald-400', label: 'On track' },
+  yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400', bar: 'bg-yellow-400', label: 'Behind pace' },
+  red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', bar: 'bg-red-400', label: 'Off track' },
+};
+
+const RANGES: Array<{ days: number; label: string }> = [
+  { days: 14, label: '14d' },
+  { days: 30, label: '30d' },
+  { days: 60, label: '60d' },
+  { days: 90, label: '90d' },
+  { days: 0, label: 'All' },
+];
+
+type MetricKey = 'revenue' | 'sessions' | 'rpm' | 'ownedAdds7d' | 'pinterestSessions7d' | 'nonAdMonthly';
+
+interface MetricDef {
+  tab: string;
+  title: string;
+  subtitle: string;
+  color: string;
+  type: 'bar' | 'line';
+  get: (d: FunnelDayRecord) => number | null;
+  expected?: (d: FunnelDayRecord) => number | null;
+  fmt: (v: number) => string;
+  zeroBased?: boolean;
+}
+
+const formatCurrency2 = (v: number) => `$${v.toFixed(2)}`;
+const formatInt = (v: number) => Math.round(v).toLocaleString('en-US');
+
+const METRICS: Record<MetricKey, MetricDef> = {
+  revenue: {
+    tab: 'Revenue',
+    title: 'Daily Mediavine revenue',
+    subtitle: 'Bars are finalized days; dashed line is the same-weekday prior-4-week mean. Red shading = below 80% of expected.',
+    color: '#ec4899',
+    type: 'bar',
+    get: (d) => d.revenue,
+    expected: (d) => d.expectedRevenue,
+    fmt: formatCurrency,
+  },
+  sessions: {
+    tab: 'Sessions',
+    title: 'Daily sessions',
+    subtitle: 'GA4 sessions vs the same-weekday prior-4-week mean. Red shading = below 80% of expected.',
+    color: '#38bdf8',
+    type: 'bar',
+    get: (d) => d.sessions,
+    expected: (d) => d.expectedSessions,
+    fmt: formatCompactNumber,
+  },
+  rpm: {
+    tab: 'RPM',
+    title: 'Session RPM',
+    subtitle: 'Mediavine revenue per 1,000 sessions. Axis is fitted to the data, not zero-based.',
+    color: '#a78bfa',
+    type: 'line',
+    get: (d) => d.rpm,
+    fmt: formatCurrency2,
+    zeroBased: false,
+  },
+  ownedAdds7d: {
+    tab: 'Owned adds',
+    title: 'Owned-audience net adds (trailing 7d)',
+    subtitle: 'Email + Patreon free + accounts, from the daily scoreboard. Headline metric #1.',
+    color: '#22c55e',
+    type: 'line',
+    get: (d) => d.ownedAdds7d,
+    fmt: formatInt,
+  },
+  pinterestSessions7d: {
+    tab: 'Pinterest',
+    title: 'Pinterest sessions (trailing 7d)',
+    subtitle: 'GA4 sessions from Pinterest over the trailing week, from the daily scoreboard.',
+    color: '#f59e0b',
+    type: 'line',
+    get: (d) => d.pinterestSessions7d,
+    fmt: formatCompactNumber,
+  },
+  nonAdMonthly: {
+    tab: 'Non-ad',
+    title: 'Non-ad revenue (monthly run-rate)',
+    subtitle: 'Patreon, affiliates, first-party — the run-rate the scoreboard records each day. Headline metric #2.',
+    color: '#34d399',
+    type: 'line',
+    get: (d) => d.nonAdMonthly,
+    fmt: formatCurrency,
+  },
 };
 
 export default function FunnelDashboardPage() {
   const [history, setHistory] = useState<FunnelHistory | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
-
-  const fetchHistory = async () => {
-    setLoading(true);
+  const fetchHistory = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch('/api/admin/funnel/history');
+      const response = await fetch('/api/admin/funnel/history', { cache: 'no-store' });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
         setErrorMessage(body?.error || `Failed to load funnel history (${response.status})`);
-        setHistory(null);
+        // A failed refresh keeps the last good render instead of blanking the page.
+        if (!isRefresh) setHistory(null);
         return;
       }
       const data = (await response.json()) as FunnelHistory;
@@ -63,11 +186,16 @@ export default function FunnelDashboardPage() {
     } catch (error) {
       console.error('Failed to fetch funnel history:', error);
       setErrorMessage('Failed to load funnel history');
-      setHistory(null);
+      if (!isRefresh) setHistory(null);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   if (loading) {
     return (
@@ -89,7 +217,7 @@ export default function FunnelDashboardPage() {
           </div>
         )}
         <button
-          onClick={fetchHistory}
+          onClick={() => fetchHistory()}
           className="bg-sims-pink hover:bg-sims-pink/90 text-white px-6 py-2 rounded-lg transition-colors"
         >
           Retry
@@ -98,217 +226,414 @@ export default function FunnelDashboardPage() {
     );
   }
 
-  return <FunnelDashboard history={history} />;
+  return (
+    <FunnelDashboard
+      history={history}
+      refreshing={refreshing}
+      refreshError={errorMessage}
+      onRefresh={() => fetchHistory(true)}
+    />
+  );
 }
 
-function FunnelDashboard({ history }: { history: FunnelHistory }) {
+function FunnelDashboard({
+  history,
+  refreshing,
+  refreshError,
+  onRefresh,
+}: {
+  history: FunnelHistory;
+  refreshing: boolean;
+  refreshError: string | null;
+  onRefresh: () => void;
+}) {
   const { expectation, days, events } = history;
 
-  const rolling = computeRolling28d(days);
+  const [rangeDays, setRangeDays] = useState(60);
+  const [metric, setMetric] = useState<MetricKey>('revenue');
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [kinds, setKinds] = useState<Set<EventKind>>(() => new Set(EVENT_KINDS));
+
+  const toggleKind = (k: EventKind) =>
+    setKinds((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+
+  // ---- derived data ----------------------------------------------------------
+  const rolling = useMemo(() => computeRolling28d(days), [days]);
   const latest = latestFinalizedRolling28d(rolling);
   const verdict = latest ? gradeVerdict(expectation, latest) : null;
+  const lastDay = lastFinalizedDay(days);
+  const lastDate = days.length > 0 ? days[days.length - 1].date : null;
+  const settlingDays = lastDay ? days.filter((d) => d.date > lastDay.date).length : days.length;
 
-  // Chart 1 & 2: 28d rolling actual vs expectation ramp, from team start to expectation end.
-  const rollingInWindow = rolling.filter(
-    (p) => p.date >= expectation.startDate && p.date <= expectation.endDate
+  const rangeDaysRows = useMemo(() => sliceLastNDays(days, rangeDays), [days, rangeDays]);
+  const rangeStart = rangeDaysRows.length > 0 ? rangeDaysRows[0].date : null;
+
+  const kindCounts = useMemo(() => {
+    const c: Record<EventKind, number> = { merge: 0, rollback: 0, incident: 0, check: 0, operator: 0 };
+    for (const e of events) if (!rangeStart || e.date >= rangeStart) c[e.kind]++;
+    return c;
+  }, [events, rangeStart]);
+
+  const chartEvents: ChartEventMarker[] = useMemo(
+    () => events.filter((e) => kinds.has(e.kind)).map((e) => ({ date: e.date, kind: e.kind, label: e.label })),
+    [events, kinds]
   );
+
+  // 28d rolling vs ramp — always the full commitment window, so the ramp end is visible.
+  const rollingInWindow = rolling.filter((p) => p.date >= expectation.startDate && p.date <= expectation.endDate);
+  const rampDates = useMemo(() => {
+    const out: string[] = [];
+    for (let d = expectation.startDate; d <= expectation.endDate; d = addDaysUTC(d, 1)) out.push(d);
+    return out;
+  }, [expectation.startDate, expectation.endDate]);
+  const revenueExpectedPoints: ChartPoint[] = rampDates.map((d) => ({ x: d, y: expectedRevenueAt(expectation, d) }));
+  const sessionsExpectedPoints: ChartPoint[] = rampDates.map((d) => ({ x: d, y: expectedSessionsAt(expectation, d) }));
   const revenueActualPoints: ChartPoint[] = rollingInWindow.map((p) => ({ x: p.date, y: p.actualRevenue28d }));
   const sessionsActualPoints: ChartPoint[] = rollingInWindow.map((p) => ({ x: p.date, y: p.actualSessions28d }));
-  const revenueExpectedPoints: ChartPoint[] = [
-    { x: expectation.startDate, y: expectation.revenue28dStart },
-    { x: expectation.endDate, y: expectation.revenue28dEnd },
-  ];
-  const sessionsExpectedPoints: ChartPoint[] = [
-    { x: expectation.startDate, y: expectation.sessions28dStart },
-    { x: expectation.endDate, y: expectation.sessions28dEnd },
-  ];
 
-  // Chart 3: last 60 days daily revenue vs same-weekday expectation, with a red band where actual < 80% of expected.
-  const last60 = days.slice(-60);
-  const dailyRevenuePoints: ChartPoint[] = last60.map((d) => ({ x: d.date, y: d.revenue }));
-  const dailyExpectedPoints: ChartPoint[] = last60.map((d) => ({ x: d.date, y: d.expectedRevenue }));
-  const dailyBands = buildBelowThresholdBands(last60.map((d) => ({ date: d.date, actual: d.revenue, expected: d.expectedRevenue })));
+  // Explorer chart for the selected metric over the selected range.
+  const m = METRICS[metric];
+  const explorerSeries = [
+    { id: 'actual', label: 'Actual', color: m.color, type: m.type, points: rangeDaysRows.map((d) => ({ x: d.date, y: m.get(d) })) },
+    ...(m.expected
+      ? [{ id: 'expected', label: 'Expected', color: '#94a3b8', dashed: true, points: rangeDaysRows.map((d) => ({ x: d.date, y: m.expected!(d) })) }]
+      : []),
+  ];
+  const explorerBands = m.expected
+    ? buildBelowThresholdBands(rangeDaysRows.map((d) => ({ date: d.date, actual: m.get(d), expected: m.expected!(d) })))
+    : [];
 
-  const chartEvents: ChartEventMarker[] = events.map((e) => ({ date: e.date, kind: e.kind, label: e.label }));
-  const recentEvents = [...events].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 30);
+  const weeks = useMemo(() => weeklySummary(rangeDaysRows, events), [rangeDaysRows, events]);
+
+  const selectDate = (d: string) => setSelectedDate((cur) => (cur === d ? null : d));
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Funnel team scoreboard</h1>
-        <p className="text-slate-400">
-          Grading the automated funnel team against the expectation it committed to on {expectation.startDate}.
-        </p>
+    <div className={`space-y-6 transition-opacity ${refreshing ? 'opacity-60' : ''}`}>
+      {/* ---- header ---- */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-1">Funnel team scoreboard</h1>
+          <p className="text-slate-400 text-sm">
+            Grading the automated funnel team against the expectation it committed to on {expectation.startDate}.
+          </p>
+          <p className="text-slate-500 text-xs mt-1">
+            Finalized through <span className="text-slate-300">{lastDay?.date ?? '—'}</span>
+            {settlingDays > 0 && <> · {settlingDays} day{settlingDays === 1 ? '' : 's'} still settling</>}
+            {' '}· generated {new Date(history.generatedAt).toLocaleString()}
+            {refreshError && <span className="text-red-400"> · refresh failed: {refreshError}</span>}
+          </p>
+        </div>
+        <button
+          onClick={onRefresh}
+          disabled={refreshing}
+          className="inline-flex items-center gap-2 self-start rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-50 md:self-auto"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
-      <VerdictBanner verdict={verdict} />
-
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h2 className="text-lg font-bold text-white mb-2">How to read this</h2>
-        <ul className="text-sm text-slate-400 space-y-1 list-disc list-inside">
-          <li>Solid lines are what actually happened (finalized Mediavine days only); dashed lines are the ramp the team committed to.</li>
-          <li>A metric only counts as &quot;on track&quot; once both revenue AND sessions clear the bar — rising RPM on falling traffic is graded behind pace, not ahead.</li>
-          <li>Vertical ticks mark merges, rollbacks, incidents, checks, and operator notes — hover one to see what happened that day.</li>
-        </ul>
-      </div>
-
-      <ChartCard
-        title="28-day rolling revenue"
-        subtitle="Actual (Mediavine + pro-rated non-ad monthly) vs the committed ramp"
-      >
-        <FunnelLineChart
-          ariaLabel="28 day rolling revenue, actual versus expectation"
-          height={260}
-          yFormatter={(v) => formatCurrency(v)}
-          events={chartEvents}
-          series={[
-            { id: 'actual', label: 'Actual', color: '#22c55e', points: revenueActualPoints },
-            { id: 'expected', label: 'Expected', color: '#94a3b8', points: revenueExpectedPoints, dashed: true },
-          ]}
-        />
-        <ChartLegend
-          items={[
-            { color: '#22c55e', label: 'Actual (finalized 28d rolling total)' },
-            { color: '#94a3b8', label: 'Expectation ramp', dashed: true },
-          ]}
-        />
-      </ChartCard>
-
-      <ChartCard
-        title="28-day rolling sessions"
-        subtitle="Actual GA4 sessions vs the committed ramp"
-      >
-        <FunnelLineChart
-          ariaLabel="28 day rolling sessions, actual versus expectation"
-          height={260}
-          yFormatter={(v) => formatCompactNumber(v)}
-          events={chartEvents}
-          series={[
-            { id: 'actual', label: 'Actual', color: '#38bdf8', points: sessionsActualPoints },
-            { id: 'expected', label: 'Expected', color: '#94a3b8', points: sessionsExpectedPoints, dashed: true },
-          ]}
-        />
-        <ChartLegend
-          items={[
-            { color: '#38bdf8', label: 'Actual (finalized 28d rolling total)' },
-            { color: '#94a3b8', label: 'Expectation ramp', dashed: true },
-          ]}
-        />
-      </ChartCard>
-
-      <ChartCard
-        title="Daily Mediavine revenue"
-        subtitle="Last 60 days vs same-weekday prior-4-week mean, shaded red where actual fell below 80% of expected"
-      >
-        <FunnelLineChart
-          ariaLabel="Daily Mediavine revenue, last 60 days, actual versus same weekday expectation"
-          height={260}
-          yFormatter={(v) => formatCurrency(v)}
-          events={chartEvents}
-          bands={dailyBands}
-          series={[
-            { id: 'actual', label: 'Actual', color: '#ec4899', points: dailyRevenuePoints, type: 'bar' },
-            { id: 'expected', label: 'Expected', color: '#94a3b8', points: dailyExpectedPoints, dashed: true },
-          ]}
-        />
-        <ChartLegend
-          items={[
-            { color: '#ec4899', label: 'Actual daily revenue' },
-            { color: '#94a3b8', label: 'Expected (same weekday, prior 4 weeks)', dashed: true },
-            { color: '#ef4444', label: 'Actual < 80% of expected', swatch: true },
-          ]}
-        />
-      </ChartCard>
-
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Activity className="h-5 w-5 text-sims-pink" />
-          Recent events
-        </h2>
-        {recentEvents.length === 0 ? (
-          <p className="text-slate-500 text-sm">No events recorded yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-500 border-b border-slate-800">
-                  <th className="py-2 pr-4 font-medium">Date</th>
-                  <th className="py-2 pr-4 font-medium">Kind</th>
-                  <th className="py-2 pr-4 font-medium">Label</th>
-                  <th className="py-2 pr-4 font-medium">Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentEvents.map((e, i) => {
-                  const Icon = EVENT_ICONS[e.kind];
-                  return (
-                    <tr key={`${e.date}-${i}`} className="border-b border-slate-800/60">
-                      <td className="py-2 pr-4 text-slate-400 whitespace-nowrap">{e.date}</td>
-                      <td className={`py-2 pr-4 whitespace-nowrap ${EVENT_LABEL_COLOR[e.kind]}`}>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Icon className="h-3.5 w-3.5" />
-                          {e.kind}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-4 text-slate-300">
-                        {e.label}
-                        {e.commit && <span className="text-slate-500"> ({e.commit})</span>}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-500">{e.result || '—'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+      {/* ---- filter row: scopes every chart, tile and table below ---- */}
+      <div className="sticky top-0 z-20 -mx-2 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl border border-slate-800 bg-slate-950/90 px-4 py-3 backdrop-blur">
+        <div className="flex items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-slate-500">Range</span>
+          <div className="inline-flex rounded-lg border border-slate-700 p-0.5" role="group" aria-label="Date range">
+            {RANGES.map((r) => (
+              <button
+                key={r.days}
+                onClick={() => setRangeDays(r.days)}
+                aria-pressed={rangeDays === r.days}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  rangeDays === r.days ? 'bg-sims-pink text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-slate-500">Events</span>
+          {EVENT_KINDS.map((k) => {
+            const Icon = EVENT_ICONS[k];
+            const on = kinds.has(k);
+            return (
+              <button
+                key={k}
+                onClick={() => toggleKind(k)}
+                aria-pressed={on}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                  on ? 'border-slate-600 bg-slate-800 text-slate-200' : 'border-slate-800 text-slate-500 line-through'
+                }`}
+              >
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: EVENT_COLORS[k], opacity: on ? 1 : 0.3 }} />
+                <Icon className="h-3 w-3" />
+                {k}
+                <span className="tabular-nums text-slate-500">{kindCounts[k]}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="text-xs text-slate-500 space-y-1">
-        <p>Generated {new Date(history.generatedAt).toLocaleString()}</p>
-        <p>{expectation.basis}</p>
-        <p>
-          Data is Mediavine finalized days only (recent days can be null while they settle); this page is regenerated
-          by the daily funnel runner and committed to <code className="text-slate-400">reports/funnel/history.json</code>.
-        </p>
+      <VerdictBanner verdict={verdict} expectation={expectation} days={days} lastDate={lastDay?.date ?? null} />
+
+      {/* ---- KPI tiles — click one to open it in the explorer ---- */}
+      <KpiTiles
+        days={days}
+        rangeRows={rangeDaysRows}
+        lastDay={lastDay}
+        verdict={verdict}
+        active={metric}
+        onPick={(k) => {
+          setMetric(k);
+          document.getElementById('funnel-explorer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
+      />
+
+      {/* ---- metric explorer ---- */}
+      <div id="funnel-explorer" className="scroll-mt-20 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white">{m.title}</h2>
+            <p className="text-sm text-slate-400">{m.subtitle}</p>
+          </div>
+          <div className="flex flex-wrap gap-1" role="tablist" aria-label="Metric">
+            {(Object.keys(METRICS) as MetricKey[]).map((k) => (
+              <button
+                key={k}
+                role="tab"
+                aria-selected={metric === k}
+                onClick={() => setMetric(k)}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  metric === k ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                {METRICS[k].tab}
+              </button>
+            ))}
+          </div>
+        </div>
+        <FunnelLineChart
+          ariaLabel={`${m.title}, ${rangeDays ? `last ${rangeDays} days` : 'all days'}. Use arrow keys to step through days and Enter to pin one.`}
+          height={280}
+          yFormatter={m.fmt}
+          events={chartEvents}
+          bands={explorerBands}
+          series={explorerSeries}
+          hoverDate={hoverDate}
+          onHoverDate={setHoverDate}
+          selectedDate={selectedDate}
+          onSelectDate={selectDate}
+          compare={m.expected ? { actual: 'actual', expected: 'expected' } : undefined}
+          zeroBased={m.zeroBased ?? true}
+        />
+        <ChartLegend
+          items={[
+            { color: m.color, label: m.type === 'bar' ? 'Actual (finalized)' : 'Actual', swatch: m.type === 'bar' },
+            ...(m.expected ? [{ color: '#94a3b8', label: 'Expected (same weekday, prior 4 weeks)', dashed: true }] : []),
+            ...(m.expected ? [{ color: '#ef4444', label: 'Actual < 80% of expected', swatch: true, faint: true }] : []),
+          ]}
+        />
       </div>
+
+      {selectedDate && (
+        <DayDetail
+          date={selectedDate}
+          days={days}
+          events={events}
+          onClose={() => setSelectedDate(null)}
+          onStep={(n) => setSelectedDate((d) => (d ? addDaysUTC(d, n) : d))}
+        />
+      )}
+
+      {/* ---- the commitment: 28d rolling vs the ramp ---- */}
+      <div className="grid gap-6 xl:grid-cols-2">
+        <ChartCard title="28-day rolling revenue" subtitle="Mediavine + pro-rated non-ad, vs the ramp committed to through the end date">
+          <FunnelLineChart
+            ariaLabel="28 day rolling revenue, actual versus expectation"
+            height={240}
+            yFormatter={(v) => formatCurrency(v)}
+            events={chartEvents}
+            hoverDate={hoverDate}
+            onHoverDate={setHoverDate}
+            selectedDate={selectedDate}
+            onSelectDate={selectDate}
+            compare={{ actual: 'actual', expected: 'expected' }}
+            series={[
+              { id: 'actual', label: 'Actual', color: '#22c55e', points: revenueActualPoints },
+              { id: 'expected', label: 'Expected', color: '#94a3b8', points: revenueExpectedPoints, dashed: true },
+            ]}
+          />
+          <ChartLegend
+            items={[
+              { color: '#22c55e', label: 'Actual (finalized 28d total)' },
+              { color: '#94a3b8', label: `Ramp to ${formatCurrency(expectation.revenue28dEnd)} by ${expectation.endDate}`, dashed: true },
+            ]}
+          />
+        </ChartCard>
+        <ChartCard title="28-day rolling sessions" subtitle="GA4 sessions vs the ramp committed to through the end date">
+          <FunnelLineChart
+            ariaLabel="28 day rolling sessions, actual versus expectation"
+            height={240}
+            yFormatter={(v) => formatCompactNumber(v)}
+            events={chartEvents}
+            hoverDate={hoverDate}
+            onHoverDate={setHoverDate}
+            selectedDate={selectedDate}
+            onSelectDate={selectDate}
+            compare={{ actual: 'actual', expected: 'expected' }}
+            series={[
+              { id: 'actual', label: 'Actual', color: '#38bdf8', points: sessionsActualPoints },
+              { id: 'expected', label: 'Expected', color: '#94a3b8', points: sessionsExpectedPoints, dashed: true },
+            ]}
+          />
+          <ChartLegend
+            items={[
+              { color: '#38bdf8', label: 'Actual (finalized 28d total)' },
+              { color: '#94a3b8', label: `Ramp to ${formatCompactNumber(expectation.sessions28dEnd)} by ${expectation.endDate}`, dashed: true },
+            ]}
+          />
+        </ChartCard>
+      </div>
+
+      <WeeklyTable weeks={weeks} onPick={(d) => setSelectedDate(d)} />
+
+      <EventsPanel
+        events={events}
+        kinds={kinds}
+        rangeStart={rangeStart}
+        selectedDate={selectedDate}
+        onPickDate={(d) => setSelectedDate(d)}
+      />
+
+      <details className="group rounded-xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-400">
+        <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-slate-300">
+          <Info className="h-4 w-4" /> How to read this page
+        </summary>
+        <ul className="mt-3 list-disc list-inside space-y-1">
+          <li>Solid marks are what actually happened (finalized Mediavine days only); dashed lines are expectations.</li>
+          <li>The verdict only reads &quot;on track&quot; once both revenue AND sessions clear 97% of the ramp — rising RPM on falling traffic is graded behind pace, not ahead.</li>
+          <li>Hover any chart for exact values; all charts share one crosshair. Click a day (or press Enter on a focused chart) to pin it and see every metric and event for that day.</li>
+          <li>The range and event filters in the bar at the top scope every chart, tile and table below them.</li>
+          <li>{expectation.basis}</li>
+          <li>
+            Data is regenerated by the daily funnel runner and committed to{' '}
+            <code className="text-slate-300">reports/funnel/history.json</code>; recent days are blank while they settle.
+          </li>
+        </ul>
+      </details>
     </div>
   );
 }
 
-function VerdictBanner({ verdict }: { verdict: Verdict | null }) {
+// ---- verdict + pace ----------------------------------------------------------
+
+function VerdictBanner({
+  verdict,
+  expectation,
+  days,
+  lastDate,
+}: {
+  verdict: Verdict | null;
+  expectation: FunnelHistory['expectation'];
+  days: FunnelDayRecord[];
+  lastDate: string | null;
+}) {
   if (!verdict) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 flex items-center gap-3">
         <AlertTriangle className="h-5 w-5 text-slate-500 flex-shrink-0" />
-        <p className="text-slate-400 text-sm">
-          Not enough finalized history yet for a 28-day rolling verdict.
-        </p>
+        <p className="text-slate-400 text-sm">Not enough finalized history yet for a 28-day rolling verdict.</p>
       </div>
     );
   }
 
   const style = VERDICT_STYLES[verdict.color];
   const Icon = verdict.color === 'green' ? CheckCircle2 : verdict.color === 'yellow' ? AlertTriangle : Siren;
+  const last7 = lastDate ? summarizeWindow(days, lastDate, 7) : null;
+  const neededRevPerDay = expectation.revenue28dEnd / 28;
+  const neededSessPerDay = expectation.sessions28dEnd / 28;
 
   return (
-    <div className={`rounded-xl p-6 border ${style.bg} ${style.border}`}>
-      <div className="flex items-start gap-3">
-        <Icon className={`h-6 w-6 flex-shrink-0 ${style.text}`} />
-        <div className="space-y-2">
-          <h2 className={`text-xl font-bold ${style.text}`}>{style.label}</h2>
-          <p className="text-slate-200">
-            Revenue: {formatCurrency(verdict.actualRevenue28d)} vs {formatCurrency(verdict.expectedRevenue28d)} expected (
-            {formatSignedPercent(verdict.revenuePct)})
-          </p>
-          <p className="text-slate-200">
-            Sessions: {formatCompactNumber(verdict.actualSessions28d)} vs {formatCompactNumber(verdict.expectedSessions28d)} expected (
-            {formatSignedPercent(verdict.sessionsPct)})
-          </p>
-          <p className="text-sm text-slate-400">
-            as of {verdict.date} · Grade requires both revenue and sessions — RPM gains with falling sessions do not count.
-          </p>
+    <div className={`rounded-xl p-5 sm:p-6 border ${style.bg} ${style.border}`}>
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
+        <div className="flex items-start gap-3 lg:w-64 lg:flex-shrink-0">
+          <Icon className={`h-7 w-7 flex-shrink-0 ${style.text}`} />
+          <div>
+            <h2 className={`text-2xl font-bold ${style.text}`}>{style.label}</h2>
+            <p className="text-xs text-slate-400">28d rolling as of {verdict.date}</p>
+          </div>
         </div>
+        <div className="grid flex-1 gap-4 sm:grid-cols-2">
+          <PctOfExpectedBar
+            label="Revenue"
+            actual={formatCurrency(verdict.actualRevenue28d)}
+            expected={formatCurrency(verdict.expectedRevenue28d)}
+            pct={verdict.revenuePct}
+            barClass={verdict.revenuePct >= 0.97 ? 'bg-emerald-400' : verdict.revenuePct >= 0.9 ? 'bg-yellow-400' : 'bg-red-400'}
+          />
+          <PctOfExpectedBar
+            label="Sessions"
+            actual={formatCompactNumber(verdict.actualSessions28d)}
+            expected={formatCompactNumber(verdict.expectedSessions28d)}
+            pct={verdict.sessionsPct}
+            barClass={verdict.sessionsPct >= 0.97 ? 'bg-emerald-400' : verdict.sessionsPct >= 0.9 ? 'bg-yellow-400' : 'bg-red-400'}
+          />
+        </div>
+      </div>
+      {last7 && last7.days > 0 && (
+        <p className="mt-4 border-t border-slate-800/80 pt-3 text-sm text-slate-300">
+          <span className="text-slate-500">Pace to {expectation.endDate}:</span> the end target needs about{' '}
+          <strong className="text-white">{formatCurrency(neededRevPerDay)}/day</strong> and{' '}
+          <strong className="text-white">{formatCompactNumber(neededSessPerDay)} sessions/day</strong>. The last {last7.days} finalized days
+          averaged <strong className="text-white">{formatCurrency(last7.revenue / last7.days)}/day</strong> and{' '}
+          <strong className="text-white">{formatCompactNumber(last7.sessions / last7.days)}/day</strong>.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PctOfExpectedBar({
+  label,
+  actual,
+  expected,
+  pct,
+  barClass,
+}: {
+  label: string;
+  actual: string;
+  expected: string;
+  pct: number;
+  barClass: string;
+}) {
+  // Scale 0–120% so the 90% and 97% gates sit at readable positions.
+  const scale = (p: number) => `${Math.min(100, (p / 1.2) * 100)}%`;
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm text-slate-400">{label}</span>
+        <span className="text-sm text-slate-400">
+          <span className="text-lg font-semibold text-white tabular-nums">{actual}</span> of {expected}
+        </span>
+      </div>
+      <div className="relative mt-2 h-2.5 rounded-full bg-slate-800" aria-hidden>
+        <div className={`h-full rounded-full ${barClass}`} style={{ width: scale(pct) }} />
+        <div className="absolute top-[-3px] h-4 w-px bg-slate-500" style={{ left: scale(0.9) }} title="90% — red below" />
+        <div className="absolute top-[-3px] h-4 w-px bg-slate-300" style={{ left: scale(0.97) }} title="97% — green at or above" />
+      </div>
+      <div className="mt-1 flex justify-between text-xs text-slate-500">
+        <span className="tabular-nums text-slate-300">
+          {formatPercent(pct, 1)} of expected ({formatSignedPercent(pct)})
+        </span>
+        <span>gates 90% / 97%</span>
       </div>
     </div>
   );
@@ -317,20 +642,512 @@ function VerdictBanner({ verdict }: { verdict: Verdict | null }) {
 function formatSignedPercent(pctOfExpected: number): string {
   const delta = pctOfExpected - 1;
   const sign = delta >= 0 ? '+' : '−';
-  return `${sign}${formatPercent(Math.abs(delta))}`;
+  return `${sign}${formatPercent(Math.abs(delta), 1)}`;
 }
 
-function ChartCard({
-  title,
-  subtitle,
-  children,
+// ---- KPI tiles -----------------------------------------------------------------
+
+function KpiTiles({
+  days,
+  rangeRows,
+  lastDay,
+  verdict,
+  active,
+  onPick,
 }: {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
+  days: FunnelDayRecord[];
+  rangeRows: FunnelDayRecord[];
+  lastDay: FunnelDayRecord | null;
+  verdict: Verdict | null;
+  active: MetricKey;
+  onPick: (k: MetricKey) => void;
 }) {
+  const end = lastDay?.date ?? null;
+  const cur = end ? summarizeWindow(days, end, 7) : null;
+  const prev = end ? summarizeWindow(days, addDaysUTC(end, -7), 7) : null;
+
+  // Scoreboard fields (trailing-7d counters) can be populated on days Mediavine hasn't finalized.
+  const latestOf = (get: (d: FunnelDayRecord) => number | null) => {
+    for (let i = days.length - 1; i >= 0; i--) {
+      const v = get(days[i]);
+      if (v !== null) return { value: v, date: days[i].date };
+    }
+    return null;
+  };
+  const valueOn = (get: (d: FunnelDayRecord) => number | null, date: string) => {
+    const d = days.find((x) => x.date === date);
+    return d ? get(d) : null;
+  };
+
+  const owned = latestOf((d) => d.ownedAdds7d);
+  const pin = latestOf((d) => d.pinterestSessions7d);
+  const nonAd = latestOf((d) => d.nonAdMonthly);
+
+  const tiles: Array<{
+    key: MetricKey;
+    label: string;
+    value: string;
+    sub: string;
+    delta: number | null;
+    deltaLabel: string;
+    spark: Array<number | null>;
+    color: string;
+  }> = [
+    {
+      key: 'revenue',
+      label: 'Revenue, last 7d',
+      value: cur ? formatCurrency(cur.revenue) : '—',
+      sub: cur && cur.expectedRevenue > 0 ? `${formatPercent(cur.revenue / cur.expectedRevenue)} of expected` : '',
+      delta: pctChange(cur?.revenue, prev?.revenue),
+      deltaLabel: 'vs prior 7d',
+      spark: rangeRows.map((d) => d.revenue),
+      color: METRICS.revenue.color,
+    },
+    {
+      key: 'sessions',
+      label: 'Sessions, last 7d',
+      value: cur ? formatCompactNumber(cur.sessions) : '—',
+      sub: cur && cur.expectedSessions > 0 ? `${formatPercent(cur.sessions / cur.expectedSessions)} of expected` : '',
+      delta: pctChange(cur?.sessions, prev?.sessions),
+      deltaLabel: 'vs prior 7d',
+      spark: rangeRows.map((d) => d.sessions),
+      color: METRICS.sessions.color,
+    },
+    {
+      key: 'rpm',
+      label: 'Session RPM, last 7d',
+      value: cur?.rpm != null ? formatCurrency2(cur.rpm) : '—',
+      sub: verdict ? `28d: ${formatCurrency2((verdict.actualRevenue28d / verdict.actualSessions28d) * 1000)}` : '',
+      delta: pctChange(cur?.rpm, prev?.rpm),
+      deltaLabel: 'vs prior 7d',
+      spark: rangeRows.map((d) => d.rpm),
+      color: METRICS.rpm.color,
+    },
+    {
+      key: 'ownedAdds7d',
+      label: 'Owned adds, 7d',
+      value: owned ? formatInt(owned.value) : '—',
+      sub: owned ? `as of ${owned.date}` : 'no scoreboard data',
+      delta: owned ? pctChange(owned.value, valueOn((d) => d.ownedAdds7d, addDaysUTC(owned.date, -7))) : null,
+      deltaLabel: 'vs a week earlier',
+      spark: rangeRows.map((d) => d.ownedAdds7d),
+      color: METRICS.ownedAdds7d.color,
+    },
+    {
+      key: 'pinterestSessions7d',
+      label: 'Pinterest sessions, 7d',
+      value: pin ? formatCompactNumber(pin.value) : '—',
+      sub: pin ? `as of ${pin.date}` : 'no scoreboard data',
+      delta: pin ? pctChange(pin.value, valueOn((d) => d.pinterestSessions7d, addDaysUTC(pin.date, -7))) : null,
+      deltaLabel: 'vs a week earlier',
+      spark: rangeRows.map((d) => d.pinterestSessions7d),
+      color: METRICS.pinterestSessions7d.color,
+    },
+    {
+      key: 'nonAdMonthly',
+      label: 'Non-ad, monthly',
+      value: nonAd ? formatCurrency(nonAd.value) : '—',
+      sub: nonAd ? `as of ${nonAd.date}` : '',
+      delta: nonAd ? pctChange(nonAd.value, valueOn((d) => d.nonAdMonthly, addDaysUTC(nonAd.date, -7))) : null,
+      deltaLabel: 'vs a week earlier',
+      spark: rangeRows.map((d) => d.nonAdMonthly),
+      color: METRICS.nonAdMonthly.color,
+    },
+  ];
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      {tiles.map((t) => {
+        const up = t.delta !== null && t.delta >= 0;
+        return (
+          <button
+            key={t.key}
+            onClick={() => onPick(t.key)}
+            aria-pressed={active === t.key}
+            className={`group flex flex-col rounded-xl border p-3 text-left transition-colors ${
+              active === t.key ? 'border-slate-500 bg-slate-800/80' : 'border-slate-800 bg-slate-900 hover:border-slate-700'
+            }`}
+          >
+            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+              {t.label}
+            </span>
+            <span className="mt-1 text-xl font-semibold text-white tabular-nums">{t.value}</span>
+            <span className="min-h-[1rem] text-xs text-slate-500">{t.sub}</span>
+            <Sparkline values={t.spark} color={t.color} />
+            <span className="mt-1 flex items-center gap-1 text-xs">
+              {t.delta === null ? (
+                <span className="text-slate-600">no comparison</span>
+              ) : (
+                <>
+                  {up ? <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" /> : <ArrowDownRight className="h-3.5 w-3.5 text-red-400" />}
+                  <span className="tabular-nums text-slate-200">
+                    {up ? '+' : '−'}
+                    {formatPercent(Math.abs(t.delta), 1)}
+                  </span>
+                  <span className="text-slate-500">{t.deltaLabel}</span>
+                </>
+              )}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Sparkline({ values, color }: { values: Array<number | null>; color: string }) {
+  const nums = values.filter((v): v is number => v !== null);
+  if (nums.length < 2) return <div className="mt-2 h-8" />;
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const span = max - min || 1;
+  const n = values.length;
+  let d = '';
+  let started = false;
+  values.forEach((v, i) => {
+    // Scoreboard counters are sparse; join across gaps so the trend stays readable.
+    if (v === null) return;
+    const x = n > 1 ? (i / (n - 1)) * 100 : 50;
+    const y = 30 - ((v - min) / span) * 28;
+    d += `${started ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)} `;
+    started = true;
+  });
+  return (
+    <svg viewBox="0 0 100 32" preserveAspectRatio="none" className="mt-2 h-8 w-full" aria-hidden>
+      <path d={d.trim()} fill="none" stroke={color} strokeWidth={1.5} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ---- pinned day ----------------------------------------------------------------
+
+function DayDetail({
+  date,
+  days,
+  events,
+  onClose,
+  onStep,
+}: {
+  date: string;
+  days: FunnelDayRecord[];
+  events: FunnelEvent[];
+  onClose: () => void;
+  onStep: (n: number) => void;
+}) {
+  const d = days.find((x) => x.date === date);
+  const dayEvents = events.filter((e) => e.date === date);
+  const first = days[0]?.date;
+  const last = days[days.length - 1]?.date;
+
+  const ratio = (a: number | null | undefined, b: number | null | undefined) =>
+    a != null && b != null && b > 0 ? `${formatPercent(a / b)} of expected` : null;
+
+  const cells: Array<{ label: string; value: string; note?: string | null }> = d
+    ? [
+        { label: 'Revenue', value: d.revenue != null ? formatCurrency2(d.revenue) : 'settling', note: ratio(d.revenue, d.expectedRevenue) },
+        { label: 'Expected revenue', value: d.expectedRevenue != null ? formatCurrency2(d.expectedRevenue) : '—' },
+        { label: 'Sessions', value: d.sessions != null ? formatInt(d.sessions) : 'settling', note: ratio(d.sessions, d.expectedSessions) },
+        { label: 'Expected sessions', value: d.expectedSessions != null ? formatInt(d.expectedSessions) : '—' },
+        { label: 'RPM', value: d.rpm != null ? formatCurrency2(d.rpm) : '—' },
+        { label: 'Owned adds (7d)', value: d.ownedAdds7d != null ? formatInt(d.ownedAdds7d) : '—' },
+        { label: 'Pinterest sessions (7d)', value: d.pinterestSessions7d != null ? formatInt(d.pinterestSessions7d) : '—' },
+        { label: 'Non-ad monthly', value: d.nonAdMonthly != null ? formatCurrency(d.nonAdMonthly) : '—' },
+      ]
+    : [];
+
+  return (
+    <div className="rounded-xl border border-pink-500/40 bg-slate-900 p-4 sm:p-6" aria-live="polite">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onStep(-1)}
+            disabled={!first || date <= first}
+            className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-30"
+            aria-label="Previous day"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <h2 className="text-lg font-bold text-white tabular-nums">
+            {new Date(`${date}T00:00:00Z`).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' })} {date}
+          </h2>
+          <button
+            onClick={() => onStep(1)}
+            disabled={!last || date >= last}
+            className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-30"
+            aria-label="Next day"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+        <button onClick={onClose} className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="Unpin day">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      {!d ? (
+        <p className="text-sm text-slate-500">No data recorded for this day.</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {cells.map((c) => (
+            <div key={c.label} className="rounded-lg bg-slate-950/60 p-3">
+              <div className="text-xs text-slate-500">{c.label}</div>
+              <div className="text-base font-semibold text-white tabular-nums">{c.value}</div>
+              {c.note && <div className="text-xs text-slate-400">{c.note}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="mt-4">
+        <h3 className="mb-2 text-sm font-medium text-slate-300">
+          {dayEvents.length} event{dayEvents.length === 1 ? '' : 's'} this day
+        </h3>
+        {dayEvents.length > 0 && (
+          <ul className="space-y-1.5">
+            {dayEvents.map((e, i) => (
+              <EventLine key={i} e={e} />
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- weekly roll-up ------------------------------------------------------------
+
+function WeeklyTable({ weeks, onPick }: { weeks: ReturnType<typeof weeklySummary>; onPick: (date: string) => void }) {
+  const pctCell = (a: number, e: number) => {
+    if (e <= 0) return <span className="text-slate-600">—</span>;
+    const p = a / e;
+    const tone = p >= 0.97 ? 'text-emerald-400' : p >= 0.9 ? 'text-yellow-400' : 'text-red-400';
+    return <span className={`tabular-nums ${tone}`}>{formatPercent(p)}</span>;
+  };
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <h2 className="text-lg font-bold text-white">Week by week</h2>
+      <p className="mb-4 text-sm text-slate-400">
+        Mon–Sun totals over finalized days in the selected range; % is against the same-weekday expectation for those same days. Click a week to pin its Monday.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead>
+            <tr className="border-b border-slate-800 text-left text-slate-500">
+              <th className="py-2 pr-4 font-medium">Week of</th>
+              <th className="py-2 pr-4 font-medium text-right">Revenue</th>
+              <th className="py-2 pr-4 font-medium text-right">vs exp.</th>
+              <th className="py-2 pr-4 font-medium text-right">Sessions</th>
+              <th className="py-2 pr-4 font-medium text-right">vs exp.</th>
+              <th className="py-2 pr-4 font-medium text-right">RPM</th>
+              <th className="py-2 pr-4 font-medium text-right">Merges</th>
+              <th className="py-2 font-medium text-right">Rollbacks / incidents</th>
+            </tr>
+          </thead>
+          <tbody>
+            {weeks.map((w) => (
+              <tr
+                key={w.weekStart}
+                onClick={() => onPick(w.weekStart)}
+                className="cursor-pointer border-b border-slate-800/60 hover:bg-slate-800/40"
+              >
+                <td className="py-2 pr-4 text-slate-300 whitespace-nowrap">
+                  {w.weekStart}
+                  {w.finalizedDays < 7 && <span className="ml-2 text-xs text-slate-500">{w.finalizedDays}/7 days</span>}
+                </td>
+                <td className="py-2 pr-4 text-right tabular-nums text-slate-200">{w.finalizedDays ? formatCurrency(w.revenue) : '—'}</td>
+                <td className="py-2 pr-4 text-right">{pctCell(w.revenue, w.expectedRevenue)}</td>
+                <td className="py-2 pr-4 text-right tabular-nums text-slate-200">{w.finalizedDays ? formatCompactNumber(w.sessions) : '—'}</td>
+                <td className="py-2 pr-4 text-right">{pctCell(w.sessions, w.expectedSessions)}</td>
+                <td className="py-2 pr-4 text-right tabular-nums text-slate-200">{w.rpm != null ? formatCurrency2(w.rpm) : '—'}</td>
+                <td className="py-2 pr-4 text-right tabular-nums text-slate-300">{w.merges || '—'}</td>
+                <td className={`py-2 text-right tabular-nums ${w.rollbacks + w.incidents > 0 ? 'text-red-400' : 'text-slate-600'}`}>
+                  {w.rollbacks + w.incidents > 0 ? `${w.rollbacks} / ${w.incidents}` : '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ---- events --------------------------------------------------------------------
+
+function EventLine({ e }: { e: FunnelEvent }) {
+  const Icon = EVENT_ICONS[e.kind];
+  const tone = resultTone(e.result);
+  return (
+    <li className="flex items-start gap-2 text-sm">
+      <Icon className={`mt-0.5 h-3.5 w-3.5 flex-shrink-0 ${EVENT_LABEL_COLOR[e.kind]}`} />
+      <span className="flex-1 text-slate-300">
+        {e.label}
+        {e.commit && <code className="ml-1 text-xs text-slate-500">{e.commit}</code>}
+      </span>
+      {e.result && <ResultPill result={e.result} tone={tone} />}
+    </li>
+  );
+}
+
+function ResultPill({ result, tone }: { result: string; tone: 'ok' | 'bad' | 'other' }) {
+  const cls =
+    tone === 'ok'
+      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+      : tone === 'bad'
+        ? 'border-red-500/30 bg-red-500/10 text-red-300'
+        : 'border-slate-700 bg-slate-800 text-slate-300';
+  const Icon = tone === 'ok' ? CheckCircle2 : tone === 'bad' ? AlertTriangle : null;
+  return (
+    <span className={`inline-flex flex-shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${cls}`}>
+      {Icon && <Icon className="h-3 w-3" />}
+      {result}
+    </span>
+  );
+}
+
+const EVENTS_PAGE = 25;
+
+function EventsPanel({
+  events,
+  kinds,
+  rangeStart,
+  selectedDate,
+  onPickDate,
+}: {
+  events: FunnelEvent[];
+  kinds: Set<EventKind>;
+  rangeStart: string | null;
+  selectedDate: string | null;
+  onPickDate: (d: string) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [actor, setActor] = useState('');
+  const [resultFilter, setResultFilter] = useState<'' | 'ok' | 'bad' | 'other'>('');
+  const [limit, setLimit] = useState(EVENTS_PAGE);
+
+  const inScope = useMemo(
+    () => events.filter((e) => kinds.has(e.kind) && (!rangeStart || e.date >= rangeStart)),
+    [events, kinds, rangeStart]
+  );
+
+  const actors = useMemo(() => {
+    const c = new Map<string, number>();
+    for (const e of inScope) {
+      const a = eventActor(e.label);
+      if (a) c.set(a, (c.get(a) ?? 0) + 1);
+    }
+    return Array.from(c.entries()).sort((a, b) => b[1] - a[1]);
+  }, [inScope]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return inScope
+      .filter((e) => !actor || eventActor(e.label) === actor)
+      .filter((e) => !resultFilter || resultTone(e.result) === resultFilter)
+      .filter(
+        (e) =>
+          !q ||
+          e.label.toLowerCase().includes(q) ||
+          (e.commit ?? '').toLowerCase().includes(q) ||
+          (e.result ?? '').toLowerCase().includes(q) ||
+          e.date.includes(q)
+      )
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  }, [inScope, actor, resultFilter, query]);
+
+  useEffect(() => setLimit(EVENTS_PAGE), [query, actor, resultFilter, kinds, rangeStart]);
+
+  const shown = filtered.slice(0, limit);
+  const groups: Array<{ date: string; items: FunnelEvent[] }> = [];
+  for (const e of shown) {
+    const g = groups[groups.length - 1];
+    if (g && g.date === e.date) g.items.push(e);
+    else groups.push({ date: e.date, items: [e] });
+  }
+
+  const selectCls = 'rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-300';
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <Activity className="h-5 w-5 text-sims-pink" />
+          Events
+          <span className="text-sm font-normal text-slate-500">
+            {filtered.length} of {inScope.length}
+          </span>
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative">
+            <span className="sr-only">Search events</span>
+            <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search label, PR, sha…"
+              className="w-56 rounded-lg border border-slate-700 bg-slate-950 py-1.5 pl-7 pr-2 text-sm text-slate-200 placeholder:text-slate-600"
+            />
+          </label>
+          <select aria-label="Filter by agent" value={actor} onChange={(e) => setActor(e.target.value)} className={selectCls}>
+            <option value="">All agents</option>
+            {actors.map(([a, n]) => (
+              <option key={a} value={a}>
+                {a} ({n})
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filter by result"
+            value={resultFilter}
+            onChange={(e) => setResultFilter(e.target.value as typeof resultFilter)}
+            className={selectCls}
+          >
+            <option value="">Any result</option>
+            <option value="ok">Pass / OK</option>
+            <option value="bad">Fail / missed</option>
+            <option value="other">Other / none</option>
+          </select>
+        </div>
+      </div>
+
+      {groups.length === 0 ? (
+        <p className="text-slate-500 text-sm">No events match these filters.</p>
+      ) : (
+        <div className="space-y-4">
+          {groups.map((g) => (
+            <div key={g.date} className={`rounded-lg p-2 ${g.date === selectedDate ? 'bg-pink-500/10 ring-1 ring-pink-500/40' : ''}`}>
+              <button
+                onClick={() => onPickDate(g.date)}
+                className="mb-1.5 text-xs font-medium text-slate-400 hover:text-white tabular-nums"
+                title="Pin this day on the charts"
+              >
+                {g.date}
+              </button>
+              <ul className="space-y-1.5">
+                {g.items.map((e, i) => (
+                  <EventLine key={i} e={e} />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+      {filtered.length > limit && (
+        <button
+          onClick={() => setLimit((l) => l + EVENTS_PAGE * 2)}
+          className="mt-4 w-full rounded-lg border border-slate-800 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-white"
+        >
+          Show more ({filtered.length - limit} remaining)
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ---- small shared bits ---------------------------------------------------------
+
+function ChartCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-white">{title}</h2>
         <p className="text-sm text-slate-400">{subtitle}</p>
@@ -343,19 +1160,19 @@ function ChartCard({
 function ChartLegend({
   items,
 }: {
-  items: Array<{ color: string; label: string; dashed?: boolean; swatch?: boolean }>;
+  items: Array<{ color: string; label: string; dashed?: boolean; swatch?: boolean; faint?: boolean }>;
 }) {
   return (
-    <div className="flex flex-wrap gap-4 mt-4 text-xs text-slate-400">
+    <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-400">
       {items.map((item, i) => (
         <span key={i} className="inline-flex items-center gap-2">
           {item.swatch ? (
-            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: item.color, opacity: 0.3 }} />
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: item.color, opacity: item.faint ? 0.3 : 0.9 }} />
           ) : (
             <span
               className="inline-block w-4 h-0.5"
               style={{
-                backgroundColor: item.color,
+                backgroundColor: item.dashed ? 'transparent' : item.color,
                 backgroundImage: item.dashed
                   ? `repeating-linear-gradient(to right, ${item.color} 0, ${item.color} 3px, transparent 3px, transparent 6px)`
                   : undefined,

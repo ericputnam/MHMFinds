@@ -122,7 +122,7 @@ export default function AdminLayout({
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 min-w-0 p-8">
           {children}
         </main>
       </div>
