@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-23
+- Tried: **default-off newsletter opt-in on the credentials sign-up form** (E86, T0): `app/sign-in/page.tsx` had NO email opt-in at all (the "sign-in" source is only `/api/waitlist`'s default). Ticked box -> `/api/waitlist` source `signup-optin` after the account exists; GA4 `newsletter_signup` only for a new row. Also graded E54/E68 day-2 (>=44 h): 5 hard of 100 (5.0%), 0 of the 7 excluded hashes re-attempted, 0 complaints, `re-permission` rows 2 total (1 from day-2) = 1.06 confirms/100 delivered -> MORE DATA.
+- Before -> after: `signup-optin` rows 0 (09-23); ~25 credential sign_up/wk (9 on /sign-in/ 09-21..23); /sign-in/ 56 sessions/7d; email adds 7d 4.
+- Verdict: MORE DATA (read 2026-10-07). Keep if >=2 `signup-optin` rows in 14 d AND opt-in >=10% of credential sign_ups.
+- Next time: `/api/waitlist` returns success for `alreadyExists`, so every GA4 `newsletter_signup` count overstates DB adds (E73: 1 event on `/`, 0 `home-hero` rows) - grade on DB rows only; add the 5 new bounce hashes before any day-3 batch.
+
 ## 2026-09-21
 - Tried: **Homepage capture strip** (E73, Tier 0, PR #132): `components/HomeCapture.tsx` rendered in `HomePageClient.tsx` between the collections block and the grid/sidebar row — `NewsletterSignup sou…
 - Before → after: subscribers **26** (footer 17, go-interstitial 4, collection-page 3, re-permission 1, sign-in 1); email adds 7d 3, accounts 7d 51, owned adds 7d **52** vs 120; `home-hero` rows 0; GA…
@@ -73,11 +79,5 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 20 subscribers (footer 16, go-interstitial 2, collection-page 1, sign-in 1 — re-verified by `groupBy source` 2026-09-08), 0 emails ever sent, 0 of 5 SMTP vars. Two DB facts changed t…
 - Verdict: MORE DATA (read on 2026-09-21 — issue #1 delivered/opens; re-permission reads 14 days after its day-1 batch)
 - Next time: build the one-click consent endpoint (`/api/subscribe/confirm`, HMAC token reusing `unsubscribe.ts`, idempotent `waitlist.upsert`, GA4 `newsletter_signup` source=`re-permission`) — Tier 1…
-
-## 2026-09-07
-- Tried: built the BigScoots SMTP sending path per the operator's 2026-09-05 decision (T1, PR #49) — nodemailer transport in `lib/services/emailNotifier.ts` used whenever `SMTP_HOST` is set (SendGrid…
-- Before → after: email subscribers 20 (footer 16, go-interstitial 2, sign-in 1, collection-page 1); `newsletter_signup` events 2/7d; **emails ever sent to those 20 people: 0**. SMTP env vars in Verce…
-- Verdict: MORE DATA (read on 2026-09-21 — first issue open rate, once the operator's ~10-minute BigScoots step lands)
-- Next time: the capture surfaces are not the constraint any more. 44 owned adds/7d with 41 of them accounts means the email list grows ~3/wk from ~88K sessions. Before adding a fifth capture surface,…
 
 _Older/fuller entries moved to `archive/playbooks/cass-2026-09.md` verbatim; nothing deleted, only truncated above._

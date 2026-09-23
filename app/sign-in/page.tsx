@@ -8,6 +8,9 @@ import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Sparkles, Crown, CheckCircle2, Download, X } from 'lucide-react';
 
+/** waitlist.source for the sign-up form's email opt-in (Cass, E86). */
+const SIGNUP_OPTIN_SOURCE = 'signup-optin';
+
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -21,6 +24,9 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [isCreator, setIsCreator] = useState(false);
+  // Weekly-email opt-in on the sign-up form (Cass, E86). MUST start false —
+  // consent is an explicit tick, never a pre-checked box.
+  const [wantsNewsletter, setWantsNewsletter] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [selectedTier, setSelectedTier] = useState('ANNUAL');
@@ -116,6 +122,31 @@ export default function SignInPage() {
         'sign_up',
         { method: 'credentials', ref: searchParams?.get('ref') || 'direct' }
       );
+
+      // Newsletter opt-in (Cass, E86): only when the visitor ticked the box,
+      // only after the account exists, and never able to fail the sign-up.
+      // Attributed on its own waitlist.source so the scoreboard counts it.
+      if (wantsNewsletter) {
+        try {
+          const optIn = await fetch('/api/waitlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, source: SIGNUP_OPTIN_SOURCE }),
+          });
+          const optInData = await optIn.json().catch(() => ({}));
+          // Fire the conversion only for a NEW row — /api/waitlist answers
+          // success for an address already on the list.
+          if (optIn.ok && optInData?.success && !optInData?.alreadyExists) {
+            (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+              'event',
+              'newsletter_signup',
+              { source: SIGNUP_OPTIN_SOURCE }
+            );
+          }
+        } catch {
+          // Opt-in is best-effort; the account was created either way.
+        }
+      }
 
       // Auto sign in after signup
       const result = await signIn('credentials', {
@@ -313,6 +344,22 @@ export default function SignInPage() {
                         </div>
                       </label>
                     </div>
+                  )}
+
+                  {mode === 'signup' && (
+                    <label className="flex items-start gap-3 cursor-pointer px-1">
+                      <input
+                        type="checkbox"
+                        name="newsletter-optin"
+                        checked={wantsNewsletter}
+                        onChange={(e) => setWantsNewsletter(e.target.checked)}
+                        className="mt-0.5 w-5 h-5 rounded border-white/20 bg-white/5 text-sims-pink focus:ring-2 focus:ring-sims-pink focus:ring-offset-0 cursor-pointer"
+                      />
+                      <span className="text-sm text-slate-300 leading-snug">
+                        Email me the best new Sims 4 CC finds.{' '}
+                        <span className="text-slate-500">No spam, unsubscribe anytime.</span>
+                      </span>
+                    </label>
                   )}
 
                   <button
