@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-09-23
+- Tried: `halloween-cc` collection page + title-only repair of the `halloween` theme, one PR (T0, E90). Picked on demand + timing: lots/houses had the biggest GSC cluster (hospital-lots 3,529 impr) but `residential`+`lot` were 55.5% title-clean with a Love Island challenge at #2; `glasses` 41.8% (the word "glass"); beard 93% but 80 impr. Halloween: 9 articles, ~519 impr/28d **before** the October peak.
+- Before → after: `halloween` theme 547 rows / 190 title-supported (34.7%) → 190 / 190 (100%); 53 added, 410 stripped; top 40 read 38/40. Source fixed: THEME_KEYWORDS no longer maps witch/vampire/ghost/pumpkin → halloween; `lib/halloweenThemeRules.ts` is title-only and also filters AI-only tags. Collection routes 23 → 24.
+- Verdict: MORE DATA (read 2026-10-21; keep if ≥200 engaged sessions OR ≥5 favorites in 28d; 7-day RPM watch on the page).
+- Next time: every THEME_KEYWORDS entry has the same bug (substring over title+description) — `bedroom` 43.6%, `kitchen` 44.6%, `bathroom` 37.6% title-supported today. Fix a theme at the source before paging it; `pumpkin` and `ghost` were rejected by reading the dry run's ADD list, not the STRIP list.
+
 ## 2026-09-21
 - Tried: `kids-cc` collection page **and the class bug behind it, in one PR** (T0, PR #136, `7816cbe`, E72). On 09-20 I rejected this cluster — 752 rows on infant/toddler/child, only 45.6% of titles carrying a kid word — and wrote…
 - Before → after: `ageGroups` kid axis **752 rows / 343 title-supported (45.6%) → 686 / 686 (100%)** — 362 added, 428 stripped, 35 rewritten, 289 no-ops over a 1,114-row union population, verified by a separate read of the changed…

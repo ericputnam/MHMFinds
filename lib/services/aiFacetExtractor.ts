@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { AGE_TITLE_PATTERNS, AGE_NEGATIVE_TITLE_CONTEXTS } from '../ageGroupRules';
+import { HALLOWEEN_THEME, isHalloweenTitle } from '../halloweenThemeRules';
 
 // ============================================
 // FACET VALUE DEFINITIONS
@@ -232,9 +233,10 @@ const THEME_KEYWORDS: Record<string, Theme> = {
   // Seasonal
   'christmas': 'christmas', 'xmas': 'christmas', 'holiday': 'christmas',
   'santa': 'christmas', 'festive': 'christmas', 'winter holiday': 'christmas',
-  'halloween': 'halloween', 'spooky': 'halloween', 'witch': 'halloween',
-  'vampire': 'halloween', 'ghost': 'halloween', 'scary': 'halloween',
-  'pumpkin': 'halloween', 'skeleton': 'halloween', 'zombie': 'halloween',
+  // `halloween` is deliberately NOT keyword-mapped here: it is derived from the
+  // TITLE only by `lib/halloweenThemeRules.ts` (Rowan, 2026-09-23). The old
+  // entries ('witch', 'vampire', 'ghost', 'pumpkin', ... over title +
+  // description) left the theme 34.7% title-supported (190 of 547 rows).
   'valentine': 'valentines', 'romantic': 'romantic', 'love': 'romantic',
   'heart': 'valentines', 'cupid': 'valentines',
   'easter': 'easter', 'bunny': 'easter', 'pastel': 'easter',
@@ -409,6 +411,12 @@ export class AIFacetExtractor {
       }
     }
 
+    // Halloween theme — title only, whole words, shared rules.
+    if (isHalloweenTitle(title) && !seenThemes.has(HALLOWEEN_THEME)) {
+      seenThemes.add(HALLOWEEN_THEME);
+      result.themes.push(HALLOWEEN_THEME);
+    }
+
     // Extract age groups — title only, whole words, shared rules.
     // (`text` above deliberately is not used here; see the AGE note above.)
     if (!AGE_NEGATIVE_TITLE_CONTEXTS.test(title)) {
@@ -553,7 +561,12 @@ Respond with ONLY valid JSON:
       visualStyle: keywordFacets.visualStyle || aiFacets.visualStyle,
 
       // Themes: union of both
-      themes: Array.from(new Set([...keywordFacets.themes, ...aiFacets.themes])),
+      // `halloween` is title-authoritative: keep it only if the keyword pass
+      // (which applies `isHalloweenTitle`) found it; never from the AI alone.
+      themes: Array.from(new Set([
+        ...keywordFacets.themes,
+        ...aiFacets.themes.filter((t) => t !== HALLOWEEN_THEME || keywordFacets.themes.includes(HALLOWEEN_THEME)),
+      ])),
 
       // Age groups: union of both
       ageGroups: Array.from(new Set([...keywordFacets.ageGroups, ...aiFacets.ageGroups])),
