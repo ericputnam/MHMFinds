@@ -27,6 +27,7 @@ import { MoreFromCreator } from '@/components/MoreFromCreator';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import type { CollectionLink } from '@/lib/collections';
 import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
+import { authorSlug, creatorHref, isJunkAuthorSlug } from '@/lib/creatorSlug';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -303,7 +304,20 @@ export default function ModDetailClient({ initialMod, collections = [] }: ModDet
                 <div className="flex-1">
                   <p className="text-sm text-slate-400">Created by</p>
                   <p className="font-semibold text-white flex items-center gap-1">
-                    {mod.creator?.handle || mod.author || 'Unknown Creator'}
+                    {/* Author name links to the creator page (E85) when the
+                        author string yields a usable slug; the page 404s for
+                        creators under MIN_MODS_FOR_PAGE, so only link when a
+                        slug exists at all. */}
+                    {mod.author && !isJunkAuthorSlug(authorSlug(mod.author)) ? (
+                      <Link
+                        href={creatorHref(authorSlug(mod.author))}
+                        className="hover:text-sims-pink transition-colors"
+                      >
+                        {mod.creator?.handle || mod.author}
+                      </Link>
+                    ) : (
+                      mod.creator?.handle || mod.author || 'Unknown Creator'
+                    )}
                     {mod.creator?.isVerified && (
                       <Crown size={14} className="text-sims-blue" />
                     )}
