@@ -180,11 +180,11 @@ ledger() {  # $1 result, $2 notes
   local row dir f seen=" "
   row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$2" | tr '|' '/' | tr '\n' ' ')")"
   for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
-    [ -n "$dir" ] || continue
+    [ "$dir" = "/reports/funnel" ] && continue  # FUNNEL_PRIMARY_WT unset (manual / standalone run)
     case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
     mkdir -p "$dir" 2>/dev/null
     f="$dir/changelog.md"
-    [ -f "$f" ] || printf '# Production change ledger\n\nAppended automatically by `scripts/agents/deploy-verify.sh` on every production deploy, evening check and rollback, so the operator can see exactly what changed and whether it was verified. Newest at the bottom.\n\n| when | mode | who / what | commit | deployment | result | notes |\n|---|---|---|---|---|---|---|\n' >"$f"
+    [ -f "$f" ] || printf '# Production change ledger\n\nAppended automatically by `scripts/agents/deploy-verify.sh` on every production deploy, morning check and rollback, so the operator can see exactly what changed and whether it was verified. Newest at the bottom.\n\n| when | mode | who / what | commit | deployment | result | notes |\n|---|---|---|---|---|---|---|\n' >"$f"
     grep -qF -- "$row" "$f" 2>/dev/null || printf '%s\n' "$row" >>"$f"
   done
   # DURABLE landing: a working-tree append is not a record — only a commit on main is (CLAUDE.md). This is
