@@ -54,6 +54,7 @@ const PAGES_WITH_SIDEBAR = [
   { name: 'Download interstitial (/go/[modId])', file: 'app/go/[modId]/GoClient.tsx' },
   { name: 'Daily game (/play/)', file: 'app/play/PlayClient.tsx' },
   { name: 'Collection page (/games/[game]/[topic])', file: 'app/games/[game]/[topic]/CollectionPageClient.tsx' },
+  { name: 'Creator page (/creator/[slug])', file: 'app/creator/[slug]/CreatorPageClient.tsx' },
 ]
 
 // ============================================================

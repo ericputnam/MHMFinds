@@ -24,6 +24,9 @@ const NEXTJS_PREFIXES = new Set([
   // 2026-09-14). __tests__/unit/middleware-route-prefixes.test.ts now asserts
   // that every routable top-level directory under app/ is listed here.
   'forgot-password', 'set-password',
+  // Public creator pages /creator/[slug]/ (Nova, E85, 2026-09-23). Distinct
+  // from 'creators' (the signed-in creator dashboard).
+  'creator',
 ]);
 
 const WP_ORIGIN = 'https://blog.musthavemods.com';

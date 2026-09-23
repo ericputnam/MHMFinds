@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-23
+- Tried: public creator pages `/creator/[slug]/` from existing catalog data (T0, PR #TBD, E85) — the profile + attribution half of the Q14 memo (#141), no file hosting, no agreements. New `lib/creatorSlug.ts` (pure) + `lib/creators.ts` (loader), `app/creator/[slug]/`, `sitemap-creators.xml` in the index, `creator` in `NEXTJS_PREFIXES`, sidebar registry entry, and the mod-page author name now links to its creator page. Slug folds the scraper's spelling variants (Ravasheen 41 + RAVASHEEN 12 rows → one page); ≥5 SFW mods or 404; junk author strings (bare Patreon ids, "Kobe Sweats 135179830") never get a page or a link.
+- Before → after: creator landing pages on the catalog 0 → ~540 (542 slugs ≥5 mods of 6,597; 894 ≥3, 273 ≥10, read 2026-09-23); demand read: "nekoswirl" creator-name cluster 69 GSC clicks/28d to 2026-09-20 landing on one mod page, blog `/sims-4-cc-creators/` 1,314 landing sessions/28d, `/top-creators/` 9, `/creators/` 1 (GA4 08-26→09-22).
+- Verdict: MORE DATA (read 2026-10-21; keep if `/creator/*` landing sessions ≥ 200 in the 28d to the read date OR ≥ 20 distinct creator pages with ≥ 1 GSC click, with `/mods/*` GSC clicks ≥ 95% of 28d baseline and mod-page session RPM ≥ 95% of the prior 4 weeks).
+- Next time: the creator-name demand was hiding in `/mods/[id]` query data, not in any creator surface — read GSC queries by *page* for a name before assuming a hub page has no demand. Outreach to the top slugs (Seoulsoul-sims 19,270 downloads, brandysims, Syboulette 67 mods) now has a URL to offer; the template is still T2.
+
 ## 2026-09-21
 - Tried: `kids-cc` collection page **and the class bug behind it, in one PR** (T0, PR #136, `7816cbe`, E72). On 09-20 I rejected this cluster — 752 rows on infant/toddler/child, only 45.6% of titles carrying a kid word — and wrote…
 - Before → after: `ageGroups` kid axis **752 rows / 343 title-supported (45.6%) → 686 / 686 (100%)** — 362 added, 428 stripped, 35 rewritten, 289 no-ops over a 1,114-row union population, verified by a separate read of the changed…
@@ -66,17 +72,5 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: `lighting` 140 rows / ~6 real → 19 / 19 real; `curtains` 7 / 0 real → 0; decor-cc grid 731 → 741; furniture 965 → 978; clutter 162 → 165; detector suite 14 → 21 tests; 128 of 147 rows rewritten, 84 to NULL. Blog:…
 - Verdict: MORE DATA (read on 2026-10-06; keep if `lighting` still spot-checks 100% fixtures and the three collection grids are flat-or-up).
 - Next time: when a facet looks junky, find out *why the detector produced it* before writing a cleanup script — the plural double-count was a general bug affecting every rule with redundant singular/plural spellings, and a data-o…
-
-## 2026-09-07
-- Tried: decor-cc collection page (T0, PR #51) — `contentTypeIn ['decor','plants','rugs','wall-art']` = 731 SFW Sims 4 mods, the largest un-paged content type in the 15,888-mod catalog; excluded `lighting` (140) and `curtains` (7)…
-- Before → after: collection routes 17 → 18; /games/sims-4/clutter/ related cards 1 → 3; canonical-trailing-slash suite red → 15/15 green; decor-cc engaged sessions 0 (page did not exist) → read 2026-10-05; GSC baseline ~104 impre…
-- Verdict: MORE DATA (read on 2026-10-05; keep if ≥200 engaged sessions or ≥5 favorites from the page).
-- Next time: run the touched page-type's existing test suite against origin/main *before* writing code — the red test was 3 days old and nobody had run it. When folding facets into a `contentTypeIn` collection, sample the top rows…
-
-## 2026-09-01
-- Tried: nothing yet — team chartered today. Read `../charter.md`, `../autonomy.md`, `../operating-model.md`, `../targets.json`, and `reports/growth/fact-base-2026-09-01.md` before your first move.
-- Before → after: baseline in `../targets.json`
-- Verdict: —
-- Next time: your first move should be the top item in your agent file's "levers" list unless the scoreboard shows a 🔴 in your area.
 
 _Older/fuller entries moved to `archive/playbooks/nova-2026-09.md` verbatim; nothing deleted, only truncated above._
