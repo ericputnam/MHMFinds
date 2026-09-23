@@ -1,3 +1,5 @@
+<!-- context budget: 10000 bytes, enforced by __tests__/unit/funnel-context-budget.test.ts; archive to mhm-funnel/archive/, don't append -->
+
 # Funnel Team — Operating Model
 
 _Established 2026-09-01. Replaces `mhm-team/operating-model.md`._
@@ -15,7 +17,7 @@ Triggered by the `mhm-funnel-daily` scheduled task. Five steps in order:
 |---|---|---|---|
 | 1. Scoreboard | script | `npx tsx scripts/agents/funnel-scoreboard.ts` pulls GA4 sessions by channel, Mediavine revenue/RPM/health, GSC clicks, DB counts (users, subscribers, favorites, download clicks, affiliate clicks), Patreon public counts, blog cadence, Pinterest liveness. Writes `reports/funnel/YYYY-MM-DD.md` + `.json`. | The numbers everyone uses |
 | 2. Circuit breaker | script | `npx tsx scripts/agents/revenue-guardrail.ts` — last finalized Mediavine day + 3-day window vs the same weekdays of the last 4 weeks; lists every production deploy / `functions.php` push in the window. 🔴 red-rpm with a deploy in the window → the runner rolls production back (`deploy-verify.sh --rollback`) **before Quinn starts**. 🟡 → no Tier 1 merges today. Also `check-blog-sidebar.sh`, pinner freshness, newsletter flag. | `reports/funnel/guardrail-YYYY-MM-DD.md`; incident file if red |
-| 3. Moves | Pip, Sage, Nova, Cass, Rio in parallel | Each reads charter → autonomy → own playbook → today's scoreboard → `experiments.md`, then **executes one move** at the highest tier it is allowed, or advances an in-flight experiment. Returns the 4-line move report. | Shipped / queued moves |
+| 3. Moves | Pip, Sage, Nova, Cass, Rio, Rowan, Ops in parallel (Ops capped ≤20% of merges, SD-11) | Each reads charter → autonomy → own playbook → today's scoreboard → `experiments.md`, then **executes one move** at the highest tier it is allowed, or advances an in-flight experiment. Returns the 4-line move report. | Shipped / queued moves |
 | 4. Digest | Quinn | Scoreboard line, guardrails, **Changed today** (one line per ledger row: PR, commit, deploy, verify result), what shipped, what ships tomorrow (T1), what needs a decision (T2), one insight. ≤30 lines. Written to `reports/funnel/digest-YYYY-MM-DD.md` and returned to the operator. | The two-minute read |
 | 5. Veto-window merges | Quinn | Tier 1 PRs whose 24h window expired with no "stop" are merged — each through the ship protocol (`deploy-verify.sh --after-merge`). | Deploys + ledger rows |
 | 6. Evening check | script (`mhm-guardrail-evening`, ~18:30) | `deploy-verify.sh --check`: re-renders production, re-checks the blog markers and 5xx. Catches slow failures (a WordPress plugin update, a Vercel env change, an ad-script change) and rolls back / restores on its own. | Ledger row; incident file if it acted |
@@ -50,6 +52,10 @@ decision written to `experiments.md`. Reading the dashboard is not a move.
 - **Grade experiments.** Every row in `experiments.md` past its read date gets
   KEEP / KILL / EXTEND with the actual number. Killed ideas go to the kill log
   and are never re-proposed without stating what changed.
+- **New experiment IDs come from `npx tsx scripts/agents/next-experiment-id.ts`**,
+  never hand-picked. E75 was independently claimed by 5 PRs the same week
+  because agents guessed "next number" from a stale read of `experiments.md`;
+  the script reads the file fresh and reserves the next ID atomically.
 - **Playbook learning.** Each agent appends one dated entry with a metric.
 - **Scorecard.** Quinn appends the weekly block to `scorecard.md`: headline
   metrics vs target, per-agent grade, biggest risk, top-3 bets.

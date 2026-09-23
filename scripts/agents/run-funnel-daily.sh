@@ -82,6 +82,35 @@ copy_env() {  # $1 worktree
 # mid-run. Drop any link before touching npm, and never share the operator's install with the run.
 drop_nm_link() { if [ -L "$1/node_modules" ]; then rm "$1/node_modules"; log "removed node_modules symlink in $1"; fi; return 0; }
 copy_env "$WT"; drop_nm_link "$WT"
+
+# --- 0. context budget check (SD-12) ----------------------------------------------------
+# WARN-only (exit 2 never blocks this run) — it exists so a doc growing unboundedly (the
+# CLAUDE.md 45KB->206KB "Prompt is too long" incident, 2026-09-17) is caught the next morning
+# instead of the next time it breaks something. Runs against $WT (today's origin/main), the
+# same tree Quinn's prompt tells her to check for herself.
+if [ -f "$WT/scripts/agents/context-budget.ts" ]; then
+  (cd "$WT" && npx tsx scripts/agents/context-budget.ts >>"$LOG_FILE" 2>&1)
+  log "context-budget.ts exit $? (WARN-only, never blocks the run)"
+else
+  log "context-budget.ts not present yet on origin/main — skipping SD-12 check"
+fi
+
+# --- 0a. flush any ledger rows that a previous run could not land on main -----------------------
+# scripts/agents/ledger-commit.sh (SD: ledger durability fix) lands every deploy-verify ledger row
+# directly on origin/main; if a push ever fails 3x it queues the row in
+# reports/funnel/ledger-pending.jsonl in THIS (operator) tree — the one place guaranteed to survive
+# past this run, unlike the ephemeral per-agent worktrees below. Flush it before anything else runs
+# so a row from yesterday doesn't sit lost.
+if [ -x "$WT/scripts/agents/ledger-commit.sh" ]; then
+  "$WT/scripts/agents/ledger-commit.sh" --flush-pending >>"$LOG_FILE" 2>&1
+  log "ledger-commit --flush-pending exit $?"
+elif [ -x "$PROJECT_DIR/scripts/agents/ledger-commit.sh" ]; then
+  "$PROJECT_DIR/scripts/agents/ledger-commit.sh" --flush-pending >>"$LOG_FILE" 2>&1
+  log "ledger-commit --flush-pending (operator-tree copy, origin/main has no ledger-commit.sh yet) exit $?"
+else
+  log "ledger-commit.sh not present anywhere yet — nothing to flush"
+fi
+
 log "npm ci + prisma generate in the worktree (the operator's node_modules is never shared or touched)"
 npm ci --no-audit --no-fund >>"$LOG_FILE" 2>&1 || { log "npm ci failed"; exit 1; }
 npx prisma generate >>"$LOG_FILE" 2>&1 || log "prisma generate failed (continuing; DB section will report)"
@@ -98,7 +127,7 @@ mkdir -p "$WT/reports/funnel" "$WT/reports/funnel/drafts" "$WT/logs"
 # ~30–60 s each from the npm cache; the log stays under logs/ (gitignored) so it can never ride into a PR.
 export FUNNEL_PRIMARY_WT="$WT"   # deploy-verify.sh mirrors ledger rows + incidents here so Quinn's digest sees them
 AGENT_WT_LINE="AGENT WORKTREES — one per agent, each a clean detached checkout of origin/main with its OWN node_modules and .env.local ready. An agent does ALL of its git/branch/build/test/PR/merge/deploy-verify work inside its OWN directory (prefix every Bash command with \`cd <its path> &&\`), never in yours (Quinn: $WT) or another agent's:"
-for a in pip sage nova cass rio; do
+for a in pip sage nova cass rio rowan ops; do
   AWT="$WT-$a"
   if git worktree add --detach "$AWT" origin/main >>"$LOG_FILE" 2>&1; then
     drop_nm_link "$AWT"; copy_env "$AWT"
@@ -119,18 +148,22 @@ if [ ! -f "$WT/scripts/agents/funnel-scoreboard.ts" ]; then
   log "funnel team files are NOT on origin/main yet — bootstrapping from the operator tree (merge them!)"
   mkdir -p "$WT/.claude/agents/mhm-funnel" "$WT/scripts/agents"
   cp -R "$PROJECT_DIR/.claude/agents/mhm-funnel/." "$WT/.claude/agents/mhm-funnel/"
-  for f in mhm-gm mhm-distribution mhm-search-ai mhm-content-creators mhm-capture mhm-product-revenue; do
-    cp "$PROJECT_DIR/.claude/agents/$f.md" "$WT/.claude/agents/$f.md"
+  for f in mhm-gm mhm-distribution mhm-search-ai mhm-content-creators mhm-capture mhm-product-revenue mhm-catalog-product mhm-platform-ops; do
+    cp "$PROJECT_DIR/.claude/agents/$f.md" "$WT/.claude/agents/$f.md" 2>/dev/null || log "bootstrap: $f.md not present in operator tree yet — skipped"
   done
   cp "$PROJECT_DIR"/scripts/agents/funnel-*.{ts,md,sh} "$WT/scripts/agents/" 2>/dev/null
   for f in scripts/agents/revenue-guardrail.ts scripts/agents/deploy-verify.sh scripts/agents/smoke-render.ts scripts/staging/push-blog-functions-prod.sh; do
     cp "$PROJECT_DIR/$f" "$WT/$f" 2>/dev/null
   done
 fi
-# The ledger and incidents live in the operator's tree (they are written by deploy-verify.sh into both);
-# seed the worktree copy so Quinn can read what changed since the last digest — APPEND-ONLY. The committed
-# copy on origin/main can be newer than the operator's (resolved incidents, rows folded into a daily PR);
-# a blind `cp` overwrote the resolved 2026-09-07 incident file on 09-08 and again on 09-09.
+# Ledger rows now land durably on origin/main themselves (scripts/agents/ledger-commit.sh, called from
+# deploy-verify.sh's ledger()) — a row committed there during THIS run is already on the $WT checkout
+# the moment `git fetch`+worktree-add happened, so in the common case this seed step is a no-op. It
+# stays as a safety net for two cases ledger-commit.sh cannot fully cover: (a) rows still sitting in
+# ledger-pending.jsonl from before this run's flush landed them, and (b) the operator's own tree having
+# rows the run doesn't otherwise see (e.g. hand-written notes). APPEND-ONLY. The committed copy on
+# origin/main can be newer than the operator's (resolved incidents, rows folded into a daily PR); a
+# blind `cp` overwrote the resolved 2026-09-07 incident file on 09-08 and again on 09-09.
 if [ -f "$PROJECT_DIR/reports/funnel/changelog.md" ]; then
   if [ -f "$WT/reports/funnel/changelog.md" ]; then
     grep -F -x -v -f "$WT/reports/funnel/changelog.md" "$PROJECT_DIR/reports/funnel/changelog.md" | grep -E '^\| 20[0-9]{2}-' >>"$WT/reports/funnel/changelog.md" || true
@@ -355,7 +388,11 @@ fi
 for f in .claude/agents/mhm-funnel/operator-queue.md .claude/agents/mhm-funnel/experiments.md .claude/agents/mhm-funnel/ideas-inbox.md; do
   [ -f "$WT/$f" ] && ! cmp -s "$WT/$f" "$PROJECT_DIR/$f" && cp "$WT/$f" "$PROJECT_DIR/$f" && log "synced $f"
 done
-# Ledger + incidents: deploy-verify.sh writes to both trees, but merge any rows Quinn's worktree has that the operator's does not.
+# Ledger + incidents: deploy-verify.sh's ledger() already pushed each row DURABLY to origin/main via
+# ledger-commit.sh as it happened — this is now a same-run convenience mirror only (so the operator's
+# tree shows today's rows without a manual `git pull`), not the mechanism that makes them durable.
+# Still append-only-merge, in case a row only made it into $WT (e.g. queued to ledger-pending.jsonl and
+# not yet flushed) and not yet into the operator's tree.
 if [ -f "$WT/reports/funnel/changelog.md" ]; then
   mkdir -p "$PROJECT_DIR/reports/funnel"
   python3 - "$WT/reports/funnel/changelog.md" "$PROJECT_DIR/reports/funnel/changelog.md" <<'PY'

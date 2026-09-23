@@ -18,6 +18,25 @@ export interface FunnelDayRecord {
   nonAdMonthly: number | null;
   ownedAdds7d: number | null;
   pinterestSessions7d: number | null;
+
+  // --- long-range / team health (E-audit, 2026-09-22). Mirrors DayEntry in
+  // scripts/agents/funnel-history.ts field-for-field — keep both in sync.
+  // Optional/nullable: older days in history.json won't carry these.
+  returningShare7d?: number | null;
+  nonPinterestShare7d?: number | null;
+  pagesPerSession7d?: number | null;
+  engagementRate7d?: number | null;
+  favorites7d?: number | null;
+  downloadClicks7d?: number | null;
+  newMods7d?: number | null;
+  catalogTotal?: number | null;
+  captureRatePer1k?: number | null;
+  creatorsOnboarded?: number | null;
+  creatorSubmissions7d?: number | null;
+  runSuccess14d?: number | null;
+  opsMergeShare7d?: number | null;
+  paperOnlyMerges7d?: number | null;
+  mergesByOwner7d?: Record<string, number> | null;
 }
 
 export interface FunnelExpectation {

@@ -33,7 +33,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -48,6 +48,9 @@ import {
   type WriterLivenessAssessment,
 } from './pinner-liveness-lib';
 import { redactError } from './operator-did-probe-lib';
+import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/captureMath';
+import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
+import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
 import {
   E40_ANCHOR,
   E40_CLICK_BASELINE,
@@ -97,6 +100,8 @@ function pct(curr: number, prev: number): string {
 }
 const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const num = (n: number) => n.toLocaleString('en-US');
+/** Format a 0-1 fraction as a percent string, e.g. 0.523 -> "52.3%". Distinct from pct(), which formats a WoW delta between two counts. */
+const frac = (v: number) => `${(v * 100).toFixed(1)}%`;
 
 /** Parse a dotenv file into a map without ever logging values. */
 function readEnvFile(path: string): Record<string, string> {
@@ -165,6 +170,12 @@ interface Ga4Data {
   /** daily distinct users, `YYYY-MM-DD` → users, from the baseline start through the window end */
   patreonClickUsersByDay: Record<string, number>;
   notSetLanding7d: number;
+  /** GA4 newVsReturning sessions, returning / (new + returning). Null if the query fails to return usable rows. */
+  returningShare7d: number | null;
+  /** GA4 screenPageViewsPerSession over the same 7d window. */
+  pagesPerSession7d: number | null;
+  /** GA4 engagementRate (0-1) over the same 7d window. */
+  engagementRate7d: number | null;
 }
 
 async function pullGa4(): Promise<Ga4Data> {
@@ -262,6 +273,47 @@ async function pullGa4(): Promise<Ga4Data> {
   });
   const notSetLanding7d = Number(ns.rows?.[0]?.metricValues?.[0]?.value ?? 0);
 
+  // Long-range health (E-audit, 2026-09-22): returning-visitor share and
+  // engagement, degraded to null independently so one bad query doesn't sink
+  // the rest of pullGa4 (the outer section() wrapper only catches a throw).
+  let returningShare7d: number | null = null;
+  try {
+    const [nvr] = await client.runReport({
+      property,
+      dateRanges: [{ startDate: start, endDate: end }],
+      dimensions: [{ name: 'newVsReturning' }],
+      metrics: [{ name: 'sessions' }],
+    });
+    let newSessions = 0;
+    let returningSessions = 0;
+    for (const row of nvr.rows ?? []) {
+      const label = (row.dimensionValues?.[0]?.value ?? '').toLowerCase();
+      const n = Number(row.metricValues?.[0]?.value ?? 0);
+      if (label === 'returning') returningSessions += n;
+      else newSessions += n;
+    }
+    const nvrTotal = newSessions + returningSessions;
+    returningShare7d = nvrTotal > 0 ? returningSessions / nvrTotal : null;
+  } catch {
+    returningShare7d = null;
+  }
+
+  let pagesPerSession7d: number | null = null;
+  let engagementRate7d: number | null = null;
+  try {
+    const [eng] = await client.runReport({
+      property,
+      dateRanges: [{ startDate: start, endDate: end }],
+      metrics: [{ name: 'screenPageViewsPerSession' }, { name: 'engagementRate' }],
+    });
+    const row = eng.rows?.[0];
+    pagesPerSession7d = row?.metricValues?.[0]?.value != null ? Number(row.metricValues[0].value) : null;
+    engagementRate7d = row?.metricValues?.[1]?.value != null ? Number(row.metricValues[1].value) : null;
+  } catch {
+    pagesPerSession7d = null;
+    engagementRate7d = null;
+  }
+
   return {
     window: `${start}→${end} vs ${prevStart}→${prevEnd}`,
     sessions7d: curr.total,
@@ -277,6 +329,9 @@ async function pullGa4(): Promise<Ga4Data> {
     patreonClickBaselineReread,
     patreonClickUsersByDay,
     notSetLanding7d,
+    returningShare7d,
+    pagesPerSession7d,
+    engagementRate7d,
   };
 }
 
@@ -347,6 +402,11 @@ interface DbData {
   downloadClicks7d: number; downloadClicks30d: number;
   affiliateClicks7d: number; affiliateClicks30d: number; affiliateEarnings30d: number;
   creatorProfiles: number; modSubmissions: number; mods: number; collections: number;
+  newMods7d: number; newModsPrior7d: number;
+  /** ModSubmission.createdAt >= 7d ago (any submitter, linked account or not). */
+  submissions7d: number;
+  /** CreatorProfile.userId that also appears on >=1 ModSubmission.userId — "has shipped something", not just signed up. */
+  creatorsOnboarded: number;
 }
 
 async function pullDb(): Promise<DbData> {
@@ -361,6 +421,7 @@ async function pullDb(): Promise<DbData> {
   const subs = anyPrisma.emailSubscriber ?? anyPrisma.waitlist;
   if (!subs) throw new Error('no subscriber model in Prisma client');
   const d7 = new Date(Date.now() - 7 * 864e5);
+  const d14 = new Date(Date.now() - 14 * 864e5);
   const d30 = new Date(Date.now() - 30 * 864e5);
   try {
     const [
@@ -370,6 +431,7 @@ async function pullDb(): Promise<DbData> {
       downloadClicks7d, downloadClicks30d,
       affiliateClicks7d, affiliateClicks30d, affEarn,
       creatorProfiles, modSubmissions, mods, collections,
+      newMods7d, newModsPrior7d, submissions7d,
     ] = await Promise.all([
       prisma.user.count(), prisma.user.count({ where: { createdAt: { gte: d7 } } }), prisma.user.count({ where: { createdAt: { gte: d30 } } }),
       subs.count(), subs.count({ where: { createdAt: { gte: d7 } } }), subs.count({ where: { createdAt: { gte: d30 } } }),
@@ -379,9 +441,30 @@ async function pullDb(): Promise<DbData> {
       prisma.affiliateClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.affiliateClick.count({ where: { clickedAt: { gte: d30 } } }),
       prisma.affiliateEarning.aggregate({ _sum: { commissionAmount: true } }).catch(() => ({ _sum: { commissionAmount: null } })),
       prisma.creatorProfile.count(), prisma.modSubmission.count(), prisma.mod.count(), prisma.collection.count(),
+      prisma.mod.count({ where: { createdAt: { gte: d7 } } }),
+      prisma.mod.count({ where: { createdAt: { gte: d14, lt: d7 } } }),
+      prisma.modSubmission.count({ where: { createdAt: { gte: d7 } } }),
     ]);
     const subscribersBySource: Record<string, number> = {};
     for (const r of subsBySource as Array<{ source: string; _count: { _all: number } }>) subscribersBySource[r.source] = r._count._all;
+
+    // Two-step join: ModSubmission.userId is nullable (anonymous submissions
+    // allowed) and there's no direct Prisma relation from CreatorProfile to
+    // ModSubmission, so "creator profiles with >=1 submission" needs a
+    // distinct-userIds query followed by a count against CreatorProfile.
+    let creatorsOnboarded = 0;
+    try {
+      const submitterIds = await prisma.modSubmission.findMany({
+        where: { userId: { not: null } },
+        select: { userId: true },
+        distinct: ['userId'],
+      });
+      const ids = submitterIds.map((s) => s.userId).filter((id): id is string => !!id);
+      creatorsOnboarded = ids.length ? await prisma.creatorProfile.count({ where: { userId: { in: ids } } }) : 0;
+    } catch {
+      creatorsOnboarded = 0;
+    }
+
     return {
       users, users7d, users30d,
       subscribers, subscribers7d, subscribers30d, subscribersBySource,
@@ -389,10 +472,52 @@ async function pullDb(): Promise<DbData> {
       downloadClicks7d, downloadClicks30d,
       affiliateClicks7d, affiliateClicks30d, affiliateEarnings30d: Number(affEarn._sum.commissionAmount ?? 0),
       creatorProfiles, modSubmissions, mods, collections,
+      newMods7d, newModsPrior7d, submissions7d, creatorsOnboarded,
     };
   } finally {
     await prisma.$disconnect();
   }
+}
+
+// ---------------------------------------------------------------- Team (changelog.md)
+interface TeamData {
+  runSuccess14d: number;
+  mergesByOwner7d: Record<string, number>;
+  totalMerges7d: number;
+  opsMergeShare7d: number | null;
+  paperOnlyMerges7d: number;
+}
+
+/**
+ * Reads reports/funnel/changelog.md (pipe-delimited, not chronological — see
+ * lib/funnel/changelogStats.ts) for merge ownership over the last 7 days, and
+ * the presence of a scoreboard JSON file for each of the last 14 calendar
+ * days as a proxy for "the morning run fired". Read-only against local repo
+ * files; no network/DB calls, so this section can't fail for the reasons the
+ * others do — a missing changelog file just yields zeros, not a throw.
+ */
+async function pullTeam(): Promise<TeamData> {
+  const changelogPath = join(OUT_DIR, 'changelog.md');
+  const raw = existsSync(changelogPath) ? readFileSync(changelogPath, 'utf8') : '';
+  const rows = parseChangelogRows(raw);
+  const stats = computeTeamStats(rows, Date.now(), 7);
+
+  const datesWithRun = new Set<string>();
+  if (existsSync(OUT_DIR)) {
+    for (const f of readdirSync(OUT_DIR)) {
+      const m = f.match(/^(\d{4}-\d{2}-\d{2})\.json$/);
+      if (m) datesWithRun.add(m[1]);
+    }
+  }
+  const runSuccess14d = computeRunSuccessShare(datesWithRun, iso(new Date()), 14);
+
+  return {
+    runSuccess14d,
+    mergesByOwner7d: stats.mergesByOwner,
+    totalMerges7d: stats.totalMerges,
+    opsMergeShare7d: stats.opsMergeShare,
+    paperOnlyMerges7d: stats.paperOnlyMerges,
+  };
 }
 
 // ---------------------------------------------------------------- Patreon (public page)
@@ -744,9 +869,10 @@ async function main() {
   const targetsPath = join(PROJECT_DIR, '.claude', 'agents', 'mhm-funnel', 'targets.json');
   const targets = existsSync(targetsPath) ? JSON.parse(readFileSync(targetsPath, 'utf8')) : null;
 
-  const [ga4, gsc, mv, db, patreon, patreonApi, wp, pinner] = await Promise.all([
+  const [ga4, gsc, mv, db, patreon, patreonApi, wp, pinner, team] = await Promise.all([
     section('ga4', pullGa4), section('gsc', pullGsc), section('mediavine', pullMediavine),
     section('db', pullDb), section('patreon', pullPatreon), section('patreonApi', pullPatreonApi), section('wordpress', pullWp), section('pinner', pullPinner),
+    section('team', pullTeam),
   ]);
 
   // --- derived headline numbers
@@ -757,6 +883,16 @@ async function main() {
   const ownedTarget = targets?.targets?.weekly?.ownedAudienceNetAdds?.[month] ?? null;
   const nonAdTarget = targets?.targets?.monthly?.nonAdRevenue?.[month] ?? null;
   const nonAdRevenue = (patreon.ok && patreon.data.grossMonthlyUsd != null ? patreon.data.grossMonthlyUsd : 0) + (db.ok ? db.data.affiliateEarnings30d : 0);
+
+  // --- long-range / product health (E-audit, 2026-09-22): each derived value
+  // degrades to null independently when either of its inputs is unavailable —
+  // never crash the scoreboard for a dashboard-only metric.
+  const sessions7d = ga4.ok ? ga4.data.sessions7d : null;
+  const captureRatePer1kSessions7d = captureRatePer1kSessions(ownedAdds7d, sessions7d);
+  const nonPinterest = ga4.ok
+    ? nonPinterestShare({ channels: ga4.data.byChannel7d, notSetSessions: ga4.data.notSetLanding7d })
+    : { raw: null, adjusted: null };
+  const owners = resolveMetricOwners(targets);
 
   const flags: string[] = [];
   if (mv.ok) {
@@ -887,12 +1023,60 @@ async function main() {
     const writerIcon = p.writerLiveness.level === 'red' ? '🔴' : p.writerLiveness.level === 'warn' ? '🟡' : '🟢';
     md += `- ${writerIcon} Pinner writer (Q11): ${p.writerLiveness.message}${p.lastWriterInsertLabel ? ` — "${p.lastWriterInsertLabel}"` : ''}\n`;
   } else md += `- Pinner: unavailable (${errOf(pinner)})\n`;
+  md += `## Long-range health\n\n`;
+  md += `| Metric | Value | Owner |\n|---|--:|---|\n`;
+  md += `| Returning-visitor share 7d | ${ga4.ok && ga4.data.returningShare7d != null ? frac(ga4.data.returningShare7d) : '—'} | ${owners.returningShare7d ?? '?'} |\n`;
+  md += `| Non-Pinterest share 7d (adjusted) | ${nonPinterest.adjusted != null ? frac(nonPinterest.adjusted) : '—'} (raw ${nonPinterest.raw != null ? frac(nonPinterest.raw) : '—'}) | ${owners.nonPinterestShare7d ?? '?'} |\n`;
+  md += `| Pages/session 7d | ${ga4.ok && ga4.data.pagesPerSession7d != null ? ga4.data.pagesPerSession7d.toFixed(2) : '—'} | ${owners.pagesPerSession7d ?? '?'} |\n`;
+  md += `| Engagement rate 7d | ${ga4.ok && ga4.data.engagementRate7d != null ? frac(ga4.data.engagementRate7d) : '—'} | ${owners.engagementRate7d ?? '?'} |\n`;
+  md += `| Favorites 7d | ${db.ok ? `+${db.data.favorites7d}` : '—'} | ${owners.favorites7d ?? '?'} |\n`;
+  md += `| Download clicks 7d | ${db.ok ? num(db.data.downloadClicks7d) : '—'} | ${owners.downloadClicks7d ?? '?'} |\n`;
+  md += `| New mods 7d (prior 7d) | ${db.ok ? `${num(db.data.newMods7d)} (${num(db.data.newModsPrior7d)})` : '—'} | ${owners.newMods7d ?? '?'} |\n`;
+  md += `| Catalog total | ${db.ok ? num(db.data.mods) : '—'} | ${owners.catalogTotal ?? '?'} |\n`;
+  md += `| Capture rate /1k sessions 7d | ${captureRatePer1kSessions7d != null ? captureRatePer1kSessions7d.toFixed(2) : '—'} | ${owners.captureRatePer1k ?? '?'} |\n`;
+  md += `| Creators onboarded (>=1 submission) | ${db.ok ? num(db.data.creatorsOnboarded) : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
+  md += `| Creator submissions 7d | ${db.ok ? num(db.data.submissions7d) : '—'} | ${owners.creatorSubmissions7d ?? '?'} |\n\n`;
+
+  md += `## Team health\n\n`;
+  if (team.ok) {
+    const t = team.data;
+    md += `- Run success 14d: **${frac(t.runSuccess14d)}** (owner: ${owners.runSuccess14d ?? '?'})\n`;
+    md += `- Merges 7d by owner: ${Object.entries(t.mergesByOwner7d).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'} (${t.totalMerges7d} total)\n`;
+    md += `- Ops merge share 7d: ${t.opsMergeShare7d != null ? frac(t.opsMergeShare7d) : '—'} (cap 20%, owner: ${owners.opsMergeShare7d ?? '?'})\n`;
+    md += `- Paper-only merges 7d: ${t.paperOnlyMerges7d} (owner: ${owners.paperOnlyMerges7d ?? '?'})\n\n`;
+  } else md += `_unavailable: ${errOf(team)}_\n\n`;
+
   md += `\n_Generated by scripts/agents/funnel-scoreboard.ts. Sections fail independently; "unavailable" means the source, not the site._\n`;
 
   const json = {
     date: today,
     headline: { ownedAdds7d, ownedTargetWeekly: ownedTarget, nonAdRevenueMonthlyGross: nonAdRevenue, nonAdTarget, mediavine28d: mv.ok ? mv.data.revenue28d : null, mediavine28dPrev: mv.ok ? mv.data.revenuePrev28d : null },
     flags, ga4, gsc, mediavine: mv, db, patreon, patreonApi, wordpress: wp, pinner,
+    longRange: {
+      returningShare7d: ga4.ok ? ga4.data.returningShare7d : null,
+      nonPinterestShare7d: nonPinterest.adjusted,
+      nonPinterestShareRaw7d: nonPinterest.raw,
+    },
+    engagement: {
+      pagesPerSession7d: ga4.ok ? ga4.data.pagesPerSession7d : null,
+      engagementRate7d: ga4.ok ? ga4.data.engagementRate7d : null,
+      favorites7d: db.ok ? db.data.favorites7d : null,
+      downloadClicks7d: db.ok ? db.data.downloadClicks7d : null,
+    },
+    catalog: {
+      newMods7d: db.ok ? db.data.newMods7d : null,
+      newModsPrior7d: db.ok ? db.data.newModsPrior7d : null,
+      total: db.ok ? db.data.mods : null,
+    },
+    capture: {
+      ratePer1kSessions7d: captureRatePer1kSessions7d,
+    },
+    creators: {
+      onboarded: db.ok ? db.data.creatorsOnboarded : null,
+      submissions7d: db.ok ? db.data.submissions7d : null,
+    },
+    team,
+    owners,
   };
   writeFileSync(join(OUT_DIR, `${today}.md`), md);
   writeFileSync(join(OUT_DIR, `${today}.json`), JSON.stringify(json, null, 2));

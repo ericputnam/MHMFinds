@@ -69,6 +69,25 @@ interface DayEntry {
   nonAdMonthly: number | null;
   ownedAdds7d: number | null;
   pinterestSessions7d: number | null;
+
+  // --- long-range / team health (E-audit, 2026-09-22). All optional/nullable
+  // so older days (no scoreboard JSON, or one predating these fields) simply
+  // read null rather than breaking existing consumers of this schema.
+  returningShare7d?: number | null;
+  nonPinterestShare7d?: number | null;
+  pagesPerSession7d?: number | null;
+  engagementRate7d?: number | null;
+  favorites7d?: number | null;
+  downloadClicks7d?: number | null;
+  newMods7d?: number | null;
+  catalogTotal?: number | null;
+  captureRatePer1k?: number | null;
+  creatorsOnboarded?: number | null;
+  creatorSubmissions7d?: number | null;
+  runSuccess14d?: number | null;
+  opsMergeShare7d?: number | null;
+  paperOnlyMerges7d?: number | null;
+  mergesByOwner7d?: Record<string, number> | null;
 }
 
 interface EventEntry {
@@ -121,7 +140,21 @@ interface ScoreboardJson {
   };
   ga4?: {
     ok: boolean;
-    data?: { byChannel7d?: Record<string, number> };
+    data?: { byChannel7d?: Record<string, number>; returningShare7d?: number | null; pagesPerSession7d?: number | null; engagementRate7d?: number | null };
+  };
+  longRange?: { returningShare7d?: number | null; nonPinterestShare7d?: number | null; nonPinterestShareRaw7d?: number | null };
+  engagement?: { pagesPerSession7d?: number | null; engagementRate7d?: number | null; favorites7d?: number | null; downloadClicks7d?: number | null };
+  catalog?: { newMods7d?: number | null; newModsPrior7d?: number | null; total?: number | null };
+  capture?: { ratePer1kSessions7d?: number | null };
+  creators?: { onboarded?: number | null; submissions7d?: number | null };
+  team?: {
+    ok: boolean;
+    data?: {
+      runSuccess14d?: number | null;
+      mergesByOwner7d?: Record<string, number>;
+      opsMergeShare7d?: number | null;
+      paperOnlyMerges7d?: number | null;
+    };
   };
 }
 
@@ -241,6 +274,21 @@ function emptyDay(date: string): DayEntry {
     nonAdMonthly: null,
     ownedAdds7d: null,
     pinterestSessions7d: null,
+    returningShare7d: null,
+    nonPinterestShare7d: null,
+    pagesPerSession7d: null,
+    engagementRate7d: null,
+    favorites7d: null,
+    downloadClicks7d: null,
+    newMods7d: null,
+    catalogTotal: null,
+    captureRatePer1k: null,
+    creatorsOnboarded: null,
+    creatorSubmissions7d: null,
+    runSuccess14d: null,
+    opsMergeShare7d: null,
+    paperOnlyMerges7d: null,
+    mergesByOwner7d: null,
   };
 }
 
@@ -326,6 +374,28 @@ async function main(): Promise<void> {
 
     const pinterest = scoreboard?.ga4?.ok ? scoreboard.ga4.data?.byChannel7d?.pinterest : undefined;
     entry.pinterestSessions7d = typeof pinterest === 'number' ? pinterest : null;
+
+    // Long-range / product / team health, same "read at request time from
+    // this day's scoreboard JSON, default to null" pattern as the fields
+    // above. Older days (no scoreboard JSON, or a pre-2026-09-22 one lacking
+    // these sections) read null via the optional-chaining fallbacks.
+    const nullableNum = (v: unknown): number | null => (typeof v === 'number' ? v : null);
+    entry.returningShare7d = nullableNum(scoreboard?.longRange?.returningShare7d);
+    entry.nonPinterestShare7d = nullableNum(scoreboard?.longRange?.nonPinterestShare7d);
+    entry.pagesPerSession7d = nullableNum(scoreboard?.engagement?.pagesPerSession7d);
+    entry.engagementRate7d = nullableNum(scoreboard?.engagement?.engagementRate7d);
+    entry.favorites7d = nullableNum(scoreboard?.engagement?.favorites7d);
+    entry.downloadClicks7d = nullableNum(scoreboard?.engagement?.downloadClicks7d);
+    entry.newMods7d = nullableNum(scoreboard?.catalog?.newMods7d);
+    entry.catalogTotal = nullableNum(scoreboard?.catalog?.total);
+    entry.captureRatePer1k = nullableNum(scoreboard?.capture?.ratePer1kSessions7d);
+    entry.creatorsOnboarded = nullableNum(scoreboard?.creators?.onboarded);
+    entry.creatorSubmissions7d = nullableNum(scoreboard?.creators?.submissions7d);
+    const teamOk = scoreboard?.team?.ok;
+    entry.runSuccess14d = teamOk ? nullableNum(scoreboard?.team?.data?.runSuccess14d) : null;
+    entry.opsMergeShare7d = teamOk ? nullableNum(scoreboard?.team?.data?.opsMergeShare7d) : null;
+    entry.paperOnlyMerges7d = teamOk ? nullableNum(scoreboard?.team?.data?.paperOnlyMerges7d) : null;
+    entry.mergesByOwner7d = teamOk ? (scoreboard?.team?.data?.mergesByOwner7d ?? null) : null;
   }
 
   // expectedRevenue / expectedSessions — mean of the same weekday, prior 4 weeks.

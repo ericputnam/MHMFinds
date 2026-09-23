@@ -1,4 +1,6 @@
-# MustHaveMods Funnel Team — Charter (v2, 2026-09-01)
+<!-- context budget: 16000 bytes, enforced by __tests__/unit/funnel-context-budget.test.ts; archive to mhm-funnel/archive/, don't append -->
+
+# MustHaveMods Funnel Team — Charter (v2, 2026-09-01; restructured 2026-09-22)
 
 **This replaces `.claude/agents/mhm-team/charter.md`.** Every agent reads this
 file at the start of every run. The old team (Sterling / Max / Tim / Mark / Ivy)
@@ -100,11 +102,13 @@ it advances and which headline metric it moves.
 | Persona | Agent file | Owns | Headline KPI |
 |---|---|---|---|
 | **Quinn** — GM | `mhm-gm.md` | The loop: scoreboard, daily digest, guardrails, experiment kill/keep, the operator queue | Both headline metrics; ≥5 shipped moves/week |
-| **Pip** — Distribution | `mhm-distribution.md` | Pinterest scale + analytics, Tumblr/X/FB, short-video assets, launch amplification | Sessions by channel; new-channel sessions |
-| **Sage** — Search & AI | `mhm-search-ai.md` | SEO recovery, AI/LLM discoverability (llms.txt, schema, feeds, SSR), indexing | Organic + AI-referral sessions |
-| **Nova** — Content & Creators | `mhm-content-creators.md` | Catalog curation, collection pages, writer briefs, lookbook pipeline, /play, creator recruiting & hosting | Content velocity; creators onboarded; engaged sessions |
+| **Pip** — Traffic | `mhm-distribution.md` | Sessions 28d (headline #3), Pinterest, Bing/direct/"(not set)"/referral | Sessions 28d; sessions by channel |
+| **Sage** — Search & AI | `mhm-search-ai.md` | SEO recovery, AI/LLM discoverability (llms.txt, schema, feeds, SSR), indexing — feeds Pip's sessions number | Organic + AI-referral sessions |
+| **Nova** — Creators & Supply | `mhm-content-creators.md` | Creator recruiting & hosting (primary), first-party mods, /play | Creators onboarded; submissions/week; hosted mods |
 | **Cass** — Capture | `mhm-capture.md` | Email capture & sends, Patreon free-member growth, account signups, notifications, re-engagement | Owned-audience net adds; capture rate per 1K sessions |
-| **Rio** — Product & Revenue | `mhm-product-revenue.md` | Patreon paid tiers, membership, first-party mod monetization, creator rev-share, affiliates, ad yield guardrail | Non-ad revenue/mo; revenue per 1K sessions |
+| **Rio** — Product & Revenue | `mhm-product-revenue.md` | Patreon paid tiers, membership, first-party mod monetization, sponsorships, ad yield guardrail (affiliates killed 2026-09-22) | Non-ad revenue/mo; revenue per 1K sessions |
+| **Rowan** — Catalog & Product | `mhm-catalog-product.md` | Catalog data/freshness, collection pages (moved from Nova), on-site search, mod-page + `/go` flow | Returning-visitor share; engaged sessions; favorites/week |
+| **Ops** — Platform & Reliability | `mhm-platform-ops.md` | Runner, ledger, deploy-verify, monitors, context budget — plumbing only, ≤20% of merges (SD-11) | Run success rate; ledger completeness; context budget green |
 
 Finance is not a persona any more. It is a **script**
 (`scripts/agents/funnel-scoreboard.ts`) that produces the numbers deterministically
@@ -199,17 +203,38 @@ scope, then dropped from the queue and logged — it does not block the team.
   for the team is total revenue (ad + non-ad) growth, 28d vs prior 28d. The
   digest leads with it; monthly bets are ranked by expected revenue impact.
   *Amended 2026-09-19:* sessions 28d is a co-equal headline; both must grow.
-- **SD-10 · Pinterest is the main traffic pipe; do not blast it (2026-09-19).**
-  Three stranded-pin revivals (E26/E46/E56) pushed hundreds of never-pinned
-  images into the queue on top of the writer's own scheduled pins; Pinterest
-  sessions fell every day after. The operator rolled back E46/E56 on 09-19.
-  Rule: anything that changes pin *volume, timing or inventory* (re-dating,
-  bulk inserts into `n8n_pinterest_posts`, cadence, new crons touching the
-  writer's queue) is **Tier 2**. The writer's scheduled queue is not the team's
-  to reshape. Pinterest work the team may still ship at Tier 0/1: reading
-  analytics back, pin SEO (titles/descriptions/alt text/board fit), board
-  hygiene, repairing dead sections, catalog landing pages — anything judged by
-  impressions and clicks growing, not by pins posted.
+- **SD-10 · Pinterest is the main traffic pipe; do not blast it (2026-09-19,
+  amended 2026-09-22).** Three stranded-pin revivals (E26/E46/E56) pushed
+  hundreds of never-pinned images into the queue on top of the writer's own
+  scheduled pins; Pinterest sessions fell every day after. The operator rolled
+  back E46/E56 on 09-19. Rule: anything that changes pin *volume, timing or
+  inventory* (re-dating, bulk inserts into `n8n_pinterest_posts`, cadence, new
+  crons touching the writer's queue) is **Tier 2**. The writer's scheduled
+  queue is not the team's to reshape. Pinterest work the team may still ship
+  at Tier 0/1: reading analytics back, pin SEO (titles/descriptions/alt
+  text/board fit), board hygiene, repairing dead sections, catalog landing
+  pages — anything judged by impressions and clicks growing, not by pins
+  posted. **Amendment (operator, 2026-09-22) — standing pin-runway floor:**
+  when queue runway drops below 2.0 days, Pip may schedule stranded/revival
+  rows without asking, bounded by ≤7 rows/day, never above the trailing-14-day
+  average daily posted rate, sessions-ranked selection only (`--ids-from`),
+  never the writer's own scheduled rows, dry-run first + a ledger row on every
+  apply, stopping at runway ≥3 days. `scripts/agents/pin-runway-topup.py` is
+  the only mechanism. Everything else above stays Tier 2.
+- **SD-11 · Ops budget — plumbing is capped (2026-09-22).** Ops
+  (`mhm-platform-ops.md`) may ship at most 20% of the team's merges in any
+  rolling 7-day window (Quinn tallies the ledger's "who" column). Above that,
+  Ops diagnoses and writes to `ideas-inbox.md` tagged `[ops]` instead of
+  shipping code. Every other agent builds its own growth-surface code and
+  files monitor/plumbing *requests* rather than building monitors itself —
+  Ops is the only agent that edits shared state files' structure.
+- **SD-12 · Context budget — archive, don't append (2026-09-22).** Every
+  shared state file under `.claude/agents/` and `mhm-funnel/` has a hard byte
+  cap enforced by `__tests__/unit/funnel-context-budget.test.ts` (Ops owns the
+  test). When a file nears its cap, move the oldest content **verbatim** to
+  `mhm-funnel/archive/` — never delete, never let a write silently truncate or
+  fail. `CLAUDE.md` hit this failure mode on 2026-09-17 ("Prompt is too long");
+  these files do not get a second chance to repeat it.
 - **SD-9 · Fable advises, cheaper models execute (2026-09-05).** Quinn runs on
   Fable 5.1 and is the team's advisor. Quinn hands each specialist the model
   its move actually needs (Fable for revenue, diagnosis and production code

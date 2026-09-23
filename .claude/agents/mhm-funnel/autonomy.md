@@ -1,3 +1,5 @@
+<!-- context budget: 14000 bytes, enforced by __tests__/unit/funnel-context-budget.test.ts; archive to mhm-funnel/archive/, don't append -->
+
 # Autonomy Tiers — what the team may do without asking
 
 _Ratified 2026-09-01. Referenced by `charter.md`. Quinn enforces; every agent
@@ -20,7 +22,7 @@ Merged by Quinn via `gh pr merge --squash`, deployed by Vercel from `main`,
 | Metadata & SEO plumbing | titles, metas, canonicals, OG, JSON-LD, breadcrumbs, `llms.txt`, sitemaps, robots directives for AI crawlers, internal links | never `noindex` a page with >50 GSC clicks/28d without Tier 1 |
 | Catalog data | facet backfills, title cleanup, content-type fixes, dedupe, image fixes, collection membership | scripts must have `--dry-run` and be run dry first; ≤5,000 rows per run |
 | Collection & facet pages | new pages from the `lib/collections.ts` registry, copy tweaks | must have ≥20 mods and be in the sitemap |
-| Pins & auto-social | scheduling pins for *newly published* posts/collections via the existing pinner and `mhm-social-scheduler`; pin SEO (titles, descriptions, board fit); board-section repair | respect the ~3 pins/hour drain; never re-date, bulk-insert or otherwise reshape the queue (`n8n_pinterest_posts`) — that is Tier 2 (SD-10); the writer's scheduled pins are not the team's inventory |
+| Pins & auto-social | scheduling pins for *newly published* posts/collections via the existing pinner and `mhm-social-scheduler`; pin SEO (titles, descriptions, board fit); board-section repair; Pip's bounded runway top-up when runway <2.0 days (SD-10 amendment, 2026-09-22 — `pin-runway-topup.py`, ≤7 rows/day, dry-run + ledger row) | respect the ~3 pins/hour drain; never re-date, bulk-insert or otherwise reshape the queue (`n8n_pinterest_posts`) beyond the runway exception — that is Tier 2 (SD-10); the writer's scheduled pins are not the team's inventory |
 | Capture surfaces (non-ad zones) | newsletter form / Patreon link / account CTA in a page region that is not an ad anchor | `sidebar-sticky-health` tests pass; never inside `<aside id="secondary">` or between `.mv-ads` children |
 | Drafts | newsletters, Patreon posts, creator outreach, sponsorship decks — written to `reports/funnel/drafts/` | drafts only; sending is Tier 1 or 2 |
 | Analytics & reports | GA4/GSC/Mediavine/Pinterest pulls, DB reads, scoreboard | read-only |
@@ -182,7 +184,8 @@ Manual: `npx tsx scripts/agents/revenue-guardrail.ts --md reports/funnel/guardra
 
 `scripts/agents/run-funnel-daily.sh` creates a fresh worktree from
 `origin/main`, runs the scoreboard, then runs Quinn with this file in context.
-Quinn spawns the five agents; each agent's move ends in one of:
+Quinn spawns the seven specialists (Ops capped at ≤20% of merges, SD-11); each
+agent's move ends in one of:
 
 - `SHIPPED (T0): <PR url>` — merged after checks.
 - `QUEUED-T1: <PR url> — merges <date> unless stopped` — appended to `operator-queue.md` and the digest.

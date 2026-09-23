@@ -137,6 +137,57 @@
       "_basis": "$5K/mo run-rate by end of 2027: 500 paying members at ~$5 + 3 sponsors + mod editions. This is the path to a business that does not live on CPMs; ads on top."
     }
   },
+  "owners": {
+    "_comment": "Which specialist owns each scoreboard metric, restructure 2026-09-22.",
+    "sessions28d": "Pip",
+    "pinterestSessions": "Pip",
+    "bingOrganic": "Pip",
+    "direct": "Pip",
+    "notSetLandingPage": "Pip",
+    "organicSessions": "Sage",
+    "aiReferralSessions": "Sage",
+    "returningVisitorSharePct": "Rowan",
+    "engagementRatePct": "Rowan",
+    "favoritesWeekly": "Rowan",
+    "catalogFreshness": "Rowan",
+    "creatorsOnboarded": "Nova",
+    "ownedAudienceNetAdds": "Cass",
+    "captureRatePer1kSessions": "Cass",
+    "nonAdRevenueMonthly": "Rio",
+    "mediavineRevenueGuardrail": "Rio",
+    "runSuccessRate": "Ops",
+    "ledgerCompleteness": "Ops",
+    "contextBudgetGreen": "Ops"
+  },
+  "longRange": {
+    "_comment": "2027-06 targets, added 2026-09-22 alongside the 7-persona restructure. Does not loosen quarterTest.",
+    "returningVisitorSharePct": {
+      "2026-09": 52,
+      "2026-12": 55,
+      "owner": "Rowan"
+    },
+    "nonPinterestSessionSharePct": {
+      "2026-09": 35,
+      "2026-12": 40,
+      "2027-06": 50,
+      "owner": "Pip"
+    },
+    "catalogNewModsPerWeek": {
+      "2026-09": 208,
+      "2027-06": 250,
+      "owner": "Rowan"
+    },
+    "creatorsOnboarded": {
+      "2026-09": 0,
+      "2026-12": 10,
+      "2027-06": 50,
+      "owner": "Nova"
+    },
+    "headQuerySearchVisibility": {
+      "method": "tracked monthly by playbooks/competitor-intel.md, 20 head queries vs top competitor rank",
+      "owner": "Sage"
+    }
+  },
   "bets": {
     "month": "2026-09",
     "list": [
