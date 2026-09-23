@@ -153,3 +153,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-21 20:01 | after-merge | Quinn: PR #145 operator approvals 2026-09-21 (Q12 applied, Q10 day-2 sent, E74 merged, funnel-page watch; Tier 0 docs) | c6e005d | https://mhm-finds-dw5l-1yn1qvkvc-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0 (deploy-verify 20:05) |
 | 2026-09-22 20:54 | after-merge | operator session / PR #150 funnel page redesign | 6543a5a | https://mhm-finds-dw5l-2lappjnt5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-22 21:22 | after-merge | operator session / PR #151 funnel thresholds | 24171f4 | https://mhm-finds-dw5l-bxwvhcga4-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-22 22:05 | after-merge | Ops / PR #153 team restructure | 5988fb9 | https://mhm-finds-dw5l-ohss7umtk-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
