@@ -8,6 +8,9 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
+## Operator watch 2026-09-23 — WATCH
+Sessions 28d to 09-21: 355,212 vs line 366,646 = 96.88% (gap 11,434, ~408/day); revenue $5,908.27 vs $5,744.60 = 102.85%. Last 7 runs 96.88/96.97/96.94/96.76/97.07/97.00/96.88% (flat); not 3 consecutive <97%, so WATCH, not BELOW LINE. Recommendation for 09-24 (Quinn may decline with a written reason in the digest): Pip and Sage two AUDIENCE moves each, Rowan a traffic page, Cass/Rio one move each, no non-AUDIENCE Tier 1. The stricter 09-22 BELOW LINE entry below stays in force until two consecutive runs ≥97%; this does not relax it.
+
 - [ ] **Operator watch 2026-09-22 — BELOW LINE (sessions), still in force on 09-23** (5th consecutive run under the 97% floor: 355,212 vs 366,646 = 96.9%; revenue 102.8%). Re-weighting per autonomy.md's 2026-09-21 directive was applied on 09-23 (Pip/Sage two AUDIENCE moves each, Rowan a traffic page, non-AUDIENCE Tier 1 #144 held). Lift only after two consecutive runs ≥97%. The launcher's full note (table + per-day ratios) is in the archive.
 
 - [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01 (→ Nova, Q14 triage in PR #141; `/creator/[slug]/` pages shipped 09-23 as E85)
