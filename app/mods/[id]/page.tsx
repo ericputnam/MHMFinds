@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import type { Mod } from '@/lib/api';
 import { ModJsonLd } from '@/components/ModJsonLd';
 import { getCollectionLinksForMod } from '@/lib/collections';
+import { modMetaDescription, modPageTitle } from '@/lib/seo/modMeta';
 import ModDetailClient from './ModDetailClient';
 
 export const revalidate = 3600;
@@ -22,6 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       shortDescription: true,
       thumbnail: true,
       gameVersion: true,
+      contentType: true,
+      category: true,
     },
   });
 
@@ -32,24 +35,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Trailing slash matches trailingSlash: true in next.config.js —
   // without it the canonical points at a 308 redirect.
   const url = `https://musthavemods.com/mods/${mod.id}/`;
-  const description =
-    mod.shortDescription ||
-    mod.description?.slice(0, 160) ||
-    `${mod.title} - Sims 4 custom content mod on MustHaveMods.`;
+  // Word-boundary cut inside Google's snippet window; `shortDescription`
+  // is a hard 200-char slice on 16,533 of 16,534 rows (E83, 2026-09-23).
+  const description = modMetaDescription(mod);
 
-  // Exact-match long-tail title: "<mod name> - Sims 4 CC | MustHaveMods".
-  // Mod-name queries are the catalog's rankable surface; the game
-  // qualifier matches how players search ("<mod> sims 4"). Skipped when
-  // the mod title already names the game.
-  const game = mod.gameVersion || 'Sims 4';
-  const qualifier = mod.title.toLowerCase().includes(game.toLowerCase())
-    ? ''
-    : game === 'Sims 4'
-      ? ' - Sims 4 CC'
-      : ` - ${game} Mod`;
-
+  // Exact-match long-tail title. CC: "<name> - Sims 4 CC | MustHaveMods";
+  // gameplay / script mods: "<name> for Sims 4 | MustHaveMods" (their
+  // queries are phrased "<name> mod sims 4"). Skipped when the mod title
+  // already names the game. Rule lives in lib/seo/modMeta.ts (E83).
   return {
-    title: `${mod.title}${qualifier} | MustHaveMods`,
+    title: modPageTitle(mod),
     description,
     alternates: { canonical: url },
     openGraph: {

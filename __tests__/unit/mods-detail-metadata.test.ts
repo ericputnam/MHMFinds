@@ -16,7 +16,9 @@ describe('generateMetadata for /mods/[id]', () => {
 
     const meta = await generateMetadata({ params: { id: 'mod-abc' } });
 
-    expect(meta.title).toBe('Test Mod Title - Sims 4 CC | MustHaveMods');
+    // The fixture title says "Mod", so E83's rule qualifies it as a mod
+    // ("for Sims 4"), not as CC — see __tests__/unit/mod-meta.test.ts.
+    expect(meta.title).toBe('Test Mod Title for Sims 4 | MustHaveMods');
     expect(meta.description).toBeTruthy();
     expect(meta.alternates?.canonical).toBe('https://musthavemods.com/mods/mod-abc/');
     expect(meta.openGraph?.title).toBe('Test Mod Title');
