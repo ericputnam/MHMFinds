@@ -838,19 +838,21 @@ run died with `Prompt is too long`.
   `patreon_click` from 8.75 to 3.57 users/day. The next agent then finds the tier id *and* the
   reason not to re-propose it in the same place, instead of re-deriving one and repeating the other.
 - **One git worktree per agent**; copy `.env.local`, never symlink it; give each its own `npm ci`.
-- **Serialize automated merges** (~4 min apart) or Vercel coalesces builds and the ledger loses
-  per-PR attribution. Re-validate the second PR on the new `main` when both touch one file.
+- **Serialize automated merges** (≥240 s apart) or Vercel coalesces builds and the ledger loses
+  per-PR attribution. Enforced by exit code, not prose: `./scripts/agents/merge-gate.sh && gh pr
+  merge N --squash` (exit 1 while the newest non-ledger commit on `origin/main` is <240 s old).
+  Re-validate the second PR on the new `main` when both touch one file.
 - **`npm run type-check` is never optional** — Vercel type-checks every `.ts` under `scripts/`.
 - **A merge without a ledger row did not happen** — and the row must be written by the step that
   merges, not by a later step of the same run. On 09-19 seven PRs landed on `main` and **one**
   (#123) has a row; #116, #117, #118, #119, #121 and #122 have none.
 - **Appending to a file in a working tree is not a record — only a commit on `main` is.**
-  `ledger()` in `deploy-verify.sh` writes its row into *three* trees (`$ROOT`,
-  `$FUNNEL_PRIMARY_WT`, `$OPERATOR_DIR`) and never runs `git add`/`commit`/`push`, so all three
-  copies are uncommitted edits that reach `main` only if some later agent's PR happens to carry
-  them. Three copies of a non-durable write is not redundancy — it is three chances to lose the
-  same row. Same shape as `history.json`, whose only path to `main` is a natural-language
-  instruction in `funnel-daily-prompt.md` telling the agent to remember to `git add` it.
+  Until PR #153, `ledger()` in `deploy-verify.sh` `printf`ed its row into three trees and never
+  committed — three copies of a non-durable write, i.e. three chances to lose the same row. It now
+  calls `scripts/agents/ledger-commit.sh`, which lands the row on `main` from a throwaway worktree
+  (idempotent, 3 push retries, falls back to `ledger-pending.jsonl` in the operator's tree, flushed
+  by the next run). Use it for any row a script "knows is true". **Still open:** `history.json`
+  reaches `main` only because `funnel-daily-prompt.md` step 8 asks the agent to `git add` it.
 - **Durable means "on `main`", not "committed".** A commit stranded on an unmerged agent branch is
   the same loss class as an uncommitted worktree edit — only cheaper to recover. **Cherry-picking
   stranded work onto another unmerged branch is not recovery** — it doubles the bookkeeping and
@@ -858,8 +860,10 @@ run died with `Prompt is too long`.
   `65e1756` on the next day's branch and *both* are still off `main`, so the approval does not
   exist as far as the repo is concerned. Land it or it is not real.
 - **A "did not fire" detector must not live inside the job it reports on.** The evening-guardrail
-  MISSED row is written by step 0e of the *morning* run, so it went silent for exactly the three
-  evenings the morning run was broken.
+  MISSED row was written by step 0e of the *morning* run, so it went silent for exactly the
+  evenings the morning run was broken. (The evening task MISSED ~17 of 21 nights and was retired
+  09-22; `deploy-verify.sh --check` now runs in morning step 0e instead. A job that never runs is
+  worse than no job — it reads as coverage.)
 - **Never widen an already approved item to carry an adjacent fix** — queue the fix as a new item.
   The operator approved the narrower description, not the one you discovered mid-flight.
 - **A dry run only proves the thing it prints.** Confirm the preview actually exercises the field
@@ -918,58 +922,53 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-20 — the paper trail was repaired by hand, and the defect that ate it is still there
+### 2026-09-22 — the ledger became durable, and every gate had to learn about the new committer
 
-- **The gap closed: 7 of 7 merges have a ledger row, up from 1 of 7.** Six Tier 0 PRs shipped
-  (#120, #124, #125, #126, #127, #128) and every one verified PASS with 5xx/15m=0. Quinn also
-  backfilled ten missing rows, the 09-18 and 09-19 digests, and the operator's 09-17 approval.
-- **The recovery pattern is worth keeping: `git checkout <stranded-branch> -- <paths>` onto today's
-  branch, never `git merge`.** The three-day gap lived on two branches that were never going to be
-  merged (`ce7c111`'s blanket approval and a day-skeleton branch). Lifting only the *files* onto the
-  current PR lands the content on `main` without dragging an abandoned branch's history with it —
-  and it is the correct answer to the 09-19 note that cherry-picking onto *another* unmerged branch
-  is not recovery.
-- **None of that was a fix.** `ledger()` in `scripts/agents/deploy-verify.sh:157` still `printf`s
-  into three working trees and runs no `git add`/`commit`/`push`; the file's last commit is PR #58,
-  weeks before the defect was identified. The 09-19 entry named the one-line fix — *commit the row
-  in the function that already knows it is true* — and the 09-20 run instead paid the cost by hand.
-  **A defect remediated by hand is a defect with a scheduled recurrence.** Corollary visible in the
-  file: because rows are appended in three trees and merged later, `changelog.md` is now out of
-  chronological order (a 09-19 08:12 row sits above 09-16 rows), so anything reading it must sort,
-  not assume append order.
-- **The diagnosis that a whole experiment was built on was wrong about its population.** E40 was
-  read as "free Patreon members click Connect on `/go` and get nothing." The Q4 pre-read classified
-  all 47 linked accounts against the campaign's 5,671 member rows: 4 free members, **43 not in the
-  campaign at all**, 0 active. 43 of 47 are Patreon-only accounts created *by the Connect click
-  itself*. So the CTA is a follow funnel and no tier rename, $10 tier, or copy change could have
-  moved paid-and-connected. The gate reads HOLD; the next move is "follow free → $3 skips the wait."
-- **The gate that produced HOLD was pre-committed on 09-08 and is imported, not restated.** `Q4_GATE`
-  lives in `scripts/agents/patreon-members-lib.ts` with a comment saying it was written before any
-  reading, and both the pre-read and its test import the same object rather than re-typing `17`.
-  The library extraction itself closed a real divergence: three callers were each computing
-  paid/free/former/joins/cancels independently, so the gate and the daily scoreboard could disagree.
-  Remaining hole: one leg is a *floor, not a count* (Patreon bills on the 1st, so cancels since an
-  anchor can only see join-and-leave-inside-the-window), and that caveat lives in prose — the
-  returned type is `'PROCEED' | 'HOLD' | 'REVERT_COPY'` with no provisional state.
-- **`skipLog: true` bought privacy and cost all bounce observability, and the bill came due.**
-  `notification_logs` is 0 rows all-time, so the only place a hard bounce exists is the mailbox —
-  hence a whole read-only IMAP counter had to be written to learn that the re-permission day-1 hard
-  bounce was **7.0%, not the 3% the operator's approval was given against**. The send was correctly
-  held. The privacy rule stands; budget for the observability you are giving up when you apply it.
-- **Even a 92.7%-clean facet needs a top-N spot-check before it backs a landing page.** `nails` is
-  the fourth facet cleaned of description-inference pollution after `lighting`, `gameplay-mod` and
-  `jewelry` — only 6 junk rows this time, but one of them was a feet body mod sitting as card #2.
-  `expectedCount` and a clean *percentage* both say nothing about the rows a visitor actually sees.
-- **The nightly compound loop still pushes an empty branch per night: 16 of 20 `compound/*` branches
-  on `origin` are 0 commits ahead of `main`** (09-02→09-16, 09-18), one more than at the 09-19 read.
-  An all-`completed` PRD from May still exits 0 in zero seconds and reports success. An empty queue
-  is not a successful run.
-- **The evening guardrail has now MISSED 8 nights (09-12→09-19) and written no real `check` row
-  since 09-04 (16 days).** Unchanged from the last two reviews, and still only fixable by the
-  operator enabling the scheduled task — the detector lives inside the morning run it watches.
+- **A rule chained in prose after the action cannot gate it.** On 09-21 two merges landed 5 s
+  apart; the Vercel alias went to the *parent* build and `deploy-verify --after-merge` graded PASS
+  against a build production was not serving. "≥4 min apart" existed only as text after
+  `gh pr merge`. Fix (#147): `merge-gate.sh` is an exit code you put *in front of* the merge.
+- **The caller's sha is a lower bound, never the thing you certify.** After waiting for its build,
+  `deploy-verify` now re-fetches `origin/main`; if HEAD moved, it waits for HEAD's build, verifies
+  *that*, and writes `main moved past caller X; graded HEAD Y` into the row. Production serves
+  HEAD, so HEAD is what gets graded.
+- **Adding an automated committer to `main` means teaching every watcher of `main` about it.**
+  `ledger-commit.sh` pushes `funnel(ledger): …` commits straight to `main` after each merge.
+  Without exemptions they would hold `merge-gate` closed for 240 s after every verify and retarget
+  `deploy-verify` onto a docs commit. Both now skip commits whose subject is `funnel(ledger):`
+  **and** whose files are all under `reports/funnel/` (subject alone is spoofable). **But the
+  exemption rests on a false premise:** `deploy-verify.sh:158` says a docs-only commit "never
+  produces" a Vercel build, and `vercel.json`'s `ignoreCommand` skips *previews only* — ledger
+  commit `505cab3` (22:13:21) produced production build `oyuurgkzl` (22:13:23). So after every
+  verified merge, production is re-aliased to a build nobody smoke-tested. Same code, so low risk
+  today, but check the build trigger before you call a commit "docs-only".
+- **"Nothing to commit" is not "nothing happened" when the worker commits for itself.**
+  `auto-compound.sh` checked `git diff --quiet` — but `loop.sh` tells Claude to commit each task,
+  so the tree is clean either way. Count `git rev-list --count $BASE_SHA..HEAD` instead. An empty
+  run now exits **2**, pushes nothing, deletes the local branch, and writes a row to
+  `reports/compound/status.jsonl`. `cleanup-empty-compound-branches.sh` (dry-run default) exists
+  but has not been run with `--apply`: `origin` still holds 20 `compound/*` branches on 09-22.
+- **`"${VAR:-}/sub"` is never empty — guard the variable, not the joined path.** `deploy-verify`'s
+  `[ -n "$dir" ] || continue` over `"${FUNNEL_PRIMARY_WT:-}/reports/funnel"` could never fire, so a
+  standalone run wrote to `/reports/funnel` at the filesystem root (#154).
+- **A fallback written inside an ephemeral worktree dies with the worktree.** The runner deletes
+  per-agent worktrees at the end of each run, so `ledger-pending.jsonl` and
+  `reports/compound/status.jsonl` are written to the operator's own checkout, not `$ROOT`.
+- **Monitor a queue's inflow, not only its depth.** The Pinterest pin *writer*
+  (`posts_2_supabase_server.py`, no cron) sat idle 09-04 → 09-21 while runway looked fine because
+  three manual revival slices kept refilling it with borrowed inventory. `assessWriterLiveness()`
+  (#142) watches the newest row carrying the writer's own insert marker (`"Wordpress Post ID"` not
+  null — this repo's tooling leaves it null), so our own top-ups cannot mask a dead writer. WARN
+  only; the fix (a BigScoots cron) is Tier 2.
+- **Budgets are now checked, not just written down.** `scripts/agents/context-budget.ts` (SD-12)
+  checks per-file byte caps on every doc the funnel agents read — `CLAUDE.md` is capped at 60 000 —
+  and the runner runs it each morning (WARN only). Closed experiments, queue items and old playbook
+  notes moved verbatim to `.claude/agents/mhm-funnel/archive/`.
+- **Admin UI: a `flex-1` child needs `min-w-0`** or wide content (charts, tables) forces the page
+  to scroll sideways — `app/admin/layout.tsx` `<main>` got it in #150.
 ---
 
-*Last compound review: 2026-09-20*
+*Last compound review: 2026-09-22*
 
 ---
 
