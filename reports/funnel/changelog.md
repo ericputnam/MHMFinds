@@ -173,3 +173,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-24 09:37 | check | morning-check |  | https://mhm-finds-dw5l-m3ycvj1t6-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-09-24 09:46 | after-merge | Pip: PR #140 rank-pin-destinations producer (E75) | 7554037 | https://mhm-finds-dw5l-5d6m9t5e9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-24 09:50 | after-merge | Cass: PR #165 day-2 bounce exclusions + frozen segment + unknown-flag guard (E54, T0) | 0acc882 | https://mhm-finds-dw5l-o8f1h9nhk-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-24 09:59 | after-merge | Rowan: PR #170 /games/sims-4/bedroom-cc/ + bedroom theme repair (E100) | 565f35d | https://mhm-finds-dw5l-eaggp16ue-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
