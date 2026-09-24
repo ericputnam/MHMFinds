@@ -40,6 +40,15 @@ export const EXCLUDED_RECIPIENT_HASHES: readonly string[] = [
   '18bb02f6f7a5e5870b437b515c3e7cce10b8fdae6ad0d0a2291ad6b932b1eb35', // day-1, 5.x.x
   'e9aad8397f610054a476e079b23fbe3713dbdd57130307761324cd1e7c42812e', // day-1, 5.x.x
   '84be038d2138135f11ab2c600efa0b84061853a937ac1cef8e110db164ac5ce4', // day-1, 5.x.x
+  // 2026-09-21 re-permission day-2 (`--offset 100`, 100 attempted), read 2026-09-24 13:45Z
+  // (`--since 2026-09-21`, ≥72 h): 5 distinct hard-bounced recipients = 3× `5.1.1`,
+  // 1× `5.2.2`, 1× `5.5.0`; 0 soft, 0 complaints. Cross-check `--since 2026-09-16`:
+  // 12 distinct hard all-time = the 7 above + these 5, disjoint, none left over.
+  '7b8599a5d2e849b96648c2fb59401ca996a4a9db11582e37a04b9b05dd35453f', // day-2, 5.x.x
+  '75d6576befbf6c90997da29b3ff8d667681251ad482aacc0431ac6493106c71d', // day-2, 5.x.x
+  '428b8c3f5bd010ab44b4f87f0f6da8571cd1c6139971b502dd559e88764bb58a', // day-2, 5.x.x
+  '734622e399efe5fdf59fc0f375cf48616a7ad90831e8eba4b095d844dc5b1bf4', // day-2, 5.x.x
+  'c7bf3d6ec4f2681a1efe3a749837ebb52cb3c0dae60eb76a81b19bb51541f641', // day-2, 5.x.x
 ];
 
 const EXCLUDED = new Set(EXCLUDED_RECIPIENT_HASHES);

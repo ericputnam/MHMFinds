@@ -68,6 +68,22 @@ const only = arg('--only');
 const dry = args.includes('--dry');
 const limitArg = Number(arg('--limit') ?? 0);
 const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
+/**
+ * Refuse any flag this script does not know. The dry switch is `--dry`; on 2026-09-24
+ * the day-3 brief spelled it `--dry-run`, which `args.includes('--dry')` does not
+ * match — that typo would have been a LIVE send to 100 accounts. On a script whose
+ * default is "send", an unrecognised flag must stop the run, never be ignored.
+ */
+const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset']);
+const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset']);
+for (let i = 0; i < args.length; i++) {
+  const a = args[i];
+  if (!KNOWN_FLAGS.has(a)) {
+    console.error(`unknown argument "${a.startsWith('--') ? a : '<value>'}" — refusing to run (dry switch is --dry)`);
+    process.exit(1);
+  }
+  if (FLAGS_WITH_VALUE.has(a)) i++;
+}
 if (!fromDb && !accountsFromDb && !arg('--to')) { console.error('need --to a@b.com[,c@d.com], --from-db or --accounts-from-db'); process.exit(1); }
 if (fromDb && accountsFromDb) { console.error('pick one of --from-db / --accounts-from-db'); process.exit(1); }
 if (fromDb && only !== 'issue') { console.error('--from-db is the issue send path: pass --only issue'); process.exit(1); }
@@ -125,7 +141,13 @@ async function loadAccounts(): Promise<string[]> {
     );
     const since = new Date(REPERMISSION_ANCHOR_AT.getTime() - REPERMISSION_ENGAGED_DAYS * 24 * 60 * 60 * 1000);
     const users = await prisma.user.findMany({
-      where: { createdAt: { gte: since, lt: REPERMISSION_ANCHOR_AT }, favorites: { some: {} } },
+      // The favourite predicate is frozen too: on 2026-09-24 an account created before the
+      // anchor whose FIRST favourite came on 09-23 had joined the "frozen" segment (383 → 384,
+      // at index 364). Any such late favourite from an older account shifts every later index.
+      where: {
+        createdAt: { gte: since, lt: REPERMISSION_ANCHOR_AT },
+        favorites: { some: { createdAt: { lt: REPERMISSION_ANCHOR_AT } } },
+      },
       select: { email: true },
       orderBy: { createdAt: 'asc' },
     });
