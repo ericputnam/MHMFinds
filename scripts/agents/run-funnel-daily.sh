@@ -40,6 +40,66 @@ MAX_TURNS="${FUNNEL_MAX_TURNS:-400}"
 mkdir -p "$PROJECT_DIR/logs" "$WORKTREE_ROOT" "$PROJECT_DIR/reports/funnel"
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"; }
 
+# >>> worktree-reap — never delete a worktree while a process still runs inside it.
+# 09-22 (incident 2026-09-22-0655): cleanup() removed every agent worktree while an orphaned deploy-verify was still
+# running in one; the orphan rolled production back, wrote its incident file into the deleted directory and its
+# ledger rows into three deleted trees. A process that has its cwd inside a worktree is the tree's positive evidence of
+# use (deploy-verify, vercel, node and every agent's Bash shell all run with `cd <its worktree>`). Three answers, never
+# collapsed: idle -> remove; busy -> wait, then TERM past the ceiling, and LEAVE the tree if anything survives;
+# could-not-enumerate (lsof missing / empty) -> leave the tree (the 2-day prune retries, through this same check).
+# Self-contained on purpose: __tests__/unit/funnel-runner-cleanup-reap.test.ts extracts this block + cleanup() and
+# runs them against real processes.
+worktree_cwd_pids() {  # $1 dir -> PIDs whose cwd is inside it (one per line). rc 0 = enumerated, 2 = could not enumerate
+  local real out
+  real="$(cd "$1" 2>/dev/null && pwd -P)" || return 2
+  out="$("${REAP_LSOF:-lsof}" -n -w -d cwd -F pn 2>/dev/null)"
+  # Vacuity guard: lsof always sees at least this shell's cwd, so no `p` line at all means lsof did not run.
+  printf '%s\n' "$out" | grep -q '^p[0-9]' || return 2
+  printf '%s\n' "$out" | REAP_DIR="$real" awk -v self="$$" -v sub_="${BASHPID:-$$}" '
+    BEGIN { d = ENVIRON["REAP_DIR"] }
+    /^p/ { pid = substr($0, 2) }
+    /^n/ { p = substr($0, 2); if ((p == d || index(p, d "/") == 1) && pid != self && pid != sub_) print pid }' | sort -u
+  return 0
+}
+reap_worktrees() {  # $1 wait_s, $2 term_grace_s (-1 = never signal), $3.. dirs. rc 0 all removed, 1 some left in place
+  local wait_s="$1" grace="$2" poll="${REAP_POLL_S:-5}" waited=0 d pids all rc unknown termed=0 removed=0 left=0
+  shift 2
+  while :; do
+    all=""; unknown=0
+    for d in "$@"; do
+      [ -d "$d" ] || continue
+      pids="$(worktree_cwd_pids "$d")"; rc=$?
+      [ "$rc" -eq 0 ] || unknown=1
+      all="$all $pids"
+    done
+    all="$(echo $all)"
+    { [ -z "$all" ] || [ "$unknown" -eq 1 ] || [ "$waited" -ge "$wait_s" ]; } && break
+    [ "$waited" -eq 0 ] && log "cleanup: waiting up to ${wait_s}s for live pid(s) in the worktrees: $all"
+    sleep "$poll"; waited=$((waited + poll))
+  done
+  if [ -n "$all" ] && [ "$grace" -ge 0 ]; then
+    log "cleanup: ceiling ${wait_s}s reached — SIGTERM to pid(s) still inside the worktrees: $all"
+    # shellcheck disable=SC2086
+    kill -TERM $all 2>/dev/null; termed=$(echo $all | wc -w | tr -d ' ')
+    local g=0
+    while [ "$g" -lt "$grace" ]; do
+      all=""; for d in "$@"; do [ -d "$d" ] && all="$all $(worktree_cwd_pids "$d")"; done
+      [ -z "$(echo $all)" ] && break
+      sleep 1; g=$((g + 1))
+    done
+  fi
+  for d in "$@"; do
+    [ -d "$d" ] || continue
+    pids="$(worktree_cwd_pids "$d")"; rc=$?
+    if [ "$rc" -ne 0 ]; then log "cleanup: left in place $d — could not enumerate its processes (unknown, not idle)"; left=$((left + 1)); continue; fi
+    if [ -n "$pids" ]; then log "cleanup: left in place $d — live pid(s) $(echo $pids) survived SIGTERM"; left=$((left + 1)); continue; fi
+    if git worktree remove --force "$d" >/dev/null 2>&1; then removed=$((removed + 1)); else log "cleanup: git worktree remove failed for $d"; fi
+  done
+  log "cleanup: reaped $removed worktree(s), left $left in place (waited ${waited}s, SIGTERM to $termed pid(s))"
+  [ "$left" -eq 0 ]
+}
+# <<< worktree-reap
+
 # --- network readiness (see run-mediavine-daily-report.sh) -------------------
 NET_OK=0
 for _ in $(seq 1 30); do
@@ -51,16 +111,22 @@ done
 # --- clean worktree from origin/main (never the operator's tree) --------------
 cd "$PROJECT_DIR" || { log "cannot cd to $PROJECT_DIR"; exit 1; }
 git fetch origin main --quiet || log "git fetch failed (offline?) — using last known origin/main"
-# Prune stale worktrees from crashed runs (older than 2 days).
-find "$WORKTREE_ROOT" -maxdepth 1 -type d -name 'funnel-*' -mtime +2 -exec git worktree remove --force {} \; 2>/dev/null
+# Prune stale worktrees from crashed runs (older than 2 days) — only idle ones: wait 0 s, never signal, so a tree a
+# process still runs in (or whose processes cannot be enumerated) is left for a later morning.
+STALE_WTS=()
+while IFS= read -r d; do [ -n "$d" ] && STALE_WTS+=("$d"); done < <(find "$WORKTREE_ROOT" -maxdepth 1 -type d -name 'funnel-*' -mtime +2 2>/dev/null)
+[ "${#STALE_WTS[@]}" -gt 0 ] && reap_worktrees 0 -1 "${STALE_WTS[@]}"
 git worktree prune
 if ! git worktree add --detach "$WT" origin/main >>"$LOG_FILE" 2>&1; then
   log "git worktree add failed — aborting (operator tree untouched)"; exit 1
 fi
 cleanup() {
   cd "$PROJECT_DIR" || exit 0
-  local d
-  for d in "$WT" "$WT"-*; do [ -d "$d" ] && git worktree remove --force "$d" >/dev/null 2>&1; done
+  local d dirs=()
+  for d in "$WT" "$WT"-*; do [ -d "$d" ] && dirs+=("$d"); done
+  # Wait for (then TERM) anything still running inside the trees before removing them — see worktree-reap above.
+  # 30 min covers a full deploy-verify (6–15 min incl. a rollback); the finite cap keeps a hung child from wedging the task.
+  [ "${#dirs[@]}" -gt 0 ] && reap_worktrees "${FUNNEL_CLEANUP_WAIT_S:-1800}" "${FUNNEL_CLEANUP_TERM_GRACE_S:-30}" "${dirs[@]}"
   git worktree prune >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
