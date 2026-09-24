@@ -95,6 +95,16 @@ export default function GoClient() {
     signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
   }, [params.modId]);
 
+  // E99 (Rio, 2026-09-24): the Connect line under the "Continue to Download"
+  // button. Until now the CTA lived only in the countdown branch, so it
+  // unmounted the moment the button appeared — a headless render on 09-24
+  // showed both links at t+4s and neither at t+13s. Its own event name so the
+  // E65 `patreon_click` read (09-26) is not diluted; the scoreboard lists it.
+  const handleConnectPatreonAfterWait = useCallback(() => {
+    gtag('event', 'patreon_click_after_wait', { source: 'go-member-cta-connect-after-wait', mod_id: String(params.modId) });
+    signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
+  }, [params.modId]);
+
   const postConnectViewFired = useRef(false);
   useEffect(() => {
     if (!showPostConnect || postConnectViewFired.current) return;
@@ -378,6 +388,38 @@ export default function GoClient() {
                       </p>
                     )}
                   </div>
+                )}
+                {/*
+                  E99 after-wait CTA (Rio, 2026-09-24) — the same two links as
+                  the countdown line, kept visible once the button is ready so
+                  the offer outlives the 10 s it used to get. Non-members only;
+                  the E74 post-connect state below takes its place after OAuth.
+                  Same placement rule: inside the mod card, a sibling of the
+                  mv-ads wrapper below, never inside it or the aside (SD-3).
+                */}
+                {canProceed && mod && membershipOn && !isMember && !showPostConnect && (
+                  <p className="mt-3 text-xs text-slate-500 text-center">
+                    Patrons skip this wait next time.{' '}
+                    <button
+                      type="button"
+                      onClick={handleConnectPatreonAfterWait}
+                      className="text-sims-pink hover:underline font-semibold"
+                    >
+                      Connect Patreon
+                    </button>
+                    {' · '}
+                    <a
+                      href={PATREON_PAGE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        gtag('event', 'patreon_click_after_wait', { source: 'go-member-cta-join-after-wait', mod_id: String(params.modId) })
+                      }
+                      className="text-sims-pink hover:underline font-semibold"
+                    >
+                      Become a patron
+                    </a>
+                  </p>
                 )}
                 {/*
                   E74 post-connect state — replaces the Connect line only when

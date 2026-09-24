@@ -234,7 +234,7 @@ async function pullGa4(): Promise<Ga4Data> {
     dimensionFilter: {
       filter: {
         fieldName: 'eventName',
-        inListFilter: { values: ['newsletter_signup', 'account_signup', 'patreon_click', 'premium_intent', 'sign_up', 'generate_lead', 'favorite', 'affiliate_click', 'member_skip_countdown'] },
+        inListFilter: { values: ['newsletter_signup', 'account_signup', 'patreon_click', 'patreon_click_after_wait', 'premium_intent', 'sign_up', 'generate_lead', 'favorite', 'affiliate_click', 'member_skip_countdown'] },
       },
     },
   });

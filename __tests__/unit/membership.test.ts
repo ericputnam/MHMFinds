@@ -274,10 +274,14 @@ describe('E74 — /go post-connect state: follow free first (Rio, 2026-09-21)', 
     expect(hasPostConnectMarker(undefined)).toBe(false)
   })
 
-  it('/go sends the marker on BOTH Patreon sign-in paths and reads it back from location.search', () => {
+  it('/go sends the marker on EVERY Patreon sign-in path and reads it back from location.search', () => {
+    // Guard the class, not a count: a third Connect path (E99) must carry the
+    // marker too, and a fourth cannot be added without it.
     const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
     const calls = code.match(/signIn\('patreon',\s*\{\s*callbackUrl:\s*withPostConnectMarker\(window\.location\.href\)\s*\}\)/g) ?? []
-    expect(calls).toHaveLength(2)
+    const all = code.match(/signIn\('patreon'/g) ?? []
+    expect(all.length).toBeGreaterThanOrEqual(2)
+    expect(calls).toHaveLength(all.length)
     expect(code).not.toMatch(/callbackUrl:\s*window\.location\.href\s*\}/)
     expect(code).toContain('hasPostConnectMarker(window.location.search)')
   })
@@ -320,5 +324,59 @@ describe('E74 — /go post-connect state: follow free first (Rio, 2026-09-21)', 
     expect(state).toBeGreaterThan(-1)
     expect(state).toBeLessThan(code.indexOf('className="mv-ads'))
     expect(state).toBeLessThan(code.indexOf('id="secondary"'))
+  })
+})
+
+describe('E99 — /go member CTA stays visible after the countdown (Rio, 2026-09-24)', () => {
+  // The Connect / Become-a-patron line lived only in the countdown branch, so
+  // it unmounted the moment "Continue to Download" appeared: a 2026-09-24
+  // headless render of a logged-out /go showed both links at t+4s and neither
+  // at t+13s. GA4 09-16→09-22: 411 users rendered /go, 39 clicked Patreon —
+  // every one of them inside the 10 s. This block pins the after-wait line:
+  // its own event name (E65's patreon_click read on 09-26 stays clean), the
+  // same two link kinds in the same order, a sibling of the ad anchors.
+  const strip = (src: string) =>
+    src.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  const AFTER_WAIT_GATE = '{canProceed && mod && membershipOn && !isMember && !showPostConnect && ('
+
+  it('renders only once the download is ready, for non-members, and never alongside the post-connect state', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    expect(code).toContain(AFTER_WAIT_GATE)
+    expect(code).toContain('Patrons skip this wait next time.')
+  })
+
+  it('uses its own GA4 event name with a connect and a join source; patreon_click still has exactly its two sources', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    const afterWait = code.match(/gtag\('event',\s*'patreon_click_after_wait'/g) ?? []
+    expect(afterWait).toHaveLength(2)
+    expect(code).toContain("source: 'go-member-cta-connect-after-wait'")
+    expect(code).toContain("source: 'go-member-cta-join-after-wait'")
+    const clicks = code.match(/gtag\('event',\s*'patreon_click'/g) ?? []
+    expect(clicks).toHaveLength(2)
+  })
+
+  it('keeps Connect before the campaign landing page link, and the block after the countdown CTA in source order', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    const block = code.indexOf(AFTER_WAIT_GATE)
+    const connect = code.indexOf('onClick={handleConnectPatreonAfterWait}', block)
+    const join = code.indexOf('href={PATREON_PAGE_URL}', block)
+    expect(connect).toBeGreaterThan(block)
+    expect(join).toBeGreaterThan(connect)
+    // The countdown CTA (E65) must still be the first Connect / join pair in the file.
+    expect(code.indexOf('onClick={handleConnectPatreon}')).toBeLessThan(block)
+    expect(code.indexOf('href={PATREON_PAGE_URL}')).toBeLessThan(block)
+  })
+
+  it('is a sibling of the mv-ads wrapper (renders before it) and outside the aside', () => {
+    const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
+    const block = code.indexOf(AFTER_WAIT_GATE)
+    expect(block).toBeGreaterThan(-1)
+    expect(block).toBeLessThan(code.indexOf('className="mv-ads'))
+    expect(block).toBeLessThan(code.indexOf('id="secondary"'))
+  })
+
+  it('the scoreboard counts the new event so the read is a row every morning, not a one-off query', () => {
+    const scoreboard = readSource('scripts/agents/funnel-scoreboard.ts')
+    expect(scoreboard).toContain("'patreon_click_after_wait'")
   })
 })
