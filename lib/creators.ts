@@ -33,9 +33,21 @@ export const MIN_MODS_FOR_PAGE = 5;
 /** First page of mods rendered server-side (same size as collection pages). */
 export const CREATOR_PAGE_SIZE = 48;
 
+/**
+ * One row of the creator population. Shared by /sitemap-creators.xml and
+ * IndexNow --creators (E95: slug + latest) and by the /creator/ hub (E97:
+ * displayName + downloads). One row type, one query — PR #167 and PR #168
+ * each added their own `listCreators` on the same day and the squash of
+ * both broke `main` (2026-09-24 10:03 incident); `lib-duplicate-exports`
+ * now fails CI on any repeated export name.
+ */
 export interface CreatorListRow {
   slug: string;
+  /** The most-used spelling of the author string. */
+  displayName: string;
   mods: number;
+  /** Sum of download clicks recorded on this site. */
+  downloads: number;
   /** createdAt of the creator's newest SFW mod; null only if the DB returns none. */
   latest: Date | null;
 }
@@ -45,25 +57,71 @@ export interface CreatorListRow {
  * of truth for "which /creator/[slug]/ URLs exist". Consumed by
  * /sitemap-creators.xml and by scripts/agents/indexnow-submit.ts --creators
  * (E95, 2026-09-24) so a search engine is never handed a URL the sitemap
- * would not list. Junk author slugs are filtered here, once.
+ * would not list. Junk author slugs are filtered here, once. The
+ * platform/aggregator names in NON_CREATOR_SLUGS are NOT filtered here —
+ * their leaves still render (E85's population is unchanged until its read);
+ * the hub drops them via listHubCreators().
  *
  * Throws on a DB error: each caller decides how to degrade (the sitemap
- * serves an empty urlset; the submit script exits 2 could-not-run).
+ * serves an empty urlset; the submit script exits 2 could-not-run; the hub
+ * renders its shell with an empty list).
  */
 export async function listCreators(): Promise<CreatorListRow[]> {
-  const rows = await prisma.$queryRaw<Array<{ slug: string; mods: number; latest: Date | null }>>`
-    SELECT trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug,
-           COUNT(*)::int AS mods,
-           MAX("createdAt") AS latest
-    FROM mods
-    WHERE author IS NOT NULL AND "isNSFW" = false
-    GROUP BY 1
-    HAVING COUNT(*) >= ${MIN_MODS_FOR_PAGE}
-    ORDER BY COUNT(*) DESC
+  const rows = await prisma.$queryRaw<
+    Array<{ slug: string; author: string; mods: number; downloads: number; latest: Date | null }>
+  >`
+    WITH per_author AS (
+      SELECT trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug,
+             author,
+             COUNT(*)::int AS n,
+             COALESCE(SUM("downloadCount"), 0)::int AS dl,
+             MAX("createdAt") AS latest
+      FROM mods
+      WHERE author IS NOT NULL AND "isNSFW" = false
+      GROUP BY 1, 2
+    ),
+    per_slug AS (
+      SELECT slug, SUM(n)::int AS mods, SUM(dl)::int AS downloads, MAX(latest) AS latest
+      FROM per_author
+      GROUP BY slug
+      HAVING SUM(n) >= ${MIN_MODS_FOR_PAGE}
+    ),
+    names AS (
+      SELECT DISTINCT ON (slug) slug, author
+      FROM per_author
+      ORDER BY slug, n DESC, author ASC
+    )
+    SELECT s.slug, n.author, s.mods, s.downloads, s.latest
+    FROM per_slug s
+    JOIN names n USING (slug)
+    ORDER BY s.mods DESC, s.slug ASC
   `;
   return rows
     .filter((r) => !isJunkAuthorSlug(r.slug))
-    .map((r) => ({ slug: r.slug, mods: Number(r.mods), latest: r.latest }));
+    .map((r) => ({
+      slug: r.slug,
+      displayName: r.author.trim(),
+      mods: Number(r.mods),
+      downloads: Number(r.downloads),
+      latest: r.latest,
+    }));
+}
+
+/**
+ * The /creator/ hub's population (Nova, E97, 2026-09-24): listCreators()
+ * minus the platform/aggregator "authors" in NON_CREATOR_SLUGS (simsfinds,
+ * amazon, simfileshare, curseforge-creator, …). Crawler surface: degrades
+ * to [] on a DB error so the hub still renders its shell and ad anchors
+ * with a 200, never a 500.
+ */
+export async function listHubCreators(): Promise<CreatorListRow[]> {
+  try {
+    const rows = await listCreators();
+    return rows.filter((r) => !isNonCreatorSlug(r.slug));
+  } catch (error) {
+    console.error('[creators] listHubCreators query failed, serving empty list:', error);
+    return [];
+  }
 }
 
 export interface AuthorVariant {
@@ -141,71 +199,6 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
       ? { website: profile.website, isVerified: profile.isVerified, bio: profile.bio }
       : null,
   };
-}
-
-/** One row of the /creator/ hub index (Nova, E97, 2026-09-24). */
-export interface CreatorListRow {
-  slug: string;
-  /** The most-used spelling of the author string. */
-  displayName: string;
-  mods: number;
-  /** Sum of download clicks recorded on this site. */
-  downloads: number;
-  /** ISO date of the creator's newest mod, or null. */
-  latest: string | null;
-}
-
-/**
- * Every creator that gets a leaf page (>= MIN_MODS_FOR_PAGE SFW mods, not a
- * junk slug) minus the platform/aggregator names in NON_CREATOR_SLUGS, most
- * mods first. One grouped query so the hub is a single round trip.
- *
- * Crawler surface: degrades to [] on a DB error — the hub still renders its
- * shell and ad anchors with a 200, never a 500.
- */
-export async function listCreators(): Promise<CreatorListRow[]> {
-  let rows: Array<{ slug: string; author: string; mods: number; downloads: number; latest: Date | null }> = [];
-  try {
-    rows = await prisma.$queryRaw<typeof rows>`
-      WITH per_author AS (
-        SELECT trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug,
-               author,
-               COUNT(*)::int AS n,
-               COALESCE(SUM("downloadCount"), 0)::int AS dl,
-               MAX("createdAt") AS latest
-        FROM mods
-        WHERE author IS NOT NULL AND "isNSFW" = false
-        GROUP BY 1, 2
-      ),
-      per_slug AS (
-        SELECT slug, SUM(n)::int AS mods, SUM(dl)::int AS downloads, MAX(latest) AS latest
-        FROM per_author
-        GROUP BY slug
-        HAVING SUM(n) >= ${MIN_MODS_FOR_PAGE}
-      ),
-      names AS (
-        SELECT DISTINCT ON (slug) slug, author
-        FROM per_author
-        ORDER BY slug, n DESC, author ASC
-      )
-      SELECT s.slug, n.author, s.mods, s.downloads, s.latest
-      FROM per_slug s
-      JOIN names n USING (slug)
-      ORDER BY s.mods DESC, s.slug ASC
-    `;
-  } catch (error) {
-    console.error('[creators] listCreators query failed, serving empty list:', error);
-    return [];
-  }
-  return rows
-    .filter((r) => !isJunkAuthorSlug(r.slug) && !isNonCreatorSlug(r.slug))
-    .map((r) => ({
-      slug: r.slug,
-      displayName: r.author.trim(),
-      mods: Number(r.mods),
-      downloads: Number(r.downloads),
-      latest: r.latest ? new Date(r.latest).toISOString().slice(0, 10) : null,
-    }));
 }
 
 /**

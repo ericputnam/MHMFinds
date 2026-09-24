@@ -19,7 +19,7 @@ import type { Metadata } from 'next';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { NewsletterSignup } from '../../components/NewsletterSignup';
-import { listCreators, creatorHref, type CreatorListRow } from '../../lib/creators';
+import { listHubCreators, creatorHref, type CreatorListRow } from '../../lib/creators';
 import { TOP_CREATORS, groupByLetter, letterAnchorId, rankByDownloads } from '../../lib/creatorHub';
 
 // The list moves with every ingest; render per request (CDN-free, one query).
@@ -29,7 +29,7 @@ const SITE = 'https://musthavemods.com';
 const CANONICAL = `${SITE}/creator/`;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const creators = await listCreators();
+  const creators = await listHubCreators();
   const n = creators.length;
   const mods = creators.reduce((s, c) => s + c.mods, 0);
   const title = n
@@ -69,7 +69,7 @@ function buildJsonLd(top: CreatorListRow[], total: number) {
 }
 
 export default async function CreatorHubPage() {
-  const creators = await listCreators();
+  const creators = await listHubCreators();
   const totalMods = creators.reduce((s, c) => s + c.mods, 0);
   const totalDownloads = creators.reduce((s, c) => s + c.downloads, 0);
   const top = rankByDownloads(creators).slice(0, TOP_CREATORS);

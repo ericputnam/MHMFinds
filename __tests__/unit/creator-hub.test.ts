@@ -94,6 +94,26 @@ describe('the hub page (app/creator/page.tsx)', () => {
   it('never calls mediavine.newPageView (useAnalytics is the only caller)', () => {
     expect(read(file)).not.toContain('newPageView');
   });
+
+  it('reads listHubCreators (degrades to []), which wraps the shared listCreators population', () => {
+    // After the 2026-09-24 duplicate-export incident there is ONE listCreators
+    // (sitemap + IndexNow + hub share it; it throws) and the hub takes the
+    // catching, NON_CREATOR_SLUGS-filtered wrapper.
+    const page = stripComments(read(file));
+    expect(page).toMatch(/import \{[^}]*\blistHubCreators\b[^}]*\} from '\.\.\/\.\.\/lib\/creators'/);
+    expect(page).not.toMatch(/\blistCreators\(/);
+    const lib = stripComments(read('lib/creators.ts'));
+    expect(lib.match(/export async function listCreators\(/g)?.length).toBe(1);
+    expect(lib.match(/export interface CreatorListRow\b/g)?.length).toBe(1);
+    const hubFn = lib.slice(lib.indexOf('export async function listHubCreators('));
+    expect(hubFn).toMatch(/await listCreators\(\)/);
+    expect(hubFn).toMatch(/isNonCreatorSlug\(r\.slug\)/);
+    expect(hubFn).toMatch(/catch \(error\)[\s\S]*return \[\];/);
+    // listCreators itself must NOT drop the non-creator slugs: the sitemap and
+    // IndexNow population is E85's, unchanged until its read.
+    const listFn = lib.slice(lib.indexOf('export async function listCreators('), lib.indexOf('export async function listHubCreators('));
+    expect(listFn).not.toMatch(/isNonCreatorSlug/);
+  });
 });
 
 describe('inbound links to the hub', () => {
