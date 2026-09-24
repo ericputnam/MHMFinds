@@ -14,6 +14,8 @@
  * - Returns undefined for ambiguous cases
  */
 
+import { BEDROOM_THEME, isBedroomTitle } from '../bedroomThemeRules';
+
 // ============================================
 // TYPES
 // ============================================
@@ -543,10 +545,11 @@ const ROOM_THEME_RULES: RoomThemeRule[] = [
     keywords: ['kitchen', 'cooking', 'culinary', 'chef', 'pantry', 'dining kitchen'],
     theme: 'kitchen',
   },
-  {
-    keywords: ['bedroom', 'bed room', 'sleeping', 'master bedroom', 'guest bedroom'],
-    theme: 'bedroom',
-  },
+  // `bedroom` is deliberately NOT a keyword rule here: it is derived from the
+  // TITLE only by `lib/bedroomThemeRules.ts` (Rowan, 2026-09-24). The old
+  // entry ('bedroom', 'bed room', 'sleeping', ... over title + description)
+  // left the theme 37.3% title-supported (195 of 523 rows) — 133 of them
+  // whole house builds, 26 pose packs, and "Sleeping Animation Pack".
   {
     keywords: ['living room', 'livingroom', 'living-room', 'lounge', 'family room',
                'sitting room', 'den'],
@@ -846,6 +849,14 @@ export function detectRoomThemesWithConfidence(
         allMatchedKeywords.push(matchedKeyword);
       }
     }
+  }
+
+  // Bedroom theme — title only, whole words, shared rules (never from the
+  // description; see lib/bedroomThemeRules.ts).
+  if (isBedroomTitle(title) && !detectedThemes.includes(BEDROOM_THEME)) {
+    detectedThemes.push(BEDROOM_THEME);
+    allMatchedKeywords.push(BEDROOM_THEME);
+    hasHighConfidenceMatch = true;
   }
 
   // Determine overall confidence
