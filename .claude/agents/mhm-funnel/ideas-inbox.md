@@ -8,6 +8,9 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
+## Operator watch 2026-09-24 — BELOW LINE (sessions)
+Sessions 28d to 09-22 (today's scoreboard history.json): 353,842 vs line 365,393 = 96.84% (gap 11,551, ~413/day); revenue $5,904.06 vs $5,730.39 = 103.03% (on line). Last 7 runs 96.97/96.94/96.76/97.07/97.00/96.88/96.84% — falling since 09-19. The 09-20 value is 96.996% (it rounds to 97.00, and the 09-23 note counted it as ≥97%). Unrounded, the last three runs (96.996, 96.88, 96.84) are all under 97%, so this is BELOW LINE, not WATCH. Required on 09-25 (not optional): Pip and Sage ship two AUDIENCE moves each; Rowan's move is a traffic page; Cass and Rio ship one move each; no Tier 1 merge that is not AUDIENCE. Revenue is on line, so this puts no limit on Rio's RPM work. Lift only after two consecutive runs at or above 97% unrounded. This entry replaces the 09-23 WATCH note (PR #164).
+
 - [ ] **Operator watch 2026-09-22 — BELOW LINE (sessions), still in force on 09-23** (5th consecutive run under the 97% floor: 355,212 vs 366,646 = 96.9%; revenue 102.8%). Re-weighting per autonomy.md's 2026-09-21 directive was applied on 09-23 (Pip/Sage two AUDIENCE moves each, Rowan a traffic page, non-AUDIENCE Tier 1 #144 held). Lift only after two consecutive runs ≥97%. The launcher's full note (table + per-day ratios) is in the archive.
 
 - [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01 (→ Nova, Q14 triage in PR #141; `/creator/[slug]/` pages shipped 09-23 as E85)
