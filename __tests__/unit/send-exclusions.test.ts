@@ -23,7 +23,8 @@ const HEX64 = /^[0-9a-f]{64}$/;
 
 describe('exclusion list shape', () => {
   it('is non-empty (day-1 produced hard bounces) and holds only sha256 hex, never an address', () => {
-    expect(EXCLUDED_RECIPIENT_HASHES.length).toBeGreaterThanOrEqual(7);
+    // 7 day-1 (read 09-20) + 5 day-2 (read 09-24). A list only ever grows; a truncation fails here.
+    expect(EXCLUDED_RECIPIENT_HASHES.length).toBeGreaterThanOrEqual(12);
     for (const h of EXCLUDED_RECIPIENT_HASHES) {
       expect(h).toMatch(HEX64);
       expect(h).not.toContain('@');
@@ -85,10 +86,20 @@ describe('the shipped send script applies the list', () => {
   it('freezes the segment at the day-1 send instant so --offset pages the same list', () => {
     expect(source).toContain("REPERMISSION_ANCHOR_AT = new Date('2026-09-16T10:51:19.626Z')");
     expect(source).toMatch(/createdAt: \{ gte: since, lt: REPERMISSION_ANCHOR_AT \}/);
+    // Membership by favourite is frozen as well, or a late first favourite joins the list (09-24).
+    expect(source).toMatch(/favorites: \{ some: \{ createdAt: \{ lt: REPERMISSION_ANCHOR_AT \} \} \}/);
+    expect(source).not.toMatch(/favorites: \{ some: \{\} \}/);
     expect(source).toMatch(/r\.createdAt < REPERMISSION_ANCHOR_AT/);
     // Exclusions and later consents come off the SLICE, never the list, or indices shift.
     expect(source).toMatch(/const slice = segment\.slice\(offsetArg, offsetArg \+ cap\)/);
     expect(source).not.toMatch(/partitionExcluded\(segment\)\.kept\.slice/);
+  });
+
+  it('refuses unknown flags, so a mistyped dry switch cannot become a live send (09-24)', () => {
+    expect(source).toMatch(/const dry = args\.includes\('--dry'\)/);
+    expect(source).toMatch(/if \(!KNOWN_FLAGS\.has\(a\)\)/);
+    expect(source).toMatch(/refusing to run \(dry switch is --dry\)/);
+    expect(source).not.toMatch(/KNOWN_FLAGS = new Set\([^)]*'--dry-run'/);
   });
 
   it('carries the exclusion counts on the ledger line, never addresses', () => {
