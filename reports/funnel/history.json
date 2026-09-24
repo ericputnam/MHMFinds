@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-23T10:37:27.537Z",
+  "generatedAt": "2026-09-24T13:39:26.037Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -2950,9 +2950,9 @@
     },
     {
       "date": "2026-09-22",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 192.44,
+      "sessions": 11455,
+      "rpm": 16.79,
       "expectedRevenue": 181.14,
       "expectedSessions": 11835,
       "nonAdMonthly": 148,
@@ -3008,6 +3008,44 @@
         "operator": 4,
         "Sage": 3,
         "Ops": 2,
+        "PR": 1
+      }
+    },
+    {
+      "date": "2026-09-24",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 181.33,
+      "expectedSessions": 11310,
+      "nonAdMonthly": 142,
+      "ownedAdds7d": 71,
+      "pinterestSessions7d": 58682,
+      "returningShare7d": 0.5327198132239273,
+      "nonPinterestShare7d": 0.1444774900863074,
+      "pagesPerSession7d": 1.5064279774346527,
+      "engagementRate7d": 0.717225181489223,
+      "favorites7d": 1451,
+      "downloadClicks7d": 191,
+      "newMods7d": 78,
+      "catalogTotal": 16534,
+      "captureRatePer1k": 0.8066073639844131,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.6428571428571429,
+      "opsMergeShare7d": 0.06521739130434782,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "favicon": 1,
+        "Quinn": 7,
+        "Rio": 6,
+        "Pip": 7,
+        "Nova": 7,
+        "operator": 4,
+        "Sage": 5,
+        "Cass": 4,
+        "Ops": 3,
+        "Rowan": 1,
         "PR": 1
       }
     }
@@ -3987,6 +4025,95 @@
       "kind": "merge",
       "label": "operator session / PR #152 ledger row",
       "commit": "c2ab51b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-22",
+      "kind": "incident",
+      "label": "Incident: FALSE ALARM: #142 verify rolled production back on a non-reproducing sitemap timeout, then graded \"STILL FAILING\" on a check that could not run"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Pip: PR #139 pin SEO audit + guarded apply (E77)",
+      "commit": "b94082d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Rio: PR #148 Q4 gate read (HOLD) + E88 re-pitch package",
+      "commit": "c1c0827",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Sage: PR #160 seo(E83): mod page title by content class + word-boundary meta description",
+      "commit": "9ae6481",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Cass: PR #155 default-off newsletter opt-in on sign-up (E86)",
+      "commit": "33c2106",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Ops: PR #161 runner bg-wait ceiling + false-alarm guards (E91)",
+      "commit": "33c2106",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Rowan: PR #156 halloween-cc collection page + halloween theme repair (E90)",
+      "commit": "b7449b1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Rio: PR #158 sponsorship media kit (E89)",
+      "commit": "aa75137",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Sage: PR #162 seo(E84): crawlable \"More <collection>\" links on collection pages",
+      "commit": "29fc728",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Nova: PR #159 /creator/[slug]/ creator landing pages (E85)",
+      "commit": "bf875ef",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Quinn: PR #157 Pip E82 writer-inflow read + Q11 T2 package (paper trail)",
+      "commit": "bf8e1aa",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Quinn: PR #149 operator watch 2026-09-22 (Tier 0 docs)",
+      "commit": "a1e793a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-23",
+      "kind": "merge",
+      "label": "Quinn: PR #163 funnel: daily run 2026-09-23",
+      "commit": "731085d",
       "result": "PASS"
     }
   ]

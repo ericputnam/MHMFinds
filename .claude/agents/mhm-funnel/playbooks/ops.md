@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-09-24 — E101
+- Tried: runner `cleanup()` waits for processes with cwd inside a worktree (lsof), SIGTERMs past 1800 s, leaves a tree whose process survives or cannot be enumerated; stale prune uses the same check (T0, PR #166).
+- Before → after: worktrees deleted under a live process 1 (09-22 orphan) → 0 expected; new test fails 4/6 on pre-fix main.
+- Verdict: MORE DATA (read 2026-10-01: `cleanup: reaped` on every run in `logs/funnel-daily.log`, 0 `left in place` without a follow-up).
+- Next time: a behavioural test that extracts the real shell function beats a grep; and `gh pr merge --delete-branch` exit 1 ≠ not merged — read the PR state.
+
 ## 2026-09-23 — E91
 - Tried: incident forensics for the 09-22 run (T0) + PR: `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS` exported in the runner (default 2 h), secondary-URL navigation retry in smoke-render, empty `check-blog-sidebar` → INCONCLUSIVE, curl failure → `[WARN]` + exit 2. Landed #147 + #142 rows and `incidents/2026-09-22-0655.md` on `main` via `ledger-commit.sh` before the PR.
 - Before → after: runs killed at the 600 s ceiling 3 of the last 5 (09-18, 09-19, 09-22) → 0 expected; ledger rows on `main` for 09-22 morning merges 0 of 2 → 2 of 2; false-alarm rollbacks 1 (09-22 07:10, harmless: identical app code, functions.php re-push failed on a missing path).

@@ -21,7 +21,7 @@ day.
 
 | Tier 1 | Owner | What | Reply to block |
 |---|---|---|---|
-| E75 · PR #140 | Pip | `rank-pin-destinations` producer: ranks revival candidates by the sessions their destination earned instead of by row recency (script + tests, no queue write). The 24h window closed 09-22 but the branch conflicts with `main` (registries + `revive-stranded-pins.py`); Pip rebases and Quinn merges **2026-09-24** via the ship protocol. | stop 140 |
+| — | — | Nothing pending. E75 · PR #140 shipped 09-24 09:46 PASS (`7554037`) when its window closed. | — |
 
 ## Tier 2 — needs your decision
 
@@ -33,6 +33,8 @@ day.
 ### Q10 · Re-permission day-2 batch (Cass, E54, 2026-09-16) — **SENT 09-21; day-3 HELD on the bounce gate**
 - **Reply:** go repermission day2 at 7% (09-21, chat). Sent 09-21 11:54Z, `--offset 100` on the frozen anchor, 0 excluded hashes in the slice.
 - **Status 2026-09-23 (Cass, E54 + E68 read):** day-2 batch **5 hard bounces / 100 (5.0%, gate 3%)**, 0 of the 7 excluded re-sent, 0 complaints, 2 re-permission confirms total (1.06 per 100 delivered). Day-3 is held by its own rule: Cass adds the 5 new bounce hashes to `lib/services/sendExclusions.ts` first (Tier 0, 09-24), then it needs your **"go repermission day3"**. Recommendation: go at 7% once the hashes are in; kill the leg if day-3 bounces ≥3% again.
+
+- **Status 2026-09-24 (Cass, PR #165 `0acc882`):** precondition (a) done. The 5 day-2 bounce hashes are excluded (list 12), and the day-3 dry run shows 12/12 matched, 0 in the slice, 99 would-send. Also fixed: `--dry-run` was silently a live send (now refused), and the segment drifted 383→384 (re-frozen). **Needs your "go repermission day3".** Recommendation: go at 7%. Kill the leg if day-3 hard bounces are ≥3%.
 
 ### Q16 · One Patreon post in your voice (Rio, E88, 2026-09-22) — **silence = dropped 2026-09-29**
 - Q4 gate re-read 09-22: **HOLD** — 0 of 54 paid patrons connected (join pace is fine). The cheapest lever is one post to existing patrons: *"Your $3 now skips the download timer — one tap to switch it on"*, linking `/go/cmim9obub00mzoxy7av4vowyr/`. Draft: `reports/funnel/drafts/patreon-connect-post-2026-09-22.md`. Read D+7 after posting; keep if ≥18 of 54 connect. Reply **"posted patreon <date>"**.
@@ -52,7 +54,7 @@ day.
 
 ### Q6 · Un-consolidate the pregnancy-mods + y2k-cc pairs (Sage, E21) — **SHIPPED 09-12**; one cache purge left (checklist below).
 
-Renumbering from the 09-21 parallel batch applied 09-22/23: E75=#140, E76=#142, E77=#139, E78=#144, E79/E80=#141, E81=#143 (full note in the archive). Q9 (PR #17 video-first ad slot) closed 09-22 unmerged; PR closed. Next free experiment ID: **E92**.
+09-24: Q14/Q15 triage memos (Nova, E79/E80) landed on `main` via the daily PR (`reports/funnel/triage/`), PR #141 closed. Two incidents today, both closed by 10:21: #168 build error (fixed forward by #171) and a verify that promoted an older deploy over a newer one (Quinn rolled back at 10:11); `[ops]` PRIORITY 1 for 09-25 is the newer-than check. Next free experiment ID: E102. Renumbering from the 09-21 parallel batch applied 09-22/23: E75=#140, E76=#142, E77=#139, E78=#144, E79/E80=#141, E81=#143 (full note in the archive). Q9 (PR #17 video-first ad slot) closed 09-22 unmerged; PR closed. Next free experiment ID: **E92**.
 
 ## Operator-only actions (no decision needed, nobody else can do them)
 

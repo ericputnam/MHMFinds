@@ -19,6 +19,13 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-24
+- Tried: E99 — `/go` member CTA kept visible after the countdown (T0, PR #169, e1b5e94). The Connect / Become-a-patron line lived only in the countdown branch, so it unmounted when "Continue to Download" appeared: headless render of a logged-out `/go` showed connect=true at t+4s and connect=false continue=true at t+13s. New line under the button, own event `patreon_click_after_wait`, gated `canProceed && mod && membershipOn && !isMember && !showPostConnect`; scoreboard capture list carries it; 5 guard tests red on pre-fix main. Production render after deploy: afterWait=true at t+13s, .mv-ads 1, aside 1. Merged onto the unbuildable main (10:03→10:12, #167×#168); ledger row is Quinn's 10:20 `--check` PASS on the #171 build.
+- Before → after: patreon_click users/day 8.75 (09-08→09-11, two outlier days of 13 when /go pv spiked to 112/65) → 5.57 (09-16→09-22); click rate per render user 11.8% → 9.5%, per page_view user 28.7% → 28.1% (flat); /go render users 74 → 58.7/day (−21%) while mod-page page_view 877 → 888/day. The drop is /go reach, not CTA copy — E65 keep rule (≥4.375) is met. After-wait clicks 0 → read 10-01.
+- Guardrail: GREEN, demand-side — 09-22 $192.44 (+6.2% same-weekday), RPM $16.79 (+9.8%), sessions −3.2%; monetizable RPM $28.75 vs $27.43 30d; 7d $1,490.45 (−0.7%), 28d $5,904.06 (+5.1%). Mediavine MCP unavailable in-session.
+- Verdict: MORE DATA (E99 read 10-01; E65 09-26; E55/E60 09-29; E74 10-06).
+- Next time: (1) a CTA that only renders inside a timed branch has a lifetime equal to the timer — render at t+timer+3s before calling placement fine; (2) Patreon clicks are now two events — add `patreon_click_after_wait` to any denominator that sums them, never fold it into E65's read; (3) `gh pr merge --delete-branch` fails when another worktree holds `main`, and the retry loop then reports "already merged" forever — merge in the foreground, delete the remote branch via the API.
+
 ## 2026-09-23
 - Tried: E89 — sponsorship media kit + outreach package (T0 draft, `reports/funnel/drafts/sponsorship-media-kit-2026-09-23.md`; sending and price are T2, the operator's). Also #148 rebased on main and merged `c1c0827` (E88 package + Q4 HOLD read + both E60 windows); silence default added to the E88 draft.
 - Before → after: sponsorship **$0/mo, 0 outreach emails ever** (2026-09-23) → read 2026-10-07; keep if ≥10 sent AND (≥1 interested reply OR ≥1 call); 0 sent by 09-30 → re-pitch once, drop 10-07. Kit numbers (GA4 08-24→09-20): 354,348 sessions · 206,979 users · 563,617 pv · desktop 93.6% · US 39.3% / UK 6.6% / BR 5.0% / FR 4.5%; two prices for the operator: $300 (hub) / $750 (site).
