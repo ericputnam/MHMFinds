@@ -73,7 +73,7 @@ export default function CreatorPageClient({ data }: CreatorPageClientProps) {
               <span>Home</span>
             </Link>
             <ChevronRight size={14} className="text-slate-600" />
-            <Link href="/top-creators/" className="hover:text-sims-pink transition-colors">
+            <Link href="/creator/" className="hover:text-sims-pink transition-colors">
               Creators
             </Link>
             <ChevronRight size={14} className="text-slate-600" />

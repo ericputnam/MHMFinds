@@ -59,6 +59,9 @@ export async function GET() {
     // /play/ — the daily styling game. changefreq daily because a new
     // episode is generated every midnight ET.
     { loc: `${baseUrl}/play/`, lastmod: APP_LASTMOD, priority: '0.6', changefreq: 'daily' },
+    // /creator/ — the crawlable A–Z hub for /creator/[slug]/ (E97). The
+    // leaves live in sitemap-creators.xml; the hub moves with every ingest.
+    { loc: `${baseUrl}/creator/`, lastmod: APP_LASTMOD, priority: '0.7', changefreq: 'daily' },
     { loc: `${baseUrl}/top-creators/`, lastmod: APP_LASTMOD, priority: '0.5', changefreq: 'weekly' },
     { loc: `${baseUrl}/about/`, lastmod: APP_LASTMOD, priority: '0.3', changefreq: 'monthly' },
     { loc: `${baseUrl}/submit-mod/`, lastmod: APP_LASTMOD, priority: '0.3', changefreq: 'monthly' },

@@ -138,7 +138,7 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            <a href="/top-creators/" className="hover:text-sims-green transition-colors">Creators</a>
+            <a href="/creator/" className="hover:text-sims-green transition-colors">Creators</a>
             <a href="/blog/" className="hover:text-white transition-colors">Blog</a>
           </div>
 
@@ -284,7 +284,7 @@ export const Navbar: React.FC = () => {
             </div>
 
             <a
-              href="/top-creators/"
+              href="/creator/"
               className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all"
               onClick={() => setShowMobileMenu(false)}
             >

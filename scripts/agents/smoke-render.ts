@@ -103,6 +103,8 @@ async function main() {
     // the bare form. Verified against production 2026-09-16: 200, secondary=1, mv-ads=1,
     // loader present, 2,846 chars of text, 0 page errors.
     { path: '/play/', kind: 'game' },
+    // /creator/ — the creator A–Z hub (E97): same ad furniture as a catalog page.
+    { path: '/creator/', kind: 'catalog' },
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
     { path: '/llms-full.txt', kind: 'text' },

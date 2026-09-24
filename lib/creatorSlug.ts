@@ -31,6 +31,50 @@ export function isJunkAuthorSlug(slug: string): boolean {
   return false;
 }
 
+/**
+ * Author strings that are platforms, stores or aggregators — not creators —
+ * yet clear MIN_MODS_FOR_PAGE on row count alone. Spot-check of the 542
+ * hub-eligible slugs on 2026-09-24 (mods / download clicks):
+ *   simsfinds 81/747 (simsfinds.com, an aggregator) · amazon 70/168 ·
+ *   simfileshare 42/329 (a file host) · curseforge-creator 38/216 (the
+ *   scraper's CurseForge fallback) · sims4downloads 5/110 · google 9/8 ·
+ *   unknown 9/10.
+ * The rest are the same class, listed pre-emptively so the next ingest
+ * cannot promote one onto the hub. The /creator/ hub (E97) never lists
+ * these. They still get a leaf page and a mod-page author link today —
+ * folding this set into isJunkAuthorSlug is a queued E85 follow-up, not
+ * part of the hub PR (it would change E85's measured population).
+ */
+export const NON_CREATOR_SLUGS: ReadonlySet<string> = new Set([
+  'simsfinds',
+  'amazon',
+  'simfileshare',
+  'curseforge-creator',
+  'curseforge',
+  'sims4downloads',
+  'google',
+  'unknown',
+  'patreon',
+  'tumblr',
+  'the-sims-resource',
+  'sims-resource',
+  'tsr',
+  'mod-the-sims',
+  'modthesims',
+  'loverslab',
+  'lovers-lab',
+  'nexusmods',
+  'nexus-mods',
+  'simsdom',
+  'sims-4-studio',
+  'mediafire',
+  'admin',
+]);
+
+export function isNonCreatorSlug(slug: string): boolean {
+  return NON_CREATOR_SLUGS.has(slug);
+}
+
 export function creatorHref(slug: string): string {
   // Trailing slash: next.config.js sets trailingSlash: true, so a bare
   // path 308s (the canonical-trailing-slash guard scans for slashless hrefs).

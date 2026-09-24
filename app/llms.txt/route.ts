@@ -47,6 +47,7 @@ ${collectionLines}
 
 - [Mod search homepage](https://musthavemods.com/): full-database search with filters for content type, art style, theme, and price
 - [Sims 4 mods hub](https://musthavemods.com/games/sims-4/): all Sims 4 collections and top mods
+- [Sims 4 CC creators A–Z](https://musthavemods.com/creator/): every creator in the catalog, ranked by downloads and listed A–Z; each links to /creator/{slug}/ with that creator's mods and download links
 - [Must-Have Sims 4 Mods guide](https://musthavemods.com/must-have-mods-sims-4/): editorial best-of guide
 - [Blog](https://musthavemods.com/blog/): guides, roundups, and new CC finds
 

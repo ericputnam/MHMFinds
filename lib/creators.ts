@@ -23,9 +23,9 @@
 
 import { prisma } from './prisma';
 import type { Mod } from './api';
-import { authorSlug, creatorHref, isJunkAuthorSlug } from './creatorSlug';
+import { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug } from './creatorSlug';
 
-export { authorSlug, creatorHref, isJunkAuthorSlug };
+export { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug };
 
 /** A creator page needs at least this many SFW mods, else 404. */
 export const MIN_MODS_FOR_PAGE = 5;
@@ -108,6 +108,71 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
       ? { website: profile.website, isVerified: profile.isVerified, bio: profile.bio }
       : null,
   };
+}
+
+/** One row of the /creator/ hub index (Nova, E97, 2026-09-24). */
+export interface CreatorListRow {
+  slug: string;
+  /** The most-used spelling of the author string. */
+  displayName: string;
+  mods: number;
+  /** Sum of download clicks recorded on this site. */
+  downloads: number;
+  /** ISO date of the creator's newest mod, or null. */
+  latest: string | null;
+}
+
+/**
+ * Every creator that gets a leaf page (>= MIN_MODS_FOR_PAGE SFW mods, not a
+ * junk slug) minus the platform/aggregator names in NON_CREATOR_SLUGS, most
+ * mods first. One grouped query so the hub is a single round trip.
+ *
+ * Crawler surface: degrades to [] on a DB error — the hub still renders its
+ * shell and ad anchors with a 200, never a 500.
+ */
+export async function listCreators(): Promise<CreatorListRow[]> {
+  let rows: Array<{ slug: string; author: string; mods: number; downloads: number; latest: Date | null }> = [];
+  try {
+    rows = await prisma.$queryRaw<typeof rows>`
+      WITH per_author AS (
+        SELECT trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug,
+               author,
+               COUNT(*)::int AS n,
+               COALESCE(SUM("downloadCount"), 0)::int AS dl,
+               MAX("createdAt") AS latest
+        FROM mods
+        WHERE author IS NOT NULL AND "isNSFW" = false
+        GROUP BY 1, 2
+      ),
+      per_slug AS (
+        SELECT slug, SUM(n)::int AS mods, SUM(dl)::int AS downloads, MAX(latest) AS latest
+        FROM per_author
+        GROUP BY slug
+        HAVING SUM(n) >= ${MIN_MODS_FOR_PAGE}
+      ),
+      names AS (
+        SELECT DISTINCT ON (slug) slug, author
+        FROM per_author
+        ORDER BY slug, n DESC, author ASC
+      )
+      SELECT s.slug, n.author, s.mods, s.downloads, s.latest
+      FROM per_slug s
+      JOIN names n USING (slug)
+      ORDER BY s.mods DESC, s.slug ASC
+    `;
+  } catch (error) {
+    console.error('[creators] listCreators query failed, serving empty list:', error);
+    return [];
+  }
+  return rows
+    .filter((r) => !isJunkAuthorSlug(r.slug) && !isNonCreatorSlug(r.slug))
+    .map((r) => ({
+      slug: r.slug,
+      displayName: r.author.trim(),
+      mods: Number(r.mods),
+      downloads: Number(r.downloads),
+      latest: r.latest ? new Date(r.latest).toISOString().slice(0, 10) : null,
+    }));
 }
 
 /**

@@ -55,6 +55,7 @@ const PAGES_WITH_SIDEBAR = [
   { name: 'Daily game (/play/)', file: 'app/play/PlayClient.tsx' },
   { name: 'Collection page (/games/[game]/[topic])', file: 'app/games/[game]/[topic]/CollectionPageClient.tsx' },
   { name: 'Creator page (/creator/[slug])', file: 'app/creator/[slug]/CreatorPageClient.tsx' },
+  { name: 'Creator hub (/creator/)', file: 'app/creator/page.tsx' },
 ]
 
 // ============================================================
