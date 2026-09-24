@@ -747,13 +747,21 @@ run died with `Prompt is too long`.
 - **Enumerate the ways a check can be wrong *before* wiring it to a destructive action.**
   "Could not run" ≠ "is broken". Health checks use three exit codes — `0` ok, `2` WARN /
   could-not-run, `1` FAIL — and a probe that can be wrong about the world returns
-  `unknown`, never a verdict that triggers a write. Two false-alarm production rollbacks came
-  from collapsing these.
+  `unknown`, never a verdict that triggers a write. Three false-alarm production rollbacks came
+  from collapsing these. **Grade on positive evidence, not on the exit code:** under `set -e` a
+  failed `curl` kills a check *before* its `[FAIL]` line prints, so "non-zero with empty output"
+  means could-not-run — on 09-22 exactly that was graded FAIL twice and produced `ROLLED BACK,
+  STILL FAILING` while Chromium saw every marker in the same minute. A single navigation timeout on
+  a secondary URL (sitemap, feed) must reproduce once on a fresh page before it counts.
 - **Silence from a scheduled job must become a row, not a sentence in a digest.** Any automation
   needs an explicit "did not fire" record; otherwise "ran and had nothing to say" and "never
   started" are indistinguishable. Annotating a dead monitor in prose is how it stays dead.
 - **A monitor must mirror its consumer's selection query**, or its threshold is decoration. And
   when a number is metered by design, threshold the *buffer* (runway), not the point-in-time count.
+  **But never divide the buffer by its *trailing* drain** — that ratio reads healthier as the drip
+  starves (Pinterest: 77 ÷ 32.5 = 2.4 d, then 77 ÷ 15 = 5.1 d as posting fell). Divide by the rate
+  you *want*. And "the writer is inserting" is not inflow: 341/341 rows since the 09-21 cron carried
+  the placeholder `post_date = '2025-01-01'`, so the queue's consumer selected none of them.
 - **Print the decision rule before you take the reading.** A threshold chosen after seeing the
   printout is not a pre-committed gate. Guardrails on a must-not-fall metric are **one-sided**
   (≥95% of baseline), never a symmetric ±band — a +13.8% RPM result once flagged as a breach.
@@ -825,7 +833,12 @@ run died with `Prompt is too long`.
   facets at once.** `jewelry` is the third facet cleaned of the same description-inference pollution
   after `lighting` (#61) and `gameplay-mod` (#79): 553 rows, only 77.0% carrying a jewelry word, a
   dining room and eight hairstyles in the grid. Re-tag from **titles only**, and prefer `NULL` to a
-  guess — NULL drops a mod from every facet, a wrong tag pollutes one.
+  guess — NULL drops a mod from every facet, a wrong tag pollutes one. The same class lives in
+  **every** `THEME_KEYWORDS` entry in `aiFacetExtractor.ts` (substring over title+description):
+  `halloween` was 547 rows / 34.7% title-supported before #156 (witch/vampire/ghost/pumpkin mapped
+  to it); `bedroom` 43.6%, `kitchen` 44.6%, `bathroom` 37.6% are still unfixed. **Fix a theme at
+  the source before you build a page on it**, and read the dry run's ADD list as hard as its STRIP
+  list — that is where `pumpkin` and `ghost` were caught.
 - **Measure a candidate keyword against the whole catalog before adding it, and record the
   *rejections* with their counts in the rule's own comment** so nobody re-proposes them. `nose`
   matches 95 titles of which 48 are nose *presets*; `chain` 31/7, `gem` 10/3, `grill` is a BBQ.
@@ -922,53 +935,43 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-22 — the ledger became durable, and every gate had to learn about the new committer
+### 2026-09-23 — the run was killed by its own parent, and the orphan rolled production back
 
-- **A rule chained in prose after the action cannot gate it.** On 09-21 two merges landed 5 s
-  apart; the Vercel alias went to the *parent* build and `deploy-verify --after-merge` graded PASS
-  against a build production was not serving. "≥4 min apart" existed only as text after
-  `gh pr merge`. Fix (#147): `merge-gate.sh` is an exit code you put *in front of* the merge.
-- **The caller's sha is a lower bound, never the thing you certify.** After waiting for its build,
-  `deploy-verify` now re-fetches `origin/main`; if HEAD moved, it waits for HEAD's build, verifies
-  *that*, and writes `main moved past caller X; graded HEAD Y` into the row. Production serves
-  HEAD, so HEAD is what gets graded.
-- **Adding an automated committer to `main` means teaching every watcher of `main` about it.**
-  `ledger-commit.sh` pushes `funnel(ledger): …` commits straight to `main` after each merge.
-  Without exemptions they would hold `merge-gate` closed for 240 s after every verify and retarget
-  `deploy-verify` onto a docs commit. Both now skip commits whose subject is `funnel(ledger):`
-  **and** whose files are all under `reports/funnel/` (subject alone is spoofable). **But the
-  exemption rests on a false premise:** `deploy-verify.sh:158` says a docs-only commit "never
-  produces" a Vercel build, and `vercel.json`'s `ignoreCommand` skips *previews only* — ledger
-  commit `505cab3` (22:13:21) produced production build `oyuurgkzl` (22:13:23). So after every
-  verified merge, production is re-aliased to a build nobody smoke-tested. Same code, so low risk
-  today, but check the build trigger before you call a commit "docs-only".
-- **"Nothing to commit" is not "nothing happened" when the worker commits for itself.**
-  `auto-compound.sh` checked `git diff --quiet` — but `loop.sh` tells Claude to commit each task,
-  so the tree is clean either way. Count `git rev-list --count $BASE_SHA..HEAD` instead. An empty
-  run now exits **2**, pushes nothing, deletes the local branch, and writes a row to
-  `reports/compound/status.jsonl`. `cleanup-empty-compound-branches.sh` (dry-run default) exists
-  but has not been run with `--apply`: `origin` still holds 20 `compound/*` branches on 09-22.
-- **`"${VAR:-}/sub"` is never empty — guard the variable, not the joined path.** `deploy-verify`'s
-  `[ -n "$dir" ] || continue` over `"${FUNNEL_PRIMARY_WT:-}/reports/funnel"` could never fire, so a
-  standalone run wrote to `/reports/funnel` at the filesystem root (#154).
-- **A fallback written inside an ephemeral worktree dies with the worktree.** The runner deletes
-  per-agent worktrees at the end of each run, so `ledger-pending.jsonl` and
-  `reports/compound/status.jsonl` are written to the operator's own checkout, not `$ROOT`.
-- **Monitor a queue's inflow, not only its depth.** The Pinterest pin *writer*
-  (`posts_2_supabase_server.py`, no cron) sat idle 09-04 → 09-21 while runway looked fine because
-  three manual revival slices kept refilling it with borrowed inventory. `assessWriterLiveness()`
-  (#142) watches the newest row carrying the writer's own insert marker (`"Wordpress Post ID"` not
-  null — this repo's tooling leaves it null), so our own top-ups cannot mask a dead writer. WARN
-  only; the fix (a BigScoots cron) is Tier 2.
-- **Budgets are now checked, not just written down.** `scripts/agents/context-budget.ts` (SD-12)
-  checks per-file byte caps on every doc the funnel agents read — `CLAUDE.md` is capped at 60 000 —
-  and the runner runs it each morning (WARN only). Closed experiments, queue items and old playbook
-  notes moved verbatim to `.claude/agents/mhm-funnel/archive/`.
-- **Admin UI: a `flex-1` child needs `min-w-0`** or wide content (charts, tables) forces the page
-  to scroll sideways — `app/admin/layout.tsx` `<main>` got it in #150.
+- **A parent that returns at dispatch will reap its children on its own clock.** `claude -p`
+  terminates background tasks 600 s after the main turn ends; Quinn's turn ends once the seven
+  specialists are dispatched, so any agent needing >10 min (build + PR + merge-gate + deploy-verify)
+  was killed mid-flight on 09-18, 09-19 and 09-22 and the runner accepted a skeleton digest as
+  "Quinn finished". Fix (#161): the runner exports `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`
+  (2 h default — finite on purpose, so a hung agent cannot wedge the task), guarded by
+  `funnel-runner-bg-ceiling.test.ts`. Before trusting any "done" from an orchestrator, find out
+  what its runtime does to work still in flight when it returns.
+- **A cleanup trap that deletes a working directory must first wait for, or kill, what runs in
+  it.** The runner's `cleanup()` removed every agent worktree while a `deploy-verify` child was
+  still alive; the orphan kept running in a deleted directory, rolled production back, wrote its
+  incident file into the void and its ledger rows into three deleted trees. Still open as `[ops]`.
+- **A remediation step that has never run is untested.** The same rollback's
+  `restore_functions_php` failed with `No such file or directory` — the push script was not in the
+  worktree's copy path. Harmless that day only because nothing was actually broken.
+- **Run the script under test from the tree under test; borrow only its dependencies.**
+  `deploy-verify` picks `smoke-render.ts` from the first tree that has `node_modules/playwright`,
+  so on 09-22 the operator tree's *stale* 7-target copy graded the deploy. Still open as `[ops]`.
+- **A guard that re-scores a proposal with the rules that generated it is circular, not a quality
+  gate.** The pin-SEO `--apply` guard (#139) only writes proposals that "re-score clean" — so it
+  approved one identical machine template for 76 of 77 rows, with an unverifiable "no dead links"
+  claim. `--apply` was withheld by hand. Judge generated output with a check it was not built to pass.
+- **"Crawlable" means a plain `<a>` in the server HTML.** Collection pages SSR 48 mods and had no
+  pagination, and `RelatedMods` is client-fetched, so every mod below rank 48 reached Google only via
+  a sitemap reporting 0 of 17,164 indexed. #162 adds a server-rendered "More …" list (plain `<a>`,
+  trailing slash, `.catch(() => [])` so it can never 500 the page, placed in the main column and
+  never inside an ad anchor). Relatedly (#160), `shortDescription` is a hard 200-char slice on
+  16,533 of 16,534 rows — truncate for meta at a word boundary, never pass it through.
+- **Demand for a hub page can hide in the query data of the leaf pages.** A creator-name cluster
+  (69 clicks/28d) was landing on one mod page while `/creators/` had 1 session — read GSC queries by
+  *page* before concluding a hub has no demand. #159 (`/creator/[slug]/`) followed the prefix rule:
+  `creator` is in `NEXTJS_PREFIXES` in the same PR (distinct from `creators`, the dashboard).
 ---
 
-*Last compound review: 2026-09-22*
+*Last compound review: 2026-09-23*
 
 ---
 

@@ -1744,3 +1744,48 @@ carries 192×192 and 512×512 PNGs, `purpose: "any"`. Zero build-time signal eit
 - **The evening guardrail has now MISSED 8 nights (09-12→09-19) and written no real `check` row
   since 09-04 (16 days).** Unchanged from the last two reviews, and still only fixable by the
   operator enabling the scheduled task — the detector lives inside the morning run it watches.
+
+## 2026-09-22 — the ledger became durable, and every gate had to learn about the new committer (CLAUDE.md summary, rotated 2026-09-23)
+
+- **A rule chained in prose after the action cannot gate it.** On 09-21 two merges landed 5 s
+  apart; the Vercel alias went to the *parent* build and `deploy-verify --after-merge` graded PASS
+  against a build production was not serving. "≥4 min apart" existed only as text after
+  `gh pr merge`. Fix (#147): `merge-gate.sh` is an exit code you put *in front of* the merge.
+- **The caller's sha is a lower bound, never the thing you certify.** After waiting for its build,
+  `deploy-verify` now re-fetches `origin/main`; if HEAD moved, it waits for HEAD's build, verifies
+  *that*, and writes `main moved past caller X; graded HEAD Y` into the row. Production serves
+  HEAD, so HEAD is what gets graded.
+- **Adding an automated committer to `main` means teaching every watcher of `main` about it.**
+  `ledger-commit.sh` pushes `funnel(ledger): …` commits straight to `main` after each merge.
+  Without exemptions they would hold `merge-gate` closed for 240 s after every verify and retarget
+  `deploy-verify` onto a docs commit. Both now skip commits whose subject is `funnel(ledger):`
+  **and** whose files are all under `reports/funnel/` (subject alone is spoofable). **But the
+  exemption rests on a false premise:** `deploy-verify.sh:158` says a docs-only commit "never
+  produces" a Vercel build, and `vercel.json`'s `ignoreCommand` skips *previews only* — ledger
+  commit `505cab3` (22:13:21) produced production build `oyuurgkzl` (22:13:23). So after every
+  verified merge, production is re-aliased to a build nobody smoke-tested. Same code, so low risk
+  today, but check the build trigger before you call a commit "docs-only".
+- **"Nothing to commit" is not "nothing happened" when the worker commits for itself.**
+  `auto-compound.sh` checked `git diff --quiet` — but `loop.sh` tells Claude to commit each task,
+  so the tree is clean either way. Count `git rev-list --count $BASE_SHA..HEAD` instead. An empty
+  run now exits **2**, pushes nothing, deletes the local branch, and writes a row to
+  `reports/compound/status.jsonl`. `cleanup-empty-compound-branches.sh` (dry-run default) exists
+  but has not been run with `--apply`: `origin` still holds 20 `compound/*` branches on 09-22.
+- **`"${VAR:-}/sub"` is never empty — guard the variable, not the joined path.** `deploy-verify`'s
+  `[ -n "$dir" ] || continue` over `"${FUNNEL_PRIMARY_WT:-}/reports/funnel"` could never fire, so a
+  standalone run wrote to `/reports/funnel` at the filesystem root (#154).
+- **A fallback written inside an ephemeral worktree dies with the worktree.** The runner deletes
+  per-agent worktrees at the end of each run, so `ledger-pending.jsonl` and
+  `reports/compound/status.jsonl` are written to the operator's own checkout, not `$ROOT`.
+- **Monitor a queue's inflow, not only its depth.** The Pinterest pin *writer*
+  (`posts_2_supabase_server.py`, no cron) sat idle 09-04 → 09-21 while runway looked fine because
+  three manual revival slices kept refilling it with borrowed inventory. `assessWriterLiveness()`
+  (#142) watches the newest row carrying the writer's own insert marker (`"Wordpress Post ID"` not
+  null — this repo's tooling leaves it null), so our own top-ups cannot mask a dead writer. WARN
+  only; the fix (a BigScoots cron) is Tier 2.
+- **Budgets are now checked, not just written down.** `scripts/agents/context-budget.ts` (SD-12)
+  checks per-file byte caps on every doc the funnel agents read — `CLAUDE.md` is capped at 60 000 —
+  and the runner runs it each morning (WARN only). Closed experiments, queue items and old playbook
+  notes moved verbatim to `.claude/agents/mhm-funnel/archive/`.
+- **Admin UI: a `flex-1` child needs `min-w-0`** or wide content (charts, tables) forces the page
+  to scroll sideways — `app/admin/layout.tsx` `<main>` got it in #150.
