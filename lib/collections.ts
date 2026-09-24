@@ -367,7 +367,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // holidays-cc -> kids-cc (2026-09-21): nurseries, cribs and kid bedrooms
     // are 39 of the kids grid and 58 of it is furniture. holidays-cc keeps 2
     // inbound (clutter, decor-cc), the floor.
-    related: ['clutter', 'kids-cc', 'decor-cc'],
+    // 2026-09-24: 'clutter' → 'bedroom-cc' so the new page has an anchored
+    // inbound source (clutter keeps 2 inbound: decor-cc, holidays-cc).
+    related: ['bedroom-cc', 'kids-cc', 'decor-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -719,7 +721,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       ageGroupsAny: ['infant', 'toddler', 'child'],
     },
     expectedCount: 686,
-    related: ['hair-cc', 'pregnancy-mods', 'furniture-cc'],
+    // 2026-09-24: 'hair-cc' → 'bedroom-cc' (kids/toddler/teen bedroom sets
+    // are the second-largest slice of that page; hair-cc keeps 6 inbound).
+    related: ['bedroom-cc', 'pregnancy-mods', 'furniture-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best kids
     // cc" intent, this page owns browse/filter intent. /sims-4-kids-cc/ is
     // live (HTTP 200, no redirect, verified 2026-09-21) and appears in neither
@@ -775,6 +779,57 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // articles together take ~519 impressions and 4 clicks (eyes 138 at 21.9,
     // makeup 50 at 23.4) — before the October peak.
     blogUrl: '/sims-4-halloween-cc/',
+  },
+  {
+    // Rowan, 2026-09-24 (E100). Second `themesAny` page; appended last
+    // because themesAny scores specificity 1. Demand: GSC 28d to 09-21 puts
+    // the bedroom cluster of legacy listicles (/sims-4-beds/, toddler /
+    // teen / kids bedroom, bedroom clutter) at ~394 impressions / 7 clicks,
+    // and the query set ("sims 4 bed frame cc" pos 16.8, "sims 4 teen
+    // bedroom cc" pos 21.9, "sims 4 bed cc", "sims 4 beds cc") lands on
+    // no browse page at all. /games/sims-4/furniture-cc/ is the busiest
+    // build/buy collection (911 landing sessions 28d) and gains a sibling.
+    slug: 'bedroom-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Bedroom CC',
+    heading: 'Sims 4 Bedroom CC',
+    metaTitle: 'Sims 4 Bedroom CC Finder — Browse 250 Beds & Bedroom Sets | MustHaveMods',
+    metaDescription:
+      'Browse 250 Sims 4 bedroom CC finds in one filterable grid — full bedroom sets, beds and bed frames, kids, toddler and teen rooms, dressers, nightstands and bedroom clutter, links checked.',
+    tagline: 'Full bedroom sets, beds, and kids’ rooms in one grid',
+    intro:
+      "The bedroom is the room every household actually uses, and it is the one Maxis furnishes worst: a handful of bed frames that all sit at the same height, mattresses that clip through them, and a teen room that looks exactly like the adult one with a poster on the wall. Most builders replace the whole lot within a week of starting a save — so bedroom CC is the largest build/buy category on the site after generic furniture, and this grid is all of it in one place.\n\nEvery item here says bedroom, bed, bed frame, mattress, dresser or nightstand in its own title. That is deliberate. Room tags are easy to get wrong when a whole blog post shares one description — a pyjama set or a pose pack that appeared in a bedroom roundup is not bedroom furniture — so this collection only holds items whose creator called them that. When we repaired the tag, more than half the rows it used to carry were whole-house lots, sleep animations and a lingerie collection; none of those are here.\n\nWhat is here splits three ways. Full bedroom sets are the bulk of it: bed, dresser, nightstand and clutter in one download, in every style the community builds — Y2K and 2000s rooms, coquette and boho, goth and Victorian gothic, punk, cozy cottage, modern, hotel suites and a Christmas bedroom for December saves. Standalone beds and frames: bunk beds, a TV bed, Murphy beds, a sofa bed, king-size and double frames, functional mattresses, and mid-century and Scandinavian bedframes that come in eight or more swatches. And rooms for the rest of the household: infant and toddler bedrooms, kids' rooms from castles to meadows, and teen rooms — all separate meshes, so check the age group before you download a bed for a toddler.\n\nTwo practical notes. Many sets ship as one large package; if you only want the bed, most creators list the individual pieces on their download page. And a lot of these are older uploads that creators re-release with new swatches — the original still works, but look for a newer version before installing both.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the sets everyone already runs, or scroll for the one-off bedframes the big roundups never reach.",
+    filter: {
+      // 250 SFW Sims 4 mods on the `bedroom` theme, verified against
+      // production 2026-09-24 *after* the same-PR repair of the theme.
+      //
+      // Before the repair the theme had 523 rows and only 195 said bedroom
+      // in the title (37.3%): 133 were whole-house lots/builds, 26 pose
+      // packs; card #3 was "Victoria's Secret Sleepwear Collection" and
+      // "Wake Up Animation" / "Sleeping Animation Pack" sat in the top 20.
+      // Cause: ROOM_THEME_RULES in contentTypeDetector.ts matched
+      // 'bedroom' / 'sleeping' by substring over title + DESCRIPTION, and the
+      // description is shared by every mod scraped from one blog post.
+      // Fixed at the source (`lib/bedroomThemeRules.ts`, imported by the
+      // detector) and re-derived from titles only: 39 added, 312 stripped
+      // (`scripts/retag-bedroom-theme.ts`, backup in
+      // reports/catalog/bedroom-theme-retag-2026-09-24.csv).
+      //
+      // Audited before ranking: 250 of 250 titles carry bedroom evidence;
+      // the top 40 by downloads read 40/40 as bedroom content. Two rows
+      // whose description says bedroom but whose title does not ("Teen
+      // Space", 7,998 downloads; "Set Shaggy") were stripped on purpose —
+      // titles only.
+      themesAny: ['bedroom'],
+    },
+    expectedCount: 250,
+    related: ['furniture-cc', 'decor-cc', 'kids-cc'],
+    // Differentiated pair: /sims-4-beds/ keeps the editorial "best beds"
+    // intent, this page owns browse/filter intent. It is live (HTTP 200,
+    // no redirect, verified 2026-09-24) and not in vercel.json; 204
+    // impressions / 5 clicks at position 36.8 over the 28d to 2026-09-21.
+    blogUrl: '/sims-4-beds/',
   },
 ];
 
