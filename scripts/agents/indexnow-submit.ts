@@ -5,11 +5,16 @@
  *   npx tsx scripts/agents/indexnow-submit.ts                 # dry run (default): prints the list, sends nothing
  *   npx tsx scripts/agents/indexnow-submit.ts --apply          # live POST to https://api.indexnow.org/indexnow
  *   npx tsx scripts/agents/indexnow-submit.ts --days 3 --cap 200 --no-collections
+ *   npx tsx scripts/agents/indexnow-submit.ts --apply --creators --days 2   # E95: + every /creator/[slug]/ page
  *
  * Selection mirrors /sitemap-mods.xml exactly (isNSFW=false, isVerified=true)
  * so we never push a URL the sitemap would not list; mods are those created in
  * the last --days (default 7), newest first, collections come first, and the
- * whole list is capped at HARD_CAP (500) no matter what flags say.
+ * whole list is capped at HARD_CAP (500) no matter what flags say — except a
+ * `--creators` run (E95, 2026-09-24), which appends every creator page from
+ * lib/creators.ts listCreators() (the /sitemap-creators.xml population, so
+ * again nothing the sitemap would not list) under CREATORS_HARD_CAP (1000).
+ * `--creators` is a one-off / occasional push, not part of the daily runner.
  *
  * Safety rails, in order:
  *   1. --apply is required to send; everything else is a dry run.
@@ -32,11 +37,13 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+  CREATORS_HARD_CAP,
   DEFAULT_DAYS,
   HARD_CAP,
   INDEXNOW_ENDPOINT,
   INDEXNOW_KEY,
   buildPayload,
+  capCeiling,
   exitCodeFor,
   interpretResponse,
   keyLocation,
@@ -100,8 +107,9 @@ function usage(): void {
       '',
       '  --apply             send for real (default is a dry run that prints the list)',
       `  --days N            mods created in the last N days (default ${DEFAULT_DAYS})`,
-      `  --cap N             max URLs per run, clamped to ${HARD_CAP}`,
+      `  --cap N             max URLs per run, clamped to ${HARD_CAP} (${CREATORS_HARD_CAP} with --creators)`,
       '  --no-collections    skip homepage / game hubs / collection pages',
+      '  --creators          also submit every /creator/[slug]/ page (the /sitemap-creators.xml population)',
       '',
       `Key: ${INDEXNOW_KEY} (public; served at ${keyLocation()})`,
       `Log: ${LOG_PATH}`,
@@ -121,6 +129,22 @@ async function fetchNewModIds(days: number, cap: number): Promise<string[]> {
       take: cap,
     });
     return rows.map((r) => r.id);
+  } finally {
+    await prisma.$disconnect().catch(() => undefined);
+  }
+}
+
+/**
+ * Every creator page slug, from the same query /sitemap-creators.xml serves
+ * (lib/creators.ts listCreators — junk slugs already filtered). Imported
+ * lazily for the same DATABASE_URL reason as fetchNewModIds.
+ */
+async function fetchCreatorSlugs(): Promise<string[]> {
+  const { listCreators } = await import('../../lib/creators');
+  const { prisma } = await import('../../lib/prisma');
+  try {
+    const rows = await listCreators();
+    return rows.map((r) => r.slug);
   } finally {
     await prisma.$disconnect().catch(() => undefined);
   }
@@ -169,15 +193,40 @@ async function main(): Promise<void> {
     finish({ ...base, reason: 'db-error' });
   }
 
-  const sel = selectUrls({ modIds: modIds!, includeCollections: args.collections, cap: args.cap });
-  const counts = { urls: sel.urls.length, mods: sel.mods, collections: sel.collections, dropped: sel.dropped.length };
+  let creatorSlugs: string[] = [];
+  if (args.creators) {
+    try {
+      creatorSlugs = await fetchCreatorSlugs();
+    } catch (err) {
+      console.error(`[indexnow] creator query failed: ${String((err as Error).message ?? err).slice(0, 200)}`);
+      finish({ ...base, reason: 'db-error-creators' });
+    }
+  }
+
+  const sel = selectUrls({
+    modIds: modIds!,
+    creatorSlugs,
+    includeCollections: args.collections,
+    cap: args.cap,
+    ceiling: capCeiling(args),
+  });
+  const counts = {
+    urls: sel.urls.length,
+    mods: sel.mods,
+    collections: sel.collections,
+    creators: sel.creators,
+    dropped: sel.dropped.length,
+  };
   if (sel.dropped.length) {
     console.error(`[indexnow] dropped ${sel.dropped.length} non-canonical URL(s):`);
     for (const u of sel.dropped.slice(0, 10)) console.error(`  - ${u}`);
   }
   if (sel.capped) console.error(`[indexnow] list truncated at cap=${args.cap}`);
 
-  console.log(`[indexnow] ${mode}: ${counts.urls} URL(s) — ${counts.collections} collection/hub, ${counts.mods} mods from the last ${args.days} day(s)`);
+  console.log(
+    `[indexnow] ${mode}: ${counts.urls} URL(s) — ${counts.collections} collection/hub, ${counts.mods} mods from the last ${args.days} day(s)` +
+      (args.creators ? `, ${counts.creators} creator pages` : ''),
+  );
   const preview = sel.urls.slice(0, 25);
   for (const u of preview) console.log(`  ${u}`);
   if (sel.urls.length > preview.length) console.log(`  … +${sel.urls.length - preview.length} more`);
