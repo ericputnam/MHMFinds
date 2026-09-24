@@ -33,6 +33,39 @@ export const MIN_MODS_FOR_PAGE = 5;
 /** First page of mods rendered server-side (same size as collection pages). */
 export const CREATOR_PAGE_SIZE = 48;
 
+export interface CreatorListRow {
+  slug: string;
+  mods: number;
+  /** createdAt of the creator's newest SFW mod; null only if the DB returns none. */
+  latest: Date | null;
+}
+
+/**
+ * Every creator slug that gets a page, most mods first — the single source
+ * of truth for "which /creator/[slug]/ URLs exist". Consumed by
+ * /sitemap-creators.xml and by scripts/agents/indexnow-submit.ts --creators
+ * (E95, 2026-09-24) so a search engine is never handed a URL the sitemap
+ * would not list. Junk author slugs are filtered here, once.
+ *
+ * Throws on a DB error: each caller decides how to degrade (the sitemap
+ * serves an empty urlset; the submit script exits 2 could-not-run).
+ */
+export async function listCreators(): Promise<CreatorListRow[]> {
+  const rows = await prisma.$queryRaw<Array<{ slug: string; mods: number; latest: Date | null }>>`
+    SELECT trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug,
+           COUNT(*)::int AS mods,
+           MAX("createdAt") AS latest
+    FROM mods
+    WHERE author IS NOT NULL AND "isNSFW" = false
+    GROUP BY 1
+    HAVING COUNT(*) >= ${MIN_MODS_FOR_PAGE}
+    ORDER BY COUNT(*) DESC
+  `;
+  return rows
+    .filter((r) => !isJunkAuthorSlug(r.slug))
+    .map((r) => ({ slug: r.slug, mods: Number(r.mods), latest: r.latest }));
+}
+
 export interface AuthorVariant {
   author: string;
   mods: number;

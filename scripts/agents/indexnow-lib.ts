@@ -18,6 +18,7 @@
  */
 
 import { getAllCollectionRoutes, collectionHref } from '../../lib/collections';
+import { creatorHref } from '../../lib/creatorSlug';
 
 /** Public IndexNow key. Change it and `public/<key>.txt` together (test enforces). */
 export const INDEXNOW_KEY = 'ee78fbc844f5b753a61535eed78c41d0';
@@ -35,6 +36,14 @@ export const SITE_ORIGIN = `https://${SITE_HOST}`;
  * should be caught by this, not by Bing's rate limiter.
  */
 export const HARD_CAP = 500;
+/**
+ * Ceiling for a `--creators` run (E95, 2026-09-24): the ~541 /creator/[slug]/
+ * pages plus the daily collections + new mods do not fit under HARD_CAP, and
+ * IndexNow accepts 10,000 URLs per POST. Still far below the 16K catalog, so
+ * an enumeration bug is still caught. The daily runner never passes
+ * --creators, so its cap is unchanged.
+ */
+export const CREATORS_HARD_CAP = 1000;
 export const DEFAULT_DAYS = 7;
 
 /** IndexNow key grammar: 8–128 chars of [a-zA-Z0-9-]. */
@@ -51,6 +60,11 @@ export function keyLocation(): string {
 /** Canonical mod detail URL — trailing slash (next.config.js `trailingSlash: true`). */
 export function modUrl(id: string): string {
   return `${SITE_ORIGIN}/mods/${id}/`;
+}
+
+/** Canonical creator page URL — built from the same helper the page canonicalises with. */
+export function creatorUrl(slug: string): string {
+  return `${SITE_ORIGIN}${creatorHref(slug)}`;
 }
 
 /**
@@ -96,16 +110,22 @@ export function isCanonicalUrl(raw: string): boolean {
   return last.includes('.');
 }
 
-/** Clamp a requested cap into [1, HARD_CAP]; undefined/NaN → HARD_CAP. */
-export function resolveCap(requested?: number): number {
-  if (requested === undefined || !Number.isFinite(requested)) return HARD_CAP;
-  return Math.max(1, Math.min(HARD_CAP, Math.floor(requested)));
+/**
+ * Clamp a requested cap into [1, ceiling]; undefined/NaN → ceiling. The
+ * ceiling is HARD_CAP unless the caller is a `--creators` run, which may
+ * lift it to CREATORS_HARD_CAP and no further.
+ */
+export function resolveCap(requested?: number, ceiling: number = HARD_CAP): number {
+  const max = Math.min(Math.max(1, Math.floor(ceiling)), CREATORS_HARD_CAP);
+  if (requested === undefined || !Number.isFinite(requested)) return max;
+  return Math.max(1, Math.min(max, Math.floor(requested)));
 }
 
 export interface Selection {
   urls: string[];
   mods: number;
   collections: number;
+  creators: number;
   /** URLs rejected by isCanonicalUrl — should always be empty; logged if not. */
   dropped: string[];
   /** True when the cap truncated the list. */
@@ -113,19 +133,28 @@ export interface Selection {
 }
 
 /**
- * Collections first (they are the pages that rank), then the newest mods up
- * to the cap. Deduplicated, every URL canonical, order preserved.
+ * Collections first (they are the pages that rank), then the newest mods,
+ * then creator pages (E95) — last so a `--creators` run can never displace
+ * the daily payload when the cap bites. Deduplicated, every URL canonical,
+ * order preserved.
  */
-export function selectUrls(opts: { modIds: readonly string[]; includeCollections: boolean; cap: number }): Selection {
-  const cap = resolveCap(opts.cap);
+export function selectUrls(opts: {
+  modIds: readonly string[];
+  creatorSlugs?: readonly string[];
+  includeCollections: boolean;
+  cap: number;
+  ceiling?: number;
+}): Selection {
+  const cap = resolveCap(opts.cap, opts.ceiling);
   const seen = new Set<string>();
   const urls: string[] = [];
   const dropped: string[] = [];
   let mods = 0;
   let collections = 0;
+  let creators = 0;
   let capped = false;
 
-  const push = (u: string, kind: 'mod' | 'collection'): boolean => {
+  const push = (u: string, kind: 'mod' | 'collection' | 'creator'): boolean => {
     if (seen.has(u)) return true;
     if (!isCanonicalUrl(u)) {
       dropped.push(u);
@@ -138,6 +167,7 @@ export function selectUrls(opts: { modIds: readonly string[]; includeCollections
     seen.add(u);
     urls.push(u);
     if (kind === 'mod') mods += 1;
+    else if (kind === 'creator') creators += 1;
     else collections += 1;
     return true;
   };
@@ -150,8 +180,13 @@ export function selectUrls(opts: { modIds: readonly string[]; includeCollections
     if (!trimmed) continue;
     if (!push(modUrl(trimmed), 'mod')) break;
   }
+  for (const slug of opts.creatorSlugs ?? []) {
+    const trimmed = String(slug ?? '').trim();
+    if (!trimmed) continue;
+    if (!push(creatorUrl(trimmed), 'creator')) break;
+  }
 
-  return { urls, mods, collections, dropped, capped };
+  return { urls, mods, collections, creators, dropped, capped };
 }
 
 export interface IndexNowPayload {
@@ -194,6 +229,8 @@ export interface RunSummary {
   urls: number;
   mods: number;
   collections: number;
+  /** Creator pages submitted (E95). Optional so pre-E95 callers and log readers keep working; printed as 0. */
+  creators?: number;
   dropped: number;
   cap: number;
   days: number;
@@ -214,6 +251,7 @@ export function summaryLine(r: RunSummary): string {
     `urls=${r.urls}`,
     `mods=${r.mods}`,
     `collections=${r.collections}`,
+    `creators=${r.creators ?? 0}`,
     `dropped=${r.dropped}`,
     `cap=${r.cap}`,
     `days=${r.days}`,
@@ -234,17 +272,26 @@ export interface CliArgs {
   days: number;
   cap: number;
   collections: boolean;
+  /** `--creators`: also submit every /creator/[slug]/ page (E95); lifts the cap ceiling to CREATORS_HARD_CAP. */
+  creators: boolean;
   help: boolean;
+}
+
+/** The cap ceiling a parsed argument set is allowed: HARD_CAP, or CREATORS_HARD_CAP for a `--creators` run. */
+export function capCeiling(args: Pick<CliArgs, 'creators'>): number {
+  return args.creators ? CREATORS_HARD_CAP : HARD_CAP;
 }
 
 /** `--apply` is the only way to send anything; everything else defaults safe. */
 export function parseArgs(argv: readonly string[]): CliArgs {
-  const args: CliArgs = { apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, help: false };
+  const args: CliArgs = { apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, help: false };
+  let requestedCap: number | undefined;
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--apply') args.apply = true;
     else if (a === '--dry-run') args.apply = false;
     else if (a === '--no-collections') args.collections = false;
+    else if (a === '--creators') args.creators = true;
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a === '--days' || a.startsWith('--days=')) {
       const v = a.includes('=') ? a.split('=')[1] : argv[++i];
@@ -252,8 +299,10 @@ export function parseArgs(argv: readonly string[]): CliArgs {
       args.days = Number.isFinite(n) && n > 0 ? Math.floor(n) : DEFAULT_DAYS;
     } else if (a === '--cap' || a.startsWith('--cap=')) {
       const v = a.includes('=') ? a.split('=')[1] : argv[++i];
-      args.cap = resolveCap(Number(v));
+      requestedCap = Number(v);
     }
   }
+  // Resolve last so `--cap 800 --creators` and `--creators --cap 800` agree.
+  args.cap = resolveCap(requestedCap, capCeiling(args));
   return args;
 }

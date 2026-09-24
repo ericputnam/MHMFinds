@@ -63,8 +63,14 @@ describe('wiring', () => {
     // The SQL expression and the TS function must agree or a linked author
     // 404s on its own page. Guard the exact expression text in both files.
     const expr = `trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g')))`;
-    expect(read('lib/creators.ts')).toContain(expr);
-    expect(read('app/sitemap-creators.xml/route.ts')).toContain(expr);
+    const lib = read('lib/creators.ts');
+    expect(lib).toContain(expr);
+    // Both the per-creator lookup and the population list use it (E95 moved
+    // the population query here from the sitemap so IndexNow shares it).
+    expect(lib.split(expr).length - 1).toBeGreaterThanOrEqual(2);
+    // The sitemap no longer carries its own copy — it consumes the lib.
+    expect(read('app/sitemap-creators.xml/route.ts')).toMatch(/import \{ listCreators[^}]*\} from '\.\.\/\.\.\/lib\/creators'/);
+    expect(read('app/sitemap-creators.xml/route.ts')).not.toContain('regexp_replace');
   });
 
   it('the creator page is registered in the sidebar guard and the sitemap index', () => {
