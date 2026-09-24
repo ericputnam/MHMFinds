@@ -183,7 +183,7 @@ describe('Navbar Component', () => {
   })
 
   describe('Navigation Links', () => {
-    it('should show Creators link pointing to /top-creators', () => {
+    it('should show Creators link pointing to /creator/ (the crawlable hub, E97)', () => {
       vi.mocked(useSession).mockReturnValue({
         data: null,
         status: 'unauthenticated',
@@ -195,7 +195,7 @@ describe('Navbar Component', () => {
       const creatorsLink = screen.getByText('Creators')
       expect(creatorsLink).toBeDefined()
       // Trailing slash required: `trailingSlash: true` 308s the bare form.
-      expect(creatorsLink.closest('a')?.getAttribute('href')).toBe('/top-creators/')
+      expect(creatorsLink.closest('a')?.getAttribute('href')).toBe('/creator/')
     })
 
     it('should show Discover link', () => {

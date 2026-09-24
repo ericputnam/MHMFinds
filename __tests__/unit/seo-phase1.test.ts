@@ -189,6 +189,8 @@ describe('1.3 - sitemap-nextjs.xml includes game pages', () => {
     expect(content).toContain('<loc>https://musthavemods.com/</loc>')
     expect(content).toContain('https://musthavemods.com/about/')
     expect(content).toContain('https://musthavemods.com/top-creators/')
+    // The crawlable creator hub (E97) — the leaves are in sitemap-creators.xml
+    expect(content).toContain('<loc>https://musthavemods.com/creator/</loc>')
     // /blog is in sitemap-blog-pages.xml to avoid cross-sitemap duplicates
     expect(content).not.toContain('https://musthavemods.com/blog')
   })
