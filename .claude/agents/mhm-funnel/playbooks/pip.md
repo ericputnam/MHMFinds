@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-24
+- Tried: E75 shipped (T1, veto closed; PR #140 rebased onto main, merged `7554037`). E93 (T0 read + decision): Bing real-vs-bot, GA4 09-16→09-22.
+- Before → after: bing_organic 15,623/7d = 14,761 with pageviews + 862 zero-pageview `(not set)` landings (5.5%). Real part: 79% engaged, 1.8 pv/session, 393 s, 51% returning, desktop Edge across 263 device×browser×country rows, weekend-peaking. Runway 70 ÷ 33.4/day = 2.10 d ≥ 2.0 → no write; ≈1.9 d tomorrow.
+- Verdict: KEEP counting Bing net of the zero-pageview slice (read 2026-10-01). Writer cron fired 09-24 05:30 (`Inserted: 0, Duplicates: 294`): the 🔴 is the runway<3 d artifact, not inflow death.
+- Next time: verify a bucket by its zero-pageview share before its size — 12.6× Google is Google's collapse, not a Bing anomaly.
+
 ## 2026-09-23
 - Tried: E77 shipped (T1, veto expired; PR #139 merged `b94082d`, deploy-verify PASS) — `--apply` **withheld**: today's audit (77 rows, 1 passing, mean 53/100) proposes one identical template description for 76 writer rows ("Browse the best Best Sims 4 Hair CC…", unverifiable "no dead links" claim) — machine copy on the writer's own pins, so the guard (re-scores clean) is not a quality gate. E82 (T0 read + decision): writer inflow vs drain.
 - Before → after: writer rows since the 09-21 cron: 268/25/48 per day (341), **341/341 dated `2025-01-01`** (Aug 1–Sep 4: 25/474 = 5%) → window inflow **0/day**. Forward queue = Q12 slice only, 7/day 09-24→10-04 (77 rows, dry **2026-10-05**); pins/24h already 35 → 15. Top-up formula 77 ÷ 32.5 = 2.37 d ≥ 2.0 → no write. No queue change.
@@ -72,12 +78,5 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: check-pinner step 1 `[FAIL] Pinner stale: last post 2026-09-11 (2 days ago)` → `[OK] last pin created 2026-09-13 10:40Z (0.2 h ago, Pinterest API) · 47 pins in 24h`; scoreboard Flags…
 - Verdict: **E36 KEEP** (section repair worked: 47 pins posted, 0 dead sections, `Remaining` 56 → 21). **E41 MORE DATA** (read 2026-09-20: 0 false 🔴 across 7 scoreboards while `pinsCreated24h` > 0 eve…
 - Next time: a proxy that was right once (09-10 → 09-12, when nothing posted at all) is still a proxy — ask the third party for its own timestamp before a monitor may go red. Two things found on the w…
-
-## 2026-09-12
-**Tried:** Diagnosed the scoreboard's "Pinner last posted 2026-09-10" 🔴 (E36). Facts from Supabase `n8n_pinterest_posts`, the Pinterest v5 API, and a read-only SSH tail of `supabase_pin_poster.log` on…
-**Before → after:** poster log 2026-09-10 07:00 → 2026-09-12 06:40 CDT: `Posted: 0, Failed: 1, Remaining: 56` on every run; `--check` after apply: `all 56 schedulable row(s) have a live board section`…
-**Verdict:** true-positive 🔴, root cause in this repo's own revival script, fixed at Tier 0. Poster-side hardening (retry without `board_section_id` on 404/2031, `id.asc` tiebreaker) is an MHMUtils/sc…
-**Next time:** any script that writes rows a consumer will act on must validate every foreign key the consumer sends to the third party (board id AND section id), not just the URLs. When a batch-size-…
-
 
 _Older/fuller entries moved to `archive/playbooks/pip-2026-09.md` verbatim; nothing deleted, only truncated above._

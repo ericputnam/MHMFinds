@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-09-24
+- Tried: `bedroom-cc` collection page + title-only repair of the `bedroom` theme, one PR (T0, E100, PR #170 `565f35d`). Picked bedroom over kitchen/bathroom on demand: GSC 28d bedroom listicle cluster ~394 impr / 7 clicks vs bathroom 105 / 1, kitchen 45 / 0, and bedroom queries ("bed frame cc" pos 16.8, "teen bedroom cc" 21.9) hit no browse page. Room themes are NOT in `THEME_KEYWORDS` — they come from `ROOM_THEME_RULES` in `contentTypeDetector.ts` (`String.includes` over title then description); the fix went there, not in the extractor.
+- Before → after: `bedroom` theme 523 rows / 195 title-supported (37.3%) → 250 / 250 (100%); 39 added, 312 stripped; top 40 read 40/40. The old `'sleeping'` keyword was the worst single word (9 of 16 `sleep*` titles are pose packs). A bare "bed" needed a veto list — the first dry run's ADD list had "Bed Cuddle", "Read in Bed", "Cat Window Hanging Bed" and three bed pose packs. Titles-only cost the old #1 card ("Teen Space", 7,998 dl, bedroom clutter per description).
+- Verdict: MORE DATA (read on 2026-10-22; keep if ≥200 engaged sessions OR ≥5 favorites in 28d and RPM ≥95%).
+- Next time: kitchen (345 rows / 33.6%) and bathroom (439 / 20.7%, Wicked Whims is card #1) have the same `ROOM_THEME_RULES` bug; copy the two-level rule (strong words never vetoed, bare noun + veto list). Four beds are typed tops/shoes/makeup (Yuna Double Bed, Duality Bed, University Life Beds, Allie Bedframe) — a contentType hand-fix via `--ids=`, not a retag.
+
 ## 2026-09-23
 - Tried: `halloween-cc` collection page + title-only repair of the `halloween` theme, one PR (T0, E90). Picked on demand + timing: lots/houses had the biggest GSC cluster (hospital-lots 3,529 impr) but `residential`+`lot` were 55.5% title-clean with a Love Island challenge at #2; `glasses` 41.8% (the word "glass"); beard 93% but 80 impr. Halloween: 9 articles, ~519 impr/28d **before** the October peak.
 - Before → after: `halloween` theme 547 rows / 190 title-supported (34.7%) → 190 / 190 (100%); 53 added, 410 stripped; top 40 read 38/40. Source fixed: THEME_KEYWORDS no longer maps witch/vampire/ghost/pumpkin → halloween; `lib/halloweenThemeRules.ts` is title-only and also filters AI-only tags. Collection routes 23 → 24.
