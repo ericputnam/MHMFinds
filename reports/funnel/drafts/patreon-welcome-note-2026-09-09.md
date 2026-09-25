@@ -14,11 +14,13 @@ So the first retention touchpoint is a **welcome note that hands over the perk w
 
 ## Where to paste it (~2 minutes)
 
-Patreon → **Membership → Tiers → "Tip Jar - Curious Simmer" ($3) → Edit → Welcome note**. Save. (Also add it to the $5 "Extra Support" tier if it stays published.) Do not put it on the $1 tier — that tier is being unpublished for new joins under Q4 step 1.
+_Tier names updated 2026-09-25 (Rio, E108): you renamed the tiers overnight on 09-25 — $3 "Tip Jar - Curious Simmer" is now **"Cappuccino"**, $5 "Extra Support" is **"Large Latte"**, $1 "Support Tier" is **"Espresso Shot"**. Prices unchanged; the perk line is still on the $3 tier. The note below is unchanged except "tip jar" → the new name._
+
+Patreon → **Membership → Tiers → "Cappuccino" ($3) → Edit → Welcome note**. Save. (Also add it to the $5 "Large Latte" tier if it stays published.) Do not put it on the $1 "Espresso Shot" tier — that tier is being unpublished for new joins under Q4 step 1 (still `published=true` on 09-25).
 
 ## Welcome note — paste as-is, edit the sign-off
 
-> Thank you — genuinely. The tip jar is what pays for the hours the lookbooks and CC lists take.
+> Thank you — genuinely. Your Cappuccino is what pays for the hours the lookbooks and CC lists take.
 >
 > One thing to do right now so you actually get something back: open any download page on musthavemods.com, tap **"Patrons skip the wait"**, and connect this Patreon account. From then on the download timer is gone whenever you're signed in. It takes about 20 seconds and you only do it once.
 >
@@ -34,7 +36,7 @@ Plain-text alternative for the thank-you screen (Patreon strips formatting there
 
 ## Optional: the day-20 post (before the second charge) — Tier 2, operator's voice, same rule as Q4's thank-you post
 
-Title: **This month in the tip jar**
+Title: **This month on Patreon** (was "This month in the tip jar" — renamed 09-25)
 
 > Quick roundup for everyone supporting the site this month: [N] lookbooks went up ([list 3 titles]), and the download-timer skip is live on musthavemods.com — if you haven't connected Patreon on a download page yet, it's one tap. Next month: [one line on what's coming]. Thank you for keeping this running.
 

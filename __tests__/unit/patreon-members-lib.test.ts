@@ -11,6 +11,7 @@ import {
   E40_CLICK_BASELINE,
   PERK_TIER_CENTS,
   Q4_GATE,
+  RENAME_WATCH,
   classifyLinkedAccounts,
   dateKeysInclusive,
   formatPaidByAmount,
@@ -319,6 +320,49 @@ describe('q4GateDecision: the 2026-09-08 rule, applied and never re-chosen', () 
   });
 });
 
+describe('RENAME_WATCH (E108): the gate\'s revert clause, re-anchored at the operator\'s 2026-09-25 renames', () => {
+  it('anchors at the earliest tier edit, after the 09-08 gate anchor, and reuses the gate\'s own thresholds (not copies)', () => {
+    expect(RENAME_WATCH.anchor).toBe('2026-09-25T04:54:06Z');
+    expect(new Date(RENAME_WATCH.anchor).getTime()).toBeGreaterThan(new Date(Q4_GATE.anchor).getTime());
+    expect(RENAME_WATCH.cancelsPerMonthMax).toBe(Q4_GATE.cancelsPerMonthMax);
+    expect(RENAME_WATCH.joinsPerMonthFloor).toBe(Q4_GATE.joinsPerMonthMin);
+    expect(RENAME_WATCH.readDate < RENAME_WATCH.finalReadDate).toBe(true);
+    // the final read must sit after the 10-01 charge run, or cancels are still a floor
+    expect(RENAME_WATCH.finalReadDate > '2026-10-01').toBe(true);
+  });
+
+  it('q4GateDecision honours the rename anchor: 4 cancels in 7 d reverts, 3 does not; days count from the rename, not from 09-08', () => {
+    const now = new Date(new Date(RENAME_WATCH.anchor).getTime() + 7 * 864e5);
+    const revert = q4GateDecision({ now, anchor: RENAME_WATCH.anchor, paid: 55, joinsSinceAnchor: 4, cancelsSinceAnchor: 4, paidAndConnectedById: 0 });
+    expect(revert.daysSinceAnchor).toBe(7);
+    expect(revert.cancelsPerMonthPace).toBeCloseTo(17.4, 1);
+    expect(revert.decision).toBe('REVERT_COPY');
+    const hold = q4GateDecision({ now, anchor: RENAME_WATCH.anchor, paid: 55, joinsSinceAnchor: 4, cancelsSinceAnchor: 3, paidAndConnectedById: 0 });
+    expect(hold.cancelsPerMonthPace).toBeCloseTo(13.0, 1);
+    expect(hold.decision).toBe('HOLD');
+    // the same inputs against the default anchor read as a different number of days — the anchor is load-bearing
+    const wrongAnchor = q4GateDecision({ now, paid: 55, joinsSinceAnchor: 4, cancelsSinceAnchor: 4, paidAndConnectedById: 0 });
+    expect(wrongAnchor.daysSinceAnchor).toBeGreaterThan(20);
+    expect(wrongAnchor.decision).toBe('HOLD');
+  });
+
+  it('summarizePatreonMembers counts joins/cancels since the rename anchor only', () => {
+    const now = new Date('2026-09-30T12:00:00Z');
+    const rows = [
+      m({ pledge_relationship_start: '2026-09-10T00:00:00Z' }), // after 09-08, before the rename
+      m({ pledge_relationship_start: '2026-09-26T00:00:00Z' }), // after the rename
+      m({ patron_status: 'former_patron', last_charge_date: '2026-09-27T00:00:00Z' }),
+      m({ patron_status: 'former_patron', last_charge_date: '2026-09-20T00:00:00Z' }),
+    ];
+    const s = summarizePatreonMembers(rows, [], { now, anchor: RENAME_WATCH.anchor });
+    expect(s.joinsSinceAnchor).toBe(1);
+    expect(s.cancelsSinceAnchor).toBe(1);
+    const d = summarizePatreonMembers(rows, [], { now });
+    expect(d.joinsSinceAnchor).toBe(2);
+    expect(d.cancelsSinceAnchor).toBe(2);
+  });
+});
+
 describe('the Q4 pre-read entrypoint is wired to the lib and prints counts only', () => {
   const src = readFileSync(join(__dirname, '..', '..', 'scripts', 'agents', 'patreon-q4-gate-preread.ts'), 'utf8');
 
@@ -329,6 +373,16 @@ describe('the Q4 pre-read entrypoint is wired to the lib and prints counts only'
     expect(src).toMatch(/members\?[^`]*include=user/);
     expect(src).toMatch(/relationships\?\.user\?\.data\?\.id/);
     expect(src).toMatch(/Q4_GATE\.readDate/);
+  });
+
+  it('--anchor is threaded into both the summary and the decision, and "rename" resolves to RENAME_WATCH (E108)', () => {
+    expect(src).toMatch(/RENAME_WATCH\.anchor/);
+    expect(src).toMatch(/summarizePatreonMembers\(members, linked, \{ now, anchor: ANCHOR\.anchor \}\)/);
+    expect(src).toMatch(/q4GateDecision\(\{ now, anchor: ANCHOR\.anchor/);
+    expect(src).toMatch(/RENAME_WATCH\.readDate/);
+    expect(src).toMatch(/RENAME_WATCH\.finalReadDate/);
+    // an unparseable anchor is a hard error, never a silent fall-through to the default
+    expect(src).toMatch(/is not an ISO date/);
   });
 
   it('never interpolates an email, a Patreon id or a raw member row into output, and redacts errors', () => {

@@ -275,6 +275,34 @@ export const Q4_GATE = {
   daysPerMonth: 30.44,
 } as const;
 
+/**
+ * Post-rename watch (E108, Rio 2026-09-25). The operator renamed the three
+ * paid tiers overnight while the Q4 gate still read HOLD (09-20/21/22/25, all
+ * on the connected leg): $1 "Support Tier" → "Espresso Shot", $3 "Tip Jar -
+ * Curious Simmer" → "Cappuccino", $5 "Extra Support" → "Large Latte" (tier
+ * `edited_at` 04:54:06Z–04:55:15Z; prices unchanged; perk line still on the
+ * $3 tier; $1 tier still published). The renames are a fact, so the gate's
+ * own revert clause is now read against the rename, not the 09-08 anchor:
+ * cancels > 16/mo pace since `anchor` → revert the copy. Joins pace is
+ * watched against the same 17/mo floor, not gated. `anchor` is the earliest
+ * of the three edits. Cancels are a floor until the 10-01 charge run
+ * (`cancelsSinceAnchor` doc above), hence the two read dates.
+ *
+ * Before-snapshot at the anchor (Members API 2026-09-25T10:45Z, 6 h after):
+ * paid 55 (10×$1, 42×$3, 2×$5, 1×$8) ≈ $153.50/mo · joins 7d 4 · cancels 7d 0 ·
+ * joins since 09-08 13 (22.7/mo) · cancels since 09-08 1 (1.7/mo) ·
+ * paid-and-connected 0 of 55. Public page the same morning: 9/42/2 = 53.
+ */
+export const RENAME_WATCH = {
+  anchor: '2026-09-25T04:54:06Z',
+  /** D+7: joins pace is readable; cancels are still a floor */
+  readDate: '2026-10-02',
+  /** after the 10-01 charge run has settled — the first honest cancels read */
+  finalReadDate: '2026-10-09',
+  cancelsPerMonthMax: Q4_GATE.cancelsPerMonthMax,
+  joinsPerMonthFloor: Q4_GATE.joinsPerMonthMin,
+} as const;
+
 export interface Q4GateInput {
   now: Date;
   anchor?: string;
