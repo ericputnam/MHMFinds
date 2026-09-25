@@ -19,6 +19,22 @@ vi.mock('@/lib/prisma', () => ({
   default: { mod: { findMany: (...args: unknown[]) => findManyMock(...args) } },
 }));
 
+/**
+ * E104: the creator population comes from lib/creators listHubCreators(),
+ * which is a $queryRaw the prisma mock above does not provide. Mock the
+ * loader (not the slug helpers — those are the real, pure functions) so the
+ * test controls the hub population per case.
+ */
+const listHubCreatorsMock = vi.fn(async () => [] as Array<{ slug: string; displayName: string; mods: number; downloads: number; latest: Date | null }>);
+
+vi.mock('@/lib/creators', async () => {
+  const slugHelpers = await vi.importActual<typeof import('@/lib/creatorSlug')>('@/lib/creatorSlug');
+  return {
+    ...slugHelpers,
+    listHubCreators: () => listHubCreatorsMock(),
+  };
+});
+
 function fakeMod(i: number, extra: Partial<Record<string, unknown>> = {}) {
   return {
     id: `mod${i}`,
@@ -62,6 +78,8 @@ describe('/llms.txt (short index)', () => {
 describe('/llms-full.txt (long form)', () => {
   beforeEach(() => {
     findManyMock.mockReset();
+    listHubCreatorsMock.mockReset();
+    listHubCreatorsMock.mockResolvedValue([]);
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => ({ ok: true, json: async () => wpPosts })),
@@ -163,6 +181,69 @@ describe('/llms-full.txt (long form)', () => {
     expect(index.indexOf('/sims-4-elf-cc/')).toBeLessThan(index.indexOf('/zed-guide-000/'));
     expect(index.indexOf('/zed-guide-000/')).toBeLessThan(index.indexOf('/zed-guide-100/'));
     expect(text).not.toContain('index may be partial');
+  });
+
+  /**
+   * E104 (Sage, 2026-09-25): the /creator/ hub and ~540 creator pages went
+   * live (E85/E97) with no mention in this file, so an assistant answering
+   * "mods by <creator>" had only a mod page to cite. The file must name the
+   * top creators with their canonical creator-page URLs, and a mod line must
+   * link its creator page only when that creator is in the hub population.
+   */
+  it('names the top creators with canonical /creator/{slug}/ URLs and links creator pages only for hub creators', async () => {
+    listHubCreatorsMock.mockResolvedValue([
+      { slug: 'ravasheen', displayName: 'Ravasheen', mods: 53, downloads: 4200, latest: null },
+      { slug: 'littlemssam', displayName: 'LittleMsSam', mods: 33, downloads: 9800, latest: null },
+      { slug: 'nekoswirl', displayName: 'Nekoswirl', mods: 12, downloads: 150, latest: null },
+    ]);
+    findManyMock.mockImplementation(async () => [
+      // Spelling variant of a hub creator: must resolve to the same slug → linked.
+      fakeMod(0, { author: 'RAVASHEEN', creator: null }),
+      // Not in the hub population (below MIN_MODS_FOR_PAGE or an aggregator): no creator link.
+      fakeMod(1, { author: 'Some Tiny Creator', creator: null }),
+      fakeMod(2, { author: 'simsfinds', creator: null }),
+    ]);
+
+    const { GET } = await import('@/app/llms-full.txt/route');
+    const text = await (await GET()).text();
+
+    // section heading counts what it lists and what the hub holds
+    expect(text).toContain('## Sims 4 CC creators on MustHaveMods (top 3 by downloads, of 3 with a creator page)');
+    // ranked by downloads, canonical trailing-slash creator URLs
+    const section = text.split('## Sims 4 CC creators on MustHaveMods')[1].split('## Recent guides')[0];
+    expect(section).toContain('1. LittleMsSam (33 mods · 9,800 downloads) — https://musthavemods.com/creator/littlemssam/');
+    expect(section).toContain('2. Ravasheen (53 mods · 4,200 downloads) — https://musthavemods.com/creator/ravasheen/');
+    expect(section).toContain('3. Nekoswirl (12 mods · 150 downloads) — https://musthavemods.com/creator/nekoswirl/');
+    expect(section).toContain('https://musthavemods.com/creator/');
+
+    // mod lines: hub creator (any spelling) gets its creator page; others do not
+    expect(text).toContain('Fake Mod 0 — by RAVASHEEN (free · hair · 1,000 downloads) — https://musthavemods.com/mods/mod0/ — creator page: https://musthavemods.com/creator/ravasheen/');
+    expect(text).toContain('Fake Mod 1 — by Some Tiny Creator (paid · hair · 999 downloads) — https://musthavemods.com/mods/mod1/\n');
+    expect(text).not.toContain('/creator/some-tiny-creator/');
+    expect(text).not.toContain('/creator/simsfinds/');
+
+    // key pages and schema inventory name the hub and the creator-page schema
+    expect(text).toContain('Sims 4 CC creators A–Z (every creator page): https://musthavemods.com/creator/');
+    expect(text).toContain('Creator pages (/creator/{slug}/): ProfilePage + Person JSON-LD');
+    // every creator URL in the file carries the trailing slash
+    // (slugs are [a-z0-9-]; a trailing sentence period is prose, not URL)
+    for (const m of text.match(/https:\/\/musthavemods\.com\/creator\/[^\s).,]*/g) ?? []) expect(m).toMatch(/\/$/);
+  });
+
+  it('still serves the collections and points at /creator/ when the creator list is unavailable', async () => {
+    listHubCreatorsMock.mockResolvedValue([]);
+    findManyMock.mockImplementation(async () => [fakeMod(0, { author: 'Ravasheen', creator: null })]);
+
+    const { GET } = await import('@/app/llms-full.txt/route');
+    const res = await GET();
+    const text = await res.text();
+
+    expect(res.status).toBe(200);
+    expect(text).toContain('## Sims 4 CC creators on MustHaveMods\n');
+    expect(text).toContain('the A–Z index at https://musthavemods.com/creator/ is authoritative');
+    // no population → no per-mod creator links, never a guessed URL
+    expect(text).not.toContain('creator page:');
+    expect(text).toContain('### Sims 4');
   });
 
   it('says so instead of silently truncating when the guide fetch is incomplete', async () => {
