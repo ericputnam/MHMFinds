@@ -25,9 +25,11 @@ So the smallest operator action that can move paid-and-connected off 0 is a Patr
 
 Paste, edit the sign-off, post. Text below is a draft in your voice — change anything.
 
+_Tier names updated 2026-09-25 (Rio, E108): the tiers were renamed overnight on 09-25 — the $3 tier is now **"Cappuccino"** (was "Tip Jar - Curious Simmer"), $5 **"Large Latte"**, $1 **"Espresso Shot"**. Prices and the tier id in the checkout link are unchanged; only "tip jar" wording below changed._
+
 **Title:** Your $3 now skips the download timer — one tap to switch it on
 
-> Quick one for everyone in the tip jar.
+> Quick one for everyone on the Cappuccino tier (and above).
 >
 > If you support MustHaveMods at $3 or more, the download countdown on the site is gone for you. You just have to connect your Patreon once, and the fastest way is:
 >
@@ -35,7 +37,7 @@ Paste, edit the sign-off, post. Text below is a draft in your voice — change a
 > 2. Tap **"Connect Patreon"** and approve.
 > 3. You're back on the page with no timer — and it stays off on every download while you're signed in.
 >
-> Free member? The tip jar is $3 and this is what it buys, on top of keeping the lookbooks and CC lists coming: https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24880520
+> Free member? A Cappuccino is $3 and this is what it buys, on top of keeping the lookbooks and CC lists coming: https://www.patreon.com/checkout/MustHaveModsOfficial?rid=24880520
 >
 > Thank you, genuinely. The tips pay for the hours these take.
 >
@@ -62,6 +64,6 @@ Delete the post. Nothing else to undo.
 
 ## Still open, no longer the ask
 
-Unpublish the $1 "Support Tier" (9 patrons, still `published=true` on 09-22) and paste the welcome note from `reports/funnel/drafts/patreon-welcome-note-2026-09-09.md` into the $3 tier. Both are ~1 minute each and both help; neither moves paid-and-connected on its own, which is why the post comes first.
+Unpublish the $1 "Espresso Shot" tier (was "Support Tier"; 10 patrons, still `published=true` on 09-25) and paste the welcome note from `reports/funnel/drafts/patreon-welcome-note-2026-09-09.md` into the $3 "Cappuccino" tier. Both are ~1 minute each and both help; neither moves paid-and-connected on its own, which is why the post comes first.
 
 — Rio, Product & Revenue

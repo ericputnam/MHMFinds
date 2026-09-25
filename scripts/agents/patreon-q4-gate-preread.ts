@@ -14,7 +14,12 @@
  *
  * Usage:
  *   npx tsx -r dotenv/config scripts/agents/patreon-q4-gate-preread.ts dotenv_config_path=.env.local \
- *     [--out reports/funnel/patreon-q4-gate-preread-YYYY-MM-DD.md] [--no-write]
+ *     [--out reports/funnel/patreon-q4-gate-preread-YYYY-MM-DD.md] [--no-write] [--anchor <ISO>|rename]
+ *
+ * `--anchor` (E108, 2026-09-25) re-reads the same rule from a different start:
+ * `--anchor rename` is `RENAME_WATCH.anchor` (the operator's overnight tier
+ * renames); any ISO date is accepted. Only "since anchor" inputs move — the
+ * connected leg, the 7-day counts and the classification do not depend on it.
  *
  * Exit 0 = report printed (and written unless --no-write), 1 = a source failed.
  */
@@ -23,6 +28,7 @@ import { dirname, join } from 'node:path';
 import { redactError } from './operator-did-probe-lib';
 import {
   Q4_GATE,
+  RENAME_WATCH,
   classifyLinkedAccounts,
   formatPaidByAmount,
   q4GateDecision,
@@ -38,7 +44,25 @@ const argValue = (flag: string): string | undefined => {
 };
 const NO_WRITE = args.includes('--no-write');
 const TODAY = new Date().toISOString().slice(0, 10);
-const OUT = argValue('--out') ?? join('reports', 'funnel', `patreon-q4-gate-preread-${TODAY}.md`);
+
+/** `--anchor rename` → RENAME_WATCH.anchor; an ISO string is used as given; absent → Q4_GATE.anchor. Anything unparseable is a hard error, never a silent default. */
+export function resolveAnchor(raw: string | undefined): { anchor: string; isRename: boolean } {
+  if (raw === undefined) return { anchor: Q4_GATE.anchor, isRename: false };
+  if (raw === 'rename') return { anchor: RENAME_WATCH.anchor, isRename: true };
+  if (Number.isNaN(new Date(raw).getTime())) throw new Error(`--anchor "${raw}" is not an ISO date (or "rename")`);
+  return { anchor: new Date(raw).toISOString(), isRename: raw === RENAME_WATCH.anchor };
+}
+const ANCHOR = (() => {
+  try {
+    return resolveAnchor(argValue('--anchor'));
+  } catch (e) {
+    console.error('[q4-gate-preread] failed:', redactError(String((e as Error)?.message ?? e)));
+    process.exit(1);
+  }
+})();
+const OUT =
+  argValue('--out') ??
+  join('reports', 'funnel', ANCHOR.isRename ? `patreon-rename-watch-${TODAY}.md` : `patreon-q4-gate-preread-${TODAY}.md`);
 const CAMPAIGN = process.env.PATREON_CAMPAIGN_ID ?? '13460416';
 
 async function fetchMembers(): Promise<PatreonMemberAttrs[]> {
@@ -94,9 +118,9 @@ const pct = (n: number, d: number) => (d > 0 ? `${Math.round((1000 * n) / d) / 1
 const yes = (b: boolean) => (b ? 'PASS' : 'FAIL');
 
 function render(members: PatreonMemberAttrs[], linked: LinkedRow[], now: Date): string {
-  const s = summarizePatreonMembers(members, linked, { now });
+  const s = summarizePatreonMembers(members, linked, { now, anchor: ANCHOR.anchor });
   const cls = classifyLinkedAccounts(members, linked);
-  const g = q4GateDecision({ now, paid: s.paid, joinsSinceAnchor: s.joinsSinceAnchor, cancelsSinceAnchor: s.cancelsSinceAnchor, paidAndConnectedById: s.paidAndConnectedById });
+  const g = q4GateDecision({ now, anchor: ANCHOR.anchor, paid: s.paid, joinsSinceAnchor: s.joinsSinceAnchor, cancelsSinceAnchor: s.cancelsSinceAnchor, paidAndConnectedById: s.paidAndConnectedById });
 
   const byDay: Record<string, number> = {};
   let patreonOnly = 0;
@@ -106,7 +130,7 @@ function render(members: PatreonMemberAttrs[], linked: LinkedRow[], now: Date): 
     if (!r.hasCredentials) patreonOnly += 1;
     if (r.isPremium) premiumAmongLinked += 1;
   }
-  const anchorDay = Q4_GATE.anchor.slice(0, 10);
+  const anchorDay = ANCHOR.anchor.slice(0, 10);
   const linkedSinceAnchor = Object.entries(byDay).filter(([d]) => d >= anchorDay).reduce((a, [, n]) => a + n, 0);
   const dayLine = Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([d, n]) => `${d.slice(5)}: ${n}`).join(' · ');
 
@@ -114,13 +138,27 @@ function render(members: PatreonMemberAttrs[], linked: LinkedRow[], now: Date): 
     .sort((a, b) => b[1] - a[1])[0];
 
   const lines: string[] = [];
-  lines.push(`# Q4 gate pre-read — ${now.toISOString().slice(0, 10)} (gate reads ${Q4_GATE.readDate})`);
-  lines.push('');
-  lines.push(`_Generated ${now.toISOString()} by \`scripts/agents/patreon-q4-gate-preread.ts\` (E69). Read-only; Patreon Members API + production DB; counts only. The rule below was written on 2026-09-08 — this file applies it, it does not choose it._`);
+  if (ANCHOR.isRename) {
+    lines.push(`# Post-rename watch — ${now.toISOString().slice(0, 10)} (anchor ${ANCHOR.anchor}; reads ${RENAME_WATCH.readDate}, final ${RENAME_WATCH.finalReadDate})`);
+    lines.push('');
+    lines.push(`_Generated ${now.toISOString()} by \`scripts/agents/patreon-q4-gate-preread.ts --anchor rename\` (E108). Read-only; Patreon Members API + production DB; counts only. The operator renamed the paid tiers at the anchor while the Q4 gate read HOLD; this file applies the gate's own revert clause from the rename onward — it does not re-open the gate._`);
+  } else {
+    lines.push(`# Q4 gate pre-read — ${now.toISOString().slice(0, 10)} (gate reads ${Q4_GATE.readDate})`);
+    lines.push('');
+    lines.push(`_Generated ${now.toISOString()} by \`scripts/agents/patreon-q4-gate-preread.ts\` (E69). Read-only; Patreon Members API + production DB; counts only. The rule below was written on 2026-09-08 — this file applies it, it does not choose it._`);
+  }
+  if (ANCHOR.anchor !== Q4_GATE.anchor && !ANCHOR.isRename) {
+    lines.push('');
+    lines.push(`_Anchor overridden to ${ANCHOR.anchor} (default ${Q4_GATE.anchor}); only the "since anchor" inputs differ from the default read._`);
+  }
   lines.push('');
   lines.push('## The rule (verbatim, operator-queue Q4)');
   lines.push('');
-  lines.push(`Proceed to renames + $10 tier only if paid joins ≥ ${Q4_GATE.joinsPerMonthMin}/mo pace since ${anchorDay} AND ≥ 1/3 of paid patrons connected on site (Patreon-id join); revert the perk copy if cancels > ${Q4_GATE.cancelsPerMonthMax}/mo pace.`);
+  if (ANCHOR.isRename) {
+    lines.push(`The renames already happened at the anchor, so only the gate's revert clause is live here: revert the tier copy if cancels > ${RENAME_WATCH.cancelsPerMonthMax}/mo pace since ${anchorDay}. Joins are watched against the ${RENAME_WATCH.joinsPerMonthFloor}/mo floor (a finding, not a revert). The $10 tier still waits on the connected leg (≥ 1/3 of paid patrons connected on site, Patreon-id join).`);
+  } else {
+    lines.push(`Proceed to renames + $10 tier only if paid joins ≥ ${Q4_GATE.joinsPerMonthMin}/mo pace since ${anchorDay} AND ≥ 1/3 of paid patrons connected on site (Patreon-id join); revert the perk copy if cancels > ${Q4_GATE.cancelsPerMonthMax}/mo pace.`);
+  }
   lines.push('');
   lines.push('## Inputs today');
   lines.push('');
@@ -131,7 +169,11 @@ function render(members: PatreonMemberAttrs[], linked: LinkedRow[], now: Date): 
   lines.push(`| Paid-and-connected (id join) | **${s.paidAndConnectedById}** of ${s.paid} paid = ${pct(s.paidAndConnectedById, s.paid)} (by email ${s.paidAndConnectedByEmail}; ${s.paidWithUserId}/${s.paid} paid rows carry an id; ${s.linkedWithPatreonId}/${linked.length} linked rows carry one) | ≥ 1/3 connected: **${yes(g.connectedLeg)}** |`);
   lines.push(`| Cancels since ${anchorDay} (last charge on/after anchor) | ${s.cancelsSinceAnchor} → ${g.cancelsPerMonthPace}/mo pace (7d ${s.cancels7d}) | cancels > ${Q4_GATE.cancelsPerMonthMax}/mo → revert copy: **${g.revertCopy ? 'YES' : 'no'}** |`);
   lines.push('');
-  lines.push(`**Decision the rule produces today: ${g.decision}**${g.decision === 'HOLD' ? ' — do not rename tiers or add the $10 tier on 09-22 unless the failing leg turns before the read.' : ''}`);
+  if (ANCHOR.isRename) {
+    lines.push(`**Revert the tier copy today: ${g.revertCopy ? 'YES' : 'no'}** (cancels ${g.cancelsPerMonthPace}/mo pace vs > ${RENAME_WATCH.cancelsPerMonthMax}) · joins ${g.joinsPerMonthPace}/mo pace vs floor ${RENAME_WATCH.joinsPerMonthFloor} (${g.joinsLeg ? 'holding' : 'below — a finding, not a revert'}; meaningless before ~D+3) · $10 tier: ${g.connectedLeg ? 'connected leg PASSES' : 'still HOLD on the connected leg'}.`);
+  } else {
+    lines.push(`**Decision the rule produces today: ${g.decision}**${g.decision === 'HOLD' ? ' — do not rename tiers or add the $10 tier on 09-22 unless the failing leg turns before the read.' : ''}`);
+  }
   lines.push('');
   lines.push(`- The cancels leg is a floor, not a count, until the 2026-10-01 charge run: Patreon bills most patrons on the 1st, so \`last_charge_date ≥ ${anchorDay}\` can only see people who joined after the anchor and left again. Re-read cancels after 10-01 before treating "revert copy: no" as final.`);
   lines.push('');
@@ -158,7 +200,11 @@ function render(members: PatreonMemberAttrs[], linked: LinkedRow[], now: Date): 
   lines.push('- "Not in campaign" dominating would mean Connect is reaching Patreon users who never followed us — the CTA is then a follow funnel, and the first ask should be the free follow, not a pledge.');
   lines.push('- "Active" ≥ 1/3 of paid is the only state in which the rule proceeds.');
   lines.push('');
-  lines.push(`Re-run on ${Q4_GATE.readDate}: \`npx tsx -r dotenv/config scripts/agents/patreon-q4-gate-preread.ts dotenv_config_path=.env.local\`.`);
+  if (ANCHOR.isRename) {
+    lines.push(`Re-run on ${RENAME_WATCH.readDate} and ${RENAME_WATCH.finalReadDate}: \`npx tsx -r dotenv/config scripts/agents/patreon-q4-gate-preread.ts dotenv_config_path=.env.local --anchor rename\`. Revert the tier copy only on the cancels leg (> ${RENAME_WATCH.cancelsPerMonthMax}/mo pace); joins < ${RENAME_WATCH.joinsPerMonthFloor}/mo pace is a finding for the digest, not a revert.`);
+  } else {
+    lines.push(`Re-run on ${Q4_GATE.readDate}: \`npx tsx -r dotenv/config scripts/agents/patreon-q4-gate-preread.ts dotenv_config_path=.env.local\`.`);
+  }
   return lines.join('\n') + '\n';
 }
 
