@@ -18,7 +18,8 @@
 # Modes:
 #   --after-merge [--sha <commit>] [--label "<who / PR>"] [--wait-min 25]
 #         wait for the production deploy of <sha> (default: the newest), promote it if the alias still serves an
-#         older build (a rollback pauses Vercel auto-promotion), verify, roll back on failure
+#         older build (a rollback pauses Vercel auto-promotion), verify, roll back on failure. If the alias already
+#         serves a NEWER build that contains <sha>, never promote over it: verify production as served, ledger SUPERSEDED
 #   --check [--label "<who>"]        verify what is live now (morning check, runner step 0e); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
@@ -45,7 +46,7 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-[ -n "$MODE" ] || { sed -n '2,29p' "$0"; exit 64; }
+[ -n "$MODE" ] || { sed -n '2,30p' "$0"; exit 64; }
 
 TS="$(date '+%Y-%m-%d %H:%M')"; STAMP="$(date '+%Y-%m-%d-%H%M%S')"
 INC_DIR="$ROOT/reports/funnel/incidents"; mkdir -p "$INC_DIR" "$ROOT/logs"
@@ -141,14 +142,49 @@ do_rollback() {
   fi
   log "rollback command FAILED — see $LOG"; return 1
 }
+deploy_meta() {  # $1 deployment URL → "<githubCommitSha|-> <createdAt ms>" from `vercel ls`; empty if not listed
+  vls | python3 -c '
+import json,sys
+u=sys.argv[1].replace("https://","")
+for x in json.load(sys.stdin)["deployments"]:
+    if x["url"]==u:
+        print(((x.get("meta") or {}).get("githubCommitSha") or "-"), x.get("createdAt") or 0); break
+' "$1" 2>/dev/null
+}
+promote_decision() {  # $1 served sha|-  $2 served createdAt  $3 candidate sha  $4 candidate createdAt
+  # → PROMOTE | SAME | SUPERSEDED. Promotion is a write: only move production FORWARD. (E110, 2026-09-24 10:05: Sage's
+  # late verify of #167 promoted 6b525b5 over #170's already-verified build and /games/sims-4/bedroom-cc/ 404'd.)
+  local s="$1" sc="${2:-0}" c="$3" cc="${4:-0}"
+  [ -n "$s" ] && [ "$s" != "-" ] && [ -n "$c" ] && [ "$c" != "-" ] || { echo PROMOTE; return 0; }  # served not a git build
+  [ "$s" = "$c" ] && { echo SAME; return 0; }
+  (cd "$ROOT" && git cat-file -e "$s^{commit}" 2>/dev/null) || (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1)
+  if (cd "$ROOT" && git cat-file -e "$s^{commit}" && git cat-file -e "$c^{commit}") 2>/dev/null; then
+    (cd "$ROOT" && git merge-base --is-ancestor "$c" "$s") && { echo SUPERSEDED; return 0; }  # served already contains ours
+    (cd "$ROOT" && git merge-base --is-ancestor "$s" "$c") && { echo PROMOTE; return 0; }     # ours contains served (rollback pause)
+  fi
+  # unrelated history, or a commit this clone cannot see: the newer build wins
+  case "$sc$cc" in *[!0-9]*) echo PROMOTE; return 0 ;; esac
+  if [ "$sc" -gt "$cc" ]; then echo SUPERSEDED; else echo PROMOTE; fi
+}
+SERVED_URL=""; SERVED_SHA=""
 ensure_promoted() {  # $1 = READY deployment for the merged sha. A `vercel rollback` silently pauses auto-promotion
   # (2026-09-05: PRs #38–#41 sat READY for 66 min; 2026-09-07/08: PRs #56, #57 and the nightly compound commit built but
   # production kept serving the rollback target for 22 h while the ledger said "verified live"). Verifying "what is live"
   # is not verifying the merge, so promote explicitly and refuse to record PASS for a build that is not serving.
-  local cur i
-  cur="$(current_prod)"
+  # Returns 0 serving $1 (or its commit) · 1 not promoted / cannot tell what is serving · 3 SUPERSEDED: production
+  # already serves a newer build that contains $1 — never promote over it (sets SERVED_URL / SERVED_SHA).
+  local cur i sm cm
+  cur="$(current_prod)"; SERVED_URL="$cur"
   [ "$cur" = "$1" ] && return 0
-  log "alias serves $cur, not the new build $1 — auto-promotion is paused; promoting explicitly"
+  [ -n "$cur" ] || { log "cannot tell what production serves (vercel inspect failed) — unknown, NOT promoting"; return 1; }
+  sm="$(deploy_meta "$cur")"; cm="$(deploy_meta "$1")"
+  [ -n "$cm" ] || { log "vercel ls does not list the candidate $1 — cannot compare builds, NOT promoting"; return 1; }
+  SERVED_SHA="${sm%% *}"
+  case "$(promote_decision "${sm%% *}" "${sm##* }" "${cm%% *}" "${cm##* }")" in
+    SAME) log "alias serves $cur, a build of the same commit ${SERVED_SHA:0:7} — not promoting"; return 0 ;;
+    SUPERSEDED) log "alias serves $cur (${SERVED_SHA:0:7}), newer than / containing $1 (${cm:0:7}) — NOT promoting over it"; return 3 ;;
+  esac
+  log "alias serves $cur (${SERVED_SHA:0:7}), older than the new build $1 — auto-promotion is paused; promoting explicitly"
   if ! (cd "$ROOT" && vercel promote "$1" --yes >>"$LOG" 2>&1); then log "vercel promote FAILED — see $LOG"; fi
   for i in 1 2 3 4 5 6; do
     sleep 10; cur="$(current_prod)"; [ "$cur" = "$1" ] && { log "promoted: production now serves $1"; return 0; }
@@ -282,8 +318,18 @@ case "$MODE" in
       fi
     fi
     log "deployment READY: $DEPLOY_URL"; sleep 15
-    if ! ensure_promoted "$DEPLOY_URL"; then
-      ledger "NOT PROMOTED" "${HEAD_NOTE}build READY but production still serves $PREV after vercel promote; nothing to roll back — promote by hand: vercel promote $DEPLOY_URL --yes"
+    ensure_promoted "$DEPLOY_URL"; PROMO=$?
+    if [ "$PROMO" -eq 3 ]; then
+      # E110: production is already on a newer build that contains this commit. Leave it; grade production AS SERVED
+      # (same semantics as --check: rollback target = the READY build before the served one).
+      CANDIDATE_URL="$DEPLOY_URL"; DEPLOY_URL="$SERVED_URL"; PREV="$(previous_ready "$DEPLOY_URL")"
+      if smoke; then
+        ledger "SUPERSEDED (production already on ${SERVED_SHA:0:7}, newer)" "$(vnotes "${HEAD_NOTE}served build graded $(verdict); candidate $CANDIDATE_URL not promoted · 5xx/15m=$FIVEXX")"
+        log "SUPERSEDED — $(verdict)"; exit 0
+      fi
+      fail_and_fix "$PREV"
+    elif [ "$PROMO" -ne 0 ]; then
+      ledger "NOT PROMOTED" "${HEAD_NOTE}build READY but production serves ${SERVED_URL:-unknown}, not it; nothing to roll back — check which is newer, then promote by hand: vercel promote $DEPLOY_URL --yes"
       exit 2
     fi
     if smoke; then ledger "$(verdict)" "$(vnotes "${HEAD_NOTE}verified live · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
