@@ -49,6 +49,17 @@ WHY TEMPLATES, NOT AN LLM
     so --self-test can assert exact strings. Every proposed field is built by
     a pure function in this file; nothing calls out to a model.
 
+    --source page (E103, 2026-09-25)
+        The template apply was withheld on 09-23: 76 writer rows would have
+        received the same machine sentence with the keyword swapped in.
+        `--source page` builds proposals from the destination post's own
+        title + excerpt (WP REST, read-only GET on the apex, cached per slug,
+        sibling rows rotate excerpt sentences so no two pins share copy).
+        A field that already passes keeps the writer's value; a destination
+        the API cannot resolve is left untouched — never a silent template
+        fallback. Scoring and the re-score guard are identical to template
+        mode.
+
 TIER (this move, 2026-09-21)
     Pin SEO (titles/descriptions/board fit) is Tier 0/1 per autonomy.md and
     explicitly listed as team-shippable under SD-10 (charter.md) — it is
@@ -78,6 +89,8 @@ USAGE
     python3 scripts/agents/pin-seo-audit.py                    # audit, default 14 days
     python3 scripts/agents/pin-seo-audit.py --days 7
     python3 scripts/agents/pin-seo-audit.py --apply
+    python3 scripts/agents/pin-seo-audit.py --source page               # page-copy dry run
+    python3 scripts/agents/pin-seo-audit.py --source page --apply
     python3 scripts/agents/pin-seo-audit.py --self-test         # offline
     python3 scripts/agents/pin-seo-audit.py \
         --rollback reports/funnel/pin-seo-rollback-YYYY-MM-DD.json --apply
@@ -163,9 +176,19 @@ def destination_slug(url):
     return segments[-1] if segments else ''
 
 
+# WordPress appends "-2", "-3" … to a slug when the title collides with an
+# existing post ("sims-4-couple-poses-2"). That digit is a dedupe artefact,
+# not a keyword — a title rule demanding "Sims 4 Couple Poses 2" verbatim
+# rejects every real page title. Only 1-2 trailing digits are stripped so a
+# year ("sims-4-cc-2025") survives.
+DEDUPE_SUFFIX_RE = re.compile(r'-\d{1,2}$')
+
+
 def slug_to_keyword(slug):
-    """'sims-4-toddler-cc' -> 'Sims 4 Toddler CC'. Deterministic, no lookups."""
-    words = [w for w in re.split(r'[-_]+', str(slug or '').strip()) if w]
+    """'sims-4-toddler-cc' -> 'Sims 4 Toddler CC'. Deterministic, no lookups.
+    Strips a trailing WordPress dedupe suffix ('-2') first."""
+    slug = DEDUPE_SUFFIX_RE.sub('', str(slug or '').strip())
+    words = [w for w in re.split(r'[-_]+', slug) if w]
     out = []
     for word in words:
         lower = word.lower()
@@ -307,6 +330,153 @@ def propose_description(keyword):
 
 
 # --------------------------------------------------------------------------
+# Page-sourced proposals (`--source page`, E103 2026-09-25)
+#
+# The 09-23 template apply was withheld because every proposal was the same
+# machine sentence with the keyword swapped in — identical copy across 76
+# writer rows. Page mode instead takes the destination post's own title and
+# excerpt (WP REST, read-only, apex host, cached per slug) so each
+# destination carries its human-written copy, and rows pointing at the same
+# destination rotate through different excerpt sentences so no two pins
+# share a description. Scoring is unchanged; a page proposal that does not
+# re-score clean is left untouched exactly like a template one, and a
+# destination the API cannot resolve (collection page, deleted post, network
+# error) is never rewritten — there is no silent fallback to the template.
+# --------------------------------------------------------------------------
+
+WP_POSTS_ENDPOINT = 'https://musthavemods.com/wp-json/wp/v2/posts/'  # trailing slash: 308 otherwise
+WP_USER_AGENT = 'Mozilla/5.0 (compatible; mhm-pin-seo-audit/1.0)'
+TAG_RE = re.compile(r'<[^>]+>')
+SENTENCE_SPLIT_RE = re.compile(r'(?<=[.!?])\s+')
+# Excerpt sentences that are site chrome, not copy worth pinning.
+EXCERPT_JUNK_RE = re.compile(
+    r'(click here|pin it|save this list|^updated by\b|^hello[,!]|^hey guys|^hi there)',
+    re.IGNORECASE)
+ELLIPSIS_RE = re.compile(r'(\[…\]|\[\.\.\.\]|…|\.\.\.)\s*$')
+
+
+def clean_html_text(raw):
+    """HTML fragment -> plain text: tags stripped, entities decoded,
+    whitespace collapsed."""
+    import html as _html
+    text = TAG_RE.sub(' ', _html.unescape(str(raw or '')))
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def excerpt_sentences(raw_excerpt):
+    """Usable sentences from a WP excerpt: chrome dropped, a trailing
+    ellipsis fragment dropped, an unterminated final sentence given a period
+    when the excerpt was not truncated."""
+    text = clean_html_text(raw_excerpt)
+    truncated = bool(ELLIPSIS_RE.search(text))
+    text = ELLIPSIS_RE.sub('', text).strip()
+    if text.lower().startswith('updated by'):
+        text = re.sub(r'^updated by[^:]*:\s*', '', text, flags=re.IGNORECASE)
+    parts = [p.strip() for p in SENTENCE_SPLIT_RE.split(text) if p.strip()]
+    out = []
+    for idx, part in enumerate(parts):
+        last = idx == len(parts) - 1
+        if not re.search(r'[.!?]$', part):
+            if last and truncated:
+                continue  # fragment cut by the excerpt limit
+            part += '.'
+        if EXCERPT_JUNK_RE.search(part):
+            continue
+        out.append(part)
+    return out
+
+
+def trim_at_word(text, limit):
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rstrip()
+    if ' ' in cut:
+        cut = cut[:cut.rfind(' ')]
+    return cut.rstrip(' ,;:—-')
+
+
+def propose_title_from_page(page_title, keyword):
+    """The post's own title, trimmed to TITLE_MAX at a word boundary; the
+    keyword is prefixed when the title does not already carry it, and a
+    short suffix is added when the title is under TITLE_MIN."""
+    title = clean_html_text(page_title)
+    if not title:
+        return ''
+    if keyword and keyword.lower() not in title.lower():
+        title = '{}: {}'.format(keyword, title)
+    if len(title) < TITLE_MIN:
+        title = title + ' — ' + TITLE_SUFFIXES[0]
+    return trim_at_word(title, TITLE_MAX)
+
+
+def related_tail(keyword):
+    related = related_terms_for(keyword)
+    if related == DEFAULT_RELATED:
+        return 'All free custom content downloads, updated regularly.'
+    return 'Includes {} and {}, all free downloads.'.format(related[0], related[1])
+
+
+def propose_description_from_page(page_title, page_excerpt, keyword, variant=0):
+    """First sentence is the post title (it carries the keyword), then
+    excerpt sentences starting at `variant` (rotated so sibling rows for one
+    destination differ), then a related-term tail when the copy has none.
+    Always 100-400 chars or '' when the page gave nothing usable."""
+    lead = clean_html_text(page_title).rstrip('.!?')
+    if not lead:
+        return ''
+    if keyword and keyword.lower() not in lead.lower():
+        lead = '{}: {}'.format(keyword, lead)
+    lead = trim_at_word(lead, TITLE_MAX) + '.'
+    sentences = excerpt_sentences(page_excerpt)
+    tail = related_tail(keyword)
+    related = related_terms_for(keyword)
+    body = lead
+    if sentences:
+        start = variant % len(sentences)
+        order = sentences[start:] + sentences[:start]
+        budget = DESC_MAX - len(tail) - 1
+        for sentence in order:
+            if len(body) + 1 + len(sentence) > budget:
+                continue
+            body = body + ' ' + sentence
+    if not any(t.lower() in body.lower() for t in related):
+        body = body + ' ' + tail
+    if len(body) < DESC_MIN:
+        body = body + ' Updated regularly with new finds worth saving.'
+    return trim_at_word(body, DESC_MAX)
+
+
+_PAGE_CACHE = {}
+
+
+def fetch_page_meta(slug, endpoint=WP_POSTS_ENDPOINT, timeout=20):
+    """{'title': raw, 'excerpt': raw} for a WordPress post slug, or None when
+    the post does not resolve (collection pages live in Next.js, not WP) or
+    the request fails. Read-only GET against the apex; cached per slug for
+    the life of the process."""
+    if not slug:
+        return None
+    if slug in _PAGE_CACHE:
+        return _PAGE_CACHE[slug]
+    url = '{}?slug={}&_fields=slug,title,excerpt&per_page=1'.format(endpoint, q(slug))
+    meta = None
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': WP_USER_AGENT}, method='GET')
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            payload = json.loads(response.read().decode() or '[]')
+        if isinstance(payload, list) and payload:
+            post = payload[0]
+            meta = {'title': (post.get('title') or {}).get('rendered') or '',
+                    'excerpt': (post.get('excerpt') or {}).get('rendered') or ''}
+            if not meta['title']:
+                meta = None
+    except (urllib.error.URLError, ValueError, OSError):
+        meta = None
+    _PAGE_CACHE[slug] = meta
+    return meta
+
+
+# --------------------------------------------------------------------------
 # Scoring (pure — covered by --self-test)
 # --------------------------------------------------------------------------
 
@@ -390,10 +560,16 @@ def score_board(keyword, board_name, board_description, board_section):
     return True, []
 
 
-def score_row(row, boards):
+def score_row(row, boards, source='template', page_meta=None, variant=0):
     """Score one queue row. Returns a dict with everything the report and
     --apply need: keyword, per-rule pass/fail, issues, proposals, overall
-    score (0-100, board-unknown excluded from the denominator)."""
+    score (0-100, board-unknown excluded from the denominator).
+
+    source='template'  proposals from propose_title/propose_description.
+    source='page'      proposals from the destination post's own title and
+                       excerpt (`page_meta`, resolved by the caller); a field
+                       that already passes keeps its current value, and a
+                       row whose page is unavailable is never proposal_ok."""
     slug = destination_slug(row.get('Post URL'))
     keyword = slug_to_keyword(slug)
     title = row.get('Post Title') or ''
@@ -416,15 +592,32 @@ def score_row(row, boards):
         checks.append(board_ok)
     score = int(round(100.0 * sum(1 for c in checks if c) / len(checks)))
 
-    proposed_title = propose_title(keyword)
-    proposed_description = propose_description(keyword)
+    proposal_source = source
+    if source == 'page':
+        if page_meta and page_meta.get('title'):
+            page_title = propose_title_from_page(page_meta['title'], keyword)
+            page_desc = propose_description_from_page(
+                page_meta['title'], page_meta.get('excerpt', ''), keyword, variant)
+            # Keep whatever already passes — the writer's copy is not
+            # replaced for the sake of it.
+            proposed_title = title if (title_ok and alt_ok) else page_title
+            proposed_description = description if desc_ok else page_desc
+        else:
+            proposal_source = 'page-unavailable'
+            proposed_title, proposed_description = '', ''
+    else:
+        proposed_title = propose_title(keyword)
+        proposed_description = propose_description(keyword)
     # A proposal is only worth writing if it fixes something and re-scores
-    # clean on its own — never trust a template blindly.
+    # clean on its own — never trust a template (or a page) blindly.
     proposal_title_ok, _ = score_title(proposed_title, keyword)
     proposal_desc_ok, _ = score_description(proposed_description, keyword)
     proposal_alt_ok, _ = score_alt_text(proposed_title)
+    if proposal_source == 'page-unavailable':
+        proposal_title_ok = proposal_desc_ok = proposal_alt_ok = False
 
     return {
+        'proposal_source': proposal_source,
         'id': row.get('id'),
         'destination': row.get('Post URL'),
         'keyword': keyword,
@@ -486,16 +679,25 @@ def md_escape(text):
     return str(text or '').replace('|', '\\|').replace('\n', ' ').strip()
 
 
-def write_report(path, scored, days, today_str, ceiling_str):
+def write_report(path, scored, days, today_str, ceiling_str, source='template'):
     total = len(scored)
     need_fix = sum(1 for s in scored if s['needs_fix'])
     passing = total - need_fix
     avg_score = int(round(sum(s['score'] for s in scored) / total)) if total else 0
     board_unknown = sum(1 for s in scored if s['board_ok'] is None)
+    fixable = sum(1 for s in scored if s['needs_fix'] and s['proposal_ok'])
+    page_unavailable = sum(1 for s in scored if s.get('proposal_source') == 'page-unavailable')
 
     lines = []
-    lines.append('# Pin SEO audit — {} ({} rows, Post Date {} .. {})\n'.format(
-        today_str, total, today_str, ceiling_str))
+    lines.append('# Pin SEO audit — {} ({} rows, Post Date {} .. {}, proposals: {})\n'.format(
+        today_str, total, today_str, ceiling_str, source))
+    if source == 'page':
+        lines.append('Proposal source `page`: title/description come from the destination '
+                     'post\'s own WP REST title + excerpt (read-only), rotated per sibling '
+                     'row; a field that already passes keeps its current value. {} row(s) '
+                     'need a fix and have a clean page proposal; {} row(s) point at a '
+                     'destination the WP API does not resolve and are never rewritten.\n'
+                     .format(fixable, page_unavailable))
     lines.append('Read-only (`audit` mode). Scores rows scheduled in the next '
                  '{} days ("Is Posted"=false) against four rules: title '
                  '40-100 chars containing the primary keyword, description '
@@ -532,21 +734,24 @@ def write_report(path, scored, days, today_str, ceiling_str):
     with open(path, 'w') as handle:
         handle.write('\n'.join(lines) + '\n')
     return {'total': total, 'need_fix': need_fix, 'passing': passing,
-            'avg_score': avg_score, 'board_unknown': board_unknown}
+            'avg_score': avg_score, 'board_unknown': board_unknown,
+            'fixable': fixable, 'page_unavailable': page_unavailable}
 
 
 # --------------------------------------------------------------------------
 # Apply / rollback
 # --------------------------------------------------------------------------
 
-def do_apply(config, scored, ledger_dir, today_str):
+def do_apply(config, scored, ledger_dir, today_str, source='template'):
     to_write = [s for s in scored if s['needs_fix'] and s['proposal_ok']]
     skipped_unfixable = [s for s in scored if s['needs_fix'] and not s['proposal_ok']]
     if skipped_unfixable:
-        print('  {} row(s) need a fix but the template proposal did not '
-              're-score clean — left untouched:'.format(len(skipped_unfixable)))
+        print('  {} row(s) need a fix but the {} proposal did not '
+              're-score clean (or the page was unavailable) — left untouched:'.format(
+                  len(skipped_unfixable), source))
         for s in skipped_unfixable[:10]:
-            print('    id={} keyword="{}"'.format(s['id'], s['keyword']))
+            print('    id={} keyword="{}" source={}'.format(
+                s['id'], s['keyword'], s.get('proposal_source', source)))
 
     if not to_write:
         print('\nNothing to apply — no row both needs a fix and has a clean proposal.')
@@ -573,6 +778,7 @@ def do_apply(config, scored, ledger_dir, today_str):
                 'new_title': s['proposed_title'],
                 'old_description': s['current_description'],
                 'new_description': s['proposed_description'],
+                'source': s.get('proposal_source', source),
             })
         except Exception as exc:
             print('  ERROR id={}: {}'.format(s['id'], exc))
@@ -585,6 +791,7 @@ def do_apply(config, scored, ledger_dir, today_str):
         json.dump({
             'generated': today_str,
             'script': 'scripts/agents/pin-seo-audit.py',
+            'source': source,
             'updated': updated,
             'entries': ledger_entries,
         }, handle, indent=2)
@@ -801,8 +1008,102 @@ def self_test():
     check(load_boards_csv('/no/such/file.csv') == {}, 'missing csv should be {} not an error')
     n += 1
 
-    print('self-test: {} assertion groups passed (keyword + scoring + templates, offline)'
-          .format(n))
+    # 12. (E103) WordPress dedupe suffix is not a keyword; a year is.
+    #     Red pre-fix: slug_to_keyword('sims-4-couple-poses-2') gave
+    #     'Sims 4 Couple Poses 2', which no real page title contains.
+    check(slug_to_keyword('sims-4-couple-poses-2') == 'Sims 4 Couple Poses',
+          slug_to_keyword('sims-4-couple-poses-2'))
+    check(slug_to_keyword('sims-4-cc-2025') == 'Sims 4 CC 2025',
+          slug_to_keyword('sims-4-cc-2025'))
+    n += 1
+
+    # 13. (E103) excerpt cleaning: tags/entities stripped, chrome sentences
+    #     dropped, truncated fragment dropped, unterminated final sentence kept
+    #     when the excerpt was not truncated.
+    raw = ('<p>Updated by Someone: Are you looking for the perfect sims 4 skin '
+           'overlays? I&#8217;ve got you covered! Want to save this list? Click '
+           'here to pin it! Skin overlays are one of the easiest ways to add '
+           'depth. They work with every&#8230;</p>')
+    sents = excerpt_sentences(raw)
+    check(sents == ['Are you looking for the perfect sims 4 skin overlays?',
+                    'I’ve got you covered!',
+                    'Skin overlays are one of the easiest ways to add depth.'], sents)
+    check(excerpt_sentences('Discover must-have Sims 4 cc 2025, from clothing to furniture')
+          == ['Discover must-have Sims 4 cc 2025, from clothing to furniture.'],
+          excerpt_sentences('Discover must-have Sims 4 cc 2025, from clothing to furniture'))
+    n += 1
+
+    # 14. (E103) page-sourced proposals re-score clean for real-shaped
+    #     inputs, carry the keyword, differ between sibling rows, and never
+    #     collapse to the template sentence.
+    pages = {
+        'sims-4-couple-poses-2': {
+            'title': '40+ Best Sims 4 Couple Poses For Perfectly Romantic Screenshots (2026 Update)',
+            'excerpt': ('<p>This Sims 4 couple poses list opens up a world of creative '
+                        'storytelling, so you can capture your Sims in heartfelt, romantic, '
+                        'or even everyday moments. With Valentine&#8217;s fast approaching, '
+                        'you can use these poses to tell richer love stories. Every pack '
+                        'below is a free download and works in the current patch.</p>')},
+        'sims-4-cc-finds-for-april': {
+            'title': '25+ Best Sims 4 CC Finds for April 2025',   # 39 chars — under TITLE_MIN
+            'excerpt': ('<p>Hello, fellow Simmers! We&#8217;re coming to the end of the month, '
+                        'and so I wanted to share some of my favorite Sims 4 cc finds for '
+                        'April. This list is a random compilation of everything from clothing '
+                        'and accessories to furniture, decor, and clutter&#8230;</p>')},
+        'sims-4-cc-2025': {
+            'title': 'Must-Have Sims 4 CC for Every Player in 2025',  # keyword absent verbatim
+            'excerpt': 'Discover must-have Sims 4 cc 2025, from clothing and hair to furniture'},
+    }
+    for slug, meta in pages.items():
+        keyword = slug_to_keyword(slug)
+        t = propose_title_from_page(meta['title'], keyword)
+        ok, issues = score_title(t, keyword)
+        check(ok, (slug, t, issues))
+        ok, issues = score_alt_text(t)
+        check(ok, (slug, t, issues))
+        d0 = propose_description_from_page(meta['title'], meta['excerpt'], keyword, 0)
+        d1 = propose_description_from_page(meta['title'], meta['excerpt'], keyword, 1)
+        for d in (d0, d1):
+            ok, issues = score_description(d, keyword)
+            check(ok, (slug, d, issues))
+            check('Browse the best' not in d, 'page proposal fell back to template copy: ' + d)
+        n += 1
+    d0 = propose_description_from_page(pages['sims-4-couple-poses-2']['title'],
+                                       pages['sims-4-couple-poses-2']['excerpt'],
+                                       'Sims 4 Couple Poses', 0)
+    d1 = propose_description_from_page(pages['sims-4-couple-poses-2']['title'],
+                                       pages['sims-4-couple-poses-2']['excerpt'],
+                                       'Sims 4 Couple Poses', 1)
+    check(d0 != d1, 'sibling rows for one destination must not share a description')
+    n += 1
+
+    # 15. (E103) score_row in page mode: a failing row gets the page copy, a
+    #     field that already passes is kept verbatim, and an unresolved page
+    #     is never proposal_ok (no silent fallback to the template).
+    boards = {'B1': {'name': 'Sims 4 Poses', 'description': 'pose packs', 'sections': {}}}
+    row = {'id': 7, 'Post URL': 'https://musthavemods.com/sims-4-couple-poses-2/',
+           'Post Title': 'Couple poses', 'AI Text Slug': '#sims4 #poses #cc #love',
+           'Board ID': 'B1', 'Board Name': 'Sims 4 Poses'}
+    r = score_row(row, boards, source='page', page_meta=pages['sims-4-couple-poses-2'])
+    check(r['needs_fix'] and r['proposal_ok'] and r['proposal_source'] == 'page', r)
+    check(r['proposed_title'].startswith('40+ Best Sims 4 Couple Poses'), r['proposed_title'])
+    n += 1
+    keep_title = propose_title('Sims 4 Couple Poses')
+    row2 = dict(row, **{'Post Title': keep_title})
+    r2 = score_row(row2, boards, source='page', page_meta=pages['sims-4-couple-poses-2'])
+    check(r2['needs_fix'] and r2['proposal_ok'], r2)
+    check(r2['proposed_title'] == keep_title, 'passing title must be kept: ' + r2['proposed_title'])
+    n += 1
+    r3 = score_row(row, boards, source='page', page_meta=None)
+    check(r3['needs_fix'] and not r3['proposal_ok']
+          and r3['proposal_source'] == 'page-unavailable', r3)
+    n += 1
+    r4 = score_row(row, boards)  # template path unchanged
+    check(r4['proposal_source'] == 'template' and r4['proposal_ok'], r4)
+    n += 1
+
+    print('self-test: {} assertion groups passed (keyword + scoring + templates + '
+          'page proposals, offline)'.format(n))
     return 0
 
 
@@ -826,6 +1127,10 @@ def main():
                              '$MHM_UTILS_DIR/pinterest-boards.csv)')
     parser.add_argument('--self-test', action='store_true',
                         help='run the offline assertions and exit')
+    parser.add_argument('--source', choices=('template', 'page'), default='template',
+                        help='where proposals come from: deterministic templates '
+                             '(default) or the destination post\'s own WP REST title '
+                             'and excerpt (`page`; read-only, cached per slug)')
     parser.add_argument('--report-dir', default=os.path.join('reports', 'funnel'))
     args = parser.parse_args()
 
@@ -857,15 +1162,34 @@ def main():
               'unknown for every row (not a failure).'.format(
                   args.boards_csv or os.path.join(utils_dir(), 'pinterest-boards.csv')))
 
-    scored = [score_row(row, boards) for row in rows]
+    if args.source == 'page':
+        slugs = sorted({destination_slug(r.get('Post URL')) for r in rows})
+        resolved = 0
+        for slug in slugs:
+            if fetch_page_meta(slug):
+                resolved += 1
+            time.sleep(0.1)
+        print('Page source: {} of {} destination(s) resolved via WP REST '
+              '(unresolved rows are left untouched).'.format(resolved, len(slugs)))
+        seen = {}
+        scored = []
+        for row in rows:
+            slug = destination_slug(row.get('Post URL'))
+            variant = seen.get(slug, 0)
+            seen[slug] = variant + 1
+            scored.append(score_row(row, boards, source='page',
+                                    page_meta=fetch_page_meta(slug), variant=variant))
+    else:
+        scored = [score_row(row, boards) for row in rows]
 
     report_path = os.path.join(
         args.report_dir, 'pin-seo-audit-{}.md'.format(today_str))
-    summary = write_report(report_path, scored, days, today_str, ceiling_str)
-    print('\n--- Summary: {} rows, {} passing, {} need a fix, mean score {}/100, '
-          '{} board-fit unknown ---'.format(
+    summary = write_report(report_path, scored, days, today_str, ceiling_str, args.source)
+    print('\n--- Summary: {} rows, {} passing, {} need a fix ({} with a clean {} '
+          'proposal), mean score {}/100, {} board-fit unknown ---'.format(
               summary['total'], summary['passing'], summary['need_fix'],
-              summary['avg_score'], summary['board_unknown']))
+              summary['fixable'], args.source, summary['avg_score'],
+              summary['board_unknown']))
     print('Report: {}'.format(report_path))
 
     if not args.apply:
@@ -873,7 +1197,7 @@ def main():
               'for rows that need a fix and re-score clean.')
         return 0
 
-    return do_apply(config, scored, args.report_dir, today_str)
+    return do_apply(config, scored, args.report_dir, today_str, args.source)
 
 
 if __name__ == '__main__':
