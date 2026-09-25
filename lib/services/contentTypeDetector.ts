@@ -15,6 +15,7 @@
  */
 
 import { BEDROOM_THEME, isBedroomTitle } from '../bedroomThemeRules';
+import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
 
 // ============================================
 // TYPES
@@ -541,10 +542,11 @@ const ROOM_THEME_RULES: RoomThemeRule[] = [
                'restroom', 'lavatory', 'powder room'],
     theme: 'bathroom',
   },
-  {
-    keywords: ['kitchen', 'cooking', 'culinary', 'chef', 'pantry', 'dining kitchen'],
-    theme: 'kitchen',
-  },
+  // `kitchen` is deliberately NOT a keyword rule here: it is derived from the
+  // TITLE only by `lib/kitchenThemeRules.ts` (Rowan, 2026-09-25, E109). The
+  // old entry ('kitchen', 'cooking', 'chef', ... over title + description)
+  // left the theme 34.2% title-supported (118 of 345 SFW Sims 4 rows) —
+  // "Realistic Cooking Mod" at #2, food clutter and a chef career in the top 20.
   // `bedroom` is deliberately NOT a keyword rule here: it is derived from the
   // TITLE only by `lib/bedroomThemeRules.ts` (Rowan, 2026-09-24). The old
   // entry ('bedroom', 'bed room', 'sleeping', ... over title + description)
@@ -859,6 +861,14 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Kitchen theme — title only, whole words, shared rules (never from the
+  // description; see lib/kitchenThemeRules.ts).
+  if (isKitchenTitle(title) && !detectedThemes.includes(KITCHEN_THEME)) {
+    detectedThemes.push(KITCHEN_THEME);
+    allMatchedKeywords.push(KITCHEN_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Determine overall confidence
   let confidence: ConfidenceLevel = 'low';
   if (detectedThemes.length > 0) {
@@ -959,5 +969,8 @@ export function getSupportedContentTypes(): string[] {
  * Get all valid room themes that this detector supports
  */
 export function getSupportedRoomThemes(): string[] {
-  return ROOM_THEME_RULES.map(rule => rule.theme).sort();
+  // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
+  // a theme to its own rule file silently drops it from this list (bedroom
+  // was missing here from #170 until 2026-09-25).
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME].sort();
 }

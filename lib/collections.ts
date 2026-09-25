@@ -180,7 +180,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 'furniture' and 'decor' were dangling slugs until 2026-09-07 — the
     // renderer silently drops related entries that don't resolve, so this
     // page rendered exactly one related collection instead of three.
-    related: ['furniture-cc', 'holidays-cc', 'decor-cc'],
+    // 2026-09-25: 'furniture-cc' → 'kitchen-cc' — kitchen clutter is the
+    // second-largest slice of the kitchen grid (furniture-cc keeps 5 inbound:
+    // decor-cc, cottagecore-cc, kids-cc, bedroom-cc, kitchen-cc).
+    related: ['kitchen-cc', 'holidays-cc', 'decor-cc'],
     blogUrl: '/sims-4-clutter/',
   },
   {
@@ -369,7 +372,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // inbound (clutter, decor-cc), the floor.
     // 2026-09-24: 'clutter' → 'bedroom-cc' so the new page has an anchored
     // inbound source (clutter keeps 2 inbound: decor-cc, holidays-cc).
-    related: ['bedroom-cc', 'kids-cc', 'decor-cc'],
+    // 2026-09-25: 'kids-cc' → 'kitchen-cc' so the new page has an anchored
+    // inbound source (kids-cc keeps 3 inbound: pregnancy-mods, hair-cc,
+    // bedroom-cc).
+    related: ['bedroom-cc', 'kitchen-cc', 'decor-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -830,6 +836,56 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // no redirect, verified 2026-09-24) and not in vercel.json; 204
     // impressions / 5 clicks at position 36.8 over the 28d to 2026-09-21.
     blogUrl: '/sims-4-beds/',
+  },
+  {
+    // Rowan, 2026-09-25 (E109). Third `themesAny` page; appended last
+    // because themesAny scores specificity 1. Demand: GSC 28d to 09-22 puts
+    // the kitchen cluster of legacy listicles (/sims-4-fridge-cc/ 111,
+    // /sims-4-kitchen-clutter-cc/ 46, /best-sims-4-appliance-cc/ 37) at 194
+    // impressions / 2 clicks at positions 33.9-45.7, and the query set
+    // ("sims 4 fridge cc" pos 21.5, "sims 4 kitchen stuff cc", "sims 4
+    // kitchen appliances" pos 24, "kitchen cc") lands on no browse page.
+    // /sims-4-kitchen-cc/ does not exist (404, checked 2026-09-25).
+    slug: 'kitchen-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Kitchen CC',
+    heading: 'Sims 4 Kitchen CC',
+    metaTitle: 'Sims 4 Kitchen CC Finder — Browse 160 Kitchen Sets & Appliances | MustHaveMods',
+    metaDescription:
+      'Browse 160 Sims 4 kitchen CC finds in one filterable grid — full kitchen sets, fridges and appliances, pantry shelves and kitchen clutter, links checked.',
+    tagline: 'Full kitchen sets, fridges, appliances, and clutter in one grid',
+    intro:
+      "The kitchen is the room your sims use more than any other — every meal, every party, every 3 a.m. cereal run goes through it — and it is the room where the base game's catalog runs thinnest. A few counter styles, fridges that all share one silhouette and a stove that looks the same in a farmhouse as it does in a penthouse. Kitchen CC is how builders make that room look like somebody actually cooks in it, and this grid is all of it in one place.\n\nEvery item here says kitchen, kitchenware, fridge, refrigerator, appliance, dishwasher or pantry in its own title. That is deliberate. Room tags are easy to get wrong when a whole blog post shares one description — a recipe mod, a breakfast-food clutter pack or an apron that appeared in a kitchen roundup is not kitchen build CC — so this collection only holds items whose creator called them that. When we repaired the tag, more than half of the rows it used to carry turned out not to be kitchen CC at all — cooking gameplay mods, custom food, aprons and whole-house lots; none of those are here.\n\nWhat is here splits three ways. Full kitchen sets are the bulk of it: counters, cabinets, islands and the clutter to match, in every style the community builds — modern and minimalist, farmhouse and cottage, pink and pastel, 1950s retro, mid-century, grunge, medieval and Japandi. Fridges and appliances: stand-alone refrigerators (built-in, mini, retro and wine fridges), functional appliance sets with stoves, dishwashers and coffee makers, and a rice cooker. And the finishing layer: pantry shelves and pantry food, backsplashes, and kitchen clutter packs that fill a counter without a single placement cheat.\n\nTwo practical notes. Functional appliances can depend on a specific pack, so check the requirements on the download page before you build a kitchen around one. And big sets often ship as several parts (\"Part 1\", \"Part 3\"); the parts are separate downloads, so grab them together if you want the full look.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link — 134 of the 160 are free. Sort by downloads for the sets everyone already runs, or scroll for the one-off fridges and pantry packs the big roundups never reach.",
+    filter: {
+      // 160 SFW Sims 4 mods on the `kitchen` theme, verified against
+      // production 2026-09-25 *after* the same-PR repair of the theme.
+      //
+      // Before the repair the theme had 345 rows and only 118 said kitchen
+      // in the title (34.2%): "Realistic Cooking Mod" (a gameplay mod) was
+      // card #2, "Soul food", "Breakfast Foods", "Kellogg's Set" and a
+      // freelance-chef career sat in the top 20, and 47 rows were lots.
+      // Cause: ROOM_THEME_RULES in contentTypeDetector.ts matched 'kitchen'
+      // / 'cooking' / 'chef' / 'culinary' by substring over title +
+      // DESCRIPTION, and the description is shared by every mod scraped from
+      // one blog post. Fixed at the source (`lib/kitchenThemeRules.ts`,
+      // imported by the detector) and re-derived from titles only: 31 added
+      // (all fridges / appliance sets), 216 stripped
+      // (`scripts/retag-kitchen-theme.ts`, backup in
+      // reports/funnel/kitchen-theme-retag-2026-09-25.csv).
+      //
+      // Audited before ranking: 160 of 160 titles carry kitchen evidence;
+      // the top 40 by downloads read 40/40 as kitchen content.
+      themesAny: ['kitchen'],
+    },
+    expectedCount: 160,
+    related: ['furniture-cc', 'clutter', 'decor-cc'],
+    // Differentiated pair: /sims-4-kitchen-clutter-cc/ keeps the editorial
+    // "best kitchen clutter" intent, this page owns browse/filter intent. It
+    // is live (HTTP 200, no redirect, checked 2026-09-25) and not in
+    // vercel.json; 46 impressions / 0 clicks at position 45.7 over the 28d
+    // to 2026-09-22.
+    blogUrl: '/sims-4-kitchen-clutter-cc/',
   },
 ];
 
