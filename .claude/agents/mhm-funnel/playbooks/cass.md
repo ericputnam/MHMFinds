@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-25
+- Tried: E107 — wired the /mods/[id] favorite button to the real API and turned its 401 into an account-capture path (own event names favorite_signin_redirect / favorite_after_signin, ref=mod-detail-favorite, resume marker ?fav=1 stripped after one attempt). PR #178, 56eb87f, deploy-verify PASS.
+- Before → after: favorite on /mods/* 0/14d, sign_up 11/14d all on /sign-in/, accounts +68/7d → read 2026-10-09.
+- Verdict: PENDING. E34 graded MISSED (2 vs ≥79 confirmed); endpoint stays for E54/E68.
+- Next time: audit every capture CTA on the top-traffic page for a stub handler before building a new surface — the biggest capture leak today was a button that did nothing, not a missing placement. Give each placement its own event name; an event param is invisible without a custom dimension. When a PR ahead of you touches your file, `git merge-tree --write-tree` dry-run first, then rebase only after it merges and re-run its suite too. OAuth buttons on sign-in drop `redirect` — fix before reading any account-capture experiment that relies on returning to the page.
+
 ## 2026-09-24
 - Tried: added the 5 day-2 bounce hashes (read-only DSN read --since 09-21, 3x 5.1.1 / 1x 5.2.2 / 1x 5.5.0; cross-check since 09-16 = 12 = 7+5). PR #165 `0acc882`.
 - Before → after: list 7 → 12; segment 384 → 383 (re-frozen on "favourited before the anchor"); day-3 dry 12/12 matched, 0 in slice, would-send 99.

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-25
+- Tried: server-render "More from <creator>" on /mods/[id] + crawlable "See all N mods by <creator>" link to /creator/[slug]/ (T0, PR #175 `8f3b5ed`, E106). New `lib/creatorMods.ts` (own file — Sage may touch lib/creators.ts the same day); loader folds spellings via findAuthorVariants, links the creator page only when ≥ MIN_MODS_FOR_PAGE, null on error; component is presentational, still a sibling of the InContentAd anchors.
+- Before → after: crawlable links from a mod page into its creator's other mods 0 → 6, and into /creator/[slug]/ 1 (author name) → 3 on the 8,404 SFW mods (50.9%) whose creator has ≥5 mods; 2,290 more get a block only. Ravasheen 41 + RAVASHEEN 12 now read as one "See all 53" (they were split). /creator/* landing 40 (09-23) / 28 (09-24), GSC impressions 0. Query cost 88 ms unindexed under 1 h ISR; prod raw-HTML check 6 links + 2 creator hrefs, .mv-ads 5 / aside#secondary 1 unchanged.
+- Verdict: MORE DATA (read 2026-10-23; keep if /creator/* landing 7d ≥ 2× the 09-23→09-29 week AND ≥30 creator pages with ≥1 GSC impression, /mods/* clicks ≥95% and mod-page RPM ≥95%).
+- Next time: read the *server* HTML of a "link block" before counting it as an internal-link surface — this one had shipped as a useEffect fetch and every audit since had counted its links; and the E85 author link still sends 2–4-mod creators to a 404 (dreamgirl), fixable in one line now that ModDetailClient receives totalMods.
+
 ## 2026-09-24
 - Tried: `/creator/` crawlable hub for the 534 creator pages (T0, E97) — PR #168 `d748eaf` BUILD ERROR (never promoted) → fix-forward PR #171 `2e7627d` PASS. Top 24 by downloads + A–Z, plain `<a>` links; Navbar, leaf breadcrumb, sitemap-nextjs, llms.txt and smoke-render point at it; 7 platform "authors" excluded hub-only via `NON_CREATOR_SLUGS`.
 - Before → after: hub landing sessions 0 (404) → live; 534 creators / 8,132 mods linked from one server-rendered page; leaves already drew 43 landing sessions on day 1 with no hub; `/top-creators/` 9 sessions/28d.

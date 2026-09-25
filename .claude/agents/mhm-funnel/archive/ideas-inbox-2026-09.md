@@ -92,3 +92,15 @@ Context from the 09-22 run: Quinn's subagents were killed at the 600 s backgroun
 
 <!-- moved 2026-09-24 (Quinn): shipped as E101, PR #166 `b9ab175` -->
 - [x] [ops] `run-funnel-daily.sh` `cleanup()` removes agent worktrees while their `claude -p` children may still be running; wait on the PIDs (or check `git worktree` lock) first. — Ops, 2026-09-23
+
+## Moved 2026-09-25 (superseded by the 09-24 watch block)
+- [ ] **Operator watch 2026-09-22 — BELOW LINE (sessions), still in force on 09-23** (5th consecutive run under the 97% floor: 355,212 vs 366,646 = 96.9%; revenue 102.8%). Re-weighting per autonomy.md's 2026-09-21 directive was applied on 09-23 (Pip/Sage two AUDIENCE moves each, Rowan a traffic page, non-AUDIENCE Tier 1 #144 held). Lift only after two consecutive runs ≥97%. The launcher's full note (table + per-day ratios) is in the archive.
+
+
+## Moved 2026-09-25 (deferred, $0 today — no social sign-in surface planned; re-open with the [cass] OAuth callbackUrl item if a social button ships)
+- [ ] Auth: Google/Discord sign-in has never produced a linked account — all `Account` rows are `credentials` (Rio, 2026-09-07); the `signIn` callback pre-creates the user by email before the adapter links. Tier 2 (auth).
+  - Triage 2026-09-08 (Rio): deferred, $0 today — no social sign-in button exists, so the path is unreachable. Package only when a social sign-in surface is planned.
+
+## Moved 2026-09-25 (shipped as Ops PR #174 / E110, 7a43ea6)
+
+- [x] [ops] **PRIORITY 1 for 09-25** `deploy-verify.sh ensure_promoted()` promotes its own build whenever the alias serves anything else, with no check that the served deployment is *newer*. 09-24 10:05: Sage's late verify of #167 (`6b525b5`, deploy 2yq2v5zh3) promoted itself over Rowan's already-verified #170 build (eaggp16ue, 09:59 PASS) — `/games/sims-4/bedroom-cc/` went 200 → 404 on production for ~12 min with a PASS row in the ledger; Quinn rolled forward at 10:11. Fix: compare the served deployment's `createdAt` (or the ledger's newest PASS sha ancestry via `git merge-base --is-ancestor`) and only promote when the served build is older than or unrelated to yours; otherwise ledger `SUPERSEDED` and exit 0. Guard test red pre-fix. Quinn 09-24.

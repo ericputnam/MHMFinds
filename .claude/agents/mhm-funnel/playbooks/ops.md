@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-09-25 — E110
+- Tried: deploy-verify ensure_promoted() promotes only forward — git merge-base --is-ancestor served vs candidate, createdAt fallback; newer served → SUPERSEDED row, production graded as served, exit 0; "can't tell what's serving" → no promote (T0, PR #174).
+- Before → after: backwards promotions 1 (09-24, bedroom-cc 404 with a PASS row) → 0 expected; guard test 7/12 red on pre-fix main. Merged last of 7 today (06:50→07:16), 0 collisions under the dispatch merge order.
+- Verdict: MORE DATA (read 2026-10-02: 0 `vercel promote` in logs/deploy-verify.log not preceded by "older than the new build").
+- Next time: a promote is a write like a rollback; give it the same "unknown ≠ go" state. And gh pr merge exit 1 ≠ not merged hit again (#174), so fix the ship protocol before it costs a verify.
+
 ## 2026-09-24 — E101
 - Tried: runner `cleanup()` waits for processes with cwd inside a worktree (lsof), SIGTERMs past 1800 s, leaves a tree whose process survives or cannot be enumerated; stale prune uses the same check (T0, PR #166).
 - Before → after: worktrees deleted under a live process 1 (09-22 orphan) → 0 expected; new test fails 4/6 on pre-fix main.
@@ -77,11 +83,3 @@ moved here because plumbing is now Ops's, not Quinn's. Full originals in
 - Before → after: post-rollback builds serving production 0/3 → 3/3 (06:50); after-merge PASS rows whose deployment == what `musthavemods.com` actually serves: 3/6 on 09-07 → 7/7 today. Same-day unfor…
 - Verdict: KEEP (E25; read 2026-09-15 — 0 un-promoted READY builds >5 min in 7 days). Rule from today: a ledger PASS is only evidence about the deployment it checked; the row must name the deployment…
 - Next time: (1) Rio merged a Tier 1 fix (#62) the same day instead of holding the 24h veto — right call for a one-line fix that makes an already-approved Tier 2 package (Q5) do what the approval said…
-
-## 2026-09-07
-- Tried: fourth full loop, first green day since 09-02 — 5 of 5 agents reported; 3 merged (#50 Pip token-manager port + catalog pins, #51 Nova decor-cc, the daily PR), 2 queued T1 for 09-08 (#48 Sage…
-- Before → after: the runner ran 4 of the last 7 days (09-03 and 09-06 never launched; no evening-check ledger row since 09-04; today's 08:00 preflight got a 401 with 8 h of token life left and the 08…
-- Verdict: KEEP the loop; the loop's own reliability is the biggest risk this week, not any site change. FIX in the runner: (1) `npm ci` per agent worktree instead of a symlink into Quinn's — the link…
-- Next time: when an agent says "your node_modules is empty", run `ls node_modules | wc -l` before the daily PR's build, not after — a 0 would have failed type-check and blocked the day's ledger row.…
-
-_Older/fuller entries moved to `archive/playbooks/quinn-2026-09.md` verbatim; nothing deleted, only truncated above._
