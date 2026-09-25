@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mod } from '@/lib/api';
 import Link from 'next/link';
@@ -29,6 +29,13 @@ import type { CollectionLink } from '@/lib/collections';
 import type { MoreFromCreatorData } from '@/lib/creatorMods';
 import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
 import { authorSlug, creatorHref, isJunkAuthorSlug } from '@/lib/creatorSlug';
+import {
+  MOD_DETAIL_FAVORITE_EVENTS,
+  MOD_DETAIL_FAVORITE_SOURCE,
+  favoriteSignInHref,
+  hasResumeFavoriteMarker,
+  modDetailPath,
+} from '@/lib/capture/modDetailFavorite';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -45,6 +52,10 @@ interface ModDetailClientProps {
    * the server in page.tsx (E106). null = no block.
    */
   moreFromCreator?: MoreFromCreatorData | null;
+}
+
+function fireGtag(name: string, params: Record<string, string>) {
+  (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.('event', name, params);
 }
 
 function InContentAd() {
@@ -82,10 +93,90 @@ export default function ModDetailClient({
     router.push(`/go/${mod.id}`);
   };
 
-  const handleFavorite = () => {
-    // TODO: Implement actual favorite functionality
-    setIsFavorited(!isFavorited);
+  // E107 (Cass, 2026-09-25) — the favorite button used to be a stub that
+  // toggled local state and never called the API, on the page type with the
+  // most Next.js sessions. Favorites are what create most registered accounts
+  // (68 of this week's 78 owned adds), so a signed-out click is now an
+  // account-capture path: 401 → /sign-in/?mode=signup&ref=mod-detail-favorite
+  // with a redirect back here carrying `?fav=1`, and the effect below finishes
+  // the save on return. Same handler shape as HomePageClient/CollectionPageClient;
+  // no DOM added or removed inside the right-column `.mv-ads` wrapper.
+  const [favoritePending, setFavoritePending] = useState(false);
+
+  /** POST the favorite. 400 "Already favorited" counts as saved (idempotent). */
+  const addFavorite = useCallback(
+    async (source: string): Promise<'saved' | 'unauthorized' | 'error'> => {
+      const response = await fetch(`/api/mods/${mod.id}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.status === 401) return 'unauthorized';
+      if (response.ok) {
+        setIsFavorited(true);
+        fireGtag('favorite', { source, mod_id: mod.id });
+        return 'saved';
+      }
+      if (response.status === 400) {
+        setIsFavorited(true);
+        return 'saved';
+      }
+      return 'error';
+    },
+    [mod.id],
+  );
+
+  const handleFavorite = async () => {
+    if (favoritePending) return;
+    setFavoritePending(true);
+    try {
+      if (isFavorited) {
+        const response = await fetch(`/api/mods/${mod.id}/favorite`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (response.ok) setIsFavorited(false);
+        return;
+      }
+      const outcome = await addFavorite('mod-detail');
+      if (outcome === 'unauthorized') {
+        fireGtag(MOD_DETAIL_FAVORITE_EVENTS.signinRedirect, {
+          source: MOD_DETAIL_FAVORITE_SOURCE,
+          mod_id: mod.id,
+        });
+        router.push(favoriteSignInHref(mod.id));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setFavoritePending(false);
+    }
   };
+
+  // Resume after sign-in: the sign-in page sends the visitor back with
+  // `?fav=1`. Complete the save once, then strip the marker so a reload or a
+  // shared link does not repeat it. A signed-out visitor carrying the marker
+  // gets a 401 and nothing else — this path never navigates to sign-in.
+  const resumeAttempted = useRef(false);
+  useEffect(() => {
+    if (resumeAttempted.current) return;
+    if (!hasResumeFavoriteMarker(window.location.search)) return;
+    resumeAttempted.current = true;
+    (async () => {
+      try {
+        const outcome = await addFavorite('mod-detail-after-signin');
+        if (outcome === 'saved') {
+          fireGtag(MOD_DETAIL_FAVORITE_EVENTS.afterSignin, {
+            source: MOD_DETAIL_FAVORITE_SOURCE,
+            mod_id: mod.id,
+          });
+        }
+      } catch (error) {
+        console.error('Error resuming favorite:', error);
+      } finally {
+        window.history.replaceState(null, '', modDetailPath(mod.id));
+      }
+    })();
+  }, [addFavorite, mod.id]);
 
   return (
     <div className="min-h-screen bg-mhm-dark">
@@ -408,6 +499,8 @@ export default function ModDetailClient({
 
                 <button
                   onClick={handleFavorite}
+                  disabled={favoritePending}
+                  aria-busy={favoritePending}
                   className={`w-full ${isFavorited
                       ? 'bg-sims-pink hover:bg-sims-pink/90 text-white'
                       : 'bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10'
