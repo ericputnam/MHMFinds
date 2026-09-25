@@ -217,9 +217,16 @@ describe('the shipped scripts use the template', () => {
     expect(src).not.toMatch(/function issueHtml\(/);
   });
 
-  it('newsletter-preview.ts --out renders the same template', () => {
+  it('newsletter-preview.ts --out renders the same template, defaulting to issue #1', () => {
     const src = readSource('scripts/agents/newsletter-preview.ts');
-    expect(src).toMatch(/renderIssue\(ISSUE_01,/);
+    expect(src).toMatch(/let issue: IssueData = ISSUE_01;/);
+    expect(src).toMatch(/renderIssue\(issue,/);
     expect(src).toMatch(/--out/);
+  });
+
+  it('newsletter-preview.ts --weekly builds this week\'s issue via the DB-driven builder, not ISSUE_01', () => {
+    const src = readSource('scripts/agents/newsletter-preview.ts');
+    expect(src).toMatch(/--weekly/);
+    expect(src).toMatch(/buildWeeklyIssueData\(createPrismaDataSource\(client\)\)/);
   });
 });
