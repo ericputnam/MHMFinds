@@ -834,9 +834,11 @@ run died with `Prompt is too long`.
   after `lighting` (#61) and `gameplay-mod` (#79): 553 rows, only 77.0% carrying a jewelry word, a
   dining room and eight hairstyles in the grid. Re-tag from **titles only**, and prefer `NULL` to a
   guess — NULL drops a mod from every facet, a wrong tag pollutes one. The same class lives in
-  **every** `THEME_KEYWORDS` entry in `aiFacetExtractor.ts` (substring over title+description):
-  `halloween` was 547 rows / 34.7% title-supported before #156 (witch/vampire/ghost/pumpkin mapped
-  to it); `bedroom` 43.6%, `kitchen` 44.6%, `bathroom` 37.6% are still unfixed. **Fix a theme at
+  **every** `THEME_KEYWORDS` entry in `aiFacetExtractor.ts` *and* every `ROOM_THEME_RULES` entry in
+  `contentTypeDetector.ts` (both substring over title+description): `halloween` was 547 rows /
+  34.7% title-supported before #156; `bedroom` was 523 rows / 37.3% (133 whole-house lots, 26 pose
+  packs) before #170 moved it to title-only `lib/bedroomThemeRules.ts` (250/250 supported);
+  `kitchen` 44.6% and `bathroom` 37.6% are still unfixed — both detectors. **Fix a theme at
   the source before you build a page on it**, and read the dry run's ADD list as hard as its STRIP
   list — that is where `pumpkin` and `ghost` were caught.
 - **Measure a candidate keyword against the whole catalog before adding it, and record the
@@ -916,7 +918,9 @@ run died with `Prompt is too long`.
   eligibility window re-sorts between runs, so `--offset 100` on day 2 is not the row you think:
   every new consent drops a row off the front and silently skips an account that was never
   attempted. Remove exclusions and post-anchor consents from the *slice*, never from the list. An
-  exclusion list that is non-empty but matches nobody is a hard failure, not a quiet pass.
+  exclusion list that is non-empty but matches nobody is a hard failure, not a quiet pass. Anchor
+  **every** time-dependent sub-predicate, not just the consent date: the "frozen" re-permission
+  segment still grew 383 → 384 because `favorites.some` was unanchored (#165).
 - **Store the hash, never the address — and assert that in a test on the source file.**
   `lib/services/sendExclusions.ts` keeps only `sha256(lower(trim(email)))`, and
   `__tests__/unit/send-exclusions.test.ts` asserts the file contains no email-shaped string, so a
@@ -935,43 +939,41 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-23 — the run was killed by its own parent, and the orphan rolled production back
+### 2026-09-24 — every check passed and production still went backwards
 
-- **A parent that returns at dispatch will reap its children on its own clock.** `claude -p`
-  terminates background tasks 600 s after the main turn ends; Quinn's turn ends once the seven
-  specialists are dispatched, so any agent needing >10 min (build + PR + merge-gate + deploy-verify)
-  was killed mid-flight on 09-18, 09-19 and 09-22 and the runner accepted a skeleton digest as
-  "Quinn finished". Fix (#161): the runner exports `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`
-  (2 h default — finite on purpose, so a hung agent cannot wedge the task), guarded by
-  `funnel-runner-bg-ceiling.test.ts`. Before trusting any "done" from an orchestrator, find out
-  what its runtime does to work still in flight when it returns.
-- **A cleanup trap that deletes a working directory must first wait for, or kill, what runs in
-  it.** The runner's `cleanup()` removed every agent worktree while a `deploy-verify` child was
-  still alive; the orphan kept running in a deleted directory, rolled production back, wrote its
-  incident file into the void and its ledger rows into three deleted trees. Still open as `[ops]`.
-- **A remediation step that has never run is untested.** The same rollback's
-  `restore_functions_php` failed with `No such file or directory` — the push script was not in the
-  worktree's copy path. Harmless that day only because nothing was actually broken.
-- **Run the script under test from the tree under test; borrow only its dependencies.**
-  `deploy-verify` picks `smoke-render.ts` from the first tree that has `node_modules/playwright`,
-  so on 09-22 the operator tree's *stale* 7-target copy graded the deploy. Still open as `[ops]`.
-- **A guard that re-scores a proposal with the rules that generated it is circular, not a quality
-  gate.** The pin-SEO `--apply` guard (#139) only writes proposals that "re-score clean" — so it
-  approved one identical machine template for 76 of 77 rows, with an unverifiable "no dead links"
-  claim. `--apply` was withheld by hand. Judge generated output with a check it was not built to pass.
-- **"Crawlable" means a plain `<a>` in the server HTML.** Collection pages SSR 48 mods and had no
-  pagination, and `RelatedMods` is client-fetched, so every mod below rank 48 reached Google only via
-  a sitemap reporting 0 of 17,164 indexed. #162 adds a server-rendered "More …" list (plain `<a>`,
-  trailing slash, `.catch(() => [])` so it can never 500 the page, placed in the main column and
-  never inside an ad anchor). Relatedly (#160), `shortDescription` is a hard 200-char slice on
-  16,533 of 16,534 rows — truncate for meta at a word boundary, never pass it through.
-- **Demand for a hub page can hide in the query data of the leaf pages.** A creator-name cluster
-  (69 clicks/28d) was landing on one mod page while `/creators/` had 1 session — read GSC queries by
-  *page* before concluding a hub has no demand. #159 (`/creator/[slug]/`) followed the prefix rule:
-  `creator` is in `NEXTJS_PREFIXES` in the same PR (distinct from `creators`, the dashboard).
+Eight merges, two incidents, both from the merge path rather than the code (09-23 entry rotated to
+the archive; its open `cleanup()` item was closed by #166).
+- **Two PRs that are each green on their own base can merge into an unbuildable `main` with no
+  git conflict.** #167 and #168 each added `export async function listCreators` to `lib/creators.ts`
+  in different hunks; the squash of #168 took both, and Vercel failed on "`listCreators`
+  redefined" (main unbuildable 10:03→10:12). The standing "re-validate the second PR on the new
+  `main` when both touch one file" rule was prose, so nothing enforced it. Fix (#171): one function,
+  plus `__tests__/unit/lib-duplicate-exports.test.ts`, a filesystem scanner over `lib/**/*.ts` with
+  a vacuity floor. When two agents need the same helper the same day, one of them owns it.
+- **A PR merged onto a broken `main` never gets a build of its own.** #169 merged at 10:07, its
+  deploy errored with the others, and it went live only inside #171's build. Ledger it as "live via
+  <sha>" — a PASS against a deployment that does not contain the commit certifies nothing.
+- **Verify order is not merge order; never promote a build older than the one serving.** #167
+  merged before #170 but verified after it, and `ensure_promoted()` explicitly promoted #167's
+  build over #170's — `/games/sims-4/bedroom-cc/` 404'd for ~6 min while every check passed
+  (Quinn restored the #170 build by hand). Explicit promotion is itself a write: compare the candidate's
+  commit against production's with `git merge-base --is-ancestor` before promoting. Open `[ops]` P1.
+- **A typo'd dry-run flag must not fall through to the live path.** `newsletter-send-test.ts` took
+  `--dry`; `--dry-run` was silently ignored and would have been a live send. Any script whose
+  default is a side effect must reject unknown flags (#165).
+- **A CTA inside a conditional branch dies with the branch.** The `/go` Patreon links lived in the
+  countdown branch and unmounted at t+10 s; a timed headless render (both links at t+4 s, none at
+  t+13 s) found it. Give a new placement its **own** event name (`patreon_click_after_wait`) so an
+  experiment already reading the old event stays clean (#169).
+- **A reaper treats "cannot tell" as busy.** #166's `cleanup()` removes a worktree only when
+  `lsof -d cwd` proves it idle; unenumerable → left in place and logged. Its test runs the real
+  function under macOS `/bin/bash` 3.2 against real processes in real worktrees (4/6 red pre-fix).
+- **Two consumers of one population share one query.** `sitemap-creators.xml` and IndexNow
+  `--creators` now both call `listCreators()` so they cannot drift, and an optional payload is
+  appended **last** so a cap can never displace the daily core payload (#167).
 ---
 
-*Last compound review: 2026-09-23*
+*Last compound review: 2026-09-24*
 
 ---
 

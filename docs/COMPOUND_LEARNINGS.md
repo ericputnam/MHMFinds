@@ -1789,3 +1789,40 @@ carries 192×192 and 512×512 PNGs, `purpose: "any"`. Zero build-time signal eit
   notes moved verbatim to `.claude/agents/mhm-funnel/archive/`.
 - **Admin UI: a `flex-1` child needs `min-w-0`** or wide content (charts, tables) forces the page
   to scroll sideways — `app/admin/layout.tsx` `<main>` got it in #150.
+
+## 2026-09-23 — the run was killed by its own parent, and the orphan rolled production back (CLAUDE.md summary, rotated 2026-09-24)
+
+- **A parent that returns at dispatch will reap its children on its own clock.** `claude -p`
+  terminates background tasks 600 s after the main turn ends; Quinn's turn ends once the seven
+  specialists are dispatched, so any agent needing >10 min (build + PR + merge-gate + deploy-verify)
+  was killed mid-flight on 09-18, 09-19 and 09-22 and the runner accepted a skeleton digest as
+  "Quinn finished". Fix (#161): the runner exports `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`
+  (2 h default — finite on purpose, so a hung agent cannot wedge the task), guarded by
+  `funnel-runner-bg-ceiling.test.ts`. Before trusting any "done" from an orchestrator, find out
+  what its runtime does to work still in flight when it returns.
+- **A cleanup trap that deletes a working directory must first wait for, or kill, what runs in
+  it.** The runner's `cleanup()` removed every agent worktree while a `deploy-verify` child was
+  still alive; the orphan kept running in a deleted directory, rolled production back, wrote its
+  incident file into the void and its ledger rows into three deleted trees. Still open as `[ops]`.
+- **A remediation step that has never run is untested.** The same rollback's
+  `restore_functions_php` failed with `No such file or directory` — the push script was not in the
+  worktree's copy path. Harmless that day only because nothing was actually broken.
+- **Run the script under test from the tree under test; borrow only its dependencies.**
+  `deploy-verify` picks `smoke-render.ts` from the first tree that has `node_modules/playwright`,
+  so on 09-22 the operator tree's *stale* 7-target copy graded the deploy. Still open as `[ops]`.
+- **A guard that re-scores a proposal with the rules that generated it is circular, not a quality
+  gate.** The pin-SEO `--apply` guard (#139) only writes proposals that "re-score clean" — so it
+  approved one identical machine template for 76 of 77 rows, with an unverifiable "no dead links"
+  claim. `--apply` was withheld by hand. Judge generated output with a check it was not built to pass.
+- **"Crawlable" means a plain `<a>` in the server HTML.** Collection pages SSR 48 mods and had no
+  pagination, and `RelatedMods` is client-fetched, so every mod below rank 48 reached Google only via
+  a sitemap reporting 0 of 17,164 indexed. #162 adds a server-rendered "More …" list (plain `<a>`,
+  trailing slash, `.catch(() => [])` so it can never 500 the page, placed in the main column and
+  never inside an ad anchor). Relatedly (#160), `shortDescription` is a hard 200-char slice on
+  16,533 of 16,534 rows — truncate for meta at a word boundary, never pass it through.
+- **Demand for a hub page can hide in the query data of the leaf pages.** A creator-name cluster
+  (69 clicks/28d) was landing on one mod page while `/creators/` had 1 session — read GSC queries by
+  *page* before concluding a hub has no demand. #159 (`/creator/[slug]/`) followed the prefix rule:
+  `creator` is in `NEXTJS_PREFIXES` in the same PR (distinct from `creators`, the dashboard).
+
+_Status 2026-09-24: the open `cleanup()` item was closed by PR #166 (reaps only worktrees `lsof` proves idle)._
