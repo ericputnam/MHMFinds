@@ -8,8 +8,8 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
-## Operator watch 2026-09-24 — BELOW LINE (sessions)
-Sessions 28d to 09-22: 353,842 vs line 365,393 = 96.8% (gap 11,551, ≈413/day); revenue $5,904.06 vs $5,730.39 = 103.0%. Runs 09-21→09-24 all under 97% (the launcher's 09-23 note, PR #164, read 96.88/96.97/96.94/96.76/97.07/97.00/96.88% and called it WATCH; folded here, #164 closed without merging). The 09-22 BELOW LINE entry stays in force. Re-weighting applied 09-24: Pip and Sage two AUDIENCE moves each, Nova and Rowan a traffic page each, Cass/Rio one move, no non-AUDIENCE Tier 1 merge. Lift only after two consecutive runs ≥97%.
+## Operator watch 2026-09-25 — BELOW LINE (sessions)
+Sessions 28d 08-26→09-22 (history.json on main): 353,842 vs line 365,393 = 96.8% (gap 11,551, ≈413/day); revenue $5,904.06 vs $5,730.39 = 103.0%. Sessions ratio over the last 7 measured windows 96.97→96.94→96.76→97.07→97.00→96.88→96.84% — flat-to-falling, under 97% on every run since 09-21 (third+ consecutive → BELOW LINE). Supersedes the 09-24 block; the 09-22 entry stays in force. Re-weighting for the next run: Pip and Sage each ship two AUDIENCE moves, Rowan's move must be a traffic page, Cass/Rio one move each, no Tier 1 that is not AUDIENCE. Fastest lever on the gap is pin inflow (Q11-b, writer cron inserts drafts → 0 pins/day): Quinn leads the digest with it until the operator replies. Lift only after two consecutive runs ≥97%.
 
 - [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01 (→ Nova, Q14 triage in PR #141; `/creator/[slug]/` pages shipped 09-23 as E85)
 
