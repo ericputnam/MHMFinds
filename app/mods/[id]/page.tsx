@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import type { Mod } from '@/lib/api';
 import { ModJsonLd } from '@/components/ModJsonLd';
 import { getCollectionLinksForMod } from '@/lib/collections';
+import { getMoreFromCreator } from '@/lib/creatorMods';
 import { modMetaDescription, modPageTitle } from '@/lib/seo/modMeta';
 import ModDetailClient from './ModDetailClient';
 
@@ -133,10 +134,16 @@ export default async function ModDetailPage({ params }: PageProps) {
   // copy never enters the client bundle. (E32, 2026-09-10)
   const collections = getCollectionLinksForMod(mod);
 
+  // "More from <creator>": resolved here so the six sibling-mod links and
+  // the /creator/[slug]/ link are in the first-paint HTML (crawlable).
+  // Slug-folded across author spellings; null on error or when the creator
+  // has no other SFW mod (E106, 2026-09-25).
+  const moreFromCreator = await getMoreFromCreator(mod.id, mod.author);
+
   return (
     <>
       <ModJsonLd mod={mod} collections={collections} />
-      <ModDetailClient initialMod={mod} collections={collections} />
+      <ModDetailClient initialMod={mod} collections={collections} moreFromCreator={moreFromCreator} />
     </>
   );
 }
