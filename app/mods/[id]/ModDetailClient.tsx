@@ -26,6 +26,7 @@ import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import type { CollectionLink } from '@/lib/collections';
+import type { MoreFromCreatorData } from '@/lib/creatorMods';
 import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
 import { authorSlug, creatorHref, isJunkAuthorSlug } from '@/lib/creatorSlug';
 import Image from 'next/image';
@@ -39,6 +40,11 @@ interface ModDetailClientProps {
    * server in page.tsx. Empty when the mod matches no collection.
    */
   collections?: CollectionLink[];
+  /**
+   * Other mods by the same creator + the creator page href, resolved on
+   * the server in page.tsx (E106). null = no block.
+   */
+  moreFromCreator?: MoreFromCreatorData | null;
 }
 
 function InContentAd() {
@@ -51,7 +57,11 @@ function InContentAd() {
   );
 }
 
-export default function ModDetailClient({ initialMod, collections = [] }: ModDetailClientProps) {
+export default function ModDetailClient({
+  initialMod,
+  collections = [],
+  moreFromCreator = null,
+}: ModDetailClientProps) {
   const router = useRouter();
   const [mod] = useState<Mod>(initialMod);
 
@@ -254,8 +264,10 @@ export default function ModDetailClient({ initialMod, collections = [] }: ModDet
 
             <InContentAd />
 
-            {/* More from Creator — drives pages/session via creator discovery loop */}
-            <MoreFromCreator modId={mod.id} author={mod.creator?.handle || mod.author} />
+            {/* More from Creator — server-resolved (E106) so the sibling-mod
+                and /creator/[slug]/ links are crawlable on first paint.
+                Sibling of the InContentAd anchors above and below, never a child. */}
+            <MoreFromCreator data={moreFromCreator} />
 
             <InContentAd />
 
