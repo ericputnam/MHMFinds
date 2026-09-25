@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-09-25
+- Tried: `kitchen-cc` collection page + title-only repair of the `kitchen` room theme, one PR (T0, E109, PR #179 `d80ae98`). Demand is thin (GSC 28d kitchen cluster 194 impr / 2 clicks vs bedroom ~394 / 7) — shipped as the spec'd traffic page because the fix is the durable part. The AI extractor cannot emit `kitchen` as a theme (it is a contentType there), so only `ROOM_THEME_RULES` needed the fix.
+- Before → after: `kitchen` theme 345 rows / 118 title-supported (34.2%) → 160 / 160 (100%); 31 added (all fridges/appliances), 216 stripped; top 40 read 40/40. Worst old keyword: 'cooking' (card #2 would have been "Realistic Cooking Mod"). Descriptions caught two false friends a count would have kept: "Sims 4 Furniture Stove Set" is a potbelly stove, "Punk Pitstop Appliances" is a foosball table.
+- Verdict: MORE DATA (read on 2026-10-23; keep if ≥200 engaged sessions OR ≥5 favorites in 28d and RPM ≥95%).
+- Next time: bathroom (439 rows, Wicked Whims card #1) is the last room theme on the substring rule — same repair, and read the ambiguous-word rows' descriptions as a spot-check (never as rule input). The kitchen grid exposed mistyped contentType (fridges as glasses/tops/makeup) — an `--ids=` contentType hand-fix, not a retag.
+
 ## 2026-09-24
 - Tried: `bedroom-cc` collection page + title-only repair of the `bedroom` theme, one PR (T0, E100, PR #170 `565f35d`). Picked bedroom over kitchen/bathroom on demand: GSC 28d bedroom listicle cluster ~394 impr / 7 clicks vs bathroom 105 / 1, kitchen 45 / 0, and bedroom queries ("bed frame cc" pos 16.8, "teen bedroom cc" 21.9) hit no browse page. Room themes are NOT in `THEME_KEYWORDS` — they come from `ROOM_THEME_RULES` in `contentTypeDetector.ts` (`String.includes` over title then description); the fix went there, not in the extractor.
 - Before → after: `bedroom` theme 523 rows / 195 title-supported (37.3%) → 250 / 250 (100%); 39 added, 312 stripped; top 40 read 40/40. The old `'sleeping'` keyword was the worst single word (9 of 16 `sleep*` titles are pose packs). A bare "bed" needed a veto list — the first dry run's ADD list had "Bed Cuddle", "Read in Bed", "Cat Window Hanging Bed" and three bed pose packs. Titles-only cost the old #1 card ("Teen Space", 7,998 dl, bedroom clutter per description).
@@ -66,9 +72,3 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Before → after: `lighting` 140 rows / ~6 real → 19 / 19 real; `curtains` 7 / 0 real → 0; decor-cc grid 731 → 741; furniture 965 → 978; clutter 162 → 165; detector suite 14 → 21 tests; 128 of 147 rows rewritten, 84 to NULL. Blog:…
 - Verdict: MORE DATA (read on 2026-10-06; keep if `lighting` still spot-checks 100% fixtures and the three collection grids are flat-or-up).
 - Next time: when a facet looks junky, find out *why the detector produced it* before writing a cleanup script — the plural double-count was a general bug affecting every rule with redundant singular/plural spellings, and a data-o…
-
-## 2026-09-07
-- Tried: decor-cc collection page (T0, PR #51) — `contentTypeIn ['decor','plants','rugs','wall-art']` = 731 SFW Sims 4 mods, the largest un-paged content type in the 15,888-mod catalog; excluded `lighting` (140) and `curtains` (7)…
-- Before → after: collection routes 17 → 18; /games/sims-4/clutter/ related cards 1 → 3; canonical-trailing-slash suite red → 15/15 green; decor-cc engaged sessions 0 (page did not exist) → read 2026-10-05; GSC baseline ~104 impre…
-- Verdict: MORE DATA (read on 2026-10-05; keep if ≥200 engaged sessions or ≥5 favorites from the page).
-- Next time: run the touched page-type's existing test suite against origin/main *before* writing code — the red test was 3 days old and nobody had run it. When folding facets into a `contentTypeIn` collection, sample the top rows…

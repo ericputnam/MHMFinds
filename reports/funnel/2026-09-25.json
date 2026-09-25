@@ -1,0 +1,357 @@
+{
+  "date": "2026-09-25",
+  "headline": {
+    "ownedAdds7d": 78,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 145,
+    "nonAdTarget": 200,
+    "mediavine28d": 5904.06,
+    "mediavine28dPrev": 5615.2
+  },
+  "flags": [
+    "🟡 Pinner: inventory runway ≈ 2.2 days (63 rows dated through +14d ÷ 28.6/day observed; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)",
+    "🔴 Pinner writer: newest writer-attributed row queued 2026-09-25 07:18Z (3.3 h ago) · 24 inserted in 24h, 365 in 7d · runway 2.2d — runway below the 3-day floor; Q11 (writer cron) is the fix"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-17→2026-09-23 vs 2026-09-10→2026-09-16",
+      "sessions7d": 89744,
+      "sessionsPrev7d": 85498,
+      "byChannel7d": {
+        "pinterest": 59782,
+        "bing_organic": 16045,
+        "direct": 5162,
+        "google_organic": 2578,
+        "other_search": 2640,
+        "tumblr": 1076,
+        "ai_referral": 280,
+        "other": 1976,
+        "reddit": 205
+      },
+      "byChannelPrev7d": {
+        "pinterest": 55313,
+        "bing_organic": 16226,
+        "direct": 4809,
+        "google_organic": 2773,
+        "other_search": 2646,
+        "tumblr": 1059,
+        "ai_referral": 321,
+        "other": 2136,
+        "reddit": 215
+      },
+      "aiReferral7d": 280,
+      "aiReferralPrev7d": 321,
+      "captureEvents7d": {
+        "patreon_click": 49,
+        "sign_up": 11,
+        "newsletter_signup": 6,
+        "affiliate_click": 5,
+        "favorite": 4
+      },
+      "captureUsers7d": {
+        "patreon_click": 40,
+        "sign_up": 10,
+        "newsletter_signup": 6,
+        "affiliate_click": 5,
+        "favorite": 4
+      },
+      "patreonClickUsersPerDay7d": 5.71,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 40,
+        "perDay": 5.71,
+        "window": "2026-09-17→2026-09-23"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-12": 9,
+        "2026-09-19": 9,
+        "2026-09-21": 9,
+        "2026-09-20": 7,
+        "2026-09-11": 6,
+        "2026-09-18": 5,
+        "2026-09-22": 5,
+        "2026-09-23": 5,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3
+      },
+      "notSetLanding7d": 3801,
+      "returningShare7d": 0.5300673606858542,
+      "pagesPerSession7d": 1.5237903090218232,
+      "engagementRate7d": 0.7225640853200623
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-26→2026-09-22",
+      "clicks28d": 2465,
+      "clicksPrev28d": 2009,
+      "impressions28d": 94020
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-22",
+      "revenue7d": 1490.45,
+      "revenuePrev7d": 1501.11,
+      "rpm7d": 17.25,
+      "rpmPrev7d": 17.2,
+      "sessions7d": 86416,
+      "revenue28d": 5904.06,
+      "revenuePrev28d": 5615.2,
+      "rpm28d": 16.69,
+      "health": {
+        "date": "2026/09/25",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 48
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1735,
+      "users7d": 68,
+      "users30d": 271,
+      "subscribers": 34,
+      "subscribers7d": 10,
+      "subscribers30d": 19,
+      "subscribersBySource": {
+        "re-permission": 2,
+        "collection-page": 3,
+        "footer": 17,
+        "signup-optin": 5,
+        "go-interstitial": 4,
+        "home-hero": 2,
+        "sign-in": 1
+      },
+      "favorites": 22050,
+      "favorites7d": 1482,
+      "downloadClicks7d": 252,
+      "downloadClicks30d": 1295,
+      "affiliateClicks7d": 13,
+      "affiliateClicks30d": 65,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16534,
+      "collections": 1713,
+      "newMods7d": 53,
+      "newModsPrior7d": 97,
+      "submissions7d": 0,
+      "creatorsOnboarded": 0
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 53,
+      "freeMembers": 5673,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5673,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 9,
+          "title": "Espresso Shot",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 42,
+          "title": "Cappuccino",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 2,
+          "title": "Large Latte",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 145
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 55,
+      "free": 5492,
+      "former": 230,
+      "grossMonthlyUsd": 153.5,
+      "paidByAmount": {
+        "$3": 42,
+        "$1": 10,
+        "$5": 2,
+        "$8": 1
+      },
+      "joins7d": 4,
+      "cancels7d": 0,
+      "joinsSinceAnchor": 13,
+      "joinsSinceAnchorAtPerkTier": 7,
+      "cancelsSinceAnchor": 1,
+      "perkTierJoins7d": 2,
+      "perkTierJoinsPerDay7d": 0.29,
+      "paidAndConnected": 0,
+      "paidAndConnectedById": 0,
+      "paidAndConnectedByEmail": 0,
+      "linkedWithPatreonId": 72,
+      "paidWithUserId": 55,
+      "connectedAccounts": 72,
+      "premiumUsers": 2,
+      "anchor": "2026-09-08",
+      "window": "2026-09-18→2026-09-25"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 22,
+      "posts7d": 5,
+      "latestPost": "2026-09-25 best-sims-4-autumn-houses"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-25",
+      "lastPinCreatedAt": "2026-09-25T07:00:04.000Z",
+      "pinsCreated24h": 7,
+      "pinsCreated7d": 200,
+      "pinsSampled": 292,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 3.6,
+        "message": "last pin created 2026-09-25 07:00Z (3.6 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 215,
+      "postedTotal": 8499,
+      "unpostedBacklog": 1737,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1674,
+      "inventoryRows": 63,
+      "runway": {
+        "level": "low",
+        "inventoryRows": 63,
+        "dailyRate": 28.571428571428573,
+        "runwayDays": 2.2,
+        "message": "inventory runway ≈ 2.2 days (63 rows dated through +14d ÷ 28.6/day observed; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)"
+      },
+      "lastWriterInsertAt": "2026-09-25T07:18:59.381422+00:00",
+      "lastWriterInsertLabel": "best-sims-4-autumn-houses",
+      "writerInserted24h": 24,
+      "writerInserted7d": 365,
+      "writerLiveness": {
+        "level": "red",
+        "hoursSinceLastInsert": 3.3,
+        "message": "newest writer-attributed row queued 2026-09-25 07:18Z (3.3 h ago) · 24 inserted in 24h, 365 in 7d · runway 2.2d — runway below the 3-day floor; Q11 (writer cron) is the fix"
+      }
+    }
+  },
+  "longRange": {
+    "returningShare7d": 0.5300673606858542,
+    "nonPinterestShare7d": 0.14472517096340387,
+    "nonPinterestShareRaw7d": 0.3338607594936709
+  },
+  "engagement": {
+    "pagesPerSession7d": 1.5237903090218232,
+    "engagementRate7d": 0.7225640853200623,
+    "favorites7d": 1482,
+    "downloadClicks7d": 252
+  },
+  "catalog": {
+    "newMods7d": 53,
+    "newModsPrior7d": 97,
+    "total": 16534
+  },
+  "capture": {
+    "ratePer1kSessions7d": 0.8691388839365306
+  },
+  "creators": {
+    "onboarded": 0,
+    "submissions7d": 0
+  },
+  "team": {
+    "ok": true,
+    "data": {
+      "runSuccess14d": 0.6428571428571429,
+      "mergesByOwner7d": {
+        "favicon": 1,
+        "Quinn": 7,
+        "Rio": 6,
+        "Pip": 8,
+        "Nova": 9,
+        "operator": 4,
+        "Sage": 6,
+        "Cass": 5,
+        "Ops": 4,
+        "Rowan": 2,
+        "PR": 1
+      },
+      "totalMerges7d": 53,
+      "opsMergeShare7d": 0.07547169811320754,
+      "paperOnlyMerges7d": 0
+    }
+  },
+  "owners": {
+    "revenue": "Rio",
+    "sessions": "Pip",
+    "rpm": "Rio",
+    "ownedAdds7d": "Cass",
+    "pinterestSessions7d": "Pip",
+    "nonAdMonthly": "Rio",
+    "returningShare7d": "Pip",
+    "nonPinterestShare7d": "Pip",
+    "pagesPerSession7d": "Sage",
+    "engagementRate7d": "Sage",
+    "favorites7d": "Cass",
+    "downloadClicks7d": "Nova",
+    "newMods7d": "Nova",
+    "catalogTotal": "Nova",
+    "captureRatePer1k": "Cass",
+    "creatorsOnboarded": "Nova",
+    "creatorSubmissions7d": "Nova",
+    "runSuccess14d": "Ops",
+    "opsMergeShare7d": "Ops",
+    "paperOnlyMerges7d": "Ops",
+    "mergesByOwner7d": "Quinn",
+    "_comment": "Which specialist owns each scoreboard metric, restructure 2026-09-22.",
+    "sessions28d": "Pip",
+    "pinterestSessions": "Pip",
+    "bingOrganic": "Pip",
+    "direct": "Pip",
+    "notSetLandingPage": "Pip",
+    "organicSessions": "Sage",
+    "aiReferralSessions": "Sage",
+    "returningVisitorSharePct": "Rowan",
+    "engagementRatePct": "Rowan",
+    "favoritesWeekly": "Rowan",
+    "catalogFreshness": "Rowan",
+    "ownedAudienceNetAdds": "Cass",
+    "captureRatePer1kSessions": "Cass",
+    "nonAdRevenueMonthly": "Rio",
+    "mediavineRevenueGuardrail": "Rio",
+    "runSuccessRate": "Ops",
+    "ledgerCompleteness": "Ops",
+    "contextBudgetGreen": "Ops"
+  }
+}

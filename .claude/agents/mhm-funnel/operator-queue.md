@@ -48,7 +48,7 @@ day.
 ### Q8 · Pinterest poster poison-row hardening (Pip, E36) — **APPROVED 09-12, deployed 09-21 with Q11** (MHMUtils `7037ffe`). Nothing left for you; closes with Q11-b.
 
 ### Q4 · Patreon tier relaunch — package ready (Rio, 2026-09-04) — **1 of 3 steps done**
-- Probe 09-23: $1 "Support Tier" still `published=true` (9 patrons); $3 tier 41, $5 tier 2; welcome note not pasted. The two dashboard steps are in the checklist below. Gate re-read 09-22: HOLD (see Q16). Full status history in the archive.
+- Probe 09-25: tiers renamed 04:54Z (Espresso Shot $1 ×10, Cappuccino $3 ×42, Large Latte $5 ×3) while the gate read HOLD; $1 tier still `published=true`; welcome note not observable. Rio's E108 watches cancels (revert copy if >16/mo pace, read 10-09). The two dashboard steps are in the checklist below. Gate re-read 09-22: HOLD (see Q16). Full status history in the archive.
 
 ### Q5 · Site membership via Patreon OAuth (Rio, E19/E24) — **SHIPPED 09-07/09-08**, env vars live in Production. Read 2026-10-07. Nothing for you.
 
@@ -58,7 +58,7 @@ day.
 
 ## Operator-only actions (no decision needed, nobody else can do them)
 
-- **Q4 step 1, 2 of 3 still yours (~2 min, Patreon dashboard):** unpublish the $1 "Support Tier" (9 patrons, still `published=true` on 09-23) and paste the welcome note from `reports/funnel/drafts/patreon-welcome-note-2026-09-09.md` into the $3 tier.
+- **Q4 step 1, 2 of 3 still yours (~2 min, Patreon dashboard):** unpublish the $1 "Espresso Shot" tier (renamed from "Support Tier" 09-25 04:54Z; 10 patrons, still `published=true` on 09-25) and paste the welcome note from `reports/funnel/drafts/patreon-welcome-note-2026-09-09.md` into the $3 "Cappuccino" tier (renamed 09-25; perk line present, welcome note not observable).
 - **`NEXT_PUBLIC_SITE_URL` (~1 min):** the operator-did probe has reported it missing from Vercel **Production** every morning since 09-17 (12 of 13 names). Vercel → Settings → Environment Variables → Production, add `NEXT_PUBLIC_SITE_URL=https://musthavemods.com`; reply "done siteurl".
 - **BigScoots 301 blog.* → apex (Q13, Pip 09-21, Tier 2 infra):** package is PR #143 (open, Tier 2); the team's half (apex Post URLs in the writer, host fix in the poster) shipped with Q8/Q11.
 - **BigScoots page-cache purge for Q6 (~1 min):** `wp bs_cache purge_cache` (site-wide, or `--urls=` the two un-consolidated articles). Until it runs the articles keep serving the old facet canonical from cache, so Google cannot see the change.

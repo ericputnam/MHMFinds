@@ -19,6 +19,13 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-25 — E108: the operator renamed the tiers on a HOLD
+- Tried: `RENAME_WATCH` constant (anchor 2026-09-25T04:54:06Z, thresholds imported from `Q4_GATE`) + `--anchor rename|<ISO>` on `patreon-q4-gate-preread.ts`; before-snapshot report; three operator drafts moved to Espresso Shot / Cappuccino / Large Latte. Grep found zero on-site tier-name copy, so no app change.
+- Before → after: 55 paid ≈ $153.50/mo, joins 7d 4, cancels 7d 0, connected 0/55 → same (snapshot only; reads 10-02 / 10-09). Q4 gate still HOLD on the connected leg (joins 22.7/mo PASS, connected 0/55 FAIL); renames are a fact, $10 tier stays Tier 2. E65 pre-read 6.6 patreon_click users/day (keep ≥ 4.375). E99 after-wait 2 users on 09-24.
+- Guardrail: GREEN from files (MCP unavailable) — 09-22 $192.44 +6.2%, RPM +9.8%, 28d +5.1%.
+- Verdict: shipped, PR #177 1bb79f6, deploy-verify PASS. Cancels are a floor until the 10-01 charge run — do not read the rename on 10-02 as "no churn".
+- Next time: when the operator acts ahead of a gate, record the anchor and the pre-committed revert rule as a tool the same day; a threshold that lives only in a decision paragraph cannot be re-run. Operator-queue Q4/Q16 text and the "Operator-only actions" line still say "Support Tier"/"Tip Jar" — Quinn's daily PR should update to "unpublish the $1 'Espresso Shot' tier" and "paste the welcome note into the $3 'Cappuccino' tier". `gh pr merge --delete-branch` exits 1 when `main` is checked out in another worktree even though the merge succeeded; check `gh pr view N --json state` before retrying.
+
 ## 2026-09-24
 - Tried: E99 — `/go` member CTA kept visible after the countdown (T0, PR #169, e1b5e94). The Connect / Become-a-patron line lived only in the countdown branch, so it unmounted when "Continue to Download" appeared: headless render of a logged-out `/go` showed connect=true at t+4s and connect=false continue=true at t+13s. New line under the button, own event `patreon_click_after_wait`, gated `canProceed && mod && membershipOn && !isMember && !showPostConnect`; scoreboard capture list carries it; 5 guard tests red on pre-fix main. Production render after deploy: afterWait=true at t+13s, .mv-ads 1, aside 1. Merged onto the unbuildable main (10:03→10:12, #167×#168); ledger row is Quinn's 10:20 `--check` PASS on the #171 build.
 - Before → after: patreon_click users/day 8.75 (09-08→09-11, two outlier days of 13 when /go pv spiked to 112/65) → 5.57 (09-16→09-22); click rate per render user 11.8% → 9.5%, per page_view user 28.7% → 28.1% (flat); /go render users 74 → 58.7/day (−21%) while mod-page page_view 877 → 888/day. The drop is /go reach, not CTA copy — E65 keep rule (≥4.375) is met. After-wait clicks 0 → read 10-01.
@@ -50,12 +57,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Guardrail: GREEN, demand-side — 09-19 $276.15 (+5.7% same-weekday), RPM $19.23 (+5.6%), sessions +0.1%; 3-day revenue +3.4%, 3-day RPM +7.…
 - Verdict: MORE DATA (E74 read 2026-10-06; E69 gate 2026-09-22 from today's numbers unless the connected leg turns overnight).
 - Next time: (1) the session carries only `isPremium` — "linked but not a member" is invisible to the client, so any post-OAuth state has to…
-## 2026-09-20
-- Tried: E69 — Q4 gate pre-read (T0). `classifyLinkedAccounts()`, `q4GateDecision()`, `Q4_GATE` constants and `cancelsSinceAnchor` added to…
-- Before → after: Q4 gate inputs known 2 days before the 09-22 read — paid joins since 09-08 **10 in 12.5 d = 24.4/mo pace (PASS)** · paid-a…
-- E45 grade: **KEEP** — `patreonApi` section `ok` on 4 of 4 mornings that produced a scoreboard (09-15, 09-16, 09-19, 09-20), 0 `unavailable…
-- Guardrail: GREEN, demand-side — 09-18 $208.00 (+2.3% same-weekday), RPM $17.73 (+7.4%), sessions −4.7%; 3-day revenue +0.6%, 3-day RPM +7.…
-- Verdict: MORE DATA (re-run the pre-read on 2026-09-22 for the gate itself; keep the tool if it exits 0 and its decision line agrees with t…
-- Next time: (1) the `/go` post-connect state is the product gap — a signed-in, Patreon-linked non-member should see "connected, not a membe…
-
-_Older/fuller entries moved to `archive/playbooks/rio-2026-09.md` verbatim; nothing deleted, only truncated above._

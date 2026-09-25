@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-25
+- Tried: E104 (T0, PR #176 `0492290`): `/llms-full.txt` names the top 40 of 534 creators with `/creator/{slug}/` URLs and links a mod's creator page only when its author slug is in `listHubCreators()` — the hub (E97) and leaves (E85) had been live two days with 0 `/creator/` URLs in the AI surface. Pattern: when a new page class ships, grep llms-full.txt for its path the same day; the test mocks `@/lib/creators` (a `$queryRaw` the prisma mock cannot serve) and keeps the real slug helpers via `importActual`. Second slot: E37 pre-read → KEEP (hair-cc "Submitted and indexed", crawled 09-24T02:12Z) and the `/games/*` title-fix candidate killed with numbers (all pos 24–32, exposed query rows < 20% of impressions, no title-miss cluster).
+- Before → after: AI-referral sessions landing on `/creator/*` 28d 0 (08-26→09-22) → read 2026-10-09 / 10-23, keep if ≥10 or ≥3 distinct pages with ai_referral 7d ≥250. Live file 0 → 130 creator URLs.
+- Verdict: E104 MORE DATA; E37 KEEP; title-set fix KILLED (no data supports it — re-propose only at pos ≤15 on a non-brand query ≥200 impr).
+- Next time: `gh pr merge --delete-branch` fails on the local `main` checkout when another agent's worktree holds `main` — the merge still lands; check `gh pr view --json state,mergeCommit` and delete the remote branch by hand. Next: E18 final read 10-06; hair-cc needs inbound links from the hair blog posts (T2 package), not titles.
+
 ## 2026-09-24
 - Tried: E95 (T0, PR #167 `6b525b5`): IndexNow `--creators` mode — 541 creator pages pushed in one POST (590 URLs, http=200). Pattern: when a sitemap and a push script select the same population, move the query into the lib (`listCreators()`) and make both consume it; guard the sitemap file for the import and against `regexp_replace`. Ceiling lifts only with the flag; new kinds append last so the cap truncates them before the daily payload.
 - Before → after: Bing-organic sessions landing on `/creator/*` 7d: 0 (09-17→09-23; 39 landing sessions, all direct) → read 2026-10-01, keep if ≥20 with bing_organic ≥95% of 15,623. Move 2 (E96 `/creator/` hub) was shipped by Nova as E97 (#168) 13 min before I could branch; ai_referral 312→287 is −19 chatgpt.com sessions inside its normal band, not structural.

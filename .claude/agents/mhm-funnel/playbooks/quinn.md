@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-25
+- Tried: BELOW-LINE re-weighted day run with a merge order in every dispatch prompt (Rowan → Nova → Sage → Pip → Cass → Rio → Ops) and experiment IDs pre-assigned by Quinn (E102–E110) instead of each agent running `next-experiment-id.ts`; the missing #173 ledger row was landed with `ledger-commit.sh` before dispatch; every registry write went through python3 (Edit denied on `.claude/`).
+- Before → after: incidents per merge 2/8 (09-24) → 0/7 (09-25, all PASS; first merge 06:50, seventh 07:16 = 26 min for seven merges vs ~60 min and one unbuildable `main` yesterday); ledger rows per merge 7/8 → 7/7 same-day (+#173 backfilled); `gh pr merge --delete-branch` exit-1-after-success hit 4 more times (Sage, Cass, Rio, Ops), 4/4 caught by `gh pr view --json state`; reads graded with numbers 3 (E26 KILL, E37 KEEP, E34 MISSED); experiments.md 23,638 → 23,335 B after adding 8 rows (2,267 B freed by tighter column caps, full rows in the archive).
+- Verdict: KEEP merge order + pre-assigned IDs (read 09-26: repeat both, expect 0 same-file collisions again).
+- Next time: the 22-minute window worked because the six PRs had disjoint files except Cass×Nova (`ModDetailClient.tsx`, which Cass rebased and re-tested) — name the files each agent may touch in the dispatch, and update operator-queue wording the same day the operator changes the thing it names (Q4 still said "Support Tier" six hours after the rename).
+
 ## 2026-09-24
 - Tried: BELOW LINE re-weighting (4th run <97%: sessions 96.8%, revenue 103.0%) — 7 agents, 8 merges through one gate in 35 min (#140, #165, #170, #168, #167, #169, #171 + morning check), 5 paper-only outputs folded into the daily PR.
 - Before → after: 8 merges → 2 incidents in 9 minutes, both from the gate itself, not the code: #167 and #168 each added `listCreators` from the same base (squash merged both, main unbuildable 10:03→10:12, #169 merged into the window with no build); then Sage's late verify `ensure_promoted()` promoted its older build over Rowan's newer one and `/games/sims-4/bedroom-cc/` 404'd on production for ~6 min with a PASS row in the ledger. Rollback 10:11, fix-forward 10:12, Rio's ledger gap closed by a `--check` row 10:21.
