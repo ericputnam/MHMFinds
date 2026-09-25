@@ -21,7 +21,9 @@ describe('deploy-verify.sh promotes the merged build before verifying it', () =>
 
   it('after-merge mode gates the smoke check on ensure_promoted and records NOT PROMOTED on failure', () => {
     const afterMerge = src.slice(src.indexOf('  after-merge)'), src.indexOf('  check)'));
-    expect(afterMerge).toMatch(/if ! ensure_promoted "\$DEPLOY_URL"; then/);
+    // E110: rc 3 = SUPERSEDED (see deploy-verify-promote-forward.test.ts); any other non-zero = NOT PROMOTED
+    expect(afterMerge).toMatch(/ensure_promoted "\$DEPLOY_URL"; PROMO=\$\?/);
+    expect(afterMerge).toMatch(/elif \[ "\$PROMO" -ne 0 \]; then\s+ledger "NOT PROMOTED"/);
     expect(afterMerge).toMatch(/ledger "NOT PROMOTED"/);
     expect(afterMerge.indexOf('ensure_promoted')).toBeLessThan(afterMerge.indexOf('if smoke; then'));
   });
