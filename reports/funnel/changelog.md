@@ -192,3 +192,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-25 07:08 | after-merge | Cass: PR #178 /mods/[id] favorite button → real API + account capture on 401 (E107) | 56eb87f | https://mhm-finds-dw5l-ovcr7yidf-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-25 07:12 | after-merge | Rio: PR #177 post-rename Patreon watch (E108) | 1bb79f6 | https://mhm-finds-dw5l-8epri2xou-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-25 07:16 | after-merge | Ops: PR #174 deploy-verify never promotes an older build over a newer one (E110; verified with the new script) | 7a43ea6 | https://mhm-finds-dw5l-gja36w51w-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-25 07:23 | after-merge | Quinn: PR #181 funnel: daily run 2026-09-25 | 59a4500 | https://mhm-finds-dw5l-8nv0ek1r4-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
