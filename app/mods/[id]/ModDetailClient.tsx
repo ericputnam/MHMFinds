@@ -28,7 +28,6 @@ import { NewsletterSignup } from '@/components/NewsletterSignup';
 import type { CollectionLink } from '@/lib/collections';
 import type { MoreFromCreatorData } from '@/lib/creatorMods';
 import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
-import { authorSlug, creatorHref, isJunkAuthorSlug } from '@/lib/creatorSlug';
 import {
   MOD_DETAIL_FAVORITE_EVENTS,
   MOD_DETAIL_FAVORITE_SOURCE,
@@ -407,13 +406,15 @@ export default function ModDetailClient({
                 <div className="flex-1">
                   <p className="text-sm text-slate-400">Created by</p>
                   <p className="font-semibold text-white flex items-center gap-1">
-                    {/* Author name links to the creator page (E85) when the
-                        author string yields a usable slug; the page 404s for
-                        creators under MIN_MODS_FOR_PAGE, so only link when a
-                        slug exists at all. */}
-                    {mod.author && !isJunkAuthorSlug(authorSlug(mod.author)) ? (
+                    {/* Author name links to the creator page (E85) only when
+                        that page exists. The href comes from the server-resolved
+                        moreFromCreator.creatorHref (lib/creatorMods.ts
+                        creatorHrefFor: non-junk slug AND >= MIN_MODS_FOR_PAGE
+                        across every spelling). Building it from the author
+                        string sent 2-4-mod creators to a 404 (E113). */}
+                    {moreFromCreator?.creatorHref ? (
                       <Link
-                        href={creatorHref(authorSlug(mod.author))}
+                        href={moreFromCreator.creatorHref}
                         className="hover:text-sims-pink transition-colors"
                       >
                         {mod.creator?.handle || mod.author}

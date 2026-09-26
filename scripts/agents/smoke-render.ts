@@ -11,14 +11,18 @@
  *   npx tsx scripts/agents/smoke-render.ts                 # against https://musthavemods.com
  *   npx tsx scripts/agents/smoke-render.ts --base https://preview-url.vercel.app
  *   npx tsx scripts/agents/smoke-render.ts --json reports/funnel/smoke.json
- * Exit 0 = all pass, 1 = at least one failure, 3 = could not run.
+ * Exit 0 = all pass, 1 = at least one POSITIVE failure, 2 = INCONCLUSIVE (network control degraded, or a
+ * failure that did not amount to evidence about the site — see smoke-render-lib.ts), 3 = could not run.
  */
 import { chromium } from 'playwright';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { INDEXNOW_KEY } from './indexnow-lib';
-import { shouldRetryRender, type SmokeKind } from './smoke-render-lib';
+import {
+  CONTROL_TIMEOUT_MS, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
+  navigationFailed, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
+} from './smoke-render-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -32,13 +36,40 @@ type Kind = SmokeKind;
  * the IndexNow ownership key is 32 bytes, well under the 50-char "empty response"
  * floor, so the default check would fail it on every run and roll production back.
  */
-interface Target { path: string; kind: Kind; expectText?: string; }
+interface Target { path: string; kind: Kind; expectText?: string; settledText?: number; }
 interface Result {
   path: string; kind: Kind; status: number | null; ms: number;
   secondary: number; mvAds: number; mediavineScript: boolean; textLength: number;
   pageErrors: string[]; consoleErrors: number; appError: boolean;
   hydrationErrors: number; thirdPartyErrors: number; failures: string[]; transientErrors?: string[];
-  expectText?: string; bodyText?: string;
+  expectText?: string; bodyText?: string; settledText?: number;
+  retried?: boolean; verdict?: Verdict; why?: string; probe?: ProbeSample | null;
+}
+interface RenderOpts { gotoMs: number; idleMs: number; settleMs: number; }
+const FIRST_RENDER: RenderOpts = { gotoMs: 45000, idleMs: 20000, settleMs: SETTLE_MS };
+/** The fresh-page retry gets a longer window so a slow-but-alive page can settle (E111). */
+const RETRY_RENDER: RenderOpts = { gotoMs: 60000, idleMs: 40000, settleMs: SETTLE_MS * 3 };
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36 mhm-smoke/1.0';
+
+/** Independent network control (E111): known-fast hosts unrelated to our deploy, fetched with a short timeout. */
+async function networkControl(): Promise<NetworkGrade> {
+  const samples: ControlSample[] = await Promise.all(NETWORK_CONTROL_URLS.map(async (url) => {
+    const t0 = Date.now();
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(CONTROL_TIMEOUT_MS), redirect: 'follow', headers: { 'user-agent': UA } });
+      return { url, status: r.status, ms: Date.now() - t0 };
+    } catch { return { url, status: null, ms: Date.now() - t0 }; }
+  }));
+  return gradeNetwork(samples);
+}
+/** Direct fetch of a page that timed out twice in Chromium — a second, independent client. */
+async function directProbe(url: string): Promise<ProbeSample> {
+  const t0 = Date.now();
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS), redirect: 'follow', headers: { 'user-agent': UA } });
+    await r.arrayBuffer().catch(() => undefined);
+    return { status: r.status, ms: Date.now() - t0 };
+  } catch { return { status: null, ms: Date.now() - t0 }; }
 }
 
 const OUR_HOST = new URL(BASE).host;
@@ -66,10 +97,12 @@ async function modIdFromSitemap(): Promise<string | null> {
 
 function expectations(r: Result): string[] {
   const f: string[] = [];
-  if (r.status !== 200) f.push(`HTTP ${r.status ?? 'no response'}`);
+  if (r.status !== 200) f.push(r.status === null ? `HTTP no response (${(r.pageErrors.find((e) => e.startsWith('navigation:')) ?? 'navigation failed').slice(0, 90)})` : `HTTP ${r.status}`);
   // React hydration mismatches (#418/#423/#425) recover by client-rendering; they are a warning
-  // (tracked for Sage/Nova), not a revenue-affecting failure. Anything else uncaught fails the page.
-  const hard = r.pageErrors.filter((e) => !isHydration(e) && !isThirdParty(e));
+  // (tracked for Sage/Nova), not a revenue-affecting failure. A navigation/evaluate failure is reported
+  // through the HTTP line above and judged by classifyRender, not as an "uncaught page error".
+  // Anything else uncaught fails the page.
+  const hard = r.pageErrors.filter((e) => !isHydration(e) && !isThirdParty(e) && !isNavError(e));
   if (hard.length) f.push(`${hard.length} uncaught page error(s): ${hard[0].slice(0, 120)}`);
   if (r.appError) f.push('Next.js "Application error" boundary rendered');
   // `game` (/play/) carries the same ad furniture as a catalog page — loader, empty
@@ -92,9 +125,11 @@ function expectations(r: Result): string[] {
 async function main() {
   const modId = await modIdFromSitemap();
   const targets: Target[] = [
-    { path: '/', kind: 'catalog' },
-    { path: '/mods', kind: 'catalog' },
-    ...(modId ? [{ path: `/mods/${modId}`, kind: 'detail' as Kind }, { path: `/go/${modId}`, kind: 'interstitial' as Kind }] : []),
+    // settledText: the grid on these three is client-fetched (/api/mods); a 200 with fewer chars than this after
+    // SLOW_LOAD_MS is an unsettled render, not a blank one (≈9,600 / 10,300 / 10,700 chars when settled, E111).
+    { path: '/', kind: 'catalog', settledText: 6000 },
+    { path: '/mods', kind: 'catalog', settledText: 6000 },
+    ...(modId ? [{ path: `/mods/${modId}`, kind: 'detail' as Kind, settledText: 1500 }, { path: `/go/${modId}`, kind: 'interstitial' as Kind }] : []),
     { path: '/sims-4-cc-finds-2/', kind: 'blog' },
     // /play/ (E38) is a first-party retention surface with its own ad anchors and its own
     // data path (/api/game/daily). It was outside every runtime check until E58: no smoke
@@ -102,9 +137,9 @@ async function main() {
     // invisible to deploy-verify. Trailing slash is load-bearing — trailingSlash: true 308s
     // the bare form. Verified against production 2026-09-16: 200, secondary=1, mv-ads=1,
     // loader present, 2,846 chars of text, 0 page errors.
-    { path: '/play/', kind: 'game' },
+    { path: '/play/', kind: 'game', settledText: 1500 },
     // /creator/ — the creator A–Z hub (E97): same ad furniture as a catalog page.
-    { path: '/creator/', kind: 'catalog' },
+    { path: '/creator/', kind: 'catalog', settledText: 6000 },
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
     { path: '/llms-full.txt', kind: 'text' },
@@ -119,13 +154,13 @@ async function main() {
   ];
   if (!modId) console.error('[smoke] WARN could not read a mod id from /sitemap-mods.xml — detail + interstitial skipped');
 
+  const netBefore = await networkControl();
+  console.log(`[smoke] network control before: ${netBefore.ok ? 'ok' : 'DEGRADED'} (${netBefore.passed}/${netBefore.total}: ${netBefore.why})`);
+
   const browser = await chromium.launch({ headless: true });
-  const ctx = await browser.newContext({
-    viewport: { width: 1366, height: 900 },
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36 mhm-smoke/1.0',
-  });
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 900 }, userAgent: UA });
   const results: Result[] = [];
-  const render = async (t: Target): Promise<Result> => {
+  const render = async (t: Target, o: RenderOpts = FIRST_RENDER): Promise<Result> => {
     const page = await ctx.newPage();
     const pageErrors: string[] = []; let consoleErrors = 0;
     page.on('pageerror', (e) => {
@@ -136,11 +171,11 @@ async function main() {
     const t0 = Date.now();
     let status: number | null = null;
     try {
-      const resp = await page.goto(`${BASE}${t.path}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+      const resp = await page.goto(`${BASE}${t.path}`, { waitUntil: 'domcontentloaded', timeout: o.gotoMs });
       status = resp?.status() ?? null;
       if (t.kind !== 'xml' && t.kind !== 'text') {
-        await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => undefined);
-        await page.waitForTimeout(SETTLE_MS);
+        await page.waitForLoadState('networkidle', { timeout: o.idleMs }).catch(() => undefined);
+        await page.waitForTimeout(o.settleMs);
       }
     } catch (e) { pageErrors.push(`navigation: ${String((e as Error).message).slice(0, 160)}`); }
     let secondary = 0, mvAds = 0, mediavineScript = false, textLength = 0, appError = false, bodyText = '';
@@ -158,34 +193,63 @@ async function main() {
     } catch (e) { pageErrors.push(`evaluate: ${String((e as Error).message).slice(0, 160)}`); }
     const hydrationErrors = pageErrors.filter(isHydration).length;
     const thirdPartyErrors = pageErrors.filter((e) => !isHydration(e) && isThirdParty(e)).length;
-    const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, thirdPartyErrors, failures: [], ...(t.expectText ? { expectText: t.expectText, bodyText } : {}) };
+    const r: Result = { path: t.path, kind: t.kind, status, ms: Date.now() - t0, secondary, mvAds, mediavineScript, textLength, pageErrors, consoleErrors, appError, hydrationErrors, thirdPartyErrors, failures: [], ...(t.expectText ? { expectText: t.expectText, bodyText } : {}), ...(t.settledText ? { settledText: t.settledText } : {}) };
     r.failures = expectations(r);
     await page.close();
     return r;
   };
+  const facts = (r: Result) => ({ kind: r.kind, status: r.status, ms: r.ms, textLength: r.textLength, appError: r.appError, pageErrors: r.pageErrors, failures: r.failures, settledText: r.settledText });
   for (const t of targets) {
     let r = await render(t);
     // A single uncaught page error on one load (third-party script, race) must not roll production back by
-    // itself (2026-09-05: 1 of 7 homepage loads threw a circular-JSON error nobody could reproduce). Render the
-    // page once more; the failure counts only if it reproduces. Structural failures (HTTP, ad anchors, blank
-    // render, Application error) are deterministic and are not retried — EXCEPT a navigation failure on a
-    // secondary target (xml/text: sitemaps, llms.txt, feeds), which also gets one fresh page: on 2026-09-22
-    // a single 45 s timeout on the prerendered /sitemap.xml (561 ms four minutes later) rolled production back
-    // by itself (incident 2026-09-22-0655.md, E91). Decision in smoke-render-lib.ts so it is unit-tested.
-    if (shouldRetryRender(t.kind, r.failures, r.pageErrors)) {
-      const again = await render(t);
-      if (!again.failures.length) { again.transientErrors = r.pageErrors; console.log(`  ↻ ${t.path}: ${r.failures[0]} did not reproduce on a second load — recorded as transient, not a failure`); }
+    // itself (2026-09-05: 1 of 7 homepage loads threw a circular-JSON error nobody could reproduce). A navigation
+    // timeout on ANY target, or a slow unsettled 200 on an ad page, gets one fresh page with a longer settle too
+    // (E91 2026-09-22: /sitemap.xml; E111 2026-09-26: four ad pages + the homepage grid during a host-wide network
+    // stall). The failure counts only if it reproduces — and classifyRender then decides whether what reproduced
+    // is evidence about the site. When the control already says the network is degraded, the retry cannot make
+    // the run conclusive, so it is skipped to bound the run time. Decisions in smoke-render-lib.ts (unit-tested).
+    if (netBefore.ok && shouldRetryRender(t.kind, r.failures, r.pageErrors, facts(r))) {
+      const again = await render(t, RETRY_RENDER);
+      if (!again.failures.length) { again.transientErrors = r.failures; console.log(`  ↻ ${t.path}: ${r.failures[0]} did not reproduce on a fresh page — recorded as transient, not a failure`); }
+      else console.log(`  ↻ ${t.path}: ${r.failures[0]} — reproduced on a fresh page (${again.ms} ms, ${again.textLength} chars)`);
+      again.retried = true;
       r = again;
     }
     results.push(r);
     console.log(`${r.failures.length ? '✗' : '✓'} ${t.path.padEnd(34)} ${String(r.status).padEnd(4)} ${String(r.ms).padStart(5)}ms  secondary=${r.secondary} mv-ads=${r.mvAds} mv-script=${r.mediavineScript ? 'y' : 'n'} text=${r.textLength} errors=${r.pageErrors.length}${r.hydrationErrors ? ` (hydration ${r.hydrationErrors} ⚠)` : ''}${r.thirdPartyErrors ? ` (3rd-party ${r.thirdPartyErrors} ⚠ ${r.pageErrors.find(isThirdParty)?.slice(0, 90)})` : ''}${r.transientErrors ? ` (transient ${r.transientErrors.length} ↻)` : ''}${r.failures.length ? '\n    → ' + r.failures.join('; ') : ''}`);
   }
   await browser.close();
-  const failed = results.filter((r) => r.failures.length);
-  const out = { base: BASE, at: new Date().toISOString(), ok: failed.length === 0, failed: failed.map((r) => ({ path: r.path, failures: r.failures })), results };
+  const netAfter = await networkControl();
+  console.log(`[smoke] network control after: ${netAfter.ok ? 'ok' : 'DEGRADED'} (${netAfter.passed}/${netAfter.total}: ${netAfter.why})`);
+  const networkOk = netBefore.ok && netAfter.ok;
+
+  // Grade on positive evidence (CLAUDE.md: "could not run ≠ is broken"). A page that never answered Chromium gets
+  // one direct fetch as a second, independent client — only when the control says the network itself is fine.
+  for (const r of results) {
+    if (!r.failures.length) { r.verdict = 'pass'; continue; }
+    if (networkOk && navigationFailed(r)) r.probe = await directProbe(`${BASE}${r.path}`);
+    const c = classifyRender(facts(r), { networkOk, probe: r.probe });
+    r.verdict = c.verdict; r.why = c.why;
+    if (c.verdict !== 'fail') console.log(`  ? ${r.path}: INCONCLUSIVE — ${c.why}`);
+  }
+  const failed = results.filter((r) => r.verdict === 'fail');
+  const inconclusive = results.filter((r) => r.verdict === 'inconclusive');
+  // A degraded control makes the WHOLE run inconclusive: positive-looking failures are recorded as `suspect` for the
+  // operator, never as `failed`, so deploy-verify cannot roll back on a reading taken through a broken network.
+  const verdict: 'PASS' | 'FAIL' | 'INCONCLUSIVE' = !networkOk ? 'INCONCLUSIVE' : failed.length ? 'FAIL' : inconclusive.length ? 'INCONCLUSIVE' : 'PASS';
+  const out = {
+    base: BASE, at: new Date().toISOString(), ok: verdict === 'PASS', verdict,
+    network: { degraded: !networkOk, before: { ok: netBefore.ok, why: netBefore.why }, after: { ok: netAfter.ok, why: netAfter.why } },
+    failed: networkOk ? failed.map((r) => ({ path: r.path, failures: r.failures, why: r.why })) : [],
+    suspect: networkOk ? [] : failed.map((r) => ({ path: r.path, failures: r.failures, why: r.why })),
+    inconclusive: inconclusive.map((r) => ({ path: r.path, why: r.why })),
+    results,
+  };
   if (JSON_OUT) { mkdirSync(dirname(JSON_OUT), { recursive: true }); writeFileSync(JSON_OUT, JSON.stringify(out, null, 2)); }
-  console.log(failed.length ? `\n[smoke] FAIL — ${failed.length}/${results.length} pages failed` : `\n[smoke] OK — ${results.length} pages pass`);
-  process.exit(failed.length ? 1 : 0);
+  console.log(verdict === 'FAIL' ? `\n[smoke] FAIL — ${failed.length}/${results.length} pages failed with positive evidence`
+    : verdict === 'INCONCLUSIVE' ? `\n[smoke] INCONCLUSIVE — ${!networkOk ? 'network control degraded; ' : ''}${inconclusive.length} inconclusive, ${failed.length} suspect of ${results.length} — not a site verdict`
+    : `\n[smoke] OK — ${results.length} pages pass`);
+  process.exit(verdict === 'FAIL' ? 1 : verdict === 'INCONCLUSIVE' ? 2 : 0);
 }
 
 main().catch((e) => { console.error('[smoke] could not run:', e?.message ?? e); process.exit(3); });

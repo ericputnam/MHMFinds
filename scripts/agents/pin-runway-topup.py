@@ -204,11 +204,22 @@ def fetch_pinterest_pins_created_since(config, since, page_size=100,
     its 7d rate, widened to RATE_WINDOW_DAYS so the top-up cap uses a longer,
     steadier baseline than the liveness check's stall detector does. Returns
     None (not 0) if the API cannot be reached, so a network hiccup can never
-    read as "posted rate is zero rows/day"."""
+    read as "posted rate is zero rows/day".
+
+    Returns (stamps, complete). `complete` is False when the fetch stopped
+    before it saw a pin older than `since` — a later page timed out, the
+    page cap was hit, or the account's newest pins simply saturate the
+    sample. In that case len(stamps) is a *floor* on the window count, not
+    the count (2026-09-26: one page of 100 landed, page 2 timed out, and
+    100 ÷ 14 = 7.14/day read as "runway 8.8 d, no-op" while the queue
+    proxy showed 36/day and 1.75 d). A zero-rows vacuity guard does not
+    cover a truncated fetch; the caller must treat complete=False as
+    unknown."""
     token = config.get('creator_access_token', '')
     if not token:
-        return None
+        return None, False
     items, bookmark, pages = [], None, 0
+    complete = False
     while pages < max_pages:
         url = 'https://api.pinterest.com/v5/pins?page_size={}'.format(page_size)
         if bookmark:
@@ -219,16 +230,22 @@ def fetch_pinterest_pins_created_since(config, since, page_size=100,
             with urllib.request.urlopen(req, timeout=timeout) as response:
                 body = json.loads(response.read())
         except Exception:
-            return None if pages == 0 else _parse_and_filter(items, since)
+            if pages == 0:
+                return None, False
+            return _parse_and_filter(items, since), False
         page_items = body.get('items', []) or []
         items.extend(page_items)
         pages += 1
         bookmark = body.get('bookmark') or None
         stamps = [_parse_ts(i.get('created_at')) for i in page_items]
         stamps = [s for s in stamps if s]
-        if not bookmark or not page_items or (stamps and min(stamps) < since):
+        if stamps and min(stamps) < since:
+            complete = True   # reached past the window's start: the count is exact
             break
-    return _parse_and_filter(items, since)
+        if not bookmark or not page_items:
+            complete = True   # the account has no older pins at all
+            break
+    return _parse_and_filter(items, since), complete
 
 
 def _parse_ts(raw):
@@ -260,12 +277,111 @@ def compute_daily_posted_rate(config, now=None, window_days=RATE_WINDOW_DAYS):
     job, not this tool's)."""
     now = now or datetime.now(timezone.utc)
     since = now - timedelta(days=window_days)
-    stamps = fetch_pinterest_pins_created_since(config, since)
+    stamps, complete = fetch_pinterest_pins_created_since(config, since)
     if stamps is None:
         return None
     if not stamps:
         return None
+    if not complete:
+        # Truncated sample: len(stamps)/window is a floor, and a floor on the
+        # rate is a *ceiling* on runway — the one direction this tool must
+        # never be wrong in. Unknown, never a number.
+        return None
     return len(stamps) / float(window_days)
+
+
+def count_posted_rows_dated_window(config, today, window_days=RATE_WINDOW_DAYS):
+    """Queue-side proxy for the trailing posted rate: rows with
+    `Is Posted=true` whose Post Date falls in [today - window, today]. The
+    poster drains oldest-first inside a 14-day window, so a row is posted
+    within days of its Post Date and a 14-day *count* of posted-dated rows
+    tracks the 14-day posted count closely even though any single row's
+    Post Date lags its real posting (pinner-liveness-lib.ts, E41). Used only
+    when Pinterest's own created_at is unavailable or truncated, and always
+    labelled as such in the output. None when the query cannot run."""
+    floor_str = str(today - timedelta(days=window_days))
+    query = ('%22Is%20Posted%22=eq.true'
+             '&%22Post%20Date%22=gte.{floor}&%22Post%20Date%22=lte.{today}'
+             ).format(floor=q(floor_str), today=q(str(today)))
+    return count_exact(config, query)
+
+
+def fetch_recently_posted_section_pairs(config, today, window_days=RATE_WINDOW_DAYS,
+                                        page=1000, max_pages=5, timeout=30):
+    """Set of (Board ID, Board Section ID) pairs that the poster has
+    successfully posted to in the last `window_days` — i.e. sections Pinterest
+    accepted recently, read from the queue table only (no Pinterest API).
+    Returns None if the read is incomplete for any reason: a partial set
+    would make good sections look dead and silently starve the top-up."""
+    floor_str = str(today - timedelta(days=window_days))
+    base = ('{}/rest/v1/{}?select=%22Board%20ID%22,%22Board%20Section%20ID%22'
+            '&%22Is%20Posted%22=eq.true&%22Post%20Date%22=gte.{floor}'
+            '&%22Board%20Section%20ID%22=not.is.null').format(
+                config['SUPABASE_URL'].rstrip('/'), TABLE, floor=q(floor_str))
+    headers = {'apikey': config['SUPABASE_KEY'],
+               'Authorization': 'Bearer ' + config['SUPABASE_KEY']}
+    pairs = set()
+    for n in range(max_pages):
+        req = urllib.request.Request(base + '&offset={}&limit={}'.format(n * page, page),
+                                     headers=headers, method='GET')
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                rows = json.loads(response.read())
+        except Exception:
+            return None
+        for row in rows:
+            if row.get('Board ID') and row.get('Board Section ID'):
+                pairs.add((str(row['Board ID']), str(row['Board Section ID'])))
+        if len(rows) < page:
+            return pairs
+    return None   # page cap hit: incomplete, not a verdict
+
+
+def drop_sections_not_recently_posted(rows, live_pairs):
+    """Queue-side stand-in for revive-stranded-pins.py's drop_dead_sections
+    (which needs the Pinterest sections API). Keeps rows with no section id
+    (Pinterest accepts a pin with only a board) and rows whose
+    (Board ID, Board Section ID) pair appears on a row posted in the last
+    14 days. Drops everything else — a section nobody posted to in two
+    weeks is either renamed/deleted (E36 poison row) or simply idle, and
+    idle-but-alive is the cheap error here. Returns (kept, dropped)."""
+    if live_pairs is None:
+        raise ValueError('live_pairs is None (incomplete read) — refuse to filter')
+    kept, dropped = [], []
+    for row in rows:
+        sid = row.get('Board Section ID')
+        if not sid:
+            kept.append(row)
+        elif (str(row.get('Board ID')), str(sid)) in live_pairs:
+            kept.append(row)
+        else:
+            dropped.append(row)
+    return kept, dropped
+
+
+RATE_SOURCES = ('auto', 'pinterest', 'queue')
+
+
+def resolve_posted_rate(config, today, source='auto', now=None,
+                        window_days=RATE_WINDOW_DAYS):
+    """(rate_or_None, basis). basis is one of
+    'pinterest-{window}d' (Pinterest created_at, complete sample),
+    'queue-posted-{window}d' (Post Date proxy over posted rows), or
+    'unknown'. `source='pinterest'` never consults the queue proxy;
+    `source='queue'` never calls Pinterest (for a day the API is flaky —
+    2026-09-26 — so the tool can still act on a real number)."""
+    if source not in RATE_SOURCES:
+        raise ValueError('rate source must be one of {}'.format(RATE_SOURCES))
+    if source in ('auto', 'pinterest'):
+        rate = compute_daily_posted_rate(config, now=now, window_days=window_days)
+        if rate is not None:
+            return rate, 'pinterest-{}d'.format(window_days)
+        if source == 'pinterest':
+            return None, 'unknown'
+    posted = count_posted_rows_dated_window(config, today, window_days)
+    if posted is None or posted <= 0:
+        return None, 'unknown'
+    return posted / float(window_days), 'queue-posted-{}d'.format(window_days)
 
 
 # ---------------------------------------------------------------------------
@@ -584,8 +700,77 @@ def self_test():
         urls = [r['Post URL'] for r in rs]
         assert len(urls) == len(set(urls)), (day, urls)
 
-    print('self-test: 10/10 assertions passed (decision logic + guards + '
-          'allocator, offline)')
+    # 11. A truncated Pinterest sample is unknown, never a (floor) rate.
+    #     2026-09-26: 100 pins over one page ÷ 14 read as 7.14/day → "runway
+    #     8.8 d, no-op" while the queue showed 36/day and 1.75 d.
+    saved = globals()['fetch_pinterest_pins_created_since']
+    now = datetime(2026, 9, 22, tzinfo=timezone.utc)
+    try:
+        globals()['fetch_pinterest_pins_created_since'] = (
+            lambda config, since, **kw: ([now] * 100, False))
+        assert compute_daily_posted_rate({'creator_access_token': 't'}, now=now) is None
+        globals()['fetch_pinterest_pins_created_since'] = (
+            lambda config, since, **kw: ([now] * 140, True))
+        assert compute_daily_posted_rate({'creator_access_token': 't'}, now=now) == 10.0
+        globals()['fetch_pinterest_pins_created_since'] = (
+            lambda config, since, **kw: (None, False))
+        assert compute_daily_posted_rate({'creator_access_token': 't'}, now=now) is None
+    finally:
+        globals()['fetch_pinterest_pins_created_since'] = saved
+
+    # 12. resolve_posted_rate: 'pinterest' never consults the queue; 'queue'
+    #     never calls Pinterest; 'auto' falls back and labels the basis.
+    saved_rate = globals()['compute_daily_posted_rate']
+    saved_cnt = globals()['count_posted_rows_dated_window']
+    calls = []
+    try:
+        globals()['compute_daily_posted_rate'] = (
+            lambda config, now=None, window_days=14: calls.append('p') or None)
+        globals()['count_posted_rows_dated_window'] = (
+            lambda config, today, window_days=14: calls.append('q') or 504)
+        assert resolve_posted_rate({}, today, 'pinterest') == (None, 'unknown')
+        assert calls == ['p'], calls
+        del calls[:]
+        rate, basis = resolve_posted_rate({}, today, 'queue')
+        assert calls == ['q'] and basis == 'queue-posted-14d', (calls, basis)
+        assert abs(rate - 36.0) < 1e-9, rate
+        del calls[:]
+        rate, basis = resolve_posted_rate({}, today, 'auto')
+        assert calls == ['p', 'q'] and basis == 'queue-posted-14d', (calls, basis)
+        globals()['count_posted_rows_dated_window'] = (
+            lambda config, today, window_days=14: None)
+        assert resolve_posted_rate({}, today, 'queue') == (None, 'unknown')
+        globals()['count_posted_rows_dated_window'] = (
+            lambda config, today, window_days=14: 0)
+        assert resolve_posted_rate({}, today, 'queue') == (None, 'unknown')
+    finally:
+        globals()['compute_daily_posted_rate'] = saved_rate
+        globals()['count_posted_rows_dated_window'] = saved_cnt
+    try:
+        resolve_posted_rate({}, today, 'bogus')
+        raise AssertionError('bogus rate source accepted')
+    except ValueError:
+        pass
+
+    # 13. Queue-side section check: no-section rows kept, live pairs kept,
+    #     stale pairs dropped, incomplete read refuses to filter.
+    live = {('B1', 'S1')}
+    rows = [{'id': 1, 'Board ID': 'B1', 'Board Section ID': 'S1'},
+            {'id': 2, 'Board ID': 'B1', 'Board Section ID': 'S9'},
+            {'id': 3, 'Board ID': 'B2', 'Board Section ID': 'S1'},
+            {'id': 4, 'Board ID': 'B2', 'Board Section ID': None},
+            {'id': 5, 'Board ID': 'B2'}]
+    kept, dropped = drop_sections_not_recently_posted(rows, live)
+    assert [r['id'] for r in kept] == [1, 4, 5], kept
+    assert [r['id'] for r in dropped] == [2, 3], dropped
+    try:
+        drop_sections_not_recently_posted(rows, None)
+        raise AssertionError('incomplete section read must refuse to filter')
+    except ValueError:
+        pass
+
+    print('self-test: 13/13 assertions passed (decision logic + guards + '
+          'allocator + rate-source + queue-side sections, offline)')
     return 0
 
 
@@ -619,6 +804,15 @@ def main():
                              'sessions-ranked selection)')
     parser.add_argument('--no-verify', action='store_true',
                         help='skip destination/image URL and board-section checks')
+    parser.add_argument('--rate-source', choices=RATE_SOURCES, default='auto',
+                        help="posted-rate basis: 'pinterest' (created_at, "
+                             "complete sample only), 'queue' (posted rows by "
+                             "Post Date — for days the Pinterest API is flaky), "
+                             "'auto' (pinterest, then queue)")
+    parser.add_argument('--sections-from-queue', action='store_true',
+                        help='verify board sections against sections posted to '
+                             'in the last 14d (queue table) instead of the '
+                             'Pinterest sections API')
     parser.add_argument('--max-per-url', type=int, default=2)
     parser.add_argument('--max-per-board', type=int, default=3)
     parser.add_argument('--ledger-dir', default=DEFAULT_LEDGER_DIR)
@@ -646,7 +840,7 @@ def main():
         return 2
 
     inventory = count_inventory(config, today)
-    rate = compute_daily_posted_rate(config)
+    rate, rate_basis = resolve_posted_rate(config, today, source=args.rate_source)
 
     def writer_rows_by_day(day):
         n = count_writer_rows_for_date(config, day)
@@ -655,13 +849,16 @@ def main():
     decision = decide_topup(inventory, rate, writer_rows_by_day, today)
 
     print('=== {}: pin-runway top-up ==='.format('APPLY' if args.apply else 'DRY RUN'))
-    print('Inventory: {}  Trailing-{}d posted rate: {}'.format(
+    print('Inventory: {}  Trailing-{}d posted rate: {} (basis: {})'.format(
         inventory, RATE_WINDOW_DAYS,
-        'unknown' if rate is None else '{:.2f}/day'.format(rate)))
+        'unknown' if rate is None else '{:.2f}/day'.format(rate), rate_basis))
     print(decision['message'])
 
     result = {
         'level': decision['level'],
+        'rate': rate,
+        'rate_basis': rate_basis,
+        'inventory_before': inventory,
         'runway_before': decision.get('runway_before'),
         'runway_after': decision.get('runway_after'),
         'rows_planned': decision.get('rows_planned', 0),
@@ -717,7 +914,18 @@ def main():
         usable = kept
         print('  URL liveness: {} dead destination(s), {} dead image(s)'.format(
             len(dead_dest), image_dead))
-        usable, _dead_sections = r.drop_dead_sections(config, usable)
+        if args.sections_from_queue:
+            live_pairs = fetch_recently_posted_section_pairs(config, today)
+            if live_pairs is None:
+                print('ERROR: could not read recently-posted sections from the '
+                      'queue (incomplete read) — refusing to filter or proceed.')
+                return 2
+            usable, dropped_sections = drop_sections_not_recently_posted(usable, live_pairs)
+            print('  sections (queue-side, {} live board/section pairs posted in '
+                  'last {}d): dropped {} row(s) whose section was not posted to'
+                  .format(len(live_pairs), RATE_WINDOW_DAYS, len(dropped_sections)))
+        else:
+            usable, _dead_sections = r.drop_dead_sections(config, usable)
     elif args.no_verify:
         print('  URL/section verification SKIPPED (--no-verify)')
 

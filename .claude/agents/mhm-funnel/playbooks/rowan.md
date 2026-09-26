@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-09-26
+- Tried: `bathroom-cc` page + title-only repair of `bathroom`, the last substring room theme (T0, E112, PR TBD). Bedroom shape: strong words never vetoed, weak `bath`/`shower`/`tub` + veto list. GSC demand thin (/sims-4-bathroom-cc/ 95 impr / 1 click, pos 43.9).
+- Before → after: `bathroom` 456 rows / 121 title-supported by the final rule (26.5%; 154 = 33.8% by the old words, 24 of them baby showers) → 123 / 123; 2 added, 335 stripped; top 24 read 24/24. Wicked Whims was card #1; "Cuddle and Bath Together" (598 dl) would have been #1 without the `cuddle` veto.
+- Verdict: MORE DATA (read 2026-10-24; keep if ≥200 engaged sessions OR ≥5 favorites in 28d and RPM ≥95%).
+- Next time: all room themes are now title-only — the next catalog move is the mistyped-contentType `--ids=` hand-fix (bathroom sets typed glasses/lashes/makeup/tops, fridges typed tops), not another theme.
+
 ## 2026-09-25
 - Tried: `kitchen-cc` collection page + title-only repair of the `kitchen` room theme, one PR (T0, E109, PR #179 `d80ae98`). Demand is thin (GSC 28d kitchen cluster 194 impr / 2 clicks vs bedroom ~394 / 7) — shipped as the spec'd traffic page because the fix is the durable part. The AI extractor cannot emit `kitchen` as a theme (it is a contentType there), so only `ROOM_THEME_RULES` needed the fix.
 - Before → after: `kitchen` theme 345 rows / 118 title-supported (34.2%) → 160 / 160 (100%); 31 added (all fridges/appliances), 216 stripped; top 40 read 40/40. Worst old keyword: 'cooking' (card #2 would have been "Realistic Cooking Mod"). Descriptions caught two false friends a count would have kept: "Sims 4 Furniture Stove Set" is a potbelly stove, "Punk Pitstop Appliances" is a foosball table.
@@ -61,14 +67,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 2026-10-11; keep if ≥200 engaged sessions or ≥5 favorites from the page in the first 28d, same bar as decor-cc).
 - Next time: **audit the facet before you rank clusters by size.** Accessories was the obvious pick on row count and would have shipped a page whose top three cards are a dating-app mod, a traits mod and a Coach handbag. The 09-08…
 
-## 2026-09-10
-- Tried: `gameplay-mod` detector rule + NULL re-tag (T0, PR #79, E33) — the follow-up I specced on 09-09. The rule already existed (467 rows); what it lacked were nouns for the three things a gameplay mod is usually named after. A…
-- Before → after: catalog rows carrying a contentType facet 15,929/16,384 (97.22%) → 15,994/16,384 (97.62%); NULL 455 → 390; gameplay-mod 467 → 480, decor 611 → 633 (22 wallpapers, which is also 22 more cards on the decor-cc page…
-- Verdict: MORE DATA (read 2026-09-24; keep if the /games/* grids are flat-or-up, a spot-check of the 65 re-tagged rows is still 100% correct, and the next ingest run adds < 10 NULL rows from a "mods" post).
-- Next time: **run the new script's dry run against the previous audit before trusting it.** The title-only pass proposed re-tagging "Green Lantern – Injustice God Among Us" as `lighting` — the exact row PR #61 had hand-cleared tw…
-
-## 2026-09-08
-- Tried: junk-facet repair (T0, PR #61) — fixed `lighting`/`curtains` at the detector level, not just in the data. Two bugs: `keywordToRegex` already appends `(?:s|es)?`, so a rule listing both 'light' and 'lights' scored TWO matc…
-- Before → after: `lighting` 140 rows / ~6 real → 19 / 19 real; `curtains` 7 / 0 real → 0; decor-cc grid 731 → 741; furniture 965 → 978; clutter 162 → 165; detector suite 14 → 21 tests; 128 of 147 rows rewritten, 84 to NULL. Blog:…
-- Verdict: MORE DATA (read on 2026-10-06; keep if `lighting` still spot-checks 100% fixtures and the three collection grids are flat-or-up).
-- Next time: when a facet looks junky, find out *why the detector produced it* before writing a cleanup script — the plural double-count was a general bug affecting every rule with redundant singular/plural spellings, and a data-o…
+_Entries 2026-09-08 and 2026-09-10 archived to `archive/playbooks/rowan-2026-09.md` (context budget)._
