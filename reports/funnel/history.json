@@ -3095,7 +3095,7 @@
       "expectedRevenue": 266.77,
       "expectedSessions": 14429,
       "nonAdMonthly": null,
-      "ownedAdds7d": null,
+      "ownedAdds7d": 90,
       "pinterestSessions7d": 59330,
       "returningShare7d": 0.5236410670263218,
       "nonPinterestShare7d": 0.14819387813702412,
