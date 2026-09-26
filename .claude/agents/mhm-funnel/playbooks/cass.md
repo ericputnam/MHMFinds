@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-26
+- Tried: E118 — the ideas-inbox premise ("Google/Discord buttons drop callbackUrl") was false: `/sign-in/` has **no OAuth buttons** and never had (`git log -S "signIn('google'"` empty; live HTML has none). The real leak was the credentials path: both success branches did `router.push(searchParams.get('redirect') || '/')` — an open redirect, and everyone arriving from the Navbar (no param) went to `/`. Shipped `app/sign-in/returnTo.ts`: `redirect` → `callbackUrl` → same-origin `document.referrer` → `/`, same-origin relative paths only, auth pages never a target. Guard 2/25 red pre-fix.
+- Before → after: page_views referred by /sign-in/ 09-12→09-25 = 11 on `/`, 1 elsewhere (1/12 off-home) while /sign-in/ views came mostly from collection/search pages; sign_up 28/7d (09-19→25, all on /sign-in/). Owned adds 7d **90** (14 email incl. signup-optin 9, 76 accounts), DB read 08:2x from the Cass tree. Read 2026-10-10.
+- Verdict: PENDING. E39 graded: SHIPPED 09-12 (reachable 09-15 via E49), not "never shipped"; completed resets unmeasurable (tokens are deleted on consume, no GA4 event) — upper bound 5 `/set-password/` views/14d, 2 outstanding tokens → NO READ.
+- Next time: verify an idea's premise against the live HTML and `git log -S` before building the fix it names — the inbox line described buttons that do not exist. And read the experiments ledger against `git log`, not against its own Status column: E39's row still said QUEUED-T2 two weeks after `9f3dc29` shipped it.
+
 ## 2026-09-25
 - Tried: E107 — wired the /mods/[id] favorite button to the real API and turned its 401 into an account-capture path (own event names favorite_signin_redirect / favorite_after_signin, ref=mod-detail-favorite, resume marker ?fav=1 stripped after one attempt). PR #178, 56eb87f, deploy-verify PASS.
 - Before → after: favorite on /mods/* 0/14d, sign_up 11/14d all on /sign-in/, accounts +68/7d → read 2026-10-09.
