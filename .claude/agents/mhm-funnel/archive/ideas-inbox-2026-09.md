@@ -109,3 +109,15 @@ Context from the 09-22 run: Quinn's subagents were killed at the 600 s backgroun
 
 - [x] [rowan] `bathroom` is the last room theme on the substring rule (439 rows, ~21–24% title-supported, Wicked Whims card #1) — same title-only repair as E100/E109 before any page. Separately, kitchen grid exposed mistyped `contentType` (fridges as glasses/tops/makeup) → `--ids=` hand-fix, not a retag. Rowan, 09-25.
   - The kitchen mistyped-contentType `--ids=` hand-fix half stays open: Rowan 09-26 lists bathroom sets typed as glasses/lashes/makeup/tops and fridges typed as tops as the next catalog move.
+
+## Moved 2026-09-26 (shipped as Nova PR #185 / E113, 553346d)
+
+- [x] [nova] E85 sidebar author link still sends 2–4-mod creators to a 404 (`dreamgirl`, 2 mods → `/creator/dreamgirl/`); `ModDetailClient` now receives `moreFromCreator.totalMods` (E106), so gate that link on `MIN_MODS_FOR_PAGE` — one-line T0. Nova, 09-25.
+
+## Merged 2026-09-26 into the later zero-pageview item (duplicate)
+
+- [x] [ops] scoreboard: report `bing_organic` (and each channel) net of zero-pageview sessions — 862 of 15,623 Bing sessions in 09-16→09-22 landed on `(not set)` with 0 `screenPageViews` and 7 s duration; the Bing line overstates real traffic by ~5.5% and that slice is 23% of the 3,808 `(not set)` landings. Pip 09-24, E93.
+
+## Moved 2026-09-26 (practiced daily since 09-25: merge order + experiment IDs pre-assigned in every dispatch)
+
+- [x] [ops] merge order was not enforceable by prose: with 7 agents on one gate, #167 and #168 both touched `lib/creators.ts` (`listCreators`) from branches cut before either merged; the second one broke `main` (BUILD ERROR 10:03, fixed by #171 at 14:12Z). merge-gate should re-check `gh pr view --json mergeStateStatus` *and* run `npm run type-check` on a rebase preview when the PR's files intersect files changed on `origin/main` since the branch point. Quinn 09-24.
