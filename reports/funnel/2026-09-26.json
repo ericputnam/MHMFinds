@@ -1,0 +1,272 @@
+{
+  "date": "2026-09-26",
+  "headline": {
+    "ownedAdds7d": null,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 0,
+    "nonAdTarget": 200,
+    "mediavine28d": 5914.81,
+    "mediavine28dPrev": 5591.01
+  },
+  "flags": [
+    "🟡 Pinner: liveness unverified — Pinterest API unavailable; newest posted row is dated 2026-09-26 (scheduled date, not a posting timestamp) (terminated)",
+    "🟡 Patreon Members API unavailable: \nInvalid `prisma.user.count()` invocation in\n/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:610:19\n\n  607 try {\n  608   const [linked, premiumUsers] = await  — E40 / Q4 gate numbers missing today"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-18→2026-09-24 vs 2026-09-11→2026-09-17",
+      "sessions7d": 89752,
+      "sessionsPrev7d": 85397,
+      "byChannel7d": {
+        "pinterest": 59330,
+        "bing_organic": 16284,
+        "direct": 5230,
+        "google_organic": 2753,
+        "other_search": 2620,
+        "tumblr": 1099,
+        "ai_referral": 274,
+        "other": 1965,
+        "reddit": 197
+      },
+      "byChannelPrev7d": {
+        "pinterest": 55318,
+        "bing_organic": 16042,
+        "direct": 4963,
+        "google_organic": 2759,
+        "other_search": 2622,
+        "tumblr": 1047,
+        "ai_referral": 329,
+        "other": 2090,
+        "reddit": 227
+      },
+      "aiReferral7d": 274,
+      "aiReferralPrev7d": 329,
+      "captureEvents7d": {
+        "patreon_click": 56,
+        "sign_up": 21,
+        "newsletter_signup": 9,
+        "affiliate_click": 7,
+        "favorite": 3,
+        "patreon_click_after_wait": 2
+      },
+      "captureUsers7d": {
+        "patreon_click": 46,
+        "sign_up": 20,
+        "newsletter_signup": 9,
+        "affiliate_click": 7,
+        "favorite": 3,
+        "patreon_click_after_wait": 2
+      },
+      "patreonClickUsersPerDay7d": 6.71,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 47,
+        "perDay": 6.71,
+        "window": "2026-09-18→2026-09-24"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-12": 9,
+        "2026-09-19": 9,
+        "2026-09-21": 9,
+        "2026-09-20": 7,
+        "2026-09-24": 7,
+        "2026-09-11": 6,
+        "2026-09-18": 5,
+        "2026-09-22": 5,
+        "2026-09-23": 5,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3
+      },
+      "notSetLanding7d": 3816,
+      "returningShare7d": 0.5236410670263218,
+      "pagesPerSession7d": 1.5087374806656502,
+      "engagementRate7d": 0.6952796761702081
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-27→2026-09-23",
+      "clicks28d": 2482,
+      "clicksPrev28d": 2019,
+      "impressions28d": 91414
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-24",
+      "revenue7d": 1533.33,
+      "revenuePrev7d": 1490.55,
+      "rpm7d": 17.34,
+      "rpmPrev7d": 17.24,
+      "sessions7d": 88442,
+      "revenue28d": 5914.81,
+      "revenuePrev28d": 5591.01,
+      "rpm28d": 16.74,
+      "health": {
+        "date": "2026/09/26",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 47
+    }
+  },
+  "db": {
+    "ok": false,
+    "error": "\nInvalid `prisma.user.count()` invocation in\n/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:436:40\n\n  433   creatorProfiles, modSubmissions, mods, collection"
+  },
+  "patreon": {
+    "ok": false,
+    "error": "terminated"
+  },
+  "patreonApi": {
+    "ok": false,
+    "error": "\nInvalid `prisma.user.count()` invocation in\n/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:610:19\n\n  607 try {\n  608   const [linked, premiumUsers] = await "
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 22,
+      "posts7d": 6,
+      "latestPost": "2026-09-26 sims-4-cottage-houses"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-26",
+      "lastPinCreatedAt": null,
+      "pinsCreated24h": null,
+      "pinsCreated7d": null,
+      "pinsSampled": 0,
+      "liveness": {
+        "level": "unverified",
+        "source": "post-date-proxy",
+        "hoursSince": 11.5,
+        "message": "liveness unverified — Pinterest API unavailable; newest posted row is dated 2026-09-26 (scheduled date, not a posting timestamp)"
+      },
+      "pinterestError": "terminated",
+      "postedLast7d": 249,
+      "postedTotal": 8571,
+      "unpostedBacklog": 1693,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1630,
+      "inventoryRows": 63,
+      "runway": {
+        "level": "unknown",
+        "inventoryRows": 63,
+        "dailyRate": null,
+        "runwayDays": null,
+        "message": "inventory 63 rows dated through +14d (0 still schedulable today); runway not computable — rate unknown"
+      },
+      "lastWriterInsertAt": "2026-09-26T10:30:10.473353+00:00",
+      "lastWriterInsertLabel": "sims-4-cottage-houses",
+      "writerInserted24h": 28,
+      "writerInserted7d": 393,
+      "writerLiveness": {
+        "level": "ok",
+        "hoursSinceLastInsert": 1,
+        "message": "newest writer-attributed row queued 2026-09-26 10:30Z (1 h ago) · 28 inserted in 24h, 393 in 7d"
+      }
+    }
+  },
+  "longRange": {
+    "returningShare7d": 0.5236410670263218,
+    "nonPinterestShare7d": 0.14819387813702412,
+    "nonPinterestShareRaw7d": 0.3389562349585524
+  },
+  "engagement": {
+    "pagesPerSession7d": 1.5087374806656502,
+    "engagementRate7d": 0.6952796761702081,
+    "favorites7d": null,
+    "downloadClicks7d": null
+  },
+  "catalog": {
+    "newMods7d": null,
+    "newModsPrior7d": null,
+    "total": null
+  },
+  "capture": {
+    "ratePer1kSessions7d": null
+  },
+  "creators": {
+    "onboarded": null,
+    "submissions7d": null
+  },
+  "team": {
+    "ok": true,
+    "data": {
+      "runSuccess14d": 0.7142857142857143,
+      "mergesByOwner7d": {
+        "favicon": 1,
+        "operator": 4,
+        "Sage": 7,
+        "Pip": 7,
+        "Cass": 6,
+        "Nova": 9,
+        "Rio": 6,
+        "Quinn": 8,
+        "Ops": 5,
+        "Rowan": 3,
+        "PR": 1
+      },
+      "totalMerges7d": 57,
+      "opsMergeShare7d": 0.08771929824561403,
+      "paperOnlyMerges7d": 0
+    }
+  },
+  "owners": {
+    "revenue": "Rio",
+    "sessions": "Pip",
+    "rpm": "Rio",
+    "ownedAdds7d": "Cass",
+    "pinterestSessions7d": "Pip",
+    "nonAdMonthly": "Rio",
+    "returningShare7d": "Pip",
+    "nonPinterestShare7d": "Pip",
+    "pagesPerSession7d": "Sage",
+    "engagementRate7d": "Sage",
+    "favorites7d": "Cass",
+    "downloadClicks7d": "Nova",
+    "newMods7d": "Nova",
+    "catalogTotal": "Nova",
+    "captureRatePer1k": "Cass",
+    "creatorsOnboarded": "Nova",
+    "creatorSubmissions7d": "Nova",
+    "runSuccess14d": "Ops",
+    "opsMergeShare7d": "Ops",
+    "paperOnlyMerges7d": "Ops",
+    "mergesByOwner7d": "Quinn",
+    "_comment": "Which specialist owns each scoreboard metric, restructure 2026-09-22.",
+    "sessions28d": "Pip",
+    "pinterestSessions": "Pip",
+    "bingOrganic": "Pip",
+    "direct": "Pip",
+    "notSetLandingPage": "Pip",
+    "organicSessions": "Sage",
+    "aiReferralSessions": "Sage",
+    "returningVisitorSharePct": "Rowan",
+    "engagementRatePct": "Rowan",
+    "favoritesWeekly": "Rowan",
+    "catalogFreshness": "Rowan",
+    "ownedAudienceNetAdds": "Cass",
+    "captureRatePer1kSessions": "Cass",
+    "nonAdRevenueMonthly": "Rio",
+    "mediavineRevenueGuardrail": "Rio",
+    "runSuccessRate": "Ops",
+    "ledgerCompleteness": "Ops",
+    "contextBudgetGreen": "Ops"
+  }
+}

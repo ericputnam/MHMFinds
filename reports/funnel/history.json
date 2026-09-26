@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T10:37:47.055Z",
+  "generatedAt": "2026-09-26T11:35:24.579Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3086,6 +3086,44 @@
         "Rowan": 2,
         "PR": 1
       }
+    },
+    {
+      "date": "2026-09-26",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 266.77,
+      "expectedSessions": 14429,
+      "nonAdMonthly": null,
+      "ownedAdds7d": 90,
+      "pinterestSessions7d": 59330,
+      "returningShare7d": 0.5236410670263218,
+      "nonPinterestShare7d": 0.14819387813702412,
+      "pagesPerSession7d": 1.5087374806656502,
+      "engagementRate7d": 0.6952796761702081,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.08771929824561403,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "favicon": 1,
+        "operator": 4,
+        "Sage": 7,
+        "Pip": 7,
+        "Cass": 6,
+        "Nova": 9,
+        "Rio": 6,
+        "Quinn": 8,
+        "Ops": 5,
+        "Rowan": 3,
+        "PR": 1
+      }
     }
   ],
   "events": [
@@ -4214,6 +4252,73 @@
       "kind": "incident",
       "label": "Incident: build ERROR",
       "commit": "d748eaf"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Rowan: PR #179 /games/sims-4/kitchen-cc/ + title-only kitchen theme repair (E109)",
+      "commit": "d80ae98",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Nova: PR #175 server-rendered \"More from <creator>\" + crawlable /creator/[slug]/ link on /mods/[id] (E106)",
+      "commit": "8f3b5ed",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Sage: PR #176 llms-full.txt names top CC creators with /creator/ pages (E104)",
+      "commit": "0492290",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Pip: PR #180 E102 E26 KILL read + runway top-up (21 rows) · E103 pin-seo --source page apply (83 rows)",
+      "commit": "840654b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Cass: PR #178 /mods/[id] favorite button → real API + account capture on 401 (E107)",
+      "commit": "56eb87f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Rio: PR #177 post-rename Patreon watch (E108)",
+      "commit": "1bb79f6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Ops: PR #174 deploy-verify never promotes an older build over a newer one (E110; verified with the new script)",
+      "commit": "7a43ea6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-25",
+      "kind": "merge",
+      "label": "Quinn: PR #181 funnel: daily run 2026-09-25",
+      "commit": "59a4500",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "rollback",
+      "label": "morning-check",
+      "result": "ROLLED BACK, STILL FAILING"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "incident",
+      "label": "Incident: still failing after rollback"
     }
   ]
 }
