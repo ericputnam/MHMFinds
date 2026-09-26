@@ -3094,7 +3094,7 @@
       "rpm": null,
       "expectedRevenue": 266.77,
       "expectedSessions": 14429,
-      "nonAdMonthly": 0,
+      "nonAdMonthly": null,
       "ownedAdds7d": null,
       "pinterestSessions7d": 59330,
       "returningShare7d": 0.5236410670263218,
