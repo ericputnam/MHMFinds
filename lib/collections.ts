@@ -208,7 +208,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['decor', 'plants', 'rugs', 'wall-art'],
     },
     expectedCount: 731,
-    related: ['clutter', 'furniture-cc', 'holidays-cc'],
+    // 2026-09-26: 'holidays-cc' → 'bathroom-cc' so the new page has an
+    // anchored inbound source (holidays-cc keeps 2 inbound: clutter,
+    // halloween-cc).
+    related: ['clutter', 'furniture-cc', 'bathroom-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial
     // "best decor CC" intent, this page owns browse/filter intent.
     // Verified live and not redirected on 2026-09-07.
@@ -879,13 +882,59 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       themesAny: ['kitchen'],
     },
     expectedCount: 160,
-    related: ['furniture-cc', 'clutter', 'decor-cc'],
+    // 2026-09-26: 'clutter' → 'bathroom-cc' (clutter keeps 2 inbound:
+    // decor-cc, holidays-cc).
+    related: ['furniture-cc', 'bathroom-cc', 'decor-cc'],
     // Differentiated pair: /sims-4-kitchen-clutter-cc/ keeps the editorial
     // "best kitchen clutter" intent, this page owns browse/filter intent. It
     // is live (HTTP 200, no redirect, checked 2026-09-25) and not in
     // vercel.json; 46 impressions / 0 clicks at position 45.7 over the 28d
     // to 2026-09-22.
     blogUrl: '/sims-4-kitchen-clutter-cc/',
+  },
+  {
+    // Rowan, 2026-09-26 (E112). Fourth `themesAny` page; appended last
+    // because themesAny scores specificity 1. Demand: GSC 28d to 09-23 puts
+    // /sims-4-bathroom-cc/ at 95 impressions / 1 click at position 43.9, and
+    // the query set ("sims 4 cc bathroom" 9, "sims bathroom cc" 7, "sims 4
+    // bathroom cc" 6, "maxis match bathroom cc" pos 37) lands on no browse
+    // page. Thin, like kitchen — shipped because the repair is the durable part.
+    slug: 'bathroom-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Bathroom CC',
+    heading: 'Sims 4 Bathroom CC',
+    metaTitle: 'Sims 4 Bathroom CC Finder — Browse 123 Bathroom Sets & Showers | MustHaveMods',
+    metaDescription:
+      'Browse 123 Sims 4 bathroom CC finds in one filterable grid — full bathroom sets, showers and tubs, bathroom clutter, bath mats and towel racks, links checked.',
+    tagline: 'Full bathroom sets, showers, tubs, and clutter in one grid',
+    intro:
+      "The bathroom is the room every build needs and almost nobody enjoys decorating in the base game. A handful of toilets, showers that all share one glass box, and a sink that looks the same in a cottage as it does in a penthouse. Bathroom CC is how builders make that small room look finished instead of functional, and this grid is all of it in one place.\n\nEvery item here says bathroom, bath, shower, tub, toilet, washroom or restroom in its own title. That is deliberate. Room tags are easy to get wrong when a whole blog post shares one description — a skincare gameplay mod, a baby shower party set or a hot tub that appeared in a bathroom roundup is not bathroom build CC — so this collection only holds items whose creator called them that. When we repaired the tag, nearly three quarters of the rows it used to carry turned out not to be bathroom CC at all — baby and bridal shower events, skincare mods, a tube-top dress and whole-house lots; none of those are here.\n\nWhat is here splits three ways. Full bathroom sets are the bulk of it: vanities, sinks, toilets, tubs and the storage to match, in the styles the community keeps building — modern and luxury, boho and coastal, pink and kawaii, country, Korean retro and a kids' ducky set. Showers and tubs: glass cubicles, rainfall heads, a build-your-own shower kit, corner showers and a medieval shower stall. And the finishing layer: bathroom clutter packs (including a set that makes the clutter functional), bath mats and toilet rugs, towel racks, wall art and restroom door signs for community lots.\n\nTwo practical notes. A few showers and tubs depend on a specific pack, so check the requirements on the download page before you build around one. And big sets often ship as several parts (\"Part 1\", \"Part 2: Clutter\"); the parts are separate downloads, so grab them together if you want the full look.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link — 99 of the 123 are free. Sort by downloads for the sets everyone already runs, or scroll for the one-off showers and clutter packs the big roundups never reach.",
+    filter: {
+      // 123 SFW Sims 4 mods on the `bathroom` theme, verified against
+      // production 2026-09-26 *after* the same-PR repair of the theme.
+      //
+      // Before the repair the theme had 456 rows and only 154 (33.8%) had
+      // even the old keywords in the title — 24 of those baby/bridal
+      // showers. Wicked Whims (a script mod) was card #1, then "Functional
+      // Skincare Mod", "Love Language Mod" and "Pregnancy Test & Birth
+      // Control Clutter". Cause: ROOM_THEME_RULES in contentTypeDetector.ts
+      // matched 'bath' / 'shower' / 'tub' by substring over title +
+      // DESCRIPTION. Fixed at the source (`lib/bathroomThemeRules.ts`,
+      // imported by the detector) and re-derived from titles only: 2 added,
+      // 335 stripped (`scripts/retag-bathroom-theme.ts`, backup in
+      // reports/funnel/bathroom-theme-retag-2026-09-26.csv).
+      //
+      // Audited before ranking: 123 of 123 titles carry bathroom evidence;
+      // the top 24 by downloads read 24/24 as bathroom content.
+      themesAny: ['bathroom'],
+    },
+    expectedCount: 123,
+    related: ['furniture-cc', 'decor-cc', 'kitchen-cc'],
+    // Differentiated pair: /sims-4-bathroom-cc/ keeps the editorial "best
+    // bathroom CC" intent, this page owns browse/filter intent. 95
+    // impressions / 1 click at position 43.9 over the 28d to 2026-09-23.
+    blogUrl: '/sims-4-bathroom-cc/',
   },
 ];
 
