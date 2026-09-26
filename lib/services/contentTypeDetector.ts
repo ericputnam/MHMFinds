@@ -16,6 +16,7 @@
 
 import { BEDROOM_THEME, isBedroomTitle } from '../bedroomThemeRules';
 import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
+import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
 
 // ============================================
 // TYPES
@@ -537,11 +538,11 @@ interface RoomThemeRule {
 }
 
 const ROOM_THEME_RULES: RoomThemeRule[] = [
-  {
-    keywords: ['bathroom', 'bath', 'shower', 'toilet', 'tub', 'bathtub', 'washroom',
-               'restroom', 'lavatory', 'powder room'],
-    theme: 'bathroom',
-  },
+  // `bathroom` is deliberately NOT a keyword rule here: it is derived from the
+  // TITLE only by `lib/bathroomThemeRules.ts` (Rowan, 2026-09-26, E112). The
+  // old entry ('bathroom', 'bath', 'shower', 'tub', ... over title +
+  // description) left the theme 33.8% title-supported (154 of 456 SFW Sims 4
+  // rows, 24 of those baby showers) — Wicked Whims at card #1.
   // `kitchen` is deliberately NOT a keyword rule here: it is derived from the
   // TITLE only by `lib/kitchenThemeRules.ts` (Rowan, 2026-09-25, E109). The
   // old entry ('kitchen', 'cooking', 'chef', ... over title + description)
@@ -869,6 +870,14 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Bathroom theme — title only, whole words, shared rules (never from the
+  // description; see lib/bathroomThemeRules.ts).
+  if (isBathroomTitle(title) && !detectedThemes.includes(BATHROOM_THEME)) {
+    detectedThemes.push(BATHROOM_THEME);
+    allMatchedKeywords.push(BATHROOM_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Determine overall confidence
   let confidence: ConfidenceLevel = 'low';
   if (detectedThemes.length > 0) {
@@ -972,5 +981,5 @@ export function getSupportedRoomThemes(): string[] {
   // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
   // a theme to its own rule file silently drops it from this list (bedroom
   // was missing here from #170 until 2026-09-25).
-  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME].sort();
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME].sort();
 }
