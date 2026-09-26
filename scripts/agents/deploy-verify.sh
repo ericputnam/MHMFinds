@@ -29,6 +29,11 @@
 # it is logged, the ledger row says INCONCLUSIVE, exit stays 0 and nothing is rolled back. Only a smoke run that
 # actually rendered pages and saw them fail (or a 5xx flood / missing blog markers) can trigger a rollback.
 # (2026-09-05: two false-alarm rollbacks in 24 h came from 'smoke-render: could not run' in dependency-less worktrees.)
+# E111 (2026-09-26): smoke-render now grades on POSITIVE evidence and carries an independent network control. A run whose
+# control is degraded, or whose only failures are navigation timeouts / unsettled renders that reproduce, is INCONCLUSIVE:
+# `failed` is empty, the row says INCONCLUSIVE (network) and fail_and_fix refuses to roll back. --check exits 2 in that
+# case (the runner already reads 2 as "could not run"); --after-merge keeps exit 0 + the INCONCLUSIVE row, because the ship
+# protocol tells agents that exit 2 means "it already rolled back — fix forward", which would be a second false alarm.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -87,7 +92,7 @@ for x in d:
 }
 
 # ---------------------------------------------------------------- checks
-FAILS=""; FIVEXX=0; INCONCLUSIVE=""; SMOKE_JSON="$ROOT/logs/smoke-$STAMP.json"
+FAILS=""; FIVEXX=0; INCONCLUSIVE=""; NET_DEGRADED=""; SMOKE_JSON="$ROOT/logs/smoke-$STAMP.json"
 addfail() { FAILS="${FAILS}${FAILS:+; }$1"; }
 smoke_dir() {  # first tree that has the deps smoke-render needs — fresh runner worktrees have no node_modules
   local d
@@ -97,16 +102,29 @@ smoke_dir() {  # first tree that has the deps smoke-render needs — fresh runne
   return 1
 }
 smoke() {
-  FAILS=""; INCONCLUSIVE=""
+  FAILS=""; INCONCLUSIVE=""; NET_DEGRADED=""
   local sdir out="$SMOKE_JSON.out"
   rm -f "$SMOKE_JSON"
   if sdir="$(smoke_dir)"; then
     log "check: rendering production pages in headless Chromium (deps from $sdir)…"
     (cd "$sdir" && npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1; cat "$out" >>"$LOG"
     if [ -f "$SMOKE_JSON" ]; then  # smoke-render writes the JSON only after it really rendered every page
-      local fl
-      fl="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(" | ".join(f["path"]+" -> "+", ".join(f["failures"]) for f in d["failed"]))' "$SMOKE_JSON" 2>/dev/null)"
-      [ -n "$fl" ] && addfail "smoke-render: $fl"
+      # E111: `failed` holds only positive-evidence failures. `network.degraded` (control hosts slow/unreachable) makes the
+      # whole smoke INCONCLUSIVE (network) — suspect pages are named in the row, never graded. `inconclusive` (a timeout or
+      # unsettled render that reproduced on a fresh page while the control passed) is could-not-run for that page. An older
+      # smoke-render.ts in another tree writes neither key; .get() keeps that readable as before.
+      local fl nd il sus
+      nd="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); n=d.get("network") or {}; print("degraded: "+str((n.get("before") or {}).get("why",""))+" / "+str((n.get("after") or {}).get("why","")) if n.get("degraded") else "")' "$SMOKE_JSON" 2>/dev/null)"
+      fl="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(" | ".join(f["path"]+" -> "+", ".join(f["failures"]) for f in d.get("failed") or []))' "$SMOKE_JSON" 2>/dev/null)"
+      il="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(" | ".join(f["path"]+" -> "+f.get("why","") for f in d.get("inconclusive") or []))' "$SMOKE_JSON" 2>/dev/null)"
+      sus="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(" | ".join(f["path"]+" -> "+", ".join(f["failures"]) for f in d.get("suspect") or []))' "$SMOKE_JSON" 2>/dev/null)"
+      if [ -n "$nd" ]; then
+        NET_DEGRADED=1
+        INCONCLUSIVE="smoke-render INCONCLUSIVE (network control $nd) — pages NOT judged; suspect: ${sus:-none}${il:+; inconclusive: $il}"
+      else
+        [ -n "$fl" ] && addfail "smoke-render: $fl"
+        [ -n "$il" ] && INCONCLUSIVE="smoke-render inconclusive (reproduced, no positive evidence): $il"
+      fi
     else
       INCONCLUSIVE="smoke-render could not run: $(grep -m1 -oE "Cannot find module '[^']*'|browserType\.launch.{0,100}|Error: .{0,100}" "$out" || echo 'no output')"
     fi
@@ -132,7 +150,7 @@ smoke() {
   log "check: 5xx in last 15m = $FIVEXX · failures: ${FAILS:-none}${INCONCLUSIVE:+ · smoke INCONCLUSIVE}"
   [ -z "$FAILS" ]
 }
-verdict() { if [ -n "$INCONCLUSIVE" ]; then echo "INCONCLUSIVE"; else echo "PASS"; fi; }
+verdict() { if [ -n "$NET_DEGRADED" ]; then echo "INCONCLUSIVE (network)"; elif [ -n "$INCONCLUSIVE" ]; then echo "INCONCLUSIVE"; else echo "PASS"; fi; }
 vnotes() { echo "${INCONCLUSIVE:+$INCONCLUSIVE · blog markers + 5xx checked, smoke NOT — verify by hand: npx tsx scripts/agents/smoke-render.ts · }$1"; }
 do_rollback() {
   log "ROLLING BACK production to $1"
@@ -260,6 +278,12 @@ incident() {  # $1 title, $2 action taken — writes the file and records it in 
 }
 fail_and_fix() {  # $1 = rollback target (may be empty)
   local first="$FAILS"
+  if [ -n "$NET_DEGRADED" ]; then
+    # E111: a reading taken through a degraded network is not evidence about the site (2026-09-26 06:58: rolled back on
+    # four navigation timeouts + an unsettled homepage while vercel/Prisma/Pinterest were all timing out from this host).
+    log "WARN: network control degraded — NOT rolling back on: $first (production unchanged; re-run --check when the control passes)"
+    ledger "INCONCLUSIVE (network)" "$(vnotes "NOT rolled back — seen through a degraded network: $first")"; exit 2
+  fi
   if [ "${FUNNEL_NO_ROLLBACK:-0}" = "1" ]; then
     incident "verification failed" "FUNNEL_NO_ROLLBACK=1 — nothing rolled back. Operator must act."
     ledger "FAIL (no-rollback mode)" "$first"; exit 2
@@ -337,7 +361,11 @@ case "$MODE" in
   check)
     DEPLOY_URL="$(current_prod)"; PREV="$(previous_ready "$DEPLOY_URL")"
     log "checking live production $DEPLOY_URL (rollback target if needed: ${PREV:-none})"
-    if smoke; then ledger "$(verdict)" "$(vnotes "scheduled/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"; exit 0; fi
+    if smoke; then
+      ledger "$(verdict)" "$(vnotes "scheduled/ad-hoc check · 5xx/15m=$FIVEXX")"; log "$(verdict)"
+      [ -n "$NET_DEGRADED" ] && exit 2  # could not run (the runner reads 2 as exactly that); nothing rolled back
+      exit 0
+    fi
     fail_and_fix "$PREV" ;;
   rollback)
     CUR="$(current_prod)"; TARGET="${TO:-$(previous_ready "$CUR")}"; DEPLOY_URL="$TARGET"
