@@ -1,0 +1,346 @@
+{
+  "generated": "2026-09-26",
+  "generator": "scripts/agents/rank-pin-destinations.ts",
+  "status": "GENERATED — read-only output; not a queued Tier 2 package until an operator/agent adds an experiment id and a per-day/days plan and gets approval (SD-10)",
+  "window_7d": "2026-09-18..2026-09-24",
+  "window_28d": "2026-08-28..2026-09-24",
+  "source": "GA4 hostName x landingPagePlusQueryString, sessionSource CONTAINS 'pinterest' (case-insensitive) — the wider definition used in reports/funnel/pinterest-read-2026-09-19.md",
+  "selection": "stranded rows (unposted, Post Date < today-14d), destination normalised (blog.musthavemods.com -> musthavemods.com, query stripped), >=50 Pinterest sessions/7d, <=10 ids/destination",
+  "pool_rows": 1000,
+  "dropped_below_threshold_destinations": 68,
+  "dropped_skipped_host_rows": 79,
+  "dropped_unparseable_url_rows": 0,
+  "destinations_selected": 23,
+  "ids_selected": 144,
+  "next_step": "python3 scripts/agents/revive-stranded-pins.py --ids-from <this file> --max-per-url 1 --per-day N --days N   (dry run first; --apply needs Tier 2 approval, SD-10)",
+  "destinations": [
+    {
+      "path": "/sims-4-wedges-cc/",
+      "sessions7d": 1014,
+      "sessions28d": 3925,
+      "stranded_rows": 30,
+      "ids": [
+        2121,
+        2122,
+        2123,
+        2124,
+        2125,
+        2126,
+        2127,
+        2128,
+        2129,
+        2130
+      ]
+    },
+    {
+      "path": "/sims-4-cc-finds-for-april/",
+      "sessions7d": 808,
+      "sessions28d": 1780,
+      "stranded_rows": 6,
+      "ids": [
+        2258,
+        2259,
+        2261,
+        2263,
+        2264,
+        2265
+      ]
+    },
+    {
+      "path": "/black-sims-4-cc/",
+      "sessions7d": 612,
+      "sessions28d": 2365,
+      "stranded_rows": 2,
+      "ids": [
+        7971,
+        8019
+      ]
+    },
+    {
+      "path": "/sims-4-couple-poses-2/",
+      "sessions7d": 538,
+      "sessions28d": 1940,
+      "stranded_rows": 6,
+      "ids": [
+        7576,
+        7577,
+        7578,
+        7579,
+        7580,
+        7581
+      ]
+    },
+    {
+      "path": "/sims-4-skin-overlay/",
+      "sessions7d": 362,
+      "sessions28d": 1692,
+      "stranded_rows": 16,
+      "ids": [
+        5153,
+        5154,
+        5155,
+        5156,
+        5157,
+        5158,
+        5159,
+        5160,
+        5161,
+        5162
+      ]
+    },
+    {
+      "path": "/sims-4-furniture-cc/",
+      "sessions7d": 261,
+      "sessions28d": 1157,
+      "stranded_rows": 22,
+      "ids": [
+        5005,
+        5006,
+        5007,
+        5008,
+        5009,
+        5010,
+        5011,
+        5012,
+        5013,
+        5014
+      ]
+    },
+    {
+      "path": "/sims-4-morning-routine-mods/",
+      "sessions7d": 141,
+      "sessions28d": 609,
+      "stranded_rows": 5,
+      "ids": [
+        6606,
+        6610,
+        6611,
+        6612,
+        6613
+      ]
+    },
+    {
+      "path": "/sims-4-plants-cc/",
+      "sessions7d": 136,
+      "sessions28d": 496,
+      "stranded_rows": 27,
+      "ids": [
+        2303,
+        2304,
+        2306,
+        2307,
+        2308,
+        2310,
+        2311,
+        2312,
+        2313,
+        2314
+      ]
+    },
+    {
+      "path": "/sims-4-plus-size-body-presets/",
+      "sessions7d": 134,
+      "sessions28d": 423,
+      "stranded_rows": 1,
+      "ids": [
+        7438
+      ]
+    },
+    {
+      "path": "/sims-4-toddler-cc/",
+      "sessions7d": 122,
+      "sessions28d": 461,
+      "stranded_rows": 11,
+      "ids": [
+        8046,
+        8049,
+        8053,
+        8055,
+        8058,
+        8060,
+        8067,
+        8082,
+        8083,
+        8091
+      ]
+    },
+    {
+      "path": "/sims-4-urban-hair-cc/",
+      "sessions7d": 109,
+      "sessions28d": 417,
+      "stranded_rows": 32,
+      "ids": [
+        2267,
+        2268,
+        2269,
+        2270,
+        2271,
+        2272,
+        2273,
+        2274,
+        2275,
+        2276
+      ]
+    },
+    {
+      "path": "/sims-4-piercings/",
+      "sessions7d": 107,
+      "sessions28d": 469,
+      "stranded_rows": 1,
+      "ids": [
+        9577
+      ]
+    },
+    {
+      "path": "/sims-4-cc-finds-for-august/",
+      "sessions7d": 101,
+      "sessions28d": 404,
+      "stranded_rows": 1,
+      "ids": [
+        3608
+      ]
+    },
+    {
+      "path": "/sims-4-rugs-cc/",
+      "sessions7d": 91,
+      "sessions28d": 307,
+      "stranded_rows": 30,
+      "ids": [
+        2372,
+        2373,
+        2374,
+        2375,
+        2376,
+        2377,
+        2378,
+        2379,
+        2380,
+        2382
+      ]
+    },
+    {
+      "path": "/sims-4-cc-finds-for-may/",
+      "sessions7d": 83,
+      "sessions28d": 375,
+      "stranded_rows": 8,
+      "ids": [
+        1652,
+        1653,
+        1654,
+        1655,
+        1656,
+        1657,
+        1658,
+        1659
+      ]
+    },
+    {
+      "path": "/sims-4-room-ideas/",
+      "sessions7d": 73,
+      "sessions28d": 311,
+      "stranded_rows": 17,
+      "ids": [
+        2692,
+        2693,
+        2694,
+        2695,
+        2696,
+        2698,
+        2699,
+        2701,
+        2702,
+        2705
+      ]
+    },
+    {
+      "path": "/best-sims-4-main-menu-overrides/",
+      "sessions7d": 72,
+      "sessions28d": 414,
+      "stranded_rows": 23,
+      "ids": [
+        4521,
+        4522,
+        4523,
+        4524,
+        4525,
+        4526,
+        4527,
+        4528,
+        4529,
+        4530
+      ]
+    },
+    {
+      "path": "/sims-4-houses/",
+      "sessions7d": 72,
+      "sessions28d": 286,
+      "stranded_rows": 1,
+      "ids": [
+        8892
+      ]
+    },
+    {
+      "path": "/sims-4-female-clothes-cc/",
+      "sessions7d": 63,
+      "sessions28d": 260,
+      "stranded_rows": 1,
+      "ids": [
+        9130
+      ]
+    },
+    {
+      "path": "/sims-4-modern-houses/",
+      "sessions7d": 62,
+      "sessions28d": 194,
+      "stranded_rows": 19,
+      "ids": [
+        3717,
+        3718,
+        3719,
+        3720,
+        3721,
+        3722,
+        3723,
+        3724,
+        3725,
+        3726
+      ]
+    },
+    {
+      "path": "/sims-4-sandals-cc/",
+      "sessions7d": 57,
+      "sessions28d": 193,
+      "stranded_rows": 4,
+      "ids": [
+        1693,
+        1694,
+        1695,
+        1696
+      ]
+    },
+    {
+      "path": "/sims-4-maxis-match-hair/",
+      "sessions7d": 55,
+      "sessions28d": 293,
+      "stranded_rows": 7,
+      "ids": [
+        7591,
+        7592,
+        7594,
+        7609,
+        7623,
+        7629,
+        7640
+      ]
+    },
+    {
+      "path": "/afro-hair-sims-4/",
+      "sessions7d": 50,
+      "sessions28d": 187,
+      "stranded_rows": 1,
+      "ids": [
+        8226
+      ]
+    }
+  ]
+}

@@ -78,6 +78,8 @@ what changed.
 | E108 | 2026-09-25 | Rio | 0 | PRODUCT | Post-rename Patreon watch: `RENAME_WATCH` anchor (2026-09-25T04:54Z, th… | paid cancels/mo pace since the rena… | 55 paid ≈ $153.50/mo; joins 7d 4, can… | 2026-10-02 (joins), 2026-10-09 (cancels, after the 10-01 charge run) | cancels pace ≤16/mo on 10-09 (joins <17/mo = fi… | Shipped 09-25 07:12 PASS (deploy 8epri2xou); 4 new tests 39… | pending |
 | E109 | 2026-09-25 | Rowan | 0 | CONTENT | `/games/sims-4/kitchen-cc/` (160 mods) + title-only kitchen room-theme… | engaged sessions + favorites on the… | 0 (page did not exist); theme 345 row… | 2026-10-23 | ≥200 engaged sessions OR ≥5 favorites in 28d, R… | Shipped 09-25 06:50 PASS (d80ae98); live 200 with .mv-ads +… | pending |
 | E110 | 2026-09-25 | Ops | 0 | OPS | deploy-verify promotes only forward (merge-base ancestor check; newer served → SUPERSEDED, unknown → no promote) #174 | backwards promotions | 1 (09-24 #167 over #170) | 2026-10-02 | 0 backwards promotions 7d; overlaps ledger SUPERSEDED | Shipped 07:16 PASS 7a43ea6; branch not hit live yet | MORE DATA |
+| E116 | 2026-09-26 | Pip | 0 | AUDIENCE | Runway top-up #2 (SD-22): 21 sessions-ranked rows → 09-26/27/28, 1/URL/day, 7 destinations; tool: truncated Pinterest sample = unknown, `--rate-source queue`, `--sections-from-queue` | Pinterest sessions 7d to the 7 destinations; runway | 3,260/7d (09-18→09-24); 63 ÷ 36/day = 1.75 d | 2026-10-04 | 7 destinations' Pinterest WoW ≥ site-wide +3 pts AND runway ≥1.5 d to 10-03 | ledger `pin-runway-topup-2026-09-26.json`; 84 rows read back | pending |
+| E117 | 2026-09-26 | Pip | 0 | AUDIENCE | `(not set)` landing audit → bot/preview noise (73/73 rows zero-pageview, 97% desktop, sources named); no pinner UTM fix; `reports/funnel/not-set-audit-2026-09-26.md` | zero-pageview share of `(not set)` landings 7d | 100% (3,816, 09-18→09-24) | 2026-10-03 | holds if ≥95%; reopen if >5% carry page views | decision row | pending |
 
 ## Kill log (compact — the full table moved verbatim to archive/experiments-2026-09.md on 2026-09-23)
 
@@ -86,4 +88,3 @@ KEEP: E5 E9 Rio guardrail · E50 E69 Rio Q4-gate tooling (gate read 09-22 HOLD o
 NO MOVE: E96 Sage (09-24, pre-empted by E97) · E105 Sage (09-25, unused — title-fix on /games/* killed with numbers: pos 24–32).
 MORE DATA: E30 Rio (no treatment until the operator pastes the note) · E51 Pip.
 
-Old-team kill log (2026-06/08, full prose in archive): Mediavine floor/CPM (06-24, re-open only w/ a different traffic profile); GSC "quick wins" sweeps (08-16, <$1/mo, hygiene not a bet); RPM as primary metric (09-01, guardrail per SD-5).
