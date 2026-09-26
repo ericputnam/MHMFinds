@@ -80,6 +80,8 @@ what changed.
 | E114 | 2026-09-26 | Sage | 0 | AUDIENCE | Registry→surface scanner: every collection slug on llms.txt, llms-full, sitemap… | ai_referral 7d + kitchen-cc landings | 274 (09-18→24; prev 329; chatgpt 304→248) | 2026-10-03, 10-10 | ai_referral ≥300 either read OR kitchen-cc ≥5/7d | 27/27 green pre-fix; red on slug drop | pending |
 | E115 | 2026-09-26 | Sage | 0 | AUDIENCE | IndexNow `--apply --creators --days 3` → 596 URLs (29 collections, 27 mods, 541… | Bing landings on /creator/* 7d | 0 (09-17→23, E95); bing_organic 16,284 | 2026-10-03 | ≥20 AND bing_organic ≥95% of 16,284 | http=200 13:19Z; indexnow-2026-09-26.md | pending |
 | E110 | 2026-09-25 | Ops | 0 | OPS | deploy-verify promotes only forward (merge-base ancestor check; newer served → SUPERSEDED, unknown → no promote) #174 | backwards promotions | 1 (09-24 #167 over #170) | 2026-10-02 | 0 backwards promotions 7d; overlaps ledger SUPERSEDED | Shipped 07:16 PASS 7a43ea6; branch not hit live yet | MORE DATA |
+| E116 | 2026-09-26 | Pip | 0 | AUDIENCE | Runway top-up #2 (SD-22): 21 sessions-ranked rows → 09-26/27/28, 1/URL/day, 7 destinations; tool: truncated Pinterest sample = unknown, `--rate-source queue`, `--sections-from-queue` | Pinterest sessions 7d to the 7 destinations; runway | 3,260/7d (09-18→09-24); 63 ÷ 36/day = 1.75 d | 2026-10-04 | 7 destinations' Pinterest WoW ≥ site-wide +3 pts AND runway ≥1.5 d to 10-03 | ledger `pin-runway-topup-2026-09-26.json`; 84 rows read back | pending |
+| E117 | 2026-09-26 | Pip | 0 | AUDIENCE | `(not set)` landing audit → bot/preview noise (73/73 rows zero-pageview, 97% desktop, sources named); no pinner UTM fix; `reports/funnel/not-set-audit-2026-09-26.md` | zero-pageview share of `(not set)` landings 7d | 100% (3,816, 09-18→09-24) | 2026-10-03 | holds if ≥95%; reopen if >5% carry page views | decision row | pending |
 
 ## Kill log (compact — the full table moved verbatim to archive/experiments-2026-09.md on 2026-09-23)
 
@@ -88,4 +90,3 @@ KEEP: E5 E9 Rio guardrail · E50 E69 Rio Q4-gate tooling (gate read 09-22 HOLD o
 NO MOVE: E96 Sage (09-24, pre-empted by E97) · E105 Sage (09-25, unused — title-fix on /games/* killed with numbers: pos 24–32).
 MORE DATA: E30 Rio (no treatment until the operator pastes the note) · E51 Pip.
 
-Old-team kill log (2026-06/08, full prose in archive): Mediavine floor/CPM (06-24, re-open only w/ a different traffic profile); GSC "quick wins" sweeps (08-16, <$1/mo, hygiene not a bet); RPM as primary metric (09-01, guardrail per SD-5).

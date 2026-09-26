@@ -230,23 +230,161 @@ def _fake_config():
 def test_main_exits_0_on_noop(topup, monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(topup, 'load_config', lambda: _fake_config())
     monkeypatch.setattr(topup, 'count_inventory', lambda config, today: 30)
-    monkeypatch.setattr(topup, 'compute_daily_posted_rate', lambda config: 5.0)
+    monkeypatch.setattr(topup, 'compute_daily_posted_rate',
+                        lambda config, now=None, window_days=14: 5.0)
     monkeypatch.setattr(sys, 'argv', ['pin-runway-topup.py',
                                       '--ledger-dir', str(tmp_path)])
     rc = topup.main()
     assert rc == 0
     out = capsys.readouterr().out
     assert 'no top-up needed' in out or 'runway' in out
+    assert 'basis: pinterest-14d' in out
 
 
 def test_main_exits_2_on_unknown(topup, monkeypatch, tmp_path):
     monkeypatch.setattr(topup, 'load_config', lambda: _fake_config())
     monkeypatch.setattr(topup, 'count_inventory', lambda config, today: None)
-    monkeypatch.setattr(topup, 'compute_daily_posted_rate', lambda config: None)
+    monkeypatch.setattr(topup, 'compute_daily_posted_rate',
+                        lambda config, now=None, window_days=14: None)
+    # The queue-side fallback must be unknown too, or 'auto' would rescue it.
+    monkeypatch.setattr(topup, 'count_posted_rows_dated_window',
+                        lambda config, today, window_days=14: None)
     monkeypatch.setattr(sys, 'argv', ['pin-runway-topup.py',
                                       '--ledger-dir', str(tmp_path)])
     rc = topup.main()
     assert rc == 2
+
+
+# --------------------------------------------------------------------------
+# Posted-rate basis: a truncated Pinterest sample is unknown, never a floor
+# (2026-09-26: 100 pins on one page ÷ 14 = 7.14/day → "runway 8.8 d, no-op"
+# while the queue-side proxy read 36/day → 1.75 d and a top-up was due).
+# --------------------------------------------------------------------------
+
+def _fixed_now(topup):
+    from datetime import datetime, timezone
+    return datetime(2026, 9, 22, tzinfo=timezone.utc)
+
+
+def test_truncated_pinterest_sample_is_unknown(topup, monkeypatch):
+    now = _fixed_now(topup)
+    monkeypatch.setattr(topup, 'fetch_pinterest_pins_created_since',
+                        lambda config, since, **kw: ([now] * 100, False))
+    assert topup.compute_daily_posted_rate({'creator_access_token': 't'}, now=now) is None
+
+
+def test_complete_pinterest_sample_is_a_rate(topup, monkeypatch):
+    now = _fixed_now(topup)
+    monkeypatch.setattr(topup, 'fetch_pinterest_pins_created_since',
+                        lambda config, since, **kw: ([now] * 140, True))
+    assert topup.compute_daily_posted_rate({'creator_access_token': 't'}, now=now) == 10.0
+
+
+def test_fetch_marks_incomplete_when_page_cap_hit(topup, monkeypatch):
+    """Every page is entirely inside the window and the bookmark never runs
+    out: the fetch must report complete=False, not pretend the count is exact."""
+    import io
+    now = _fixed_now(topup)
+    body = json.dumps({'items': [{'created_at': '2026-09-21T10:00:00'}] * 100,
+                       'bookmark': 'more'}).encode()
+
+    class _Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(topup.urllib.request, 'urlopen',
+                        lambda req, timeout=30: _Resp(body))
+    since = now - timedelta(days=14)
+    stamps, complete = topup.fetch_pinterest_pins_created_since(
+        {'creator_access_token': 't'}, since, max_pages=2)
+    assert len(stamps) == 200
+    assert complete is False
+
+
+def test_fetch_marks_complete_when_it_passes_the_window(topup, monkeypatch):
+    import io
+    now = _fixed_now(topup)
+    body = json.dumps({'items': [{'created_at': '2026-09-21T10:00:00'},
+                                 {'created_at': '2026-08-01T10:00:00'}],
+                       'bookmark': 'more'}).encode()
+
+    class _Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(topup.urllib.request, 'urlopen',
+                        lambda req, timeout=30: _Resp(body))
+    since = now - timedelta(days=14)
+    stamps, complete = topup.fetch_pinterest_pins_created_since(
+        {'creator_access_token': 't'}, since)
+    assert len(stamps) == 1
+    assert complete is True
+
+
+@pytest.mark.parametrize('source,expected_calls,expected_basis', [
+    ('pinterest', ['p'], 'unknown'),
+    ('queue', ['q'], 'queue-posted-14d'),
+    ('auto', ['p', 'q'], 'queue-posted-14d'),
+])
+def test_resolve_posted_rate_sources(topup, monkeypatch, source, expected_calls,
+                                     expected_basis):
+    calls = []
+    monkeypatch.setattr(topup, 'compute_daily_posted_rate',
+                        lambda config, now=None, window_days=14: calls.append('p') or None)
+    monkeypatch.setattr(topup, 'count_posted_rows_dated_window',
+                        lambda config, today, window_days=14: calls.append('q') or 504)
+    rate, basis = topup.resolve_posted_rate({}, TODAY, source)
+    assert calls == expected_calls
+    assert basis == expected_basis
+    if basis != 'unknown':
+        assert rate == pytest.approx(36.0)
+
+
+def test_resolve_posted_rate_prefers_pinterest_when_complete(topup, monkeypatch):
+    monkeypatch.setattr(topup, 'compute_daily_posted_rate',
+                        lambda config, now=None, window_days=14: 12.5)
+    monkeypatch.setattr(topup, 'count_posted_rows_dated_window',
+                        lambda config, today, window_days=14: 504)
+    assert topup.resolve_posted_rate({}, TODAY, 'auto') == (12.5, 'pinterest-14d')
+
+
+@pytest.mark.parametrize('count', [None, 0])
+def test_resolve_posted_rate_queue_unknown_on_bad_count(topup, monkeypatch, count):
+    monkeypatch.setattr(topup, 'count_posted_rows_dated_window',
+                        lambda config, today, window_days=14: count)
+    assert topup.resolve_posted_rate({}, TODAY, 'queue') == (None, 'unknown')
+
+
+def test_resolve_posted_rate_rejects_bogus_source(topup):
+    with pytest.raises(ValueError):
+        topup.resolve_posted_rate({}, TODAY, 'bogus')
+
+
+# --------------------------------------------------------------------------
+# Queue-side board-section check (stand-in for the Pinterest sections API)
+# --------------------------------------------------------------------------
+
+def test_drop_sections_not_recently_posted(topup):
+    live = {('B1', 'S1')}
+    rows = [{'id': 1, 'Board ID': 'B1', 'Board Section ID': 'S1'},
+            {'id': 2, 'Board ID': 'B1', 'Board Section ID': 'S9'},
+            {'id': 3, 'Board ID': 'B2', 'Board Section ID': 'S1'},
+            {'id': 4, 'Board ID': 'B2', 'Board Section ID': None},
+            {'id': 5, 'Board ID': 'B2'}]
+    kept, dropped = topup.drop_sections_not_recently_posted(rows, live)
+    assert [r['id'] for r in kept] == [1, 4, 5]
+    assert [r['id'] for r in dropped] == [2, 3]
+
+
+def test_drop_sections_refuses_incomplete_read(topup):
+    with pytest.raises(ValueError):
+        topup.drop_sections_not_recently_posted([{'id': 1}], None)
 
 
 def test_main_refuses_apply_without_ids_from(topup, monkeypatch, tmp_path):
