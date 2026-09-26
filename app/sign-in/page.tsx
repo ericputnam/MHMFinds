@@ -7,6 +7,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Sparkles, Crown, CheckCircle2, Download, X } from 'lucide-react';
+import { resolveSignInReturn } from './returnTo';
 
 /** waitlist.source for the sign-up form's email opt-in (Cass, E86). */
 const SIGNUP_OPTIN_SOURCE = 'signup-optin';
@@ -70,6 +71,17 @@ export default function SignInPage() {
     },
   };
 
+  // Where a successful sign-in/sign-up goes (Cass, E118). Never push a raw
+  // query value: `resolveSignInReturn` only returns same-origin relative
+  // paths, and falls back to the page the visitor came from, then `/`.
+  const returnPath = () =>
+    resolveSignInReturn({
+      redirect: searchParams?.get('redirect'),
+      callbackUrl: searchParams?.get('callbackUrl'),
+      referrer: typeof document !== 'undefined' ? document.referrer : null,
+      origin: window.location.origin,
+    });
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -85,8 +97,7 @@ export default function SignInPage() {
       if (result?.error) {
         setError('Invalid email or password');
       } else {
-        const redirect = searchParams?.get('redirect') || '/';
-        router.push(redirect);
+        router.push(returnPath());
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -158,8 +169,7 @@ export default function SignInPage() {
       if (result?.error) {
         setError('Account created, but sign-in failed. Please try signing in.');
       } else {
-        const redirect = searchParams?.get('redirect') || '/';
-        router.push(redirect);
+        router.push(returnPath());
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
