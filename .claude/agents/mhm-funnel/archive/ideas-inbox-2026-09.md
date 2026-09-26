@@ -104,3 +104,8 @@ Context from the 09-22 run: Quinn's subagents were killed at the 600 s backgroun
 ## Moved 2026-09-25 (shipped as Ops PR #174 / E110, 7a43ea6)
 
 - [x] [ops] **PRIORITY 1 for 09-25** `deploy-verify.sh ensure_promoted()` promotes its own build whenever the alias serves anything else, with no check that the served deployment is *newer*. 09-24 10:05: Sage's late verify of #167 (`6b525b5`, deploy 2yq2v5zh3) promoted itself over Rowan's already-verified #170 build (eaggp16ue, 09:59 PASS) — `/games/sims-4/bedroom-cc/` went 200 → 404 on production for ~12 min with a PASS row in the ledger; Quinn rolled forward at 10:11. Fix: compare the served deployment's `createdAt` (or the ledger's newest PASS sha ancestry via `git merge-base --is-ancestor`) and only promote when the served build is older than or unrelated to yours; otherwise ledger `SUPERSEDED` and exit 0. Guard test red pre-fix. Quinn 09-24.
+
+## Moved 2026-09-26 (shipped as Rowan PR #187 / E112, 975d92b)
+
+- [x] [rowan] `bathroom` is the last room theme on the substring rule (439 rows, ~21–24% title-supported, Wicked Whims card #1) — same title-only repair as E100/E109 before any page. Separately, kitchen grid exposed mistyped `contentType` (fridges as glasses/tops/makeup) → `--ids=` hand-fix, not a retag. Rowan, 09-25.
+  - The kitchen mistyped-contentType `--ids=` hand-fix half stays open: Rowan 09-26 lists bathroom sets typed as glasses/lashes/makeup/tops and fridges typed as tops as the next catalog move.

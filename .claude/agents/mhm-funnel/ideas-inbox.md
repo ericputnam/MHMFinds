@@ -8,8 +8,8 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
-## Operator watch 2026-09-24 — BELOW LINE (sessions)
-Sessions 28d to 09-22: 353,842 vs line 365,393 = 96.8% (gap 11,551, ≈413/day); revenue $5,904.06 vs $5,730.39 = 103.0%. Runs 09-21→09-24 all under 97% (the launcher's 09-23 note, PR #164, read 96.88/96.97/96.94/96.76/97.07/97.00/96.88% and called it WATCH; folded here, #164 closed without merging). The 09-22 BELOW LINE entry stays in force. Re-weighting applied 09-24: Pip and Sage two AUDIENCE moves each, Nova and Rowan a traffic page each, Cass/Rio one move, no non-AUDIENCE Tier 1 merge. Lift only after two consecutive runs ≥97%.
+## Operator watch 2026-09-26 — BELOW LINE (sessions), 6th run
+Sessions 28d 08-26→09-22 (history.json; 09-23→09-26 not yet measured): 353,842 vs line 365,393 = 96.84% (gap 11,551, ≈413/day); revenue $5,904.06 vs $5,730.39 = 103.0%. Last 8 windows 96.97→96.94→96.76→97.07→97.00→96.88→96.84→96.84%, all under 97% since 09-21. Supersedes the 09-24/09-25 blocks (#182/#184 closed unmerged). GA4 7d +5.1%: the gap is the 08-26→09-08 trough, not a current decline. Re-weighting: Pip and Sage two AUDIENCE moves each, Nova and Rowan a traffic page each, Cass/Rio one move, no Tier 1 that is not AUDIENCE. Fastest lever: pin inflow (Q11-b). Lift after two consecutive runs ≥97%.
 
 - [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01 (→ Nova, Q14 triage in PR #141; `/creator/[slug]/` pages shipped 09-23 as E85)
 
@@ -50,5 +50,6 @@ Sessions 28d to 09-22: 353,842 vs line 365,393 = 96.8% (gap 11,551, ≈413/day);
 - [ ] [cass] `app/sign-in/page.tsx` honours `redirect`/`ref` only on the credentials path — Google/Discord buttons send everyone to `/`, so E107's `favorite_after_signin` undercounts by the OAuth share. Carry `callbackUrl` through `signIn(provider, { callbackUrl })`. T0, Cass takes it Monday 09-28. Cass, 09-25.
 - [ ] [quinn] `ownedAdds7d` in `funnel-scoreboard.ts` (~L879) is email + accounts only; Patreon free members (+24/day, 5,673) are owned audience per the charter and excluded from headline #1. Decide: include as a third line (not folded into the 120/wk target without re-baselining). Cass, 09-25.
 - [ ] [pip] pin-SEO board fit: 40 of 84 window rows fail only board fit after E103 (mean 88, ceiling without board moves); board reassignment is T1 (new-board territory). Also `--source hybrid` (keyword lead + writer's own sentence) to keep per-pin specificity. Pip, 09-25.
-- [ ] [rowan] `bathroom` is the last room theme on the substring rule (439 rows, ~21–24% title-supported, Wicked Whims card #1) — same title-only repair as E100/E109 before any page. Separately, kitchen grid exposed mistyped `contentType` (fridges as glasses/tops/makeup) → `--ids=` hand-fix, not a retag. Rowan, 09-25.
+- [ ] [ops] `ledger-commit.sh --incident` copies by basename (09-26 closure landed as `e111-incident.md`, rename `704b31b`): take `path:dest` or assert the `YYYY-MM-DD-HHMMSS.md` name. T0. Ops, 09-26.
+- [ ] [rio] `patreon-q4-gate-preread.ts:213` `Promise.all` discards the reachable half when one source is degraded (3 attempts 09-26, 0 gate numbers) → `allSettled` + partial report + exit 2, deadline inside `fetchMembers`. T0 before the 10-02 E108 read. Rio, 09-26.
 - [ ] [sage] hair-cc is indexed but not ranking (1 impr / 0 clicks 28d): needs inbound links from the male-long-hair / braids / short-hair blog posts — T2 package for the functions.php push process, not titles. Sage, 09-25.

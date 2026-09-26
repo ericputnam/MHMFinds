@@ -1,103 +1,184 @@
-# Funnel scoreboard — 2026-09-25
+prisma:error 
+Invalid `prisma.user.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:436:40
 
-**Headline:** owned-audience adds 7d **78** (target 120/wk) · non-ad revenue **$145.00/mo gross** (target $200.00) · Mediavine 28d **$5,904.06** (+5.1% vs prior)
+  433   creatorProfiles, modSubmissions, mods, collections,
+  434   newMods7d, newModsPrior7d, submissions7d,
+  435 ] = await Promise.all([
+→ 436   prisma.user.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `subs.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:437:12
+
+  434   newMods7d, newModsPrior7d, submissions7d,
+  435 ] = await Promise.all([
+  436   prisma.user.count(), prisma.user.count({ where: { createdAt: { gte: d7 } } }), prisma.user.count({ where: { createdAt: { gte: d30 } } }),
+→ 437   subs.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `prisma.favorite.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:439:23
+
+  436 prisma.user.count(), prisma.user.count({ where: { createdAt: { gte: d7 } } }), prisma.user.count({ where: { createdAt: { gte: d30 } } }),
+  437 subs.count(), subs.count({ where: { createdAt: { gte: d7 } } }), subs.count({ where: { createdAt: { gte: d30 } } }),
+  438 subs.groupBy({ by: ['source'], _count: { _all: true } }),
+→ 439 prisma.favorite.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `prisma.downloadClick.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:440:28
+
+  437 subs.count(), subs.count({ where: { createdAt: { gte: d7 } } }), subs.count({ where: { createdAt: { gte: d30 } } }),
+  438 subs.groupBy({ by: ['source'], _count: { _all: true } }),
+  439 prisma.favorite.count(), prisma.favorite.count({ where: { createdAt: { gte: d7 } } }),
+→ 440 prisma.downloadClick.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `prisma.creatorProfile.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:443:29
+
+  440 prisma.downloadClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.downloadClick.count({ where: { clickedAt: { gte: d30 } } }),
+  441 prisma.affiliateClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.affiliateClick.count({ where: { clickedAt: { gte: d30 } } }),
+  442 prisma.affiliateEarning.aggregate({ _sum: { commissionAmount: true } }).catch(() => ({ _sum: { commissionAmount: null } })),
+→ 443 prisma.creatorProfile.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `prisma.creatorProfile.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:443:79
+
+  440 prisma.downloadClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.downloadClick.count({ where: { clickedAt: { gte: d30 } } }),
+  441 prisma.affiliateClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.affiliateClick.count({ where: { clickedAt: { gte: d30 } } }),
+  442 prisma.affiliateEarning.aggregate({ _sum: { commissionAmount: true } }).catch(() => ({ _sum: { commissionAmount: null } })),
+→ 443 prisma.creatorProfile.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `prisma.mod.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:444:18
+
+  441 prisma.affiliateClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.affiliateClick.count({ where: { clickedAt: { gte: d30 } } }),
+  442 prisma.affiliateEarning.aggregate({ _sum: { commissionAmount: true } }).catch(() => ({ _sum: { commissionAmount: null } })),
+  443 prisma.creatorProfile.count(), prisma.modSubmission.count(), prisma.mod.count(), prisma.collection.count(),
+→ 444 prisma.mod.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+prisma:error 
+Invalid `prisma.user.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:610:19
+
+  607 try {
+  608   const [linked, premiumUsers] = await Promise.all([
+  609     prisma.account.findMany({ where: { provider: 'patreon' }, select: { providerAccountId: true, user: { select: { email: true } } } }),
+→ 610     prisma.user.count(
+Can't reach database server at `db.prisma.io:5432`
+
+Please make sure your database server is running at `db.prisma.io:5432`.
+# Funnel scoreboard — 2026-09-26
+
+**Headline:** owned-audience adds 7d **?** (target 120/wk) · non-ad revenue **$0.00/mo gross** (target $200.00) · Mediavine 28d **$5,914.81** (+5.8% vs prior)
 
 ## Flags
 
-- 🟡 Pinner: inventory runway ≈ 2.2 days (63 rows dated through +14d ÷ 28.6/day observed; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)
-- 🔴 Pinner writer: newest writer-attributed row queued 2026-09-25 07:18Z (3.3 h ago) · 24 inserted in 24h, 365 in 7d · runway 2.2d — runway below the 3-day floor; Q11 (writer cron) is the fix
+- 🟡 Pinner: liveness unverified — Pinterest API unavailable; newest posted row is dated 2026-09-26 (scheduled date, not a posting timestamp) (terminated)
+- 🟡 Patreon Members API unavailable: 
+Invalid `prisma.user.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:610:19
 
-## Audience (GA4 2026-09-17→2026-09-23 vs 2026-09-10→2026-09-16)
+  607 try {
+  608   const [linked, premiumUsers] = await  — E40 / Q4 gate numbers missing today
+
+## Audience (GA4 2026-09-18→2026-09-24 vs 2026-09-11→2026-09-17)
 
 | Channel | 7d | prev 7d | Δ |
 |---|--:|--:|--:|
-| **All sessions** | 89,744 | 85,498 | +5.0% |
-| pinterest | 59,782 | 55,313 | +8.1% |
-| bing_organic | 16,045 | 16,226 | -1.1% |
-| direct | 5,162 | 4,809 | +7.3% |
-| other_search | 2,640 | 2,646 | -0.2% |
-| google_organic | 2,578 | 2,773 | -7.0% |
-| other | 1,976 | 2,136 | -7.5% |
-| tumblr | 1,076 | 1,059 | +1.6% |
-| ai_referral | 280 | 321 | -12.8% |
-| reddit | 205 | 215 | -4.7% |
+| **All sessions** | 89,752 | 85,397 | +5.1% |
+| pinterest | 59,330 | 55,318 | +7.3% |
+| bing_organic | 16,284 | 16,042 | +1.5% |
+| direct | 5,230 | 4,963 | +5.4% |
+| google_organic | 2,753 | 2,759 | -0.2% |
+| other_search | 2,620 | 2,622 | -0.1% |
+| other | 1,965 | 2,090 | -6.0% |
+| tumblr | 1,099 | 1,047 | +5.0% |
+| ai_referral | 274 | 329 | -16.7% |
+| reddit | 197 | 227 | -13.2% |
 
-- (not set) landing sessions 7d: 3,801 (suspected bot/tag noise)
-- Capture events 7d: patreon_click=49, sign_up=11, newsletter_signup=6, affiliate_click=5, favorite=4
+- (not set) landing sessions 7d: 3,816 (suspected bot/tag noise)
+- Capture events 7d: patreon_click=56, sign_up=21, newsletter_signup=9, affiliate_click=7, favorite=3, patreon_click_after_wait=2
 
-## Search (GSC 2026-08-26→2026-09-22)
+## Search (GSC 2026-08-27→2026-09-23)
 
-- Clicks 28d: **2,465** (+22.7% vs prior 28d) · impressions 94,020
+- Clicks 28d: **2,482** (+22.9% vs prior 28d) · impressions 91,414
 
-## Ad revenue (Mediavine, anchored 2026-09-22)
+## Ad revenue (Mediavine, anchored 2026-09-24)
 
 | Window | Revenue | Δ | Session RPM | Sessions |
 |---|--:|--:|--:|--:|
-| 7d | $1,490.45 | -0.7% | $17.25 (prev $17.20) | 86,416 |
-| 28d | $5,904.06 | +5.1% | $16.69 | |
+| 7d | $1,533.33 | +2.9% | $17.34 (prev $17.24) | 88,442 |
+| 28d | $5,914.81 | +5.8% | $16.74 | |
 
-- Health: date=2026/09/25 · ads_txt=ok · privacy_policy=ok
+- Health: date=2026/09/26 · ads_txt=ok · privacy_policy=ok
 
 ## Owned audience & engagement (production DB)
 
-| Metric | Total | 7d | 30d |
-|---|--:|--:|--:|
-| Registered accounts | 1,735 | +68 | +271 |
-| Email subscribers | 34 | +10 | +19 |
-| Favorites | 22,050 | +1482 | |
-| Download clicks | | 252 | 1,295 |
-| Affiliate clicks | | 13 | 65 |
-| Affiliate earnings | | | $0.00 |
+_unavailable: 
+Invalid `prisma.user.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:436:40
 
-- Subscribers by source: re-permission=2, collection-page=3, footer=17, signup-optin=5, go-interstitial=4, home-hero=2, sign-in=1
-- Catalog: 16,534 mods · 1,713 user collections · 20 creator profiles · 4 submissions
+  433   creatorProfiles, modSubmissions, mods, collection_
 
 ## Patreon (public page)
 
-- Paid patrons: **53** · free members: **5673** · gross ≈ $145.00/mo
-- Tiers: Espresso Shot $1×9, Cappuccino $3×42, Large Latte $5×2
+_unavailable: terminated_
 
 ## Patreon (Members API + site accounts) — E40 read 2026-09-19 · Q4 gate 2026-09-22
 
-| Metric | Value |
-|---|--:|
-| Paid patrons (API) | 55 (10×$1, 42×$3, 2×$5, 1×$8) ≈ $153.50/mo |
-| Paid-and-connected | **0** of 72 linked accounts (0% of paid; gate needs ≥ 1/3) · by Patreon id 0, by email 0 (email-only was the pre-09-14 join) · 72 linked accounts carry a Patreon id, 55 of 55 paid rows carry one · premium-flagged users 2 |
-| $3-tier joins since 2026-09-08 | **7** (all tiers 13) |
-| $3-tier joins 7d (2026-09-18→2026-09-25) | 2 → 0.29/day |
-| Paid joins / cancels 7d | 4 / 0 (Aug 2026 pace: 17 / 16 per month) |
-| patreon_click users/day (GA4, mean of daily distinct users, 2026-09-17→2026-09-23) | 5.71 (40 users / 7 days) vs E40 baseline 8.75 (35 users / 4 days, 2026-09-08→2026-09-11, frozen 09-12; GA4 re-reads that window today as 8.75) |
+_unavailable: 
+Invalid `prisma.user.count()` invocation in
+/Users/eputnam/.mhm-worktrees/funnel-2026-09-26-32072/scripts/agents/funnel-scoreboard.ts:610:19
 
-- E40 keep if: paid-and-connected ≥ 3 OR $3-tier joins 09-13→09-19 ≥ 11, with session RPM within ±5% of $17.55; revert if paid-and-connected still 0 AND joins < 8 AND patreon_click users/day (mean of daily distinct users over 2026-09-17→2026-09-23) < 4.375 (50% of the 8.75 baseline, mean of daily distinct users 2026-09-08→2026-09-11). Paid-and-connected is the id join (fallback email); the E40 BEFORE of 0 was email-only.
-- Q4 gate (2026-09-22): proceed to renames + $10 tier only if joins ≥ 17/mo pace AND ≥ 1/3 of paid patrons connected (id join); revert copy if cancels > 16/mo pace.
+  607 try {
+  608   const [linked, premiumUsers] = await _
 
 ## Content & distribution pipelines
 
-- Blog posts: 5 in 7d, 22 in 30d · latest: 2026-09-25 best-sims-4-autumn-houses
-- Pinner: last pin created 2026-09-25 07:00Z (3.6 h ago, Pinterest API) · **7 pins in 24h**, 200 in 7d (Pinterest API) · **inventory runway ≈ 2.2 days (63 rows dated through +14d ÷ 28.6/day observed; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)** · 1674 stranded before the poster's 14d window, 1737 unposted total, 8,499 posted rows all-time
-  - queue `Post Date` is the scheduled date, not a posting timestamp — newest posted row is dated 2026-09-25; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.
-- 🔴 Pinner writer (Q11): newest writer-attributed row queued 2026-09-25 07:18Z (3.3 h ago) · 24 inserted in 24h, 365 in 7d · runway 2.2d — runway below the 3-day floor; Q11 (writer cron) is the fix — "best-sims-4-autumn-houses"
+- Blog posts: 6 in 7d, 22 in 30d · latest: 2026-09-26 sims-4-cottage-houses
+- Pinner: liveness unverified — Pinterest API unavailable; newest posted row is dated 2026-09-26 (scheduled date, not a posting timestamp) · 249 posted rows dated in the last 7d (queue proxy) · **inventory 63 rows dated through +14d (0 still schedulable today); runway not computable — rate unknown** · 1630 stranded before the poster's 14d window, 1693 unposted total, 8,571 posted rows all-time
+  - queue `Post Date` is the scheduled date, not a posting timestamp — newest posted row is dated 2026-09-26; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.
+- 🟢 Pinner writer (Q11): newest writer-attributed row queued 2026-09-26 10:30Z (1 h ago) · 28 inserted in 24h, 393 in 7d — "sims-4-cottage-houses"
 ## Long-range health
 
 | Metric | Value | Owner |
 |---|--:|---|
-| Returning-visitor share 7d | 53.0% | Pip |
-| Non-Pinterest share 7d (adjusted) | 14.5% (raw 33.4%) | Pip |
-| Pages/session 7d | 1.52 | Sage |
-| Engagement rate 7d | 72.3% | Sage |
-| Favorites 7d | +1482 | Cass |
-| Download clicks 7d | 252 | Nova |
-| New mods 7d (prior 7d) | 53 (97) | Nova |
-| Catalog total | 16,534 | Nova |
-| Capture rate /1k sessions 7d | 0.87 | Cass |
-| Creators onboarded (>=1 submission) | 0 | Nova |
-| Creator submissions 7d | 0 | Nova |
+| Returning-visitor share 7d | 52.4% | Pip |
+| Non-Pinterest share 7d (adjusted) | 14.8% (raw 33.9%) | Pip |
+| Pages/session 7d | 1.51 | Sage |
+| Engagement rate 7d | 69.5% | Sage |
+| Favorites 7d | — | Cass |
+| Download clicks 7d | — | Nova |
+| New mods 7d (prior 7d) | — | Nova |
+| Catalog total | — | Nova |
+| Capture rate /1k sessions 7d | — | Cass |
+| Creators onboarded (>=1 submission) | — | Nova |
+| Creator submissions 7d | — | Nova |
 
 ## Team health
 
-- Run success 14d: **64.3%** (owner: Ops)
-- Merges 7d by owner: favicon=1, Quinn=7, Rio=6, Pip=8, Nova=9, operator=4, Sage=6, Cass=5, Ops=4, Rowan=2, PR=1 (53 total)
-- Ops merge share 7d: 7.5% (cap 20%, owner: Ops)
+- Run success 14d: **71.4%** (owner: Ops)
+- Merges 7d by owner: favicon=1, operator=4, Sage=7, Pip=7, Cass=6, Nova=9, Rio=6, Quinn=8, Ops=5, Rowan=3, PR=1 (57 total)
+- Ops merge share 7d: 8.8% (cap 20%, owner: Ops)
 - Paper-only merges 7d: 0 (owner: Ops)
 
 
