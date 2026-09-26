@@ -80,8 +80,12 @@ describe('wiring', () => {
     expect(read('app/sitemap.xml/route.ts')).toContain('/sitemap-creators.xml');
   });
 
-  it('the mod page links the author to the creator page', () => {
+  it('the mod page links the author to the creator page only when it exists (E113)', () => {
+    // Pre-E113 this asserted creatorHref(authorSlug(mod.author)) — the
+    // ungated form that sent 2–4-mod creators to a 404. See
+    // __tests__/unit/creator-link-gate.test.ts.
     const src = read('app/mods/[id]/ModDetailClient.tsx');
-    expect(src).toContain('creatorHref(authorSlug(mod.author))');
+    expect(src).toContain('href={moreFromCreator.creatorHref}');
+    expect(src).not.toContain('creatorHref(authorSlug(mod.author))');
   });
 });

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-26
+- Tried: E113 (T0, one PR): (a) mod-page author link now takes its href from the server-resolved `moreFromCreator.creatorHref` (count-gated `creatorHrefFor`) instead of `creatorHref(authorSlug(mod.author))`; (b) "More Sims 4 CC creators" on every `/creator/[slug]/` — 8 server-rendered links to the creators ranked next to it by downloads, hub population only, memoised 1 h, 800 ms cap. Sitemap/IndexNow (E95), hub ItemList schema and server-rendered hub counts (E97) already existed, so none of the three suggested lifts was new.
+- Before → after: author links to a 404 on the 2,290 SFW mods whose creator has 2–4 mods → 0 (single-mod creators' links also gone); inbound peer links per leaf 0 → ~8 (534 leaves). `listCreators` read 4.9 s cold / one 610 s stall from the operator host today — do not await it unbounded on a force-dynamic page.
+- Verdict: MORE DATA (read 2026-10-24; keep if `/creator/*` landing sessions 7d ≥ 174 = 1.5× the 09-19→09-25 baseline of 116 (96 distinct pages, GA4) AND 0 `/creator/*` 404 hits from `/mods/*` referrers, with `/mods/*` sessions ≥95%).
+- Next time: read what already exists before choosing among dispatched options — all three were shipped; the real gap was leaf-to-leaf links.
+
 ## 2026-09-25
 - Tried: server-render "More from <creator>" on /mods/[id] + crawlable "See all N mods by <creator>" link to /creator/[slug]/ (T0, PR #175 `8f3b5ed`, E106). New `lib/creatorMods.ts` (own file — Sage may touch lib/creators.ts the same day); loader folds spellings via findAuthorVariants, links the creator page only when ≥ MIN_MODS_FOR_PAGE, null on error; component is presentational, still a sibling of the InContentAd anchors.
 - Before → after: crawlable links from a mod page into its creator's other mods 0 → 6, and into /creator/[slug]/ 1 (author name) → 3 on the 8,404 SFW mods (50.9%) whose creator has ≥5 mods; 2,290 more get a block only. Ravasheen 41 + RAVASHEEN 12 now read as one "See all 53" (they were split). /creator/* landing 40 (09-23) / 28 (09-24), GSC impressions 0. Query cost 88 ms unindexed under 1 h ISR; prod raw-HTML check 6 links + 2 creator hrefs, .mv-ads 5 / aside#secondary 1 unchanged.
