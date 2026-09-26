@@ -1826,3 +1826,38 @@ carries 192×192 and 512×512 PNGs, `purpose: "any"`. Zero build-time signal eit
   `creator` is in `NEXTJS_PREFIXES` in the same PR (distinct from `creators`, the dashboard).
 
 _Status 2026-09-24: the open `cleanup()` item was closed by PR #166 (reaps only worktrees `lsof` proves idle)._
+
+### 2026-09-24 — every check passed and production still went backwards
+
+Eight merges, two incidents, both from the merge path rather than the code (09-23 entry rotated to
+the archive; its open `cleanup()` item was closed by #166).
+- **Two PRs that are each green on their own base can merge into an unbuildable `main` with no
+  git conflict.** #167 and #168 each added `export async function listCreators` to `lib/creators.ts`
+  in different hunks; the squash of #168 took both, and Vercel failed on "`listCreators`
+  redefined" (main unbuildable 10:03→10:12). The standing "re-validate the second PR on the new
+  `main` when both touch one file" rule was prose, so nothing enforced it. Fix (#171): one function,
+  plus `__tests__/unit/lib-duplicate-exports.test.ts`, a filesystem scanner over `lib/**/*.ts` with
+  a vacuity floor. When two agents need the same helper the same day, one of them owns it.
+- **A PR merged onto a broken `main` never gets a build of its own.** #169 merged at 10:07, its
+  deploy errored with the others, and it went live only inside #171's build. Ledger it as "live via
+  <sha>" — a PASS against a deployment that does not contain the commit certifies nothing.
+- **Verify order is not merge order; never promote a build older than the one serving.** #167
+  merged before #170 but verified after it, and `ensure_promoted()` explicitly promoted #167's
+  build over #170's — `/games/sims-4/bedroom-cc/` 404'd for ~6 min while every check passed
+  (Quinn restored the #170 build by hand). Explicit promotion is itself a write: compare the candidate's
+  commit against production's with `git merge-base --is-ancestor` before promoting. Open `[ops]` P1.
+- **A typo'd dry-run flag must not fall through to the live path.** `newsletter-send-test.ts` took
+  `--dry`; `--dry-run` was silently ignored and would have been a live send. Any script whose
+  default is a side effect must reject unknown flags (#165).
+- **A CTA inside a conditional branch dies with the branch.** The `/go` Patreon links lived in the
+  countdown branch and unmounted at t+10 s; a timed headless render (both links at t+4 s, none at
+  t+13 s) found it. Give a new placement its **own** event name (`patreon_click_after_wait`) so an
+  experiment already reading the old event stays clean (#169).
+- **A reaper treats "cannot tell" as busy.** #166's `cleanup()` removes a worktree only when
+  `lsof -d cwd` proves it idle; unenumerable → left in place and logged. Its test runs the real
+  function under macOS `/bin/bash` 3.2 against real processes in real worktrees (4/6 red pre-fix).
+- **Two consumers of one population share one query.** `sitemap-creators.xml` and IndexNow
+  `--creators` now both call `listCreators()` so they cannot drift, and an optional payload is
+  appended **last** so a cap can never displace the daily core payload (#167).
+
+_Status 2026-09-25: the open `[ops]` P1 (backwards promotion) was closed by PR #174 (`ensure_promoted()` promotes only forward)._

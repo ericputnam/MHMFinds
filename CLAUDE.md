@@ -838,7 +838,8 @@ run died with `Prompt is too long`.
   `contentTypeDetector.ts` (both substring over title+description): `halloween` was 547 rows /
   34.7% title-supported before #156; `bedroom` was 523 rows / 37.3% (133 whole-house lots, 26 pose
   packs) before #170 moved it to title-only `lib/bedroomThemeRules.ts` (250/250 supported);
-  `kitchen` 44.6% and `bathroom` 37.6% are still unfixed — both detectors. **Fix a theme at
+  `kitchen` was 345 rows / 34.2% before #179 (`lib/kitchenThemeRules.ts`, 160/160); `bathroom`
+  (439 rows, a Wicked Whims mod at card #1) is the last substring room theme. **Fix a theme at
   the source before you build a page on it**, and read the dry run's ADD list as hard as its STRIP
   list — that is where `pumpkin` and `ghost` were caught.
 - **Measure a candidate keyword against the whole catalog before adding it, and record the
@@ -856,7 +857,10 @@ run died with `Prompt is too long`.
 - **Serialize automated merges** (≥240 s apart) or Vercel coalesces builds and the ledger loses
   per-PR attribution. Enforced by exit code, not prose: `./scripts/agents/merge-gate.sh && gh pr
   merge N --squash` (exit 1 while the newest non-ledger commit on `origin/main` is <240 s old).
-  Re-validate the second PR on the new `main` when both touch one file.
+  Re-validate the second PR on the new `main` when both touch one file. **`gh pr merge` exit 1 does
+  not mean "not merged"** — `--delete-branch` fails when another worktree holds `main` after the
+  remote merge has landed (6 times on 09-24/25). Read `gh pr view N --json state,mergeCommit`,
+  never the exit code, before retrying or skipping the after-merge verify.
 - **`npm run type-check` is never optional** — Vercel type-checks every `.ts` under `scripts/`.
 - **A merge without a ledger row did not happen** — and the row must be written by the step that
   merges, not by a later step of the same run. On 09-19 seven PRs landed on `main` and **one**
@@ -939,41 +943,51 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-24 — every check passed and production still went backwards
+### 2026-09-25 — seven merges, zero incidents: coordination paid once at dispatch
 
-Eight merges, two incidents, both from the merge path rather than the code (09-23 entry rotated to
-the archive; its open `cleanup()` item was closed by #166).
-- **Two PRs that are each green on their own base can merge into an unbuildable `main` with no
-  git conflict.** #167 and #168 each added `export async function listCreators` to `lib/creators.ts`
-  in different hunks; the squash of #168 took both, and Vercel failed on "`listCreators`
-  redefined" (main unbuildable 10:03→10:12). The standing "re-validate the second PR on the new
-  `main` when both touch one file" rule was prose, so nothing enforced it. Fix (#171): one function,
-  plus `__tests__/unit/lib-duplicate-exports.test.ts`, a filesystem scanner over `lib/**/*.ts` with
-  a vacuity floor. When two agents need the same helper the same day, one of them owns it.
-- **A PR merged onto a broken `main` never gets a build of its own.** #169 merged at 10:07, its
-  deploy errored with the others, and it went live only inside #171's build. Ledger it as "live via
-  <sha>" — a PASS against a deployment that does not contain the commit certifies nothing.
-- **Verify order is not merge order; never promote a build older than the one serving.** #167
-  merged before #170 but verified after it, and `ensure_promoted()` explicitly promoted #167's
-  build over #170's — `/games/sims-4/bedroom-cc/` 404'd for ~6 min while every check passed
-  (Quinn restored the #170 build by hand). Explicit promotion is itself a write: compare the candidate's
-  commit against production's with `git merge-base --is-ancestor` before promoting. Open `[ops]` P1.
-- **A typo'd dry-run flag must not fall through to the live path.** `newsletter-send-test.ts` took
-  `--dry`; `--dry-run` was silently ignored and would have been a live send. Any script whose
-  default is a side effect must reject unknown flags (#165).
-- **A CTA inside a conditional branch dies with the branch.** The `/go` Patreon links lived in the
-  countdown branch and unmounted at t+10 s; a timed headless render (both links at t+4 s, none at
-  t+13 s) found it. Give a new placement its **own** event name (`patreon_click_after_wait`) so an
-  experiment already reading the old event stays clean (#169).
-- **A reaper treats "cannot tell" as busy.** #166's `cleanup()` removes a worktree only when
-  `lsof -d cwd` proves it idle; unenumerable → left in place and logged. Its test runs the real
-  function under macOS `/bin/bash` 3.2 against real processes in real worktrees (4/6 red pre-fix).
-- **Two consumers of one population share one query.** `sitemap-creators.xml` and IndexNow
-  `--creators` now both call `listCreators()` so they cannot drift, and an optional payload is
-  appended **last** so a cap can never displace the daily core payload (#167).
+Seven PRs (#174–#180) landed in 26 minutes, all PASS, 7/7 ledger rows same-day. The difference
+from 09-24 (2 incidents in 8 merges) was procedural, not code.
+- **Assign merge order and shared IDs at dispatch, not at the gate.** Quinn put a fixed merge order
+  in every dispatch prompt and pre-assigned experiment IDs (E102–E110) instead of each agent
+  racing `next-experiment-id.ts`. Next step: name the *files* each agent may touch — the only
+  overlap (Cass×Nova on `ModDetailClient.tsx`) was caught by a `git merge-tree --write-tree` dry
+  run and a rebase *after* the first PR merged, with both suites re-run.
+- **A promote is a write, like a rollback — give it the same "unknown ≠ go" state.** #174 closed
+  09-24's backwards promotion: `ensure_promoted()` decides with `git merge-base --is-ancestor`
+  (served contains candidate → `SUPERSEDED`, rc 3, no promote; unrelated → newer `createdAt`;
+  can't tell what is serving → no promote). Guard runs the real extracted bash function under
+  `/bin/bash` 3.2 against a real git repo with the Vercel CLI stubbed — 7/12 red pre-fix.
+- **The last merge of a session is the one that loses its ledger row.** #173 (the 09-24 daily-run
+  PR) had no row because Quinn's session ended before its after-merge verify (09-19 lost six rows
+  the same way). Backfilled retroactively via `ledger-commit.sh`. Verify-and-ledger the final PR before the
+  session's closing step, not after it.
+- **Audit existing CTAs for stub handlers before building new surfaces.** The mod page's "Add to
+  Favorites" button (largest Next.js surface, 3,961 landings/7d) was a `// TODO` that toggled
+  local state — favorites create 68 of 78 weekly owned adds, and this page produced none (#178).
+- **Read the *server* HTML before counting a link block as internal linking.** "More from
+  <creator>" was a client `useEffect` fetch, so none of its links were crawlable and every audit had
+  counted them; it also matched the author string exactly (Ravasheen 41 + RAVASHEEN 12 split).
+  #175 server-renders it, folds spellings via `findAuthorVariants`, and links `/creator/[slug]/`
+  only when the creator clears `MIN_MODS_FOR_PAGE` — **never emit a link the target would 404**.
+  #176 applied the same rule to `llms-full.txt` (link only slugs in `listHubCreators()`). When a new
+  page class ships, grep `llms-full.txt` for its path the same day (0 `/creator/` URLs for 2 days).
+- **Check what a derived keyword actually is before a rule demands it verbatim.** WordPress's `-2`
+  dedupe suffix made "Sims 4 Couple Poses 2" the pin-SEO target, which no real title could pass
+  (#180). And the apex `/wp-json/*` 308s without a trailing slash too.
+- **Grade a treatment by the units it treated, not the channel total.** E26 pin revival: channel
+  flat, the 14 treated destinations −7.6% vs site −0.1% → KILL. A channel read would have called it
+  a win.
+- **When the operator acts ahead of a gate, encode the anchor and the revert rule as a tool the
+  same day.** The Patreon tiers were renamed on a HOLD; #177 made `--anchor rename` a runnable
+  pre-read with thresholds imported from `Q4_GATE`. A threshold that lives only in a decision
+  paragraph cannot be re-run. Update operator-queue wording the day the named thing changes.
+- **A registry of "supported" values drifts when a new mechanism is added beside the old one.**
+  `getSupportedRoomThemes()` omitted `bedroom` from #170 until #179, because it only read
+  `ROOM_THEME_RULES` and bedroom had moved to a title-only rule file.
+
 ---
 
-*Last compound review: 2026-09-24*
+*Last compound review: 2026-09-25*
 
 ---
 
