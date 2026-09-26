@@ -18,12 +18,16 @@ import { ModGrid } from '../../../components/ModGrid';
 import { NewsletterSignup } from '../../../components/NewsletterSignup';
 import type { Mod } from '../../../lib/api';
 import type { CreatorPageData } from '../../../lib/creators';
+import type { RelatedCreator } from '../../../lib/creatorHubRelated';
+import { creatorHref } from '../../../lib/creatorSlug';
 
 interface CreatorPageClientProps {
   data: CreatorPageData;
+  /** Server-resolved peer creators (E113); every slug has a page. */
+  related?: RelatedCreator[];
 }
 
-export default function CreatorPageClient({ data }: CreatorPageClientProps) {
+export default function CreatorPageClient({ data, related = [] }: CreatorPageClientProps) {
   const [mods] = useState<Mod[]>(data.mods);
   const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -162,6 +166,41 @@ export default function CreatorPageClient({ data }: CreatorPageClientProps) {
                   <NewsletterSignup source="creator-page" />
                 </div>
               </div>
+
+              {/* Peer creators (E113) — plain links from server data, a
+                  sibling of the grid, never inside the ad anchor. Every slug
+                  comes from the hub population, so none of these 404. */}
+              {related.length > 0 && (
+                <nav
+                  className="mt-10 pt-8 border-t border-white/10"
+                  aria-labelledby="related-creators-heading"
+                  data-testid="related-creators"
+                >
+                  <h2 id="related-creators-heading" className="text-lg font-bold text-white mb-4">
+                    More Sims 4 CC creators
+                  </h2>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {related.map((c) => (
+                      <li key={c.slug}>
+                        <a
+                          href={creatorHref(c.slug)}
+                          className="text-slate-200 hover:text-sims-pink hover:underline"
+                        >
+                          {c.displayName}
+                        </a>
+                        <span className="text-slate-500 text-sm">
+                          {' '}· {c.mods.toLocaleString()} {c.mods === 1 ? 'mod' : 'mods'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-sm">
+                    <a href="/creator/" className="text-sims-pink hover:underline">
+                      Browse all creators A–Z →
+                    </a>
+                  </p>
+                </nav>
+              )}
             </div>
 
             {/* Sidebar column: Mediavine ad anchor.

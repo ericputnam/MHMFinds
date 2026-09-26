@@ -14,6 +14,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../lib/creators';
+import { getRelatedCreators } from '../../../lib/creatorHubRelated';
 import CreatorPageClient from './CreatorPageClient';
 
 // Author strings change with every ingest and there are ~540 eligible
@@ -86,11 +87,13 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   const data = await getCreatorPageData(slug);
   if (!data) notFound();
 
+  // Peer links (E113): resolved here so they are in the first-paint HTML.
+  const related = await getRelatedCreators(data.slug);
   const jsonLd = buildJsonLd(data);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <CreatorPageClient data={data} />
+      <CreatorPageClient data={data} related={related} />
     </>
   );
 }
