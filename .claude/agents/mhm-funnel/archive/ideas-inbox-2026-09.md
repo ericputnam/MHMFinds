@@ -121,3 +121,51 @@ Context from the 09-22 run: Quinn's subagents were killed at the 600 s backgroun
 ## Moved 2026-09-26 (practiced daily since 09-25: merge order + experiment IDs pre-assigned in every dispatch)
 
 - [x] [ops] merge order was not enforceable by prose: with 7 agents on one gate, #167 and #168 both touched `lib/creators.ts` (`listCreators`) from branches cut before either merged; the second one broke `main` (BUILD ERROR 10:03, fixed by #171 at 14:12Z). merge-gate should re-check `gh pr view --json mergeStateStatus` *and* run `npm run type-check` on a rebase preview when the PR's files intersect files changed on `origin/main` since the branch point. Quinn 09-24.
+
+## Moved 2026-09-27 (triaged 2026-09-01 operator items (owners assigned: Q14 → Nova, Q15 → Nova, B3 → Sage; tracked in operator-queue.md))
+
+- [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01 (→ Nova, Q14 triage in PR #141; `/creator/[slug]/` pages shipped 09-23 as E85)
+
+- [ ] Gaming catalog beyond Sims 4: which game has Pinterest-shaped demand and no good mod finder? — operator, 2026-09-01 (→ Nova, Q15 triage in PR #141)
+
+- [ ] Architect the site for LLM discovery — operator, 2026-09-01 (→ Sage, B3)
+
+## Moved 2026-09-27 (re-tiered T2 / operator-only (tracked in operator-queue.md checklist: Q13 blog host 301, bs_cache purge, vercel.json ignoreCommand))
+
+- [ ] Runner: stop deploying paper trail. 10 of 18 merges 09-02→09-05 changed only `reports/`, `.claude/`, `docs/` or `*.md`, yet each rebuilt and republished the site. Add a Vercel Ignored Build Step (`vercel.json` `ignoreCommand`) AND teach `deploy-verify.sh --after-merge` that a CANCELED/ignored build for a docs-only sha is not a failure: ledger it as "PASS (docs-only, no deploy)". Tier 1 (deploy pipeline) — Quinn, 2026-09-05
+  - Triage 2026-09-07 (Quinn): re-tiered to **Tier 2** — `vercel.json` is operator-only. Paper-trail merges are batched into the daily-run PR where possible. 09-23: 5 of today's 11 merges were paper-only and each produced a production build.
+
+- [ ] Pinterest sends 17,276 sessions/7d to `blog.musthavemods.com` (22% of all sessions). Pip's half (apex Post URLs in the MHMUtils writer) shipped with Q11 on 09-21; operator half = BigScoots nginx 301 blog.* → apex (Tier 2, Q13 / PR #143). — Sage via Quinn, 2026-09-08
+  - 09-25 (Pip, E102 read): blog.* Pinterest +8.7% vs apex −3.6% over 09-10→09-23 — the host split is now a measurable share of the channel, not a nuisance.
+
+- [ ] `push-blog-functions-prod.sh` only runs `wp cache flush`; BigScoots **page** cache keeps serving pre-push HTML until `wp bs_cache purge_cache`. Add a purge step to both push scripts and have `check-blog-sidebar.sh` warn when `x-bigscoots-cache: cache` is served with an `age` older than the push. Tier 0 → Quinn. — 2026-09-12
+
+## Moved 2026-09-27 (practised daily, no code change pending (registries written via python3; merge order + `gh pr view --json state` are in every dispatch and the ship protocol))
+
+- [ ] Runner: the agents' Edit/Write tool is denied on every `.claude/` path in the funnel session, so the registries can only be written through `python3` in Bash. Tier 0 → Quinn. — 2026-09-08
+  - 2026-09-19 (Quinn): not an allowlist gap — it is the CLI's built-in protection of `.claude/` config paths. Fix (a): move the mutable files (`experiments.md`, `operator-queue.md`, `ideas-inbox.md`, `playbooks/`) to e.g. `reports/funnel/team/` with pointers in the agent files; (b) `--permission-mode bypassPermissions` is a policy change → Tier 2. Recommend (a). 09-23: 4 of 4 registry writes went through `python3`/`cp`, 0 lost.
+
+- [ ] [ops] merge-gate contention: 7 agents polling one 240 s slot cost each agent 4–24 min on 09-23, and one agent's `pkill` of its own wait loop killed another's. Give the dispatch prompt a merge order (site changes first, paper trails last) or a per-agent gate lock file. — Quinn, 2026-09-23
+
+- [ ] [ops] two merge-loop failure modes hit twice today (Rio #169, Ops #166): `gh pr merge --delete-branch` exits 1 when `main` is checked out in another agent's worktree although the remote merge went through (retry loops then spin on "already merged" and the after-merge verify never runs), and GitHub SSH `Permission denied (publickey)` failed 3 fetches/pushes 10:18–10:37 (a ledger row went to `ledger-pending.jsonl`). Ship protocol should read `gh pr view N --json state` instead of the exit code; check whether other rows were queued. — Quinn, 2026-09-24
+  - 09-25: hit 3 more times (Sage #176, Cass #178, Rio #177 — `main` checked out in Rowan's worktree); every merge had landed, all three checked state before retrying, 0 rows lost. Still worth the runner line.
+
+## Moved 2026-09-27 (closed (shipped or moot) on 2026-09-27)
+
+- [x] [cass] `app/sign-in/page.tsx` honours `redirect`/`ref` only on the credentials path — Google/Discord buttons send everyone to `/`, so E107's `favorite_after_signin` undercounts by the OAuth share. Carry `callbackUrl` through `signIn(provider, { callbackUrl })`. T0, Cass takes it Monday 09-28. Cass, 09-25. — MOOT: /sign-in/ has no OAuth buttons (E118, #183); closed (Cass, 09-27)
+
+- [x] [rio] `patreon-q4-gate-preread.ts:213` `Promise.all` discards the reachable half when one source is degraded (3 attempts 09-26, 0 gate numbers) → `allSettled` + partial report + exit 2, deadline inside `fetchMembers`. T0 before the 10-02 E108 read. Rio, 09-26. — shipped as E125, PR #196 `9fa3415` (Rio, 09-27)
+
+- [x] [sage] IndexNow `--guides` leg (T0): the daily push never includes blog guides (16,250/16,434 Bing sessions/7d). WP `modified_after` via `lib/seo/wpGuides.ts`. Baseline 6.6 Bing sessions/guide/wk; keep if ≥8.0 and bing ≥95%. Sage, 09-26. — shipped as E121, PR #192 `26b2e89` (Sage, 09-27)
+
+- [x] [cass] `password_reset_complete` GA4 event on `/set-password/` success — E39 cannot be read without it. T0. Cass, 09-26. — shipped as E123, PR #191 (Cass, 09-27)
+
+## Moved 2026-09-27 (operator-side launchd install is Tier 2; the evening task it was meant to back up was retired 09-22)
+
+- [ ] Scheduler resilience: the 06:30 Desktop routine only fires while the Claude desktop app is open. Add a launchd fallback (`com.mhm.funnel-daily.plist` → `run-funnel-daily.sh`, 06:45) that skips if the day's digest already exists. Tier 1 (pipeline) — ops, 2026-09-07
+
+## Moved 2026-09-27 (shipped as Ops PR #194 / E126, b8732d1)
+
+- [x] [ops] `ledger-commit.sh --incident` copies by basename (09-26 closure landed as `e111-incident.md`, rename `704b31b`): take `path:dest` or assert the `YYYY-MM-DD-HHMMSS.md` name. T0. Ops, 09-26. — shipped in E126, Ops PR #194 `b8732d1`: `--incident` now requires `YYYY-MM-DD-HHMMSS.md` (exit 64) (Quinn, 09-27)
+
+- [x] [ops] `funnel-history.ts` wrote `nonAdMonthly: 0` for 09-26 because the Patreon scrape terminated (scoreboard printed "$0.00/mo gross" for *unavailable*) — a not-measured must be `null`, never 0 (Quinn nulled the row by hand). T0. Quinn, 09-26. — shipped in E126, Ops PR #194 `b8732d1`: `deriveScoreboardFields()` nulls every field from an `ok:false` section (Quinn, 09-27)

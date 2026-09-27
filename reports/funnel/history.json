@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-26T11:35:24.579Z",
+  "generatedAt": "2026-09-27T10:37:55.392Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -2976,9 +2976,9 @@
     },
     {
       "date": "2026-09-23",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 198.91,
+      "sessions": 11769,
+      "rpm": 16.9,
       "expectedRevenue": 180.71,
       "expectedSessions": 11396,
       "nonAdMonthly": 142,
@@ -3013,9 +3013,9 @@
     },
     {
       "date": "2026-09-24",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 204.28,
+      "sessions": 11925,
+      "rpm": 17.13,
       "expectedRevenue": 181.33,
       "expectedSessions": 11310,
       "nonAdMonthly": 142,
@@ -3051,9 +3051,9 @@
     },
     {
       "date": "2026-09-25",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 217.39,
+      "sessions": 12811,
+      "rpm": 16.96,
       "expectedRevenue": 201.61,
       "expectedSessions": 12044,
       "nonAdMonthly": 145,
@@ -3122,6 +3122,43 @@
         "Quinn": 8,
         "Ops": 5,
         "Rowan": 3,
+        "PR": 1
+      }
+    },
+    {
+      "date": "2026-09-27",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 269.62,
+      "expectedSessions": 15281,
+      "nonAdMonthly": 151,
+      "ownedAdds7d": 105,
+      "pinterestSessions7d": 59073,
+      "returningShare7d": 0.5200658185352063,
+      "nonPinterestShare7d": 0.15166441680788123,
+      "pagesPerSession7d": 1.536792327750033,
+      "engagementRate7d": 0.7099482918637027,
+      "favorites7d": 1691,
+      "downloadClicks7d": 380,
+      "newMods7d": 80,
+      "catalogTotal": 16561,
+      "captureRatePer1k": 1.1686533774082606,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.09836065573770492,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Sage": 8,
+        "Pip": 8,
+        "Cass": 7,
+        "Nova": 10,
+        "Rio": 6,
+        "Quinn": 8,
+        "operator": 3,
+        "Ops": 6,
+        "Rowan": 4,
         "PR": 1
       }
     }
@@ -4314,6 +4351,55 @@
       "kind": "rollback",
       "label": "morning-check",
       "result": "ROLLED BACK, STILL FAILING"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "merge",
+      "label": "Ops: PR #186 deploy-verify never rolls back on timeout-only / could-not-run evidence (E111)",
+      "commit": "396e6e2",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "check",
+      "label": "Ops: incident 2026-09-26-064626 CLOSED (false alarm — host network degraded 06:30–08:00; fix PR #186 / E111)",
+      "commit": "396e6e2",
+      "result": "CLOSED (false alarm)"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "merge",
+      "label": "Rowan: PR #187 /games/sims-4/bathroom-cc/ + title-only bathroom theme repair (E112)",
+      "commit": "975d92b",
+      "result": "SUPERSEDED (production already on 30da191, newer)"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "merge",
+      "label": "Nova: PR #185 E113 author-link gate + peer creator links",
+      "commit": "553346d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "merge",
+      "label": "Sage: PR #188 registry→surface scanner for collection pages (E114) + IndexNow push of the 09-24/25 pages (E115)",
+      "commit": "f2259f1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "merge",
+      "label": "Pip: PR #189 E116 runway top-up #2 + truncated-sample guard · E117 (not set) audit",
+      "commit": "fcca885",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-26",
+      "kind": "merge",
+      "label": "Cass: PR #183 sign-in returns visitors to the page they came from, same-origin only (E118)",
+      "commit": "4e159ad",
+      "result": "PASS"
     },
     {
       "date": "2026-09-26",
