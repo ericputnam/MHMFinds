@@ -21,7 +21,7 @@ day.
 
 | Tier 1 | Owner | What | Reply to block |
 |---|---|---|---|
-| — | — | Nothing pending. E75 · PR #140 shipped 09-24 09:46 PASS (`7554037`) when its window closed. | — |
+| PR #195 | Nova | E122 — the "Claim this page" link on every `/creator/[slug]/` page now leads to a form that ties the submission to the signed-in account and creates a *pending* creator profile (invisible on the site until you promote it at review). "Creators onboarded" could not move before this: the form never linked a user. No ad, auth, or schema change. Queued 2026-09-27; merges 2026-09-28 unless stopped. | "stop 195" |
 
 ## Tier 2 — needs your decision
 
@@ -48,6 +48,7 @@ day.
 ### Q8 · Pinterest poster poison-row hardening (Pip, E36) — **APPROVED 09-12, deployed 09-21 with Q11** (MHMUtils `7037ffe`). Nothing left for you; closes with Q11-b.
 
 ### Q4 · Patreon tier relaunch — package ready (Rio, 2026-09-04) — **1 of 3 steps done**
+- 09-27 mid-read (E108 D+2.2): 0 of 55 paid connected, linked 83 (74 never in the campaign), joins/cancels since the rename 0/0 — still HOLD on the connected leg; the two dashboard steps are unchanged.
 - Probe 09-25: tiers renamed 04:54Z (Espresso Shot $1 ×10, Cappuccino $3 ×42, Large Latte $5 ×3) while the gate read HOLD; $1 tier still `published=true`; welcome note not observable. Rio's E108 watches cancels (revert copy if >16/mo pace, read 10-09). The two dashboard steps are in the checklist below. Gate re-read 09-22: HOLD (see Q16). Full status history in the archive.
 
 ### Q5 · Site membership via Patreon OAuth (Rio, E19/E24) — **SHIPPED 09-07/09-08**, env vars live in Production. Read 2026-10-07. Nothing for you.

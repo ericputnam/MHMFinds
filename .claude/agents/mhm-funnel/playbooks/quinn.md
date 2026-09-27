@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-27
+- Tried: first run with sessions back ON LINE (97.84%, run 1 of 2): the AUDIENCE re-weighting went to all seven as a *recommendation declinable in one sentence*, with pre-assigned IDs (E120–E126), a fixed merge order and a per-agent allowed-file list. Six Tier 0 PRs merged (#191/#192/#193/#194/#196/#197), all PASS; one Tier 1 queued (#195); 7/7 move reports had tier/metric/before/read date on the first pass.
+- Before → after: reports rejected for a missing field 1 (09-25) → 0; duplicate ledger rows in my tree 2 → 0 (taken from origin/main, root cause to Ops as E126); history.json not-measured values re-written as 0: 1 → 0 by hand, runner fix same day.
+- Verdict: KEEP (read 09-28: does the window hold a second run, and does the runner leave the 09-26 non-ad value null?)
+- Next time: two declines were "the metric was zero by construction" (Nova: the claim form never linked a user; Cass: the largest surface-less page is 0.2% of sessions). When a metric has read 0 for three runs, ask the owner to read its SQL against the CTA's write path before proposing a surface. Agents obey the session attribution reminder over the brief's trailer (5 of 7 commits say "Opus 5.5") — stop restating it.
+
 ## 2026-09-26
 - Tried: incident-mode run on a degraded host network (06:30–08:00: Vercel CLI, Prisma, Patreon, Pinterest, Mediavine all timed out; morning check rolled production back to `fkrwcuqk0` on timeout-only evidence and graded it STILL FAILING). Re-ran the guardrail by hand (GREEN, 09-24 $204.28 +12.7%), curled every smoke target (all 200 with Mediavine markers), declared a false alarm, made the grader fix Ops's move (E111, #186) and let the other six run under it (merge order Ops → Rowan → Nova → Sage → Pip → Cass → Rio, IDs E111–E119, files named per agent).
 - Before → after: false-alarm rollbacks 2 in 5 days (09-22, 09-26) → grader refuses rollback on `INCONCLUSIVE (network)`, 21/29 guards red pre-fix; homepage in the same hour 1,788 chars / `.mv-ads`=0 at 27.8 s (06:46) vs 10,345 chars / 1 at 9.0 s (09:26 recheck PASS) — same site, different network. Agent stalls: 5 of 7 hit the 600 s no-progress watchdog on external calls (Nova, Ops, Sage×2, Pip×2, Rio); every one recovered on a resume message that said "no MCP / API calls, bounded commands, ship from what you have".
@@ -54,15 +60,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: ledger rows on `main` for the 7 PRs merged 09-18/09-19: 1 of 7 → 7 of 7; experiments registered for them: 0 of 5 → 5 of 5; the operator's Tier 2 approval existed on `main`: no → yes.…
 - Verdict: KEEP "paper trail first, merges second" — the skeleton + part-1 commit took 25 minutes and needed no agent; FIX the tool: the Edit tool is denied on every `.claude/` path in this session (6…
 - Next time: when a stranded branch is based on an older `main`, never `git merge` it — `git checkout <branch> -- <file>` for report files, and reconcile the team registries by hand (main had rolled E…
-
-## 2026-09-16
-- Tried: a green day with four reads due or overdue (E1, E4, E28, E57) and one pre-committed send gate that landed exactly on its threshold — Cass's re-permission day-1 came back 3 hard bounces of 100…
-- Before → after: gates re-read after the number arrived 1 (09-13) → 0 today; reads graded on their due date 4 of 4 (E1 KILL, E4 EXTEND, E28 KEEP, E57 registered); one address (3.0% vs 2.0% with two b…
-- Verdict: KEEP (read on 2026-09-23 when Q10 either has a reply or gets its one re-pitch)
-- Next time: a gate that reads at its own threshold is a decision, not a rounding question — the cheap move is a queue item with a recommendation and a silence-default, which costs the operator one wo…
-
-## 2026-09-15
-- Tried: the run that follows a budget-exhausted run (09-14 shipped 6 merges, 0 ledger rows, no digest). Backfilled the missing #101 ledger row, registered E46–E50, then ran today's five as normal: 4…
-- Before → after: ledger rows per merge 0/6 (09-14) → 1/1 on every merge today; two 24h-veto items (#94, #96) resolved in the registry 1 day late instead of never.
-- Verdict: KEEP (read on 2026-09-16: the daily PR must be the first thing merged after the agent PRs, not the last, so the digest survives even if the run dies)
-- Next time: three of today's five agent moves were "the number the team was reading was wrong" (pinner 🟡 = threshold, not outage; paid-and-connected 0 of 35 is real, not an email artifact; issue #1 w…

@@ -8,49 +8,59 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
-## Operator watch 2026-09-26 — BELOW LINE (sessions), 6th run
-Sessions 28d 08-26→09-22 (history.json; 09-23→09-26 not yet measured): 353,842 vs line 365,393 = 96.84% (gap 11,551, ≈413/day); revenue $5,904.06 vs $5,730.39 = 103.0%. Last 8 windows 96.97→96.94→96.76→97.07→97.00→96.88→96.84→96.84%, all under 97% since 09-21. Supersedes the 09-24/09-25 blocks (#182/#184 closed unmerged). GA4 7d +5.1%: the gap is the 08-26→09-08 trough, not a current decline. Re-weighting: Pip and Sage two AUDIENCE moves each, Nova and Rowan a traffic page each, Cass/Rio one move, no Tier 1 that is not AUDIENCE. Fastest lever: pin inflow (Q11-b). Lift after two consecutive runs ≥97%.
+Moved 2026-09-27 → archive: Q14/Q15/B3 (owned, in queue); runner paper-trail, blog host 301, bs_cache purge, launchd fallback (T2 / operator checklist); Edit-denied `.claude/`, merge-gate contention, gh-merge exit-1 (practised, no change pending); closed cass callbackUrl (MOOT), rio E125 #196, sage E121 #192, cass E123 #191, ops E126 #194 (history null, --incident name).
 
-- [ ] Host creators' mods directly (files + profile + audience) so creators bring their fans — operator, 2026-09-01 (→ Nova, Q14 triage in PR #141; `/creator/[slug]/` pages shipped 09-23 as E85)
-
-- [ ] Gaming catalog beyond Sims 4: which game has Pinterest-shaped demand and no good mod finder? — operator, 2026-09-01 (→ Nova, Q15 triage in PR #141)
-
-- [ ] Architect the site for LLM discovery — operator, 2026-09-01 (→ Sage, B3)
+## Operator watch 2026-09-27 — ON LINE (sessions), run 1 of 2
+Sessions 28d 08-29→09-25: 353,874 vs line 361,681 = 97.84% (first ≥97% since 09-21; prior 8 runs 96.76–97.07%); revenue $5,941.05 vs $5,721.26 = 103.8%; GA4 7d +5.5%. Re-weighting (Pip/Sage two AUDIENCE moves, no non-AUDIENCE Tier 1) is a declinable *recommendation* today and lifts after a second run ≥97% (09-28). Fastest lever: pin inflow (Q11-b).
 
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — needed for a real P&L; add here when known
-
-- [ ] Runner: stop deploying paper trail. 10 of 18 merges 09-02→09-05 changed only `reports/`, `.claude/`, `docs/` or `*.md`, yet each rebuilt and republished the site. Add a Vercel Ignored Build Step (`vercel.json` `ignoreCommand`) AND teach `deploy-verify.sh --after-merge` that a CANCELED/ignored build for a docs-only sha is not a failure: ledger it as "PASS (docs-only, no deploy)". Tier 1 (deploy pipeline) — Quinn, 2026-09-05
-  - Triage 2026-09-07 (Quinn): re-tiered to **Tier 2** — `vercel.json` is operator-only. Paper-trail merges are batched into the daily-run PR where possible. 09-23: 5 of today's 11 merges were paper-only and each produced a production build.
-
-- [ ] Scheduler resilience: the 06:30 Desktop routine only fires while the Claude desktop app is open. Add a launchd fallback (`com.mhm.funnel-daily.plist` → `run-funnel-daily.sh`, 06:45) that skips if the day's digest already exists. Tier 1 (pipeline) — ops, 2026-09-07
-
-- [ ] Runner: the agents' Edit/Write tool is denied on every `.claude/` path in the funnel session, so the registries can only be written through `python3` in Bash. Tier 0 → Quinn. — 2026-09-08
-  - 2026-09-19 (Quinn): not an allowlist gap — it is the CLI's built-in protection of `.claude/` config paths. Fix (a): move the mutable files (`experiments.md`, `operator-queue.md`, `ideas-inbox.md`, `playbooks/`) to e.g. `reports/funnel/team/` with pointers in the agent files; (b) `--permission-mode bypassPermissions` is a policy change → Tier 2. Recommend (a). 09-23: 4 of 4 registry writes went through `python3`/`cp`, 0 lost.
-
-- [ ] Pinterest sends 17,276 sessions/7d to `blog.musthavemods.com` (22% of all sessions). Pip's half (apex Post URLs in the MHMUtils writer) shipped with Q11 on 09-21; operator half = BigScoots nginx 301 blog.* → apex (Tier 2, Q13 / PR #143). — Sage via Quinn, 2026-09-08
-  - 09-25 (Pip, E102 read): blog.* Pinterest +8.7% vs apex −3.6% over 09-10→09-23 — the host split is now a measurable share of the channel, not a nuisance.
-
-- [ ] `push-blog-functions-prod.sh` only runs `wp cache flush`; BigScoots **page** cache keeps serving pre-push HTML until `wp bs_cache purge_cache`. Add a purge step to both push scripts and have `check-blog-sidebar.sh` warn when `x-bigscoots-cache: cache` is served with an `age` older than the push. Tier 0 → Quinn. — 2026-09-12
 
 - [ ] [ops] `scripts/agents/pinner-liveness-lib.ts:337-345` — the writer flag returns 🔴 whenever runway <3 d regardless of writer liveness (09-23: "🔴 writer" while 48 rows/24h were inserted). Make it inflow-only (rows/day carrying a real `Post Date`) and threshold the *allotment* rows dated into the next 7 d, not the point-in-time count. — Pip, 2026-09-23
 - [ ] [ops] `deploy-verify.sh` runs whichever `smoke-render.ts` sits in the first tree that has playwright, not `$ROOT`'s — an agent worktree with an older script can grade production. Use `$ROOT`'s script with `NODE_PATH` pointing at the playwright tree. — Ops, 2026-09-23
 - [ ] [ops] runner step 1b (revenue-guardrail rollback path) should act only on exit **1**; exit 2 is "could not run", never a verdict. — Ops, 2026-09-23
 - [ ] [ops] `funnel-context-budget.test.ts`: Rio reports rio.md sat at 14,012 B (cap 10,000) with the suite green until #158 trimmed it; `context-budget.ts` checks 26 files and does flag playbooks, so confirm the unit test iterates the same glob (not a hand-written list) and add a vacuity guard (≥7 playbooks found). Sage also hit the cap on sage.md (9,619 B) mid-run and could not append — Quinn logged Sage's rows. — Rio/Sage via Quinn, 2026-09-23
-- [ ] [ops] merge-gate contention: 7 agents polling one 240 s slot cost each agent 4–24 min on 09-23, and one agent's `pkill` of its own wait loop killed another's. Give the dispatch prompt a merge order (site changes first, paper trails last) or a per-agent gate lock file. — Quinn, 2026-09-23
 - [ ] [ops] incident template: every `reports/funnel/incidents/*.md` tells the fixer to "smoke the preview URL", which has never been executable here — previews are cancelled by the Ignored Build Step and sit behind SSO. Replace with "smoke `next start` of the fix build locally" (Nova, 09-24, #168→#171).
 - [ ] [nova] `scripts/agents/page-rpm-lib.ts` `bucketFor`: add `'creator'` to `OTHER_APP_PREFIXES` so `/creator/*` (534 pages, E97) is bucketed as app pages, not blog (Nova, 09-24).
 - [ ] [nova] after the E97 read (10-22): fold `NON_CREATOR_SLUGS` (7 platform "authors" excluded hub-only) into `isJunkAuthorSlug` so the leaf pages and sitemap agree with the hub (Nova, 09-24).
-- [ ] [ops] two merge-loop failure modes hit twice today (Rio #169, Ops #166): `gh pr merge --delete-branch` exits 1 when `main` is checked out in another agent's worktree although the remote merge went through (retry loops then spin on "already merged" and the after-merge verify never runs), and GitHub SSH `Permission denied (publickey)` failed 3 fetches/pushes 10:18–10:37 (a ledger row went to `ledger-pending.jsonl`). Ship protocol should read `gh pr view N --json state` instead of the exit code; check whether other rows were queued. — Quinn, 2026-09-24
-  - 09-25: hit 3 more times (Sage #176, Cass #178, Rio #177 — `main` checked out in Rowan's worktree); every merge had landed, all three checked state before retrying, 0 rows lost. Still worth the runner line.
 
 - [ ] [ops] runner: log `cleanup: stale-prune found 0` when STALE_WTS is empty so every run has a start-of-run reap row, not just at EXIT (today `cleanup: reaped` = 0 matches is expected: trap fires only when Quinn exits) — Ops 09-25
-- [ ] [cass] `app/sign-in/page.tsx` honours `redirect`/`ref` only on the credentials path — Google/Discord buttons send everyone to `/`, so E107's `favorite_after_signin` undercounts by the OAuth share. Carry `callbackUrl` through `signIn(provider, { callbackUrl })`. T0, Cass takes it Monday 09-28. Cass, 09-25.
 - [ ] [quinn] `ownedAdds7d` in `funnel-scoreboard.ts` (~L879) is email + accounts only; Patreon free members (+24/day, 5,673) are owned audience per the charter and excluded from headline #1. Decide: include as a third line (not folded into the 120/wk target without re-baselining). Cass, 09-25.
 - [ ] [ops] `funnel-scoreboard.ts` channel sessions: report each channel net of zero-pageview sessions (or carry `zeroPageviewSessions7d` per channel). E117: the whole `(not set)` landing slice (3,816/7d; Pinterest 2,327, Bing 868) has `screenPageViews = 0` and is 97% desktop — preview/prefetch noise inflating the Pinterest and Bing lines and the headline. `reports/funnel/not-set-audit-2026-09-26.md`. Pip, 09-26.
 - [ ] [pip] pin-SEO board fit: 40 of 84 window rows fail only board fit after E103 (mean 88, ceiling without board moves); board reassignment is T1 (new-board territory). Also `--source hybrid` (keyword lead + writer's own sentence) to keep per-pin specificity. Pip, 09-25.
-- [ ] [ops] `ledger-commit.sh --incident` copies by basename (09-26 closure landed as `e111-incident.md`, rename `704b31b`): take `path:dest` or assert the `YYYY-MM-DD-HHMMSS.md` name. T0. Ops, 09-26.
-- [ ] [rio] `patreon-q4-gate-preread.ts:213` `Promise.all` discards the reachable half when one source is degraded (3 attempts 09-26, 0 gate numbers) → `allSettled` + partial report + exit 2, deadline inside `fetchMembers`. T0 before the 10-02 E108 read. Rio, 09-26.
 - [ ] [sage] hair-cc is indexed but not ranking (1 impr / 0 clicks 28d): needs inbound links from the male-long-hair / braids / short-hair blog posts — T2 package for the functions.php push process, not titles. Sage, 09-25.
-- [ ] [sage] IndexNow `--guides` leg (T0): the daily push never includes blog guides (16,250/16,434 Bing sessions/7d). WP `modified_after` via `lib/seo/wpGuides.ts`. Baseline 6.6 Bing sessions/guide/wk; keep if ≥8.0 and bing ≥95%. Sage, 09-26.
-- [ ] [ops] `funnel-history.ts` wrote `nonAdMonthly: 0` for 09-26 because the Patreon scrape terminated (scoreboard printed "$0.00/mo gross" for *unavailable*) — a not-measured must be `null`, never 0 (Quinn nulled the row by hand). T0. Quinn, 09-26.
-- [ ] [cass] `password_reset_complete` GA4 event on `/set-password/` success — E39 cannot be read without it. T0. Cass, 09-26.
+
+- [ ] [sage] Bound the IndexNow POST and key-file fetch with AbortSignal.timeout; today only the new WP read is bounded. A hung api.indexnow.org would stall runner step 0c2 (T0) — Sage, 09-27
+
+- [ ] [sage] One-time IndexNow push of guides with the most Bing sessions over the last 28d (not just recent edits) as a separate test group vs E121's edit-driven group (T0, after the 10-04 read) — Sage, 09-27
+
+- [ ] [nova] T2 package: creator outreach template (reports/funnel/drafts/creator-outreach-template-2026-09-28.md) for the top 20 creators by downloads, each row with its /creator/<slug>/ page and claim URL from E122 — the on-site ask cannot reach creators who never visit their page; template needs operator approval, sending is T1 at 20/week — Nova, 09-27
+
+- [ ] [nova] admin review affordance: when approving a source='Creator Claim' submission, promote the claimant's pending-<slug>-… CreatorProfile.handle to <slug> and set isCreator in one action (/admin/creators + /api/admin/submissions; T0 admin-only code) — today it is two manual edits — Nova, 09-27
+
+- [ ] [nova] scoreboard request (Ops/Quinn): add "claim submissions 7d" (ModSubmission.source='Creator Claim') and "pending creator profiles" (handle LIKE 'pending-%') next to creators onboarded, so E122 reads from the scoreboard, not a manual query — Nova, 09-27
+
+- [ ] [nova] E12 read on 10-09 should be graded against 0/15 adopted W36–W38 and closed as KILL of the weekly head-term brief format (playbook 09-21); do not write W39/W40 packs unless the writer asks — the operating-model §5 line "weekly brief pack" is out of date with the 09-22 charter and should be amended to "monthly, on request" — Nova, 09-27
+
+- [ ] [pip] pin-SEO × top-up ordering: the 21 E124 rows scored 0–50/100 on today's page-source audit (titles 39 chars, descriptions 418–650 chars) — revival rows go out with the weakest copy in the queue. Add a `--source page` copy pass *inside* `pin-runway-topup.py` (before the re-date, same ledger) so the treatment is part of the top-up and never contaminates an open read; needs `pin-seo-audit.py --ids FILE` mode (Tier 0). — Pip, 09-27
+
+- [ ] [pip] top-up treadmill: 3 consecutive floor-triggered top-ups (09-25/26/27), each +0.57 d vs ~0.6 d/day drain; runway will be <2.0 d again 09-28. The standing approval holds the floor but cannot reach 3.0 d (hard_cap_21 bound all three days). Quinn: fold into Monday's Q11-b 7-day-rule re-pitch as the number. — Pip, 09-27
+
+- [ ] [ops] `npx vitest run __tests__/unit/pin-*` in the Pip ship protocol matches no file (exit 1, empty log); the pin tests are `pinner-liveness.test.ts` and `rank-pin-destinations-lib.test.ts` — fix the protocol glob in the dispatch prompt / runner or rename. — Pip, 09-27
+
+- [ ] [quinn/ops] Add 'password_reset_complete' to the capture-events inListFilter in scripts/agents/funnel-scoreboard.ts:237 so it shows on the scoreboard. — Cass, 09-27
+
+- [ ] [cass] Put a mode=reset|invite param on the emailed /set-password link (lib/services/authEmail.ts) so E123 can split resets from invites; today it counts both. Links there also lack the trailing slash. — Cass, 09-27
+
+- [ ] [cass] The mod-detail email box (E10) has had 0 waitlist rows in 22 days. Grade it KILL/REWORK and try a "save your finds" (account) offer next to the favorite button instead of a bottom-of-page email form. Same check for creator-page (0 rows since 09-23). T0. — Cass, 09-27
+
+- [ ] [rio] `scripts/_patreon-auth.ts` persists refreshed tokens to `.env.local` in the *cwd*: a 401-triggered refresh from an agent worktree rotates the single-use pair in the worktree copy only and strands the operator's refresh token in the operator repo's `.env.local`. Refuse to refresh outside the operator repo, or write back to a path from env. T0, before the next monthly expiry. — Rio, 09-27
+
+- [ ] [rio] `patreonGet()` takes no `AbortSignal`; E125 bounds the pre-read by racing, so a hung fetch is abandoned, not cancelled. Add an optional `init` with `AbortSignal.timeout(ms)` and use it from the scoreboard's `pullPatreonApi`, which walks the same ~12 pages unbounded. T0. — Rio, 09-27
+
+- [ ] [rowan] Detector class rule: a row that passes isBedroomTitle/isKitchenTitle/isBathroomTitle must never get a CAS contentType at ingest. Own PR with a whole-catalog before/after diff; E120 hand-fixed 76 of these. — Rowan, 09-27
+
+- [ ] [rowan] Leftover room-theme rows typed `bathroom`(21)/`kitchen`(8)/`residential`(20)/`lot`(22)/`holidays`(6) — audit whether room-titled build sets belong in furniture/clutter, spot-check before any retag. — Rowan, 09-27
+
+- [ ] [ops] `deploy-verify.sh` smoke set still does not render a `/games/sims-4/*` collection route; Rowan curled three by hand today. — Rowan, 09-27
+
+- [ ] [ops] E126 follow-ups: `funnel-scoreboard.ts:885` still writes `nonAdRevenueMonthlyGross: 0` when patreon/db fail (make null; digest/md headline read the 0); the end-of-run WT→operator changelog mirror in `run-funnel-daily.sh` is still exact-text (route via `--merge-local`); `funnel-history.ts` carries `nonAdMonthly` forward on days with no scoreboard JSON — null needs a dashboard-owner call. — Ops, 09-27
