@@ -377,7 +377,8 @@ describe('the Q4 pre-read entrypoint is wired to the lib and prints counts only'
 
   it('--anchor is threaded into both the summary and the decision, and "rename" resolves to RENAME_WATCH (E108)', () => {
     expect(src).toMatch(/RENAME_WATCH\.anchor/);
-    expect(src).toMatch(/summarizePatreonMembers\(members, linked, \{ now, anchor: ANCHOR\.anchor \}\)/);
+    // E125: the DB leg may be missing, so the summary runs against `linked ?? []` — the anchor is still threaded
+    expect(src).toMatch(/summarizePatreonMembers\(members, linked \?\? \[\], \{ now, anchor: ANCHOR\.anchor \}\)/);
     expect(src).toMatch(/q4GateDecision\(\{ now, anchor: ANCHOR\.anchor/);
     expect(src).toMatch(/RENAME_WATCH\.readDate/);
     expect(src).toMatch(/RENAME_WATCH\.finalReadDate/);
