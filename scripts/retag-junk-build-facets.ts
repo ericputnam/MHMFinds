@@ -136,6 +136,31 @@ async function main() {
   });
 
   console.log(`\nLoaded ${rows.length} rows.\n`);
+
+  // A non-empty --ids list that matches nothing (or only some of it) is a
+  // hard failure, not a quiet pass: the id does not exist, sits outside
+  // --facets, or was already fixed — and the operator must know which.
+  // (Rowan, 2026-09-27, E120.)
+  if (ids) {
+    const loaded = new Set(rows.map(r => r.id));
+    const missing = ids.filter(id => !loaded.has(id));
+    if (missing.length > 0) {
+      await prisma.$disconnect();
+      throw new Error(
+        `--ids named ${missing.length} id(s) not loaded (absent, outside --facets, or over --limit): ${missing.join(', ')}`,
+      );
+    }
+    const unpinned = rows.filter(r => !OVERRIDES[r.id]);
+    if (unpinned.length > 0) {
+      // --ids is the hand-audited mode; an unpinned row would silently fall
+      // through to title-only re-detection, which is the facet-wide tool.
+      await prisma.$disconnect();
+      throw new Error(
+        `--ids named ${unpinned.length} row(s) with no entry in hand-audited-content-types.ts: ${unpinned.map(r => r.id).join(', ')}`,
+      );
+    }
+  }
+
   if (rows.length === 0) {
     await prisma.$disconnect();
     return;
