@@ -1861,3 +1861,47 @@ the archive; its open `cleanup()` item was closed by #166).
   appended **last** so a cap can never displace the daily core payload (#167).
 
 _Status 2026-09-25: the open `[ops]` P1 (backwards promotion) was closed by PR #174 (`ensure_promoted()` promotes only forward)._
+
+### 2026-09-25 — seven merges, zero incidents: coordination paid once at dispatch
+
+Seven PRs (#174–#180) landed in 26 minutes, all PASS, 7/7 ledger rows same-day. The difference
+from 09-24 (2 incidents in 8 merges) was procedural, not code.
+- **Assign merge order and shared IDs at dispatch, not at the gate.** Quinn put a fixed merge order
+  in every dispatch prompt and pre-assigned experiment IDs (E102–E110) instead of each agent
+  racing `next-experiment-id.ts`. Next step: name the *files* each agent may touch — the only
+  overlap (Cass×Nova on `ModDetailClient.tsx`) was caught by a `git merge-tree --write-tree` dry
+  run and a rebase *after* the first PR merged, with both suites re-run.
+- **A promote is a write, like a rollback — give it the same "unknown ≠ go" state.** #174 closed
+  09-24's backwards promotion: `ensure_promoted()` decides with `git merge-base --is-ancestor`
+  (served contains candidate → `SUPERSEDED`, rc 3, no promote; unrelated → newer `createdAt`;
+  can't tell what is serving → no promote). Guard runs the real extracted bash function under
+  `/bin/bash` 3.2 against a real git repo with the Vercel CLI stubbed — 7/12 red pre-fix.
+- **The last merge of a session is the one that loses its ledger row.** #173 (the 09-24 daily-run
+  PR) had no row because Quinn's session ended before its after-merge verify (09-19 lost six rows
+  the same way). Backfilled retroactively via `ledger-commit.sh`. Verify-and-ledger the final PR before the
+  session's closing step, not after it.
+- **Audit existing CTAs for stub handlers before building new surfaces.** The mod page's "Add to
+  Favorites" button (largest Next.js surface, 3,961 landings/7d) was a `// TODO` that toggled
+  local state — favorites create 68 of 78 weekly owned adds, and this page produced none (#178).
+- **Read the *server* HTML before counting a link block as internal linking.** "More from
+  <creator>" was a client `useEffect` fetch, so none of its links were crawlable and every audit had
+  counted them; it also matched the author string exactly (Ravasheen 41 + RAVASHEEN 12 split).
+  #175 server-renders it, folds spellings via `findAuthorVariants`, and links `/creator/[slug]/`
+  only when the creator clears `MIN_MODS_FOR_PAGE` — **never emit a link the target would 404**.
+  #176 applied the same rule to `llms-full.txt` (link only slugs in `listHubCreators()`). When a new
+  page class ships, grep `llms-full.txt` for its path the same day (0 `/creator/` URLs for 2 days).
+- **Check what a derived keyword actually is before a rule demands it verbatim.** WordPress's `-2`
+  dedupe suffix made "Sims 4 Couple Poses 2" the pin-SEO target, which no real title could pass
+  (#180). And the apex `/wp-json/*` 308s without a trailing slash too.
+- **Grade a treatment by the units it treated, not the channel total.** E26 pin revival: channel
+  flat, the 14 treated destinations −7.6% vs site −0.1% → KILL. A channel read would have called it
+  a win.
+- **When the operator acts ahead of a gate, encode the anchor and the revert rule as a tool the
+  same day.** The Patreon tiers were renamed on a HOLD; #177 made `--anchor rename` a runnable
+  pre-read with thresholds imported from `Q4_GATE`. A threshold that lives only in a decision
+  paragraph cannot be re-run. Update operator-queue wording the day the named thing changes.
+- **A registry of "supported" values drifts when a new mechanism is added beside the old one.**
+  `getSupportedRoomThemes()` omitted `bedroom` from #170 until #179, because it only read
+  `ROOM_THEME_RULES` and bedroom had moved to a title-only rule file.
+
+_Status 2026-09-26: the "name the files each agent may touch" next step is still open; 09-26 again had no file overlap to test it._

@@ -747,12 +747,15 @@ run died with `Prompt is too long`.
 - **Enumerate the ways a check can be wrong *before* wiring it to a destructive action.**
   "Could not run" ≠ "is broken". Health checks use three exit codes — `0` ok, `2` WARN /
   could-not-run, `1` FAIL — and a probe that can be wrong about the world returns
-  `unknown`, never a verdict that triggers a write. Three false-alarm production rollbacks came
+  `unknown`, never a verdict that triggers a write. Four false-alarm production rollbacks came
   from collapsing these. **Grade on positive evidence, not on the exit code:** under `set -e` a
   failed `curl` kills a check *before* its `[FAIL]` line prints, so "non-zero with empty output"
   means could-not-run — on 09-22 exactly that was graded FAIL twice and produced `ROLLED BACK,
   STILL FAILING` while Chromium saw every marker in the same minute. A single navigation timeout on
   a secondary URL (sitemap, feed) must reproduce once on a fresh page before it counts.
+  **A probe needs a control:** a failure of *your* network is not a failure of *the site*. Since
+  #186 `smoke-render` samples independent hosts before and after the run; a degraded control makes
+  the whole run INCONCLUSIVE and `deploy-verify.sh` refuses to roll back on it.
 - **Silence from a scheduled job must become a row, not a sentence in a digest.** Any automation
   needs an explicit "did not fire" record; otherwise "ran and had nothing to say" and "never
   started" are indistinguishable. Annotating a dead monitor in prose is how it stays dead.
@@ -839,7 +842,9 @@ run died with `Prompt is too long`.
   34.7% title-supported before #156; `bedroom` was 523 rows / 37.3% (133 whole-house lots, 26 pose
   packs) before #170 moved it to title-only `lib/bedroomThemeRules.ts` (250/250 supported);
   `kitchen` was 345 rows / 34.2% before #179 (`lib/kitchenThemeRules.ts`, 160/160); `bathroom`
-  (439 rows, a Wicked Whims mod at card #1) is the last substring room theme. **Fix a theme at
+  was 456 rows / 26.5% (Wicked Whims at card #1, "Tube Top Dress" via `tub`) before #187
+  (`lib/bathroomThemeRules.ts`, 123/123). **Every room theme is now title-only** — a new one must
+  follow the same pattern, not go back into `ROOM_THEME_RULES`. **Fix a theme at
   the source before you build a page on it**, and read the dry run's ADD list as hard as its STRIP
   list — that is where `pumpkin` and `ghost` were caught.
 - **Measure a candidate keyword against the whole catalog before adding it, and record the
@@ -943,51 +948,57 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-25 — seven merges, zero incidents: coordination paid once at dispatch
+### 2026-09-26 — the same build graded FAIL at 06:46 and PASS at 09:26
 
-Seven PRs (#174–#180) landed in 26 minutes, all PASS, 7/7 ledger rows same-day. The difference
-from 09-24 (2 incidents in 8 merges) was procedural, not code.
-- **Assign merge order and shared IDs at dispatch, not at the gate.** Quinn put a fixed merge order
-  in every dispatch prompt and pre-assigned experiment IDs (E102–E110) instead of each agent
-  racing `next-experiment-id.ts`. Next step: name the *files* each agent may touch — the only
-  overlap (Cass×Nova on `ModDetailClient.tsx`) was caught by a `git merge-tree --write-tree` dry
-  run and a rebase *after* the first PR merged, with both suites re-run.
-- **A promote is a write, like a rollback — give it the same "unknown ≠ go" state.** #174 closed
-  09-24's backwards promotion: `ensure_promoted()` decides with `git merge-base --is-ancestor`
-  (served contains candidate → `SUPERSEDED`, rc 3, no promote; unrelated → newer `createdAt`;
-  can't tell what is serving → no promote). Guard runs the real extracted bash function under
-  `/bin/bash` 3.2 against a real git repo with the Vercel CLI stubbed — 7/12 red pre-fix.
-- **The last merge of a session is the one that loses its ledger row.** #173 (the 09-24 daily-run
-  PR) had no row because Quinn's session ended before its after-merge verify (09-19 lost six rows
-  the same way). Backfilled retroactively via `ledger-commit.sh`. Verify-and-ledger the final PR before the
-  session's closing step, not after it.
-- **Audit existing CTAs for stub handlers before building new surfaces.** The mod page's "Add to
-  Favorites" button (largest Next.js surface, 3,961 landings/7d) was a `// TODO` that toggled
-  local state — favorites create 68 of 78 weekly owned adds, and this page produced none (#178).
-- **Read the *server* HTML before counting a link block as internal linking.** "More from
-  <creator>" was a client `useEffect` fetch, so none of its links were crawlable and every audit had
-  counted them; it also matched the author string exactly (Ravasheen 41 + RAVASHEEN 12 split).
-  #175 server-renders it, folds spellings via `findAuthorVariants`, and links `/creator/[slug]/`
-  only when the creator clears `MIN_MODS_FOR_PAGE` — **never emit a link the target would 404**.
-  #176 applied the same rule to `llms-full.txt` (link only slugs in `listHubCreators()`). When a new
-  page class ships, grep `llms-full.txt` for its path the same day (0 `/creator/` URLs for 2 days).
-- **Check what a derived keyword actually is before a rule demands it verbatim.** WordPress's `-2`
-  dedupe suffix made "Sims 4 Couple Poses 2" the pin-SEO target, which no real title could pass
-  (#180). And the apex `/wp-json/*` 308s without a trailing slash too.
-- **Grade a treatment by the units it treated, not the channel total.** E26 pin revival: channel
-  flat, the 14 treated destinations −7.6% vs site −0.1% → KILL. A channel read would have called it
-  a win.
-- **When the operator acts ahead of a gate, encode the anchor and the revert rule as a tool the
-  same day.** The Patreon tiers were renamed on a HOLD; #177 made `--anchor rename` a runnable
-  pre-read with thresholds imported from `Q4_GATE`. A threshold that lives only in a decision
-  paragraph cannot be re-run. Update operator-queue wording the day the named thing changes.
-- **A registry of "supported" values drifts when a new mechanism is added beside the old one.**
-  `getSupportedRoomThemes()` omitted `bedroom` from #170 until #179, because it only read
-  `ROOM_THEME_RULES` and bedroom had moved to a title-only rule file.
+Seven PRs (#183, #185–#189, daily #190), all PASS, 7/7 ledger rows. One false-alarm rollback,
+closed the same morning.
+- **A reading taken through a broken network is not a verdict about the site.** At 06:46 the
+  morning check rolled production back on four `page.goto` 45 s timeouts and a homepage grid
+  still client-fetching (1,788 of ~9,600 chars at 27.8 s). The host itself could not reach
+  Vercel, Prisma, Patreon or Pinterest in the same window, the guardrail was GREEN, and the
+  06:58 log line literally said `smoke INCONCLUSIVE` — and it still rolled back. Second false
+  alarm in five days (09-22 E91). #186 added a network control (google/vercel/cloudflare,
+  ≥2 of 3 in ≤4 s, sampled before *and* after), fresh-page retries on primary targets, and
+  positive-evidence grading (a page that never answered gets a direct fetch as tie-breaker:
+  200 → inconclusive). Guard runs the real `smoke()`/`fail_and_fix()` under `/bin/bash` 3.2 with
+  the CLIs stubbed, 21/29 red pre-fix, plus "positive evidence still rolls back" green on both
+  sides — **a guard that removes a destructive path must also prove the path still fires.**
+- **A docs-only commit to `main` is still a production deploy**, and every deploy gets graded.
+  The rolled-back build (`6cb461c`) was the previous night's CLAUDE.md-only compound commit, so
+  the rollback changed nothing a visitor could see. Never read "the deploy after X failed" as
+  evidence against X without diffing what X shipped.
+- **Name the file a helper writes, and name it the way the consumer expects.** `ledger-commit.sh
+  --incident` copies by `basename`, so an incident drafted as `e111-incident.md` landed under the
+  wrong name and needed a fix-up commit (`704b31b`). Write incident files at their final name
+  (`incidents/<YYYY-MM-DD-HHMMSS>.md`) before handing them over.
+- **Read the handler before trusting the inbox premise.** The queued item said "/sign-in/ OAuth
+  buttons drop `callbackUrl`"; `/sign-in/` has no OAuth buttons. The real defect was an **open
+  redirect** — both success branches pushed `?redirect=` verbatim, so `?redirect=https://evil.example/`
+  left the site from our own form (#183). Any return-to/redirect param: same-origin relative
+  paths only; drop `//host`, `/\host`, control chars, absolute URLs and auth pages
+  (`app/sign-in/returnTo.ts`).
+- **A truncated sample is `unknown`, never a rate.** Pinterest returned 100 pins on one page;
+  ÷ 14 days read as 7.1/day → "runway 8.8 d, no-op" while the queue showed 36/day → 1.75 d
+  (#189). Same class as the paginated-fetch rule above: check `hit the page cap` before dividing.
+- **Gate a link on the same predicate as the page it targets, and scan for the bypass.** The
+  mod-page author link used `creatorHref(authorSlug(...))` and linked ~2,290 mod pages to a
+  creator page that 404s below `MIN_MODS_FOR_PAGE`; #185 routes it through the server-resolved
+  href and a class scan forbids the raw call anywhere (09-25's "never emit a link the target would
+  404" rule, now enforced rather than stated).
+- **A registry→surface scanner can be green on day one — see it red once anyway.** #188 walks
+  `SIMS4_COLLECTIONS` against llms.txt, llms-full.txt, the sitemap, per-collection RSS and
+  IndexNow (vacuity guard ≥15). All 26 slugs were already green, so it was proven by deleting
+  `kitchen-cc` from one route, watching it fail, and restoring.
+- **Bound every external call an agent makes.** 5 of 7 agents hit the 600 s no-progress watchdog
+  on MCP/API calls during the network outage; all recovered on a resume told "no MCP calls,
+  bounded commands, ship from local data". Put timeouts on the call, not on the agent.
+- **Hold a test that would contaminate an open read.** Rio did not ship a `/go` copy test (E119)
+  because E65 KEEP means it would change the surface E99 is still being read on. Not shipping is a
+  valid daily move when the alternative corrupts an experiment.
 
 ---
 
-*Last compound review: 2026-09-25*
+*Last compound review: 2026-09-26*
 
 ---
 
