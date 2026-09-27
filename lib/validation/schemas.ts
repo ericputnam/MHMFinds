@@ -20,6 +20,19 @@ export const ModSubmissionSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   submitterName: z.string().min(1, 'Your name is required').max(100, 'Name too long'),
   submitterEmail: emailPattern,
+  /**
+   * Slug of the /creator/[slug]/ page the submitter is claiming (Nova,
+   * E122). Optional and lenient here — an invalid value becomes undefined
+   * rather than failing the whole submission; the route re-validates with
+   * lib/creatorClaim parseClaimSlug before using it.
+   */
+  claimedCreatorSlug: z
+    .string()
+    .trim()
+    .max(80)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional()
+    .catch(undefined),
 });
 
 /**

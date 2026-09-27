@@ -20,6 +20,7 @@ import type { Mod } from '../../../lib/api';
 import type { CreatorPageData } from '../../../lib/creators';
 import type { RelatedCreator } from '../../../lib/creatorHubRelated';
 import { creatorHref } from '../../../lib/creatorSlug';
+import { claimHref } from '../../../lib/creatorClaim';
 
 interface CreatorPageClientProps {
   data: CreatorPageData;
@@ -118,11 +119,18 @@ export default function CreatorPageClient({ data, related = [] }: CreatorPageCli
                 </a>
               </p>
             )}
+            {/* Claim link (E122): carries the slug so the click is readable in
+                GA4 and the submission can be tied to this page. Plain <a>:
+                /submit-mod/ is a different route tree, no client transition. */}
             <p className="mt-4 text-sm text-slate-500">
               Are you {data.displayName}?{' '}
-              <Link href="/submit-mod/" className="text-sims-pink hover:underline">
+              <a
+                href={claimHref(data.slug)}
+                className="text-sims-pink hover:underline"
+                data-testid="creator-claim-link"
+              >
                 Claim this page and submit new mods →
-              </Link>
+              </a>
             </p>
           </div>
         </header>
