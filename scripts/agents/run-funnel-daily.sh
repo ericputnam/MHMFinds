@@ -230,8 +230,14 @@ fi
 # rows the run doesn't otherwise see (e.g. hand-written notes). APPEND-ONLY. The committed copy on
 # origin/main can be newer than the operator's (resolved incidents, rows folded into a daily PR); a
 # blind `cp` overwrote the resolved 2026-09-07 incident file on 09-08 and again on 09-09.
+# E126 (2026-09-27): byte-level `grep -x -v` re-appended rows main had RELABELLED or CORRECTED (the
+# operator tree keeps the stale originals forever), so Quinn's tree gained 2 duplicate rows that morning.
+# Identity-aware merge: a row main already accounts for (same when+mode+commit, or any row for the same
+# mode+commit) is skipped and counted — "ledger: flush skipped N duplicate row(s)" in the log.
 if [ -f "$PROJECT_DIR/reports/funnel/changelog.md" ]; then
-  if [ -f "$WT/reports/funnel/changelog.md" ]; then
+  if [ -x "$WT/scripts/agents/ledger-commit.sh" ] && grep -q -- '--merge-local' "$WT/scripts/agents/ledger-commit.sh"; then
+    "$WT/scripts/agents/ledger-commit.sh" --merge-local "$PROJECT_DIR/reports/funnel/changelog.md" --into "$WT/reports/funnel/changelog.md" 2>&1 | grep -E '^ledger: (merge-local|flush skipped|seeded)' | while IFS= read -r l; do log "$l"; done
+  elif [ -f "$WT/reports/funnel/changelog.md" ]; then
     grep -F -x -v -f "$WT/reports/funnel/changelog.md" "$PROJECT_DIR/reports/funnel/changelog.md" | grep -E '^\| 20[0-9]{2}-' >>"$WT/reports/funnel/changelog.md" || true
   else
     cp "$PROJECT_DIR/reports/funnel/changelog.md" "$WT/reports/funnel/changelog.md"
