@@ -264,9 +264,11 @@ fi
 # isCanonicalUrl(), and HARD_CAP caps the batch no matter what flags say. Non-fatal by design, honouring the
 # house 0/2/1 convention: 2 = could-not-run (no DATABASE_URL, DB error, key file down), 1 = IndexNow rejected
 # it. Either way the loop continues and the script's own summary line is tailed here, so silence is falsifiable.
+# --guides (E121, 2026-09-27): also push WordPress guides published/edited in the same 2 days — guides are
+# 16,250 of 16,434 Bing sessions/7d and had never been pushed. A failed WP read logs guides_fetch=partial only.
 log "IndexNow submit…"
 if [ -f "$WT/scripts/agents/indexnow-submit.ts" ]; then
-  (cd "$WT" && MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/indexnow-submit.ts --apply --days 2 >>"$LOG_FILE" 2>&1)
+  (cd "$WT" && MHM_PROJECT_DIR="$WT" npx tsx scripts/agents/indexnow-submit.ts --apply --days 2 --guides >>"$LOG_FILE" 2>&1)
   INDEXNOW_RC=$?
   case "$INDEXNOW_RC" in
     0) : ;;

@@ -26,6 +26,7 @@ import {
   selectUrls,
   summaryLine,
 } from '../../scripts/agents/indexnow-lib';
+import { fetchWpGuidesModifiedSince, wpModifiedAfterParam } from '@/lib/seo/wpGuides';
 import { SIMS4_COLLECTIONS } from '@/lib/collections';
 
 vi.mock('next-auth/jwt', () => ({ getToken: vi.fn() }));
@@ -184,7 +185,7 @@ describe('selectUrls', () => {
 
   it('is empty-safe', () => {
     const sel = selectUrls({ modIds: [], includeCollections: false, cap: HARD_CAP });
-    expect(sel).toEqual({ urls: [], mods: 0, collections: 0, creators: 0, dropped: [], capped: false });
+    expect(sel).toEqual({ urls: [], mods: 0, collections: 0, creators: 0, guides: 0, dropped: [], capped: false });
   });
 });
 
@@ -321,7 +322,7 @@ describe('summaryLine', () => {
       http: 200,
       reason: 'ok',
     });
-    expect(line).toBe('2026-09-14T11:00:00Z indexnow mode=live status=OK urls=42 mods=22 collections=20 creators=0 dropped=0 cap=500 days=7 http=200 reason=ok');
+    expect(line).toBe('2026-09-14T11:00:00Z indexnow mode=live status=OK urls=42 mods=22 collections=20 creators=0 guides=0 guides_fetch=- dropped=0 cap=500 days=7 http=200 reason=ok');
     expect(line.includes('\n')).toBe(false);
   });
 
@@ -333,7 +334,7 @@ describe('summaryLine', () => {
 
 describe('parseArgs', () => {
   it('defaults to a dry run with collections, 7 days and the hard cap', () => {
-    expect(parseArgs([])).toEqual({ apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, help: false });
+    expect(parseArgs([])).toEqual({ apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, guides: false, help: false });
   });
 
   it('only --apply turns on live mode; --dry-run after it turns it back off', () => {
@@ -419,5 +420,100 @@ describe('the post-deploy smoke check watches the ownership proof', () => {
     expect(src).toMatch(/body does not contain the expected text/);
     // Reports the length only; it must never print a target's body into the log or the JSON.
     expect(src).not.toMatch(/expected text[^)]*\$\{r\.bodyText\}/);
+  });
+});
+
+/**
+ * E121 (2026-09-27): the `--guides` leg. Blog guides are 16,250 of 16,434 Bing-organic sessions/7d
+ * (09-18→09-24) and the daily push had never contained one — it sent collections, mods and (once)
+ * creators. Invariants: guides come right after collections (rank by earning power, not by recency
+ * of the row); only the apex canonical of a guide is ever sent (a blog.* URL or a 301'd legacy post
+ * is dropped, not submitted); the WordPress read is "modified since", with a client-side re-check so
+ * a site-timezone offset cannot widen the window; and the daily runner actually passes the flag.
+ */
+describe('blog guides (E121)', () => {
+  const g1 = 'https://musthavemods.com/sims-4-cottage-houses/';
+  const g2 = 'https://musthavemods.com/best-sims-4-autumn-houses/';
+
+  it('orders collections → guides → mods → creators and counts guides', () => {
+    const sel = selectUrls({ modIds: ['m1'], guideUrls: [g1, g2, g1], creatorSlugs: ['alice'], includeCollections: true, cap: HARD_CAP, ceiling: CREATORS_HARD_CAP });
+    const nColl = 2 + SIMS4_COLLECTIONS.length;
+    expect(sel.collections).toBe(nColl);
+    expect(sel.guides).toBe(2);
+    expect(sel.urls.slice(nColl)).toEqual([g1, g2, modUrl('m1'), creatorUrl('alice')]);
+  });
+
+  it('guides displace mods (not the other way round) when the cap bites', () => {
+    const sel = selectUrls({ modIds: ['m1', 'm2'], guideUrls: [g1, g2], includeCollections: false, cap: 3 });
+    expect(sel.urls).toEqual([g1, g2, modUrl('m1')]);
+    expect(sel.capped).toBe(true);
+  });
+
+  it('drops a blog-host URL and a redirected legacy post instead of submitting them', () => {
+    const blog = 'https://blog.musthavemods.com/sims-4-cottage-houses/';
+    const redirected = 'https://musthavemods.com/sims-4-goth-cc/';
+    const sel = selectUrls({ modIds: [], guideUrls: [blog, redirected, g1], includeCollections: false, cap: HARD_CAP });
+    expect(sel.urls).toEqual([g1]);
+    expect(sel.guides).toBe(1);
+    expect(sel.dropped).toEqual([blog, redirected]);
+  });
+
+  it('parses --guides; the default stays off', () => {
+    expect(parseArgs([]).guides).toBe(false);
+    expect(parseArgs(['--apply', '--days', '2', '--guides']).guides).toBe(true);
+  });
+
+  it('prints guides and whether the WordPress read finished', () => {
+    const line = summaryLine({ when: new Date(0), mode: 'live', status: 'OK', urls: 3, mods: 0, collections: 0, guides: 3, guidesFetch: 'partial', dropped: 0, cap: 500, days: 2 });
+    expect(line).toContain(' creators=0 guides=3 guides_fetch=partial dropped=0 ');
+  });
+
+  it('asks WordPress for modified_after with a one-day slack, in UTC wall-clock form', () => {
+    expect(wpModifiedAfterParam(new Date('2026-09-25T06:00:00.000Z'))).toBe('2026-09-24T06:00:00');
+  });
+
+  it('fetches modified guides, rewrites to the apex and re-checks modified_gmt client-side', async () => {
+    const calls: string[] = [];
+    const fetchImpl = (async (url: string) => {
+      calls.push(url);
+      return new Response(
+        JSON.stringify([
+          { title: { rendered: 'Cottage' }, link: 'https://blog.musthavemods.com/sims-4-cottage-houses/', date_gmt: '2026-09-26T05:15:52', modified_gmt: '2026-09-26T05:17:05' },
+          // Inside WordPress's local-time window but before the UTC cutoff: must be dropped.
+          { title: { rendered: 'Old' }, link: 'https://blog.musthavemods.com/old-post/', date_gmt: '2026-01-01T00:00:00', modified_gmt: '2026-09-24T23:00:00' },
+          { title: { rendered: 'Goth' }, link: 'https://blog.musthavemods.com/sims-4-goth-cc/', date_gmt: '2026-01-01T00:00:00', modified_gmt: '2026-09-26T00:00:00' },
+        ]),
+        { status: 200, headers: { 'X-WP-TotalPages': '1' } },
+      );
+    }) as unknown as typeof fetch;
+    const r = await fetchWpGuidesModifiedSince(new Date('2026-09-25T00:00:00Z'), { fetchImpl });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toContain('modified_after=2026-09-24T00:00:00');
+    expect(calls[0]).toContain('modified_gmt');
+    expect(r.guides.map((x) => x.url)).toEqual(['https://musthavemods.com/sims-4-cottage-houses/']);
+    expect(r.complete).toBe(true);
+  });
+
+  it('an empty window is a complete answer, a network failure is not', async () => {
+    const empty = (async () => new Response('[]', { status: 200, headers: { 'X-WP-TotalPages': '0' } })) as unknown as typeof fetch;
+    const r1 = await fetchWpGuidesModifiedSince(new Date(), { fetchImpl: empty });
+    expect(r1).toMatchObject({ guides: [], complete: true });
+    const down = (async () => {
+      throw new Error('ENOTFOUND');
+    }) as unknown as typeof fetch;
+    const r2 = await fetchWpGuidesModifiedSince(new Date(), { fetchImpl: down });
+    expect(r2.complete).toBe(false);
+  });
+
+  it('the script reads guides through the shared lib with a bounded timeout, and only under --guides', () => {
+    const src = stripComments(read('scripts/agents/indexnow-submit.ts'));
+    expect(src).toMatch(/fetchWpGuidesModifiedSince\(/);
+    expect(src).toMatch(/if \(args\.guides\)/);
+    expect(src).toMatch(/AbortSignal\.timeout\(/);
+  });
+
+  it('the daily runner passes --guides in step 0c2', () => {
+    const runner = read('scripts/agents/run-funnel-daily.sh');
+    expect(runner).toMatch(/indexnow-submit\.ts --apply --days 2 --guides/);
   });
 });

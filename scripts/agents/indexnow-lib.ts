@@ -19,6 +19,7 @@
 
 import { getAllCollectionRoutes, collectionHref } from '../../lib/collections';
 import { creatorHref } from '../../lib/creatorSlug';
+import { isRedirectedPostUrl } from '../../lib/seo/wpGuides';
 
 /** Public IndexNow key. Change it and `public/<key>.txt` together (test enforces). */
 export const INDEXNOW_KEY = 'ee78fbc844f5b753a61535eed78c41d0';
@@ -126,6 +127,8 @@ export interface Selection {
   mods: number;
   collections: number;
   creators: number;
+  /** Blog guides submitted (E121). */
+  guides: number;
   /** URLs rejected by isCanonicalUrl — should always be empty; logged if not. */
   dropped: string[];
   /** True when the cap truncated the list. */
@@ -133,13 +136,18 @@ export interface Selection {
 }
 
 /**
- * Collections first (they are the pages that rank), then the newest mods,
- * then creator pages (E95) — last so a `--creators` run can never displace
- * the daily payload when the cap bites. Deduplicated, every URL canonical,
- * order preserved.
+ * Collections first (they are the pages that rank), then blog guides (E121 —
+ * the class that earns 16,250 of 16,434 Bing sessions/7d, so it outranks new
+ * mods when the cap bites), then the newest mods, then creator pages (E95) —
+ * last so a `--creators` run can never displace the daily payload.
+ * Deduplicated, every URL canonical, order preserved. A guide URL must
+ * already be the apex canonical (lib/seo/wpGuides.ts rewrites it); a blog.*
+ * URL or a legacy post that 301s to a collection is dropped, never sent.
  */
 export function selectUrls(opts: {
   modIds: readonly string[];
+  /** Absolute apex URLs of guides published/edited inside the window (E121). */
+  guideUrls?: readonly string[];
   creatorSlugs?: readonly string[];
   includeCollections: boolean;
   cap: number;
@@ -152,11 +160,12 @@ export function selectUrls(opts: {
   let mods = 0;
   let collections = 0;
   let creators = 0;
+  let guides = 0;
   let capped = false;
 
-  const push = (u: string, kind: 'mod' | 'collection' | 'creator'): boolean => {
+  const push = (u: string, kind: 'mod' | 'collection' | 'creator' | 'guide'): boolean => {
     if (seen.has(u)) return true;
-    if (!isCanonicalUrl(u)) {
+    if (!isCanonicalUrl(u) || (kind === 'guide' && isRedirectedPostUrl(u))) {
       dropped.push(u);
       return true;
     }
@@ -168,12 +177,18 @@ export function selectUrls(opts: {
     urls.push(u);
     if (kind === 'mod') mods += 1;
     else if (kind === 'creator') creators += 1;
+    else if (kind === 'guide') guides += 1;
     else collections += 1;
     return true;
   };
 
   if (opts.includeCollections) {
     for (const u of collectionUrls()) if (!push(u, 'collection')) break;
+  }
+  for (const raw of opts.guideUrls ?? []) {
+    const u = String(raw ?? '').trim();
+    if (!u) continue;
+    if (!push(u, 'guide')) break;
   }
   for (const id of opts.modIds) {
     const trimmed = String(id ?? '').trim();
@@ -186,7 +201,7 @@ export function selectUrls(opts: {
     if (!push(creatorUrl(trimmed), 'creator')) break;
   }
 
-  return { urls, mods, collections, creators, dropped, capped };
+  return { urls, mods, collections, creators, guides, dropped, capped };
 }
 
 export interface IndexNowPayload {
@@ -231,6 +246,10 @@ export interface RunSummary {
   collections: number;
   /** Creator pages submitted (E95). Optional so pre-E95 callers and log readers keep working; printed as 0. */
   creators?: number;
+  /** Blog guides submitted (E121). Optional for the same reason; printed as 0. */
+  guides?: number;
+  /** Whether the WordPress "modified since" read finished: complete | partial | - (leg not run). */
+  guidesFetch?: 'complete' | 'partial';
   dropped: number;
   cap: number;
   days: number;
@@ -252,6 +271,8 @@ export function summaryLine(r: RunSummary): string {
     `mods=${r.mods}`,
     `collections=${r.collections}`,
     `creators=${r.creators ?? 0}`,
+    `guides=${r.guides ?? 0}`,
+    `guides_fetch=${r.guidesFetch ?? '-'}`,
     `dropped=${r.dropped}`,
     `cap=${r.cap}`,
     `days=${r.days}`,
@@ -274,6 +295,8 @@ export interface CliArgs {
   collections: boolean;
   /** `--creators`: also submit every /creator/[slug]/ page (E95); lifts the cap ceiling to CREATORS_HARD_CAP. */
   creators: boolean;
+  /** `--guides`: also submit blog guides published/edited in the last --days (E121). Does not lift the cap. */
+  guides: boolean;
   help: boolean;
 }
 
@@ -284,7 +307,7 @@ export function capCeiling(args: Pick<CliArgs, 'creators'>): number {
 
 /** `--apply` is the only way to send anything; everything else defaults safe. */
 export function parseArgs(argv: readonly string[]): CliArgs {
-  const args: CliArgs = { apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, help: false };
+  const args: CliArgs = { apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, guides: false, help: false };
   let requestedCap: number | undefined;
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -292,6 +315,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     else if (a === '--dry-run') args.apply = false;
     else if (a === '--no-collections') args.collections = false;
     else if (a === '--creators') args.creators = true;
+    else if (a === '--guides') args.guides = true;
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a === '--days' || a.startsWith('--days=')) {
       const v = a.includes('=') ? a.split('=')[1] : argv[++i];
