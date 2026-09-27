@@ -4,6 +4,7 @@ import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { trackPasswordResetComplete } from '@/lib/analytics/gtag';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -69,6 +70,9 @@ function SetPasswordForm() {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        // GA4 password_reset_complete (E123) — the only record that a reset
+        // finished, since the token row is deleted on consume. No PII.
+        trackPasswordResetComplete();
         setDone(true);
         setTimeout(() => router.push('/sign-in?mode=signin'), 2500);
       } else {
