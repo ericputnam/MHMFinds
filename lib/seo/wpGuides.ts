@@ -52,6 +52,8 @@ export interface WpGuide {
   url: string;
   /** YYYY-MM-DD from `date_gmt`, or '' when absent. */
   date: string;
+  /** Raw `modified_gmt` (YYYY-MM-DDTHH:MM:SS, UTC) — only requested by fetchWpGuidesModifiedSince. */
+  modifiedGmt?: string;
 }
 
 export interface WpGuideFetch {
@@ -78,9 +80,45 @@ export async function fetchAllWpGuides(options?: {
   revalidate?: number;
   fetchImpl?: FetchLike;
 }): Promise<WpGuideFetch> {
-  const maxPages = options?.maxPages ?? WP_GUIDES_MAX_PAGES;
-  const revalidate = options?.revalidate ?? 3600;
-  const doFetch = options?.fetchImpl ?? fetch;
+  return fetchWpGuidesPaged(options ?? {});
+}
+
+/**
+ * `modified_after` is compared by WordPress against `post_modified`, which is
+ * the SITE's local time, not UTC. Asking for one extra day and re-checking
+ * `modified_gmt` client-side makes the window exact whatever the site's
+ * timezone setting is. Format: UTC wall clock, no zone suffix.
+ */
+export function wpModifiedAfterParam(since: Date): string {
+  return new Date(since.getTime() - 24 * 3600e3).toISOString().replace(/\.\d{3}Z$/, '');
+}
+
+/**
+ * Guides published or edited at/after `since` (UTC), apex-rewritten,
+ * redirected slugs dropped (E121 — the IndexNow `--guides` leg). An empty
+ * window is a complete answer; a failed page is not. Never throws.
+ */
+export async function fetchWpGuidesModifiedSince(
+  since: Date,
+  options?: { maxPages?: number; fetchImpl?: FetchLike },
+): Promise<WpGuideFetch> {
+  return fetchWpGuidesPaged({ ...(options ?? {}), revalidate: 0, modifiedSince: since });
+}
+
+async function fetchWpGuidesPaged(options: {
+  maxPages?: number;
+  revalidate?: number;
+  fetchImpl?: FetchLike;
+  modifiedSince?: Date;
+}): Promise<WpGuideFetch> {
+  const maxPages = options.maxPages ?? WP_GUIDES_MAX_PAGES;
+  const revalidate = options.revalidate ?? 3600;
+  const doFetch = options.fetchImpl ?? fetch;
+  const since = options.modifiedSince;
+  const query = since
+    ? `&_fields=title,link,date_gmt,modified_gmt&modified_after=${wpModifiedAfterParam(since)}&orderby=modified&order=desc`
+    : '&_fields=title,link,date_gmt';
+  const sinceMs = since ? since.getTime() : null;
 
   const guides: WpGuide[] = [];
   const seen = new Set<string>();
@@ -92,8 +130,8 @@ export async function fetchAllWpGuides(options?: {
     let res: Response;
     try {
       res = await doFetch(
-        `${WP_POSTS_ENDPOINT}?per_page=${WP_GUIDES_PER_PAGE}&page=${page}&_fields=title,link,date_gmt`,
-        { next: { revalidate } } as RequestInit,
+        `${WP_POSTS_ENDPOINT}?per_page=${WP_GUIDES_PER_PAGE}&page=${page}${query}`,
+        (revalidate > 0 ? { next: { revalidate } } : { cache: 'no-store' }) as RequestInit,
       );
     } catch (error) {
       console.error(`[wpGuides] fetch threw on page ${page}:`, error);
@@ -107,7 +145,7 @@ export async function fetchAllWpGuides(options?: {
       break;
     }
 
-    let posts: Array<{ title?: { rendered?: string }; link?: string; date_gmt?: string }>;
+    let posts: Array<{ title?: { rendered?: string }; link?: string; date_gmt?: string; modified_gmt?: string }>;
     try {
       posts = (await res.json()) as typeof posts;
     } catch (error) {
@@ -128,8 +166,14 @@ export async function fetchAllWpGuides(options?: {
       if (!url || !titleRendered) continue;
       if (isRedirectedPostUrl(url)) continue;
       if (seen.has(url)) continue;
+      if (sinceMs !== null) {
+        const modifiedMs = Date.parse(`${p.modified_gmt ?? ''}Z`);
+        if (!Number.isFinite(modifiedMs) || modifiedMs < sinceMs) continue;
+      }
       seen.add(url);
-      guides.push({ titleRendered, url, date: (p.date_gmt ?? '').split('T')[0] });
+      const guide: WpGuide = { titleRendered, url, date: (p.date_gmt ?? '').split('T')[0] };
+      if (since) guide.modifiedGmt = p.modified_gmt ?? '';
+      guides.push(guide);
     }
 
     const headerTotal = Number(res.headers?.get?.('X-WP-TotalPages') ?? '');
@@ -140,7 +184,8 @@ export async function fetchAllWpGuides(options?: {
   }
 
   const capHit = pagesFetched >= maxPages && (totalPages === null || totalPages > maxPages);
-  const complete = !errored && !capHit && guides.length > 0;
+  // A full-inventory read that returns nothing is broken; a "modified since" read may legitimately be empty.
+  const complete = !errored && !capHit && (guides.length > 0 || since !== undefined);
 
   return { guides, complete, pagesFetched, totalPages };
 }

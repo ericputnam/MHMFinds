@@ -6,6 +6,7 @@
  *   npx tsx scripts/agents/indexnow-submit.ts --apply          # live POST to https://api.indexnow.org/indexnow
  *   npx tsx scripts/agents/indexnow-submit.ts --days 3 --cap 200 --no-collections
  *   npx tsx scripts/agents/indexnow-submit.ts --apply --creators --days 2   # E95: + every /creator/[slug]/ page
+ *   npx tsx scripts/agents/indexnow-submit.ts --apply --guides --days 2     # E121: + blog guides edited in the window
  *
  * Selection mirrors /sitemap-mods.xml exactly (isNSFW=false, isVerified=true)
  * so we never push a URL the sitemap would not list; mods are those created in
@@ -15,6 +16,11 @@
  * lib/creators.ts listCreators() (the /sitemap-creators.xml population, so
  * again nothing the sitemap would not list) under CREATORS_HARD_CAP (1000).
  * `--creators` is a one-off / occasional push, not part of the daily runner.
+ * `--guides` (E121, 2026-09-27) adds every WordPress guide published or edited
+ * in the last --days, read through lib/seo/wpGuides.ts (the same inventory and
+ * redirect exclusions /sitemap-blog-posts.xml uses), apex-rewritten. It is in
+ * the daily runner: guides are 16,250 of 16,434 Bing sessions/7d. A failed WP
+ * read never blocks the rest of the push — it is logged `guides_fetch=partial`.
  *
  * Safety rails, in order:
  *   1. --apply is required to send; everything else is a dry run.
@@ -35,6 +41,8 @@
 
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+
+import { fetchWpGuidesModifiedSince } from '../../lib/seo/wpGuides';
 
 import {
   CREATORS_HARD_CAP,
@@ -110,6 +118,7 @@ function usage(): void {
       `  --cap N             max URLs per run, clamped to ${HARD_CAP} (${CREATORS_HARD_CAP} with --creators)`,
       '  --no-collections    skip homepage / game hubs / collection pages',
       '  --creators          also submit every /creator/[slug]/ page (the /sitemap-creators.xml population)',
+      '  --guides            also submit blog guides published/edited in the last --days (WordPress REST)',
       '',
       `Key: ${INDEXNOW_KEY} (public; served at ${keyLocation()})`,
       `Log: ${LOG_PATH}`,
@@ -148,6 +157,21 @@ async function fetchCreatorSlugs(): Promise<string[]> {
   } finally {
     await prisma.$disconnect().catch(() => undefined);
   }
+}
+
+/** Per-request bound on the WordPress read; the whole leg is one page on a normal day. */
+const WP_TIMEOUT_MS = 30_000;
+
+/**
+ * Apex URLs of guides published or edited in the last `days`. Never throws;
+ * a timeout or HTTP error comes back as `complete: false` with whatever was read.
+ */
+async function fetchGuideUrls(days: number): Promise<{ urls: string[]; complete: boolean }> {
+  const since = new Date(Date.now() - days * 24 * 3600e3);
+  const bounded = ((input: RequestInfo | URL, init?: RequestInit) =>
+    fetch(input, { ...(init ?? {}), signal: AbortSignal.timeout(WP_TIMEOUT_MS) })) as typeof fetch;
+  const r = await fetchWpGuidesModifiedSince(since, { fetchImpl: bounded, maxPages: 5 });
+  return { urls: r.guides.map((g) => g.url), complete: r.complete };
 }
 
 /** The key file must be live before a submit can succeed; check it, don't assume it. */
@@ -203,8 +227,18 @@ async function main(): Promise<void> {
     }
   }
 
+  let guideUrls: string[] = [];
+  let guidesFetch: RunSummary['guidesFetch'];
+  if (args.guides) {
+    const g = await fetchGuideUrls(args.days);
+    guideUrls = g.urls;
+    guidesFetch = g.complete ? 'complete' : 'partial';
+    if (!g.complete) console.error(`[indexnow] WordPress guide read did not finish; pushing the ${g.urls.length} guide(s) it returned`);
+  }
+
   const sel = selectUrls({
     modIds: modIds!,
+    guideUrls,
     creatorSlugs,
     includeCollections: args.collections,
     cap: args.cap,
@@ -215,6 +249,8 @@ async function main(): Promise<void> {
     mods: sel.mods,
     collections: sel.collections,
     creators: sel.creators,
+    guides: sel.guides,
+    guidesFetch,
     dropped: sel.dropped.length,
   };
   if (sel.dropped.length) {
@@ -225,6 +261,7 @@ async function main(): Promise<void> {
 
   console.log(
     `[indexnow] ${mode}: ${counts.urls} URL(s) — ${counts.collections} collection/hub, ${counts.mods} mods from the last ${args.days} day(s)` +
+      (args.guides ? `, ${counts.guides} blog guides` : '') +
       (args.creators ? `, ${counts.creators} creator pages` : ''),
   );
   const preview = sel.urls.slice(0, 25);
