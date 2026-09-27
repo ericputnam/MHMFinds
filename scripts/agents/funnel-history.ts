@@ -138,6 +138,8 @@ interface ScoreboardJson {
     ownedAdds7d?: number;
     nonAdRevenueMonthlyGross?: number;
   };
+  db?: { ok: boolean };
+  patreon?: { ok: boolean };
   ga4?: {
     ok: boolean;
     data?: { byChannel7d?: Record<string, number>; returningShare7d?: number | null; pagesPerSession7d?: number | null; engagementRate7d?: number | null };
@@ -252,6 +254,83 @@ function parseIncidentEvents(dir: string): EventEntry[] {
   return events;
 }
 
+// ---- scoreboard JSON -> per-day fields (pure; exported for tests) ----------
+//
+// Rule (E126, 2026-09-27): a value whose SOURCE SECTION reported `ok: false` was NOT MEASURED and is
+// written as `null` — never as 0, and never as a carried-forward number. On 2026-09-26 the Patreon
+// scrape and the DB section both failed; funnel-scoreboard.ts still wrote
+// `headline.nonAdRevenueMonthlyGross: 0` (it sums `patreon.ok ? gross : 0` + `db.ok ? affiliate : 0`),
+// and every morning's rebuild of history.json turned that into `nonAdMonthly: 0` — undoing Quinn's
+// hand-nulled row on main. Section -> field map (mirrors funnel-scoreboard.ts's json builder):
+//   patreon + db -> nonAdMonthly (Patreon gross + DB affiliate 30d; either failed = undercount = null)
+//   db           -> ownedAdds7d, favorites7d, downloadClicks7d, newMods7d, catalogTotal, creators*
+//   ga4          -> pinterestSessions7d, returningShare7d, nonPinterestShare7d, pagesPerSession7d, engagementRate7d
+//   ga4 + db     -> captureRatePer1k (owned adds / sessions)
+//   team         -> runSuccess14d, opsMergeShare7d, paperOnlyMerges7d, mergesByOwner7d
+// A section that is ABSENT from an older scoreboard (pre-section format) is not a failure: the field is
+// read as before. Only an explicit `ok: false` nulls it.
+
+type SectionName = 'ga4' | 'db' | 'patreon' | 'team';
+type DerivedFields = Omit<DayEntry, 'date' | 'revenue' | 'sessions' | 'rpm' | 'expectedRevenue' | 'expectedSessions'>;
+
+export function sectionFailed(scoreboard: ScoreboardJson | null, name: SectionName): boolean {
+  const sec = (scoreboard as Record<string, unknown> | null)?.[name] as { ok?: unknown } | undefined;
+  return !!sec && typeof sec === 'object' && sec.ok === false;
+}
+
+export function deriveScoreboardFields(
+  date: string,
+  scoreboard: ScoreboardJson | null,
+  lastKnownNonAd: number,
+  nonAdBaseline: number,
+): { fields: DerivedFields; lastKnownNonAd: number } {
+  const nullableNum = (v: unknown): number | null => (typeof v === 'number' ? v : null);
+  const ga4Bad = sectionFailed(scoreboard, 'ga4');
+  const dbBad = sectionFailed(scoreboard, 'db');
+  const patreonBad = sectionFailed(scoreboard, 'patreon');
+  const teamBad = sectionFailed(scoreboard, 'team');
+  const ga4 = (v: unknown): number | null => (ga4Bad ? null : nullableNum(v));
+  const db = (v: unknown): number | null => (dbBad ? null : nullableNum(v));
+
+  let nonAdMonthly: number | null;
+  let nextLastKnown = lastKnownNonAd;
+  const scoreboardNonAd = scoreboard?.headline?.nonAdRevenueMonthlyGross;
+  if (scoreboard && (patreonBad || dbBad)) {
+    // Not measured today. Do not write 0, do not carry forward, do not let it become "last known".
+    nonAdMonthly = null;
+  } else if (typeof scoreboardNonAd === 'number') {
+    nextLastKnown = scoreboardNonAd;
+    nonAdMonthly = scoreboardNonAd;
+  } else if (date < '2026-09-01') {
+    nonAdMonthly = nonAdBaseline;
+  } else {
+    nonAdMonthly = lastKnownNonAd;
+  }
+
+  const teamOk = scoreboard?.team?.ok === true && !teamBad;
+  const fields: DerivedFields = {
+    nonAdMonthly,
+    ownedAdds7d: db(scoreboard?.headline?.ownedAdds7d),
+    pinterestSessions7d: scoreboard?.ga4?.ok ? nullableNum(scoreboard.ga4.data?.byChannel7d?.pinterest) : null,
+    returningShare7d: ga4(scoreboard?.longRange?.returningShare7d),
+    nonPinterestShare7d: ga4(scoreboard?.longRange?.nonPinterestShare7d),
+    pagesPerSession7d: ga4(scoreboard?.engagement?.pagesPerSession7d),
+    engagementRate7d: ga4(scoreboard?.engagement?.engagementRate7d),
+    favorites7d: db(scoreboard?.engagement?.favorites7d),
+    downloadClicks7d: db(scoreboard?.engagement?.downloadClicks7d),
+    newMods7d: db(scoreboard?.catalog?.newMods7d),
+    catalogTotal: db(scoreboard?.catalog?.total),
+    captureRatePer1k: ga4Bad || dbBad ? null : nullableNum(scoreboard?.capture?.ratePer1kSessions7d),
+    creatorsOnboarded: db(scoreboard?.creators?.onboarded),
+    creatorSubmissions7d: db(scoreboard?.creators?.submissions7d),
+    runSuccess14d: teamOk ? nullableNum(scoreboard?.team?.data?.runSuccess14d) : null,
+    opsMergeShare7d: teamOk ? nullableNum(scoreboard?.team?.data?.opsMergeShare7d) : null,
+    paperOnlyMerges7d: teamOk ? nullableNum(scoreboard?.team?.data?.paperOnlyMerges7d) : null,
+    mergesByOwner7d: teamOk ? (scoreboard?.team?.data?.mergesByOwner7d ?? null) : null,
+  };
+  return { fields, lastKnownNonAd: nextLastKnown };
+}
+
 // ---- main -------------------------------------------------------------------
 
 function readExisting(path: string): History | null {
@@ -345,7 +424,8 @@ async function main(): Promise<void> {
   const targets = JSON.parse(readFileSync(TARGETS_PATH, 'utf8')) as Targets;
   const nonAdBaseline = targets.baseline.nonAdRevenue.monthlyTotal;
 
-  // nonAdMonthly / ownedAdds7d / pinterestSessions7d from the scoreboard JSONs.
+  // nonAdMonthly / ownedAdds7d / pinterestSessions7d / long-range fields from the scoreboard JSONs.
+  // Derivation lives in deriveScoreboardFields() so the "failed source -> null" rule is unit-testable.
   let lastKnownNonAd = nonAdBaseline;
   for (const d of sortedDates) {
     const entry = dayMap.get(d)!;
@@ -358,44 +438,9 @@ async function main(): Promise<void> {
         scoreboard = null;
       }
     }
-
-    const scoreboardNonAd = scoreboard?.headline?.nonAdRevenueMonthlyGross;
-    if (typeof scoreboardNonAd === 'number') {
-      lastKnownNonAd = scoreboardNonAd;
-      entry.nonAdMonthly = scoreboardNonAd;
-    } else if (d < '2026-09-01') {
-      entry.nonAdMonthly = nonAdBaseline;
-    } else {
-      entry.nonAdMonthly = lastKnownNonAd;
-    }
-
-    const ownedAdds = scoreboard?.headline?.ownedAdds7d;
-    entry.ownedAdds7d = typeof ownedAdds === 'number' ? ownedAdds : null;
-
-    const pinterest = scoreboard?.ga4?.ok ? scoreboard.ga4.data?.byChannel7d?.pinterest : undefined;
-    entry.pinterestSessions7d = typeof pinterest === 'number' ? pinterest : null;
-
-    // Long-range / product / team health, same "read at request time from
-    // this day's scoreboard JSON, default to null" pattern as the fields
-    // above. Older days (no scoreboard JSON, or a pre-2026-09-22 one lacking
-    // these sections) read null via the optional-chaining fallbacks.
-    const nullableNum = (v: unknown): number | null => (typeof v === 'number' ? v : null);
-    entry.returningShare7d = nullableNum(scoreboard?.longRange?.returningShare7d);
-    entry.nonPinterestShare7d = nullableNum(scoreboard?.longRange?.nonPinterestShare7d);
-    entry.pagesPerSession7d = nullableNum(scoreboard?.engagement?.pagesPerSession7d);
-    entry.engagementRate7d = nullableNum(scoreboard?.engagement?.engagementRate7d);
-    entry.favorites7d = nullableNum(scoreboard?.engagement?.favorites7d);
-    entry.downloadClicks7d = nullableNum(scoreboard?.engagement?.downloadClicks7d);
-    entry.newMods7d = nullableNum(scoreboard?.catalog?.newMods7d);
-    entry.catalogTotal = nullableNum(scoreboard?.catalog?.total);
-    entry.captureRatePer1k = nullableNum(scoreboard?.capture?.ratePer1kSessions7d);
-    entry.creatorsOnboarded = nullableNum(scoreboard?.creators?.onboarded);
-    entry.creatorSubmissions7d = nullableNum(scoreboard?.creators?.submissions7d);
-    const teamOk = scoreboard?.team?.ok;
-    entry.runSuccess14d = teamOk ? nullableNum(scoreboard?.team?.data?.runSuccess14d) : null;
-    entry.opsMergeShare7d = teamOk ? nullableNum(scoreboard?.team?.data?.opsMergeShare7d) : null;
-    entry.paperOnlyMerges7d = teamOk ? nullableNum(scoreboard?.team?.data?.paperOnlyMerges7d) : null;
-    entry.mergesByOwner7d = teamOk ? (scoreboard?.team?.data?.mergesByOwner7d ?? null) : null;
+    const derived = deriveScoreboardFields(d, scoreboard, lastKnownNonAd, nonAdBaseline);
+    lastKnownNonAd = derived.lastKnownNonAd;
+    Object.assign(entry, derived.fields);
   }
 
   // expectedRevenue / expectedSessions — mean of the same weekday, prior 4 weeks.
@@ -475,7 +520,11 @@ async function main(): Promise<void> {
   if (mediavineError) process.exit(3);
 }
 
-main().catch((e) => {
-  console.error('[funnel-history] fatal:', e instanceof Error ? e.message : e);
-  process.exit(3);
-});
+// Run only when executed as a script (npx tsx scripts/agents/funnel-history.ts), not when a unit test
+// imports deriveScoreboardFields().
+if (/funnel-history\.ts$/.test(process.argv[1] ?? '')) {
+  main().catch((e) => {
+    console.error('[funnel-history] fatal:', e instanceof Error ? e.message : e);
+    process.exit(3);
+  });
+}

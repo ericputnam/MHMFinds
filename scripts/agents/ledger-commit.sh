@@ -23,6 +23,23 @@
 #                     [--label "<short text for the commit message>"] [--incident <path to .md file>]
 #                     [--dry-run] [--remote-url <url>] [--branch main]
 #   ledger-commit.sh --flush-pending [--remote-url <url>] [--branch main]   # replays ledger-pending.jsonl, oldest first
+#   ledger-commit.sh --merge-local <src changelog.md> --into <dst changelog.md>  # local-only mirror, no git
+#
+# Idempotency (E126, 2026-09-27). A ledger row has an IDENTITY, not just bytes: rows get re-labelled on
+# main ("PR #145 …" -> "Quinn: PR #145 …") and false alarms get a correcting row instead of the original
+# ("06:55 ROLLED BACK" -> "07:14 after-merge (correcting row …)"). The runner's seed step compared bytes
+# only, so every morning it re-appended both superseded originals from the operator tree into Quinn's
+# checkout of main (2 duplicate rows on 2026-09-27). Two identity rules, both in row_is_duplicate():
+#   strict    — exact line, or same (when, mode-word, commit) [or (when, mode-word, label) if no commit].
+#               Used by --flush-pending: a queued row already on main by identity is dropped from the queue.
+#   supersede — strict, OR the destination already has ANY row for the same (mode-word, commit). Used by
+#               --merge-local, the non-durable same-run mirror: a row that main already accounts for
+#               (relabelled or corrected) must never be resurrected from a stale tree.
+# Both log "ledger: flush skipped N duplicate row(s)".
+#
+# --incident <file> must be named incidents/<YYYY-MM-DD-HHMMSS>.md already — it is copied by basename and
+# funnel-history.ts only parses that name. Anything else is refused up front (exit 64) instead of landing
+# under the wrong name (the 2026-09-26 closure landed as e111-incident.md and needed a fix-up commit).
 #
 # Env: LEDGER_COMMIT=0   — no-op (exit 0 without touching git); used by tests and dry runs that only
 #                          want deploy-verify's LOCAL append (to $ROOT/$FUNNEL_PRIMARY_WT), no push.
@@ -38,7 +55,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # (e.g. for tests that point ROOT elsewhere, or if that path does not exist on this machine).
 PERSIST_DIR="/Users/eputnam/java_projects/MHMFinds"
 [ -d "$PERSIST_DIR" ] || PERSIST_DIR="$ROOT"
-ROW=""; LABEL="ledger-commit"; INCIDENT=""; DRY_RUN=0; REMOTE_URL=""; BRANCH="main"; FLUSH=0
+ROW=""; LABEL="ledger-commit"; INCIDENT=""; DRY_RUN=0; REMOTE_URL=""; BRANCH="main"; FLUSH=0; MERGE_SRC=""; MERGE_DST=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --row) ROW="$2"; shift ;;
@@ -48,10 +65,71 @@ while [ $# -gt 0 ]; do
     --remote-url) REMOTE_URL="$2"; shift ;;
     --branch) BRANCH="$2"; shift ;;
     --flush-pending) FLUSH=1 ;;
+    --merge-local) MERGE_SRC="$2"; shift ;;
+    --into) MERGE_DST="$2"; shift ;;
     *) echo "ledger-commit: unknown argument: $1"; exit 64 ;;
   esac
   shift
 done
+
+# ---------------------------------------------------------------- row identity (E126)
+# row_is_duplicate <row> <changelog> <strict|supersede>  -> 0 if the changelog already has this row by identity.
+row_is_duplicate() {
+  [ -f "$2" ] || return 1
+  python3 - "$1" "$2" "$3" <<'PY'
+import sys
+row, path, mode = sys.argv[1], sys.argv[2], sys.argv[3]
+def ident(line):
+    c = [x.strip() for x in line.rstrip("\n").split("|")]
+    if len(c) < 6 or not c[1].startswith("20"):
+        return None
+    word = c[2].split()[0] if c[2] else ""
+    return c[1], word, c[3], c[4]
+lines = [l.rstrip("\n") for l in open(path, encoding="utf-8", errors="replace")]
+if row.rstrip("\n") in lines:
+    sys.exit(0)
+me = ident(row)
+if me is None:
+    sys.exit(1)
+when, word, label, sha = me
+for l in lines:
+    o = ident(l)
+    if o is None:
+        continue
+    if sha:
+        if o[1] == word and o[3] == sha and (mode == "supersede" or o[0] == when):
+            sys.exit(0)
+    elif o[0] == when and o[1] == word and o[2] == label:
+        sys.exit(0)
+sys.exit(1)
+PY
+}
+
+if [ -n "$MERGE_SRC" ] || [ -n "$MERGE_DST" ]; then
+  # Local-only, append-only mirror of dated rows from one changelog into another. No git, no network.
+  [ -n "$MERGE_SRC" ] && [ -n "$MERGE_DST" ] || { echo "ledger-commit: --merge-local needs --into"; exit 64; }
+  [ -f "$MERGE_SRC" ] || { echo "ledger: merge source $MERGE_SRC missing — nothing to do"; exit 0; }
+  [ -f "$MERGE_DST" ] || { cp "$MERGE_SRC" "$MERGE_DST"; echo "ledger: seeded $MERGE_DST from $MERGE_SRC"; exit 0; }
+  added=0; skipped=0
+  while IFS= read -r line; do
+    case "$line" in "| 20"[0-9][0-9]-*) ;; *) continue ;; esac
+    if row_is_duplicate "$line" "$MERGE_DST" supersede; then
+      skipped=$((skipped + 1)); echo "ledger: skip (already accounted for on dst): ${line:0:90}"
+    else
+      printf '%s\n' "$line" >>"$MERGE_DST"; added=$((added + 1))
+    fi
+  done <"$MERGE_SRC"
+  echo "ledger: merge-local appended $added row(s)"
+  echo "ledger: flush skipped $skipped duplicate row(s)"
+  exit 0
+fi
+
+if [ -n "$INCIDENT" ]; then
+  case "$(basename "$INCIDENT")" in
+    [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9].md) ;;
+    *) echo "ledger-commit: --incident must be named YYYY-MM-DD-HHMMSS.md (got $(basename "$INCIDENT")) — rename it first; nothing landed"; exit 64 ;;
+  esac
+fi
 
 # LEDGER_PENDING_FILE lets tests point the pending queue at a scratch location instead of the real
 # operator tree.
@@ -134,7 +212,14 @@ if [ "$FLUSH" = 1 ]; then
   [ -f "$PENDING" ] || { echo "ledger-commit: no pending rows"; exit 0; }
   TMP_REMAIN="$(mktemp "${TMPDIR:-/tmp}/ledger-pending.XXXXXX")"
   : >"$TMP_REMAIN"
-  STATUS=0
+  STATUS=0; SKIPPED=0
+  # Snapshot of the branch's changelog for identity checks (a relabelled/corrected copy of a pending row
+  # is not byte-identical, so land_one's exact-line check alone would append it a second time).
+  MAIN_CHANGELOG=""
+  if (cd "$ROOT" && git fetch -q "$REMOTE_URL" "$BRANCH") 2>/dev/null; then
+    MAIN_CHANGELOG="$(mktemp "${TMPDIR:-/tmp}/ledger-main.XXXXXX")"
+    (cd "$ROOT" && git show FETCH_HEAD:reports/funnel/changelog.md) >"$MAIN_CHANGELOG" 2>/dev/null || { rm -f "$MAIN_CHANGELOG"; MAIN_CHANGELOG=""; }
+  fi
   while IFS= read -r line; do
     [ -n "$line" ] || continue
     # Fields can contain spaces and pipes (it's a markdown table row) — never split on whitespace.
@@ -147,6 +232,10 @@ d=json.loads(sys.argv[1])
 sys.stdout.write(d.get("row","") + "\x1f" + d.get("label","") + "\x1f" + (d.get("incident") or ""))
 ' "$line")"
     IFS=$'\x1f' read -r p_row p_label p_incident <<<"$parsed"
+    if [ -n "$MAIN_CHANGELOG" ] && row_is_duplicate "$p_row" "$MAIN_CHANGELOG" strict; then
+      SKIPPED=$((SKIPPED + 1)); echo "ledger-commit: pending row already on $BRANCH by identity — dropped from queue ($p_label)"
+      continue
+    fi
     if land_one "$p_row" "flush: $p_label" "$p_incident"; then
       echo "ledger-commit: flushed pending row ($p_label)"
     else
@@ -155,6 +244,8 @@ sys.stdout.write(d.get("row","") + "\x1f" + d.get("label","") + "\x1f" + (d.get(
   done <"$PENDING"
   mv "$TMP_REMAIN" "$PENDING"
   [ -s "$PENDING" ] || rm -f "$PENDING"
+  [ -n "$MAIN_CHANGELOG" ] && rm -f "$MAIN_CHANGELOG"
+  echo "ledger: flush skipped $SKIPPED duplicate row(s)"
   exit "$STATUS"
 fi
 
