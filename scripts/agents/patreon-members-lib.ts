@@ -342,6 +342,37 @@ export function q4GateDecision(i: Q4GateInput): Q4GateDecision {
 }
 
 // ---------------------------------------------------------------------------
+// Source grading for the pre-read (E125, Rio 2026-09-27)
+// ---------------------------------------------------------------------------
+
+/**
+ * The pre-read has two sources — the Patreon Members API (paid / joins /
+ * cancels) and the production DB (linked accounts → the connected leg). On
+ * 2026-09-26 three runs produced zero gate numbers because `Promise.all`
+ * discarded the reachable Members API result when the DB timed out. One
+ * degraded source is a *partial* report: the reachable half is printed, the
+ * missing leg reads UNKNOWN (never PASS/FAIL), the file gets a `-partial`
+ * suffix so it cannot overwrite a full read of the same day, and the process
+ * exits 2 ("could not fully run"), which no caller may treat as a verdict.
+ */
+export type SourceStatus = { ok: true } | { ok: false; error: string };
+
+export interface SourceGrade {
+  mode: 'full' | 'members-only' | 'linked-only' | 'none';
+  /** 0 = full read · 2 = partial read written (a finding, never a verdict) · 1 = nothing to write */
+  exitCode: 0 | 1 | 2;
+  /** appended to the report basename so a partial never overwrites a full read of the same day */
+  outSuffix: '' | '-partial';
+}
+
+/** Pure. */
+export function gradeSources(members: SourceStatus, linked: SourceStatus): SourceGrade {
+  if (members.ok && linked.ok) return { mode: 'full', exitCode: 0, outSuffix: '' };
+  if (!members.ok && !linked.ok) return { mode: 'none', exitCode: 1, outSuffix: '-partial' };
+  return { mode: members.ok ? 'members-only' : 'linked-only', exitCode: 2, outSuffix: '-partial' };
+}
+
+// ---------------------------------------------------------------------------
 // E40 traffic leg — mean of daily distinct users over an explicit window
 // ---------------------------------------------------------------------------
 
