@@ -14,12 +14,8 @@ import { HAND_AUDITED_CONTENT_TYPES } from '../../scripts/lib/hand-audited-conte
 import { isBedroomTitle } from '../../lib/bedroomThemeRules';
 import { isKitchenTitle } from '../../lib/kitchenThemeRules';
 import { isBathroomTitle } from '../../lib/bathroomThemeRules';
-
-const CAS_TYPES = new Set([
-  'tops', 'bottoms', 'dresses', 'full-body', 'shoes', 'hair', 'makeup', 'eyebrows',
-  'eyeliner', 'blush', 'lipstick', 'eyes', 'lashes', 'glasses', 'jewelry', 'nails',
-  'accessories', 'hats', 'skin', 'tattoos', 'body-preset', 'poses', 'beard', 'facial-hair',
-]);
+// E132: the real set the detector guards with, not a restated copy.
+import { CAS_CONTENT_TYPES as CAS_TYPES } from '../../lib/services/contentTypeDetector';
 
 const BUILD_TYPES = new Set(['furniture', 'clutter', 'decor']);
 

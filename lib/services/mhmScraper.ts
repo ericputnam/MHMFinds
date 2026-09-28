@@ -7,6 +7,7 @@ import { modBlockParser } from './modBlockParser';
 import {
   detectContentType,
   detectRoomThemes,
+  guardRoomTitledContentType,
 } from './contentTypeDetector';
 import {
   detectGame,
@@ -1363,7 +1364,9 @@ export class MustHaveModsScraper {
         // title-based detection is a fallback for generic/mixed-category posts
         const urlContentType = detectContentTypeFromUrl(mod.sourceUrl);
         const titleContentType = detectContentType(mod.title, mod.description);
-        const detectedContentType = urlContentType || titleContentType;
+        // E132: a room-titled row (bedroom/kitchen/bathroom, title-only rules)
+        // is never Create-a-Sim, even when the blog post's URL category says so.
+        const detectedContentType = guardRoomTitledContentType(mod.title, urlContentType || titleContentType);
         const detectedThemes = detectRoomThemes(mod.title, mod.description);
 
         // Check if mod already exists by download URL (most reliable)
