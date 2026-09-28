@@ -9,12 +9,26 @@
  *    (inconclusive)? "Could not run ≠ is broken" (CLAUDE.md): only a verdict backed by positive
  *    evidence may reach deploy-verify's rollback branch.
  */
-export type SmokeKind = 'catalog' | 'detail' | 'interstitial' | 'blog' | 'game' | 'xml' | 'text';
+export type SmokeKind = 'catalog' | 'detail' | 'interstitial' | 'blog' | 'game' | 'collection' | 'xml' | 'text';
 
 /** Non-ad, non-revenue targets: sitemaps, llms.txt, feeds, the IndexNow key. */
 export const SECONDARY_KINDS: ReadonlySet<SmokeKind> = new Set<SmokeKind>(['xml', 'text']);
 /** Pages that carry Mediavine furniture and are graded on it. */
-export const AD_KINDS: ReadonlySet<SmokeKind> = new Set<SmokeKind>(['catalog', 'detail', 'interstitial', 'blog', 'game']);
+export const AD_KINDS: ReadonlySet<SmokeKind> = new Set<SmokeKind>(['catalog', 'detail', 'interstitial', 'blog', 'game', 'collection']);
+
+/**
+ * E133: which `/games/sims-4/<slug>/` collection page this run renders. Until E133 no verify had ever rendered a
+ * collection route (29 in the registry; 2026-09-24 bedroom-cc served a 404 under a PASS row, and Rowan curled
+ * three by hand on 09-27). One page per run bounds the cost (~8 s on a healthy run); the choice rotates by UTC
+ * day across the registry's hrefs, so every collection is rendered within `hrefs.length` days and a renamed or
+ * removed slug can never leave the check pointing at a path the registry no longer has. The caller passes
+ * `collectionHref()` of the live registry — never a hand-written slug. Empty registry → null (caller warns).
+ */
+export function pickCollectionPath(hrefs: readonly string[], now: Date = new Date()): string | null {
+  if (!hrefs.length) return null;
+  const day = Math.floor(now.getTime() / 86_400_000);
+  return hrefs[((day % hrefs.length) + hrefs.length) % hrefs.length];
+}
 
 /**
  * A full ad page normally loads in 7–10 s on this host. At or above SLOW_LOAD_MS a page whose text is

@@ -19,9 +19,10 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { INDEXNOW_KEY } from './indexnow-lib';
+import { collectionHref, getCollectionsForGame } from '../../lib/collections';
 import {
-  CONTROL_TIMEOUT_MS, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
-  navigationFailed, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
+  AD_KINDS, CONTROL_TIMEOUT_MS, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
+  navigationFailed, pickCollectionPath, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
 } from './smoke-render-lib';
 
 const args = process.argv.slice(2);
@@ -105,10 +106,11 @@ function expectations(r: Result): string[] {
   const hard = r.pageErrors.filter((e) => !isHydration(e) && !isThirdParty(e) && !isNavError(e));
   if (hard.length) f.push(`${hard.length} uncaught page error(s): ${hard[0].slice(0, 120)}`);
   if (r.appError) f.push('Next.js "Application error" boundary rendered');
-  // `game` (/play/) carries the same ad furniture as a catalog page — loader, empty
-  // aside#secondary, a multi-child .mv-ads — so it gets the same assertions. It is a
-  // separate kind only so a failure line names what broke.
-  const adPage = r.kind === 'catalog' || r.kind === 'detail' || r.kind === 'interstitial' || r.kind === 'blog' || r.kind === 'game';
+  // `game` (/play/) and `collection` (/games/sims-4/<slug>/) carry the same ad furniture as a catalog page —
+  // loader, empty aside#secondary, a multi-child .mv-ads — so they get the same assertions. They are separate
+  // kinds only so a failure line names what broke. AD_KINDS is the single list (E133: a hand-written copy here
+  // would let a new ad kind be rendered but never graded on its anchors).
+  const adPage = AD_KINDS.has(r.kind);
   if (adPage) {
     if (!r.mediavineScript) f.push('Mediavine loader (scripts.mediavine.com) missing');
     if (r.secondary < 1) f.push('aside#secondary (Mediavine sidebar anchor) missing');
@@ -124,6 +126,8 @@ function expectations(r: Result): string[] {
 
 async function main() {
   const modId = await modIdFromSitemap();
+  // E133: one collection page per run, chosen from the live registry (see pickCollectionPath).
+  const collectionPath = pickCollectionPath(getCollectionsForGame('sims-4').map(collectionHref));
   const targets: Target[] = [
     // settledText: the grid on these three is client-fetched (/api/mods); a 200 with fewer chars than this after
     // SLOW_LOAD_MS is an unsettled render, not a blank one (≈9,600 / 10,300 / 10,700 chars when settled, E111).
@@ -140,6 +144,10 @@ async function main() {
     { path: '/play/', kind: 'game', settledText: 1500 },
     // /creator/ — the creator A–Z hub (E97): same ad furniture as a catalog page.
     { path: '/creator/', kind: 'catalog', settledText: 6000 },
+    // A /games/sims-4/<slug>/ collection page (E133) — server-rendered grid (one .mv-ads) + empty aside#secondary.
+    // A navigation timeout here is retried and graded by classifyRender like every other ad page (E111): could-not-run
+    // is INCONCLUSIVE, never a rollback; a 404 or a render missing its anchors is positive evidence.
+    ...(collectionPath ? [{ path: collectionPath, kind: 'collection' as Kind, settledText: 1500 }] : []),
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
     { path: '/llms-full.txt', kind: 'text' },
@@ -153,6 +161,7 @@ async function main() {
     { path: `/${INDEXNOW_KEY}.txt`, kind: 'text', expectText: INDEXNOW_KEY },
   ];
   if (!modId) console.error('[smoke] WARN could not read a mod id from /sitemap-mods.xml — detail + interstitial skipped');
+  if (!collectionPath) console.error('[smoke] WARN lib/collections.ts returned no sims-4 collections — collection route NOT rendered');
 
   const netBefore = await networkControl();
   console.log(`[smoke] network control before: ${netBefore.ok ? 'ok' : 'DEGRADED'} (${netBefore.passed}/${netBefore.total}: ${netBefore.why})`);
