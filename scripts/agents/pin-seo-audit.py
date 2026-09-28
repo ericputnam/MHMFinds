@@ -40,6 +40,19 @@ WHAT IT DOES
         Restores "Post Title" / "AI Text Slug" from a rollback file written
         by a previous --apply. `Is Posted=false` guards the restore PATCH too.
 
+    --ids FILE (E127, 2026-09-28)
+        Score / repair an explicit id list instead of the next-N-days window:
+        the file may be a top-up ledger (`entries[].id`), a ranked package
+        (`destinations[].ids`), `{"ids": [...]}` or a bare list. Rows are
+        selected by id with `Is Posted=false` only — no Post Date predicate,
+        because the rows this exists for are *stranded* (placeholder date
+        2025-01-01) and are about to be re-dated by pin-runway-topup.py.
+        Report and rollback files get an `-ids` suffix so a same-day window
+        audit is never overwritten. pin-runway-topup.py imports `fetch_by_ids`
+        / `score_rows` / `apply_proposals` from here to run the page-copy pass
+        on its own plan *before* it re-dates a row, so a revival row never
+        goes out with the 0-50/100 copy the 09-27 audit found on all 21.
+
     --self-test
         Offline assertions for keyword derivation, scoring and template
         generation. No network, no credentials.
@@ -672,6 +685,128 @@ def fetch_scheduled(config, today_str, ceiling_str, limit):
 
 
 # --------------------------------------------------------------------------
+# --ids FILE: explicit id selection (E127, 2026-09-28). Pure parsing is
+# covered by --self-test; the fetch has no date predicate on purpose.
+# --------------------------------------------------------------------------
+
+def parse_ids_file(obj):
+    """Ordered, de-duplicated integer ids from a parsed id file. Accepts a
+    pin-runway-topup / revive ledger (`entries[].id`), a ranked package
+    (`destinations[].ids`), `{"ids": [...]}`, or a bare list. Raises
+    ValueError on an empty list or a non-integer id — a malformed file must
+    never degrade into "nothing to do"."""
+    if isinstance(obj, dict):
+        if 'entries' in obj:
+            raw = [(e or {}).get('id') for e in (obj['entries'] or [])]
+        elif 'destinations' in obj:
+            raw = []
+            for dest in obj['destinations'] or []:
+                raw.extend((dest or {}).get('ids') or [])
+        elif 'ids' in obj:
+            raw = obj['ids'] or []
+        else:
+            raise ValueError('id file has none of "entries", "destinations", "ids"')
+    elif isinstance(obj, list):
+        raw = obj
+    else:
+        raise ValueError('id file must be a JSON object or list')
+    ids, seen = [], set()
+    for value in raw:
+        if isinstance(value, bool) or not isinstance(value, int):
+            if isinstance(value, str) and value.strip().isdigit():
+                value = int(value.strip())
+            else:
+                raise ValueError('non-integer id in id file: {!r}'.format(value))
+        if value in seen:
+            continue
+        seen.add(value)
+        ids.append(value)
+    if not ids:
+        raise ValueError('id file lists no ids')
+    return ids
+
+
+def load_ids_file(path):
+    with open(path) as handle:
+        return parse_ids_file(json.load(handle))
+
+
+def fetch_by_ids(config, ids, chunk=100):
+    """Rows for `ids` that are still unposted. Deliberately no Post Date
+    predicate: the rows this mode exists for carry the stranded placeholder
+    date and are about to be re-dated by pin-runway-topup.py. Order of the
+    input list is preserved so the caller's ranking survives."""
+    rows = []
+    for i in range(0, len(ids), chunk):
+        batch = ids[i:i + chunk]
+        query = ('{cols}&id=in.({ids})&%22Is%20Posted%22=eq.false').format(
+            cols=SELECT_COLS, ids=','.join(str(v) for v in batch))
+        rows.extend(supabase(config, 'GET', query))
+    rank = {v: i for i, v in enumerate(ids)}
+    for row in rows:
+        row['id'] = int(row['id'])
+    rows.sort(key=lambda r: rank.get(r['id'], len(rank)))
+    return rows
+
+
+def score_rows(rows, boards, source='template', page_fetcher=None,
+               max_consecutive_failures=3, pause=0.1):
+    """Score every row; in page mode resolve each distinct destination once
+    (cached by `page_fetcher`, default `fetch_page_meta`) and rotate the
+    excerpt variant across sibling rows of one destination. After
+    `max_consecutive_failures` destinations in a row fail to resolve, the
+    remaining destinations are marked unavailable without another network
+    call — a dead WordPress must never turn a 21-row pass into a
+    21 x timeout stall (the caller may be the floor top-up, which must not
+    be blocked by copy). Returns (scored, resolved_count, slug_count)."""
+    if source != 'page':
+        return [score_row(row, boards) for row in rows], 0, 0
+    fetcher = page_fetcher or fetch_page_meta
+    slugs = []
+    for row in rows:
+        slug = destination_slug(row.get('Post URL'))
+        if slug not in slugs:
+            slugs.append(slug)
+    meta_by_slug = {}
+    resolved = 0
+    consecutive_failures = 0
+    for slug in slugs:
+        if consecutive_failures >= max_consecutive_failures:
+            meta_by_slug[slug] = None
+            continue
+        meta = fetcher(slug)
+        meta_by_slug[slug] = meta
+        if meta:
+            resolved += 1
+            consecutive_failures = 0
+        else:
+            consecutive_failures += 1
+        if pause:
+            time.sleep(pause)
+    seen = {}
+    scored = []
+    for row in rows:
+        slug = destination_slug(row.get('Post URL'))
+        variant = seen.get(slug, 0)
+        seen[slug] = variant + 1
+        scored.append(score_row(row, boards, source='page',
+                                page_meta=meta_by_slug.get(slug), variant=variant))
+    return scored, resolved, len(slugs)
+
+
+def summarize_scored(scored):
+    """Numbers the report, the top-up ledger and the digest all quote."""
+    total = len(scored)
+    need_fix = sum(1 for s in scored if s['needs_fix'])
+    fixable = sum(1 for s in scored if s['needs_fix'] and s['proposal_ok'])
+    unavailable = sum(1 for s in scored if s.get('proposal_source') == 'page-unavailable')
+    mean_before = int(round(sum(s['score'] for s in scored) / total)) if total else 0
+    return {'total': total, 'passing': total - need_fix, 'need_fix': need_fix,
+            'fixable': fixable, 'page_unavailable': unavailable,
+            'mean_score': mean_before}
+
+
+# --------------------------------------------------------------------------
 # Report
 # --------------------------------------------------------------------------
 
@@ -742,10 +877,25 @@ def write_report(path, scored, days, today_str, ceiling_str, source='template'):
 # Apply / rollback
 # --------------------------------------------------------------------------
 
-def do_apply(config, scored, ledger_dir, today_str, source='template'):
+def rollback_ledger_path(ledger_dir, today_str, suffix=''):
+    """`pin-seo-rollback-<date>[-<suffix>].json`. The suffix keeps an
+    `--ids` run (or the top-up's embedded pass) from overwriting the same
+    day's window-audit rollback file — two applies, two undo files."""
+    name = 'pin-seo-rollback-{}{}.json'.format(today_str, '-' + suffix if suffix else '')
+    return os.path.join(ledger_dir, name)
+
+
+def apply_proposals(config, scored, ledger_path, today_str, source='template',
+                    verbose=True):
+    """Write the clean proposals, save the rollback ledger first-class, and
+    return the numbers: {'updated', 'skipped', 'unfixable', 'ledger', 'entries'}.
+    `ledger` is None when nothing needed writing (no file is created for a
+    no-op, so an empty file can never masquerade as an applied pass).
+    Callers that want an exit code use do_apply(); pin-runway-topup.py
+    embeds this dict in its own ledger."""
     to_write = [s for s in scored if s['needs_fix'] and s['proposal_ok']]
     skipped_unfixable = [s for s in scored if s['needs_fix'] and not s['proposal_ok']]
-    if skipped_unfixable:
+    if skipped_unfixable and verbose:
         print('  {} row(s) need a fix but the {} proposal did not '
               're-score clean (or the page was unavailable) — left untouched:'.format(
                   len(skipped_unfixable), source))
@@ -753,9 +903,12 @@ def do_apply(config, scored, ledger_dir, today_str, source='template'):
             print('    id={} keyword="{}" source={}'.format(
                 s['id'], s['keyword'], s.get('proposal_source', source)))
 
+    result = {'updated': 0, 'skipped': 0, 'unfixable': len(skipped_unfixable),
+              'ledger': None, 'entries': []}
     if not to_write:
-        print('\nNothing to apply — no row both needs a fix and has a clean proposal.')
-        return 0
+        if verbose:
+            print('\nNothing to apply — no row both needs a fix and has a clean proposal.')
+        return result
 
     ledger_entries = []
     updated = skipped = 0
@@ -785,8 +938,7 @@ def do_apply(config, scored, ledger_dir, today_str, source='template'):
             skipped += 1
         time.sleep(0.05)
 
-    ledger_path = os.path.join(ledger_dir, 'pin-seo-rollback-{}.json'.format(today_str))
-    os.makedirs(ledger_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(ledger_path) or '.', exist_ok=True)
     with open(ledger_path, 'w') as handle:
         json.dump({
             'generated': today_str,
@@ -796,11 +948,20 @@ def do_apply(config, scored, ledger_dir, today_str, source='template'):
             'entries': ledger_entries,
         }, handle, indent=2)
 
-    print('\n=== Applied: {} rewritten, {} skipped ==='.format(updated, skipped))
-    print('Rollback file: {}'.format(ledger_path))
-    print('Rollback (one command):')
-    print('  python3 scripts/agents/pin-seo-audit.py --rollback {} --apply'
-          .format(ledger_path))
+    if verbose:
+        print('\n=== Applied: {} rewritten, {} skipped ==='.format(updated, skipped))
+        print('Rollback file: {}'.format(ledger_path))
+        print('Rollback (one command):')
+        print('  python3 scripts/agents/pin-seo-audit.py --rollback {} --apply'
+              .format(ledger_path))
+    result.update({'updated': updated, 'skipped': skipped,
+                   'ledger': ledger_path, 'entries': ledger_entries})
+    return result
+
+
+def do_apply(config, scored, ledger_dir, today_str, source='template', suffix=''):
+    apply_proposals(config, scored, rollback_ledger_path(ledger_dir, today_str, suffix),
+                    today_str, source)
     return 0
 
 
@@ -1102,8 +1263,66 @@ def self_test():
     check(r4['proposal_source'] == 'template' and r4['proposal_ok'], r4)
     n += 1
 
+    # 16. (E127) --ids file shapes: top-up ledger, ranked package, {"ids"},
+    #     bare list; order kept, duplicates dropped, junk refused.
+    check(parse_ids_file({'entries': [{'id': 5}, {'id': '7'}, {'id': 5}]}) == [5, 7],
+          parse_ids_file({'entries': [{'id': 5}, {'id': '7'}, {'id': 5}]}))
+    check(parse_ids_file({'destinations': [{'ids': [3, 1]}, {'ids': [2, 3]}]}) == [3, 1, 2],
+          'package shape')
+    check(parse_ids_file({'ids': [9, 8]}) == [9, 8] and parse_ids_file([4]) == [4], 'ids/list')
+    for bad in ({'entries': []}, [], {'nope': 1}, {'ids': [True]}, {'ids': ['x']}, 'str'):
+        try:
+            parse_ids_file(bad)
+            raise AssertionError('accepted malformed id file: {!r}'.format(bad))
+        except ValueError:
+            pass
+    n += 1
+
+    # 17. (E127) score_rows in page mode: one fetch per distinct destination,
+    #     sibling variants rotate, and after 3 consecutive unresolved
+    #     destinations the rest are marked unavailable with no further call.
+    calls = []
+
+    def fetcher(slug):
+        calls.append(slug)
+        return pages.get(slug)
+    rows = [{'id': i, 'Post URL': 'https://musthavemods.com/sims-4-couple-poses-2/',
+             'Post Title': 'x', 'AI Text Slug': '#a', 'Board ID': 'B1', 'Board Name': 'Sims 4 Poses'}
+            for i in (1, 2)]
+    rows.append({'id': 3, 'Post URL': 'https://musthavemods.com/sims-4-cc-2025/',
+                 'Post Title': 'x', 'AI Text Slug': '#a', 'Board ID': 'B1', 'Board Name': 'Sims 4 Poses'})
+    scored, resolved, slug_count = score_rows(rows, boards, source='page',
+                                              page_fetcher=fetcher, pause=0)
+    check(calls == ['sims-4-couple-poses-2', 'sims-4-cc-2025'], calls)
+    check(resolved == 2 and slug_count == 2, (resolved, slug_count))
+    check(scored[0]['proposed_description'] != scored[1]['proposed_description'],
+          'sibling rows must rotate the excerpt variant')
+    check(all(s['proposal_ok'] for s in scored), scored)
+    del calls[:]
+    dead_rows = [{'id': i, 'Post URL': 'https://musthavemods.com/missing-{}/'.format(i),
+                  'Post Title': 'x', 'AI Text Slug': '#a', 'Board ID': 'B1',
+                  'Board Name': 'Sims 4 Poses'} for i in range(6)]
+    scored, resolved, slug_count = score_rows(dead_rows, boards, source='page',
+                                              page_fetcher=lambda s: calls.append(s),
+                                              pause=0)
+    check(len(calls) == 3 and resolved == 0 and slug_count == 6, (calls, resolved))
+    check(all(s['proposal_source'] == 'page-unavailable' and not s['proposal_ok']
+              for s in scored), 'unresolved rows must never be proposal_ok')
+    summary = summarize_scored(scored)
+    check(summary['total'] == 6 and summary['fixable'] == 0
+          and summary['page_unavailable'] == 6, summary)
+    n += 1
+
+    # 18. (E127) rollback ledger naming: suffix isolates an --ids / top-up
+    #     apply from the same day's window apply.
+    check(rollback_ledger_path('r', '2026-09-28') == os.path.join('r', 'pin-seo-rollback-2026-09-28.json'),
+          rollback_ledger_path('r', '2026-09-28'))
+    check(rollback_ledger_path('r', '2026-09-28', 'topup')
+          == os.path.join('r', 'pin-seo-rollback-2026-09-28-topup.json'), 'suffix')
+    n += 1
+
     print('self-test: {} assertion groups passed (keyword + scoring + templates + '
-          'page proposals, offline)'.format(n))
+          'page proposals + ids mode, offline)'.format(n))
     return 0
 
 
@@ -1132,6 +1351,12 @@ def main():
                              '(default) or the destination post\'s own WP REST title '
                              'and excerpt (`page`; read-only, cached per slug)')
     parser.add_argument('--report-dir', default=os.path.join('reports', 'funnel'))
+    parser.add_argument('--ids', metavar='FILE',
+                        help='score/repair exactly these row ids (top-up ledger '
+                             '`entries[].id`, package `destinations[].ids`, '
+                             '`{"ids":[..]}` or a bare list) instead of the next-N-days '
+                             'window; selection is `Is Posted=false` only, no date '
+                             'predicate (E127). Report/rollback files get an `-ids` suffix.')
     args = parser.parse_args()
 
     if args.self_test:
@@ -1146,14 +1371,26 @@ def main():
     today = date.today()
     ceiling = today + timedelta(days=days)
     today_str, ceiling_str = str(today), str(ceiling)
+    suffix = 'ids' if args.ids else ''
 
-    print('=== {}: pin SEO audit ({} days, Post Date {} .. {}) ==='.format(
-        'APPLY' if args.apply else 'AUDIT (read-only)', days, today_str, ceiling_str))
-
-    rows = fetch_scheduled(config, today_str, ceiling_str, HARD_CAP)
-    print('Fetched {} row(s) scheduled and not yet posted.'.format(len(rows)))
+    if args.ids:
+        try:
+            ids = load_ids_file(args.ids)
+        except (OSError, ValueError) as exc:
+            print('ERROR: cannot read id file {}: {}'.format(args.ids, exc))
+            return 2
+        print('=== {}: pin SEO audit ({} id(s) from {}) ==='.format(
+            'APPLY' if args.apply else 'AUDIT (read-only)', len(ids), args.ids))
+        rows = fetch_by_ids(config, ids)
+        print('Fetched {} of {} id(s) still unposted ({} already posted or unknown).'
+              .format(len(rows), len(ids), len(ids) - len(rows)))
+    else:
+        print('=== {}: pin SEO audit ({} days, Post Date {} .. {}) ==='.format(
+            'APPLY' if args.apply else 'AUDIT (read-only)', days, today_str, ceiling_str))
+        rows = fetch_scheduled(config, today_str, ceiling_str, HARD_CAP)
+        print('Fetched {} row(s) scheduled and not yet posted.'.format(len(rows)))
     if not rows:
-        print('Nothing scheduled in this window — nothing to audit.')
+        print('Nothing selected — nothing to audit.')
         return 0
 
     boards = load_boards_csv(args.boards_csv)
@@ -1162,28 +1399,14 @@ def main():
               'unknown for every row (not a failure).'.format(
                   args.boards_csv or os.path.join(utils_dir(), 'pinterest-boards.csv')))
 
+    scored, resolved, slug_count = score_rows(rows, boards, source=args.source)
     if args.source == 'page':
-        slugs = sorted({destination_slug(r.get('Post URL')) for r in rows})
-        resolved = 0
-        for slug in slugs:
-            if fetch_page_meta(slug):
-                resolved += 1
-            time.sleep(0.1)
         print('Page source: {} of {} destination(s) resolved via WP REST '
-              '(unresolved rows are left untouched).'.format(resolved, len(slugs)))
-        seen = {}
-        scored = []
-        for row in rows:
-            slug = destination_slug(row.get('Post URL'))
-            variant = seen.get(slug, 0)
-            seen[slug] = variant + 1
-            scored.append(score_row(row, boards, source='page',
-                                    page_meta=fetch_page_meta(slug), variant=variant))
-    else:
-        scored = [score_row(row, boards) for row in rows]
+              '(unresolved rows are left untouched).'.format(resolved, slug_count))
 
     report_path = os.path.join(
-        args.report_dir, 'pin-seo-audit-{}.md'.format(today_str))
+        args.report_dir, 'pin-seo-audit-{}{}.md'.format(
+            today_str, '-' + suffix if suffix else ''))
     summary = write_report(report_path, scored, days, today_str, ceiling_str, args.source)
     print('\n--- Summary: {} rows, {} passing, {} need a fix ({} with a clean {} '
           'proposal), mean score {}/100, {} board-fit unknown ---'.format(
@@ -1197,7 +1420,7 @@ def main():
               'for rows that need a fix and re-score clean.')
         return 0
 
-    return do_apply(config, scored, args.report_dir, today_str, args.source)
+    return do_apply(config, scored, args.report_dir, today_str, args.source, suffix)
 
 
 if __name__ == '__main__':
