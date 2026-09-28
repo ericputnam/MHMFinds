@@ -587,18 +587,30 @@ async function pullPatreonApi(): Promise<PatreonApiData> {
   const members: PatreonMemberAttrs[] = [];
   let url: string | null =
     `https://www.patreon.com/api/oauth2/v2/campaigns/${campaign}/members?fields%5Bmember%5D=patron_status,pledge_relationship_start,last_charge_date,currently_entitled_amount_cents,email&include=user&page%5Bcount%5D=500`;
+  // E131: the walk is ~12 pages of ~500 rows. Each page is cancelled (not just
+  // abandoned) at PATREON_PAGE_TIMEOUT_MS, and the whole walk at
+  // PATREON_WALK_BUDGET_MS, so a hung Patreon cannot hold the morning scoreboard.
+  // A walk that hits the page cap with `links.next` still set is a truncated
+  // sample: unknown, never a member count (same rule as patreon-q4-gate-preread).
+  const PATREON_PAGE_TIMEOUT_MS = 30_000;
+  const PATREON_WALK_BUDGET_MS = 180_000;
+  const PATREON_PAGE_CAP = 50;
+  const walkDeadline = Date.now() + PATREON_WALK_BUDGET_MS;
   let pages = 0;
-  while (url && pages < 50) {
+  while (url && pages < PATREON_PAGE_CAP) {
+    const left = walkDeadline - Date.now();
+    if (left <= 0) throw new Error(`Members API walk exceeded the ${PATREON_WALK_BUDGET_MS} ms budget after ${pages} pages`);
     const j: {
       data?: Array<{ attributes: PatreonMemberAttrs; relationships?: { user?: { data?: { id?: string } | null } } }>;
       links?: { next?: string };
-    } = await patreonGet(url);
+    } = await patreonGet(url, { signal: AbortSignal.timeout(Math.min(PATREON_PAGE_TIMEOUT_MS, left)) });
     // `include=user` puts the Patreon user id on the relationship; we never read
     // the `included` user objects (no user fields are requested).
     members.push(...(j.data ?? []).map((d) => ({ ...d.attributes, patreonUserId: d.relationships?.user?.data?.id ?? null })));
     url = j.links?.next ?? null;
     pages += 1;
   }
+  if (url) throw new Error(`Members API walk truncated at the ${PATREON_PAGE_CAP}-page cap with links.next unexhausted (${members.length} rows so far)`);
 
   const dbUrl = fileEnv.DIRECT_DATABASE_URL ?? process.env.DIRECT_DATABASE_URL;
   if (!dbUrl || !dbUrl.startsWith('postgres')) throw new Error('DIRECT_DATABASE_URL missing from .env.local');
