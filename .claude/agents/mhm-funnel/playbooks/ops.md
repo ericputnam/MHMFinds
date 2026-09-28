@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-09-28 — E133
+- Tried: smoke-render renders 1 /games/sims-4/<slug>/ collection/run, rotated by UTC day over getCollectionsForGame('sims-4').map(collectionHref); expectations() grades anchors via AD_KINDS, not its own kind list; timeouts stay INCONCLUSIVE (T0, PR #200 c839ce7).
+- Before → after: collection routes in the smoke 0/14 → 1/15 (vampire-cc 200, secondary=1, mv-ads=1, 7.3 s); smoke ≈59 s → ≈69 s; 7/11 new tests red on pre-fix main; after-merge verify PASS 07:21 with the new script. Run success 14d 10/14 (71.4%); ledger completeness since 09-21 67/69 (97.1%).
+- Verdict: MORE DATA (read 2026-10-05: 1 collection per smoke JSON, ≥7 distinct slugs, 0 timeout-only rollbacks on it).
+- Next time: ledger completeness since 09-21 is 67/69 — both gaps are Quinn's daily PRs (#138, #190); the row must come from the step that sees the merge, so make the runner write it after Quinn exits.
+
 ## 2026-09-27 — E126
 - Tried: "section `ok:false` → null" in a pure `deriveScoreboardFields()`; ledger rows keyed by identity — strict (when, mode-word, commit) for `--flush-pending`, supersede (same mode-word + commit) for the new `--merge-local` that the runner seed step now calls; `--incident` asserts `YYYY-MM-DD-HHMMSS.md` (exit 64).
 - Before → after: replaying the real operator changelog into main appended 2 → 0 duplicate rows (200 skipped); 09-26 `nonAdMonthly` 0 → null in the subprocess test; 3/6 + 3/4 new tests red pre-fix, 126/126 guard suites green. PR #194 `b8732d1`, verify PASS 07:24.

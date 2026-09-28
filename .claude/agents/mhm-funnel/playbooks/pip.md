@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-28
+- Tried: E127 — moved the E103 `--source page` pin-SEO rewrite INSIDE `pin-runway-topup.py` so it runs on exactly the plan's rows before the re-date (fail-open, own undo file, `seo_pass` in the ledger); shipped PR #205 (deploy-verify PASS) and used it for SD-10 floor top-up #4 the same morning.
+- Before → after: top-up rows scored mean 67/100 (2/21 passing) → 89/100 (21/21 passing) on a re-read of the changed field; runway 1.34 → 1.89 d (52 → 73 rows ÷ 38.71/day); 21 re-dated 7×09-28/29/30 over 9 destinations; 19 rewritten, 0 skipped, 9/9 destination pages resolved.
+- Verdict: pending (read 2026-10-06 — sessions to the 9 destinations vs 2,644 baseline). E66 EXTEND to 10-05 (Tue–Fri 7,776/day = 97.2%), E70 KEEP (4 applies 21/21). The floor mechanics: four 21-row top-ups have never lifted runway above 2.44 d; the cap is a treadmill, not a fix.
+- Next time: a copy pass that shares rows with a scheduling tool must (1) re-read the rows with its own columns so the rollback carries the real old description, (2) be fail-open to the scheduler, and (3) verify with a separate `--ids` read of the changed field, not the dry-run preview. Grade E66/E70 with the GA4 daily series and quote the rule's window exactly (Tue–Fri), not the visually nicer week.
+
 ## 2026-09-26 (E116 / E117)
 - Tried: E116 top-up #2 (T0, SD-22): 21 sessions-ranked rows (`rank-pin-destinations.ts` GA4 7d/28d → 23 destinations, 144 ids) to 09-26/27/28, 1 per URL per day, Pinterest API untouched (`--rate-source queue`, `--sections-from-queue`). E117 `(not set)` audit from one GA4 read.
 - Before → after: runway 63 ÷ 36.0/day (posted rows by Post Date, 14d) = 1.75 d → 84 ÷ 36 = 2.33 d (09-26 0→7, 09-27 14→21, 09-28 7→14). Tool bug: Pinterest fetch got 1 page (100 pins) then timed out; 100 ÷ 14 = 7.14/day read as "runway 8.8 d, no-op" — a truncated sample is a floor on rate = ceiling on runway. `(not set)` 3,816/7d: 73/73 rows zero-pageview, 97% desktop, 86 engaged, sources named (Pinterest 2,327, Bing 868) → noise; a UTM fix would move nothing.
@@ -60,8 +66,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: E15 pins leg **KILL** (makeup-cc 0, witch-cc 0 Pinterest sessions 09-13→09-19 vs ≥10; token leg KEEP stands). E46/E56 **ROLLED BACK (operator, 09-19)** — cadence leg held while live (pinsCr…
 - Next time: **a dry run only proves what it prints — read the plan, not the exit code.** The first ids-mode dry run exited 0 with a plausible plan and was wrong on the one thing the mode exists for (…
 
-## 2026-09-20
-- Tried: E66 — read-only diagnosis of the apex-host Pinterest decline behind the 09-19 rollback (T0, `reports/funnel/pinterest-read-2026-09-20.md`), plus the SD-10 wording fix in `check-pinner.sh` ste…
-- Before → after: headline Pinterest 7d −5.4% (65,341 → 61,799, both hosts) of which the Labor Day pair (09-07 10,372 vs 09-14 8,300) is −2,072 = **58%**; ex-Monday −2.7% (apex −4.0%, blog +0.5%). Ape…
-- Verdict: rollback premise **unproven** (decline is a holiday artefact plus a diffuse taper on un-revived pages) but not disproven (GA4 cannot see impressions). E66 MORE DATA — Tue–Fri mean 8,003/day…
-- Next time: **check the calendar before quoting a WoW.** One holiday Monday in the prior week manufactured most of a "−7%" that then justified a rollback of three experiments. The scoreboard compares…
+_Older entries (up to 2026-09-20) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._

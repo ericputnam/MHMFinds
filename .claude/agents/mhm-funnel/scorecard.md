@@ -30,6 +30,25 @@ target · 🟡 within 10% · 🔴 more than 10% below. Silence is not green.
 
 ---
 
+## Week of 2026-09-28 (covers 2026-09-21 → 2026-09-27, judged on data to 09-26)
+
+**Headline:** total revenue 28d $5,996 Mediavine (08-30→09-26) + ≈$146 non-ad vs expectation $5,757 (🟢 104.2%; Mediavine +6.5% vs prior 28d) · sessions 28d 355,144 vs expectation 360,796 (🟡 98.4%, floor 97% — ON LINE run 2 of 2, re-weighting lifted) · owned-audience net adds 110/wk vs target 120 (🟡 92%) · non-ad revenue $146/mo public ($153.50 API, 55 paid) vs $200 (🔴 73%)
+
+| Agent | KPI | Target | Actual (7d to 09-26) | Grade | Moves shipped (T0/T1) | Note |
+|---|---|---|---|---|---|---|
+| Pip | sessions by channel 7d | hold ≥ Aug run-rate (~92K/7d) | 90,708 (+5.0% WoW); Pinterest 59,711 (+5.6%); Bing 16,337 (+3.2%) | 🟡 | 7 T0 merges 7d (E116, E117, E124, E127 + top-ups #2–#4 applied) | Runway 1.34 → 1.89 d after top-up #4; four 21-row top-ups never lifted it above 2.44 d — treadmill. Writer inflow still 0/day (Q11-b re-pitched today). E66 EXTEND, E70 KEEP. |
+| Sage | organic + AI-referral sessions 28d | +25% AI-referral by 09-30 (≥385/7d) | google_organic 2,959 (+11.2%); ai_referral 332 (+9.2%, 86% of 385); GSC /games/sims-4/* 169 clicks pos 23.9 | 🟡 | 7 T0 merges 7d (E114, E115, E121, E128) | E47/E52 KILL: 13/13 IndexNow OK days and Bing still 16,337 < 17,032. E32 KEEP, E18 EXTEND (pos 37.49 vs ≤37). E2/E42 read 09-30 at 332 vs 385. |
+| Nova | pages shipped / creators onboarded | ≥1 page + 1 brief per week; creators >0 | /creator/ hub + 534 pages live (E97/E113); claim path end-to-end (E122 T1 + E129 admin review); creators onboarded 0; claim subs 0 | 🟢 surfaces · 🔴 creators | 7 merges 7d (E113, E122, E129 + fixes) | "Onboarded 0" was 0 by construction until 09-28; now 0 because nobody is sent to the page — outreach template is the T2 ask. E33 KEEP closed (coverage 96.87%). |
+| Cass | owned-audience net adds 7d | 120 | 110 (26 email + 84 accounts); capture 1.21/1K | 🟡 | 6 T0 merges 7d (E118, E123, E130) | E10 KILL (0 rows ever); E130 account offer under the /mods/[id] image reads 10-12. Q10 day-3 dropped under the 7-day rule; E54/E68 grade 09-30 on two batches. |
+| Rio | non-ad revenue / mo | $200 by 09-30 | $146 public / $153.50 API (55 paid); joins 7d 3, cancels 1; connected 0/55 | 🔴 | 5 T0 merges 7d (E108, E125, E131) | Target will be missed 09-30. E55/E60 read 09-29: pre-read KEEP (page RPM floors pass). /go pageviews −49% WoW (342→175) is the member-CTA ceiling. Q16 drops 09-29, Q17 re-pitch 09-30. |
+| Rowan | returning-visitor share / engaged sessions | — (no scoreboard line yet) | not read this week — no returning-visitor or engaged-sessions series on the scoreboard; 3 room pages shipped (bedroom 250, kitchen 160, bathroom 123 mods) | ⚪ unmeasured | 6 T0 merges 7d (E100, E109, E112, E120, E132) | Every room theme is now title-only; E132 stops CAS mistypes at ingest but 74 of 76 E120 rows came from aiFacetExtractor (queued). KPI needs an `[ops]` scoreboard line before it can be graded. |
+| Ops | run success rate / ledger completeness | 100% / 100% | run success 14d 10/14 = 71.4% (09-14 no digest, 09-17 prompt too long, 09-18/09-22 600 s kill; 09-23→09-28 6/6); ledger completeness since 09-21 67/69 = 97.1% (gaps #138, #190 — both daily PRs; #198 backfilled 09-28) | 🟡 | 6 merges 7d (E101, E110, E111, E126, E133) — 11.8% of 51 (cap 20%) | Not-measured now stays null (E126). Open: #201 INCONCLUSIVE on a curl leg with no network control; `nonAdRevenueMonthlyGross: 0` at the source. |
+
+**Experiments graded:** KEEP E32, E33 (closed), E70 (closed) · KILL E47, E52, E10 (lifetime 0) · EXTEND E18 → 10-06, E66 → 10-05 · CLOSED paper E79/E80 · pending reads 09-29 E55/E60, 09-30 E2/E27/E42/E54/E68/E76/E82/E91.
+**Biggest risk:** pin inflow is still 0/day and the daily 21-row top-up is a treadmill (four mornings: 1.83→2.44, 1.75→2.33, 1.59→2.16, 1.34→1.89 d); the Q12 slice runs dry 10-05 and the ranked pool covers ~7 more top-ups. Pinterest is 66% of sessions and only Q11-b (operator scp) changes the slope. Second: non-ad revenue misses its 09-30 target with 0 of 55 paid patrons connected and `/go` reach halved.
+**Top 3 bets next week:** 1) Q11-b approval → writer schedules 12 pins/day (Pip patch, operator scp). 2) E130 "Save this find" + a favorites page (Rowan) so the account offer has something to promise; read 10-12. 3) Creator outreach template (Nova, T2) — the first thing that sends anyone to the now-working claim path.
+**Operator queue:** 4 open T2 decisions (Q11-b 5 d, Q16 6 d — drops 09-29, Q17 5 d, Q18 7 d) + Q4 dashboard steps (24 d) + 4 operator-only actions (`NEXT_PUBLIC_SITE_URL` 13 mornings, BigScoots, GA4 dimension, GSC).
+
 ## Week of 2026-09-21 (covers 2026-09-14 → 2026-09-20, judged on data to 09-19)
 
 **Headline:** total revenue 28d $6,051 vs expectation $5,798 (🟢 104.4%; Mediavine $5,916 +5.4%) · sessions 28d 355,780 vs expectation 369,773 (🟡 96.2%, floor 97%) · owned-audience net adds 52/wk vs target 120 (🔴 43%) · non-ad revenue $148/mo ($150.50 API) vs $200 (🔴 74%)
@@ -48,28 +67,4 @@ target · 🟡 within 10% · 🔴 more than 10% below. Silence is not green.
 **Operator queue:** 3 open T2 decisions (Q12 1 day, Q10 5 days, Q9 31 days — closes 09-22 by its own rule) + 4 approved items waiting on operator hands (Q4 step 1, Q8+Q11 scp, evening task, `NEXT_PUBLIC_SITE_URL`).
 **Missing block:** the Week of 2026-09-14 block was never written (the 09-14 run's grades live in `digest-2026-09-14.md` → `digest-2026-09-20.md`); not reconstructed here to avoid re-deriving numbers after the fact.
 
-## Week of 2026-09-07 (covers 2026-09-01 → 2026-09-07, first graded week)
-
-**Headline:** owned-audience net adds 44/wk vs target 120 (🔴, 37% of target; baseline was 63) · non-ad revenue $127/mo vs $200 (🔴, 64%) · MV 28d $5,628 vs prior $6,088 (guardrail 🟡 at 92.4%; circuit breaker 🟢 on 09-07 — 09-05 was +12% vs same-weekday avg) · **total revenue 28d ≈ $5,745 vs ≈ $6,207 prior (−7.4%) — the SD-8 number, 🔴**
-
-| Agent | KPI | Target | Actual (7d to 09-05) | Grade | Moves shipped (T0/T1) | Note |
-|---|---|---|---|---|---|---|
-| Pip | sessions by channel 7d | hold ≥ Aug run-rate (~92K/7d) | 87,770 (−4.3%); Pinterest 57,522 (−6.5%) | 🔴 | 2 T0 (E1 read-back + 7 catalog pins; E14 liveness check) | Post-summer Pinterest taper, second week; pinner alive (112 pins/7d, backlog 1,901). Stored Pinterest token 401 → Q2. |
-| Sage | organic + AI-referral sessions | +25% AI-referral by 09-30 | google_organic 1,846 (+31.7%); ai_referral 228 (−33.7%); GSC clicks 28d 2,171 (+3.5%) | 🟡 | 3 T0 (E2 robots, E8 diagnosis, E11 hydration fix) | B3 diagnosis delivered 4 days early. AI referral trending the wrong way; homepage SSR (T1) is the queued lever. |
-| Nova | pages shipped / creators onboarded | ≥1 page + 1 brief per week | 2 collection pages (witch-cc 48, makeup-cc 922) + 2 briefs (W36, W37); creators 0 | 🟢 | 3 T0 (E3, E7, E12) | Brief adoption 0/1 so far (W36). |
-| Cass | owned-audience net adds 7d | 120 | 44 (email +3, accounts +41) | 🔴 | 3 T0 (E4 /go, E6 collections, E10 mod detail) | 3 new surfaces → 3 signups; footer still 16 of 20 subscribers. Nothing sent to 1,553 accounts yet — SMTP transport is the unlock. |
-| Rio | non-ad revenue / mo | $200 by 09-30 | $127 (47 paid patrons) | 🔴 | 3 T0 diagnoses (E5, E9, E13) + Q4 package | Three yellows all traffic-side; E5 counter 0/5. Q4 Patreon relaunch (+$348/mo case) unanswered 3 days. Affiliates $0 on 53 clicks → cut-or-kill 09-15. |
-
-**Experiments graded:** none due (first read dates: E11 09-08, E14 09-12, E5/E9/E13 09-15, E1/E4 09-16). 14 rows open, 0 killed.
-**Biggest risk:** the loop itself, not a channel — 09-03 and 09-06 runs never launched, the evening check has no ledger row since 09-04, and today's first launch (08:00) failed headless auth (keychain token expires 2026-09-07 16:00) before the 08:03 retry succeeded. A team that runs 4 days in 7 cannot ship 5 moves/week. Second: Pinterest taper (−6.5% WoW) is 89% of the revenue gap and nothing on the site fixes it.
-**Top 3 bets next week:** 1) Sage's homepage SSR shell (T1) — the #1 historical click source is a blank shell to Googlebot. 2) Cass's SMTP newsletter transport + first send to the 20 subscribers, then re-permission to accounts (T1; needs the operator's 10-minute BigScoots step). 3) Rio: Patreon OAuth membership package (T2) so Q4 has a product the day it is approved.
-**Operator queue:** 3 open T2 (Q1 stale main, Q2 tokens, Q4 Patreon tiers), oldest 6 days — Q1 and Q2 hit the 7-day re-pitch rule tomorrow.
-
-## Week of 2026-09-01 (baseline, no grades yet)
-
-**Headline:** owned-audience net adds ≈63/wk (baseline) · non-ad revenue ≈$100/mo (baseline) · MV 28d $6,066 (Aug), RPM $15.09
-
-Baseline week. Team chartered 2026-09-01; first graded block lands Monday 2026-09-07.
-Known reds carried in from the fact base: Google clicks −94% over 16 months
-(undiagnosed), 17 email subscribers, GA4 has no conversion events, pinner is
-unmonitored, `main` is 4+ weeks behind the feature branch.
+Older blocks (Week of 2026-09-07, Week of 2026-09-01 baseline) live verbatim in `archive/scorecard-2026-09.md`.

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-28
+- Tried: E128 (T0, PR #199 `45addf4`). The IndexNow key GET and submit now time out at 15 s and 30 s; a timeout grades COULD-NOT-RUN, never FAIL. A source scan requires a timeout on every `fetch(`.
+- Before → after: fetches with a timeout 1 of 3 → 3 of 3; 8 of 55 tests red before the fix; dry run same 30 URLs. Graded: E47 and E52 KILL — Bing 7d 16,337 against the 17,032 target with IndexNow OK on all 13 days, so a working sitewide push did not move Bing. E32 KEEP: collections 169 clicks at position 23.9, `/mods/*` 596. E18 EXTEND: position 37.49, 0.49 short of the ≤37 rule.
+- Verdict: MORE DATA (read 2026-10-05: 7/7 runner lines present, 0 new FAIL).
+- Next time: a `beforeEach` that returns `mock.mockClear()` returns the mock itself; vitest treats a returned function as teardown and hung until the 10 s hook timeout — always write hooks with braces. In GSC, a page-filtered query broken down by country summed to 129 `/mods/*` clicks while the date breakdown summed to 596: grade a clicks guard with the same breakdown as its baseline.
+
 ## 2026-09-26
 - Tried: E114 (T0): registry→surface scanner `collection-surfaces-llms-sitemap-feeds.test.ts` — every collection slug on llms.txt / llms-full.txt / sitemap-nextjs.xml / per-collection feed / IndexNow with one identical canonical URL; all 26 green pre-fix (kitchen-cc was already on all four live — the surfaces are registry-driven), seen red by dropping one slug. E115 (T0): explicit IndexNow `--apply --creators --days 3` → 596 URLs http=200 (report `reports/funnel/indexnow-2026-09-26.md`). Network was degraded: MCP calls hung twice; Quinn ordered no further GA4/GSC calls. Pattern: **get the breakdown in the first call and stop** — the chatgpt-only drop (304→248, every other AI source flat) was known 5 minutes in.
 - Before → after: ai_referral 7d 274 (09-18→09-24; prev 329) → read 10-03 / 10-10, keep if ≥300 or kitchen-cc ≥5 landings/7d; Bing /creator/* landings 0 → read 10-03 with E95 (≥20).
@@ -82,12 +88,4 @@ means DB schema migrations. I had that wrong in an earlier entry.
 **Next:** the GA4:GSC ratio on the scoreboard (owed from 09-20), then `/games/*` facet titles
 sitting at position ~25 on 5–6K impressions each.
 
-## 2026-09-16
-- Tried: decompose the scoreboard's google_organic 7d **2,404 (+32.2%)** and ai_referral **323 (+21.9%)** against GSC and GA4 (E57, Tier 0,…
-- Two wins that *are* in GSC, both small: (a) the 09-12 un-consolidation — 09-12 and 09-13 are the **two highest click days in the 21-day wi…
-- Plumbing: no gap. `shoes-cc` (shipped 09-13, crawled 09-13T15:31Z) and `loading-screens` (shipped 09-15, crawled 09-15T16:30Z — **indexed…
-- Before → after: new metric **GA4:GSC ratio for Google organic**, baseline **1.81** (09-01–09-07), current **2.34** (09-08–09-13) → read **…
-- Verdict: MORE DATA (read 2026-09-23). No code shipped — all three candidate Tier 0 fixes in the brief were closed by the data.
-- Next time: wire the ratio into `funnel-scoreboard.ts` so a GA4/GSC divergence flags itself (its own run — Pip and Rio collided on that fil…
-
-_Older entries (2026-09-15 and earlier) moved to `archive/playbooks/sage-2026-09.md` verbatim; nothing deleted._
+_Older entries (up to 2026-09-16) live verbatim in `archive/playbooks/sage-2026-09.md`; nothing deleted._
