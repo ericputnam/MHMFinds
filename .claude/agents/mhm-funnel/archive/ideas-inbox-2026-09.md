@@ -169,3 +169,20 @@ Context from the 09-22 run: Quinn's subagents were killed at the 600 s backgroun
 - [x] [ops] `ledger-commit.sh --incident` copies by basename (09-26 closure landed as `e111-incident.md`, rename `704b31b`): take `path:dest` or assert the `YYYY-MM-DD-HHMMSS.md` name. T0. Ops, 09-26. — shipped in E126, Ops PR #194 `b8732d1`: `--incident` now requires `YYYY-MM-DD-HHMMSS.md` (exit 64) (Quinn, 09-27)
 
 - [x] [ops] `funnel-history.ts` wrote `nonAdMonthly: 0` for 09-26 because the Patreon scrape terminated (scoreboard printed "$0.00/mo gross" for *unavailable*) — a not-measured must be `null`, never 0 (Quinn nulled the row by hand). T0. Quinn, 09-26. — shipped in E126, Ops PR #194 `b8732d1`: `deriveScoreboardFields()` nulls every field from an `ok:false` section (Quinn, 09-27)
+
+## Moved 2026-09-28 (verbatim)
+
+Moved 2026-09-27 → archive: Q14/Q15/B3 (owned, in queue); runner paper-trail, blog host 301, bs_cache purge, launchd fallback (T2 / operator checklist); Edit-denied `.claude/`, merge-gate contention, gh-merge exit-1 (practised, no change pending); closed cass callbackUrl (MOOT), rio E125 #196, sage E121 #192, cass E123 #191, ops E126 #194 (history null, --incident name).
+
+- [ ] [pip] top-up treadmill: 3 consecutive floor-triggered top-ups (09-25/26/27), each +0.57 d vs ~0.6 d/day drain; runway will be <2.0 d again 09-28. The standing approval holds the floor but cannot reach 3.0 d (hard_cap_21 bound all three days). Quinn: fold into Monday's Q11-b 7-day-rule re-pitch as the number. — Pip, 09-27  → consumed by the 2026-09-28 Q11-b re-pitch.
+
+## Consumed 2026-09-28 (verbatim; shipped as E127–E133 or reworked)
+
+- [ ] [sage] Bound the IndexNow POST and key-file fetch with AbortSignal.timeout; today only the new WP read is bounded. A hung api.indexnow.org would stall runner step 0c2 (T0) — Sage, 09-27
+- [ ] [nova] admin review affordance: when approving a source='Creator Claim' submission, promote the claimant's pending-<slug>-… CreatorProfile.handle to <slug> and set isCreator in one action (/admin/creators + /api/admin/submissions; T0 admin-only code) — today it is two manual edits — Nova, 09-27
+- [ ] [pip] pin-SEO × top-up ordering: the 21 E124 rows scored 0–50/100 on today's page-source audit (titles 39 chars, descriptions 418–650 chars) — revival rows go out with the weakest copy in the queue. Add a `--source page` copy pass *inside* `pin-runway-topup.py` (before the re-date, same ledger) so the treatment is part of the top-up and never contaminates an open read; needs `pin-seo-audit.py --ids FILE` mode (Tier 0). — Pip, 09-27
+- [ ] [cass] The mod-detail email box (E10) has had 0 waitlist rows in 22 days. Grade it KILL/REWORK and try a "save your finds" (account) offer next to the favorite button instead of a bottom-of-page email form. Same check for creator-page (0 rows since 09-23). T0. — Cass, 09-27
+- [ ] [rio] `scripts/_patreon-auth.ts` persists refreshed tokens to `.env.local` in the *cwd*: a 401-triggered refresh from an agent worktree rotates the single-use pair in the worktree copy only and strands the operator's refresh token in the operator repo's `.env.local`. Refuse to refresh outside the operator repo, or write back to a path from env. T0, before the next monthly expiry. — Rio, 09-27
+- [ ] [rio] `patreonGet()` takes no `AbortSignal`; E125 bounds the pre-read by racing, so a hung fetch is abandoned, not cancelled. Add an optional `init` with `AbortSignal.timeout(ms)` and use it from the scoreboard's `pullPatreonApi`, which walks the same ~12 pages unbounded. T0. — Rio, 09-27
+- [ ] [rowan] Detector class rule: a row that passes isBedroomTitle/isKitchenTitle/isBathroomTitle must never get a CAS contentType at ingest. Own PR with a whole-catalog before/after diff; E120 hand-fixed 76 of these. — Rowan, 09-27
+- [ ] [ops] `deploy-verify.sh` smoke set still does not render a `/games/sims-4/*` collection route; Rowan curled three by hand today. — Rowan, 09-27

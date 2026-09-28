@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T10:37:55.392Z",
+  "generatedAt": "2026-09-28T10:38:05.953Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3089,13 +3089,13 @@
     },
     {
       "date": "2026-09-26",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 295.2,
+      "sessions": 15230,
+      "rpm": 19.38,
       "expectedRevenue": 266.77,
       "expectedSessions": 14429,
       "nonAdMonthly": null,
-      "ownedAdds7d": 90,
+      "ownedAdds7d": null,
       "pinterestSessions7d": 59330,
       "returningShare7d": 0.5236410670263218,
       "nonPinterestShare7d": 0.14819387813702412,
@@ -3160,6 +3160,42 @@
         "Ops": 6,
         "Rowan": 4,
         "PR": 1
+      }
+    },
+    {
+      "date": "2026-09-28",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 195.9,
+      "expectedSessions": 12508,
+      "nonAdMonthly": 146,
+      "ownedAdds7d": 110,
+      "pinterestSessions7d": 59711,
+      "returningShare7d": 0.5192453660414719,
+      "nonPinterestShare7d": 0.15363571934798015,
+      "pagesPerSession7d": 1.5574467143268187,
+      "engagementRate7d": 0.7113720369181735,
+      "favorites7d": 1438,
+      "downloadClicks7d": 382,
+      "newMods7d": 50,
+      "catalogTotal": 16561,
+      "captureRatePer1k": 1.212682453587335,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.11864406779661017,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Pip": 7,
+        "Sage": 8,
+        "Cass": 7,
+        "Rio": 6,
+        "Nova": 8,
+        "Quinn": 8,
+        "operator": 3,
+        "Ops": 7,
+        "Rowan": 5
       }
     }
   ],
@@ -4088,13 +4124,6 @@
     },
     {
       "date": "2026-09-21",
-      "kind": "merge",
-      "label": "PR #145 operator approvals 2026-09-21 (Tier 0 docs)",
-      "commit": "c6e005d",
-      "result": "PASS"
-    },
-    {
-      "date": "2026-09-21",
       "kind": "incident",
       "label": "Incident: production alias twice fell behind `main` (two `vercel promote`s); no rollback, no user-facing failure"
     },
@@ -4132,13 +4161,6 @@
       "label": "operator session / PR #152 ledger row",
       "commit": "c2ab51b",
       "result": "PASS"
-    },
-    {
-      "date": "2026-09-22",
-      "kind": "rollback",
-      "label": "Pip: PR #142 writer-liveness monitor for the Pinterest pin queue (E76, T0)",
-      "commit": "536ac96",
-      "result": "ROLLED BACK, STILL FAILING"
     },
     {
       "date": "2026-09-22",
@@ -4405,6 +4427,48 @@
       "date": "2026-09-26",
       "kind": "incident",
       "label": "Incident: still failing after rollback"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "merge",
+      "label": "Sage: PR #192 IndexNow --guides leg — daily push includes blog guides (E121)",
+      "commit": "26b2e89",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "merge",
+      "label": "Pip: PR #193 E124 runway top-up #3 (21 sessions-ranked rows, runway 1.59 d → 2.16 d)",
+      "commit": "53b583c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "merge",
+      "label": "Cass: PR #191 GA4 password_reset_complete on /set-password/ success (E123)",
+      "commit": "28ed332",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "merge",
+      "label": "Rio: PR #196 Q4/rename-watch pre-read keeps the reachable half on a degraded morning (E125)",
+      "commit": "9fa3415",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "merge",
+      "label": "Rowan: PR #197 pin 76 room-titled build/buy rows typed as CAS (E120)",
+      "commit": "4cf3a19",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-27",
+      "kind": "merge",
+      "label": "Ops: PR #194 not-measured is null + idempotent ledger flush (E126)",
+      "commit": "b8732d1",
+      "result": "PASS"
     }
   ]
 }

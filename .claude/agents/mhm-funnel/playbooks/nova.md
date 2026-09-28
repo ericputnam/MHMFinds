@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-28
+- Tried: admin review for E122 claims (T0, PR #204 `115f8bd`, E129). `/admin/creator-claims` plus GET/POST `/api/admin/creator-claims/`, with the decisions in a pure planner (`lib/creatorClaimReview.ts`). Reject refuses when mods link to the profile; promote refuses a handle that is already taken.
+- Before → after: ways to see or promote a pending claim in the admin went 0 → 1. Pending claims 0, claim submissions 0, onboarded 0 (DB 2026-09-28). The existing `/api/admin/creators/[id]` PATCH already accepts any handle with no check, which is why nobody noticed the missing review step. E33 graded KEEP and closed: coverage 96.87% (NULL 518), gameplay-mod 467→487.
+- Verdict: MORE DATA (read 2026-10-11 with E122).
+- Next time: the claim path now works end to end but nobody is being sent to it. Outreach (the T2 template) is the only move that feeds it, and E33-style facet coverage has drifted to 96.87% as ingests land NULL.
+
 ## 2026-09-26
 - Tried: E113 (T0, one PR): (a) mod-page author link now takes its href from the server-resolved `moreFromCreator.creatorHref` (count-gated `creatorHrefFor`) instead of `creatorHref(authorSlug(mod.author))`; (b) "More Sims 4 CC creators" on every `/creator/[slug]/` — 8 server-rendered links to the creators ranked next to it by downloads, hub population only, memoised 1 h, 800 ms cap. Sitemap/IndexNow (E95), hub ItemList schema and server-rendered hub counts (E97) already existed, so none of the three suggested lifts was new.
 - Before → after: author links to a 404 on the 2,290 SFW mods whose creator has 2–4 mods → 0 (single-mod creators' links also gone); inbound peer links per leaf 0 → ~8 (534 leaves). `listCreators` read 4.9 s cold / one 610 s stall from the operator host today — do not await it unbounded on a force-dynamic page.

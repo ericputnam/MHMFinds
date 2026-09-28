@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-09-28
+- Tried: class rule behind E120 — room-titled row (bedroom/kitchen/bathroom, title-only) never gets a CAS contentType; guard in detector + mhmScraper ingest; `--room-titled-cas` dry-run mode (T0, E132, PR #202 `323f50a`).
+- Before → after: room-titled CAS rows 0/532 → 0/532 (0 written); whole-catalog sim re-ingest diff 2 rows, detector diff 4 (all E120, all CAS → NULL/furniture), non-room rows 0; E120 replay 26 agree / 47 NULL / 3 other build-buy / 0 CAS.
+- Verdict: MORE DATA (read 2026-10-05; keep if count stays 0 and pins 76/76 no drift).
+- Next time: diff the writer, not just the rule — today's ingest would have mistyped only 2 of E120's 76; the other 74 came from aiFacetExtractor's substring match. Find which code path wrote the bad rows before assuming it was the ingest.
+
 ## 2026-09-26
 - Tried: `bathroom-cc` page + title-only repair of `bathroom`, the last substring room theme (T0, E112, PR TBD). Bedroom shape: strong words never vetoed, weak `bath`/`shower`/`tub` + veto list. GSC demand thin (/sims-4-bathroom-cc/ 95 impr / 1 click, pos 43.9).
 - Before → after: `bathroom` 456 rows / 121 title-supported by the final rule (26.5%; 154 = 33.8% by the old words, 24 of them baby showers) → 123 / 123; 2 added, 335 stripped; top 24 read 24/24. Wicked Whims was card #1; "Cuddle and Bath Together" (598 dl) would have been #1 without the `cuddle` veto.

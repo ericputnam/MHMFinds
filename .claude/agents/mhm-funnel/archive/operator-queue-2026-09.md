@@ -244,3 +244,11 @@ Six agents opened PRs in parallel today and five of them claimed **E75** (#139 p
 Resolved/closed items (Q12 approved+applied, Q1 shipped, Q3 closed, and the last-30-days closed log) moved verbatim to `archive/operator-queue-2026-09.md`.
 
 Compressed to the newest 1-2 status lines per item; full history (every dated status update) plus resolved/closed items moved verbatim to `archive/operator-queue-2026-09.md`.
+
+## Dropped 2026-09-28 under the 7-day rule (verbatim)
+
+### Q10 · Re-permission day-2 batch (Cass, E54, 2026-09-16) — **SENT 09-21; day-3 HELD on the bounce gate**
+- **Reply:** go repermission day2 at 7% (09-21, chat). Sent 09-21 11:54Z, `--offset 100` on the frozen anchor, 0 excluded hashes in the slice.
+- **Status 2026-09-23 (Cass, E54 + E68 read):** day-2 batch **5 hard bounces / 100 (5.0%, gate 3%)**, 0 of the 7 excluded re-sent, 0 complaints, 2 re-permission confirms total (1.06 per 100 delivered). Day-3 is held by its own rule: Cass adds the 5 new bounce hashes to `lib/services/sendExclusions.ts` first (Tier 0, 09-24), then it needs your **"go repermission day3"**. Recommendation: go at 7% once the hashes are in; kill the leg if day-3 bounces ≥3% again.
+
+- **Status 2026-09-24 (Cass, PR #165 `0acc882`):** precondition (a) done. The 5 day-2 bounce hashes are excluded (list 12), and the day-3 dry run shows 12/12 matched, 0 in the slice, 99 would-send. Also fixed: `--dry-run` was silently a live send (now refused), and the segment drifted 383→384 (re-frozen). **Needs your "go repermission day3".** Recommendation: go at 7%. Kill the leg if day-3 hard bounces are ≥3%.

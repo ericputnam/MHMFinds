@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-28
+- Tried: E130 — "Save this find" account offer under the /mods/[id] hero image, E10 email box removed (T0, PR #203, cb271e4, verify PASS). Own ref/marker/event names so it reads apart from E107.
+- Before → after: mod-detail waitlist rows 0 ever → surface removed; /mods/* 7,988 sessions/7d, 98 % desktop; favorite_after_signin 0/14d, favorite_signin_redirect 4/14d; save_finds_* 0 → read 2026-10-12. Owned adds 7d 110 (26 email + 84 accounts), capture 1.21/1K.
+- Verdict: E10 KILL (0 rows in its whole life); E130 PENDING.
+- Next time: grade a surface on its lifetime count, not the window you were told — "0 in 22 days" was "0 ever". Read device split before choosing a placement: 98 % desktop moved the offer from "below the sidebar wrapper" (~1,100 px) to "under the image" (~500 px). And read the copy against what the product actually has — no favorites page exists, so the offer promises only the stored favorite.
+
 ## 2026-09-26
 - Tried: E118 — the ideas-inbox premise ("Google/Discord buttons drop callbackUrl") was false: `/sign-in/` has **no OAuth buttons** and never had (`git log -S "signIn('google'"` empty; live HTML has none). The real leak was the credentials path: both success branches did `router.push(searchParams.get('redirect') || '/')` — an open redirect, and everyone arriving from the Navbar (no param) went to `/`. Shipped `app/sign-in/returnTo.ts`: `redirect` → `callbackUrl` → same-origin `document.referrer` → `/`, same-origin relative paths only, auth pages never a target. Guard 2/25 red pre-fix.
 - Before → after: page_views referred by /sign-in/ 09-12→09-25 = 11 on `/`, 1 elsewhere (1/12 off-home) while /sign-in/ views came mostly from collection/search pages; sign_up 28/7d (09-19→25, all on /sign-in/). Owned adds 7d **90** (14 email incl. signup-optin 9, 76 accounts), DB read 08:2x from the Cass tree. Read 2026-10-10.
@@ -68,8 +74,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: E44 MORE DATA (read 2026-09-21; keep-if currently met: 1 bounce ≤2, 0 unsubs ≤2). E54 QUEUED-T1: day-1 batch 1 (`--offset 0`, 100) sends 2026-09-16 unless `stop repermission`; then 100/day…
 - Next time: a send with no ledger is a send you cannot prove happened — the probe took longer than the send. Before issue #2: prune the 550 address from `waitlist` (counts-only script), add UTM tags,…
 
-## 2026-09-13
-- Tried: (1) the mail-tester run the queue promised, from the production SMTP transport on this machine (`newsletter-preview.ts --verify` → `Verify: OK`), one message to a mail-tester.com inbox, no hu…
-- Before → after: mail-tester **7.5/10 (09-08, old template) → 8.5/10** (`https://www.mail-tester.com/test-mhmcass0913`, 2026-09-13). SpamAssassin 0.0 (only `HTML_FONT_SIZE_HUGE`/`HTML_MESSAGE` at 0.0…
-- Verdict: gate met in spirit, not in digits — the only deduction not owned by the operator's DNS is a link-checker false positive, so issue #1 is **QUEUED-T1 to send 2026-09-14** unless "stop newslet…
-- Next time: bulkMailer checks the unsubscribe URL with a raw `includes()`, so the template must insert it **unescaped** — `escapeHtml` turned `&t=` into `&amp;t=` and the guard threw on the first ren…
+_Older entries (up to 2026-09-13) live verbatim in `archive/playbooks/cass-2026-09.md`; nothing deleted._

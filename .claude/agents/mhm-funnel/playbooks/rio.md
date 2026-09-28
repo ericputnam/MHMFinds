@@ -19,6 +19,13 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-28
+- Tried: E131 — Patreon refresh persists to the operator's `.env.local` (linked worktree → main checkout via the `.git` gitdir pointer; `PATREON_ENV_FILE` override; else refuse before the token endpoint), adopt-before-refresh, `patreonGet(url, init)` with `AbortSignal.timeout`, bounded scoreboard walk (T0, PR #201, `f2c8244`). 9/10 guard cases red on `e765da5`.
+- Before → after: refreshes persisted to the operator repo 0 (none ever; tokens issued 09-07, first expiry ≈10-07) → read 10-09. Live: worktree → `/Users/eputnam/java_projects/MHMFinds/.env.local`, `/tmp` → null, 1 ms signal → TimeoutError, real GET 2.5 s no 401. E55 pre-read: site page RPM $11.10 → $10.98, remainder $10.43 → $10.23 (both ≥ floor); E60 tool 14/14 × 2.
+- Guardrail: GREEN from files — 09-26 $295.20 (+10.7 %), RPM $19.38 (+4.9 %), 28d $5,995.90 (+6.5 %); MCP not retried.
+- Verdict: shipped; deploy-verify INCONCLUSIVE (curl leg failed on the runner's network, markers not judged) → hand smoke 14/14 OK with control 3/3, sidebar healthy. E55/E60 → KEEP on 09-29.
+- Next time: (1) a helper whose persistence target is "cwd" must be asked which cwd every caller actually runs in before it is trusted with a single-use secret — the runner's copy-per-worktree made the default silently wrong for 8 of 8 daily callers; (2) INCONCLUSIVE is not PASS — run the two hand checks before quoting the row, and give the curl leg the same network control the smoke has.
+
 ## 2026-09-26
 - Tried: no code move (E119 unused). E65 graded; Q4 `--anchor rename` pre-read attempted twice (fetch failed; terminated at 240 s).
 - Before → after: patreon_click 3.43 users/day (09-12→09-18) → 7.00 (09-20→09-25: 7,9,5,5,7,9); /go pv users 24→39/day; click rate per pv user 22.1%; RPM 100.6% of $17.24. After-wait 2, 3 users on 09-24/25.
@@ -47,11 +54,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (E89 10-07; E88 D+7 from the post; E65 09-26; E55/E60 09-29; E74 10-06).
 - Next time: (1) the live playbook hit 14,012 bytes on main after #148 (file cap 10,000; the budget test did not fire) — `wc -c` it before every commit; (2) GA4 age/gender is thresholded to 0 rows for this property — never claim demographics in a kit.
 
-## 2026-09-22
-- Tried: E88 — the Q4 gate's formal read + the smaller re-pitch (T0 paper trail; the ask itself is T2, operator's voice). `patreon-q4-gate-preread.ts` run for the gate date → `reports/funnel/patreon-q4-gate-preread-2026-09-22.md`, exit 0, decision line = hand rule; re-pitch package `reports/funnel/drafts/patreon-connect-post-2026-09-22.md` (one Patreon post…
-- Q4 gate 2026-09-22 (rule pre-committed 09-08, `Q4_GATE`): paid joins since 09-08 **10 in 14.5 d = 21/mo (PASS)** · paid-and-connected **0 of 54 (FAIL)** · cancels since anchor 1 = 2.1/mo (revert copy: no; floor until 10-01) → **HOLD**, third in a row. Linked accounts 52 → 59 in 24 h (7/day, vs 3.9/day 09-08→09-21), in-campaign 4 → 6, still 0 paying. The 5…
-- E74 day 1 (live 09-21 08:33Z; GA4 unfinalized, today partial): `patreon_post_connect_view` 7 events / 5 users on 09-21 + 1/1 on 09-22 = **6 users saw the post-connect state**; `patreon_follow_click` **0**, `patreon_reconnect_click` **0** (real zeros — both `gtag` calls are in `GoClient.tsx` lines 94/398); `patreon_click` 12 events / 9 users on 09-21 (09-1…
-- Before → after (E88): paid-and-connected **0 of 54** (2026-09-22 pre-read 10:51Z); `member_skip_countdown` 0 events in the 14 d to 09-22 → read 7 days after the post goes out (D+7; 09-29 if posted today). Keep/proceed if ≥ 18 of 54 (exact 1/3) → Q4 renames + $10 tier proceed on the pre-committed rule; ≥ 1 → channel works, welcome note next; 0 → drop count…
-- Guardrail: GREEN, mix-side — 09-20 $265.23 (−0.8% same-weekday), RPM $17.14 (−2.7%), sessions +2.0%; 3-day revenue +2.4%, 3-day RPM +3.1%; MV health ok; 7d $1,464.96 (−8.7%), 28d $5,925.63 (+5.1%). **Session RPM −4.7% WoW ($17.83 → $16.99) decomposes as page RPM −2.3% ($11.23 → $10.97) × pageviews/session −2.4% (1.587 → 1.549).** Inside page RPM the head…
-- Verdict: MORE DATA (E88 reads D+7 from the post; E74 10-06; E65 09-26; E55/E60 09-29).
-- Next time: (1) verify a client-rendered CTA with a headless render, never curl — production `/go` HTML carries the homepage `<title>` and no "Connect Patreon" string, the rendered page has both (status 200, Connect ×1, `.mv-ads` 1, `aside#secondary` 1, 6 s settle); (2) one-off `tsx` reads must live inside the worktree (`scripts/agents/_rio_tmp_*.ts`, dele…
+_Older entries (up to 2026-09-22) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
