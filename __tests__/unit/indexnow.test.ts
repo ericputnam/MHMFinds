@@ -9,10 +9,13 @@ import {
   HARD_CAP,
   INDEXNOW_ENDPOINT,
   INDEXNOW_KEY,
+  KEY_FILE_TIMEOUT_MS,
   KEY_RE,
+  SUBMIT_TIMEOUT_MS,
   SITE_HOST,
   buildPayload,
   capCeiling,
+  checkKeyFile,
   collectionUrls,
   creatorUrl,
   exitCodeFor,
@@ -22,6 +25,7 @@ import {
   keyLocation,
   modUrl,
   parseArgs,
+  postIndexNow,
   resolveCap,
   selectUrls,
   summaryLine,
@@ -357,17 +361,19 @@ describe('the shipped script', () => {
 
   it('cannot send without --apply and checks the key file is live before it POSTs', () => {
     expect(src).toMatch(/if \(!args\.apply\)/);
-    expect(src).toMatch(/keyFileIsLive\(\)/);
+    expect(src).toMatch(/checkKeyFile\(fetch\)/);
     expect(src).toMatch(/key-file-not-live/);
     // The live check must precede the POST in source order.
-    expect(src.indexOf('keyFileIsLive()')).toBeLessThan(src.indexOf("method: 'POST'"));
+    expect(src.indexOf('checkKeyFile(fetch)')).toBeGreaterThan(-1);
+    expect(src.indexOf('checkKeyFile(fetch)')).toBeLessThan(src.indexOf('postIndexNow('));
   });
 
   it("mirrors the mod sitemap's selection (isNSFW false, isVerified true) and the endpoint constant", () => {
     expect(src).toMatch(/isNSFW: false, isVerified: true/);
     const sitemap = read('app/sitemap-mods.xml/route.ts');
     expect(sitemap).toMatch(/isNSFW: false, isVerified: true/);
-    expect(src).toMatch(/INDEXNOW_ENDPOINT/);
+    // E128 moved the POST into the lib; the endpoint constant is used there.
+    expect(stripComments(read('scripts/agents/indexnow-lib.ts'))).toMatch(/fetchImpl\(INDEXNOW_ENDPOINT,/);
   });
 
   it('writes one summary line to logs/indexnow.log and never reads a secret it does not need', () => {
@@ -515,5 +521,95 @@ describe('blog guides (E121)', () => {
   it('the daily runner passes --guides in step 0c2', () => {
     const runner = read('scripts/agents/run-funnel-daily.sh');
     expect(runner).toMatch(/indexnow-submit\.ts --apply --days 2 --guides/);
+  });
+});
+
+/**
+ * E128 (2026-09-28): the key-file GET and the IndexNow POST were bare `fetch` calls. A hung
+ * api.indexnow.org would have stalled runner step 0c2 (and everything after it) indefinitely.
+ * These run red against pre-fix origin/main: checkKeyFile/postIndexNow did not exist, and the
+ * source scanner finds two unbounded fetch( calls in indexnow-submit.ts.
+ */
+describe('network calls are bounded (E128)', () => {
+  /** A fetch that never answers unless its signal aborts — i.e. a hung server. */
+  const hung = vi.fn((_input: string, init?: RequestInit) => {
+    return new Promise<Response>((_resolve, reject) => {
+      const signal = init?.signal;
+      if (!signal) return; // unbounded caller: hangs forever (the test's own timeout catches it)
+      signal.addEventListener('abort', () => reject(signal.reason));
+    });
+  });
+  beforeEach(() => {
+    hung.mockClear();
+  });
+
+  it('the bounds are finite and small enough to keep step 0c2 short', () => {
+    expect(KEY_FILE_TIMEOUT_MS).toBeGreaterThan(0);
+    expect(KEY_FILE_TIMEOUT_MS).toBeLessThanOrEqual(30_000);
+    expect(SUBMIT_TIMEOUT_MS).toBeGreaterThan(0);
+    expect(SUBMIT_TIMEOUT_MS).toBeLessThanOrEqual(60_000);
+  });
+
+  it('a hung key-file server returns not-live + timedOut, and never throws', async () => {
+    const t0 = Date.now();
+    const r = await checkKeyFile(hung, 50);
+    expect(Date.now() - t0).toBeLessThan(2_000);
+    expect(r).toEqual({ live: false, http: null, timedOut: true });
+    expect(hung.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+  }, 5_000);
+
+  it('a hung IndexNow POST grades COULD-NOT-RUN (exit 2, unknown), not FAIL', async () => {
+    const t0 = Date.now();
+    const r = await postIndexNow(['https://musthavemods.com/mods/x/'], hung, 50);
+    expect(Date.now() - t0).toBeLessThan(2_000);
+    expect(r.status).toBe('COULD-NOT-RUN');
+    expect(r.reason).toBe('submit-timeout');
+    expect(r.http).toBeNull();
+    expect(exitCodeFor(r.status)).toBe(2);
+    const init = hung.mock.calls[0][1];
+    expect(hung.mock.calls[0][0]).toBe(INDEXNOW_ENDPOINT);
+    expect(init?.method).toBe('POST');
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  }, 5_000);
+
+  it('keeps the existing verdicts: 200 → OK, 403 → FAIL with body, refused socket → FAIL', async () => {
+    const ok = (async () => new Response('', { status: 200 })) as never;
+    expect(await postIndexNow(['https://musthavemods.com/'], ok, 50)).toMatchObject({ status: 'OK', http: 200, reason: 'ok' });
+    const forbidden = (async () => new Response('bad key', { status: 403 })) as never;
+    expect(await postIndexNow(['https://musthavemods.com/'], forbidden, 50)).toMatchObject({
+      status: 'FAIL',
+      http: 403,
+      reason: 'key-not-valid',
+      detail: 'bad key',
+    });
+    const refused = (async () => {
+      throw new TypeError('fetch failed');
+    }) as never;
+    expect(await postIndexNow(['https://musthavemods.com/'], refused, 50)).toMatchObject({ status: 'FAIL', reason: 'network-error' });
+  });
+
+  it('the key check still requires the exact key body and a 200', async () => {
+    const good = (async () => new Response(`${INDEXNOW_KEY}\n`, { status: 200 })) as never;
+    expect(await checkKeyFile(good, 50)).toEqual({ live: true, http: 200, timedOut: false });
+    const wrong = (async () => new Response('<html>', { status: 200 })) as never;
+    expect((await checkKeyFile(wrong, 50)).live).toBe(false);
+    const moved = (async () => new Response('', { status: 301 })) as never;
+    expect(await checkKeyFile(moved, 50)).toEqual({ live: false, http: 301, timedOut: false });
+  });
+
+  it('every fetch( call in the submit script and the lib carries a signal (scanner, with vacuity guard)', () => {
+    let seen = 0;
+    for (const file of ['scripts/agents/indexnow-submit.ts', 'scripts/agents/indexnow-lib.ts']) {
+      const src = stripComments(read(file));
+      const re = /\b(?:fetch|fetchImpl)\(/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(src))) {
+        seen++;
+        const call = src.slice(m.index, m.index + 400);
+        expect(call, `${file}: unbounded ${m[0]} at offset ${m.index}`).toMatch(/signal:\s*AbortSignal\.timeout\(/);
+      }
+    }
+    // WP wrapper + key-file GET + POST. Fewer means the scanner went blind.
+    expect(seen).toBeGreaterThanOrEqual(3);
   });
 });
