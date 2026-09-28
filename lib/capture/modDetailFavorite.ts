@@ -50,3 +50,46 @@ export function favoriteSignInHref(modId: string): string {
 export function hasResumeFavoriteMarker(search: string): boolean {
   return new URLSearchParams(search).get(RESUME_FAVORITE_PARAM) === '1';
 }
+
+/*
+ * E130 (Cass, 2026-09-28) — the "Save this find" offer under the hero image.
+ *
+ * Replaces the E10 email box at the bottom of the left column, which produced
+ * 0 `waitlist` rows in its whole life (source `mod-detail`, killed 09-21).
+ * Same 401 → sign-up → return-and-save flow as the favorite button, but with
+ * its own `ref`, its own resume marker value and its own two event names, so
+ * the two surfaces never share a count: `?fav=1` is the button (E107),
+ * `?fav=save` is the offer (E130). The offer lives outside the right-column
+ * `.mv-ads` wrapper — a sibling, never a child — because that wrapper's
+ * geometry is Mediavine's.
+ */
+
+/** `ref` on the sign-in URL and `source` on every event the offer fires. */
+export const MOD_DETAIL_SAVE_SOURCE = 'mod-detail-save';
+
+/** Value of the resume marker when the visitor came from the offer. */
+export const RESUME_SAVE_VALUE = 'save';
+
+/** GA4 event names — distinct from E107's so each surface reads alone. */
+export const MOD_DETAIL_SAVE_EVENTS = {
+  /** A signed-out visitor clicked the offer and was sent to sign-up. */
+  signinRedirect: 'save_finds_signin_redirect',
+  /** The save completed on return from sign-up (the offer's success). */
+  afterSignin: 'save_finds_after_signin',
+} as const;
+
+/** Where the sign-in page should send an offer visitor back to. */
+export function resumeSaveHref(modId: string): string {
+  return `${modDetailPath(modId)}?${RESUME_FAVORITE_PARAM}=${RESUME_SAVE_VALUE}`;
+}
+
+/** The sign-up URL a signed-out offer click goes to. */
+export function saveFindsSignInHref(modId: string): string {
+  const redirect = encodeURIComponent(resumeSaveHref(modId));
+  return `/sign-in/?mode=signup&ref=${MOD_DETAIL_SAVE_SOURCE}&redirect=${redirect}`;
+}
+
+/** True when `search` carries the offer's marker (exactly `fav=save`). */
+export function hasResumeSaveMarker(search: string): boolean {
+  return new URLSearchParams(search).get(RESUME_FAVORITE_PARAM) === RESUME_SAVE_VALUE;
+}

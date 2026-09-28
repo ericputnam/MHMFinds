@@ -24,16 +24,20 @@ import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
-import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { SaveFindsOffer } from '@/components/SaveFindsOffer';
 import type { CollectionLink } from '@/lib/collections';
 import type { MoreFromCreatorData } from '@/lib/creatorMods';
 import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
 import {
   MOD_DETAIL_FAVORITE_EVENTS,
   MOD_DETAIL_FAVORITE_SOURCE,
+  MOD_DETAIL_SAVE_EVENTS,
+  MOD_DETAIL_SAVE_SOURCE,
   favoriteSignInHref,
   hasResumeFavoriteMarker,
+  hasResumeSaveMarker,
   modDetailPath,
+  saveFindsSignInHref,
 } from '@/lib/capture/modDetailFavorite';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
@@ -151,23 +155,55 @@ export default function ModDetailClient({
     }
   };
 
+  // E130 (Cass, 2026-09-28) — the "Save this find" offer under the hero
+  // image. Same flow as the heart, own ref / marker / event names so the two
+  // surfaces read separately: a signed-in click saves and fires `favorite`
+  // (source mod-detail-save); a signed-out click fires
+  // save_finds_signin_redirect and goes to sign-up with a redirect back here
+  // carrying `?fav=save`. Never toggles a favorite off.
+  const handleSaveFinds = async () => {
+    if (favoritePending || isFavorited) return;
+    setFavoritePending(true);
+    try {
+      const outcome = await addFavorite(MOD_DETAIL_SAVE_SOURCE);
+      if (outcome === 'unauthorized') {
+        fireGtag(MOD_DETAIL_SAVE_EVENTS.signinRedirect, {
+          source: MOD_DETAIL_SAVE_SOURCE,
+          mod_id: mod.id,
+        });
+        router.push(saveFindsSignInHref(mod.id));
+      }
+    } catch (error) {
+      console.error('Error saving find:', error);
+    } finally {
+      setFavoritePending(false);
+    }
+  };
+
   // Resume after sign-in: the sign-in page sends the visitor back with
-  // `?fav=1`. Complete the save once, then strip the marker so a reload or a
-  // shared link does not repeat it. A signed-out visitor carrying the marker
-  // gets a 401 and nothing else — this path never navigates to sign-in.
+  // `?fav=1` (the heart, E107) or `?fav=save` (the offer, E130). Complete the
+  // save once, then strip the marker so a reload or a shared link does not
+  // repeat it. A signed-out visitor carrying the marker gets a 401 and
+  // nothing else — this path never navigates to sign-in.
   const resumeAttempted = useRef(false);
   useEffect(() => {
     if (resumeAttempted.current) return;
-    if (!hasResumeFavoriteMarker(window.location.search)) return;
+    const viaOffer = hasResumeSaveMarker(window.location.search);
+    if (!viaOffer && !hasResumeFavoriteMarker(window.location.search)) return;
     resumeAttempted.current = true;
     (async () => {
       try {
-        const outcome = await addFavorite('mod-detail-after-signin');
+        const outcome = await addFavorite(
+          viaOffer ? 'mod-detail-save-after-signin' : 'mod-detail-after-signin',
+        );
         if (outcome === 'saved') {
-          fireGtag(MOD_DETAIL_FAVORITE_EVENTS.afterSignin, {
-            source: MOD_DETAIL_FAVORITE_SOURCE,
-            mod_id: mod.id,
-          });
+          fireGtag(
+            viaOffer ? MOD_DETAIL_SAVE_EVENTS.afterSignin : MOD_DETAIL_FAVORITE_EVENTS.afterSignin,
+            {
+              source: viaOffer ? MOD_DETAIL_SAVE_SOURCE : MOD_DETAIL_FAVORITE_SOURCE,
+              mod_id: mod.id,
+            },
+          );
         }
       } catch (error) {
         console.error('Error resuming favorite:', error);
@@ -304,6 +340,22 @@ export default function ModDetailClient({
               )}
             </div>
 
+            {/*
+              "Save this find" account offer (E130). Directly under the hero
+              image — 98% of /mods/* sessions are desktop (7,828 of 7,988,
+              09-21→09-27), where this sits level with the action card and
+              ~500px down; the right column below the ad wrapper is ~1,100px.
+              Sibling of every .mv-ads element, never a child: the right-column
+              wrapper that holds the heart is Mediavine's geometry. Replaces
+              the E10 email box that used to sit after RelatedMods (0 waitlist
+              rows, source mod-detail, in its whole life — killed 09-21).
+            */}
+            <SaveFindsOffer
+              saved={isFavorited}
+              pending={favoritePending}
+              onSave={handleSaveFinds}
+            />
+
             {/* Description Section */}
             <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mb-6">
               <h2 className="text-2xl font-bold text-white mb-4">About This Mod</h2>
@@ -361,25 +413,10 @@ export default function ModDetailClient({
 
             <InContentAd />
 
-            {/* Related Mods */}
+            {/* Related Mods — last block of the left column. The E10 email
+                box that followed it (source mod-detail) was removed by E130:
+                0 waitlist rows ever. */}
             <RelatedMods modId={mod.id} category={mod.category} gameVersion={mod.gameVersion} />
-
-            {/*
-              Email capture — sibling of all .mv-ads blocks, never inside them.
-              Placed after RelatedMods so it appears when the user has finished
-              reading and is deciding what to do next.
-              source="mod-detail" lets the scoreboard attribute adds to this
-              surface specifically (E10).
-            */}
-            <div className="bg-mhm-card border border-sims-pink/20 rounded-2xl p-6 mt-6">
-              <p className="text-white font-semibold mb-1">
-                Get the best new Sims 4 mods weekly
-              </p>
-              <p className="text-sm text-slate-400 mb-4">
-                New CC drops, curated finds, and free mod roundups — straight to your inbox.
-              </p>
-              <NewsletterSignup source="mod-detail" />
-            </div>
           </div>
 
           {/* Right Column - Mod Info & Actions */}
