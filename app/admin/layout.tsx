@@ -18,6 +18,7 @@ import {
   BarChart3,
   DollarSign,
   Activity,
+  UserCheck,
 } from 'lucide-react';
 
 // Admin navigation - full access to all features (admin only)
@@ -30,6 +31,7 @@ const adminNavItems = [
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },
   { href: '/admin/waitlist', label: 'Waitlist', icon: Mail },
   { href: '/admin/creators', label: 'Creators', icon: Users },
+  { href: '/admin/creator-claims', label: 'Creator Claims', icon: UserCheck },
   { href: '/admin/categories', label: 'Taxonomy', icon: Tags },
   { href: '/admin/users', label: 'Users', icon: UserCircle },
 ];
