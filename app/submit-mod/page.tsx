@@ -1,10 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
-import { Upload, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Upload, AlertCircle, CheckCircle2, Loader2, BadgeCheck } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
+import {
+  CLAIM_BODY_FIELD,
+  CLAIM_PARAM,
+  claimSignInHref,
+  claimedPageHref,
+  parseClaimSlug,
+} from '../../lib/creatorClaim';
 
 interface FormData {
   modUrl: string;
@@ -34,6 +42,17 @@ export default function SubmitModPage() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  // Creator claim (E122): the slug of the /creator/[slug]/ page that sent
+  // the visitor here. Read from window.location in an effect rather than
+  // useSearchParams so this client page needs no Suspense boundary and
+  // still prerenders statically.
+  const [claimedSlug, setClaimedSlug] = useState<string | null>(null);
+  const { data: session, status: sessionStatus } = useSession();
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get(CLAIM_PARAM);
+    setClaimedSlug(parseClaimSlug(raw));
+  }, []);
 
   // Client-side validation
   const validateForm = (): boolean => {
@@ -119,6 +138,7 @@ export default function SubmitModPage() {
         body: JSON.stringify({
           ...formData,
           captchaToken,
+          ...(claimedSlug ? { [CLAIM_BODY_FIELD]: claimedSlug } : {}),
         }),
       });
 
@@ -165,13 +185,12 @@ export default function SubmitModPage() {
                 <span className="text-sm font-semibold text-sims-pink">Submit</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-                Submit a{' '}
-                <span className="text-white">
-                  Mod
-                </span>
+                {claimedSlug ? 'Claim your creator page' : 'Submit a Mod'}
               </h1>
               <p className="text-slate-400 text-lg">
-                Found an amazing mod? Share it with our community!
+                {claimedSlug
+                  ? 'Submit one of your own mods and this page becomes yours.'
+                  : 'Found an amazing mod? Share it with our community!'}
               </p>
             </div>
           </div>
@@ -198,6 +217,45 @@ export default function SubmitModPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-red-500 mb-2">Error</h3>
                   <p className="text-slate-300">{submitMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Creator claim box (E122) — only when a creator page sent the
+                visitor here. Signed out: one link to sign in and come back
+                (E118 returnTo keeps the claim in the redirect). Signed in:
+                the submission is tied to the account and creates the creator
+                profile the scoreboard counts. */}
+            {claimedSlug && (
+              <div
+                className="mb-8 bg-sims-pink/10 border border-sims-pink/20 rounded-2xl p-6"
+                data-testid="creator-claim-box"
+              >
+                <div className="flex items-start gap-4">
+                  <BadgeCheck className="h-5 w-5 text-sims-pink flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-slate-300 leading-relaxed">
+                    <p className="mb-2">
+                      You are claiming{' '}
+                      <a href={claimedPageHref(claimedSlug)} className="text-sims-pink hover:underline">
+                        musthavemods.com{claimedPageHref(claimedSlug)}
+                      </a>
+                      . Submit a link to one of your own mods below; once it is approved, the page is
+                      linked to your account and you can add your bio and links.
+                    </p>
+                    {sessionStatus === 'authenticated' ? (
+                      <p className="text-slate-400">
+                        Signed in as {session?.user?.name || session?.user?.email} — this submission will
+                        count toward your creator profile.
+                      </p>
+                    ) : sessionStatus === 'unauthenticated' ? (
+                      <p className="text-slate-400">
+                        <a href={claimSignInHref(claimedSlug)} className="text-sims-pink hover:underline">
+                          Sign in or create a free account first
+                        </a>{' '}
+                        so the claim is tied to you — you will come straight back here.
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             )}

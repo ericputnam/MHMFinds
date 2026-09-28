@@ -1,12 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 import { prisma } from '@/lib/prisma';
 import { ModSubmissionSchema, formatZodError } from '@/lib/validation/schemas';
 import { ZodError } from 'zod';
 import { verifyTurnstileToken } from '@/lib/services/turnstile';
 import { emailNotifier } from '@/lib/services/emailNotifier';
+import { CLAIM_SOURCE, parseClaimSlug, pendingProfileHandle } from '@/lib/creatorClaim';
+
+// getServerSession reads request headers; never let this route be
+// evaluated statically.
+export const dynamic = 'force-dynamic';
 
 // Rate limiting map (in-memory - for production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+/**
+ * Who is submitting, if anyone is signed in (Nova, E122). The form is
+ * public and must keep working for anonymous visitors, so a session
+ * lookup failure is treated as "nobody", never as an error.
+ */
+async function sessionUserId(): Promise<string | null> {
+  try {
+    const session = await getServerSession(authOptions);
+    return session?.user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Make sure a signed-in claimant has the CreatorProfile row the scoreboard
+ * counts ("creators onboarded" = CreatorProfile.userId ∩
+ * ModSubmission.userId). Idempotent; a failure here is logged and
+ * swallowed so the submission that triggered it is never lost. Does NOT
+ * set User.isCreator — the review queue keeps that gate (admin-only) — and
+ * does NOT use the public slug as the handle: /creator/[slug]/ joins on
+ * `handle === slug`, so the row is created under a pending handle that no
+ * page reads, and an admin promotes it at review.
+ */
+async function ensureCreatorProfile(userId: string, slug: string): Promise<void> {
+  try {
+    const existing = await prisma.creatorProfile.findUnique({ where: { userId }, select: { id: true } });
+    if (existing) return;
+    await prisma.creatorProfile.create({
+      data: { userId, handle: pendingProfileHandle(slug, userId) },
+    });
+  } catch (error) {
+    console.error('ensureCreatorProfile failed:', error);
+  }
+}
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -102,6 +145,9 @@ export async function POST(request: NextRequest) {
     }
 
     const { modUrl, modName, description, category, submitterName, submitterEmail } = validatedData;
+    // Creator claim (E122): re-validated here, not trusted from the schema.
+    const claimedSlug = parseClaimSlug(validatedData.claimedCreatorSlug);
+    const userId = await sessionUserId();
 
     // Check for duplicate submissions (same URL within last 24 hours)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -135,12 +181,22 @@ export async function POST(request: NextRequest) {
         submitterEmail,
         submitterIp: ip,
         status: 'pending',
+        // E122: tie the row to the signed-in account (null when anonymous —
+        // the pre-E122 behaviour) and record which creator page was claimed.
+        userId,
+        ...(claimedSlug ? { source: CLAIM_SOURCE, author: claimedSlug } : {}),
       },
     });
 
+    if (userId && claimedSlug) {
+      await ensureCreatorProfile(userId, claimedSlug);
+    }
+
     const adminEmail = process.env.SUBMISSIONS_ALERT_EMAIL || process.env.ADMIN_EMAIL;
     if (adminEmail) {
-      const subject = `New mod submission: ${submission.modName}`;
+      const subject = claimedSlug
+        ? `Creator claim for /creator/${claimedSlug}/: ${submission.modName}`
+        : `New mod submission: ${submission.modName}`;
       const html = `
         <p>A new mod submission is waiting for review.</p>
         <ul>
@@ -148,6 +204,7 @@ export async function POST(request: NextRequest) {
           <li><strong>Category:</strong> ${submission.category}</li>
           <li><strong>URL:</strong> ${submission.modUrl}</li>
           <li><strong>Submitter:</strong> ${submission.submitterName} (${submission.submitterEmail})</li>
+          ${claimedSlug ? `<li><strong>Claims creator page:</strong> https://musthavemods.com/creator/${claimedSlug}/${userId ? ' (signed-in account, profile created)' : ' (anonymous — ask them to sign in to link it)'}</li>` : ''}
         </ul>
       `;
 
