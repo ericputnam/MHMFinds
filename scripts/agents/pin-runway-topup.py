@@ -57,10 +57,32 @@ WHAT IT DOES NOT DO
     delegates to revive-stranded-pins.py's `drop_dead_sections` /
     `url_alive` (imported) so the same E36 poison-row protection applies.
 
+PIN-SEO PASS (E127, 2026-09-28)
+    Revival rows were written by an older pinner and score a mean ~62/100 on
+    the E77 pin-SEO rubric; E103 showed the `--source page` rewrite lifts a
+    slice to ~88/100 but it ran as a *separate* step after the re-date, so
+    three of four top-ups went out with weak copy. The top-up now runs that
+    pass itself, on exactly the rows in its plan, BEFORE the re-date:
+      * `--seo-source page` (default): re-read the plan's ids with
+        pin-seo-audit.py's columns, score each row, and on --apply rewrite
+        title + description for rows that need a fix AND re-score clean
+        from the destination's own WP title/excerpt. Rows whose page cannot
+        be resolved are left untouched (never a template fallback).
+      * `--seo-source none`: skip the pass entirely.
+      * Fail-open: the pass is advisory to the *floor*. Any exception (WP
+        REST down, Supabase read error, module missing) is printed as a
+        WARN and the re-date proceeds — a copy problem must never turn a
+        1.3-day runway into a 🔴 sessions day.
+      * Own undo file `pin-seo-rollback-<date>-topup.json` (pin-seo-audit.py
+        --rollback), plus a `seo_pass` summary block embedded in this tool's
+        ledger. revive-stranded-pins.py --rollback reads `entries` only, so
+        the extra key is inert for the re-date rollback.
+
 USAGE
     python3 scripts/agents/pin-runway-topup.py                      # dry run
     python3 scripts/agents/pin-runway-topup.py --ids-from PKG.json  # dry run, ranked
     python3 scripts/agents/pin-runway-topup.py --ids-from PKG.json --apply
+    python3 scripts/agents/pin-runway-topup.py --ids-from PKG.json --seo-source none --apply
     python3 scripts/agents/pin-runway-topup.py --self-test           # offline
     python3 scripts/agents/pin-runway-topup.py --json                # machine output
 
@@ -135,6 +157,106 @@ def revive():
                   'cannot reuse its selection/allocation logic')
             sys.exit(2)
     return _REVIVE
+
+
+SEO_SOURCES = ('none', 'page')
+_SEO = None
+
+
+def _load_seo_module():
+    path = os.path.join(SCRIPT_DIR, 'pin-seo-audit.py')
+    if not os.path.isfile(path):
+        return None
+    spec = importlib.util.spec_from_file_location('mhm_pin_seo_audit', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def seo():
+    """Lazily loaded; None when pin-seo-audit.py is missing (the pass is
+    then skipped with a WARN — never a hard failure for the floor top-up)."""
+    global _SEO
+    if _SEO is None:
+        _SEO = _load_seo_module()
+    return _SEO
+
+
+def seo_pass(config, plan, source, ledger_dir, today, apply, boards_csv=None):
+    """E127: score the plan's rows on the pin-SEO rubric and, on apply,
+    rewrite weak copy from the destination page BEFORE the re-date.
+
+    Never raises. Returns a summary dict that main() prints and apply_plan()
+    embeds in the ledger:
+        status  'skipped' | 'scored' (dry run) | 'applied' | 'error'
+        reason  why skipped/errored (None otherwise)
+        total/passing/need_fix/fixable/page_unavailable/mean_score
+        resolved/slug_count  WP REST resolution (page source)
+        updated/skipped      rows rewritten / refused (apply only)
+        ledger               pin-seo-rollback-<date>-topup.json (apply only)
+    """
+    summary = {'source': source, 'status': 'skipped', 'reason': None,
+               'total': 0, 'passing': 0, 'need_fix': 0, 'fixable': 0,
+               'page_unavailable': 0, 'mean_score': None,
+               'resolved': 0, 'slug_count': 0,
+               'updated': 0, 'skipped': 0, 'ledger': None}
+    if source == 'none':
+        summary['reason'] = '--seo-source none'
+        return summary
+    if not plan:
+        summary['reason'] = 'empty plan'
+        return summary
+    try:
+        s = seo()
+        if s is None:
+            summary['reason'] = 'pin-seo-audit.py not found next to this script'
+            return summary
+        ids = [row['id'] for row, _ in plan]
+        # Re-read with the SEO script's own columns: revive's SELECT_COLS has
+        # no `AI Text Slug`, and a rollback ledger must carry the *real* old
+        # description, never an empty string.
+        rows = s.fetch_by_ids(config, ids)
+        boards = s.load_boards_csv(boards_csv)
+        scored, resolved, slug_count = s.score_rows(rows, boards, source=source)
+        summary.update(s.summarize_scored(scored))
+        summary['resolved'] = resolved
+        summary['slug_count'] = slug_count
+        summary['status'] = 'scored'
+        if apply:
+            res = s.apply_proposals(
+                config, scored,
+                s.rollback_ledger_path(ledger_dir, str(today), 'topup'),
+                str(today), source=source, verbose=False)
+            summary['updated'] = res['updated']
+            summary['skipped'] = res['skipped']
+            summary['ledger'] = res['ledger']
+            summary['status'] = 'applied'
+    except Exception as exc:  # fail-open by design (see docstring)
+        summary['status'] = 'error'
+        summary['reason'] = '{}: {}'.format(type(exc).__name__, str(exc)[:200])
+    return summary
+
+
+def format_seo_summary(summary):
+    if summary['status'] == 'skipped':
+        return 'Pin-SEO pass skipped ({}).'.format(summary['reason'])
+    if summary['status'] == 'error':
+        return ('WARN: pin-SEO pass failed ({}) — copy left as-is; the re-date '
+                'is not blocked by it.'.format(summary['reason']))
+    line = ('Pin-SEO pass (source={}): {} rows scored, {} passing, {} need a fix '
+            '({} with a clean proposal, {} page unavailable), mean {}/100, '
+            '{}/{} destination(s) resolved.'.format(
+                summary['source'], summary['total'], summary['passing'],
+                summary['need_fix'], summary['fixable'], summary['page_unavailable'],
+                summary['mean_score'], summary['resolved'], summary['slug_count']))
+    if summary['status'] == 'applied':
+        line += '\n  rewrote {} row(s), {} skipped'.format(summary['updated'], summary['skipped'])
+        if summary['ledger']:
+            line += ('\n  rollback: python3 scripts/agents/pin-seo-audit.py --rollback {} '
+                     '--apply'.format(summary['ledger']))
+        else:
+            line += ' (no rollback file: nothing needed writing)'
+    return line
 
 
 # ---------------------------------------------------------------------------
@@ -571,7 +693,8 @@ def allocate_topup(rows_in_priority_order, day_plan, max_per_url=2, max_per_boar
 # Apply
 # ---------------------------------------------------------------------------
 
-def apply_plan(config, plan, ledger_dir, today, experiment='SD-22-topup'):
+def apply_plan(config, plan, ledger_dir, today, experiment='SD-22-topup',
+               seo_summary=None):
     r = revive()
     entries = []
     updated = skipped = 0
@@ -601,14 +724,17 @@ def apply_plan(config, plan, ledger_dir, today, experiment='SD-22-topup'):
 
     os.makedirs(ledger_dir, exist_ok=True)
     ledger_path = os.path.join(ledger_dir, '{}{}.json'.format(LEDGER_PREFIX, today))
+    payload = {
+        'generated': str(today),
+        'script': 'scripts/agents/pin-runway-topup.py',
+        'experiment': experiment,
+        'updated': updated,
+        'entries': entries,
+    }
+    if seo_summary is not None:
+        payload['seo_pass'] = seo_summary  # inert for revive --rollback (reads `entries`)
     with open(ledger_path, 'w') as handle:
-        json.dump({
-            'generated': str(today),
-            'script': 'scripts/agents/pin-runway-topup.py',
-            'experiment': experiment,
-            'updated': updated,
-            'entries': entries,
-        }, handle, indent=2)
+        json.dump(payload, handle, indent=2)
     return updated, skipped, ledger_path
 
 
@@ -769,8 +895,68 @@ def self_test():
     except ValueError:
         pass
 
-    print('self-test: 13/13 assertions passed (decision logic + guards + '
-          'allocator + rate-source + queue-side sections, offline)')
+    # 14. (E127) Pin-SEO pass is fail-open and never writes on a dry run:
+    #     'none' skips without loading the module; a dry run scores but
+    #     never calls apply_proposals; apply calls it with the -topup ledger;
+    #     an exception becomes status='error', never a raise.
+    global _SEO
+    saved_seo = _SEO
+    calls = []
+
+    class _FakeSeo:
+        @staticmethod
+        def fetch_by_ids(config, ids):
+            calls.append(('fetch', tuple(ids)))
+            if config.get('boom'):
+                raise RuntimeError('supabase down')
+            return [{'id': i} for i in ids]
+
+        @staticmethod
+        def load_boards_csv(path=None):
+            return {}
+
+        @staticmethod
+        def score_rows(rows, boards, source='template', **kw):
+            scored = [{'id': r['id'], 'score': 50, 'needs_fix': True,
+                       'proposal_ok': True, 'proposal_source': source} for r in rows]
+            return scored, 1, 1
+
+        @staticmethod
+        def summarize_scored(scored):
+            return {'total': len(scored), 'passing': 0, 'need_fix': len(scored),
+                    'fixable': len(scored), 'page_unavailable': 0, 'mean_score': 50}
+
+        @staticmethod
+        def rollback_ledger_path(ledger_dir, today_str, suffix=''):
+            return os.path.join(ledger_dir, 'pin-seo-rollback-{}-{}.json'.format(today_str, suffix))
+
+        @staticmethod
+        def apply_proposals(config, scored, ledger_path, today_str, source='template',
+                            verbose=True):
+            calls.append(('apply', ledger_path))
+            return {'updated': len(scored), 'skipped': 0, 'unfixable': 0,
+                    'ledger': ledger_path, 'entries': []}
+
+    try:
+        _SEO = _FakeSeo
+        plan = [({'id': 11}, today), ({'id': 12}, today)]
+        s0 = seo_pass({}, plan, 'none', '/tmp/x', today, apply=False)
+        assert s0['status'] == 'skipped' and calls == [], s0
+        s1 = seo_pass({}, plan, 'page', '/tmp/x', today, apply=False)
+        assert s1['status'] == 'scored' and s1['total'] == 2 and s1['ledger'] is None, s1
+        assert calls == [('fetch', (11, 12))], calls
+        s2 = seo_pass({}, plan, 'page', '/tmp/x', today, apply=True)
+        assert s2['status'] == 'applied' and s2['updated'] == 2, s2
+        assert calls[-1] == ('apply', '/tmp/x/pin-seo-rollback-{}-topup.json'.format(today)), calls
+        s3 = seo_pass({'boom': True}, plan, 'page', '/tmp/x', today, apply=True)
+        assert s3['status'] == 'error' and 'supabase down' in s3['reason'], s3
+        assert 'WARN' in format_seo_summary(s3)
+        assert seo_pass({}, [], 'page', '/tmp/x', today, apply=True)['status'] == 'skipped'
+    finally:
+        _SEO = saved_seo
+
+    print('self-test: 14/14 assertions passed (decision logic + guards + '
+          'allocator + rate-source + queue-side sections + seo pass, offline)')
     return 0
 
 
@@ -815,6 +1001,14 @@ def main():
                              'Pinterest sections API')
     parser.add_argument('--max-per-url', type=int, default=2)
     parser.add_argument('--max-per-board', type=int, default=3)
+    parser.add_argument('--seo-source', choices=SEO_SOURCES, default='page',
+                        help="E127: rewrite weak pin copy on the plan's rows from "
+                             "the destination page BEFORE re-dating ('page', "
+                             "default) or skip the pass ('none'). Fail-open: a "
+                             "failed pass never blocks the top-up.")
+    parser.add_argument('--boards-csv', default=None,
+                        help='pinterest-boards.csv for the SEO board-fit score '
+                             '(default: MHMUtils/pinterest-boards.csv)')
     parser.add_argument('--ledger-dir', default=DEFAULT_LEDGER_DIR)
     parser.add_argument('--json', action='store_true', help='machine-readable output')
     parser.add_argument('--self-test', action='store_true')
@@ -966,6 +1160,12 @@ def main():
     print('\nRule that bound the count: {}'.format(decision['bound_rule']))
 
     if not args.apply:
+        # Dry run: score only (read-only WP REST + Supabase reads), so the
+        # preview shows what copy an --apply would rewrite.
+        seo_summary = seo_pass(config, plan, args.seo_source, args.ledger_dir,
+                               today, apply=False, boards_csv=args.boards_csv)
+        print('\n' + format_seo_summary(seo_summary))
+        result['seo_pass'] = seo_summary
         print('\nDRY RUN — nothing written.')
         if args.json:
             print(json.dumps(result, indent=2))
@@ -977,7 +1177,15 @@ def main():
             print(json.dumps(result, indent=2))
         return 0
 
-    updated, skipped, ledger_path = apply_plan(config, plan, args.ledger_dir, today)
+    # E127: copy first, then dates. A row that gets re-dated is posted within
+    # ~3 days, so its copy must already be right when the date moves.
+    seo_summary = seo_pass(config, plan, args.seo_source, args.ledger_dir,
+                           today, apply=True, boards_csv=args.boards_csv)
+    print('\n' + format_seo_summary(seo_summary))
+    result['seo_pass'] = seo_summary
+
+    updated, skipped, ledger_path = apply_plan(config, plan, args.ledger_dir, today,
+                                               seo_summary=seo_summary)
     print('\n=== Applied: {} re-dated, {} skipped ==='.format(updated, skipped))
     print('Ledger: {}'.format(ledger_path))
     print('Rollback (one command):')
