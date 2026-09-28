@@ -54,13 +54,30 @@
  *   npx tsx scripts/retag-junk-build-facets.ts --apply
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=lighting --limit=50
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=nails --ids=id1,id2   # only those rows
+ *   npx tsx scripts/retag-junk-build-facets.ts --room-titled-cas            # E132, see below
+ *
+ * --room-titled-cas (Rowan, 2026-09-28, E132)
+ * -------------------------------------------
+ * Population: every row typed as a Create-a-Sim content type
+ * (`CAS_CONTENT_TYPES`) whose TITLE passes a title-only room rule
+ * (bedroom / kitchen / bathroom). Each is re-decided by
+ * `guardRoomTitledContentType` — title-only build/buy answer or NULL — unless
+ * it is hand-audited, in which case the pin wins. It also reads back every
+ * E120 pin and reports how many rows still hold their pinned value: those are
+ * explicit no-ops, and a pin that has drifted is printed by id.
+ * `--facets` is ignored in this mode.
  */
 
 // CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
 import './lib/setup-env';
 
 import { prisma } from '../lib/prisma';
-import { detectContentTypeWithConfidence } from '../lib/services/contentTypeDetector';
+import {
+  CAS_CONTENT_TYPES,
+  detectContentTypeWithConfidence,
+  guardRoomTitledContentType,
+  isRoomTitle,
+} from '../lib/services/contentTypeDetector';
 import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
 
 /** autonomy.md: catalog scripts touch at most 5,000 rows per run. */
@@ -101,14 +118,23 @@ function parseArgs() {
   // facet filter still applies on top of this, so an id in another facet is
   // ignored rather than rewritten.
   const ids = idsArg ? idsArg.slice('--ids='.length).split(',').map(s => s.trim()).filter(Boolean) : null;
-  return { apply, verbose, facets, limit, ids };
+  const roomTitledCas = argv.includes('--room-titled-cas');
+  if (roomTitledCas && ids) throw new Error('--room-titled-cas and --ids= are separate modes; pass one.');
+  return { apply, verbose, facets: roomTitledCas ? Array.from(CAS_CONTENT_TYPES) : facets, limit, ids, roomTitledCas };
 }
 
 /** Decide the new content type for one row. Exported shape kept simple for testing. */
-function decide(row: Row): Change {
+function decide(row: Row, roomTitledCas = false): Change {
   const override = OVERRIDES[row.id];
   if (override) {
     return { row, to: override.contentType, reason: `override: ${override.why}` };
+  }
+
+  if (roomTitledCas) {
+    // E132: never re-detect from scratch here — only the room-titled CAS
+    // answer is in question, and the guard answers exactly that.
+    const to = guardRoomTitledContentType(row.title, row.contentType) ?? null;
+    return { row, to, reason: to ? 'room-titled: CAS suppressed, title names a build/buy type' : 'room-titled: CAS suppressed, NULL beats a guess' };
   }
 
   // Title only. Description-only inference is exactly what mis-tagged these rows.
@@ -120,22 +146,45 @@ function decide(row: Row): Change {
 }
 
 async function main() {
-  const { apply, verbose, facets, limit, ids } = parseArgs();
+  const { apply, verbose, facets, limit, ids, roomTitledCas } = parseArgs();
 
   console.log('='.repeat(72));
-  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}`);
+  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}`);
   console.log(`Facets: ${facets.join(', ')} · row cap: ${limit}`);
   if (ids) console.log(`Restricted to ${ids.length} id(s): ${ids.join(', ')}`);
   console.log('='.repeat(72));
 
-  const rows: Row[] = await prisma.mod.findMany({
+  const loaded: Row[] = await prisma.mod.findMany({
     where: { contentType: { in: facets }, ...(ids ? { id: { in: ids } } : {}) },
     select: { id: true, title: true, contentType: true, downloadCount: true },
     orderBy: { downloadCount: 'desc' },
-    take: limit,
+    // The room filter runs in code, so the CAS population is read whole and
+    // the 5,000-row write cap is enforced on the filtered set below.
+    take: roomTitledCas ? 25000 : limit, // bounded read: catalog is ~16.6k rows
   });
 
-  console.log(`\nLoaded ${rows.length} rows.\n`);
+  // --room-titled-cas: keep only rows the guard would move (or that are pinned).
+  const rows: Row[] = roomTitledCas
+    ? loaded
+        .filter(r => isRoomTitle(r.title))
+        .filter(r => OVERRIDES[r.id] || guardRoomTitledContentType(r.title, r.contentType) !== r.contentType)
+        .slice(0, limit)
+    : loaded;
+
+  console.log(`\nLoaded ${loaded.length} rows${roomTitledCas ? `; ${rows.length} room-titled CAS rows in scope` : ''}.\n`);
+
+  if (roomTitledCas) {
+    // Read back every E120 pin: each must still hold its pinned value (a no-op).
+    const pinIds = Object.keys(OVERRIDES).filter(id => OVERRIDES[id].why.startsWith('E120 '));
+    const pinned = await prisma.mod.findMany({
+      where: { id: { in: pinIds } },
+      select: { id: true, contentType: true },
+    });
+    const drifted = pinned.filter(p => p.contentType !== OVERRIDES[p.id].contentType);
+    console.log(`E120 pins: ${pinIds.length} · found ${pinned.length} · at pinned value (no-op) ${pinned.length - drifted.length} · drifted ${drifted.length}`);
+    for (const d of drifted) console.log(`    DRIFT ${d.id}: now ${d.contentType}, pin ${OVERRIDES[d.id].contentType}`);
+    if (pinned.length !== pinIds.length) console.log(`    MISSING ${pinIds.length - pinned.length} pinned id(s) from the catalog`);
+  }
 
   // A non-empty --ids list that matches nothing (or only some of it) is a
   // hard failure, not a quiet pass: the id does not exist, sits outside
@@ -170,7 +219,7 @@ async function main() {
   let unchanged = 0;
 
   for (const row of rows) {
-    const change = decide(row);
+    const change = decide(row, roomTitledCas);
     if (change.to === row.contentType) {
       unchanged++;
       continue;

@@ -707,13 +707,120 @@ export function detectContentTypeWithConfidence(
   title: string,
   description?: string
 ): DetectionResult {
+  const result = detectWithRules(title, description, SORTED_RULES);
+  if (!result.contentType || !isSuppressedRoomTitledCas(title, result.contentType)) {
+    return result;
+  }
+  return roomTitledFallback(title, result.contentType);
+}
+
+// ============================================
+// ROOM-TITLED ROWS ARE NEVER CREATE-A-SIM (E132)
+// ============================================
+
+/**
+ * Create-a-Sim content types: things a Sim wears or is. A row whose TITLE
+ * passes a title-only room rule (bedroom / kitchen / bathroom) is build/buy
+ * content and must never land in one of these facets.
+ *
+ * `cas-background` is deliberately NOT here: "Coquette Bedroom – CAS
+ * Background" is a room-titled row that genuinely is a CAS background (2 such
+ * rows on 2026-09-28). `pet-clothing` is not here either — no room-titled row
+ * has ever carried it, and "pet bed" is vetoed by the bedroom rule anyway.
+ *
+ * Exported so the guard tests import the real set (house rule: guard the
+ * constant, not a copy of its value).
+ */
+export const CAS_CONTENT_TYPES: ReadonlySet<string> = new Set([
+  'tops', 'bottoms', 'dresses', 'full-body', 'shoes', 'hair', 'makeup', 'eyebrows',
+  'eyeliner', 'blush', 'lipstick', 'eyes', 'lashes', 'glasses', 'jewelry', 'nails',
+  'accessories', 'hats', 'skin', 'tattoos', 'body-preset', 'preset', 'poses', 'beard',
+  'facial-hair',
+]);
+
+/** True iff the title alone passes a title-only room rule (bedroom, kitchen or bathroom). */
+export function isRoomTitle(title: string | null | undefined): boolean {
+  return isBedroomTitle(title) || isKitchenTitle(title) || isBathroomTitle(title);
+}
+
+const SORTED_RULES: KeywordRule[] = [...CONTENT_TYPE_RULES].sort((a, b) => b.priority - a.priority);
+const SORTED_NON_CAS_RULES: KeywordRule[] = SORTED_RULES.filter(r => !CAS_CONTENT_TYPES.has(r.contentType));
+
+/**
+ * CAS types a build/buy set's own TITLE uses as a word, so a title match on
+ * them is not evidence of CAS. Measured 2026-09-28 over the 16,561-row
+ * catalog: the only room-titled rows whose title alone read as CAS were
+ * "Eevie Kitchen Accessories", "Sims 4 Bathroom Accessories" and
+ * "2 Enchanted Bathroom Accessories" — 3 of 3 are build clutter (E120).
+ */
+const ROOM_AMBIGUOUS_CAS_TITLE_TYPES: ReadonlySet<string> = new Set(['accessories']);
+
+/**
+ * True when `type` is a CAS answer for a room-titled row that must be
+ * suppressed. A CAS type the TITLE itself names is kept ("Kitchen Poses",
+ * "Bedroom Eyes Lashes" — a pose pack staged in a room is still a pose pack;
+ * 0 such rows in the catalog on 2026-09-28, so this exemption changes no
+ * stored row). Everything else — a CAS type from the description, the blog
+ * post's URL category, or an ambiguous title word — is suppressed.
+ */
+function isSuppressedRoomTitledCas(title: string | null | undefined, type: string): boolean {
+  if (!CAS_CONTENT_TYPES.has(type) || !isRoomTitle(title)) return false;
+  if (ROOM_AMBIGUOUS_CAS_TITLE_TYPES.has(type)) return true;
+  const titleOnly = detectWithRules(title || '', undefined, SORTED_RULES);
+  return !(titleOnly.contentType === type && titleOnly.confidence !== 'low');
+}
+
+/**
+ * The answer for a room-titled row whose first answer was a CAS type: re-run
+ * the detector over the TITLE ONLY with every CAS rule removed. A confident
+ * build/buy answer ("Cozy Ruffle Bed" -> furniture) is kept; anything else is
+ * `undefined` — NULL beats a guess, and fix-null-content-types.ts can repair
+ * a NULL later, while a fridge on makeup-cc is visible to every visitor.
+ *
+ * Never falls back to the description: a blog post's description is shared by
+ * every mod scraped from it, which is how these rows got a CAS type at all
+ * (E120: "glass" in wine-fridge copy, "blush" inside "Roseblush").
+ */
+function roomTitledFallback(title: string, suppressed: string): DetectionResult {
+  const r = detectWithRules(title, undefined, SORTED_NON_CAS_RULES);
+  if (r.contentType && r.confidence !== 'low') {
+    return { ...r, reasoning: `room-titled: CAS "${suppressed}" suppressed (E132); ${r.reasoning}` };
+  }
+  return {
+    contentType: undefined,
+    confidence: 'low',
+    matchedKeywords: [],
+    reasoning: `room-titled: CAS "${suppressed}" suppressed (E132) and the title names no build/buy type`,
+  };
+}
+
+/**
+ * Apply the room-titled-is-never-CAS rule to a content type that came from
+ * somewhere other than `detectContentTypeWithConfidence` — at ingest, the
+ * blog post's URL category (`detectContentTypeFromUrl`) outranks the
+ * detector, so a bathroom set scraped from a glasses round-up would otherwise
+ * still be written as `glasses`. Returns the candidate unchanged unless it is
+ * CAS and the title is a room title.
+ */
+export function guardRoomTitledContentType(
+  title: string | null | undefined,
+  candidate: string | null | undefined,
+): string | undefined {
+  if (!candidate) return undefined;
+  if (!isSuppressedRoomTitledCas(title, candidate)) return candidate;
+  const r = roomTitledFallback(title || '', candidate);
+  return r.confidence === 'low' ? undefined : r.contentType;
+}
+
+function detectWithRules(
+  title: string,
+  description: string | undefined,
+  sortedRules: KeywordRule[],
+): DetectionResult {
   const titleLower = (title || '').toLowerCase();
   const descLower = (description || '').toLowerCase();
 
   const matchedKeywords: string[] = [];
-
-  // Sort rules by priority (highest first)
-  const sortedRules = [...CONTENT_TYPE_RULES].sort((a, b) => b.priority - a.priority);
 
   const hasNegative = (rule: KeywordRule): boolean =>
     !!rule.negativeKeywords?.some(neg =>
