@@ -237,6 +237,69 @@ export function interpretResponse(http: number): { ok: boolean; reason: string }
 
 export type SubmitStatus = 'OK' | 'DRY-RUN' | 'FAIL' | 'COULD-NOT-RUN';
 
+/**
+ * Network bounds (E128, 2026-09-28). Until E128 only the WordPress read was
+ * bounded; the key-file GET and the IndexNow POST used a bare `fetch`, so a
+ * hung api.indexnow.org (or a slow apex) stalled runner step 0c2 — and every
+ * step after it — for as long as the socket stayed open. Each call now carries
+ * `AbortSignal.timeout`, which also bounds the body read. A timeout is
+ * *unknown*, not a rejection: the engine may or may not have received the
+ * list, so it grades COULD-NOT-RUN (exit 2), never FAIL (exit 1).
+ */
+export const KEY_FILE_TIMEOUT_MS = 15_000;
+export const SUBMIT_TIMEOUT_MS = 30_000;
+
+type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+
+/** True for the errors `AbortSignal.timeout` produces (TimeoutError; AbortError on older runtimes). */
+export function isTimeoutError(err: unknown): boolean {
+  const name = (err as { name?: unknown } | null)?.name;
+  return name === 'TimeoutError' || name === 'AbortError';
+}
+
+/** The key file must be live before a submit can succeed; check it, don't assume it. Never throws. */
+export async function checkKeyFile(
+  fetchImpl: FetchLike,
+  timeoutMs: number = KEY_FILE_TIMEOUT_MS,
+): Promise<{ live: boolean; http: number | null; timedOut: boolean }> {
+  try {
+    const res = await fetchImpl(keyLocation(), {
+      headers: { 'User-Agent': 'mhm-indexnow-submit/1.0' },
+      redirect: 'manual',
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (res.status !== 200) return { live: false, http: res.status, timedOut: false };
+    const body = (await res.text()).trim();
+    return { live: body === INDEXNOW_KEY, http: res.status, timedOut: false };
+  } catch (err) {
+    return { live: false, http: null, timedOut: isTimeoutError(err) };
+  }
+}
+
+/** POST the list to IndexNow within `timeoutMs`. Never throws. */
+export async function postIndexNow(
+  urls: readonly string[],
+  fetchImpl: FetchLike,
+  timeoutMs: number = SUBMIT_TIMEOUT_MS,
+): Promise<{ status: SubmitStatus; http: number | null; reason: string; detail?: string }> {
+  try {
+    const res = await fetchImpl(INDEXNOW_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'User-Agent': 'mhm-indexnow-submit/1.0' },
+      body: JSON.stringify(buildPayload(urls)),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const verdict = interpretResponse(res.status);
+    if (verdict.ok) return { status: 'OK', http: res.status, reason: verdict.reason };
+    const text = (await res.text().catch(() => '')).slice(0, 200);
+    return { status: 'FAIL', http: res.status, reason: verdict.reason, detail: text || undefined };
+  } catch (err) {
+    const detail = String((err as Error)?.message ?? err).slice(0, 200);
+    if (isTimeoutError(err)) return { status: 'COULD-NOT-RUN', http: null, reason: 'submit-timeout', detail };
+    return { status: 'FAIL', http: null, reason: 'network-error', detail };
+  }
+}
+
 export interface RunSummary {
   when: Date;
   mode: 'dry-run' | 'live';

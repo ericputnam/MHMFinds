@@ -48,18 +48,16 @@ import {
   CREATORS_HARD_CAP,
   DEFAULT_DAYS,
   HARD_CAP,
-  INDEXNOW_ENDPOINT,
   INDEXNOW_KEY,
-  buildPayload,
   capCeiling,
+  checkKeyFile,
   exitCodeFor,
-  interpretResponse,
   keyLocation,
   parseArgs,
+  postIndexNow,
   selectUrls,
   summaryLine,
   type RunSummary,
-  type SubmitStatus,
 } from './indexnow-lib';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? process.cwd();
@@ -174,18 +172,6 @@ async function fetchGuideUrls(days: number): Promise<{ urls: string[]; complete:
   return { urls: r.guides.map((g) => g.url), complete: r.complete };
 }
 
-/** The key file must be live before a submit can succeed; check it, don't assume it. */
-async function keyFileIsLive(): Promise<{ live: boolean; http: number | null }> {
-  try {
-    const res = await fetch(keyLocation(), { headers: { 'User-Agent': 'mhm-indexnow-submit/1.0' }, redirect: 'manual' });
-    if (res.status !== 200) return { live: false, http: res.status };
-    const body = (await res.text()).trim();
-    return { live: body === INDEXNOW_KEY, http: res.status };
-  } catch {
-    return { live: false, http: null };
-  }
-}
-
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
@@ -277,33 +263,17 @@ async function main(): Promise<void> {
     finish({ ...base, ...counts, status: 'OK', reason: 'nothing-to-submit' });
   }
 
-  const key = await keyFileIsLive();
+  const key = await checkKeyFile(fetch);
   if (!key.live) {
-    console.error(`[indexnow] key file not live at ${keyLocation()} (http=${key.http ?? 'network-error'}); refusing to submit`);
-    finish({ ...base, ...counts, http: key.http, reason: 'key-file-not-live' });
+    console.error(
+      `[indexnow] key file not live at ${keyLocation()} (http=${key.http ?? (key.timedOut ? 'timeout' : 'network-error')}); refusing to submit`,
+    );
+    finish({ ...base, ...counts, http: key.http, reason: key.timedOut ? 'key-file-timeout' : 'key-file-not-live' });
   }
 
-  let http: number | null = null;
-  let status: SubmitStatus = 'FAIL';
-  let reason = 'network-error';
-  try {
-    const res = await fetch(INDEXNOW_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8', 'User-Agent': 'mhm-indexnow-submit/1.0' },
-      body: JSON.stringify(buildPayload(sel.urls)),
-    });
-    http = res.status;
-    const verdict = interpretResponse(res.status);
-    status = verdict.ok ? 'OK' : 'FAIL';
-    reason = verdict.reason;
-    if (!verdict.ok) {
-      const text = (await res.text().catch(() => '')).slice(0, 200);
-      if (text) console.error(`[indexnow] response body: ${text}`);
-    }
-  } catch (err) {
-    console.error(`[indexnow] POST failed: ${String((err as Error).message ?? err).slice(0, 200)}`);
-  }
-
+  const posted = await postIndexNow(sel.urls, fetch);
+  if (posted.detail) console.error(`[indexnow] ${posted.http === null ? 'POST failed' : 'response body'}: ${posted.detail}`);
+  const { status, http, reason } = posted;
   finish({ ...base, ...counts, status, http, reason });
 }
 
