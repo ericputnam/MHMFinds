@@ -1905,3 +1905,53 @@ from 09-24 (2 incidents in 8 merges) was procedural, not code.
   `ROOM_THEME_RULES` and bedroom had moved to a title-only rule file.
 
 _Status 2026-09-26: the "name the files each agent may touch" next step is still open; 09-26 again had no file overlap to test it._
+
+### 2026-09-26 — the same build graded FAIL at 06:46 and PASS at 09:26
+
+Seven PRs (#183, #185–#189, daily #190), all PASS, 7/7 ledger rows. One false-alarm rollback,
+closed the same morning.
+- **A reading taken through a broken network is not a verdict about the site.** At 06:46 the
+  morning check rolled production back on four `page.goto` 45 s timeouts and a homepage grid
+  still client-fetching (1,788 of ~9,600 chars at 27.8 s). The host itself could not reach
+  Vercel, Prisma, Patreon or Pinterest in the same window, the guardrail was GREEN, and the
+  06:58 log line literally said `smoke INCONCLUSIVE` — and it still rolled back. Second false
+  alarm in five days (09-22 E91). #186 added a network control (google/vercel/cloudflare,
+  ≥2 of 3 in ≤4 s, sampled before *and* after), fresh-page retries on primary targets, and
+  positive-evidence grading (a page that never answered gets a direct fetch as tie-breaker:
+  200 → inconclusive). Guard runs the real `smoke()`/`fail_and_fix()` under `/bin/bash` 3.2 with
+  the CLIs stubbed, 21/29 red pre-fix, plus "positive evidence still rolls back" green on both
+  sides — **a guard that removes a destructive path must also prove the path still fires.**
+- **A docs-only commit to `main` is still a production deploy**, and every deploy gets graded.
+  The rolled-back build (`6cb461c`) was the previous night's CLAUDE.md-only compound commit, so
+  the rollback changed nothing a visitor could see. Never read "the deploy after X failed" as
+  evidence against X without diffing what X shipped.
+- **Name the file a helper writes, and name it the way the consumer expects.** `ledger-commit.sh
+  --incident` copies by `basename`, so an incident drafted as `e111-incident.md` landed under the
+  wrong name and needed a fix-up commit (`704b31b`). Write incident files at their final name
+  (`incidents/<YYYY-MM-DD-HHMMSS>.md`) before handing them over.
+- **Read the handler before trusting the inbox premise.** The queued item said "/sign-in/ OAuth
+  buttons drop `callbackUrl`"; `/sign-in/` has no OAuth buttons. The real defect was an **open
+  redirect** — both success branches pushed `?redirect=` verbatim, so `?redirect=https://evil.example/`
+  left the site from our own form (#183). Any return-to/redirect param: same-origin relative
+  paths only; drop `//host`, `/\host`, control chars, absolute URLs and auth pages
+  (`app/sign-in/returnTo.ts`).
+- **A truncated sample is `unknown`, never a rate.** Pinterest returned 100 pins on one page;
+  ÷ 14 days read as 7.1/day → "runway 8.8 d, no-op" while the queue showed 36/day → 1.75 d
+  (#189). Same class as the paginated-fetch rule above: check `hit the page cap` before dividing.
+- **Gate a link on the same predicate as the page it targets, and scan for the bypass.** The
+  mod-page author link used `creatorHref(authorSlug(...))` and linked ~2,290 mod pages to a
+  creator page that 404s below `MIN_MODS_FOR_PAGE`; #185 routes it through the server-resolved
+  href and a class scan forbids the raw call anywhere (09-25's "never emit a link the target would
+  404" rule, now enforced rather than stated).
+- **A registry→surface scanner can be green on day one — see it red once anyway.** #188 walks
+  `SIMS4_COLLECTIONS` against llms.txt, llms-full.txt, the sitemap, per-collection RSS and
+  IndexNow (vacuity guard ≥15). All 26 slugs were already green, so it was proven by deleting
+  `kitchen-cc` from one route, watching it fail, and restoring.
+- **Bound every external call an agent makes.** 5 of 7 agents hit the 600 s no-progress watchdog
+  on MCP/API calls during the network outage; all recovered on a resume told "no MCP calls,
+  bounded commands, ship from local data". Put timeouts on the call, not on the agent.
+- **Hold a test that would contaminate an open read.** Rio did not ship a `/go` copy test (E119)
+  because E65 KEEP means it would change the surface E99 is still being read on. Not shipping is a
+  valid daily move when the alternative corrupts an experiment.
+
+_Status 2026-09-27: the `--incident` basename trap is now enforced — `ledger-commit.sh --incident` asserts the `YYYY-MM-DD-HHMMSS.md` name (exit 64, #194). The per-agent allowed-file list was used at dispatch on 09-27 (no overlap occurred)._

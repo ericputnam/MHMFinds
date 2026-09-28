@@ -948,57 +948,51 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-26 — the same build graded FAIL at 06:46 and PASS at 09:26
+### 2026-09-27 — six Tier 0 merges, zero incidents; the day's bugs were all "unknown read as a value"
 
-Seven PRs (#183, #185–#189, daily #190), all PASS, 7/7 ledger rows. One false-alarm rollback,
-closed the same morning.
-- **A reading taken through a broken network is not a verdict about the site.** At 06:46 the
-  morning check rolled production back on four `page.goto` 45 s timeouts and a homepage grid
-  still client-fetching (1,788 of ~9,600 chars at 27.8 s). The host itself could not reach
-  Vercel, Prisma, Patreon or Pinterest in the same window, the guardrail was GREEN, and the
-  06:58 log line literally said `smoke INCONCLUSIVE` — and it still rolled back. Second false
-  alarm in five days (09-22 E91). #186 added a network control (google/vercel/cloudflare,
-  ≥2 of 3 in ≤4 s, sampled before *and* after), fresh-page retries on primary targets, and
-  positive-evidence grading (a page that never answered gets a direct fetch as tie-breaker:
-  200 → inconclusive). Guard runs the real `smoke()`/`fail_and_fix()` under `/bin/bash` 3.2 with
-  the CLIs stubbed, 21/29 red pre-fix, plus "positive evidence still rolls back" green on both
-  sides — **a guard that removes a destructive path must also prove the path still fires.**
-- **A docs-only commit to `main` is still a production deploy**, and every deploy gets graded.
-  The rolled-back build (`6cb461c`) was the previous night's CLAUDE.md-only compound commit, so
-  the rollback changed nothing a visitor could see. Never read "the deploy after X failed" as
-  evidence against X without diffing what X shipped.
-- **Name the file a helper writes, and name it the way the consumer expects.** `ledger-commit.sh
-  --incident` copies by `basename`, so an incident drafted as `e111-incident.md` landed under the
-  wrong name and needed a fix-up commit (`704b31b`). Write incident files at their final name
-  (`incidents/<YYYY-MM-DD-HHMMSS>.md`) before handing them over.
-- **Read the handler before trusting the inbox premise.** The queued item said "/sign-in/ OAuth
-  buttons drop `callbackUrl`"; `/sign-in/` has no OAuth buttons. The real defect was an **open
-  redirect** — both success branches pushed `?redirect=` verbatim, so `?redirect=https://evil.example/`
-  left the site from our own form (#183). Any return-to/redirect param: same-origin relative
-  paths only; drop `//host`, `/\host`, control chars, absolute URLs and auth pages
-  (`app/sign-in/returnTo.ts`).
-- **A truncated sample is `unknown`, never a rate.** Pinterest returned 100 pins on one page;
-  ÷ 14 days read as 7.1/day → "runway 8.8 d, no-op" while the queue showed 36/day → 1.75 d
-  (#189). Same class as the paginated-fetch rule above: check `hit the page cap` before dividing.
-- **Gate a link on the same predicate as the page it targets, and scan for the bypass.** The
-  mod-page author link used `creatorHref(authorSlug(...))` and linked ~2,290 mod pages to a
-  creator page that 404s below `MIN_MODS_FOR_PAGE`; #185 routes it through the server-resolved
-  href and a class scan forbids the raw call anywhere (09-25's "never emit a link the target would
-  404" rule, now enforced rather than stated).
-- **A registry→surface scanner can be green on day one — see it red once anyway.** #188 walks
-  `SIMS4_COLLECTIONS` against llms.txt, llms-full.txt, the sitemap, per-collection RSS and
-  IndexNow (vacuity guard ≥15). All 26 slugs were already green, so it was proven by deleting
-  `kitchen-cc` from one route, watching it fail, and restoring.
-- **Bound every external call an agent makes.** 5 of 7 agents hit the 600 s no-progress watchdog
-  on MCP/API calls during the network outage; all recovered on a resume told "no MCP calls,
-  bounded commands, ship from local data". Put timeouts on the call, not on the agent.
-- **Hold a test that would contaminate an open read.** Rio did not ship a `/go` copy test (E119)
-  because E65 KEEP means it would change the surface E99 is still being read on. Not shipping is a
-  valid daily move when the alternative corrupts an experiment.
+Six PRs (#191–#194, #196, #197) plus daily #198, all PASS, 8/8 ledger rows, guardrail GREEN.
+The 09-26 section (open-redirect fix, network-control smoke, docs-only deploys) is in the archive.
+- **Not measured is `null`, never `0` — and a failed day is never "last known".** Every morning
+  `funnel-history.ts` rewrote 09-26 `nonAdMonthly` as `0` because the Patreon and DB scoreboard
+  sections had failed, undoing a hand-null on `main`. Now a section with `ok:false` nulls every
+  field derived from it (#194). Still open: `funnel-scoreboard.ts` emits
+  `nonAdRevenueMonthlyGross: 0` at the source.
+- **Byte-level dedupe is not idempotency once a human edits a row.** The runner's `grep -x -v` seed
+  re-appended a relabelled PR #145 row and a superseded PR #142 row. Ledger rows now have identity
+  `(when, mode-word, commit | label)`; `--flush-pending` skips rows `main` already has and
+  `--merge-local` also skips rows `main` has relabelled. A stale tree must never bring back a row
+  `main` has already dealt with.
+- **Settle independent sources independently.** `patreon-q4-gate-preread.ts` used `Promise.all`,
+  so a slow production DB threw away a healthy Members API read and 3 runs on 09-26 produced
+  nothing. `Promise.allSettled` + a pure `gradeSources()` → full / members-only / linked-only /
+  none (exit 0/2/2/1). The missing leg prints **UNKNOWN**, the file gets a `-partial` suffix so it
+  cannot overwrite a full read, and each leg has its own deadline (#196).
+- **An `--ids=` fix mode must fail hard on an id it cannot act on.** `retag-junk-build-facets.ts
+  --ids=` used to skip unknown ids quietly or fall back to re-detection; it now exits non-zero when
+  a named id is not loaded or has no hand-audited pin (#197, 76 room-titled rows typed as CAS —
+  fridges on `makeup-cc`, beds on `poses`). The guard re-runs the title-only room rules over every
+  pin's quoted title (vacuity ≥ 76).
+- **An experiment with no event cannot be graded.** E39 (password reset) had no signal because the
+  reset token row is deleted on use and no GA4 event fired. #191 adds
+  `trackPasswordResetComplete()` (no PII, no-op without gtag, never throws). Ship the event
+  *before* the change you want to measure.
+- **A push that never included the traffic source was invisible.** Blog guides are 16,250 of 16,434
+  weekly Bing-organic sessions, and the daily IndexNow push had never contained one. `--guides`
+  (#192) is placed *before* new mods so a 500-URL cap cannot push it out. It drops `blog.*` and
+  301'd URLs, and a failed WordPress read never blocks the push. Audit a submitter's payload
+  against the channel's top landing pages.
+- **When a metric has read 0 for three runs, compare its SQL with the CTA's write path before
+  building another surface.** Nova found "creators onboarded" was 0 by construction (the claim form
+  never linked a user). Cass found the largest page type with no capture box is 0.2% of sessions.
+  Two headline builds were avoided by one side-by-side read each.
+- **A top-up that recovers exactly one day's drain is a treadmill, not a fix.** The pin runway
+  needed a 21-row top-up (+0.57 d) three days running against a ~0.6 d/day drain. The cap holds the
+  floor but can never reach the 3.0 d target, so escalate the slope (writer cadence, Q11-b) rather
+  than repeat the top-up.
 
 ---
 
-*Last compound review: 2026-09-26*
+*Last compound review: 2026-09-27*
 
 ---
 
