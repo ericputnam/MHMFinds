@@ -25,11 +25,10 @@ day.
 
 ## Tier 2 — needs your decision
 
-### Q11-b · The writer cron inserts *drafts*, not scheduled pins (Pip, E82, 2026-09-23) — **re-pitched 2026-09-28, one word**
-- **Re-pitch (Pip, 09-28):** four floor top-ups in four mornings (09-25/26/27/28) each added the 21-row maximum, +0.57 d of runway, against a ~0.6 d/day drain: runway read 1.83→2.44, 1.75→2.33, 1.59→2.16, 1.34→1.89 d and has never reached 3.0. The Q12 revival slice (7/day, 09-24→10-04) runs dry 2026-10-05; today's ranked pool is 152 ids over 25 destinations, about seven more top-ups at 1/URL/day. Only the writer's cadence changes the slope. Ask: approve.
-- **Why:** all 341 rows the cron inserted since 09-21 carry `Post Date = 2025-01-01` (the plugin's "unscheduled" sentinel), so inflow to the poster's 14-day window is **0/day**. Package: `reports/funnel/drafts/q11-writer-post-date-2026-09-23.md`.
-- **Approve one:** (1) **`--schedule-per-day 12`** flag in `posts_2_supabase_server.py`, cron passes it, never past +14 d, 1 per URL per day — Pip writes the patch, you scp (preferred); (2) the writer presses the plugin's schedule step on the 341 rows; (3) `pin-runway-topup.py` promotes sentinel rows at ≤7/day. Reply **"approve q11 1"** (or 2 / 3). Read: writer-dated rows/day 0 → ≥12; pins/24h ≈25 → ≥37 within 7 d of the change.
-- **History:** Q11 server steps 4–8 are done (files + `30 5` cron verified 09-21). Full status lines in `archive/operator-queue-2026-09.md`. Silence to 10-05 = dropped and logged; the daily 21-row top-up continues until then.
+### Q11-b · Writer cron inserts drafts — **CLOSED 2026-09-28 by operator: options 1–3 declined**
+- Operator (chat, 09-28): focus on the pins the **writer schedules going forward** and make those the best Pinterest SEO they can be; do not overwhelm the Pinterest algorithm (SD-10). So: no auto-dating in `posts_2_supabase_server.py`, no team promotion of the placeholder-dated (`2025-01-01`) backlog, and no re-pitch. Pin volume and timing stay with the writer.
+- **Standing Pip step (Tier 0, copy only, SD-10-safe):** every run, `pin-seo-audit.py --source page` on the next-14-day window, then `--apply` for rows that fail and re-score clean. This covers writer-dated rows as they appear and never touches Post Date, image, URL or volume. The ledger row carries the ids and the rollback file.
+- **09-28 baseline (read-only audit):** 63 rows in the window, **0 writer-scheduled**. All 63 are runway-floor revival rows (56/63 passing, mean 84/100). Writer rows only appear once the writer schedules them; none are dated since the 09-21 server move. The SD-10 runway floor (≤7/day, stops at 3 d) is unchanged.
 
 ### Q16 · One Patreon post in your voice (Rio, E88, 2026-09-22) — **silence = dropped 2026-09-29 (tomorrow), no re-pitch**
 - Q4 gate re-read 09-22: **HOLD** — 0 of 54 paid patrons connected (join pace is fine). The cheapest lever is one post to existing patrons: *"Your $3 now skips the download timer — one tap to switch it on"*, linking `/go/cmim9obub00mzoxy7av4vowyr/`. Draft: `reports/funnel/drafts/patreon-connect-post-2026-09-22.md`. Read D+7 after posting; keep if ≥18 of 54 connect. Reply **"posted patreon <date>"**.
