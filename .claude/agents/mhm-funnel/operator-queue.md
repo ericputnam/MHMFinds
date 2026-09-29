@@ -43,9 +43,8 @@ day.
 
 ### Q8 · Pinterest poster poison-row hardening (Pip, E36) — **APPROVED 09-12, deployed 09-21 with Q11** (MHMUtils `7037ffe`). Nothing left for you; closes with Q11-b.
 
-### Q4 · Patreon tier relaunch — package ready (Rio, 2026-09-04) — **1 of 3 steps done**
-- 09-28 read (E108/E125, API 09-27): 55 paid ≈ $153.50/mo, joins 7d 3, cancels 1 (since 09-08: 13 joins / 2 cancels); connected 0 of 55, linked 83 — still HOLD on the connected leg; the two dashboard steps are unchanged.
-- Probe 09-25: tiers renamed 04:54Z (Espresso Shot $1 ×10, Cappuccino $3 ×42, Large Latte $5 ×3) while the gate read HOLD; $1 tier still `published=true`; welcome note not observable. Rio's E108 watches cancels (revert copy if >16/mo pace, read 10-09). The two dashboard steps are in the checklist below. Gate re-read 09-22: HOLD (see Q16). Full status history in the archive.
+### Q4 · Patreon tier relaunch — **CLOSED 2026-09-28 by operator: won't do**
+- Operator (chat, 09-28): the writer controls the Patreon pay plans and "it ain't broke", so the remaining dashboard steps (unpublish the $1 Espresso Shot tier, paste the $3 welcome note) will not be done. Tiers stay as they are (Espresso Shot $1 / Cappuccino $3 / Large Latte $5). **Do not re-pitch tier or pricing changes.** Rio keeps reading paid count and gross as a guardrail only. History is in the archive.
 
 ### Q5 · Site membership via Patreon OAuth (Rio, E19/E24) — **SHIPPED 09-07/09-08**, env vars live in Production. Read 2026-10-07. Nothing for you.
 
@@ -55,11 +54,6 @@ Q10 (re-permission day-3, Cass/E54) **dropped 2026-09-28** under the 7-day rule 
 
 ## Operator-only actions (no decision needed, nobody else can do them)
 
-- **Q4 step 1, 2 of 3 still yours (~2 min, Patreon dashboard):** unpublish the $1 "Espresso Shot" tier (renamed from "Support Tier" 09-25 04:54Z; 10 patrons, still `published=true` on 09-25) and paste the welcome note from `reports/funnel/drafts/patreon-welcome-note-2026-09-09.md` into the $3 "Cappuccino" tier (renamed 09-25; perk line present, welcome note not observable).
-- **`NEXT_PUBLIC_SITE_URL` (~1 min):** the operator-did probe has reported it missing from Vercel **Production** every morning since 09-17 (13 mornings running). Vercel → Settings → Environment Variables → Production, add `NEXT_PUBLIC_SITE_URL=https://musthavemods.com`; reply "done siteurl".
-- **BigScoots 301 blog.* → apex (Q13, Pip 09-21, Tier 2 infra):** package is PR #143 (open, Tier 2); the team's half (apex Post URLs in the writer, host fix in the poster) shipped with Q8/Q11.
-- **BigScoots page-cache purge for Q6 (~1 min):** `wp bs_cache purge_cache` (site-wide, or `--urls=` the two un-consolidated articles). Until it runs the articles keep serving the old facet canonical from cache, so Google cannot see the change.
-- **GA4 (~1 min, Rio 09-12):** Admin → Custom definitions → event-scoped custom dimension `source` on event parameter `source`. Until it exists the `newsletter_signup`/`patreon_click` by-source split cannot be queried via the API.
-- **GSC (~2 min, Sage 09-12):** URL Inspection → **Request indexing** on `https://musthavemods.com/games/sims-4/hair-cc/` and, after the cache purge above, on `/sims-4-pregnancy-mods/`, `/sims-4-y2k-cc/`, `/games/sims-4/pregnancy-mods/`, `/games/sims-4/y2k-cc/`; then Sitemaps → resubmit `sitemap.xml` (last submitted 04-22; today's `/sitemap-creators.xml` and `/games/sims-4/halloween-cc/` are new). The service credential returns "Insufficient Permission" on `submit_sitemap`, so neither is automatable.
+- **All cleared 2026-09-28.** The operator reported done: `NEXT_PUBLIC_SITE_URL` in Vercel Production, the Q6 BigScoots cache purge (verified by Claude), the GA4 custom dimension `source`, and the GSC indexing requests plus sitemap resubmit. Q13 (blog.* → apex 301) **SHIPPED 09-28** through the kadence-child `functions.php` rather than nginx, because the nginx config is root-owned (PR #208, CRITICAL_MARKERS `mhm_host_split_301` and `mhm_host_split_js`). PR #143's nginx package is superseded. Read the Pinterest blog.* session share and pageviews per session on 2026-10-05.
 
 Resolved/closed items (Q9 closed 09-22, E74 shipped 09-21, evening-check item closed 09-22, Q12 applied, Q1 shipped, Q3 closed, and the last-30-days closed log) plus the full dated status history of every open item live verbatim in `archive/operator-queue-2026-09.md`. The file as it stood before the 2026-09-23 rewrite is appended there in full.
