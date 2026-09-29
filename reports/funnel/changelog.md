@@ -223,3 +223,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-28 07:17 | after-merge | Ops: PR #200 smoke renders one /games/sims-4/<slug>/ collection from the registry (E133) — verified with the NEW smoke-render | c839ce7 | https://mhm-finds-dw5l-7ra3ep3ou-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-28 07:24 | check | Quinn: --check after the 09-28 merge window (covers #201 INCONCLUSIVE) |  | https://mhm-finds-dw5l-1hqcw5i9v-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-09-28 20:18 | after-merge | manual | a8c28a5 | https://mhm-finds-dw5l-9h2mwuieu-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-28 20:59 | after-merge | manual | 982fb28 | https://mhm-finds-dw5l-nnn2zl1am-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
