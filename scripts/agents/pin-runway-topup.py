@@ -121,6 +121,19 @@ RUNWAY_HORIZON_DAYS = 14         # must match pinner-liveness-lib.ts's DEFAULT_R
 LOOKBACK_DAYS = 14               # must match revive-stranded-pins.py's LOOKBACK_DAYS
 MAX_FILL_HORIZON_DAYS = 60       # safety valve so a near-zero rate can't loop forever
 
+# The writer plugin's "waiting for its article's scheduled day" state (Q11-b,
+# closed 2026-09-28): rows are inserted at this Post Date and re-dated by the
+# plugin on the article's Scheduled Date. Since the Q11 deploy
+# (PLUGIN_SCHEDULE_SINCE, MHMUtils 7037ffe) that schedule WORKS, so a
+# placeholder row created on/after that date is the writer's own scheduled
+# pin, not stranded inventory — never promote it. Rows at the same date
+# created *before* the deploy are the pre-Q11 stranded pool the SD-10
+# standing approval covers. 2026-09-29 read: 1610/1610 stranded rows carry
+# `Wordpress Post ID`, so that column cannot discriminate (see
+# filter_writer_rows); this date-based predicate is the one that can.
+PLACEHOLDER_POST_DATE = '2025-01-01'
+PLUGIN_SCHEDULE_SINCE = '2026-09-21'
+
 TABLE = 'n8n_pinterest_posts'
 DEFAULT_CONFIG = os.path.join(
     os.path.expanduser('~'), 'java_projects', 'MHMUtils', 'config.json')
@@ -653,11 +666,128 @@ def select_candidates(config, today, ids_from, lookback_days=LOOKBACK_DAYS):
 def filter_writer_rows(rows):
     """Belt-and-suspenders: even though the date filter should already
     exclude the writer's fresh rows, never select a row the writer itself
-    attributed (Wordpress Post ID set)."""
+    attributed (Wordpress Post ID set).
+
+    2026-09-29 finding (E135): revive's SELECT_COLS never fetches that
+    column, so this filter has dropped 0 rows on every run — and fetching it
+    would not help: 1610/1610 stranded rows carry `Wordpress Post ID` (the
+    writer's cron inserted the whole pool months ago), so the marker cannot
+    separate "the writer's scheduled pin" from "stranded revival inventory".
+    The predicate that can is the plugin-schedule one below
+    (`filter_plugin_scheduled_rows`); this one stays as a no-op guard for a
+    row that ever arrives with the column populated."""
     kept, dropped = [], 0
     for row in rows:
         if row.get('Wordpress Post ID') not in (None, ''):
             dropped += 1
+            continue
+        kept.append(row)
+    return kept, dropped
+
+
+# ---------------------------------------------------------------------------
+# Writer plugin-schedule guard (E135, 2026-09-29). Top-up #4 promoted ids
+# 11848/11849 — created 2026-09-28 for an Upcoming article — because nothing
+# in the pipeline could see `created_at`. Q11-b: placeholder rows are the
+# writer's schedule, not a backlog. A row is the writer's scheduled pin when
+# its Post Date is the placeholder AND (it was created on/after the plugin
+# deploy OR its destination has any row created on/after it — i.e. the
+# plugin currently manages that article). Fail-closed: if either read cannot
+# complete, main() refuses rather than guessing.
+# ---------------------------------------------------------------------------
+
+def destination_key(url):
+    """Host-folded (blog.* -> apex), query/fragment-stripped, lower-cased URL
+    key so the same article on either host is one destination."""
+    if not url:
+        return None
+    try:
+        parts = urllib.parse.urlsplit(str(url).strip())
+    except ValueError:
+        return None
+    host = (parts.hostname or '').lower()
+    if host == 'blog.musthavemods.com':
+        host = 'musthavemods.com'
+    path = parts.path or '/'
+    if not path.endswith('/'):
+        path += '/'
+    if not host:
+        return None
+    return host + path.lower()
+
+
+def is_plugin_scheduled_row(attr, managed_keys, since=PLUGIN_SCHEDULE_SINCE,
+                            placeholder=PLACEHOLDER_POST_DATE):
+    """Pure predicate. `attr` carries the row's `Post Date`, `created_at` and
+    `Post URL` (as fetched by fetch_attribution); `managed_keys` is the set
+    of destination keys the plugin currently manages."""
+    post_date = str(attr.get('Post Date') or '')[:10]
+    if post_date != placeholder:
+        return False
+    created = str(attr.get('created_at') or '')[:10]
+    if created and created >= since:
+        return True
+    key = destination_key(attr.get('Post URL'))
+    return bool(key) and key in (managed_keys or set())
+
+
+def fetch_attribution(config, ids, chunk=100):
+    """id -> {'Post Date', 'created_at', 'Post URL'} for the candidate ids.
+    Returns None (never a partial dict) if any chunk cannot be read."""
+    r = revive()
+    out = {}
+    ids = [int(v) for v in ids]
+    for i in range(0, len(ids), chunk):
+        batch = ids[i:i + chunk]
+        query = ('select=id,%22Post%20Date%22,created_at,%22Post%20URL%22'
+                 '&id=in.({})'.format(','.join(str(v) for v in batch)))
+        try:
+            rows = r.supabase(config, 'GET', query)
+        except Exception:
+            return None
+        for row in rows:
+            out[int(row['id'])] = row
+    if len(out) != len(set(ids)):
+        return None
+    return out
+
+
+def fetch_plugin_managed_keys(config, since=PLUGIN_SCHEDULE_SINCE, page=1000):
+    """Destination keys of every row (posted or not) created on/after
+    `since` — the articles the writer plugin currently manages. Paginates
+    with Range so a >1000-row answer is never silently truncated; returns
+    None if the read cannot complete."""
+    r = revive()
+    keys = set()
+    offset = 0
+    while True:
+        query = ('select=id,%22Post%20URL%22&created_at=gte.{}'
+                 '&order=id.asc&limit={}&offset={}'.format(q(since), page, offset))
+        try:
+            rows = r.supabase(config, 'GET', query)
+        except Exception:
+            return None
+        for row in rows:
+            key = destination_key(row.get('Post URL'))
+            if key:
+                keys.add(key)
+        if len(rows) < page:
+            return keys
+        offset += page
+        if offset > 50000:
+            return None  # runaway; treat as could-not-run
+
+
+def filter_plugin_scheduled_rows(rows, attribution, managed_keys,
+                                 since=PLUGIN_SCHEDULE_SINCE):
+    """Drop the writer's plugin-scheduled rows. A candidate missing from
+    `attribution` is dropped too (unknown is never selectable). Returns
+    (kept, dropped_rows)."""
+    kept, dropped = [], []
+    for row in rows:
+        attr = (attribution or {}).get(int(row['id']))
+        if attr is None or is_plugin_scheduled_row(attr, managed_keys, since=since):
+            dropped.append(row)
             continue
         kept.append(row)
     return kept, dropped
@@ -955,8 +1085,33 @@ def self_test():
     finally:
         _SEO = saved_seo
 
-    print('self-test: 14/14 assertions passed (decision logic + guards + '
-          'allocator + rate-source + queue-side sections + seo pass, offline)')
+    # 15. (E135) Writer plugin-schedule guard: placeholder + created since the
+    #     deploy -> writer's; placeholder + old but managed destination ->
+    #     writer's; placeholder + old + unmanaged -> selectable; a real date
+    #     is never the writer's placeholder; unknown attribution is dropped.
+    managed = {destination_key('https://blog.musthavemods.com/sims-4-fall-decor-cc/')}
+    assert destination_key('https://musthavemods.com/sims-4-fall-decor-cc/?x=1') in managed
+    fresh = {'Post Date': '2025-01-01', 'created_at': '2026-09-28T10:30:00+00:00',
+             'Post URL': 'https://musthavemods.com/sims-4-boat-cc/'}
+    old_managed = {'Post Date': '2025-01-01', 'created_at': '2025-06-11T00:00:00+00:00',
+                   'Post URL': 'https://musthavemods.com/sims-4-fall-decor-cc/'}
+    old_free = {'Post Date': '2025-01-01', 'created_at': '2025-06-11T00:00:00+00:00',
+                'Post URL': 'https://musthavemods.com/sims-4-wedges-cc/'}
+    dated = {'Post Date': '2026-01-25', 'created_at': '2026-09-28T10:30:00+00:00',
+             'Post URL': 'https://musthavemods.com/sims-4-wedges-cc/'}
+    assert is_plugin_scheduled_row(fresh, managed)
+    assert is_plugin_scheduled_row(old_managed, managed)
+    assert not is_plugin_scheduled_row(old_free, managed)
+    assert not is_plugin_scheduled_row(dated, managed)
+    rows = [{'id': 1}, {'id': 2}, {'id': 3}, {'id': 4}, {'id': 5}]
+    attribution = {1: fresh, 2: old_managed, 3: old_free, 4: dated}
+    kept, dropped = filter_plugin_scheduled_rows(rows, attribution, managed)
+    assert [r['id'] for r in kept] == [3, 4], kept
+    assert [r['id'] for r in dropped] == [1, 2, 5], dropped
+
+    print('self-test: 15/15 assertions passed (decision logic + guards + '
+          'allocator + rate-source + queue-side sections + seo pass + '
+          'plugin-schedule guard, offline)')
     return 0
 
 
@@ -1081,6 +1236,26 @@ def main():
     if dropped_writer:
         print('  dropped {} row(s) attributed to the writer (never touched by '
               'this tool)'.format(dropped_writer))
+
+    # E135: the writer plugin's scheduled rows (placeholder-dated, created
+    # since the Q11 deploy, or pointing at an article the plugin manages) are
+    # never selectable. Fail-closed: an unreadable attribution is a refusal.
+    attribution = fetch_attribution(config, [row['id'] for row in candidates]) \
+        if candidates else {}
+    managed_keys = fetch_plugin_managed_keys(config)
+    if attribution is None or managed_keys is None:
+        print('ERROR: could not read row attribution (created_at / Post Date) '
+              'or the plugin-managed destination set — refusing to select '
+              'anything rather than risk a writer plugin-scheduled row.')
+        return 2
+    candidates, dropped_plugin = filter_plugin_scheduled_rows(
+        candidates, attribution, managed_keys)
+    print('  writer plugin-schedule guard: {} managed destination(s) since {}; '
+          'dropped {} plugin-scheduled row(s){}'.format(
+              len(managed_keys), PLUGIN_SCHEDULE_SINCE, len(dropped_plugin),
+              ' (ids ' + ', '.join(str(r_['id']) for r_ in dropped_plugin[:12])
+              + (' …' if len(dropped_plugin) > 12 else '') + ')' if dropped_plugin else ''))
+    result['dropped_plugin_scheduled'] = [row['id'] for row in dropped_plugin]
 
     r = revive()
     usable = [row for row in candidates if all(row.get(f) for f in r.REQUIRED_FIELDS)]

@@ -65,6 +65,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import {
+  PLACEHOLDER_POST_DATE,
+  PLUGIN_SCHEDULE_SINCE,
+  destinationKeyFromUrl,
   rankDestinations,
   renderMarkdownTable,
   toIdsFilePackage,
@@ -190,19 +193,47 @@ async function fetchStrandedPool(poolSize: number): Promise<StrandedPinRow[]> {
   // Same floor the poster and revive-stranded-pins.py's default fetch_stranded use.
   const floor = daysAgo(POSTER_LOOKBACK_DAYS);
   const query =
-    `select=id,%22Post%20Date%22,%22Post%20URL%22` +
+    `select=id,%22Post%20Date%22,%22Post%20URL%22,created_at` +
     `&%22Is%20Posted%22=eq.false` +
     `&%22Post%20Date%22=lt.${floor}` +
     `&order=%22Post%20Date%22.desc&limit=${poolSize}`;
   const table = `${base}/rest/v1/n8n_pinterest_posts`;
-  const r = await fetch(`${table}?${query}`, { headers });
+  const r = await fetch(`${table}?${query}`, { headers, signal: AbortSignal.timeout(45_000) });
   if (!r.ok) throw new Error(`supabase ${r.status}`);
   const raw = (await r.json()) as Array<Record<string, unknown>>;
   return raw.map((row) => ({
     id: Number(row.id),
     postUrl: String(row['Post URL'] ?? ''),
     postDate: String(row['Post Date'] ?? '').slice(0, 10),
+    createdAt: String(row.created_at ?? ''),
   }));
+}
+
+/**
+ * E135: destination keys of EVERY row (posted or not) created on/after the
+ * plugin deploy — the articles the writer plugin currently manages. The pool
+ * above only sees unposted rows, so an article whose plugin batch already
+ * posted would otherwise look unmanaged. Throws on an incomplete read: a
+ * package built on a guess is worse than no package.
+ */
+async function fetchPluginManagedKeys(since: string): Promise<Set<string>> {
+  const { base, key } = await loadSupabaseConfig();
+  const headers = { apikey: key, Authorization: `Bearer ${key}` };
+  const table = `${base}/rest/v1/n8n_pinterest_posts`;
+  const page = 1000;
+  const keys = new Set<string>();
+  for (let offset = 0; offset <= 50_000; offset += page) {
+    const query = `select=id,%22Post%20URL%22&created_at=gte.${since}&order=id.asc&limit=${page}&offset=${offset}`;
+    const r = await fetch(`${table}?${query}`, { headers, signal: AbortSignal.timeout(45_000) });
+    if (!r.ok) throw new Error(`supabase ${r.status} (plugin-managed read)`);
+    const raw = (await r.json()) as Array<Record<string, unknown>>;
+    for (const row of raw) {
+      const k = destinationKeyFromUrl(String(row['Post URL'] ?? ''));
+      if (k) keys.add(k);
+    }
+    if (raw.length < page) return keys;
+  }
+  throw new Error('plugin-managed read did not terminate (>50k rows since the deploy?)');
 }
 
 // ---------------------------------------------------------------- CLI
@@ -253,10 +284,11 @@ async function main() {
   console.log(`[rank-pin-destinations] GA4 windows: 7d ${start7d}→${end}, 28d ${start28d}→${end}`);
   console.log(`[rank-pin-destinations] min-sessions=${args.minSessions} max-per-url=${args.maxPerUrl} pool-size=${args.poolSize} skip-hosts=${args.skipHosts.join(',') || '(none)'}`);
 
-  const [sessions7dRows, sessions28dRows, strandedRows] = await Promise.all([
+  const [sessions7dRows, sessions28dRows, strandedRows, managedKeys] = await Promise.all([
     fetchPinterestLandingSessions(start7d, end),
     fetchPinterestLandingSessions(start28d, end),
     fetchStrandedPool(args.poolSize),
+    fetchPluginManagedKeys(PLUGIN_SCHEDULE_SINCE),
   ]);
 
   const result = rankDestinations({
@@ -266,6 +298,7 @@ async function main() {
     minSessions7d: args.minSessions,
     maxPerUrl: args.maxPerUrl,
     skipHosts: args.skipHosts,
+    extraManagedKeys: managedKeys,
   });
 
   const today = iso(new Date());
@@ -276,11 +309,13 @@ async function main() {
     window_7d: `${start7d}..${end}`,
     window_28d: `${start28d}..${end}`,
     source: "GA4 hostName x landingPagePlusQueryString, sessionSource CONTAINS 'pinterest' (case-insensitive) — the wider definition used in reports/funnel/pinterest-read-2026-09-19.md",
-    selection: `stranded rows (unposted, Post Date < today-${POSTER_LOOKBACK_DAYS}d), destination normalised (blog.musthavemods.com -> musthavemods.com, query stripped), >=${args.minSessions} Pinterest sessions/7d, <=${args.maxPerUrl} ids/destination`,
+    selection: `stranded rows (unposted, Post Date < today-${POSTER_LOOKBACK_DAYS}d), destination normalised (blog.musthavemods.com -> musthavemods.com, query stripped), >=${args.minSessions} Pinterest sessions/7d, <=${args.maxPerUrl} ids/destination; writer plugin-scheduled rows excluded (Post Date ${PLACEHOLDER_POST_DATE} and created_at >= ${PLUGIN_SCHEDULE_SINCE} or destination managed by the plugin — E135)`,
     pool_rows: result.poolRows,
     dropped_below_threshold_destinations: result.droppedBelowThreshold,
     dropped_skipped_host_rows: result.droppedSkippedHost,
     dropped_unparseable_url_rows: result.droppedUnparseableUrl,
+    dropped_plugin_scheduled_rows: result.droppedPluginScheduled,
+    plugin_managed_destinations: managedKeys.size,
     destinations_selected: result.destinations.length,
     ids_selected: result.destinations.reduce((n, d) => n + d.ids.length, 0),
     next_step: 'python3 scripts/agents/revive-stranded-pins.py --ids-from <this file> --max-per-url 1 --per-day N --days N   (dry run first; --apply needs Tier 2 approval, SD-10)',
@@ -288,7 +323,7 @@ async function main() {
 
   const pkg = toIdsFilePackage(result, meta);
 
-  console.log(`[rank-pin-destinations] pool ${result.poolRows} stranded row(s) -> ${result.destinations.length} destination(s) selected, ${meta.ids_selected} id(s); dropped ${result.droppedBelowThreshold} below threshold, ${result.droppedSkippedHost} on a skipped host, ${result.droppedUnparseableUrl} unparseable.`);
+  console.log(`[rank-pin-destinations] pool ${result.poolRows} stranded row(s) -> ${result.destinations.length} destination(s) selected, ${meta.ids_selected} id(s); dropped ${result.droppedBelowThreshold} below threshold, ${result.droppedSkippedHost} on a skipped host, ${result.droppedUnparseableUrl} unparseable, ${result.droppedPluginScheduled} writer plugin-scheduled (${managedKeys.size} managed destination(s) since ${PLUGIN_SCHEDULE_SINCE}).`);
   const top = result.destinations.slice(0, 10);
   for (const d of top) {
     console.log(`  ${d.sessions7d.toString().padStart(6)}/7d  ${d.sessions28d.toString().padStart(7)}/28d  ${d.ids.length.toString().padStart(2)} id(s)  ${d.path}`);

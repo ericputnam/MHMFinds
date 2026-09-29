@@ -1,0 +1,18 @@
+{
+  "generated": "2026-09-29",
+  "script": "scripts/agents/pin-seo-audit.py",
+  "source": "page",
+  "updated": 1,
+  "entries": [
+    {
+      "id": 11849,
+      "destination": "https://musthavemods.com/sims-4-fall-decor-cc/",
+      "old_title": "47+ Best Sims 4 Fall Decor CC to Keep You in The Cozy Autumn Mood (2026 Update)",
+      "new_title": "47+ Best Sims 4 Fall Decor CC to Keep You in The Cozy Autumn Mood (2026 Update)",
+      "old_description": "If you\u2019re looking for vintage fall-themed items to add to your home, consider getting the Fall Collection by Pink Baddie. This Sims 4 fall custom content contains an armchair, throw blanket + pillow, and two decor items. You can add the armchair to your patio as furniture or create space in your bedroom for reading.",
+      "new_description": "47+ Best Sims 4 Fall Decor CC to Keep You in The Cozy Autumn Mood (2026 Update). Autumn is finally here, and what better way to celebrate the cool temperatures than with stunning Sims 4 fall decor cc. Update: I\u2019ve added 20+ new fall decorations for your Sim\u2019s homes, offices, and spaces. Includes wall art and clutter, all free downloads.",
+      "source": "page"
+    }
+  ],
+  "note": "E135 subset of pin-seo-rollback-2026-09-28-topup.json: restore the writer's own copy on plugin-scheduled row 11849 (Q11-b: copy changes on writer rows wait for the operator)"
+}

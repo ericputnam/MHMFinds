@@ -35,6 +35,51 @@ export interface StrandedPinRow {
   postUrl: string;
   /** n8n_pinterest_posts."Post Date", YYYY-MM-DD */
   postDate: string;
+  /** n8n_pinterest_posts.created_at, ISO; optional so older fixtures/packages still parse. */
+  createdAt?: string;
+}
+
+/**
+ * The writer plugin's "waiting for its article's scheduled day" Post Date
+ * (Q11-b, closed 2026-09-28). Rows inserted at this date on/after the Q11
+ * deploy (PLUGIN_SCHEDULE_SINCE, MHMUtils 7037ffe) are the writer's own
+ * scheduled pins and must never enter a revival package — top-up #4 promoted
+ * ids 11848/11849 (created 2026-09-28) because the pool could not see
+ * created_at. Rows at the same date created before the deploy are the pre-Q11
+ * stranded pool the SD-10 standing approval covers. Mirrored by
+ * PLACEHOLDER_POST_DATE / PLUGIN_SCHEDULE_SINCE in pin-runway-topup.py.
+ */
+export const PLACEHOLDER_POST_DATE = '2025-01-01';
+export const PLUGIN_SCHEDULE_SINCE = '2026-09-21';
+
+/**
+ * True when `row` is the writer plugin's scheduled pin: placeholder-dated AND
+ * (created on/after the plugin deploy OR pointing at a destination the plugin
+ * currently manages, i.e. one with any row created on/after the deploy).
+ */
+export function isPluginScheduledRow(
+  row: StrandedPinRow,
+  managedKeys: Set<string>,
+  since: string = PLUGIN_SCHEDULE_SINCE,
+  placeholder: string = PLACEHOLDER_POST_DATE,
+): boolean {
+  if ((row.postDate ?? '').slice(0, 10) !== placeholder) return false;
+  const created = (row.createdAt ?? '').slice(0, 10);
+  if (created && created >= since) return true;
+  const key = destinationKeyFromUrl(row.postUrl);
+  return !!key && managedKeys.has(key);
+}
+
+/** Destination keys of rows created on/after `since` — the articles the plugin manages, as far as the given rows can tell. */
+export function pluginManagedKeys(rows: StrandedPinRow[], since: string = PLUGIN_SCHEDULE_SINCE): Set<string> {
+  const keys = new Set<string>();
+  for (const row of rows) {
+    const created = (row.createdAt ?? '').slice(0, 10);
+    if (!created || created < since) continue;
+    const key = destinationKeyFromUrl(row.postUrl);
+    if (key) keys.add(key);
+  }
+  return keys;
 }
 
 export interface RankedDestination {
@@ -57,6 +102,10 @@ export interface RankResult {
   droppedUnparseableUrl: number;
   /** Stranded rows whose destination host is in skipHosts. */
   droppedSkippedHost: number;
+  /** Stranded rows that are the writer plugin's scheduled pins (E135) — never packaged. */
+  droppedPluginScheduled: number;
+  /** Ids of the rows counted in droppedPluginScheduled, so a reader can audit the exclusion. */
+  droppedPluginScheduledIds: number[];
   /** Stranded rows given to rankDestinations, before any dropping. */
   poolRows: number;
 }
@@ -156,6 +205,10 @@ export interface RankOptions {
   maxPerUrl: number;
   /** Destination hosts to exclude entirely (default: the proxied blog subdomain — revive-stranded-pins.py drops these at --apply time anyway; dropping here keeps the package honest about what is actually selectable). */
   skipHosts?: string[];
+  /** Plugin-deploy cutoff for isPluginScheduledRow; default PLUGIN_SCHEDULE_SINCE. */
+  pluginScheduleSince?: string;
+  /** Extra destination keys known to be plugin-managed (e.g. from a wider read that includes posted rows). */
+  extraManagedKeys?: Iterable<string>;
 }
 
 /**
@@ -170,8 +223,18 @@ export function rankDestinations(opts: RankOptions): RankResult {
   const byKey = new Map<string, StrandedPinRow[]>();
   let droppedUnparseableUrl = 0;
   let droppedSkippedHost = 0;
+  const droppedPluginScheduledIds: number[] = [];
+
+  const since = opts.pluginScheduleSince ?? PLUGIN_SCHEDULE_SINCE;
+  const managedKeys = pluginManagedKeys(opts.strandedRows, since);
+  for (const key of Array.from(opts.extraManagedKeys ?? [])) managedKeys.add(key);
 
   for (const row of opts.strandedRows) {
+    // E135: the writer plugin's scheduled pins are never revival inventory.
+    if (isPluginScheduledRow(row, managedKeys, since)) {
+      droppedPluginScheduledIds.push(row.id);
+      continue;
+    }
     const host = hostOfUrl(row.postUrl);
     if (host && skipHosts.has(host)) {
       droppedSkippedHost++;
@@ -217,6 +280,8 @@ export function rankDestinations(opts: RankOptions): RankResult {
     droppedBelowThreshold,
     droppedUnparseableUrl,
     droppedSkippedHost,
+    droppedPluginScheduled: droppedPluginScheduledIds.length,
+    droppedPluginScheduledIds,
     poolRows: opts.strandedRows.length,
   };
 }
