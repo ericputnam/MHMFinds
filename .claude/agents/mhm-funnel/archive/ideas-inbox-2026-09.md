@@ -186,3 +186,25 @@ Moved 2026-09-27 → archive: Q14/Q15/B3 (owned, in queue); runner paper-trail, 
 - [ ] [rio] `patreonGet()` takes no `AbortSignal`; E125 bounds the pre-read by racing, so a hung fetch is abandoned, not cancelled. Add an optional `init` with `AbortSignal.timeout(ms)` and use it from the scoreboard's `pullPatreonApi`, which walks the same ~12 pages unbounded. T0. — Rio, 09-27
 - [ ] [rowan] Detector class rule: a row that passes isBedroomTitle/isKitchenTitle/isBathroomTitle must never get a CAS contentType at ingest. Own PR with a whole-catalog before/after diff; E120 hand-fixed 76 of these. — Rowan, 09-27
 - [ ] [ops] `deploy-verify.sh` smoke set still does not render a `/games/sims-4/*` collection route; Rowan curled three by hand today. — Rowan, 09-27
+
+
+## Done 2026-09-29
+- [ ] [nova] `scripts/agents/page-rpm-lib.ts` `bucketFor`: add `'creator'` to `OTHER_APP_PREFIXES` so `/creator/*` (534 pages, E97) is bucketed as app pages, not blog (Nova, 09-24). → shipped as E137-b, PR #217
+
+## Parked 2026-09-29 (Ops backlog, verbatim; not done)
+- [ ] [ops] `scripts/agents/pinner-liveness-lib.ts:337-345` — the writer flag returns 🔴 whenever runway <3 d regardless of writer liveness (09-23: "🔴 writer" while 48 rows/24h were inserted). Make it inflow-only (rows/day carrying a real `Post Date`) and threshold the *allotment* rows dated into the next 7 d, not the point-in-time count. — Pip, 2026-09-23
+- [ ] [ops] `deploy-verify.sh` runs whichever `smoke-render.ts` sits in the first tree that has playwright, not `$ROOT`'s — an agent worktree with an older script can grade production. Use `$ROOT`'s script with `NODE_PATH` pointing at the playwright tree. — Ops, 2026-09-23
+- [ ] [ops] runner step 1b (revenue-guardrail rollback path) should act only on exit **1**; exit 2 is "could not run", never a verdict. — Ops, 2026-09-23
+- [ ] [ops] `funnel-context-budget.test.ts`: Rio reports rio.md sat at 14,012 B (cap 10,000) with the suite green until #158 trimmed it; `context-budget.ts` checks 26 files and does flag playbooks, so confirm the unit test iterates the same glob (not a hand-written list) and add a vacuity guard (≥7 playbooks found). Sage also hit the cap on sage.md (9,619 B) mid-run and could not append — Quinn logged Sage's rows. — Rio/Sage via Quinn, 2026-09-23
+- [ ] [ops] incident template: every `reports/funnel/incidents/*.md` tells the fixer to "smoke the preview URL", which has never been executable here — previews are cancelled by the Ignored Build Step and sit behind SSO. Replace with "smoke `next start` of the fix build locally" (Nova, 09-24, #168→#171).
+- [ ] [ops] runner: log `cleanup: stale-prune found 0` when STALE_WTS is empty so every run has a start-of-run reap row, not just at EXIT (today `cleanup: reaped` = 0 matches is expected: trap fires only when Quinn exits) — Ops 09-25
+
+## Done / superseded 2026-09-29 (verbatim)
+- [ ] [nova] T2 package: creator outreach template (reports/funnel/drafts/creator-outreach-template-2026-09-28.md) for the top 20 creators by downloads, each row with its /creator/<slug>/ page and claim URL from E122 — the on-site ask cannot reach creators who never visit their page; template needs operator approval, sending is T1 at 20/week — Nova, 09-27  → filed as Q23 / E137 on 09-29
+- [ ] [rowan] Guard `aiFacetExtractor.ts` contentType with `guardRoomTitledContentType` — its substring match over title+desc typed 74 of 76 E120 rows (the ingest guard in E132 covers only 2); own PR, whole-catalog dry run. — Rowan, 09-28  → superseded 09-29: the extractor wrote 2/76, not 74 — see the live [rowan] correction
+- [ ] [rowan] Favorites have no page (no `/account/favorites` route; Navbar Heart `components/Navbar.tsx:161` is a `<button>` with no href/onClick) — 1,522+ accounts save mods they cannot see, so E130 promises only the stored favorite. Also `/mods/[id]` sets `isFavorited=false` regardless of session; hydrate from the API. — Cass, 09-28  → shipped as E140, PR #223 (Tier 1, merges 09-30)
+- [ ] [rowan/cass] `/go` GA4 pageviews fell 342→175/wk (−49%) while `/mods/[id]` held 6,375→6,098; the member CTA ceiling is `/go` reach — what stopped sending users to `/go`? (E99 reads 10-01.) — Rio, 09-28  → superseded 09-29: stale window; Rio finds /go page_view ≈40% of render users every week — see the live [rio] line
+- [ ] [nova] Operator decision to package with the outreach template: should promoting a claim also set `User.isCreator` (unlocks creator surfaces)? Today promote changes the handle only. — Nova, 09-28  → packaged in Q23 (E137) on 09-29
+- [ ] [rio] `patreon-churn-read.ts`, `patreon-relaunch-read.ts`, `operator-did-probe.ts` still call `patreonGet` with no signal — 30 s per-page timeout each; add a commented `PATREON_ENV_FILE` line to `env.example` (T0). — Rio, 09-28  → shipped as E139, PR #220
+
+_Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenever runway <3 d) shipped the same day as E141 / PR #218 — done, not parked._

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-28T10:38:05.953Z",
+  "generatedAt": "2026-09-29T10:38:00.533Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3127,9 +3127,9 @@
     },
     {
       "date": "2026-09-27",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 299.13,
+      "sessions": 17665,
+      "rpm": 16.93,
       "expectedRevenue": 269.62,
       "expectedSessions": 15281,
       "nonAdMonthly": 151,
@@ -3196,6 +3196,43 @@
         "operator": 3,
         "Ops": 7,
         "Rowan": 5
+      }
+    },
+    {
+      "date": "2026-09-29",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 180.08,
+      "expectedSessions": 11492,
+      "nonAdMonthly": 145,
+      "ownedAdds7d": 120,
+      "pinterestSessions7d": 59321,
+      "returningShare7d": 0.5166859453206923,
+      "nonPinterestShare7d": 0.174618413546493,
+      "pagesPerSession7d": 1.564228675334918,
+      "engagementRate7d": 0.7243430349103417,
+      "favorites7d": 1337,
+      "downloadClicks7d": 420,
+      "newMods7d": 50,
+      "catalogTotal": 16561,
+      "captureRatePer1k": 1.301038662532255,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7857142857142857,
+      "opsMergeShare7d": 0.12121212121212122,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "operator": 3,
+        "Ops": 8,
+        "Pip": 7,
+        "Quinn": 7,
+        "Rio": 5,
+        "Sage": 7,
+        "Cass": 6,
+        "Rowan": 6,
+        "Nova": 7,
+        "manual": 10
       }
     }
   ],
@@ -4468,6 +4505,132 @@
       "kind": "merge",
       "label": "Ops: PR #194 not-measured is null + idempotent ledger flush (E126)",
       "commit": "b8732d1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Nova: PR #195 creator claim can onboard a creator (E122, Tier 1)",
+      "commit": "e765da5",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Rowan: PR #202 room-titled row is never CAS at ingest (E132)",
+      "commit": "323f50a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Nova: PR #204 admin creator-claim review (E129)",
+      "commit": "115f8bd",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Sage: PR #199 bound IndexNow key-file GET and POST (E128)",
+      "commit": "45addf4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Rio: PR #201 Patreon refresh persists to the operator repo; bounded Members API walk (E131)",
+      "commit": "f2c8244",
+      "result": "INCONCLUSIVE"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Pip: PR #205 pin-SEO copy pass inside the runway top-up (E127)",
+      "commit": "533cb7b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Cass: PR #203 \"Save this find\" account offer on /mods/[id] replaces the dead E10 email box (E130, Tier 0)",
+      "commit": "cb271e4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "Ops: PR #200 smoke renders one /games/sims-4/<slug>/ collection from the registry (E133) — verified with the NEW smoke-render",
+      "commit": "c839ce7",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "a8c28a5",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "982fb28",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "a08a0d5",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "e4ec002",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "df741ab",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "e2a2ab3",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "aa3939a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "f47abfe",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-28",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "182e24c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "7b39d2c",
       "result": "PASS"
     }
   ]

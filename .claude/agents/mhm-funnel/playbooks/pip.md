@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-29
+- Tried: E135 (T0, PR #222 `6b0b47a`) — "writer's own rows" cannot be read from `Wordpress Post ID`: it is set on 1610/1610 stranded rows and 1445/1445 placeholder rows, so the top-up's writer filter dropped 0 rows on every run and top-up #4 promoted 2 plugin-scheduled rows (11848 posted, 11849 reverted). The writer's schedule is placeholder date + (created_at ≥ 2026-09-21 OR destination has a row created since); the ranker now drops those at the source (1 of 1000 today, 16 managed destinations) and the top-up refuses (exit 2) if attribution cannot be read. Tests 6/6 red pre-fix.
+- Before → after: top-up #5 with the guarded tool: 21 rows / 8 destinations / 0 plugin rows; runway 1.13 → 1.67 d (44 → 65 @ 39.0/day, queue-posted-14d basis); SEO 60 → 89 on re-read. Pre-reads 09-30: E76 4 false 🔴 in 7 mornings (fix is Ops #218); E82 writer rows/day 25/48/0/24/28/0/48/20, 107 plugin rows posted in 7d.
+- Verdict: MORE DATA (read 2026-10-07). QUEUED-T2: writer Upcoming pin-SEO apply, 353 rows, mean 54/100.
+- Next time: check a filter's selectivity (rows dropped per run) before trusting it — 0 dropped on 4 runs was the tell.
+
 ## 2026-09-28
 - Tried: E127 — moved the E103 `--source page` pin-SEO rewrite INSIDE `pin-runway-topup.py` so it runs on exactly the plan's rows before the re-date (fail-open, own undo file, `seo_pass` in the ledger); shipped PR #205 (deploy-verify PASS) and used it for SD-10 floor top-up #4 the same morning.
 - Before → after: top-up rows scored mean 67/100 (2/21 passing) → 89/100 (21/21 passing) on a re-read of the changed field; runway 1.34 → 1.89 d (52 → 73 rows ÷ 38.71/day); 21 re-dated 7×09-28/29/30 over 9 destinations; 19 rewritten, 0 skipped, 9/9 destination pages resolved.
@@ -60,10 +66,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-05; keep if mean ≥90 after apply, treated sessions hold).
 - Next time: writer descriptions run 400-800+ chars — length fails before quality is scored; root cause is the writer's prompt, out of scope.
 
-## 2026-09-21
-- Tried: E70 — `--ids-from FILE` + `--max-per-url N` selection mode on `scripts/agents/revive-stranded-pins.py` (T0 code, no `--apply`; PR today) so a Q12 approval executes as one command. Ids come fr…
-- Before → after: dry run `--ids-from pin-revival-package-2026-09-20.json --per-day 7 --days 14 --max-per-url 1`: 271/271 ids selectable, 25 destinations live, 271 images live, 2 rows dropped on a dea…
-- Verdict: E15 pins leg **KILL** (makeup-cc 0, witch-cc 0 Pinterest sessions 09-13→09-19 vs ≥10; token leg KEEP stands). E46/E56 **ROLLED BACK (operator, 09-19)** — cadence leg held while live (pinsCr…
-- Next time: **a dry run only proves what it prints — read the plan, not the exit code.** The first ids-mode dry run exited 0 with a plausible plan and was wrong on the one thing the mode exists for (…
-
-_Older entries (up to 2026-09-20) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._

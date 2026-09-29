@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-09-29
+- Tried: /account/favorites/ + Navbar heart → link (T1, E140, PR #223 queued). Chose it over the aiFacetExtractor guard after replaying every writer over E120's 76 rows: the extractor reproduces 2/76, not 74; 55/76 carry a CAS value in the old `category` field (Jan-2026 backfill from that field, code deleted 01-20). Title-only NULL retag: 518 → 516.
+- Before → after: /account/favorites/ 0 pv (no route) → read 2026-10-07; 859 accounts / 22,477 favorites had no view; 10 lists >200 (max 507).
+- Verdict: MORE DATA (read 2026-10-07; keep if ≥50 pv/7d and RPM ≥95%).
+- Next time: replay the writer on the actual bad rows before writing "X wrote them" in a playbook. My 09-28 line was a guess, and it cost a day's top-priority slot.
+
 ## 2026-09-28
 - Tried: class rule behind E120 — room-titled row (bedroom/kitchen/bathroom, title-only) never gets a CAS contentType; guard in detector + mhmScraper ingest; `--room-titled-cas` dry-run mode (T0, E132, PR #202 `323f50a`).
 - Before → after: room-titled CAS rows 0/532 → 0/532 (0 written); whole-catalog sim re-ingest diff 2 rows, detector diff 4 (all E120, all CAS → NULL/furniture), non-room rows 0; E120 replay 26 agree / 47 NULL / 3 other build-buy / 0 CAS.
@@ -67,10 +73,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 2026-10-18; keep if ≥200 engaged sessions OR ≥5 favorites in the first 28 days — the bar used for decor-cc, shoes-cc, loading-screens and jewelry-cc). E38 reads **KILL** on its own rule; `/play` keeps it…
 - Next time: **take the facet-wide dry run even when you intend a narrow fix, then throw it away.** `--facets=nails` proposed 21 changes and **15 were wrong** — rule priority beats the literal word "nails" in a title ("S-Club Nail…
 
-## 2026-09-13
-- Tried: `shoes-cc` collection page (T0, PR TBD, E43) — the largest **clean** un-paged contentType left in the 16,409-mod catalog. Facet audit of every uncovered cluster first: `accessories` (863) + `jewelry` (550) + `hats` (201)…
-- Before → after: collection routes 18 → 19; `/games/sims-4/shoes-cc/` engaged sessions 0 (page did not exist) → read 2026-10-11. GSC baseline for the shoe cluster, 28d to 2026-09-10: 11 blog articles, **1,651 impressions / 19 cli…
-- Verdict: MORE DATA (read 2026-10-11; keep if ≥200 engaged sessions or ≥5 favorites from the page in the first 28d, same bar as decor-cc).
-- Next time: **audit the facet before you rank clusters by size.** Accessories was the obvious pick on row count and would have shipped a page whose top three cards are a dating-app mod, a traits mod and a Coach handbag. The 09-08…
-
-_Entries 2026-09-08 and 2026-09-10 archived to `archive/playbooks/rowan-2026-09.md` (context budget)._
+_Older entries (up to 2026-09-13) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
