@@ -1955,3 +1955,48 @@ closed the same morning.
   valid daily move when the alternative corrupts an experiment.
 
 _Status 2026-09-27: the `--incident` basename trap is now enforced — `ledger-commit.sh --incident` asserts the `YYYY-MM-DD-HHMMSS.md` name (exit 64, #194). The per-agent allowed-file list was used at dispatch on 09-27 (no overlap occurred)._
+
+### 2026-09-27 — six Tier 0 merges, zero incidents; the day's bugs were all "unknown read as a value"
+
+Six PRs (#191–#194, #196, #197) plus daily #198, all PASS, 8/8 ledger rows, guardrail GREEN.
+The 09-26 section (open-redirect fix, network-control smoke, docs-only deploys) is in the archive.
+- **Not measured is `null`, never `0` — and a failed day is never "last known".** Every morning
+  `funnel-history.ts` rewrote 09-26 `nonAdMonthly` as `0` because the Patreon and DB scoreboard
+  sections had failed, undoing a hand-null on `main`. Now a section with `ok:false` nulls every
+  field derived from it (#194). Still open: `funnel-scoreboard.ts` emits
+  `nonAdRevenueMonthlyGross: 0` at the source.
+- **Byte-level dedupe is not idempotency once a human edits a row.** The runner's `grep -x -v` seed
+  re-appended a relabelled PR #145 row and a superseded PR #142 row. Ledger rows now have identity
+  `(when, mode-word, commit | label)`; `--flush-pending` skips rows `main` already has and
+  `--merge-local` also skips rows `main` has relabelled. A stale tree must never bring back a row
+  `main` has already dealt with.
+- **Settle independent sources independently.** `patreon-q4-gate-preread.ts` used `Promise.all`,
+  so a slow production DB threw away a healthy Members API read and 3 runs on 09-26 produced
+  nothing. `Promise.allSettled` + a pure `gradeSources()` → full / members-only / linked-only /
+  none (exit 0/2/2/1). The missing leg prints **UNKNOWN**, the file gets a `-partial` suffix so it
+  cannot overwrite a full read, and each leg has its own deadline (#196).
+- **An `--ids=` fix mode must fail hard on an id it cannot act on.** `retag-junk-build-facets.ts
+  --ids=` used to skip unknown ids quietly or fall back to re-detection; it now exits non-zero when
+  a named id is not loaded or has no hand-audited pin (#197, 76 room-titled rows typed as CAS —
+  fridges on `makeup-cc`, beds on `poses`). The guard re-runs the title-only room rules over every
+  pin's quoted title (vacuity ≥ 76).
+- **An experiment with no event cannot be graded.** E39 (password reset) had no signal because the
+  reset token row is deleted on use and no GA4 event fired. #191 adds
+  `trackPasswordResetComplete()` (no PII, no-op without gtag, never throws). Ship the event
+  *before* the change you want to measure.
+- **A push that never included the traffic source was invisible.** Blog guides are 16,250 of 16,434
+  weekly Bing-organic sessions, and the daily IndexNow push had never contained one. `--guides`
+  (#192) is placed *before* new mods so a 500-URL cap cannot push it out. It drops `blog.*` and
+  301'd URLs, and a failed WordPress read never blocks the push. Audit a submitter's payload
+  against the channel's top landing pages.
+- **When a metric has read 0 for three runs, compare its SQL with the CTA's write path before
+  building another surface.** Nova found "creators onboarded" was 0 by construction (the claim form
+  never linked a user). Cass found the largest page type with no capture box is 0.2% of sessions.
+  Two headline builds were avoided by one side-by-side read each.
+- **A top-up that recovers exactly one day's drain is a treadmill, not a fix.** The pin runway
+  needed a 21-row top-up (+0.57 d) three days running against a ~0.6 d/day drain. The cap holds the
+  floor but can never reach the 3.0 d target, so escalate the slope (writer cadence, Q11-b) rather
+  than repeat the top-up.
+
+
+_Status 2026-09-28: the last bullet's premise was wrong — the writer's plugin *does* date placeholder rows on each article's scheduled day (#212); Q11-b closed with no writer-cadence change._

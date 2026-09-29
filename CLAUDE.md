@@ -383,6 +383,7 @@ Current critical markers (Apr 8 2026):
 - `mhm_mediavine_sidebar_css` — Mediavine sidebar CSS
 - `mhm_search_form_rewrite_js` — Blog search form rewrite (PRD: blog search)
 - `is_from_apex_rewrite` — Apex domain rewrite helper
+- `mhm_host_split_301` / `mhm_host_split_js` — blog.* → apex 301 + cached-HTML JS fallback (Q13, #208)
 
 ### After Every Push to Prod
 
@@ -763,8 +764,10 @@ run died with `Prompt is too long`.
   when a number is metered by design, threshold the *buffer* (runway), not the point-in-time count.
   **But never divide the buffer by its *trailing* drain** — that ratio reads healthier as the drip
   starves (Pinterest: 77 ÷ 32.5 = 2.4 d, then 77 ÷ 15 = 5.1 d as posting fell). Divide by the rate
-  you *want*. And "the writer is inserting" is not inflow: 341/341 rows since the 09-21 cron carried
-  the placeholder `post_date = '2025-01-01'`, so the queue's consumer selected none of them.
+  you *want*. **Before calling a sentinel value "stranded", trace one row end to end:** the
+  `post_date = '2025-01-01'` rows were read as dead inventory for a week (E82, Q11-b re-pitched
+  four times) — they are the writer plugin's "waiting for its scheduled day" state and do get
+  dated and posted on that day (#212). One row followed through Supabase would have shown it.
 - **Print the decision rule before you take the reading.** A threshold chosen after seeing the
   printout is not a pre-committed gate. Guardrails on a must-not-fall metric are **one-sided**
   (≥95% of baseline), never a symmetric ±band — a +13.8% RPM result once flagged as a breach.
@@ -773,7 +776,9 @@ run died with `Prompt is too long`.
   hide that all of the movement sits on one: Pinterest read −10.2% WoW in aggregate while `blog.*`
   (31.7% of pin sessions) was *up* 1.8% and the entire decline was on the apex. When comparing two
   duplicate-content hosts, restrict to **paths that exist on both** and compare per-path, or page
-  mix confounds the host effect.
+  mix confounds the host effect. **A per-host ratio needs a denominator that partitions:** ~6,000
+  weekly sessions touch both hosts and are counted on *each*, while pageviews split, so per-host
+  pv/session read `blog.*` at −19.5% when the landing-host gap was ~−6% (#210).
 - **Rank a scarce repeatable action by the outcome you want to move, never by input recency.**
   An allocator that takes "the N newest rows" is blind to earning power and can be anti-correlated
   with value by construction: the three destinations getting the most revival pins (32% of the
@@ -859,6 +864,10 @@ run died with `Prompt is too long`.
   `patreon_click` from 8.75 to 3.57 users/day. The next agent then finds the tier id *and* the
   reason not to re-propose it in the same place, instead of re-deriving one and repeating the other.
 - **One git worktree per agent**; copy `.env.local`, never symlink it; give each its own `npm ci`.
+  Consequence: **a script that rotates a secret must never write it to the cwd's `.env.local`.** A
+  single-use refresh token spent from a throwaway worktree dies with the copy and leaves the
+  operator's file holding a dead token. `scripts/_patreon-auth.ts` resolves the main checkout's
+  file (or refuses before calling the token endpoint) and adopts a newer pair already on disk (#201).
 - **Serialize automated merges** (≥240 s apart) or Vercel coalesces builds and the ledger loses
   per-PR attribution. Enforced by exit code, not prose: `./scripts/agents/merge-gate.sh && gh pr
   merge N --squash` (exit 1 while the newest non-ledger commit on `origin/main` is <240 s old).
@@ -948,51 +957,48 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-27 — six Tier 0 merges, zero incidents; the day's bugs were all "unknown read as a value"
+### 2026-09-28 — eight morning merges + seven evening; Q13 host-split 301 shipped
 
-Six PRs (#191–#194, #196, #197) plus daily #198, all PASS, 8/8 ledger rows, guardrail GREEN.
-The 09-26 section (open-redirect fix, network-control smoke, docs-only deploys) is in the archive.
-- **Not measured is `null`, never `0` — and a failed day is never "last known".** Every morning
-  `funnel-history.ts` rewrote 09-26 `nonAdMonthly` as `0` because the Patreon and DB scoreboard
-  sections had failed, undoing a hand-null on `main`. Now a section with `ok:false` nulls every
-  field derived from it (#194). Still open: `funnel-scoreboard.ts` emits
-  `nonAdRevenueMonthlyGross: 0` at the source.
-- **Byte-level dedupe is not idempotency once a human edits a row.** The runner's `grep -x -v` seed
-  re-appended a relabelled PR #145 row and a superseded PR #142 row. Ledger rows now have identity
-  `(when, mode-word, commit | label)`; `--flush-pending` skips rows `main` already has and
-  `--merge-local` also skips rows `main` has relabelled. A stale tree must never bring back a row
-  `main` has already dealt with.
-- **Settle independent sources independently.** `patreon-q4-gate-preread.ts` used `Promise.all`,
-  so a slow production DB threw away a healthy Members API read and 3 runs on 09-26 produced
-  nothing. `Promise.allSettled` + a pure `gradeSources()` → full / members-only / linked-only /
-  none (exit 0/2/2/1). The missing leg prints **UNKNOWN**, the file gets a `-partial` suffix so it
-  cannot overwrite a full read, and each leg has its own deadline (#196).
-- **An `--ids=` fix mode must fail hard on an id it cannot act on.** `retag-junk-build-facets.ts
-  --ids=` used to skip unknown ids quietly or fall back to re-detection; it now exits non-zero when
-  a named id is not loaded or has no hand-audited pin (#197, 76 room-titled rows typed as CAS —
-  fridges on `makeup-cc`, beds on `poses`). The guard re-runs the title-only room rules over every
-  pin's quoted title (vacuity ≥ 76).
-- **An experiment with no event cannot be graded.** E39 (password reset) had no signal because the
-  reset token row is deleted on use and no GA4 event fired. #191 adds
-  `trackPasswordResetComplete()` (no PII, no-op without gtag, never throws). Ship the event
-  *before* the change you want to measure.
-- **A push that never included the traffic source was invisible.** Blog guides are 16,250 of 16,434
-  weekly Bing-organic sessions, and the daily IndexNow push had never contained one. `--guides`
-  (#192) is placed *before* new mods so a 500-URL cap cannot push it out. It drops `blog.*` and
-  301'd URLs, and a failed WordPress read never blocks the push. Audit a submitter's payload
-  against the channel's top landing pages.
-- **When a metric has read 0 for three runs, compare its SQL with the CTA's write path before
-  building another surface.** Nova found "creators onboarded" was 0 by construction (the claim form
-  never linked a user). Cass found the largest page type with no capture box is 0.2% of sessions.
-  Two headline builds were avoided by one side-by-side read each.
-- **A top-up that recovers exactly one day's drain is a treadmill, not a fix.** The pin runway
-  needed a 21-row top-up (+0.57 d) three days running against a ~0.6 d/day drain. The cap holds the
-  floor but can never reach the 3.0 d target, so escalate the slope (writer cadence, Q11-b) rather
-  than repeat the top-up.
+15 PRs (#195, #199–#205, #207–#213) plus daily #206; every after-merge PASS except #201
+(INCONCLUSIVE: blog curl could not run — closed by a follow-up `--check` PASS, not by re-grading).
+The 09-27 section is in the archive.
+- **Ship the loop-breaker before the redirect.** A blanket 301 on `blog.*` would have bounced the
+  Next.js proxy's own fetch back to the apex → middleware → `blog.*` again, an infinite loop as
+  502s on every article. #207 made every proxy fetch carry `X-MHM-Proxy: nextjs-edge` (inert, with
+  a test) and only then did #208 add `mhm_host_split_301`, which skips that header, logged-in
+  users, previews, feeds, admin and non-GET/HEAD. The JS fallback builds its hostnames from split
+  strings because **middleware rewrites blog-origin hostnames inside proxied HTML** — a literal
+  would have become a self-redirect. The nginx draft needed a v2 because `ads.txt` looped: exclude
+  files. **Still open:** the markers are in `CRITICAL_MARKERS`, but `check-host-split.sh` is not
+  wired into `check-blog-sidebar.sh`/`deploy-verify.sh`, so nothing live-checks the 301 daily.
+- **A kill verdict measured through a broken pipe is void, not negative.** Affiliates were killed
+  on $0 (E13) while 49% of on-site clicks went to `gtplayer.com`, a host Impact rejects for that
+  program. Three sync scripts set `validationStatus: 'validated'` with no link check, so a DB-only
+  fix reverts on the next sync — fix the writer, and never name a flag for a check nobody ran
+  (E134, #213).
+- **A step that runs "after, if at all" does not run.** Three of four pin top-ups went out with
+  ~62–67/100 copy because the SEO rewrite was a separate command. #205 runs it *inside* the
+  top-up, before the re-date, fail-open (a WP/Supabase error WARNs, never blocks the floor), with
+  its own rollback file: 19/21 rewritten, mean 67 → 89.
+- **Every outbound `fetch(` in a runner step carries a signal, and a timeout is unknown.** Only
+  the WordPress read in `indexnow-submit.ts` was bounded; a hung `api.indexnow.org` would stall
+  step 0c2 and everything after it. #199 bounds both calls and scans that every `fetch(` has a
+  `signal` (vacuity ≥3); a POST timeout grades COULD-NOT-RUN (exit 2). Same for the Patreon
+  Members walk (#201): 30 s/page, 180 s budget, a capped walk with `links.next` set is an error.
+- **A smoke set that never renders a route class cannot catch it.** `deploy-verify` had never
+  rendered one of the 29 collection routes; `bedroom-cc` served a 404 under a PASS row on 09-24.
+  #200 picks one per run from `getCollectionsForGame('sims-4')`, rotated by UTC day — never a
+  literal slug — and grades it via the shared `AD_KINDS`.
+- **A self-serve claim must never write the public identifier.** `/creator/[slug]/` joins
+  `CreatorProfile` on `handle === slug`, so a claim creates a `pending-<slug>-<id8>` handle and only
+  an admin promotes it (#195, #204: 409 if the slug is taken or mods already link to the row).
+- **Fix the class at ingest, not only the rows.** #197 pinned 76 room-titled rows typed as CAS;
+  #202 makes the detector *and* the scraper's URL-category fallback refuse a CAS type for a
+  room-titled row unless the title itself names it (poses, lashes), falling back to NULL.
 
 ---
 
-*Last compound review: 2026-09-27*
+*Last compound review: 2026-09-28*
 
 ---
 
