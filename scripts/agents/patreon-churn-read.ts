@@ -20,7 +20,7 @@
  * Needs PATREON_* creator tokens in .env.local (see scripts/_patreon-auth.ts) and, without --no-db, DATABASE_URL.
  */
 import { writeFileSync } from 'node:fs';
-import { patreonGet } from '../_patreon-auth';
+import { patreonGet, nextPageTimeoutMs, PATREON_PAGE_TIMEOUT_MS, PATREON_WALK_BUDGET_MS } from '../_patreon-auth';
 
 const CAMPAIGN = process.env.PATREON_CAMPAIGN_ID ?? '13460416';
 const args = process.argv.slice(2);
@@ -62,10 +62,16 @@ async function fetchMembers(): Promise<MemberAttrs[]> {
     `https://www.patreon.com/api/oauth2/v2/campaigns/${CAMPAIGN}/members` +
     `?fields%5Bmember%5D=${MEMBER_FIELDS}&page%5Bcount%5D=500`;
   const out: MemberAttrs[] = [];
+  // Bounded walk (E139): each page ≤ PATREON_PAGE_TIMEOUT_MS, whole walk ≤ PATREON_WALK_BUDGET_MS.
+  const walkDeadline = Date.now() + PATREON_WALK_BUDGET_MS;
+  let pages = 0;
   while (url) {
-    const j: { data?: Array<{ attributes: MemberAttrs }>; links?: { next?: string } } = await patreonGet(url);
+    const j: { data?: Array<{ attributes: MemberAttrs }>; links?: { next?: string } } = await patreonGet(url, {
+      signal: AbortSignal.timeout(nextPageTimeoutMs(walkDeadline, pages)),
+    });
     out.push(...(j.data ?? []).map((d) => d.attributes));
     url = j.links?.next ?? null;
+    pages += 1;
   }
   return out;
 }
@@ -73,7 +79,8 @@ async function fetchMembers(): Promise<MemberAttrs[]> {
 async function fetchTiers(): Promise<TierAttrs[]> {
   const j: { included?: Array<{ type: string; attributes: TierAttrs }> } = await patreonGet(
     `https://www.patreon.com/api/oauth2/v2/campaigns/${CAMPAIGN}` +
-      `?include=tiers&fields%5Btier%5D=title,amount_cents,published,patron_count,edited_at`
+      `?include=tiers&fields%5Btier%5D=title,amount_cents,published,patron_count,edited_at`,
+    { signal: AbortSignal.timeout(PATREON_PAGE_TIMEOUT_MS) }
   );
   return (j.included ?? []).filter((x) => x.type === 'tier').map((x) => x.attributes);
 }
