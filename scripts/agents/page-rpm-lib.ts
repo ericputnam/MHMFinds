@@ -41,6 +41,11 @@ const OTHER_APP_PREFIXES = new Set([
   'privacy-policy', 'terms', 'top-creators', 'simple-main', 'verify-md',
   '_next', 'sitemap', 'manifest', 'downloads', 'feeds', 'search',
   'forgot-password', 'set-password', 'lookbooks', 'premium',
+  // Public creator pages /creator/[slug]/ + the /creator/ hub (E85, 09-23).
+  // Missing until 09-29 (E137-b), so ~534 creator pages were summed into the
+  // blog bucket. __tests__/unit/page-rpm-bucket-app-routes.test.ts now checks
+  // every NEXTJS_PREFIXES entry and every app/ route directory.
+  'creator',
 ]);
 
 /** Strip query/hash, guarantee a leading slash, collapse `//`. */
