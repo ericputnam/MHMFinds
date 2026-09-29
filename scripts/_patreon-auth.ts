@@ -48,6 +48,30 @@ export interface PatreonGetInit {
 /** What the caller saw at `<cwd>/.git`: a directory (main checkout), a gitdir pointer file (linked worktree), or nothing. */
 export type DotGit = { kind: 'dir' } | { kind: 'file'; content: string } | null;
 
+/** Per-page bound for any Patreon GET (mirrors the scoreboard walk, #201). */
+export const PATREON_PAGE_TIMEOUT_MS = 30_000;
+/** Whole-walk budget for a paginated Members API read. */
+export const PATREON_WALK_BUDGET_MS = 180_000;
+
+/**
+ * Timeout for the next page of a paginated walk: `min(page timeout, budget
+ * left)`. Throws once the budget is spent, so a slow-but-answering Patreon
+ * cannot stretch a walk past `PATREON_WALK_BUDGET_MS` one page at a time. Use
+ * as `patreonGet(url, { signal: AbortSignal.timeout(nextPageTimeoutMs(deadline, pages)) })`
+ * — the literal `signal: AbortSignal.timeout(` is what
+ * `__tests__/unit/patreon-get-signal.test.ts` scans for (E139).
+ */
+export function nextPageTimeoutMs(
+  walkDeadline: number,
+  pagesDone: number,
+  pageTimeoutMs: number = PATREON_PAGE_TIMEOUT_MS,
+  walkBudgetMs: number = PATREON_WALK_BUDGET_MS
+): number {
+  const left = walkDeadline - Date.now();
+  if (left <= 0) throw new Error(`Patreon Members API walk exceeded the ${walkBudgetMs} ms budget after ${pagesDone} pages`);
+  return Math.min(pageTimeoutMs, left);
+}
+
 function need(name: string): string {
   const v = process.env[name];
   if (!v || /^your[-_]/i.test(v)) {

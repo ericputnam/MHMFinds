@@ -104,7 +104,7 @@ async function probePatreon(): Promise<Snapshot['patreon']> {
   if (!tok || /^your[-_]/i.test(tok)) return { status: 'could-not-run', note: 'PATREON_CREATOR_ACCESS_TOKEN not set in .env.local', ...base };
 
   // Lazy import so a missing token never even loads the auth helper.
-  const { patreonGet } = await import('../_patreon-auth');
+  const { patreonGet, PATREON_PAGE_TIMEOUT_MS } = await import('../_patreon-auth');
   const url = (campaignFields: string | null) =>
     `https://www.patreon.com/api/oauth2/v2/campaigns/${CAMPAIGN}?include=tiers&fields%5Btier%5D=${TIER_FIELDS}` +
     (campaignFields ? `&fields%5Bcampaign%5D=${campaignFields}` : '');
@@ -112,14 +112,14 @@ async function probePatreon(): Promise<Snapshot['patreon']> {
   let body: CampaignResponse;
   let thanksChecked = true;
   try {
-    body = await patreonGet(url('thanks_msg,patron_count'));
+    body = await patreonGet(url('thanks_msg,patron_count'), { signal: AbortSignal.timeout(PATREON_PAGE_TIMEOUT_MS) });
   } catch (e) {
     const msg = String((e as Error)?.message ?? e);
     if (/Patreon API 4\d\d/.test(msg) && !/401|403/.test(msg)) {
       // Field-validation 400 — retry without the campaign fields, still read-only.
       thanksChecked = false;
       try {
-        body = await patreonGet(url(null));
+        body = await patreonGet(url(null), { signal: AbortSignal.timeout(PATREON_PAGE_TIMEOUT_MS) });
       } catch (e2) {
         return { status: 'could-not-run', note: `Patreon API: ${redact(String((e2 as Error)?.message ?? e2)).slice(0, 160)}`, ...base };
       }
