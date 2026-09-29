@@ -486,6 +486,17 @@ def _wire_low_runway_main(topup, monkeypatch, tmp_path, log, seo_fail=False,
     rows = [_plan_row(i) for i in range(1, 31)]
     monkeypatch.setattr(topup, 'select_candidates',
                         lambda config, today, ids_from: (rows, {}, ['stubbed selection']))
+    # E135 guard reads: every stub row is old, non-placeholder inventory and
+    # no destination is plugin-managed. `raising=False` keeps the pre-E135
+    # tests loadable against a tree without the guard (the E135 tests below
+    # fail on their own assertions there).
+    monkeypatch.setattr(topup, 'fetch_attribution',
+                        lambda config, ids: {int(i): {'Post Date': '2026-08-01',
+                                                      'created_at': '2025-06-01T00:00:00+00:00',
+                                                      'Post URL': _plan_row(int(i))['Post URL']}
+                                             for i in ids}, raising=False)
+    monkeypatch.setattr(topup, 'fetch_plugin_managed_keys', lambda config, since=None: set(),
+                        raising=False)
     monkeypatch.setattr(topup, '_REVIVE', _FakeRevive(log))
     if seo_module == 'fake':
         monkeypatch.setattr(topup, '_SEO', _FakeSeo(log, fail=seo_fail))
@@ -649,3 +660,119 @@ def test_seo_apply_proposals_patch_filters_is_posted_false(seo, monkeypatch, tmp
 
 if __name__ == '__main__':
     sys.exit(pytest.main([__file__, '-v']))
+
+
+# --------------------------------------------------------------------------
+# E135 (2026-09-29): the writer plugin's scheduled rows are never selectable.
+# Top-up #4 promoted ids 11848/11849 (created 2026-09-28 for an Upcoming
+# article) because `filter_writer_rows` never sees `Wordpress Post ID` and,
+# per the 09-29 read, 1610/1610 stranded rows carry it anyway. Against
+# pre-E135 origin/main every test in this section fails (AttributeError on
+# the missing functions / plugin rows present in the plan).
+# --------------------------------------------------------------------------
+
+_FALL_DECOR = 'https://musthavemods.com/sims-4-fall-decor-cc/'
+
+
+def _attr(post_date, created, url=_FALL_DECOR):
+    return {'Post Date': post_date, 'created_at': created, 'Post URL': url}
+
+
+def test_destination_key_folds_blog_host_and_strips_query(topup):
+    apex = topup.destination_key('https://musthavemods.com/sims-4-fall-decor-cc/?utm=x#f')
+    blog = topup.destination_key('https://BLOG.musthavemods.com/sims-4-fall-decor-cc')
+    assert apex == blog == 'musthavemods.com/sims-4-fall-decor-cc/'
+    assert topup.destination_key('') is None and topup.destination_key(None) is None
+
+
+def test_plugin_scheduled_predicate(topup):
+    managed = {topup.destination_key(_FALL_DECOR)}
+    # the real 09-28 violation: placeholder + created after the Q11 deploy
+    assert topup.is_plugin_scheduled_row(_attr('2025-01-01', '2026-09-28T10:30:00+00:00'), set())
+    # placeholder, old, but the plugin manages that article now
+    assert topup.is_plugin_scheduled_row(_attr('2025-01-01', '2025-06-11T00:00:00+00:00'), managed)
+    # placeholder, old, unmanaged destination = the pre-Q11 stranded pool
+    assert not topup.is_plugin_scheduled_row(
+        _attr('2025-01-01', '2025-06-11T00:00:00+00:00', 'https://musthavemods.com/sims-4-wedges-cc/'),
+        managed)
+    # a real Post Date is never the placeholder, whatever created_at says
+    assert not topup.is_plugin_scheduled_row(_attr('2026-01-25', '2026-09-28T10:30:00+00:00'), managed)
+    # the cutoff is a parameter: one day before the deploy is not the plugin's
+    assert not topup.is_plugin_scheduled_row(_attr('2025-01-01', '2026-09-20T23:59:00+00:00'), set())
+    assert topup.is_plugin_scheduled_row(_attr('2025-01-01', '2026-09-21T00:00:00+00:00'), set())
+
+
+def test_filter_plugin_scheduled_rows_drops_plugin_and_unknown(topup):
+    rows = [{'id': 11848}, {'id': 11849}, {'id': 2127}, {'id': 999}]
+    attribution = {
+        11848: _attr('2025-01-01', '2026-09-28T10:30:00+00:00'),
+        11849: _attr('2025-01-01', '2026-09-28T10:30:01+00:00'),
+        2127: _attr('2025-01-01', '2025-06-11T00:00:00+00:00',
+                    'https://musthavemods.com/sims-4-wedges-cc/'),
+        # 999 has no attribution row: unknown is never selectable
+    }
+    kept, dropped = topup.filter_plugin_scheduled_rows(rows, attribution, set())
+    assert [r['id'] for r in kept] == [2127]
+    assert [r['id'] for r in dropped] == [11848, 11849, 999]
+
+
+def test_main_never_plans_a_plugin_scheduled_row(topup, monkeypatch, tmp_path):
+    log = []
+    _wire_low_runway_main(topup, monkeypatch, tmp_path, log)
+    # rows 1-3 become the writer's plugin-scheduled pins; 4 is old but its
+    # destination is plugin-managed; everything else is real inventory.
+    managed_url = 'https://musthavemods.com/sims-4-fall-decor-cc/'
+
+    def attribution(config, ids):
+        out = {}
+        for i in ids:
+            i = int(i)
+            if i <= 3:
+                out[i] = _attr('2025-01-01', '2026-09-28T10:30:00+00:00')
+            elif i == 4:
+                out[i] = _attr('2025-01-01', '2025-06-11T00:00:00+00:00', managed_url)
+            else:
+                out[i] = _attr('2025-01-01', '2025-06-11T00:00:00+00:00',
+                               'https://musthavemods.com/sims-4-wedges-cc/')
+        return out
+
+    monkeypatch.setattr(topup, 'fetch_attribution', attribution)
+    monkeypatch.setattr(topup, 'fetch_plugin_managed_keys',
+                        lambda config, since=None: {topup.destination_key(managed_url)})
+    monkeypatch.setattr(sys, 'argv', [
+        'pin-runway-topup.py', '--apply', '--ids-from', 'pkg.json', '--no-verify',
+        '--seo-source', 'none', '--max-per-url', '30', '--max-per-board', '30',
+        '--ledger-dir', str(tmp_path)])
+    assert topup.main() == 0
+    redated = [e[1] for e in log if e[0] == 'redate']
+    assert len(redated) == topup.HARD_CAP
+    for forbidden in (1, 2, 3, 4):
+        assert not any('id=eq.{}&'.format(forbidden) in query for query in redated), \
+            'plugin-scheduled row {} was re-dated'.format(forbidden)
+    with open(os.path.join(str(tmp_path), '{}{}.json'.format(topup.LEDGER_PREFIX, date.today()))) as h:
+        ledger = json.load(h)
+    assert {e['id'] for e in ledger['entries']}.isdisjoint({1, 2, 3, 4})
+
+
+def test_main_refuses_when_attribution_cannot_be_read(topup, monkeypatch, tmp_path):
+    log = []
+    _wire_low_runway_main(topup, monkeypatch, tmp_path, log)
+    monkeypatch.setattr(topup, 'fetch_attribution', lambda config, ids: None)
+    monkeypatch.setattr(sys, 'argv', [
+        'pin-runway-topup.py', '--apply', '--ids-from', 'pkg.json', '--no-verify',
+        '--seo-source', 'none', '--max-per-url', '30', '--max-per-board', '30',
+        '--ledger-dir', str(tmp_path)])
+    assert topup.main() == 2
+    assert not any(e[0] == 'redate' for e in log)
+    assert os.listdir(str(tmp_path)) == []
+
+
+def test_main_refuses_when_managed_set_cannot_be_read(topup, monkeypatch, tmp_path):
+    log = []
+    _wire_low_runway_main(topup, monkeypatch, tmp_path, log)
+    monkeypatch.setattr(topup, 'fetch_plugin_managed_keys', lambda config, since=None: None)
+    monkeypatch.setattr(sys, 'argv', [
+        'pin-runway-topup.py', '--ids-from', 'pkg.json', '--no-verify',
+        '--seo-source', 'none', '--ledger-dir', str(tmp_path)])
+    assert topup.main() == 2
+    assert not any(e[0] == 'redate' for e in log)

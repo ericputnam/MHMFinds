@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  PLACEHOLDER_POST_DATE,
+  PLUGIN_SCHEDULE_SINCE,
   aggregateSessions,
   destinationKey,
   destinationKeyFromUrl,
   hostOfUrl,
+  isPluginScheduledRow,
   normalizeHost,
   normalizePath,
   pathFromKey,
+  pluginManagedKeys,
   rankDestinations,
   renderMarkdownTable,
   toIdsFilePackage,
@@ -324,5 +328,67 @@ describe('renderMarkdownTable', () => {
     expect(md).toContain('| Destination |');
     expect(md).toContain('window');
     expect(md).toContain('Dropped: 0 destination(s)');
+  });
+});
+
+// E135 (2026-09-29): the writer plugin's scheduled pins (Post Date
+// 2025-01-01, created on/after the Q11 deploy, or pointing at an article the
+// plugin manages) must never enter a package. Top-up #4 promoted ids
+// 11848/11849 (created 2026-09-28, sims-4-fall-decor-cc) because the pool
+// could not see created_at. Against pre-E135 main every case here fails.
+describe('isPluginScheduledRow / rankDestinations plugin guard (E135)', () => {
+  const fallDecor = 'https://musthavemods.com/sims-4-fall-decor-cc/';
+
+  it('flags a placeholder row created on/after the plugin deploy, and not one created before it', () => {
+    expect(isPluginScheduledRow({ id: 11849, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2026-09-28T10:30:00+00:00' }, new Set())).toBe(true);
+    expect(isPluginScheduledRow({ id: 1, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2026-09-20T23:59:00+00:00' }, new Set())).toBe(false);
+    expect(isPluginScheduledRow({ id: 2, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2026-09-21T00:00:00+00:00' }, new Set())).toBe(true);
+    expect(PLUGIN_SCHEDULE_SINCE).toBe('2026-09-21');
+    expect(PLACEHOLDER_POST_DATE).toBe('2025-01-01');
+  });
+
+  it('flags an old placeholder row whose destination the plugin manages (either host), never a really-dated row', () => {
+    const managed = pluginManagedKeys([
+      { id: 9, postUrl: 'https://blog.musthavemods.com/sims-4-fall-decor-cc/', postDate: '2025-01-01', createdAt: '2026-09-28T00:00:00+00:00' },
+    ]);
+    expect(managed.size).toBe(1);
+    expect(isPluginScheduledRow({ id: 3, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2025-06-11T00:00:00+00:00' }, managed)).toBe(true);
+    expect(isPluginScheduledRow({ id: 4, postUrl: 'https://musthavemods.com/sims-4-wedges-cc/', postDate: '2025-01-01', createdAt: '2025-06-11T00:00:00+00:00' }, managed)).toBe(false);
+    expect(isPluginScheduledRow({ id: 5, postUrl: fallDecor, postDate: '2026-01-25', createdAt: '2026-09-28T00:00:00+00:00' }, managed)).toBe(false);
+    // a row without createdAt (older fixture/package) is judged by destination only
+    expect(isPluginScheduledRow({ id: 6, postUrl: fallDecor, postDate: '2025-01-01' }, new Set())).toBe(false);
+  });
+
+  it('rankDestinations drops plugin-scheduled rows from the pool, counts them, and still ranks the rest', () => {
+    const stranded: StrandedPinRow[] = [
+      // the 09-28 violation class: fresh plugin rows for a high-session article
+      { id: 11848, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2026-09-28T10:30:00+00:00' },
+      { id: 11849, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2026-09-28T10:30:01+00:00' },
+      // an old placeholder row for the same (now plugin-managed) article
+      { id: 700, postUrl: fallDecor, postDate: '2025-01-01', createdAt: '2025-06-11T00:00:00+00:00' },
+      // genuine pre-Q11 stranded inventory
+      { id: 2127, postUrl: 'https://musthavemods.com/sims-4-wedges-cc/', postDate: '2025-01-01', createdAt: '2025-06-11T00:00:00+00:00' },
+      // a destination only the wider (posted-rows) read knows is managed
+      { id: 800, postUrl: 'https://musthavemods.com/sims-4-pumpkin-recipes/', postDate: '2025-01-01', createdAt: '2025-06-11T00:00:00+00:00' },
+    ];
+    const sessions = [
+      { host: 'musthavemods.com', path: '/sims-4-fall-decor-cc/', sessions: 900 },
+      { host: 'musthavemods.com', path: '/sims-4-wedges-cc/', sessions: 733 },
+      { host: 'musthavemods.com', path: '/sims-4-pumpkin-recipes/', sessions: 500 },
+    ];
+    const result = rankDestinations({
+      strandedRows: stranded,
+      sessions7dRows: sessions,
+      sessions28dRows: sessions,
+      minSessions7d: 50,
+      maxPerUrl: 10,
+      skipHosts: ['blog.musthavemods.com'],
+      extraManagedKeys: ['musthavemods.com/sims-4-pumpkin-recipes/'],
+    });
+    expect(result.droppedPluginScheduled).toBe(4);
+    expect(result.droppedPluginScheduledIds.sort((a, b) => a - b)).toEqual([700, 800, 11848, 11849]);
+    expect(result.destinations.map((d) => d.path)).toEqual(['/sims-4-wedges-cc/']);
+    expect(result.destinations[0].ids).toEqual([2127]);
+    expect(result.poolRows).toBe(5);
   });
 });
