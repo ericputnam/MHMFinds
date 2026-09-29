@@ -179,12 +179,12 @@ describe('assessWriterLiveness (Q11, 2026-09-21)', () => {
     inserted7d: 0,
   };
 
-  it('today (2026-09-21): idle 17 days, 0/0 inserts, low runway → red on both triggers', () => {
+  it('2026-09-21: idle 17 days, 0/0 inserts, low runway → red on the inflow trigger alone', () => {
     const a = assessWriterLiveness({ ...IDLE_SINCE_0904, runwayDays: 0.5, now: WRITER_NOW });
     expect(a.level).toBe('red');
     expect(a.hoursSinceLastInsert).toBeCloseTo(411.2, 0);
-    expect(a.message).toContain('runway below the 3-day floor');
-    expect(a.message).toContain('no insert in');
+    expect(a.message).toContain('the writer looks dead');
+    expect(a.message).toContain('runway 0.5d');
     expect(writerLivenessExitCode(a.level)).toBe(2); // WARN, never FAIL — Q11 is Tier 2/operator-owned
   });
 
@@ -215,19 +215,42 @@ describe('assessWriterLiveness (Q11, 2026-09-21)', () => {
     expect(DEFAULT_WRITER_RED_HOURS).toBe(72);
   });
 
-  it('low runway overrides to red even with a very recent insert', () => {
+  // E141 (2026-09-29): the writer flag is inflow-only. Until this PR a runway
+  // under 3 d forced it 🔴 "unconditionally", so the 09-29 scoreboard led with
+  // "🔴 Pinner writer … 4.1 h ago · 20 inserted in 24h, 168 in 7d" — a red on a
+  // writer that was demonstrably alive, printed next to the runway's own 🟡.
+  // Runway is the *depth* signal and already has its own 🟡 flag (assessRunway,
+  // floor DEFAULT_LOW_RUNWAY_DAYS); the writer flag answers only "is the thing
+  // that fills the queue still inserting rows".
+  it('E141 fixture (09-29 scoreboard): alive writer + low runway → ok, runway number kept', () => {
+    const now = new Date('2026-09-29T10:39:00Z');
     const a = assessWriterLiveness({
-      lastWriterInsertAt: new Date(WRITER_NOW.getTime() - 2 * 3600e3).toISOString(),
-      inserted24h: 5,
-      inserted7d: 30,
-      runwayDays: 1.5,
-      now: WRITER_NOW,
+      lastWriterInsertAt: '2026-09-29T06:33:23.301281+00:00',
+      inserted24h: 20,
+      inserted7d: 168,
+      runwayDays: 1.4,
+      now,
     });
-    expect(a.level).toBe('red');
-    expect(a.message).toContain('runway below the 3-day floor');
-    // A fresh insert should not be described as if the writer had gone dark.
-    expect(a.message).not.toContain('no insert in');
-    expect(DEFAULT_WRITER_RUNWAY_RED_DAYS).toBe(3);
+    expect(a.level).toBe('ok');
+    expect(writerLivenessExitCode(a.level)).toBe(0);
+    expect(a.message).toContain('20 inserted in 24h, 168 in 7d');
+    expect(a.message).toContain('runway 1.4d'); // the number stays visible
+    expect(a.message).not.toContain('Q11 (writer cron) is the fix'); // Q11 closed 09-28
+    // The runway's own flag still fires on the same reading.
+    const rw = assessRunway({ inventoryRows: 46, schedulableToday: 4, pinsCreated7d: 236, pinsCreated24h: 25 });
+    expect(rw.level).toBe('low');
+    expect(runwayExitCode(rw.level)).toBe(2);
+  });
+
+  it('low runway alone never changes the writer level — any runway, same verdict', () => {
+    const fresh = new Date(WRITER_NOW.getTime() - 2 * 3600e3).toISOString();
+    const stale30h = new Date(WRITER_NOW.getTime() - 30 * 3600e3).toISOString();
+    for (const runwayDays of [0, 0.5, 1.5, 2.99, 3, 12, null]) {
+      expect(assessWriterLiveness({ lastWriterInsertAt: fresh, inserted24h: 5, inserted7d: 30, runwayDays, now: WRITER_NOW }).level).toBe('ok');
+      expect(assessWriterLiveness({ lastWriterInsertAt: stale30h, inserted24h: 0, inserted7d: 30, runwayDays, now: WRITER_NOW }).level).toBe('warn');
+    }
+    // Kept exported for check-pinner.sh's documented mirror; it no longer decides the writer level.
+    expect(DEFAULT_WRITER_RUNWAY_RED_DAYS).toBe(DEFAULT_LOW_RUNWAY_DAYS);
   });
 
   it('never observing a writer row is red (cannot establish freshness), even with healthy runway', () => {
@@ -250,7 +273,7 @@ describe('assessWriterLiveness (Q11, 2026-09-21)', () => {
     expect(a.message).toContain('duplicates confirmed the writer ran');
   });
 
-  it('duplicatesDetected=true does not override a genuinely low runway', () => {
+  it('duplicatesDetected=true reads ok even at low runway — depth is the runway flag\'s job', () => {
     const a = assessWriterLiveness({
       lastWriterInsertAt: '2026-09-04T08:46:31.894735+00:00',
       inserted24h: 0,
@@ -259,7 +282,7 @@ describe('assessWriterLiveness (Q11, 2026-09-21)', () => {
       duplicatesDetected: true,
       now: WRITER_NOW,
     });
-    expect(a.level).toBe('red');
+    expect(a.level).toBe('ok');
   });
 
   it('runwayDays null (rate unknown) does not by itself force red or ok — hours since insert still decides', () => {
@@ -328,6 +351,10 @@ describe('the shipped consumers use the Pinterest signal', () => {
     expect(src).toMatch(/writerLiveness/);
     // Pushed as a flag when red/warn, styled 🔴/🟡 — never silently dropped.
     expect(src).toMatch(/wl\.level === 'red' \? '🔴' : '🟡'/);
+    // E141: with the writer flag inflow-only, the runway floor must keep its own 🟡 flag.
+    expect(src).toMatch(/if \(rw\.level === 'empty' \|\| rw\.level === 'low'\) \{\s*\n\s*flags\.push\(`🟡 Pinner: \$\{rw\.message\}/);
+    // The writer call must not pass a runway threshold that could re-couple the two.
+    expect(src).not.toMatch(/runwayRedDays/);
   });
   it('check-pinner.sh step 2b queries writer-attributed created_at and only ever WARNs', () => {
     const src = read('scripts/agents/check-pinner.sh');

@@ -277,7 +277,13 @@ export function runwayExitCode(level: RunwayLevel): 0 | 2 {
 
 export const DEFAULT_WRITER_WARN_HOURS = 26;
 export const DEFAULT_WRITER_RED_HOURS = 72;
-export const DEFAULT_WRITER_RUNWAY_RED_DAYS = 3;
+/**
+ * No longer decides the writer level (E141, 2026-09-29) — the runway floor is
+ * `DEFAULT_LOW_RUNWAY_DAYS` on `assessRunway`, which has its own 🟡 flag. Kept
+ * exported because check-pinner.sh step 2b still names it as its mirror; that
+ * mirror still carries the old runway→RED override (WARN exit either way).
+ */
+export const DEFAULT_WRITER_RUNWAY_RED_DAYS = DEFAULT_LOW_RUNWAY_DAYS;
 
 export type WriterLivenessLevel = 'ok' | 'warn' | 'red';
 
@@ -292,10 +298,15 @@ export interface WriterLivenessAssessment {
  * Decide whether the writer (the thing that fills the queue, not the thing
  * that drains it) is still alive.
  *
- * - Inventory runway < `runwayRedDays` → 🔴, unconditionally. A low runway is
- *   the thing that actually breaks the pipeline; it overrides everything else
- *   below even if a writer row landed an hour ago, because a fresh single
- *   insert does not refill a queue that is about to run out.
+ * Inflow only (E141, 2026-09-29). Until then a runway < 3 d forced this flag
+ * 🔴 "unconditionally", so the 09-29 scoreboard led with "🔴 Pinner writer …
+ * 4.1 h ago · 20 inserted in 24h, 168 in 7d" — a red on a writer that was
+ * demonstrably alive, beside the runway's own 🟡 for the same reading. Depth
+ * and inflow are separate questions: runway is flagged by `assessRunway`
+ * (🟡 below `DEFAULT_LOW_RUNWAY_DAYS`); this answers only "is the writer still
+ * inserting rows". `runwayDays` is carried into the message for context and
+ * never changes the level.
+ *
  * - `duplicatesDetected === true` → 🟢. Not wired to a live signal in this PR
  *   (the source would be the writer's own cron log on BigScoots — out of
  *   reach while Q11 installs that cron and the operator asked that nothing
@@ -313,18 +324,16 @@ export function assessWriterLiveness(input: {
   lastWriterInsertAt: string | null;
   inserted24h: number | null;
   inserted7d: number | null;
-  /** From `RunwayAssessment.runwayDays`; null when the rate is unknown. */
+  /** From `RunwayAssessment.runwayDays`; null when the rate is unknown. Display only — never decides the level. */
   runwayDays: number | null;
   now?: Date;
   warnAfterHours?: number;
   redAfterHours?: number;
-  runwayRedDays?: number;
   duplicatesDetected?: boolean | null;
 }): WriterLivenessAssessment {
   const now = input.now ?? new Date();
   const warnAfter = input.warnAfterHours ?? DEFAULT_WRITER_WARN_HOURS;
   const redAfter = input.redAfterHours ?? DEFAULT_WRITER_RED_HOURS;
-  const runwayRedDays = input.runwayRedDays ?? DEFAULT_WRITER_RUNWAY_RED_DAYS;
 
   const last = parsePinterestTimestamp(input.lastWriterInsertAt);
   const hours = last ? Math.max(0, (now.getTime() - last.getTime()) / 3600e3) : null;
@@ -334,17 +343,8 @@ export function assessWriterLiveness(input: {
     ? `newest writer-attributed row queued ${last.toISOString().slice(0, 16).replace('T', ' ')}Z (${rounded} h ago)`
     : 'no writer-attributed row found in the queryable history';
   const countsMsg = `${input.inserted24h ?? 0} inserted in 24h, ${input.inserted7d ?? 0} in 7d`;
-  const runwayLow = input.runwayDays != null && input.runwayDays < runwayRedDays;
   const runwayMsg = input.runwayDays == null ? '' : ` · runway ${input.runwayDays}d`;
 
-  if (runwayLow) {
-    const staleClause = hours != null && hours > redAfter ? ` and no insert in ${rounded}h` : '';
-    return {
-      level: 'red',
-      hoursSinceLastInsert: rounded,
-      message: `${stampMsg} · ${countsMsg}${runwayMsg} — runway below the ${runwayRedDays}-day floor${staleClause}; Q11 (writer cron) is the fix`,
-    };
-  }
   if (input.duplicatesDetected === true) {
     return {
       level: 'ok',
