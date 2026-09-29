@@ -243,3 +243,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-29 06:56 | after-merge | Sage: PR #221 sitemap-mods.xml lastmod from createdAt/lastScraped (E136) | 72c8841 | https://mhm-finds-dw5l-9tssn0t15-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-29 07:01 | after-merge | Pip: PR #222 writer plugin-schedule guard in the runway top-up + ranker (E135) | 6b0b47a | https://mhm-finds-dw5l-drreqoelq-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-29 07:33 | after-merge | Cass: PR #219 hydrate /mods/[id] favorite state (E138) | 9101e51 | https://mhm-finds-dw5l-j91omtvix-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-29 07:46 | after-merge | Ops: PR #218 writer-liveness flag inflow-only (E141) | 4e8cbe9 | https://mhm-finds-dw5l-g6y893hkh-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
