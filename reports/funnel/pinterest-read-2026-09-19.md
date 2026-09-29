@@ -85,6 +85,47 @@ Same content, same week, same channel — only the host differs.
 at the duplicate. Converting that to dollars needs Mediavine per-host RPM, which
 this read does not have — **handing the dollar question to Rio, not inventing it.**
 
+## 2a. Correction, 2026-09-28: the −19.5% is a per-host counting artefact, mostly
+
+GA4 check for Pinterest sessions, 2026-09-13 → 09-19 (property 437117335):
+
+- **No session splitting.** Zero sessions have `sessionSource = blog.musthavemods.com`,
+  so moving between hosts does not start a new session.
+- **Sessions double-count across hosts.** 56,640 Pinterest sessions total, but
+  43,153 apex + 19,480 blog.* = 62,633 when counted per host. So ~6,000 sessions
+  touched both hosts: `session_start` by host gives 39,967 apex-landers and 16,261
+  blog-landers, so ~3,190 blog-landers also hit the apex and ~3,220 apex-landers also hit blog.*.
+- **Pageviews do not double-count** (85,547 = 61,779 + 23,768). Per-host pv/session
+  therefore divides one host's share of a crossing session's pageviews by a full
+  session. Crossers are ~16.5% of blog.* sessions but ~7.4% of apex sessions, so
+  the bias lands mostly on blog.*.
+- **The crossings are not our links.** Only 13 blog.* pageviews/week have an apex
+  referrer; blog.* pageviews overwhelmingly carry a `pinterest.com` referrer. A
+  crossing session is a visitor clicking a second pin within 30 minutes, and that
+  pin happens to point at the other host. The middleware already rewrites body
+  `href`s to the apex, so there is no internal-link fix to make.
+
+**Landing-host pv/session, bounded** (the API cannot attribute a crosser's
+pageviews to where they landed):
+
+| Assumption about crossing sessions | blog.* landers | apex landers | gap |
+|---|--:|--:|--:|
+| symmetric (most likely) | ~1.46 | ~1.55 | **≈ −6%** |
+| worst case for blog.* | 1.26 | 1.63 | −22% |
+| best case for blog.* | 1.66 | 1.47 | +13% |
+
+**Revised forgone-pageview estimate:** ≈1,500/week, not 4,700–5,900, and possibly
+zero. The 301 (Q13, PR #208, live 09-28) is still worth having for canonical
+consolidation and clean measurement, but "recaptures lost traffic" was overstated.
+
+**How to read Q13 (E81), 2026-10-05:** use whole-site Pinterest pageviews ÷ Pinterest
+sessions (baseline **1.51** = 85,547 / 56,640), same weekdays, with Mediavine RPM
+alongside. Do not use per-host pv/session. After the 301 almost every session lands on
+the apex, so the crossing artefact disappears from the new number and a per-host
+before/after would show a fake "improvement". Pin-mix shifts can move this ratio on
+their own, so treat a change under ~3% as noise. Also check that blog.* carries
+<5% of Pinterest sessions.
+
 ## 3. THE DECISION: stop allocating revival pins by recency
 
 `revive-stranded-pins.py` selects the **600 newest stranded rows** and then fills
