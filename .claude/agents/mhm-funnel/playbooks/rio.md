@@ -19,6 +19,14 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-29
+- Tried: E139 — bounded every `patreonGet(` caller (6 calls / 4 scripts) with `signal: AbortSignal.timeout(nextPageTimeoutMs(...))`, one exported helper + two constants in `_patreon-auth.ts`, commented `PATREON_ENV_FILE` in env.example, filesystem scanner (vacuity ≥7 calls / ≥5 files) (T0, PR #220, d8c04ba). 3/3 red on 4ba11cc; live churn walk 29 s.
+- Before → after: unbounded calls 6 → 0; /go reach re-read: page_view 342 → 175 → 324 by week, `render` users 531 → 408 → 613 — the "−49 %" was a stale w1→w2 read against the E40 spike week.
+- E55 KEEP (CTR leg 59/30d grid-only vs 51; site page RPM $11.10 → $11.17); E60 KEEP (14/14 ×2, home coverage 81.7 %; remainder $8.74 below its $10.12 floor = long-tail geometry, T2).
+- Guardrail: GREEN from files — 09-27 $299.13 (+10.9 %), 28d $6,061.48 (+7.0 %); MCP unavailable.
+- Verdict: shipped, PASS 06:56. Reads: E99 10-01, E139 10-06, E134 10-12.
+- Next time: (1) a WoW "−49 %" quoted from a note is a window, not a trend — re-pull three weeks before diagnosing code; (2) `/go` GA4 page_view captures ~40 % of `render` users every week (205/531, 248/613) — use `render` users as the /go denominator until the page_view gap is explained; (3) Cass #219 was still open at 06:51 when the gate opened — merged sixth by the gate, not by the roster; no file overlap.
+
 ## 2026-09-28 — E134 items B+C: shared validator + GTRacing DB repair
 - Tried: shared affiliate-link validator (T1, ok/broken/unknown, unknown never writes) wired into the 3 call sites that set `validationStatus:'validated'` unconditionally; query-derived GTRacing DB repair (T0/1, operator pre-approved, ran ahead of the source-fix merging) with an expected-shape abort-gate, not a hardcoded id list (PR #214, `f47abfe`).
 - Before → after: 5 GTRacing rows deep-linking to the Impact-rejected `gtplayer.com` host, zero link checks anywhere → 4 "GT890MF Edition" rows host-fixed to `gtracing.com` (active), 1 bare-slug row retired (still 404 post-fix). 1 deliberate verification click: `irclickid=`/`irgwc=1` present, landed on `deal.gtracing.com` HTTP 200. 30 new tests incl. a filesystem-walking scanner (>20 scripts).
@@ -53,12 +61,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (E99 read 10-01; E65 09-26; E55/E60 09-29; E74 10-06).
 - Next time: (1) a CTA that only renders inside a timed branch has a lifetime equal to the timer — render at t+timer+3s before calling placement fine; (2) Patreon clicks are now two events — add `patreon_click_after_wait` to any denominator that sums them, never fold it into E65's read; (3) `gh pr merge --delete-branch` fails when another worktree holds `main`, and the retry loop then reports "already merged" forever — merge in the foreground, delete the remote branch via the API.
 
-## 2026-09-23
-- Tried: E89 — sponsorship media kit + outreach package (T0 draft, `reports/funnel/drafts/sponsorship-media-kit-2026-09-23.md`; sending and price are T2, the operator's). Also #148 rebased on main and merged `c1c0827` (E88 package + Q4 HOLD read + both E60 windows); silence default added to the E88 draft.
-- Before → after: sponsorship **$0/mo, 0 outreach emails ever** (2026-09-23) → read 2026-10-07; keep if ≥10 sent AND (≥1 interested reply OR ≥1 call); 0 sent by 09-30 → re-pitch once, drop 10-07. Kit numbers (GA4 08-24→09-20): 354,348 sessions · 206,979 users · 563,617 pv · desktop 93.6% · US 39.3% / UK 6.6% / BR 5.0% / FR 4.5%; two prices for the operator: $300 (hub) / $750 (site).
-- E60 early read (both windows in #148, pulled 09-22 at equal maturity): blog $12.26→$14.08 (+14.8%), home $9.65→$9.16 (−5.1%), unseen remainder $10.46→$8.95 (−14.4%) while its pv share rose 47%→57%. Decision: the under-earner is the long tail (`/mods/[id]` + small posts) and the homepage serves 24% fewer imp/pv than an article (11.14 vs 14.72) at the best viewability (69.5%) — both fixes are ad geometry (T2, SD-5); no T0 copy fix exists, hence E89 by $/mo.
-- Guardrail: GREEN, traffic-side — 09-21 $188.32 (−6.0% same-weekday) on sessions −8.1% with RPM $16.03 (+2.9%); 3-day revenue +0.1%, 3-day RPM +2.0%; MV health ok; 28d $5,908 (+4.7%). Monday 09-21 is judged against a 4-wk mean that contains Labor Day 09-07 — sessions, not yield.
-- Verdict: MORE DATA (E89 10-07; E88 D+7 from the post; E65 09-26; E55/E60 09-29; E74 10-06).
-- Next time: (1) the live playbook hit 14,012 bytes on main after #148 (file cap 10,000; the budget test did not fire) — `wc -c` it before every commit; (2) GA4 age/gender is thresholded to 0 rows for this property — never claim demographics in a kit.
-
-_Older entries (up to 2026-09-22) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-23) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-29
+- Tried: (a) E137 creator outreach package (T2, queued): top 20 hub creators by 28d download clicks, page + claim URL per row, template, and the isCreator decision in one file. (b) E137-b (T0, PR #217 `949b536`): 'creator' added to page-rpm OTHER_APP_PREFIXES; class test covers every NEXTJS_PREFIXES entry and every app/ route dir, red pre-fix on exactly /creator/ (2 cases).
+- Before → after: /creator/* landing sessions 116 (09-15→09-21) → 558 (09-22→09-28, GA4 apex). The top 20 hold only 202/1,408 28d clicks, 5–26 each; 11/20 publish mainly on TSR, and 8 are TSR-only with no contact route of their own. Onboarded 0, claims 0.
+- Verdict: MORE DATA (read 2026-10-13).
+- Next time: `sourceUrl` on scraped mods is the MHM blog post, not the creator. Read `downloadUrl` for a creator's channel. And if the next batch skips TSR-only creators, rank from 21+ rather than re-sorting.
+
 ## 2026-09-28
 - Tried: admin review for E122 claims (T0, PR #204 `115f8bd`, E129). `/admin/creator-claims` plus GET/POST `/api/admin/creator-claims/`, with the decisions in a pure planner (`lib/creatorClaimReview.ts`). Reject refuses when mods link to the profile; promote refuses a handle that is already taken.
 - Before → after: ways to see or promote a pending claim in the admin went 0 → 1. Pending claims 0, claim submissions 0, onboarded 0 (DB 2026-09-28). The existing `/api/admin/creators/[id]` PATCH already accepts any handle with no check, which is why nobody noticed the missing review step. E33 graded KEEP and closed: coverage 96.87% (NULL 518), gameplay-mod 467→487.
@@ -55,8 +61,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-19; keep if ≥15 engaged sessions in the 7d to the read date **and** aggregate collection-page engaged sessions ≥95% of 1,069 **and** `/sims-4-kids-cc/` impressions ≥80% of 153 — i.e. the page has…
 - Next time: three things. **(1) Distinguish a class bug from heterogeneous junk by asking whether one rule is uniformly wrong, and check both directions.** 09-20's nails case was six wrong rows for six reasons and correctly got `…
 
-## 2026-09-20
-- Tried: `nails-cc` collection page + a 6-row repair of the `nails` facet in the same PR (T0, PR #127, E67). `nails` was the last clean un-paged contentType: 151 rows, 0 pages, 0 mod detail pages with a collection breadcrumb. **Re…
-- Before → after: `nails` facet 151 rows / 92.7% title-clean → 145 / **97.2%** (141 of 145), top 12 by downloads 12/12 genuine and two 8-row mid-grid samples 16/16; collection routes 21 → 22; mod detail pages with a collection bre…
-- Verdict: MORE DATA (read 2026-10-18; keep if ≥200 engaged sessions OR ≥5 favorites in the first 28 days — the bar used for decor-cc, shoes-cc, loading-screens and jewelry-cc). E38 reads **KILL** on its own rule; `/play` keeps it…
-- Next time: **take the facet-wide dry run even when you intend a narrow fix, then throw it away.** `--facets=nails` proposed 21 changes and **15 were wrong** — rule priority beats the literal word "nails" in a title ("S-Club Nail…
+_Older entries (up to 2026-09-20) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._

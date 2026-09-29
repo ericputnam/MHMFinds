@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-29
+- Tried: E138 — made `/mods/[id]` load the real favorite state for signed-in visitors through a new read-only GET, with no request for anonymous visitors (T0, PR #219, 9101e51, verify PASS 07:33). 9/9 red pre-fix.
+- Before → after: /mods/* `favorite` 6 users / 43 events over 14d, anonymous redirects 11 over 14d → read 2026-10-13. Owned adds 7d went 110 → 120 (target hit), capture 1.21 → 1.30/1K.
+- Verdict: PENDING. Pre-reads 09-30: E4 KILL (1.49/1K < 2; extension window 1.73/1K; still above site 1.30/1K — replace, don't just drop). E54/E68 KILL (1.06 confirms per 100 vs ≥2; 2 of 387 yes; exclusion leg 0/12 re-attempted passes — keep `sendExclusions`).
+- Next time: check the effective response headers with `next start` before trusting a route's `Cache-Control`. `next.config.js` sets `public, s-maxage=60` on every `/api/*` response and replaced my `no-store` locally.
+
 ## 2026-09-28
 - Tried: E130 — "Save this find" account offer under the /mods/[id] hero image, E10 email box removed (T0, PR #203, cb271e4, verify PASS). Own ref/marker/event names so it reads apart from E107.
 - Before → after: mod-detail waitlist rows 0 ever → surface removed; /mods/* 7,988 sessions/7d, 98 % desktop; favorite_after_signin 0/14d, favorite_signin_redirect 4/14d; save_finds_* 0 → read 2026-10-12. Owned adds 7d 110 (26 email + 84 accounts), capture 1.21/1K.
@@ -68,10 +74,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - E4 grade (go-interstitial capture, read due today): **EXTEND to 2026-09-30**. 3 go-interstitial subscribers (all 3 GA4 `newsletter_signup` events 09-02→09-14 are on `/go/`) ÷ **2,309** `/go/` sessio…
 - Next time: (1) a 3.0% hard-bounce day-1 means the account list has dead addresses — before day-2, build a code-only exclusion for hard-bounced accounts (no `bouncedAt` column exists; a schema column…
 
-## 2026-09-15
-- Tried: (1) established whether issue #1 actually went out on 09-14 before touching anything (E54, T0). `notification_logs` = 0 rows all-time and is structurally blind (`bulkMailer` passes `skipLog:…
-- Before → after: emails ever sent to subscribers 0 → **1 issue to 23** (09-14); send records 0 → 1 reconstructed + every future run. Re-permission Before (2026-09-15): 1,640 accounts not in `waitlist…
-- Verdict: E44 MORE DATA (read 2026-09-21; keep-if currently met: 1 bounce ≤2, 0 unsubs ≤2). E54 QUEUED-T1: day-1 batch 1 (`--offset 0`, 100) sends 2026-09-16 unless `stop repermission`; then 100/day…
-- Next time: a send with no ledger is a send you cannot prove happened — the probe took longer than the send. Before issue #2: prune the 550 address from `waitlist` (counts-only script), add UTM tags,…
-
-_Older entries (up to 2026-09-13) live verbatim in `archive/playbooks/cass-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-15) live verbatim in `archive/playbooks/cass-2026-09.md`; nothing deleted._

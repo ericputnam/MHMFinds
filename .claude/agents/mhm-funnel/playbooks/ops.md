@@ -24,6 +24,9 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-09-29
+E141: a runway override made the writer flag 🔴 on 6 of 7 mornings. On 09-29 it was 🔴 while the writer had inserted 20 rows in 24 h and 168 in 7 d. Re-graded with the inflow-only rule, the same 7 mornings give 0 🔴, 1 🟡 (09-24, 27.1 h since last insert) and 6 🟢. One flag should answer one question: depth belongs to assessRunway, inflow to assessWriterLiveness. PR #218 `4e8cbe9`, PASS 07:46; 4/36 tests red pre-fix. Ledger audit 7d: 73/73 merges on main have a row after a retroactive #190 row (`8835a89`); `check-pinner.sh` still carries the old override (inbox).
+
 ## 2026-09-28 — E133
 - Tried: smoke-render renders 1 /games/sims-4/<slug>/ collection/run, rotated by UTC day over getCollectionsForGame('sims-4').map(collectionHref); expectations() grades anchors via AD_KINDS, not its own kind list; timeouts stay INCONCLUSIVE (T0, PR #200 c839ce7).
 - Before → after: collection routes in the smoke 0/14 → 1/15 (vampire-cc 200, secondary=1, mv-ads=1, 7.3 s); smoke ≈59 s → ≈69 s; 7/11 new tests red on pre-fix main; after-merge verify PASS 07:21 with the new script. Run success 14d 10/14 (71.4%); ledger completeness since 09-21 67/69 (97.1%).
@@ -72,8 +75,4 @@ moved here because plumbing is now Ops's, not Quinn's. Full originals in
 - Verdict: KEEP "paper trail first, merges second" — the skeleton + part-1 commit took 25 minutes and needed no agent; FIX the tool: the Edit tool is denied on every `.claude/` path in this session (6…
 - Next time: when a stranded branch is based on an older `main`, never `git merge` it — `git checkout <branch> -- <file>` for report files, and reconcile the team registries by hand (main had rolled E…
 
-## 2026-09-10
-- Tried: seventh full loop, green day (09-08 revenue +7.8% on RPM +14.9%, sessions −6.0%) — 5 of 5 agents returned complete move reports (0 rejected). Merged the T1 whose veto expired (#69 Pip pin rev…
-- Before → after: runner fixes that actually executed 0/4 → still 0/4 until Q7 is done (the tracked copy and the prompt-from-`$WT` change ship in the daily PR); mid-run reinstalls 0 (but only because…
-- Verdict: KEEP the ship protocol (7/7 merges verified, 0 rollbacks, 0 incidents this week); KEEP asking T1 agents to leave the two registry files to the daily PR — make it a dispatch-prompt rule tomo…
-- Next time: (1) confirm Q7 by checking `logs/funnel-daily.log` for `prompt=` and the step-0d `operator-did` line — if absent, the stale copy ran again and the digest must say so; (2) the evening chec…
+_Older entries (up to 2026-09-10) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._
