@@ -8,6 +8,7 @@ import { UsageIndicator } from './subscription/UsageIndicator';
 import { GAME_COLORS, GAME_TAGLINES } from '../lib/gameColors';
 import { GAME_TO_SLUG } from '../lib/gameRoutes';
 import { isMembershipEnabled } from '../lib/membership';
+import { FAVORITES_PATH } from '../lib/favoritesPath';
 
 export const Navbar: React.FC = () => {
   const { data: session, status } = useSession();
@@ -158,9 +159,16 @@ export const Navbar: React.FC = () => {
             </a>
           )}
 
-          <button className="p-2.5 text-slate-400 hover:text-sims-pink hover:bg-white/5 rounded-full transition-all">
+          {/* E140: was a <button> with no href or handler — favorites were
+              write-only. Signed-out visitors are sent to sign-in by the page. */}
+          <Link
+            href={FAVORITES_PATH}
+            aria-label="Your favorite mods"
+            title="Your favorites"
+            className="p-2.5 text-slate-400 hover:text-sims-pink hover:bg-white/5 rounded-full transition-all"
+          >
             <Heart className="h-5 w-5" />
-          </button>
+          </Link>
 
           {/* User Menu - Show when authenticated */}
           {status === 'authenticated' && session?.user ? (
