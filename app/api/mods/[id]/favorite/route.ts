@@ -3,6 +3,49 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { prisma } from '../../../../../lib/prisma';
 
+// Session-dependent on every method — never statically rendered or cached.
+export const dynamic = 'force-dynamic';
+
+/**
+ * GET — is this mod in the signed-in visitor's favorites? (E138, Cass,
+ * 2026-09-29). `/mods/[id]` used to start every visitor at "not favorited",
+ * so a signed-in visitor who had already saved the mod saw "Add to
+ * Favorites" and the E130 "Save this find" offer, and one click on the heart
+ * POSTed a duplicate (400) instead of removing it. The client calls this
+ * only when `useSession()` reports `authenticated` — anonymous visitors make
+ * no request. Read-only: GET never mutates.
+ */
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const noStore = { 'Cache-Control': 'private, no-store' };
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: noStore });
+    }
+
+    const favorite = await prisma.favorite.findUnique({
+      where: {
+        userId_modId: {
+          userId: session.user.id,
+          modId: params.id,
+        },
+      },
+      select: { id: true },
+    });
+
+    return NextResponse.json({ favorited: favorite !== null }, { headers: noStore });
+  } catch (error) {
+    console.error('Error reading favorite state:', error);
+    return NextResponse.json(
+      { error: 'Failed to read favorite state' },
+      { status: 500, headers: noStore }
+    );
+  }
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
