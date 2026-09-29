@@ -19,6 +19,13 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-28 — E134 items B+C: shared validator + GTRacing DB repair
+- Tried: shared affiliate-link validator (T1, ok/broken/unknown, unknown never writes) wired into the 3 call sites that set `validationStatus:'validated'` unconditionally; query-derived GTRacing DB repair (T0/1, operator pre-approved, ran ahead of the source-fix merging) with an expected-shape abort-gate, not a hardcoded id list (PR #214, `f47abfe`).
+- Before → after: 5 GTRacing rows deep-linking to the Impact-rejected `gtplayer.com` host, zero link checks anywhere → 4 "GT890MF Edition" rows host-fixed to `gtracing.com` (active), 1 bare-slug row retired (still 404 post-fix). 1 deliberate verification click: `irclickid=`/`irgwc=1` present, landed on `deal.gtracing.com` HTTP 200. 30 new tests incl. a filesystem-walking scanner (>20 scripts).
+- Guardrail: not re-read (no ad/pricing touch). deploy-verify PASS 22:41 (f47abfe), 5xx=0.
+- Verdict: shipped. E134 stays PENDING, reads 2026-10-12. Optimizer launchd job stays paused until confirmed durable.
+- Next time: (1) a red-before-green proof via `git show HEAD:<file>` stops proving anything once the fix and test share a commit (or a squash collapses both) — HEAD becomes the fixed content and the check passes for the wrong reason; freeze the pre-fix snippet as an inline fixture instead. (2) confirm a full-suite failure is outside your diff (`git diff origin/main --stat`) before treating it as yours.
+
 ## 2026-09-28
 - Tried: E131 — Patreon refresh persists to the operator's `.env.local` (linked worktree → main checkout via the `.git` gitdir pointer; `PATREON_ENV_FILE` override; else refuse before the token endpoint), adopt-before-refresh, `patreonGet(url, init)` with `AbortSignal.timeout`, bounded scoreboard walk (T0, PR #201, `f2c8244`). 9/10 guard cases red on `e765da5`.
 - Before → after: refreshes persisted to the operator repo 0 (none ever; tokens issued 09-07, first expiry ≈10-07) → read 10-09. Live: worktree → `/Users/eputnam/java_projects/MHMFinds/.env.local`, `/tmp` → null, 1 ms signal → TimeoutError, real GET 2.5 s no 401. E55 pre-read: site page RPM $11.10 → $10.98, remainder $10.43 → $10.23 (both ≥ floor); E60 tool 14/14 × 2.
