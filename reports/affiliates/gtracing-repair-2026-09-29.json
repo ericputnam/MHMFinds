@@ -1,0 +1,86 @@
+{
+  "generatedAt": "2026-09-29T02:20:14.878Z",
+  "applied": true,
+  "plans": [
+    {
+      "id": "cmseld40r0000oxhebzx4mf0m",
+      "name": "GT Lynck System Pro GT890MF Edition - White",
+      "action": "host-fix",
+      "before": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40088148344912&u=https%3A%2F%2Fgtplayer.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40088148344912&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "after": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40088148344912&u=https%3A%2F%2Fgtracing.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40088148344912&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "reason": "gtplayer.com -> gtracing.com host fix confirmed reachable"
+    },
+    {
+      "id": "cmucm106u0000oxdvwo5gusoa",
+      "name": "Music Series GT890MF - White",
+      "action": "retire",
+      "before": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40861152051280&u=https%3A%2F%2Fgtplayer.com%2Fproducts%2Fgt890mf%3Fvariant%3D40861152051280&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "after": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40861152051280&u=https%3A%2F%2Fgtplayer.com%2Fproducts%2Fgt890mf%3Fvariant%3D40861152051280&intsrc=APIG_13261",
+        "validationStatus": "retired",
+        "isActive": false
+      },
+      "reason": "host fix applied but destination still broken, no other slug known: contract=ok (contract Active); deeplink-domain=ok (gtracing.com is in DeeplinkDomains); destination-reachable=broken (HTTP 404)"
+    },
+    {
+      "id": "cmtslrx2h0001oxtfb21df4d7",
+      "name": "GT Lynck System Pro GT890MF Edition - Red",
+      "action": "host-fix",
+      "before": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40059614855248&u=https%3A%2F%2Fgtplayer.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40059614855248&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "after": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40059614855248&u=https%3A%2F%2Fgtracing.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40059614855248&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "reason": "gtplayer.com -> gtracing.com host fix confirmed reachable"
+    },
+    {
+      "id": "cmsylis5c0000oxyq2xkkr5pb",
+      "name": "GT Lynck System Pro GT890MF Edition - Pink",
+      "action": "host-fix",
+      "before": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40082685755472&u=https%3A%2F%2Fgtplayer.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40082685755472&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "after": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40082685755472&u=https%3A%2F%2Fgtracing.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40082685755472&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "reason": "gtplayer.com -> gtracing.com host fix confirmed reachable"
+    },
+    {
+      "id": "cmsylis800001oxyqlns7yj0w",
+      "name": "GT Lynck System Pro GT890MF Edition - Gray",
+      "action": "host-fix",
+      "before": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40082685689936&u=https%3A%2F%2Fgtplayer.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40082685689936&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "after": {
+        "affiliateUrl": "https://gtracing.sjv.io/c/2956236/1719124/18111?prodsku=40082685689936&u=https%3A%2F%2Fgtracing.com%2Fproducts%2Fgt-lynck-system-pro-gt890mf-edition%3Fvariant%3D40082685689936&intsrc=APIG_13261",
+        "validationStatus": "validated",
+        "isActive": true
+      },
+      "reason": "gtplayer.com -> gtracing.com host fix confirmed reachable"
+    }
+  ]
+}

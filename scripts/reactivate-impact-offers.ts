@@ -23,10 +23,20 @@ if (process.env.DIRECT_DATABASE_URL) {
 }
 
 import { PrismaClient } from '@prisma/client';
+import {
+  applyKnownHostFix,
+  extractImpactCampaignId,
+  validateAffiliateLink,
+} from '../lib/services/affiliateEarnings/linkValidator';
 
 const prisma = new PrismaClient();
 const DRY_RUN = process.argv.includes('--dry-run');
 const SITE_CTR_MULTIPLIER = 0.5; // must match LOW_CTR_SITE_MULTIPLIER in affiliate-optimize.ts
+// Live-link checks are best-effort here: if creds are absent, the contract/deeplink-domain leg is
+// simply not attempted (fewer checks, not a false 'unknown') — the destination-reachability leg
+// still runs regardless, since it needs no Impact API access at all.
+const SID = process.env.IMPACT_ACCOUNT_SID;
+const TOKEN = process.env.IMPACT_AUTH_TOKEN;
 
 async function main() {
   const totals = await prisma.affiliateOffer.aggregate({
@@ -47,12 +57,13 @@ async function main() {
 
   const retired = await prisma.affiliateOffer.findMany({
     where: { validationStatus: 'retired', partner: { not: 'amazon' } },
-    select: { id: true, name: true, partner: true, impressions: true, clicks: true },
+    select: { id: true, name: true, partner: true, impressions: true, clicks: true, affiliateUrl: true },
     orderBy: { partner: 'asc' },
   });
 
   let reactivated = 0;
   let clearing = 0;
+  let heldBackBrokenOrUnknown = 0;
   for (const o of retired) {
     const ctr = o.impressions > 0 ? o.clicks / o.impressions : 0;
     const clears = o.impressions > 0 && ctr > bar;
@@ -61,18 +72,44 @@ async function main() {
       `${clears ? '🟢 reactivate ' : '⚪ stays retired'} [${o.partner}] ${o.name.slice(0, 55)} — ` +
         `CTR ${(ctr * 100).toFixed(4)}% (${o.impressions} imp / ${o.clicks} clicks)`
     );
-    if (clears && !DRY_RUN) {
+    if (!clears) continue;
+
+    // A CTR that clears the bar is not evidence the link still works (E134: GTRacing's dead
+    // gtplayer.com deep-link had real historical clicks). Re-validate before promoting anything
+    // out of 'retired' — never reactivate on stale click history alone.
+    const campaignId = extractImpactCampaignId(o.affiliateUrl);
+    const { url: fixedUrl, fixed } = applyKnownHostFix(campaignId, o.affiliateUrl);
+    const validation = await validateAffiliateLink({
+      affiliateUrl: fixedUrl,
+      campaignId,
+      sid: SID,
+      token: TOKEN,
+    });
+    if (fixed) console.log(`    (host-fixed: ${o.affiliateUrl} -> ${fixedUrl})`);
+
+    if (validation.outcome !== 'ok') {
+      heldBackBrokenOrUnknown++;
+      console.log(
+        `    held back (${validation.outcome}): ${validation.checks
+          .map((c) => `${c.name}=${c.outcome} (${c.detail})`)
+          .join('; ')}`
+      );
+      continue;
+    }
+
+    if (!DRY_RUN) {
       await prisma.affiliateOffer.update({
         where: { id: o.id },
-        data: { isActive: true, validationStatus: 'validated' },
+        data: { isActive: true, validationStatus: 'validated', affiliateUrl: fixedUrl },
       });
-      reactivated++;
     }
+    reactivated++;
   }
 
   console.log(
-    `\n${DRY_RUN ? `Would reactivate ${clearing}` : `Reactivated ${reactivated}`} of ` +
-      `${retired.length} retired offers.`
+    `\n${DRY_RUN ? `Would reactivate ${reactivated}` : `Reactivated ${reactivated}`} of ` +
+      `${retired.length} retired offers (${clearing} cleared the CTR bar, ` +
+      `${heldBackBrokenOrUnknown} of those held back on a broken/unknown link check).`
   );
 }
 

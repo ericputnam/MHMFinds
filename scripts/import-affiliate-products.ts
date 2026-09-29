@@ -14,9 +14,14 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 import { PrismaClient, Prisma } from '@prisma/client';
+import { validateAffiliateLink } from '../lib/services/affiliateEarnings/linkValidator';
 
 const prisma = new PrismaClient();
 
+// Operator decision (2026-09-28): musthavemod04-20 is the ONLY supported Amazon store id. Any
+// other tag reaching formatAffiliateUrl() is a bug, not a variant to honor — see the amazon-tag
+// leg of validateAffiliateLink() below, which turns a mismatch into validationStatus:'invalid'
+// instead of silently shipping a link that pays a different (or no) Associates account.
 const PARTNER_TAG = process.env.AMAZON_PARTNER_TAG || 'musthavemod04-20';
 
 interface ProductCandidate {
@@ -460,6 +465,23 @@ async function importProducts() {
         continue;
       }
 
+      // Amazon-tag check only — never a live fetch of amazon.com (bulk-fetching Amazon is
+      // forbidden; captchas/bot checks must never be bypassed). formatAffiliateUrl() already
+      // always uses PARTNER_TAG, so this exists to catch a future hardcoded URL that bypasses it,
+      // not because today's ASIN list is expected to fail it.
+      const validation = await validateAffiliateLink({
+        affiliateUrl,
+        checkDestination: false,
+        requiredAmazonTag: PARTNER_TAG,
+      });
+      const validationStatus = validation.outcome === 'broken' ? 'invalid' : 'validated';
+      if (validation.outcome === 'broken') {
+        console.log(
+          `  ✗ wrong Amazon tag, importing as invalid: ${product.name} — ` +
+            validation.checks.map((c) => `${c.name}=${c.outcome} (${c.detail})`).join('; ')
+        );
+      }
+
       // Create the affiliate offer
       await prisma.affiliateOffer.create({
         data: {
@@ -470,7 +492,7 @@ async function importProducts() {
           partner: 'amazon',
           category: product.category,
           priority: 50, // Medium priority
-          isActive: true,
+          isActive: validationStatus === 'validated',
           salePrice: new Prisma.Decimal(product.price),
           matchingThemes: [product.theme],
           matchingContentTypes: [product.category],
@@ -482,7 +504,7 @@ async function importProducts() {
           personaScore: 5, // 5/8 personas approve (good threshold)
           personaFeedback: product.aestheticFit,
           sourceType: 'manual',
-          validationStatus: 'validated',
+          validationStatus,
           validatedAt: new Date(),
           researchNotes: `Theme: ${product.theme}. Curated for MHM audience (women 16-30, creative/artistic interests). ${product.aestheticFit}`,
         }
