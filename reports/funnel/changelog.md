@@ -224,3 +224,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-09-28 07:24 | check | Quinn: --check after the 09-28 merge window (covers #201 INCONCLUSIVE) |  | https://mhm-finds-dw5l-1hqcw5i9v-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-09-28 20:18 | after-merge | manual | a8c28a5 | https://mhm-finds-dw5l-9h2mwuieu-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-09-28 20:59 | after-merge | manual | 982fb28 | https://mhm-finds-dw5l-nnn2zl1am-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-09-28 21:03 | after-merge | manual | a08a0d5 | https://mhm-finds-dw5l-a92kuonc0-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
