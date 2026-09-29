@@ -329,3 +329,107 @@ The push scripts (`push-blog-functions.sh` and `push-blog-functions-prod.sh`) ru
 ### custom.css Gradients
 
 The Kadence child theme `custom.css` had 6+ gradients that needed replacement with solid colors. When editing `custom.css`, check for and remove any gradient declarations.
+
+---
+
+## Kadence-Safe Post-Content Edits
+
+For any change that must rewrite an exact string inside a post's `post_content`
+(e.g. an affiliate tag) **without altering anything else about the post** —
+not spacing, not block structure, not byte length where avoidable. Built for
+E134 item D (Amazon tag hygiene); reusable for any similar future repair.
+Library: `lib/wp/kadenceSafeReplace.ts` (pure, unit-tested — see
+`__tests__/unit/kadence-safe-replace.test.ts` and fixtures in
+`__tests__/fixtures/kadence/`, cut byte-for-byte from real posts). CLI:
+`scripts/wp/kadence-safe-replace.ts`, modes `read` / `dry-run` / `apply` /
+`load-raw` (test-setup only, never `--prod`).
+
+### How Gutenberg/Kadence actually encode a URL (confirmed by direct inspection)
+
+A URL used by an affiliate link can appear in a post body in two independent
+encodings, and **a given occurrence is either one or the other, never both** —
+do not assume a JSON-attribute copy and an HTML-body copy are paired:
+
+- **Self-closing/dynamic blocks** (e.g. `kadence/singlebtn`, nested inside
+  `kadence/advancedbtn`) store the URL only as a JSON block-comment attribute:
+  `<!-- wp:kadence/singlebtn {"link":"https://...&tag=...","noFollow":true,
+  "sponsored":true} /-->`. `&` is JSON-escaped as `&`.
+- **Static content blocks** (`paragraph`, `heading`, `kadence/infobox`) store
+  the URL only in the rendered HTML body: `<a href="https://...&amp;tag=...">`.
+  `&` is usually HTML-escaped as `&amp;`, but at least one real post (3534)
+  has a raw, unescaped `&` in an `href` — do not assume `&amp;` is universal.
+
+A same-length literal swap (e.g. `musthavemod08-20` → `musthavemod04-20`, both
+17 chars) sidesteps needing to know which encoding applies at a given
+occurrence: replace the literal bytes everywhere, then verify with the
+invariants below rather than trying to parse-and-rewrite each block type.
+
+### Safety invariants (what makes this different from `sed`/`wp search-replace`)
+
+Never use `wp search-replace` (hard-banned — it walks every table and every
+serialized-PHP blob site-wide with no per-post scoping) and never write
+content through the REST API (`content.rendered` is post-render HTML with
+block delimiters stripped — writing it back flattens the post). Instead:
+same-length-only literal replace, then check, before ever writing: occurrence
+count of the old string drops to zero, occurrence count of the new string
+increases by exactly the expected amount, total byte length is unchanged,
+no byte outside the matched spans differs (`diffOutsideKnownSpans`), and the
+Gutenberg block tree shape is identical before/after (parsed via
+`@wordpress/block-serialization-default-parser`) — this is what actually
+catches "the edit accidentally broke a block delimiter."  The write itself
+goes through a raw `$wpdb->update()` (never `wp_insert_post`/`wp_update_post`,
+which run `wp_unslash()`/kses and create a revision), verified by sha256
+immediately before and after, with automatic same-request restore on any
+after-mismatch.
+
+### `wp eval-file` silently no-ops large payloads — keep the evaluated file tiny
+
+On this host, `wp eval-file` on a large (confirmed ~150–200KB) PHP file loads
+WordPress fully (visible in `--debug` output up to "Loaded WordPress"), then
+produces **zero stdout and exits 0** — no error, no exception, easily misread
+as "the write succeeded with an empty response" or a transport bug. Confirmed
+by bisection independent of WordPress entirely: a bare `<?php $x =
+base64_decode('<200KB literal>'); echo ...;` script reproduces it under `wp
+eval-file` but runs fine under plain `php script.php` on the same host — so
+this is `wp eval-file`/WP-CLI specific, not a PHP limit. Most likely a
+host-side anti-webshell guard on `wp eval`/`eval-file` (BigScoots' own
+`bs_helper` MU-plugin is visible in the `--debug` loaded-commands list).
+**Do not try to raise or bypass it.** Instead, never inline large content into
+a file passed to `wp eval-file`: write the content to its own remote temp file
+first via plain shell redirection (`cat`/`base64 -d`, proven reliable at
+200KB+ with no such limit) and have a small, fixed-size PHP script
+`file_get_contents()` it at runtime. `applyContentUpdate()` in
+`scripts/wp/kadence-safe-replace.ts` does this; `readPostContent()` doesn't
+need it (its *output*, not input, is large, and large stdout is unaffected).
+
+### A direct fetch to the blog host redirects to the apex — verifying "did it work" needs a header
+
+Fetching a blog post's permalink directly (`blogmusthavemodscom.bigscoots-
+staging.com/...` or, by the same architecture, `blog.musthavemods.com/...`)
+301s to the apex (`musthavemods.com/...`) for any request that isn't the
+Next.js proxy itself. `fetch()` follows redirects by default, so an
+unmarked verification request silently renders the **apex's** copy of the
+page — on prod that is a no-op (apex and origin agree once the origin is
+correct), but on staging it means checking *production's* unmodified content
+and misreading it as a staging test failure. Send the same
+`X-MHM-Proxy: nextjs-edge` header `middleware.ts` sends on every legitimate
+server-to-server fetch to the blog host (see `middleware.ts`'s own comment on
+the redirect loop this prevents). `fetchRendered()` in
+`scripts/wp/kadence-safe-replace.ts` sends this header; do not remove it.
+
+### Cache layers to clear after a direct DB write (bypasses `save_post` hooks)
+
+A raw `$wpdb->update()` never fires cache-invalidation hooks that a normal
+editor save would, beyond the explicit `clean_post_cache()` call in the write
+script. Clearing the rendered page for a visitor needs, in order:
+1. **WP object cache** — `wp cache flush --path=<docroot>`. Cheap, always safe,
+   done automatically by the CLI after a successful write.
+2. **BigScoots page cache** — `wp bs_cache purge_cache --path=<docroot>`.
+   **Staging refuses this** ("Cache purge is not allowed in staging
+   environment") — confirmed by direct test, not documented anywhere else.
+   Only relevant/available on prod.
+3. **Cloudflare** sits in front of both; a page cache purge above is normally
+   sufficient to reach it for HTML responses on this site's configuration, but
+   if a change doesn't appear after (1) and (2), Cloudflare cache is the next
+   thing to check (not a documented purge command here — ask the operator or
+   check the Cloudflare dashboard before assuming code is wrong).

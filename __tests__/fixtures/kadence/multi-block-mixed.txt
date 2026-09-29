@@ -1,0 +1,67 @@
+<!-- wp:heading {"textAlign":"center","style":{"typography":{"fontSize":45}}} -->
+<h2 class="wp-block-heading has-text-align-center" style="font-size:45px"><mark style="background-color:rgba(0, 0, 0, 0)" class="has-inline-color has-theme-palette-2-color">Best Sims 4 Expansion Packs</mark></h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center"} -->
+<p class="has-text-align-center">The top 3 packs on this list are pretty essential to my gameplay, but keep in mind when reading through this, that I am a <strong>HUGE</strong> lover of realistic and family gameplay. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph {"align":"center"} -->
+<p class="has-text-align-center">So, if you're a fan of occult or themed gameplay, your opinion of the best expansion packs may be wildly different.😅</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":3,"style":{"typography":{"fontSize":30}}} -->
+<h3 class="wp-block-heading" style="font-size:30px">1. The Sims 4 Seasons</h3>
+<!-- /wp:heading -->
+
+<!-- wp:image {"align":"center","id":4259,"width":"700px","sizeSlug":"large","linkDestination":"custom"} -->
+<figure class="wp-block-image aligncenter size-large is-resized"><a href="https://musthavemods.com/best-sims-4-expansion-packs/"><img src="https://musthavemods.com/wp-content/uploads/2021/07/sims4seasons-1024x576.jpg" class="wp-image-4259" alt="Festive holiday scene featuring Santa giving gifts to children inside a decorated Christmas living room with colorful ornaments, presents, and a cozy fireplace." style="width:700px"  > </a></figure>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>The Sims 4 Seasons expansion pack is a hands-down, must-own expansion. It will completely change your game in the best way possible.  It creates so many opportunities for family gameplay and storytelling with holidays and seasonal activities. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The changing seasons create such a dynamic sim world. I LOVE seeing the leaves changing colors, snow falling, or plants sprouting as the days pass. Speaking of plants, this pack also gives you new plants, and all of the plants in the game become seasonal. So, now tomatoes will only grow in the summer unless you build a greenhouse. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><strong>Out of all the Sims 4 expansion packs, seasons will add the most to your everyday gameplay. </strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:kadence/advancedbtn {"uniqueID":"4256_05266f-48","btns":[],"letterSpacing":""} -->
+<div class="wp-block-kadence-advancedbtn kb-buttons-wrap kb-btns4256_05266f-48"><!-- wp:kadence/singlebtn {"uniqueID":"4256_10683b-17","text":"BUY NOW","link":"https://www.amazon.com/Sims-Seasons-Online-Game-Code/dp/B07DFZRJ6G?crid=S2NHXU6ZO4TF\u0026keywords=sims+4\u0026qid=1665164101\u0026qu=eyJxc2MiOiI1LjE0IiwicXNhIjoiNS41MiIsInFzcCI6IjUuMjMifQ%3D%3D\u0026sprefix=sims+4,aps,110\u0026sr=8-16\u0026linkCode=sl1\u0026tag=musthavemod08-20\u0026linkId=9ae68cc57e36e5b6422af799c44e57a4\u0026language=en_US\u0026ref_=as_li_ss_tl","target":"_blank","noFollow":true,"sponsored":true,"inheritStyles":"inherit","typography":[{"size":["","",""],"sizeType":"px","lineHeight":["","",""],"lineType":"","letterSpacing":["","",""],"letterType":"px","family":"","google":false,"style":"normal","weight":"regular","variant":"","subset":"","textTransform":"","loadGoogle":true}],"noCustomDefaults":true} /--></div>
+<!-- /wp:kadence/advancedbtn -->
+
+<!-- wp:spacer {"height":"40px"} -->
+<div style="height:40px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:heading {"level":3,"style":{"typography":{"fontSize":30}}} -->
+<h3 class="wp-block-heading" style="font-size:30px">2. The Sims 4 Cats &amp; Dogs</h3>
+<!-- /wp:heading -->
+
+<!-- wp:image {"align":"center","id":4260,"width":"700px","sizeSlug":"large","linkDestination":"custom"} -->
+<figure class="wp-block-image aligncenter size-large is-resized"><a href="https://musthavemods.com/best-sims-4-expansion-packs/"><img src="https://musthavemods.com/wp-content/uploads/2021/07/sims4catsanddogs-1024x576.jpg" class="wp-image-4260" alt="Beautiful Sim park with people, dogs, and a scenic waterfront view in The Sims 4, showcasing the vibrant outdoor community and enhanced with popular mods." style="width:700px"  > </a></figure>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>Brindleton Bay is one of my absolute favorite worlds. It's <strong>STUNNING</strong>!😍</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>I love the whole vibe of this coastal town. This may be because I have a personal fantasy of growing old, living in a cottage, and writing bestselling novels in a town much like Brindleton Bay. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>But besides that fact, this expansion pack is a must-have. You'll get cats, dogs, and the ability to own a vet clinic. Pets are such an integral part of our lives as humans and it's only fitting that our sims can have the same experience. Need I say more? </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The one downside to this expansion pack is that you have no control over your pets. It was a weird choice on the part of the Sims team in my opinion. Luckily, modders have given us the ability to control our pets with the <a aria-label="controllable pets mod (opens in a new tab)" class="ek-link" href="https://musthavemods.com/sims-4-playable-pets-mod/" target="_blank" rel="noreferrer noopener"><strong>controllable pets mod</strong></a>. </p>
+<!-- /wp:paragraph -->
+
+<!-- wp:kadence/advancedbtn {"uniqueID":"4256_e6d12b-8e","btns":[],"letterSpacing":""} -->
+<div class="wp-block-kadence-advancedbtn kb-buttons-wrap kb-btns4256_e6d12b-8e"><!-- wp:kadence/singlebtn {"uniqueID":"4256_0fa92b-62","text":"BUY NOW","link":"https://www.amazon.com/Sims-Cats-Dogs-Online-Game/dp/B07888WVKX?crid=S2NHXU6ZO4TF\u0026keywords=sims+4\u0026qid=1665164137\u0026qu=eyJxc2MiOiI1LjE0IiwicXNhIjoiNS41MiIsInFzcCI6IjUuMjMifQ%3D%3D\u0026sprefix=sims+4,aps,110\u0026sr=8-18\u0026linkCode=sl1\u0026tag=musthavemod08-20\u0026linkId=0cceee033d84276f680980b166604c05\u0026language=en_US\u0026ref_=as_li_ss_tl","target":"_blank","noFollow":true,"sponsored":true,"inheritStyles":"inherit","typography":[{"size":["","",""],"sizeType":"px","lineHeight":["","",""],"lineType":"","letterSpacing":["","",""],"letterType":"px","family":"","google":false,"style":"normal","weight":"regular","variant":"","subset":"","textTransform":"","loadGoogle":true}],"noCustomDefaults":true} /--></div>
+<!-- /wp:kadence/advancedbtn -->
