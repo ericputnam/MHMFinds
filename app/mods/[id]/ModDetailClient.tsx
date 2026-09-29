@@ -39,6 +39,7 @@ import {
   modDetailPath,
   saveFindsSignInHref,
 } from '@/lib/capture/modDetailFavorite';
+import { useModFavoriteState } from '@/lib/capture/useModFavoriteState';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -87,7 +88,10 @@ export default function ModDetailClient({
   );
   const trail = crumbs.slice(0, -1); // all but the current page
   const alsoIn = collections.slice(1, 4); // secondary collections, max 3
-  const [isFavorited, setIsFavorited] = useState(false);
+  // E138 (Cass, 2026-09-29): hydrated from GET /api/mods/[id]/favorite/ for
+  // signed-in visitors only (anonymous visitors make no request), so someone
+  // who already saved this mod sees "Favorited" and the saved offer state.
+  const [isFavorited, setIsFavorited] = useModFavoriteState(mod.id);
   const [selectedImage, setSelectedImage] = useState<string | null>(
     initialMod.thumbnail || initialMod.images?.[0] || null
   );
@@ -125,7 +129,7 @@ export default function ModDetailClient({
       }
       return 'error';
     },
-    [mod.id],
+    [mod.id, setIsFavorited],
   );
 
   const handleFavorite = async () => {
