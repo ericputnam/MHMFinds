@@ -33,6 +33,7 @@ if (process.env.DIRECT_DATABASE_URL) {
 }
 
 import { PrismaClient } from '@prisma/client';
+import { applyKnownHostFix, validateAffiliateLink } from '../lib/services/affiliateEarnings/linkValidator';
 
 const prisma = new PrismaClient();
 
@@ -308,6 +309,7 @@ async function collectCatalogOffers(target: CatalogTarget) {
     matchingThemes: target.matchingThemes,
     priority: target.priority,
     originalPrice: item.CurrentPrice ? Number(item.CurrentPrice) : null,
+    programId: target.programId,
   }));
 }
 
@@ -321,6 +323,8 @@ interface OfferInput {
   matchingThemes: string[];
   priority: number;
   originalPrice: number | null;
+  /** Impact CampaignId — used to self-heal known-broken deep-link hosts and to validate the link. */
+  programId: string;
 }
 
 async function upsertOffer(offer: OfferInput): Promise<'created' | 'updated' | 'skipped_retired'> {
@@ -330,18 +334,54 @@ async function upsertOffer(offer: OfferInput): Promise<'created' | 'updated' | '
   // Offers killed by the optimizer (validationStatus 'retired') stay dead —
   // re-syncing the catalog must never resurrect a proven non-converter.
   if (existing?.validationStatus === 'retired') return 'skipped_retired';
+
+  // Self-heal known-broken deep-link hosts (E134 — GTRacing's catalog feed
+  // deep-links via gtplayer.com, a host Impact rejects for this program) so a
+  // re-sync stops re-copying the same dead link every run.
+  const { programId, ...offerRest } = offer;
+  const { url: fixedUrl, fixed } = applyKnownHostFix(programId, offerRest.affiliateUrl);
+  if (fixed) console.log(`    (host-fixed: ${offerRest.affiliateUrl} -> ${fixedUrl})`);
+
+  // Never write validationStatus:'validated' on faith — this is the exact gap
+  // that let 110 dead GTRacing clicks go out as "validated" for months (E134).
+  const validation = await validateAffiliateLink({
+    affiliateUrl: fixedUrl,
+    campaignId: programId,
+    sid: SID,
+    token: TOKEN,
+  });
+
+  let validationStatus: string;
+  let isActive: boolean;
+  if (validation.outcome === 'ok') {
+    validationStatus = 'validated';
+    isActive = ACTIVATE;
+  } else if (validation.outcome === 'broken') {
+    validationStatus = 'invalid';
+    isActive = false;
+    console.log(`    ✗ BROKEN: ${validation.checks.map((c) => `${c.name}=${c.outcome} (${c.detail})`).join('; ')}`);
+  } else {
+    // unknown must never flip validationStatus either way — preserve whatever
+    // an existing row already had, and hold a never-before-seen offer back
+    // from serving until a future run can actually confirm it works.
+    validationStatus = existing?.validationStatus ?? 'pending';
+    isActive = existing ? existing.isActive : false;
+    console.log(`    ? UNKNOWN: ${validation.checks.map((c) => `${c.name}=${c.outcome} (${c.detail})`).join('; ')}`);
+  }
+
   const data = {
-    ...offer,
+    ...offerRest,
+    affiliateUrl: fixedUrl,
     // /api/affiliates/match ranks by finalScore desc; without this the new
     // audience-fit offers would sort below the legacy Amazon rows (which have
     // researched scores). Derive from priority: fit-ranked 60-90 range.
     finalScore: offer.priority + 20,
     network: 'impact',
     sourceType: 'impact',
-    validationStatus: 'validated',
+    validationStatus,
     personaValidated: true,
     personaScore: 5,
-    isActive: ACTIVATE,
+    isActive,
   };
   if (existing) {
     await prisma.affiliateOffer.update({ where: { id: existing.id }, data });
@@ -412,6 +452,7 @@ async function main() {
         matchingThemes: o.matchingThemes,
         priority: o.priority,
         originalPrice: null,
+        programId: target.programId,
       });
     }
   }
