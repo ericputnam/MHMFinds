@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-30
+- Tried: E144 (T0, PR #228): diagnosed 0 claim starts on the population, not the CTA. GA4 09-23→09-29: /creator/* 558 landing sessions, /submit-mod/ 1 view total, 0 with `?creator=`; DB: 0 ModSubmission rows source='Creator Claim' ever, 4 submissions lifetime (last 2026-01-10), 0 pending profiles. The CTA was server-rendered above the grid but a slate-500 footnote — and the visitor is a fan (~1 landing/page/week), not the creator. Shipped `CreatorClaimCard` in the hero: visible "Claim this page" + fan-forward "Send them this page" (copies the claim URL with `&ref=share`, GA4 `creator_claim_share`), hidden on verified profiles; hub copy no longer routes claims through the bare form.
+- Before → after: claim views 0/wk, share events 0 (no surface) → read 2026-10-14.
+- Verdict: MORE DATA (read 2026-10-14; keep if ≥10 `creator_claim_share` events OR ≥3 `/submit-mod/?creator=` views in 14d, with /creator/* landing 7d ≥95% of 558).
+- Next time: when a CTA reads 0 on 500+ sessions, ask who is in the sessions first — an ask aimed at 1-in-500 visitors needs the other 499 to carry it. Outreach (Q23) is still the only direct feed.
+
 ## 2026-09-29
 - Tried: (a) E137 creator outreach package (T2, queued): top 20 hub creators by 28d download clicks, page + claim URL per row, template, and the isCreator decision in one file. (b) E137-b (T0, PR #217 `949b536`): 'creator' added to page-rpm OTHER_APP_PREFIXES; class test covers every NEXTJS_PREFIXES entry and every app/ route dir, red pre-fix on exactly /creator/ (2 cases).
 - Before → after: /creator/* landing sessions 116 (09-15→09-21) → 558 (09-22→09-28, GA4 apex). The top 20 hold only 202/1,408 28d clicks, 5–26 each; 11/20 publish mainly on TSR, and 8 are TSR-only with no contact route of their own. Onboarded 0, claims 0.
@@ -55,10 +61,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-21; keep if `/creator/*` landing sessions ≥ 200 in the 28d to the read date OR ≥ 20 distinct creator pages with ≥ 1 GSC click, with `/mods/*` GSC clicks ≥ 95% of 28d baseline and mod-page session RPM ≥ 95% of the prior 4 weeks).
 - Next time: the creator-name demand was hiding in `/mods/[id]` query data, not in any creator surface — read GSC queries by *page* for a name before assuming a hub page has no demand. Outreach to the top slugs (Seoulsoul-sims 19,270 downloads, brandysims, Syboulette 67 mods) now has a URL to offer; the template is still T2.
 
-## 2026-09-21
-- Tried: `kids-cc` collection page **and the class bug behind it, in one PR** (T0, PR #136, `7816cbe`, E72). On 09-20 I rejected this cluster — 752 rows on infant/toddler/child, only 45.6% of titles carrying a kid word — and wrote…
-- Before → after: `ageGroups` kid axis **752 rows / 343 title-supported (45.6%) → 686 / 686 (100%)** — 362 added, 428 stripped, 35 rewritten, 289 no-ops over a 1,114-row union population, verified by a separate read of the changed…
-- Verdict: MORE DATA (read 2026-10-19; keep if ≥15 engaged sessions in the 7d to the read date **and** aggregate collection-page engaged sessions ≥95% of 1,069 **and** `/sims-4-kids-cc/` impressions ≥80% of 153 — i.e. the page has…
-- Next time: three things. **(1) Distinguish a class bug from heterogeneous junk by asking whether one rule is uniformly wrong, and check both directions.** 09-20's nails case was six wrong rows for six reasons and correctly got `…
-
-_Older entries (up to 2026-09-20) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
