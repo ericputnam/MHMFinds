@@ -326,6 +326,7 @@ describe('sendWeeklyNewsletter — flag on, real send path, mailer mocked', () =
     process.env = { ...ORIGINAL_ENV };
     vi.doUnmock('@/lib/prisma');
     vi.doUnmock('@/lib/services/bulkMailer');
+    vi.doUnmock('fs');
     vi.resetModules();
   });
 
@@ -350,6 +351,14 @@ describe('sendWeeklyNewsletter — flag on, real send path, mailer mocked', () =
       };
       return { prisma: p, default: p };
     });
+    // The file ledger is best-effort on Vercel but real on a laptop — never let a test append
+    // to reports/funnel/newsletter-sends.jsonl (a first run of this test did).
+    const appendFileSync = vi.fn();
+    vi.doMock('fs', async (orig) => {
+      const actual = await orig<typeof import('fs')>();
+      const patched = { ...actual, appendFileSync, mkdirSync: vi.fn() };
+      return { ...patched, default: patched };
+    });
     const unsub = 'https://musthavemods.com/api/unsubscribe/?e=abc&t=def';
     let renderedHtml = '';
     const sendBulk = vi.fn(async (opts: any) => {
@@ -373,6 +382,7 @@ describe('sendWeeklyNewsletter — flag on, real send path, mailer mocked', () =
     expect(result).toMatchObject({ success: true, sent: 2, recipients: 2 });
     // Counts-only durable ledger — never an address.
     expect(logCreate).toHaveBeenCalledTimes(1);
+    expect(appendFileSync).toHaveBeenCalled(); // intercepted, not written
     expect(JSON.stringify(logCreate.mock.calls[0])).not.toMatch(/@example\.com/);
 
     expect(renderedHtml).toContain(unsub);
