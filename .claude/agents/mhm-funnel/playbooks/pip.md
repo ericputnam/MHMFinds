@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-30
+- Tried: E142 top-up #6 (T0, SD-10 floor; Supabase only, tool unchanged since #222): 21 sessions-ranked rows (ranker 28 destinations/140 ids; 12 destinations used) to 09-30/10-01/10-02, 1/URL/day. Filter selectivity printed: plugin guard dropped 0 in the top-up but 1 in the ranker on the same 1000-row pool (16 managed destinations) — an upstream drop, not a blind filter.
+- Before → after: runway 0.94 → 1.46 d (38 → 59 @ 40.50/day queue-posted-14d); SEO 58 → 87/100 (0/21 → 21/21 passing) on an `--ids` re-read; read-back 21/21, created_at max 2026-03-25, 0 plugin rows. E76 read: 6 of 7 mornings (09-23→09-29) 🔴 while the writer inserted 48/0/24/28/0/48/20 — every 🔴 was the runway<3 d clause. E82 read: inserts/day 48/0/24/28/0/48/20/0 (168 in 8 d), 44 real-dated at insert, 151 plugin rows posted on their day, 310 at placeholder, 0 dated ahead — inflow alive and lumpy (2–3 articles/wk), never ≥12/day dated ahead. Direct +38.5%: top-70 landing×hour cells 760 vs 740 → the +2k is long-tail (9,278 cells), no page/hour spike.
+- Verdict: E142 MORE DATA (read 10-08: Pinterest sessions to the 12 destinations vs 4,500/7d (GA4 09-22→09-28)). E76 KILL as shipped (E141 #218 replaced the rule; 09-30 reads 🟡 correctly). E82 KILL the ≥12/day rule, KEEP the read.
+- Next time: the cap is a treadmill — six 21-row top-ups and runway has never held above 2.44 d (0.94 d this morning). Grade the floor by rows the plugin dates on schedule, not by top-ups landed.
+
 ## 2026-09-29
 - Tried: E135 (T0, PR #222 `6b0b47a`) — "writer's own rows" cannot be read from `Wordpress Post ID`: it is set on 1610/1610 stranded rows and 1445/1445 placeholder rows, so the top-up's writer filter dropped 0 rows on every run and top-up #4 promoted 2 plugin-scheduled rows (11848 posted, 11849 reverted). The writer's schedule is placeholder date + (created_at ≥ 2026-09-21 OR destination has a row created since); the ranker now drops those at the source (1 of 1000 today, 16 managed destinations) and the top-up refuses (exit 2) if attribution cannot be read. Tests 6/6 red pre-fix.
 - Before → after: top-up #5 with the guarded tool: 21 rows / 8 destinations / 0 plugin rows; runway 1.13 → 1.67 d (44 → 65 @ 39.0/day, queue-posted-14d basis); SEO 60 → 89 on re-read. Pre-reads 09-30: E76 4 false 🔴 in 7 mornings (fix is Ops #218); E82 writer rows/day 25/48/0/24/28/0/48/20, 107 plugin rows posted in 7d.
@@ -53,17 +59,5 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: writer rows since the 09-21 cron: 268/25/48 per day (341), **341/341 dated `2025-01-01`** (Aug 1–Sep 4: 25/474 = 5%) → window inflow **0/day**. Forward queue = Q12 slice only, 7/day 09-24→10-04 (77 rows, dry **2026-10-05**); pins/24h already 35 → 15. Top-up formula 77 ÷ 32.5 = 2.37 d ≥ 2.0 → no write. No queue change.
 - Verdict: E82 decision row — runway is NOT self-healing; the cron writes drafts, not scheduled pins (`posts_2_supabase_server.py:401` hard-codes `post_date = '2025-01-01'`, "placeholder so n8n doesn't pick up entries prematurely"). Q11 follow-up is Tier 2 (operator's script) — package `reports/funnel/drafts/q11-writer-post-date-2026-09-23.md`. E77 MORE DATA (read 2026-10-05) only if a non-template proposal mode ships first.
 - Next time: a runway formula that divides inventory by the *trailing* drain reads healthier as the drip starves (77 ÷ 15 = 5.1 d) — threshold the allotment (rows/day dated ahead vs the posted rate you want), not the residue. Same conflation makes the 🔴 writer flag fire on runway <3 d with an insert 0.1 h old ([ops] request filed).
-
-## 2026-09-21 (writer-liveness)
-- Tried: E76 — writer-liveness monitor for Q11 (T0, PR #142, in-repo half only per the operator's server-touch lockout while the Q11 scp was in progress). `assessWriterLiveness()`/`writerLivenessExitC…
-- Before → after: no writer-liveness signal existed before today. Real `check-pinner.sh` run, 2026-09-21T11:57Z: newest writer-attributed row `id 11420`, `created_at 2026-09-04T08:46:31.894735+00:00`…
-- Verdict: MORE DATA (read 2026-09-22: does the flag flip to 🟢 within one scoreboard run of the Q11 cron landing, or of a manual schedule press; keep if 0 false 🔴/🟡 on any morning a writer row actuall…
-- Next time: queue depth (runway) and queue inflow (writer liveness) are different failure modes with very different lag — depth can hide a dead writer behind borrowed inventory for two-plus weeks, ex…
-
-## 2026-09-21 (pin SEO)
-- Tried: E77 (PR #139) — `scripts/agents/pin-seo-audit.py` (T1): scores the next 14 d of `n8n_pinterest_posts` on title 40-100 chars + slug keyword, description 100-400 chars, alt text (= Post Title at send time), board fit. `--apply` writes only `Post Title`/`AI Text Slug` on rows whose template proposal re-scores clean; `Is Posted=false` guard; rollback ledger first.
-- Before → after: 09-21 audit `reports/funnel/pin-seo-audit-2026-09-21.md`: 37 rows, 1/37 passing, mean 72/100; no write.
-- Verdict: MORE DATA (read 2026-10-05; keep if mean ≥90 after apply, treated sessions hold).
-- Next time: writer descriptions run 400-800+ chars — length fails before quality is scored; root cause is the writer's prompt, out of scope.
 
 _Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
