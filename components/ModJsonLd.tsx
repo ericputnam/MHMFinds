@@ -7,6 +7,7 @@ import {
   buildModBreadcrumb,
   modCanonicalUrl,
 } from '@/lib/seo/modBreadcrumb';
+import { modLastmod } from '@/lib/seo/modLastmod';
 
 interface ModJsonLdProps {
   mod: Mod;
@@ -16,6 +17,26 @@ interface ModJsonLdProps {
    * the visible trail in ModDetailClient.
    */
   collections?: CollectionLink[];
+}
+
+/**
+ * `dateModified` for the SoftwareApplication node. Never fed by `updatedAt`
+ * (see lib/seo/modLastmod.ts); omitted rather than thrown if createdAt is
+ * unparseable, and never earlier than `datePublished`.
+ */
+function contentDateModified(mod: Mod): { dateModified?: string } {
+  let modified: string;
+  try {
+    modified = modLastmod({ createdAt: mod.createdAt, lastScraped: mod.lastScraped });
+  } catch {
+    return {};
+  }
+  const published = mod.publishedAt ? new Date(mod.publishedAt) : null;
+  if (published && !Number.isNaN(published.getTime())) {
+    const p = published.toISOString().slice(0, 10);
+    if (p > modified) modified = p;
+  }
+  return { dateModified: modified };
 }
 
 /**
@@ -60,9 +81,10 @@ export function ModJsonLd({ mod, collections = [] }: ModJsonLdProps) {
     ...(mod.publishedAt
       ? { datePublished: new Date(mod.publishedAt).toISOString().split('T')[0] }
       : {}),
-    ...(mod.updatedAt
-      ? { dateModified: new Date(mod.updatedAt).toISOString().split('T')[0] }
-      : {}),
+    // E143 (2026-09-30): the same honest date as this page's sitemap
+    // <lastmod> — max(createdAt, lastScraped), never the Prisma @updatedAt
+    // column, which every download-counter write and retag pass bumps.
+    ...contentDateModified(mod),
   };
 
   // Home › Sims 4 › <Collection> › <Mod> — same builder as the visible nav.
