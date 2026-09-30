@@ -795,8 +795,10 @@ run died with `Prompt is too long`.
   follow the 308; RFC 8058 one-click POSTs do not.
 - **Any new top-level `app/` directory needs a `NEXTJS_PREFIXES` entry in the same PR**, or
   middleware proxies it to WordPress and the visitor gets a 404. Invisible to `next build`.
-  Paths whose first segment contains a dot are exempt by construction (`middleware.ts:65` skips
-  them and the matcher excludes `favicon.ico`), so icon/manifest/static files need no entry.
+  It also needs `OTHER_APP_PREFIXES` in `scripts/agents/page-rpm-lib.ts`, or its RPM is counted
+  as blog (#217 test parses middleware). Paths whose first segment contains a dot are exempt by
+  construction (`middleware.ts:65` skips them and the matcher excludes `favicon.ico`), so
+  icon/manifest/static files need no entry.
 - **`output: 'standalone'` only ships files it has traced, and it cannot see an `fs` read.** Any
   route that reads a repo-committed file via `fs.readFileSync(process.cwd() + …)` instead of
   `import` needs a matching `experimental.outputFileTracingIncludes` entry in `next.config.js`
@@ -817,6 +819,10 @@ run died with `Prompt is too long`.
   placeholder — the dry-run preview is the artifact a human signs off on.
 - **A crawler/feed surface degrades to partial content, never a 500.** Per-query `.catch()` →
   empty list → 200. A poller that gets an error may back off for days.
+- **`next.config.js` stamps every `/api/*` response `public, s-maxage=60`** and overrides a route's
+  own `no-store` (seen under `next start`, #219). A per-user GET (favorites, session state) must not
+  depend on its own header. Add a per-request nonce, or exempt the path in `next.config.js`
+  (Tier 2). Check `x-vercel-cache` after deploy.
 - **GET must never mutate** on any consent endpoint (unsubscribe, confirm). Link scanners and mail
   prefetchers follow GET links. Make the POST idempotent.
 - **Never let an email carrying a live secret ride the shared notifier's logging path** — pass
@@ -957,48 +963,39 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-28 — eight morning merges + seven evening; Q13 host-split 301 shipped
+### 2026-09-29 — nine merges (#214, #216–#222, daily #224), zero incidents
 
-15 PRs (#195, #199–#205, #207–#213) plus daily #206; every after-merge PASS except #201
-(INCONCLUSIVE: blog curl could not run — closed by a follow-up `--check` PASS, not by re-grading).
-The 09-27 section is in the archive.
-- **Ship the loop-breaker before the redirect.** A blanket 301 on `blog.*` would have bounced the
-  Next.js proxy's own fetch back to the apex → middleware → `blog.*` again, an infinite loop as
-  502s on every article. #207 made every proxy fetch carry `X-MHM-Proxy: nextjs-edge` (inert, with
-  a test) and only then did #208 add `mhm_host_split_301`, which skips that header, logged-in
-  users, previews, feeds, admin and non-GET/HEAD. The JS fallback builds its hostnames from split
-  strings because **middleware rewrites blog-origin hostnames inside proxied HTML** — a literal
-  would have become a self-redirect. The nginx draft needed a v2 because `ads.txt` looped: exclude
-  files. **Still open:** the markers are in `CRITICAL_MARKERS`, but `check-host-split.sh` is not
-  wired into `check-blog-sidebar.sh`/`deploy-verify.sh`, so nothing live-checks the 301 daily.
-- **A kill verdict measured through a broken pipe is void, not negative.** Affiliates were killed
-  on $0 (E13) while 49% of on-site clicks went to `gtplayer.com`, a host Impact rejects for that
-  program. Three sync scripts set `validationStatus: 'validated'` with no link check, so a DB-only
-  fix reverts on the next sync — fix the writer, and never name a flag for a check nobody ran
-  (E134, #213).
-- **A step that runs "after, if at all" does not run.** Three of four pin top-ups went out with
-  ~62–67/100 copy because the SEO rewrite was a separate command. #205 runs it *inside* the
-  top-up, before the re-date, fail-open (a WP/Supabase error WARNs, never blocks the floor), with
-  its own rollback file: 19/21 rewritten, mean 67 → 89.
-- **Every outbound `fetch(` in a runner step carries a signal, and a timeout is unknown.** Only
-  the WordPress read in `indexnow-submit.ts` was bounded; a hung `api.indexnow.org` would stall
-  step 0c2 and everything after it. #199 bounds both calls and scans that every `fetch(` has a
-  `signal` (vacuity ≥3); a POST timeout grades COULD-NOT-RUN (exit 2). Same for the Patreon
-  Members walk (#201): 30 s/page, 180 s budget, a capped walk with `links.next` set is an error.
-- **A smoke set that never renders a route class cannot catch it.** `deploy-verify` had never
-  rendered one of the 29 collection routes; `bedroom-cc` served a 404 under a PASS row on 09-24.
-  #200 picks one per run from `getCollectionsForGame('sims-4')`, rotated by UTC day — never a
-  literal slug — and grades it via the shared `AD_KINDS`.
-- **A self-serve claim must never write the public identifier.** `/creator/[slug]/` joins
-  `CreatorProfile` on `handle === slug`, so a claim creates a `pending-<slug>-<id8>` handle and only
-  an admin promotes it (#195, #204: 409 if the slug is taken or mods already link to the row).
-- **Fix the class at ingest, not only the rows.** #197 pinned 76 room-titled rows typed as CAS;
-  #202 makes the detector *and* the scraper's URL-category fallback refuse a CAS type for a
-  room-titled row unless the title itself names it (poses, lashes), falling back to NULL.
+The 09-28 section is in the archive.
+- **Prisma `@updatedAt` is not a content date.** Every `downloadCount` increment and retag pass
+  bumps it, so `/sitemap-mods.xml` claimed 6,070 of 16,524 pages changed in 28 d on a catalog that
+  grew 673 — and new mods lost the one crawl signal a sitemap gives. Use `max(createdAt,
+  lastScraped)` (`lib/seo/modLastmod.ts`, #221). E37 had fixed the collection sitemap and left
+  this sibling on the same bug.
+- **A filter that removes 0 rows on every run is testing a field it cannot see.**
+  `filter_writer_rows` read `Wordpress Post ID`, which the revive `SELECT_COLS` never fetched, so
+  top-up #4 re-dated two of the writer plugin's scheduled rows (#222). Treat "dropped 0/0" as a
+  vacuity failure, and fail closed (exit 2, no write) when the attribution read fails.
+- **One flag answers one question.** The writer-liveness flag went 🔴 on low *runway* while the
+  writer was inserting 20 rows/day: 6 of 7 mornings were false reds, and the runway already had
+  its own 🟡 (#218). Depth and inflow are separate readings. Backtest a flag rule on the stored
+  scoreboard JSONs before you ship it.
+- **The host-split 301 redirects your own tools too.** A server-side `fetch` of `blog.*`
+  without `X-MHM-Proxy: nextjs-edge` follows the 301 without error. Staging checks were reading
+  prod (#216). Any probe of a specific host must send the header or use `redirect: 'manual'` and
+  assert the final URL. Same PR: `wp eval-file` silently no-ops on ~150–200 KB payloads (read a side
+  file), and JS `.length` counts UTF-16 units, not bytes (`Buffer.byteLength`).
+- **A one-off repair derives its targets from a query, asserts the approved plan shape, and
+  aborts with no writes on any mismatch.** It writes the rollback file before the first write
+  (#214 GTRacing: 4 host-fixes + 1 retire). A re-run is then safe and self-correcting.
+- **Still open:** `check-host-split.sh` is still not wired into `check-blog-sidebar.sh` or
+  `deploy-verify.sh`. `check-pinner.sh` step 2b still mirrors the old writer-runway override
+  (#218). The full `npx vitest run` reported 3 pre-existing failures on `main` (`play-page.test.ts`
+  `AD_KINDS` regex drift, `ModDetailPage.test.tsx` aria-name drift, #214), and the targeted
+  ship-protocol suites cannot see them.
 
 ---
 
-*Last compound review: 2026-09-28*
+*Last compound review: 2026-09-29*
 
 ---
 

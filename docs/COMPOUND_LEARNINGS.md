@@ -2000,3 +2000,42 @@ The 09-26 section (open-redirect fix, network-control smoke, docs-only deploys) 
 
 
 _Status 2026-09-28: the last bullet's premise was wrong — the writer's plugin *does* date placeholder rows on each article's scheduled day (#212); Q11-b closed with no writer-cadence change._
+
+### 2026-09-28 — eight morning merges + seven evening; Q13 host-split 301 shipped
+
+15 PRs (#195, #199–#205, #207–#213) plus daily #206; every after-merge PASS except #201
+(INCONCLUSIVE: blog curl could not run — closed by a follow-up `--check` PASS, not by re-grading).
+The 09-27 section is in the archive.
+- **Ship the loop-breaker before the redirect.** A blanket 301 on `blog.*` would have bounced the
+  Next.js proxy's own fetch back to the apex → middleware → `blog.*` again, an infinite loop as
+  502s on every article. #207 made every proxy fetch carry `X-MHM-Proxy: nextjs-edge` (inert, with
+  a test) and only then did #208 add `mhm_host_split_301`, which skips that header, logged-in
+  users, previews, feeds, admin and non-GET/HEAD. The JS fallback builds its hostnames from split
+  strings because **middleware rewrites blog-origin hostnames inside proxied HTML** — a literal
+  would have become a self-redirect. The nginx draft needed a v2 because `ads.txt` looped: exclude
+  files. **Still open:** the markers are in `CRITICAL_MARKERS`, but `check-host-split.sh` is not
+  wired into `check-blog-sidebar.sh`/`deploy-verify.sh`, so nothing live-checks the 301 daily.
+- **A kill verdict measured through a broken pipe is void, not negative.** Affiliates were killed
+  on $0 (E13) while 49% of on-site clicks went to `gtplayer.com`, a host Impact rejects for that
+  program. Three sync scripts set `validationStatus: 'validated'` with no link check, so a DB-only
+  fix reverts on the next sync — fix the writer, and never name a flag for a check nobody ran
+  (E134, #213).
+- **A step that runs "after, if at all" does not run.** Three of four pin top-ups went out with
+  ~62–67/100 copy because the SEO rewrite was a separate command. #205 runs it *inside* the
+  top-up, before the re-date, fail-open (a WP/Supabase error WARNs, never blocks the floor), with
+  its own rollback file: 19/21 rewritten, mean 67 → 89.
+- **Every outbound `fetch(` in a runner step carries a signal, and a timeout is unknown.** Only
+  the WordPress read in `indexnow-submit.ts` was bounded; a hung `api.indexnow.org` would stall
+  step 0c2 and everything after it. #199 bounds both calls and scans that every `fetch(` has a
+  `signal` (vacuity ≥3); a POST timeout grades COULD-NOT-RUN (exit 2). Same for the Patreon
+  Members walk (#201): 30 s/page, 180 s budget, a capped walk with `links.next` set is an error.
+- **A smoke set that never renders a route class cannot catch it.** `deploy-verify` had never
+  rendered one of the 29 collection routes; `bedroom-cc` served a 404 under a PASS row on 09-24.
+  #200 picks one per run from `getCollectionsForGame('sims-4')`, rotated by UTC day — never a
+  literal slug — and grades it via the shared `AD_KINDS`.
+- **A self-serve claim must never write the public identifier.** `/creator/[slug]/` joins
+  `CreatorProfile` on `handle === slug`, so a claim creates a `pending-<slug>-<id8>` handle and only
+  an admin promotes it (#195, #204: 409 if the slug is taken or mods already link to the row).
+- **Fix the class at ingest, not only the rows.** #197 pinned 76 room-titled rows typed as CAS;
+  #202 makes the detector *and* the scraper's URL-category fallback refuse a CAS type for a
+  room-titled row unless the title itself names it (poses, lashes), falling back to NULL.
