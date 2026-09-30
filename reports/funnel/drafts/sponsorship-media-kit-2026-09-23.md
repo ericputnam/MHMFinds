@@ -12,6 +12,8 @@ Every number below has a source and a date. Nothing is rounded up. Demographics 
 
 **Audience, last 28 days (GA4, 2026-08-24 → 2026-09-20)**
 
+> **Re-checked 2026-09-30 (Rio, Q17 re-pitch)** — GA4 2026-09-02 → 2026-09-29: sessions **356,828** (desktop 334,098 = 93.6%), users **211,206**, pageviews **561,357**, desktop engagement 73.3%; hub `/new-sims-4-mods-2026/` 2,030 GA4 pv/week (Mediavine 1,700) ≈ 7,000+ pv/month. Every figure in the table below and in both emails is at or below the current read, so the kit under-claims; the emails were refreshed to the new 28-day numbers, nothing else changed.
+
 | | |
 |---|---|
 | Sessions | **354,348** |
@@ -77,9 +79,9 @@ Both are above display-ad rates (site page RPM $10.97) on purpose: this is a sin
 
 > Subject: Presented-by slot on MustHaveMods' new-mods hub (Oct)
 >
-> Hi [name] — I run MustHaveMods.com, a Sims 4 CC discovery site: 354K sessions and 207K users in the last 28 days, 94% on desktop, 39% US.
+> Hi [name] — I run MustHaveMods.com, a Sims 4 CC discovery site: 357K sessions and 211K users in the last 28 days, 94% on desktop, 39% US.
 >
-> For October I'm opening one "presented by" line at the top of our new-mods hub (≈6,300 views/month) plus our newsletter. One sponsor, exclusive to your category, $300 for the month. Your logo and link, copy written by us, you approve it.
+> For October I'm opening one "presented by" line at the top of our new-mods hub (≈7,000 views/month) plus our newsletter. One sponsor, exclusive to your category, $300 for the month. Your logo and link, copy written by us, you approve it.
 >
 > Want the one-page kit? Reply and I'll send it, or say no and I won't follow up.
 >
@@ -89,7 +91,7 @@ Both are above display-ad rates (site page RPM $10.97) on purpose: this is a sin
 
 > Subject: Sponsor a PC-gaming audience for a month — MustHaveMods
 >
-> Hi [name] — MustHaveMods.com is a Sims 4 mod site with 354K sessions/28d, 93.6% desktop, average session 6 minutes. Readers are actively installing content into a PC game.
+> Hi [name] — MustHaveMods.com is a Sims 4 mod site with 357K sessions/28d, 93.6% desktop, average session 6 minutes. Readers are actively installing content into a PC game.
 >
 > I'm offering a single month-long site sponsorship ("presented by" on our homepage and new-mods hub, ≈23K sponsored views, plus 4 Pinterest pins to your page) for $750. Category-exclusive. One-page kit attached.
 >
