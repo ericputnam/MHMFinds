@@ -132,9 +132,15 @@ describe('Zod schema accepts an optional, validated claim field', () => {
 
 describe('wiring: the claim link, the form and the API agree', () => {
   it('CreatorPageClient links "Claim this page" through claimHref(slug), never bare /submit-mod/', () => {
-    const src = stripComments(read('app/creator/[slug]/CreatorPageClient.tsx'));
-    expect(src).toMatch(/claimHref\(\s*data\.slug\s*\)/);
-    expect(src).not.toMatch(/href=["']\/submit-mod\/["']/);
+    // E144 moved the link into components/creator/CreatorClaimCard.tsx; the
+    // page must hand it data.slug and the card must build the href with
+    // claimHref(slug). Neither file may fall back to the bare form URL.
+    const page = stripComments(read('app/creator/[slug]/CreatorPageClient.tsx'));
+    expect(page).toMatch(/<CreatorClaimCard[\s\S]*?slug=\{data\.slug\}/);
+    expect(page).not.toMatch(/href=["']\/submit-mod\/["']/);
+    const card = stripComments(read('components/creator/CreatorClaimCard.tsx'));
+    expect(card).toMatch(/href=\{claimHref\(\s*slug\s*\)\}/);
+    expect(card).not.toMatch(/href=["']\/submit-mod\/["']/);
   });
 
   it('the /submit-mod/ form reads the claim param and posts the claim field', () => {

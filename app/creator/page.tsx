@@ -113,10 +113,15 @@ export default async function CreatorHubPage() {
               their hair, clothes, furniture, build/buy and gameplay mods with working download links. Ranked by
               downloads first, then the full list A–Z.
             </p>
-            <p className="text-sm text-slate-500">
-              Are you a creator?{' '}
-              <a href="/submit-mod/" className="text-sims-pink hover:underline">Submit your mods</a> to claim
-              your page · See the{' '}
+            {/* E144: the bare /submit-mod/ form cannot claim a page (the claim
+                needs the slug, E122) — send creators to their own page's
+                "Claim this page" instead, and keep the form for creators the
+                catalog has not scraped yet. */}
+            <p className="text-sm text-slate-400" data-testid="hub-creator-cta">
+              Are you one of these creators? Open your page below and use{' '}
+              <span className="text-slate-200">“Claim this page”</span> to link it to your account. Not
+              listed yet?{' '}
+              <a href="/submit-mod/" className="text-sims-pink hover:underline">Submit your mods</a> · See the{' '}
               <a href="/top-creators/" className="text-sims-pink hover:underline">verified creator leaderboard</a>
             </p>
           </div>
