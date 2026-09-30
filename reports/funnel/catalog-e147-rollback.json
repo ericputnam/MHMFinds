@@ -1,0 +1,457 @@
+{
+ "writtenAt": "2026-09-30T10:54:27.955Z",
+ "mode": "apply",
+ "facets": [
+  "bathroom",
+  "kitchen",
+  "residential",
+  "lot",
+  "holidays"
+ ],
+ "rows": [
+  {
+   "id": "cmijo06e300myoxc8zm37gwls",
+   "title": "Stainless Steel Fridge and Stove",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijkg63v0002oxc8d6xmic1x",
+   "title": "Kitchen Enya Part 1",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8wtdp00s0oxy8kfsvki8a",
+   "title": "Bathroom Delight",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky94ghr00nuoxhcbxrds4d8",
+   "title": "Cottonwood Kitchen",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijo0fa400n4oxc8agrh7mxp",
+   "title": "Industry Kitchen Appliances",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmknfb7260078oxolm8xlqxcj",
+   "title": "Naturalis Pantry Wall Shelves CC",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8wrsd00r9oxy8ilexu6x6",
+   "title": "Mix It Bathroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijlmhg7006ioxc88jn4hs9i",
+   "title": "Custom Kitchen Appliance: Rice Cooker",
+   "from": "kitchen",
+   "to": "clutter"
+  },
+  {
+   "id": "cmkq9lc8m002loxvgs3l6yqzm",
+   "title": "Sims 4 Bathroom Essentials",
+   "from": "bathroom",
+   "to": null
+  },
+  {
+   "id": "cmkq9ivvr002doxvgkjcdc0jv",
+   "title": "Hamptons Sims 4 bathroom Addon",
+   "from": "bathroom",
+   "to": null
+  },
+  {
+   "id": "cmim8wrwr00rboxy8l0vxhss3",
+   "title": "Sims 4 Modern Bathroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmikxi8v0000iox9ef38qnsuv",
+   "title": "Onda Shower",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky94mni00nvoxhcjex1wzpc",
+   "title": "Kitchen Time Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkq9ku6w002joxvg5zklajal",
+   "title": "Serenity Bathroom CC for Sims 4",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkxfs6vc000zoxj3pjonud24",
+   "title": "2 Pro Pantry",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmky66am900f3oxhcjhuixj9x",
+   "title": "Modern Kitchen Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijkgt9o000ioxc8acoqwibw",
+   "title": "Kitchen Country",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky93mwu00nroxhc37thyidv",
+   "title": "Chop Chop! Kitchen Set Part 1",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmku2mx27001yoxkzimot3phr",
+   "title": "Pink Bathroom Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky8uzsv00n1oxhcfv80xnr8",
+   "title": "Chalk Sims 4 Kitchen CC",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmii5lt7p0035oxkzm9pjhjui",
+   "title": "Aurum Bedroom Decorations",
+   "from": "holidays",
+   "to": "decor"
+  },
+  {
+   "id": "cmim8wst800rqoxy8098kqkzw",
+   "title": "Orbita Tub",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0lqwm0009oxeeqd1tlr61",
+   "title": "Bathroom Baker Shower",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmik9mvi40076oxk7jmz2pomc",
+   "title": "Merrit Kitchen",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky8ve3j00n2oxhc809bt6ot",
+   "title": "Herbalist Sims 4 Kitchen CC",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkq9jvgc002goxvgc6llx4bx",
+   "title": "Sabra Bathroom Set for Sims 4",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim9n4j800iwoxy7yhjrhmjx",
+   "title": "Bambino Toddler Bedroom CC Pack",
+   "from": "holidays",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkq9k73d002hoxvgmw5j28b7",
+   "title": "Sims 4 Washroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil1g91900dgoxeesr6icood",
+   "title": "Ariel Bathroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0y1zs005voxeedhswgkoz",
+   "title": "Stockholm Fridge Refrigerator",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0y59u005xoxeeddv6q8rf",
+   "title": "The Refrigerator",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmku20w36001roxkzz82j42dn",
+   "title": "Cottage Dreams Bathroom CC",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijo0gub00n5oxc8m026xkal",
+   "title": "Ethel Kitchen Part 2",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8wrnr00r7oxy83d32t36p",
+   "title": "Baysic Bathroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8wtbk00rzoxy8k6aopcrs",
+   "title": "Oceane Bathroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0yfmn0064oxeee45cjzz2",
+   "title": "Country Cottage Refrigerator",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0yd8i0063oxeekt8pcu99",
+   "title": "Isla Refrigerator",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0yjsw0065oxee6zcldq29",
+   "title": "Dasyatis Refrigerator",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8wsp900rooxy848ymulhy",
+   "title": "Zone Bathroom",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijkg4rf0001oxc8qy5ec080",
+   "title": "Bathroom Country",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0l7ya0000oxeeoo53utnb",
+   "title": "Obal Shower",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmik9n6ih007doxk7r7xm7kj8",
+   "title": "Korea Retro Bathroom Set Part 1",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0lojq0008oxeeu68chtrt",
+   "title": "Regenerate Shower",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0xg41005moxeefi5ehy9p",
+   "title": "Rundown Fridge",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkq9l42c002koxvg8tldddwt",
+   "title": "Sims 4 Modern Bathroom",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkq9imw4002coxvgv7a23j0c",
+   "title": "Serene Sims 4 Bathroom CC",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0lmqk0007oxeep7fjeco9",
+   "title": "Ragoon Shower",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijnscv300imoxc8hrugqgns",
+   "title": "Fleur kitchenware Pt.I",
+   "from": "holidays",
+   "to": "clutter"
+  },
+  {
+   "id": "cmky8znk800neoxhc81y1tmw1",
+   "title": "Green Witchy Kitchen Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky8zwel00nfoxhc94ca14pf",
+   "title": "Sims 4 Vanilla Kitchen",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky91gql00nkoxhc9961t0s8",
+   "title": "IRL Kitchen Item Collection",
+   "from": "lot",
+   "to": null
+  },
+  {
+   "id": "cmky923sv00nmoxhctpliubdy",
+   "title": "Stylish-Wood Signature Kitchen",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky938oc00nqoxhckx0vnr96",
+   "title": "Sunwoven Kitchen Appliances",
+   "from": "lot",
+   "to": null
+  },
+  {
+   "id": "cmijn12i900adoxc87r0ctg9w",
+   "title": "Grandma’s Kitchen Utensil Rack",
+   "from": "residential",
+   "to": "clutter"
+  },
+  {
+   "id": "cmknf8pu7001voxolokw5sue6",
+   "title": "Functional Bathroom Set",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8wt1e00ruoxy8zuj91ai8",
+   "title": "Elen bathroom",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijkh25v000ooxc828smm9j4",
+   "title": "Duck Egg Blue Farmhouse Kitchen",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmknfbcg0007toxolsjbrtj0t",
+   "title": "Shower Tweaks",
+   "from": "bathroom",
+   "to": "script-mod"
+  },
+  {
+   "id": "cmky8y8xz00nboxhcqerhp411",
+   "title": "Cozy Kitchen CC for Sims 4",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky299w400cfoxhcntx0qs1t",
+   "title": "3 Apratuka Bathroom Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmku1zbg1001ooxkz67b3hiar",
+   "title": "3 Kawaii Bathroom Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0lc920002oxeejspwudw9",
+   "title": "Xero Shower",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky92oki00nooxhcfmek09an",
+   "title": "Arc Kitchen Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky90tpl00nioxhcm45aq4fl",
+   "title": "Sims 4 Grove Kitchen Set",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmttziccy00agoxfe44m5qc5r",
+   "title": "DelSol Part 9: The Kitchen Appliances",
+   "from": "lot",
+   "to": null
+  },
+  {
+   "id": "cmikxi1wt000fox9e0l4l886p",
+   "title": "Bidet As It May Shower Tub Glass Combo",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0z3zu006joxeeca9uhkhu",
+   "title": "Love The Less Kitchen Fridge",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkxfrmyi000xoxj3sm2mwtva",
+   "title": "Annam Appliances",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmikxi71p000hox9ewk2azjcs",
+   "title": "Silky Intentions Shower",
+   "from": "bathroom",
+   "to": "furniture"
+  },
+  {
+   "id": "cmsmbkxv600a5oxeu1396vsu5",
+   "title": "Lovely Kitchen Set A",
+   "from": "lot",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijo026q00mvoxc8mlrktip0",
+   "title": "Country Coffee Appliances",
+   "from": "residential",
+   "to": "clutter"
+  },
+  {
+   "id": "cmil0ybpi0062oxeevwn8rmhz",
+   "title": "Rioja Refrigerator",
+   "from": "kitchen",
+   "to": "furniture"
+  },
+  {
+   "id": "cmsmcn68000ugoxeu2lcmdsvo",
+   "title": "Gourmet Pottery Kitchen Set",
+   "from": "lot",
+   "to": "clutter"
+  },
+  {
+   "id": "cmijnzylk00mtoxc83g2cwqp1",
+   "title": "Keep Life Simple Kitchen Dishwasher",
+   "from": "residential",
+   "to": "furniture"
+  }
+ ]
+}
