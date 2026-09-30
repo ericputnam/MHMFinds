@@ -708,7 +708,10 @@ export function detectContentTypeWithConfidence(
   description?: string
 ): DetectionResult {
   const result = detectWithRules(title, description, SORTED_RULES);
-  if (!result.contentType || !isSuppressedRoomTitledCas(title, result.contentType)) {
+  if (
+    !result.contentType ||
+    (!isSuppressedRoomTitledCas(title, result.contentType) && !isSuppressedRoomTitledLot(title, result.contentType))
+  ) {
     return result;
   }
   return roomTitledFallback(title, result.contentType);
@@ -743,8 +746,55 @@ export function isRoomTitle(title: string | null | undefined): boolean {
   return isBedroomTitle(title) || isKitchenTitle(title) || isBathroomTitle(title);
 }
 
+// ============================================
+// A ROOM IS A THEME, NOT A CONTENT TYPE; A ROOM SET IS NOT A LOT (E147)
+// ============================================
+
+/**
+ * Room words that are themes (`themes[]`, title-only rules in
+ * lib/*ThemeRules.ts), never content types. The bathroom/kitchen/bedroom
+ * collection pages filter on `themes`, so a row typed `bathroom` sat in no
+ * content-type facet at all. The only writer was the blog post's URL category
+ * (`detectContentTypeFromUrl`: /sims-4-bathroom-cc/ -> 'bathroom'); no
+ * CONTENT_TYPE_RULES entry emits one. On 2026-09-30: 22 rows `bathroom`,
+ * 8 `kitchen`, 0 `bedroom`/`living-room`; replaying today's ingest over them
+ * re-wrote 10 `bathroom` and 6 `kitchen`. Exported for the guard test.
+ */
+export const ROOM_VALUE_CONTENT_TYPES: ReadonlySet<string> = new Set([
+  'bathroom', 'kitchen', 'bedroom', 'living-room',
+]);
+
+/** Whole-lot content types. `residential` has no current writer (591 legacy rows). */
+const LOT_CONTENT_TYPES: ReadonlySet<string> = new Set(['lot', 'residential']);
+
+/**
+ * Title words that make a room-titled row a whole building, so `lot` stands
+ * ("Ranch 5-Bedroom with In-Law Suite House"). Measured 2026-09-30 over the
+ * 532 room-titled rows of the 16,561-row catalog, per lot-rule keyword in the
+ * TITLE (real lots / hits): house 1/1. REJECTED — do not re-add: cottage 0/3
+ * ("Country Cottage Refrigerator"), farmhouse 0/1 ("Duck Egg Blue Farmhouse
+ * Kitchen"), manor 0/1 ("Midnight Manor Kitchen 1"), build 0/2 ("Build A
+ * Shower Kit"). townhouse/apartment/mansion/villa: 0 hits, unambiguous
+ * buildings. No singular+plural pairs (`keywordToRegex` adds the plural).
+ */
+const WHOLE_BUILDING_TITLE_WORDS = ['house', 'townhouse', 'apartment', 'mansion', 'villa'];
+
+function namesWholeBuilding(title: string | null | undefined): boolean {
+  const t = (title || '').toLowerCase();
+  return WHOLE_BUILDING_TITLE_WORDS.some(w => keywordMatches(t, w));
+}
+
+/** True when `type` is a lot answer on a room-titled row whose title names no building. */
+function isSuppressedRoomTitledLot(title: string | null | undefined, type: string): boolean {
+  return LOT_CONTENT_TYPES.has(type) && isRoomTitle(title) && !namesWholeBuilding(title);
+}
+
 const SORTED_RULES: KeywordRule[] = [...CONTENT_TYPE_RULES].sort((a, b) => b.priority - a.priority);
-const SORTED_NON_CAS_RULES: KeywordRule[] = SORTED_RULES.filter(r => !CAS_CONTENT_TYPES.has(r.contentType));
+// E147: the room-titled fallback drops the lot rule as well as every CAS rule —
+// otherwise "Country Cottage Refrigerator" falls straight back to `lot`.
+const SORTED_NON_CAS_RULES: KeywordRule[] = SORTED_RULES.filter(
+  r => !CAS_CONTENT_TYPES.has(r.contentType) && !LOT_CONTENT_TYPES.has(r.contentType),
+);
 
 /**
  * CAS types a build/buy set's own TITLE uses as a word, so a title match on
@@ -784,30 +834,43 @@ function isSuppressedRoomTitledCas(title: string | null | undefined, type: strin
 function roomTitledFallback(title: string, suppressed: string): DetectionResult {
   const r = detectWithRules(title, undefined, SORTED_NON_CAS_RULES);
   if (r.contentType && r.confidence !== 'low') {
-    return { ...r, reasoning: `room-titled: CAS "${suppressed}" suppressed (E132); ${r.reasoning}` };
+    return { ...r, reasoning: `room-titled: "${suppressed}" suppressed (E132/E147); ${r.reasoning}` };
   }
   return {
     contentType: undefined,
     confidence: 'low',
     matchedKeywords: [],
-    reasoning: `room-titled: CAS "${suppressed}" suppressed (E132) and the title names no build/buy type`,
+    reasoning: `room-titled: "${suppressed}" suppressed (E132/E147) and the title names no build/buy type`,
   };
 }
 
 /**
- * Apply the room-titled-is-never-CAS rule to a content type that came from
- * somewhere other than `detectContentTypeWithConfidence` — at ingest, the
- * blog post's URL category (`detectContentTypeFromUrl`) outranks the
- * detector, so a bathroom set scraped from a glasses round-up would otherwise
- * still be written as `glasses`. Returns the candidate unchanged unless it is
- * CAS and the title is a room title.
+ * Apply the room rules to a content type that came from somewhere other than
+ * `detectContentTypeWithConfidence` — at ingest, the blog post's URL category
+ * (`detectContentTypeFromUrl`) outranks the detector, so a bathroom set
+ * scraped from a glasses round-up would otherwise still be written as
+ * `glasses`. Three rules:
+ *
+ *   - a room value (`ROOM_VALUE_CONTENT_TYPES`, E147) is never returned, for
+ *     ANY title: it is re-decided from the title alone, or NULL;
+ *   - a CAS type on a room-titled row is suppressed (E132);
+ *   - `lot`/`residential` on a room-titled row is suppressed unless the title
+ *     names a whole building (E147).
+ *
+ * Otherwise the candidate is returned unchanged. `holidays` is deliberately
+ * untouched: a real 926-row facet with its own collection page.
  */
 export function guardRoomTitledContentType(
   title: string | null | undefined,
   candidate: string | null | undefined,
 ): string | undefined {
   if (!candidate) return undefined;
-  if (!isSuppressedRoomTitledCas(title, candidate)) return candidate;
+  if (ROOM_VALUE_CONTENT_TYPES.has(candidate)) {
+    // No rule emits a room value, so this re-decision cannot loop back to one.
+    const t = detectContentTypeWithConfidence(title || '');
+    return t.confidence === 'low' ? undefined : t.contentType;
+  }
+  if (!isSuppressedRoomTitledCas(title, candidate) && !isSuppressedRoomTitledLot(title, candidate)) return candidate;
   const r = roomTitledFallback(title || '', candidate);
   return r.confidence === 'low' ? undefined : r.contentType;
 }

@@ -55,6 +55,12 @@
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=lighting --limit=50
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=nails --ids=id1,id2   # only those rows
  *   npx tsx scripts/retag-junk-build-facets.ts --room-titled-cas            # E132, see below
+ *   ... --rollback-out=reports/funnel/x.json   # write {id,title,from,to} before any write
+ *
+ * Every run prints the STRIP list (rows leaving each current facet), the ADD
+ * list (rows entering each new facet) and the filter's selectivity (facet
+ * population -> rows in scope -> rows changing). A filter that changes 0 rows
+ * is a question, not a pass (E147, 2026-09-30).
  *
  * --room-titled-cas (Rowan, 2026-09-28, E132)
  * -------------------------------------------
@@ -79,6 +85,8 @@ import {
   isRoomTitle,
 } from '../lib/services/contentTypeDetector';
 import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
+import { mkdirSync, writeFileSync } from 'fs';
+import { dirname } from 'path';
 
 /** autonomy.md: catalog scripts touch at most 5,000 rows per run. */
 const MAX_ROWS = 5000;
@@ -120,7 +128,9 @@ function parseArgs() {
   const ids = idsArg ? idsArg.slice('--ids='.length).split(',').map(s => s.trim()).filter(Boolean) : null;
   const roomTitledCas = argv.includes('--room-titled-cas');
   if (roomTitledCas && ids) throw new Error('--room-titled-cas and --ids= are separate modes; pass one.');
-  return { apply, verbose, facets: roomTitledCas ? Array.from(CAS_CONTENT_TYPES) : facets, limit, ids, roomTitledCas };
+  const rollbackArg = argv.find(a => a.startsWith('--rollback-out='));
+  const rollbackOut = rollbackArg ? rollbackArg.slice('--rollback-out='.length) : null;
+  return { apply, verbose, facets: roomTitledCas ? Array.from(CAS_CONTENT_TYPES) : facets, limit, ids, roomTitledCas, rollbackOut };
 }
 
 /** Decide the new content type for one row. Exported shape kept simple for testing. */
@@ -146,7 +156,7 @@ function decide(row: Row, roomTitledCas = false): Change {
 }
 
 async function main() {
-  const { apply, verbose, facets, limit, ids, roomTitledCas } = parseArgs();
+  const { apply, verbose, facets, limit, ids, roomTitledCas, rollbackOut } = parseArgs();
 
   console.log('='.repeat(72));
   console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}`);
@@ -249,7 +259,41 @@ async function main() {
     }
   }
 
+  // STRIP / ADD lists and selectivity (E147): read both directions, and never
+  // take "changed 0" as a pass without knowing how many rows the filter saw.
+  const population = await prisma.mod.count({ where: { contentType: { in: facets } } });
+  const strip = new Map<string, number>();
+  const add = new Map<string, number>();
+  for (const c of changes) {
+    const from = c.row.contentType ?? '(null)';
+    strip.set(from, (strip.get(from) ?? 0) + 1);
+    const to = c.to ?? '(null)';
+    add.set(to, (add.get(to) ?? 0) + 1);
+  }
+  const fmt = (m: Map<string, number>) =>
+    Array.from(m.entries()).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(', ') || '(none)';
   console.log('\n' + '-'.repeat(72));
+  console.log(`STRIP (leaving) : ${fmt(strip)}`);
+  console.log(`ADD   (entering): ${fmt(add)}`);
+  const pct = (n: number, d: number) => (d > 0 ? `${((100 * n) / d).toFixed(1)}%` : 'n/a');
+  console.log(
+    `Selectivity     : facet population ${population} -> in scope ${rows.length} (${pct(rows.length, population)})` +
+      ` -> changing ${changes.length} (${pct(changes.length, rows.length)} of scope); unchanged/pinned no-op ${unchanged}`,
+  );
+  if (changes.length === 0) console.log('WARNING: the filter changes 0 rows — check it can see the field it tests.');
+  if (rollbackOut) {
+    mkdirSync(dirname(rollbackOut), { recursive: true });
+    writeFileSync(
+      rollbackOut,
+      JSON.stringify(
+        { writtenAt: new Date().toISOString(), mode: apply ? 'apply' : 'dry-run', facets, rows: changes.map(c => ({ id: c.row.id, title: c.row.title, from: c.row.contentType, to: c.to })) },
+        null,
+        1,
+      ) + '\n',
+    );
+    console.log(`Rollback file   : ${rollbackOut} (${changes.length} rows, prior values in "from")`);
+  }
+  console.log('-'.repeat(72));
   console.log(`Rows examined : ${rows.length}`);
   console.log(`Unchanged     : ${unchanged}`);
   console.log(`To change     : ${changes.length}`);
