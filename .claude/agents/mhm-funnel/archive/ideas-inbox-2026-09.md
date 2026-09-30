@@ -208,3 +208,30 @@ Moved 2026-09-27 → archive: Q14/Q15/B3 (owned, in queue); runner paper-trail, 
 - [ ] [rio] `patreon-churn-read.ts`, `patreon-relaunch-read.ts`, `operator-did-probe.ts` still call `patreonGet` with no signal — 30 s per-page timeout each; add a commented `PATREON_ENV_FILE` line to `env.example` (T0). — Rio, 09-28  → shipped as E139, PR #220
 
 _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenever runway <3 d) shipped the same day as E141 / PR #218 — done, not parked._
+
+## Done / consumed 2026-09-30 (verbatim; Quinn triage)
+
+- [ ] [rowan] Leftover room-theme rows typed `bathroom`(21)/`kitchen`(8)/`residential`(20)/`lot`(22)/`holidays`(6) — audit whether room-titled build sets belong in furniture/clutter, spot-check before any retag. — Rowan, 09-27
+  _→ E147 / PR #230 (Rowan)_
+- [ ] [ops] Daily-run PRs #138 (09-21) and #190 (09-26) have no after-merge ledger row (#181, #198 do). After Quinn exits, the runner should write the row for today's daily PR via ledger-commit.sh — the row belongs to the step that sees the merge. — Ops, 09-28
+  _→ E148 / PR #229 (Ops)_
+- [ ] [sage/cass] `components/ModJsonLd.tsx:63` dateModified = updatedAt — same class as E136; switch to `modLastmod()`. — 09-29
+  _→ E143 / PR #225 (Sage)_
+- [ ] [rio] /go GA4 page_view records ~40% of /go `render` users weekly (205/531, 134/408, 248/613); use `render` users as the /go denominator until explained. — 09-29
+  _→ E146 / PR #232 (Rio)_
+- [ ] [pip] Direct 7,196 (+35.7% WoW) is the biggest unexamined headline mover; segment by landing page / hour before it counts as growth. — 09-29
+  _→ Pip segmented 09-30: broad (no single landing/hour), counts as growth_
+
+- [ ] [rio] Re-run the page-rpm snapshot after #217: blog-bucket RPM since 09-23 included /creator/* pageviews. — Nova 09-29
+  _CLOSED on paper 09-30 (Rio): `/creator/*` 0.43% of pv (617/142,800, max 52 pv/wk), below Mediavine's daily top-150 — 09-29 page-RPM snapshots stand; no re-run._
+
+- [ ] [quinn] E4 reads KILL at 1.49/1K but beats the site rate 1.30/1K — replace with an E130-style account offer, don't just drop it. — Cass 09-29
+  _→ graded 2026-09-30 (Cass): E4 KILL at 1.45/1K (28d), replace-not-drop line filed as [cass]._
+
+## Parked 2026-09-30 (verbatim; Ops pulls from here — SD-11 cap)
+
+- [ ] [ops] merge-gate.sh checks then acts with no lock: #229/#228/#227 merged 06:55:31/33/37 after all three passed the same poll — needs an atomic mkdir lock, not a timestamp check. — Ops 09-30
+- [ ] [ops] When main moves during a verify, the deploy-verify row's commit column is the graded head, not the PR's merge sha (#229 reads 6970725, not 82d25c2) — the 1:1 ledger audit must also match "PR #N" in the who column. — Ops 09-30
+- [ ] [ops] scoreboard: add GA4 `creator_claim_share` 7d and `/submit-mod/?creator=` views split by `ref=share` next to "Creator submissions 7d" so E144 reads from the scoreboard. — Nova 09-30
+- [ ] [ops] `ledger-commit.sh` / ship protocol: reject a `--label` naming a PR whose `gh pr view` state is not MERGED — would have blocked the mislabelled 06:51 verify row (Pip's label on Cass's 77c3a9e). — Pip 09-30
+- [ ] [ops] Two leftover writers of room values into contentType: aiFacetExtractor maps fridge→kitchen (used only by deploy-facets-safely.ts), and mhmScraperUtils URL mapping would still write bedroom on 118 rows. The E147 ingest guard catches both; the writers themselves are outside Rowan's allowed files. — Rowan 09-30

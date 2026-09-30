@@ -1,0 +1,364 @@
+{
+  "date": "2026-09-30",
+  "headline": {
+    "ownedAdds7d": 121,
+    "ownedTargetWeekly": 120,
+    "nonAdRevenueMonthlyGross": 149,
+    "nonAdTarget": 200,
+    "mediavine28d": 6107.1,
+    "mediavine28dPrev": 5631.87
+  },
+  "flags": [
+    "🟡 Pinner: inventory runway ≈ 0.9 days (39 rows dated through +14d ÷ 41.6/day observed; 4 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)",
+    "🟡 Pinner writer: newest writer-attributed row queued 2026-09-29 06:33Z (28.1 h ago) · 0 inserted in 24h, 120 in 7d · runway 0.9d — between 26-72h, watch it"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-09-22→2026-09-28 vs 2026-09-15→2026-09-21",
+      "sessions7d": 92548,
+      "sessionsPrev7d": 88682,
+      "byChannel7d": {
+        "pinterest": 59439,
+        "bing_organic": 16657,
+        "direct": 7159,
+        "google_organic": 2914,
+        "other_search": 2557,
+        "tumblr": 1154,
+        "ai_referral": 357,
+        "other": 2107,
+        "reddit": 204
+      },
+      "byChannelPrev7d": {
+        "pinterest": 59247,
+        "bing_organic": 15612,
+        "direct": 5169,
+        "google_organic": 2580,
+        "other_search": 2585,
+        "tumblr": 1035,
+        "ai_referral": 294,
+        "other": 1970,
+        "reddit": 190
+      },
+      "aiReferral7d": 357,
+      "aiReferralPrev7d": 294,
+      "captureEvents7d": {
+        "patreon_click": 71,
+        "favorite": 50,
+        "sign_up": 42,
+        "newsletter_signup": 25,
+        "patreon_click_after_wait": 21,
+        "affiliate_click": 10,
+        "favorite_signin_redirect": 8
+      },
+      "captureUsers7d": {
+        "patreon_click": 55,
+        "favorite": 13,
+        "sign_up": 41,
+        "newsletter_signup": 24,
+        "patreon_click_after_wait": 21,
+        "affiliate_click": 10,
+        "favorite_signin_redirect": 7
+      },
+      "patreonClickUsersPerDay7d": 7.86,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 55,
+        "perDay": 7.86,
+        "window": "2026-09-22→2026-09-28"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-09-26": 11,
+        "2026-09-12": 9,
+        "2026-09-19": 9,
+        "2026-09-21": 9,
+        "2026-09-25": 9,
+        "2026-09-27": 9,
+        "2026-09-28": 9,
+        "2026-09-20": 7,
+        "2026-09-24": 7,
+        "2026-09-11": 6,
+        "2026-09-18": 5,
+        "2026-09-22": 5,
+        "2026-09-23": 5,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3
+      },
+      "notSetLanding7d": 4041,
+      "returningShare7d": 0.5186015191509993,
+      "pagesPerSession7d": 1.560331294321442,
+      "engagementRate7d": 0.7243652898825312
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-08-31→2026-09-27",
+      "clicks28d": 2598,
+      "clicksPrev28d": 2041,
+      "impressions28d": 85151
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-09-28",
+      "revenue7d": 1603.05,
+      "revenuePrev7d": 1471.25,
+      "rpm7d": 17.18,
+      "rpmPrev7d": 17.06,
+      "sessions7d": 93330,
+      "revenue28d": 6107.1,
+      "revenuePrev28d": 5631.87,
+      "rpm28d": 17.07,
+      "health": {
+        "date": "2026/09/30",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 43
+    }
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 1806,
+      "users7d": 92,
+      "users30d": 295,
+      "subscribers": 56,
+      "subscribers7d": 29,
+      "subscribers30d": 39,
+      "subscribersBySource": {
+        "re-permission": 2,
+        "collection-page": 3,
+        "footer": 17,
+        "signup-optin": 25,
+        "go-interstitial": 6,
+        "home-hero": 2,
+        "sign-in": 1
+      },
+      "favorites": 22509,
+      "favorites7d": 1181,
+      "downloadClicks7d": 492,
+      "downloadClicks30d": 1515,
+      "affiliateClicks7d": 11,
+      "affiliateClicks30d": 57,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 20,
+      "modSubmissions": 4,
+      "mods": 16561,
+      "collections": 1783,
+      "newMods7d": 27,
+      "newModsPrior7d": 106,
+      "submissions7d": 0,
+      "creatorsOnboarded": 0
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 55,
+      "freeMembers": 5777,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 5777,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 11,
+          "title": "Espresso Shot",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 41,
+          "title": "Cappuccino",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 3,
+          "title": "Large Latte",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 149
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 55,
+      "free": 5589,
+      "former": 231,
+      "grossMonthlyUsd": 153.5,
+      "paidByAmount": {
+        "$3": 42,
+        "$1": 10,
+        "$5": 2,
+        "$8": 1
+      },
+      "joins7d": 6,
+      "cancels7d": 1,
+      "joinsSinceAnchor": 16,
+      "joinsSinceAnchorAtPerkTier": 9,
+      "cancelsSinceAnchor": 2,
+      "perkTierJoins7d": 4,
+      "perkTierJoinsPerDay7d": 0.57,
+      "paidAndConnected": 0,
+      "paidAndConnectedById": 0,
+      "paidAndConnectedByEmail": 0,
+      "linkedWithPatreonId": 107,
+      "paidWithUserId": 55,
+      "connectedAccounts": 107,
+      "premiumUsers": 2,
+      "anchor": "2026-09-08",
+      "window": "2026-09-23→2026-09-30"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 20,
+      "posts7d": 5,
+      "latestPost": "2026-09-29 sims-4-fall-outdoor-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-09-30",
+      "lastPinCreatedAt": "2026-09-30T10:20:05.000Z",
+      "pinsCreated24h": 70,
+      "pinsCreated7d": 291,
+      "pinsSampled": 292,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 0.3,
+        "message": "last pin created 2026-09-30 10:20Z (0.3 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 309,
+      "postedTotal": 8746,
+      "unpostedBacklog": 1586,
+      "drainableBacklog": 4,
+      "strandedBacklog": 1547,
+      "inventoryRows": 39,
+      "runway": {
+        "level": "low",
+        "inventoryRows": 39,
+        "dailyRate": 41.57142857142857,
+        "runwayDays": 0.9,
+        "message": "inventory runway ≈ 0.9 days (39 rows dated through +14d ÷ 41.6/day observed; 4 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)"
+      },
+      "lastWriterInsertAt": "2026-09-29T06:33:23.301281+00:00",
+      "lastWriterInsertLabel": "sims-4-fall-outdoor-cc",
+      "writerInserted24h": 0,
+      "writerInserted7d": 120,
+      "writerLiveness": {
+        "level": "warn",
+        "hoursSinceLastInsert": 28.1,
+        "message": "newest writer-attributed row queued 2026-09-29 06:33Z (28.1 h ago) · 0 inserted in 24h, 120 in 7d · runway 0.9d — between 26-72h, watch it"
+      }
+    }
+  },
+  "longRange": {
+    "returningShare7d": 0.5186015191509993,
+    "nonPinterestShare7d": 0.17273486430062635,
+    "nonPinterestShareRaw7d": 0.35774949215542207
+  },
+  "engagement": {
+    "pagesPerSession7d": 1.560331294321442,
+    "engagementRate7d": 0.7243652898825312,
+    "favorites7d": 1181,
+    "downloadClicks7d": 492
+  },
+  "catalog": {
+    "newMods7d": 27,
+    "newModsPrior7d": 106,
+    "total": 16561
+  },
+  "capture": {
+    "ratePer1kSessions7d": 1.3074296581233522
+  },
+  "creators": {
+    "onboarded": 0,
+    "submissions7d": 0
+  },
+  "team": {
+    "ok": true,
+    "data": {
+      "runSuccess14d": 0.7857142857142857,
+      "mergesByOwner7d": {
+        "Pip": 7,
+        "Rio": 6,
+        "Sage": 8,
+        "Cass": 7,
+        "Ops": 7,
+        "Rowan": 6,
+        "Nova": 8,
+        "Quinn": 8,
+        "manual": 10
+      },
+      "totalMerges7d": 67,
+      "opsMergeShare7d": 0.1044776119402985,
+      "paperOnlyMerges7d": 0
+    }
+  },
+  "owners": {
+    "revenue": "Rio",
+    "sessions": "Pip",
+    "rpm": "Rio",
+    "ownedAdds7d": "Cass",
+    "pinterestSessions7d": "Pip",
+    "nonAdMonthly": "Rio",
+    "returningShare7d": "Pip",
+    "nonPinterestShare7d": "Pip",
+    "pagesPerSession7d": "Sage",
+    "engagementRate7d": "Sage",
+    "favorites7d": "Cass",
+    "downloadClicks7d": "Nova",
+    "newMods7d": "Nova",
+    "catalogTotal": "Nova",
+    "captureRatePer1k": "Cass",
+    "creatorsOnboarded": "Nova",
+    "creatorSubmissions7d": "Nova",
+    "runSuccess14d": "Ops",
+    "opsMergeShare7d": "Ops",
+    "paperOnlyMerges7d": "Ops",
+    "mergesByOwner7d": "Quinn",
+    "_comment": "Which specialist owns each scoreboard metric, restructure 2026-09-22.",
+    "sessions28d": "Pip",
+    "pinterestSessions": "Pip",
+    "bingOrganic": "Pip",
+    "direct": "Pip",
+    "notSetLandingPage": "Pip",
+    "organicSessions": "Sage",
+    "aiReferralSessions": "Sage",
+    "returningVisitorSharePct": "Rowan",
+    "engagementRatePct": "Rowan",
+    "favoritesWeekly": "Rowan",
+    "catalogFreshness": "Rowan",
+    "ownedAudienceNetAdds": "Cass",
+    "captureRatePer1kSessions": "Cass",
+    "nonAdRevenueMonthly": "Rio",
+    "mediavineRevenueGuardrail": "Rio",
+    "runSuccessRate": "Ops",
+    "ledgerCompleteness": "Ops",
+    "contextBudgetGreen": "Ops"
+  }
+}

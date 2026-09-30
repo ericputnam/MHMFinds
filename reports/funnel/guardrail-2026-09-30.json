@@ -1,0 +1,831 @@
+{
+  "status": "green",
+  "action": "none",
+  "day": "2026-09-28",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 195.9,
+    "sessions": 12508.25,
+    "rpm": 15.57
+  },
+  "actualDay": {
+    "date": "2026-09-28",
+    "revenue": 195.7,
+    "sessions": 12475,
+    "rpm": 15.68
+  },
+  "window3": {
+    "actualRevenue": 790.03,
+    "expectedRevenue": 732.2825,
+    "actualSessions": 45370,
+    "expectedSessions": 42218.5,
+    "actualRpm": 17.413048269781793,
+    "expectedRpm": 17.32118494293595
+  },
+  "rollbackTo": null,
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-09-30T10:37:37.160Z",
+      "ref": "10ee7a9",
+      "text": "BUILDING funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-1vp1jtsn9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-30T02:31:23.920Z",
+      "ref": "db89802",
+      "text": "READY chore: compound learnings from 2026-09-29 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-csmqkfvdo-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:52:41.202Z",
+      "ref": "f2fc710",
+      "text": "READY funnel: daily run 2026-09-29 (#224) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ho6ngvzty-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:50:08.136Z",
+      "ref": "99d9df2",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #218 writer-liveness flag inflow-only (E141) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-gckpp6su7-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:45:58.828Z",
+      "ref": "4e8cbe9",
+      "text": "READY fix(ops): writer-liveness flag is inflow-only; runway keeps its own 🟡 (E141) (#218) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-g6y893hkh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:37:31.522Z",
+      "ref": "c8e43cc",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #219 hydrate /mods/[id] favorite state (E138) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-em04ref6j-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:33:47.388Z",
+      "ref": "9101e51",
+      "text": "READY feat(cass): hydrate /mods/[id] favorite state for signed-in visitors (E138) (#219) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-j91omtvix-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:05:08.070Z",
+      "ref": "6681efe",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #222 writer plugin-schedule guard in the runway top-u [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ol76vzed8-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:01:19.556Z",
+      "ref": "6b0b47a",
+      "text": "READY fix(pins): writer plugin-schedule guard in the runway top-up + ranker (E135) (#222) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-drreqoelq-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T11:00:18.300Z",
+      "ref": "644a533",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #221 sitemap-mods.xml lastmod from createdAt/lastScr [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-98zgcf57e-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T10:59:08.870Z",
+      "ref": "616fa6d",
+      "text": "READY funnel(ledger): Pip: E135 runway top-up #5 apply ledger [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-gl3cufpce-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T10:56:52.433Z",
+      "ref": "72c8841",
+      "text": "READY feat(seo): sitemap-mods.xml lastmod from max(createdAt, lastScraped), never @updatedAt (E1 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-9tssn0t15-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T10:56:22.099Z",
+      "ref": "d7445d8",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #220 bound every patreonGet caller (E139) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-20hzc1zts-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T10:52:36.907Z",
+      "ref": "d8c04ba",
+      "text": "READY fix(rio): bound every patreonGet caller with a 30 s/page signal + 180 s walk budget (E139, [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-kwep4fpdr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-09-29T10:51:58.149Z",
+      "ref": "a427d71",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #217 page-rpm bucket /creator/* as app [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-2lgvht6dh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T22:31:17-04:00",
+      "ref": "db89802",
+      "text": "chore: compound learnings from 2026-09-29"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:52:37-04:00",
+      "ref": "f2fc710",
+      "text": "funnel: daily run 2026-09-29 (#224)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:50:03-04:00",
+      "ref": "99d9df2",
+      "text": "funnel(ledger): after-merge: Ops: PR #218 writer-liveness flag inflow-only (E141)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:45:55-04:00",
+      "ref": "4e8cbe9",
+      "text": "fix(ops): writer-liveness flag is inflow-only; runway keeps its own 🟡 (E141) (#218)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:37:27-04:00",
+      "ref": "c8e43cc",
+      "text": "funnel(ledger): after-merge: Cass: PR #219 hydrate /mods/[id] favorite state (E138)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:33:42-04:00",
+      "ref": "9101e51",
+      "text": "feat(cass): hydrate /mods/[id] favorite state for signed-in visitors (E138) (#219)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:05:02-04:00",
+      "ref": "6681efe",
+      "text": "funnel(ledger): after-merge: Pip: PR #222 writer plugin-schedule guard in the runway top-u"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:01:16-04:00",
+      "ref": "6b0b47a",
+      "text": "fix(pins): writer plugin-schedule guard in the runway top-up + ranker (E135) (#222)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T07:00:14-04:00",
+      "ref": "644a533",
+      "text": "funnel(ledger): after-merge: Sage: PR #221 sitemap-mods.xml lastmod from createdAt/lastScr"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:59:05-04:00",
+      "ref": "616fa6d",
+      "text": "funnel(ledger): Pip: E135 runway top-up #5 apply ledger"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:56:47-04:00",
+      "ref": "72c8841",
+      "text": "feat(seo): sitemap-mods.xml lastmod from max(createdAt, lastScraped), never @updatedAt (E1"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:56:18-04:00",
+      "ref": "d7445d8",
+      "text": "funnel(ledger): after-merge: Rio: PR #220 bound every patreonGet caller (E139)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:52:33-04:00",
+      "ref": "d8c04ba",
+      "text": "fix(rio): bound every patreonGet caller with a 30 s/page signal + 180 s walk budget (E139,"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:51:54-04:00",
+      "ref": "a427d71",
+      "text": "funnel(ledger): after-merge: Nova: PR #217 page-rpm bucket /creator/* as app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:48:47-04:00",
+      "ref": "38cc8c1",
+      "text": "funnel(ledger): Pip: E135 writer-row revert ledger"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:48:18-04:00",
+      "ref": "949b536",
+      "text": "fix(page-rpm): bucket /creator/* as an app page, not blog (E137-b) (#217)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:47:03-04:00",
+      "ref": "8835a89",
+      "text": "funnel(ledger): retroactive: PR #190 daily run 2026-09-26"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:39:54-04:00",
+      "ref": "4ba11cc",
+      "text": "funnel(ledger): retroactive: PR #206 daily run 2026-09-28"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T06:37:24-04:00",
+      "ref": "a443fb5",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T00:32:51-04:00",
+      "ref": "b358bb7",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-29T00:29:11-04:00",
+      "ref": "7b39d2c",
+      "text": "feat(affiliates): Kadence-safe Amazon tag hygiene tool (E134 item D) (#216)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T22:52:15-04:00",
+      "ref": "67ca754",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T22:48:21-04:00",
+      "ref": "182e24c",
+      "text": "docs(rio): playbook entry for E134 items B+C (PR #214) (#215)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T22:41:13-04:00",
+      "ref": "3757a6b",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T22:37:13-04:00",
+      "ref": "f47abfe",
+      "text": "fix(affiliates): shared link validator (E134 items B+C) + GTRacing DB repair (#214)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T22:31:12-04:00",
+      "ref": "1fdfe91",
+      "text": "chore: compound learnings from 2026-09-28"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T22:04:13-04:00",
+      "ref": "879f82e",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:59:56-04:00",
+      "ref": "aa3939a",
+      "text": "Rio: reopen affiliates as repair-only (E134), void E55's revenue leg (#213)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:51:41-04:00",
+      "ref": "c669b82",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:48:28-04:00",
+      "ref": "e2a2ab3",
+      "text": "docs(funnel): correct Q11-b — writer plugin schedule works; placeholder = waiting for sche"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:45:33-04:00",
+      "ref": "71675e7",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:41:37-04:00",
+      "ref": "df741ab",
+      "text": "docs(funnel): close Q11-b per operator — writer owns pin volume; Pip runs daily pin-SEO pa"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:30:09-04:00",
+      "ref": "5a08ab6",
+      "text": "funnel(ledger): check: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:23:43-04:00",
+      "ref": "682b577",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:20:11-04:00",
+      "ref": "e4ec002",
+      "text": "docs(funnel): correct Q13 read plan — per-host pv/session was a counting artefact (#210)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:07:40-04:00",
+      "ref": "50f8f7a",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:03:33-04:00",
+      "ref": "a08a0d5",
+      "text": "docs(funnel): record 2026-09-28 operator replies — Q4 Patreon closed (won't do), checklist"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T21:03:12-04:00",
+      "ref": "e56ef5c",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T20:48:53-04:00",
+      "ref": "982fb28",
+      "text": "feat(wp): Q13 host-split 301 blog.* -> apex via functions.php (#208)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T20:22:18-04:00",
+      "ref": "c998222",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T20:18:32-04:00",
+      "ref": "a8c28a5",
+      "text": "Q13: X-MHM-Proxy header on proxy fetches to blog.* (rebased #143) + v2 nginx block (#207)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:30:45-04:00",
+      "ref": "5a12e81",
+      "text": "funnel: daily run 2026-09-28 (#206)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:26:17-04:00",
+      "ref": "1b86348",
+      "text": "funnel(ledger): check: Quinn: --check after the 09-28 merge window (covers #201 INCONCLUSI"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:21:25-04:00",
+      "ref": "39f026d",
+      "text": "funnel(ledger): after-merge: Ops: PR #200 smoke renders one /games/sims-4/<slug>/ collecti"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:17:43-04:00",
+      "ref": "c839ce7",
+      "text": "fix(ops): smoke-render renders one /games/sims-4/<slug>/ collection page, picked from the "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:16:22-04:00",
+      "ref": "dac3185",
+      "text": "funnel(ledger): after-merge: Cass: PR #203 \"Save this find\" account offer on /mods/[id] re"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:12:43-04:00",
+      "ref": "cb271e4",
+      "text": "feat(capture): \"Save this find\" account offer under the /mods/[id] hero image; E10 email b"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:12:04-04:00",
+      "ref": "3a4daeb",
+      "text": "funnel(ledger): after-merge: Pip: PR #205 pin-SEO copy pass inside the runway top-up (E127"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:08:27-04:00",
+      "ref": "533cb7b",
+      "text": "feat(pins): run the page-sourced pin-SEO copy pass inside the runway top-up, before the re"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:07:43-04:00",
+      "ref": "ab48a2b",
+      "text": "funnel(ledger): after-merge: Rio: PR #201 Patreon refresh persists to the operator repo; b"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:04:14-04:00",
+      "ref": "f2c8244",
+      "text": "fix(rio): Patreon refresh persists to the operator's .env.local, never a worktree copy; bo"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:04:06-04:00",
+      "ref": "a416006",
+      "text": "funnel(ledger): after-merge: Sage: PR #199 bound IndexNow key-file GET and POST (E128)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T07:00:08-04:00",
+      "ref": "45addf4",
+      "text": "fix(seo): bound the IndexNow key-file GET and POST with AbortSignal.timeout (E128, Tier 0)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:59:12-04:00",
+      "ref": "a4d7dce",
+      "text": "funnel(ledger): after-merge: Nova: PR #204 admin creator-claim review (E129)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:56:36-04:00",
+      "ref": "0176896",
+      "text": "funnel(ledger): Pip: E127 runway top-up #4 applied (21 re-dated, 19 rewritten)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:55:52-04:00",
+      "ref": "115f8bd",
+      "text": "feat(nova): admin can review creator claims — promote pending-<slug> or reject (E129, Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:54:22-04:00",
+      "ref": "2b150e2",
+      "text": "funnel(ledger): after-merge: Rowan: PR #202 room-titled row is never CAS at ingest (E132)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:51:04-04:00",
+      "ref": "323f50a",
+      "text": "fix(catalog): a room-titled row is never Create-a-Sim at ingest (E132, Tier 0) (#202)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:50:33-04:00",
+      "ref": "5e9e60a",
+      "text": "funnel(ledger): after-merge: Nova: PR #195 creator claim can onboard a creator (E122, Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:50:12-04:00",
+      "ref": "f3152fb",
+      "text": "funnel(ledger): retroactive: PR #198 daily run 2026-09-27"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:46:42-04:00",
+      "ref": "e765da5",
+      "text": "feat(nova): creator \"claim this page\" can actually onboard a creator (E122, Tier 1) (#195)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-28T06:37:26-04:00",
+      "ref": "8074ca8",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T22:30:48-04:00",
+      "ref": "91866e4",
+      "text": "chore: compound learnings from 2026-09-27"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T07:29:39-04:00",
+      "ref": "609a76d",
+      "text": "funnel: daily run 2026-09-27 (#198)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T07:27:51-04:00",
+      "ref": "23ac379",
+      "text": "funnel(ledger): after-merge: Ops: PR #194 not-measured is null + idempotent ledger flush ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T07:24:08-04:00",
+      "ref": "b8732d1",
+      "text": "fix(ops): not-measured is null, and the ledger flush is idempotent by row identity (E126, "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T07:08:22-04:00",
+      "ref": "96519e2",
+      "text": "funnel(ledger): after-merge: Rowan: PR #197 pin 76 room-titled build/buy rows typed as CAS"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T07:04:32-04:00",
+      "ref": "4cf3a19",
+      "text": "fix(rowan): pin 76 room-titled build/buy rows typed as CAS — fridges out of makeup-cc, bed"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T07:02:19-04:00",
+      "ref": "d333b1f",
+      "text": "funnel(ledger): after-merge: Rio: PR #196 Q4/rename-watch pre-read keeps the reachable hal"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:58:58-04:00",
+      "ref": "9fa3415",
+      "text": "feat(rio): Q4/rename-watch pre-read keeps the reachable half on a degraded morning (E125, "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:57:48-04:00",
+      "ref": "69ae8d0",
+      "text": "funnel(ledger): after-merge: Cass: PR #191 GA4 password_reset_complete on /set-password/ s"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:54:34-04:00",
+      "ref": "28ed332",
+      "text": "feat(cass): GA4 password_reset_complete on /set-password/ success (E123, Tier 0) (#191)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:53:27-04:00",
+      "ref": "b5875d6",
+      "text": "funnel(ledger): after-merge: Pip: PR #193 E124 runway top-up #3 (21 sessions-ranked rows, "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:50:20-04:00",
+      "ref": "53b583c",
+      "text": "funnel(pip): E124 runway top-up #3 — 21 sessions-ranked rows, runway 1.59 d → 2.16 d (Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:50:07-04:00",
+      "ref": "961b505",
+      "text": "funnel(ledger): after-merge: Sage: PR #192 IndexNow --guides leg — daily push includes blo"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:49:00-04:00",
+      "ref": "1c2f2cf",
+      "text": "funnel(ledger): apply: Pip: E124 runway top-up #3 (21 rows, 1.59 d → 2.16 d)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:46:04-04:00",
+      "ref": "26b2e89",
+      "text": "feat(sage): IndexNow --guides leg — daily push includes blog guides edited in the window ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-27T06:37:20-04:00",
+      "ref": "e401d27",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T22:31:04-04:00",
+      "ref": "362807e",
+      "text": "chore: compound learnings from 2026-09-26"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:47:33-04:00",
+      "ref": "a2d6d7a",
+      "text": "funnel: daily run 2026-09-26 (#190)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:46:13-04:00",
+      "ref": "b474c42",
+      "text": "funnel(ledger): after-merge: Cass: PR #183 sign-in returns visitors to the page they came "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:42:36-04:00",
+      "ref": "4e159ad",
+      "text": "feat(cass): sign-in returns visitors to the page they came from, same-origin only (E118, T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:42:14-04:00",
+      "ref": "bcd0c20",
+      "text": "funnel(ledger): after-merge: Pip: PR #189 E116 runway top-up #2 + truncated-sample guard ·"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:38:28-04:00",
+      "ref": "fcca885",
+      "text": "funnel(pip): E116 runway top-up #2 (21 sessions-ranked rows, queue-side rate; truncated-sa"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:37:38-04:00",
+      "ref": "1a03bc6",
+      "text": "funnel(ledger): after-merge: Sage: PR #188 registry→surface scanner for collection pages ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:34:00-04:00",
+      "ref": "f2259f1",
+      "text": "funnel(sage): registry→surface scanner for collection pages (E114) + IndexNow push of the "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:33:35-04:00",
+      "ref": "0448c40",
+      "text": "funnel(ledger): after-merge: Nova: PR #185 E113 author-link gate + peer creator links"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:31:36-04:00",
+      "ref": "704b31b",
+      "text": "funnel(ledger): incident 2026-09-26-064626 closure — restore the incident filename (ledger"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:29:44-04:00",
+      "ref": "553346d",
+      "text": "funnel(nova): E113 gate mod-page author link on MIN_MODS_FOR_PAGE + peer creator links on "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:28:53-04:00",
+      "ref": "cccfba7",
+      "text": "funnel(ledger): after-merge: Rowan: PR #187 /games/sims-4/bathroom-cc/ + title-only bathro"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:28:39-04:00",
+      "ref": "3fdae3a",
+      "text": "funnel(ledger): check: incident 2026-09-26-064626 closure"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:27:44-04:00",
+      "ref": "db7c2e2",
+      "text": "funnel(ledger): check: morning-recheck"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:25:24-04:00",
+      "ref": "30da191",
+      "text": "funnel(ledger): after-merge: Ops: PR #186 deploy-verify never rolls back on timeout-only /"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:25:23-04:00",
+      "ref": "975d92b",
+      "text": "funnel(rowan): /games/sims-4/bathroom-cc/ + title-only repair of the bathroom room theme ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T09:21:03-04:00",
+      "ref": "396e6e2",
+      "text": "fix(deploy-verify): never roll back on timeout-only / could-not-run evidence — network con"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-26T07:29:18-04:00",
+      "ref": "a13b594",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T22:31:02-04:00",
+      "ref": "6cb461c",
+      "text": "chore: compound learnings from 2026-09-25"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:27:16-04:00",
+      "ref": "1886f22",
+      "text": "funnel(ledger): after-merge: Quinn: PR #181 funnel: daily run 2026-09-25"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:23:41-04:00",
+      "ref": "59a4500",
+      "text": "funnel: daily run 2026-09-25 (#181)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:20:03-04:00",
+      "ref": "547806e",
+      "text": "funnel(ledger): after-merge: Ops: PR #174 deploy-verify never promotes an older build over"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:16:21-04:00",
+      "ref": "7a43ea6",
+      "text": "fix(deploy-verify): ensure_promoted() never promotes an older build over a newer one (E110"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:15:36-04:00",
+      "ref": "684cb71",
+      "text": "funnel(ledger): after-merge: Rio: PR #177 post-rename Patreon watch (E108)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:12:07-04:00",
+      "ref": "1bb79f6",
+      "text": "feat(rio): post-rename Patreon watch — --anchor rename on the Q4 pre-read + before-snapsho"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:11:32-04:00",
+      "ref": "2a63694",
+      "text": "funnel(ledger): after-merge: Cass: PR #178 /mods/[id] favorite button → real API + account"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:07:54-04:00",
+      "ref": "56eb87f",
+      "text": "feat(cass): wire the /mods/[id] favorite button to the API + account capture on 401 (E107,"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:06:51-04:00",
+      "ref": "9f3786e",
+      "text": "funnel(ledger): after-merge: Pip: PR #180 E102 E26 KILL read + runway top-up (21 rows) · E"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:03:22-04:00",
+      "ref": "840654b",
+      "text": "funnel(pip): E102 E26 read (KILL) + runway top-up ledger; E103 pin-seo-audit --source page"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T07:02:35-04:00",
+      "ref": "f99d917",
+      "text": "funnel(ledger): after-merge: Sage: PR #176 llms-full.txt names top CC creators with /creat"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T06:59:08-04:00",
+      "ref": "0492290",
+      "text": "feat(llms-full): name the top CC creators with /creator/ pages for AI answer engines (E104"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T06:58:23-04:00",
+      "ref": "e699525",
+      "text": "funnel(ledger): after-merge: Nova: PR #175 server-rendered \"More from <creator>\" + crawlab"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T06:54:54-04:00",
+      "ref": "8f3b5ed",
+      "text": "feat(nova): server-render \"More from <creator>\" on /mods/[id] with a crawlable link to /cr"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T06:54:12-04:00",
+      "ref": "8590fa2",
+      "text": "funnel(ledger): after-merge: Rowan: PR #179 /games/sims-4/kitchen-cc/ + title-only kitchen"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T06:50:29-04:00",
+      "ref": "d80ae98",
+      "text": "funnel(rowan): /games/sims-4/kitchen-cc/ + title-only repair of the kitchen room theme (E1"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-09-25T06:40:46-04:00",
+      "ref": "59dab33",
+      "text": "funnel(ledger): retroactive: Quinn / PR #173 daily run 2026-09-24"
+    },
+    {
+      "kind": "functions.php",
+      "at": "2026-09-28T20:48:53-04:00",
+      "ref": "982fb28",
+      "text": "feat(wp): Q13 host-split 301 blog.* -> apex via functions.php (#208)"
+    }
+  ],
+  "health": {
+    "date": "2026/09/30",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $195.70 (-0.1%), RPM 15.68 (0.7%), sessions -0.3% vs same weekday, prior 4 weeks · 3-day revenue 7.9%"
+  ]
+}

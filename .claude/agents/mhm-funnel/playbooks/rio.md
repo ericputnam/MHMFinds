@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-09-30 — E146: /go read on the render denominator; B2 September graded
+- Tried: go-funnel-read + lib, 17 tests, PR #232; first live run counted today's partial day (E99 3.5/day) — fixed to 4.2 before shipping. Q17 kit + emails re-checked (PR #233).
+- Before → after: page_view÷render 41.4% (227/548); E99 21u/5d = 4.2/day ON PACE (keep ≥1.0). B2 Sept: 49→55 paid, $129→$149 (+15%) vs $200 MISSED; connected 0/107. Guardrail GREEN from files.
+- Verdict: shipped, reads 10-01 (E99) / 10-06 (E74) / 10-12 (E134).
+- Next time: (1) a partial today needs its own state or it drags every mean; (2) `redact()` treats `E99=…` as KEY=value — keep printed report keys lowercase.
+
 ## 2026-09-29
 - Tried: E139 — bounded every `patreonGet(` caller (6 calls / 4 scripts) with `signal: AbortSignal.timeout(nextPageTimeoutMs(...))`, one exported helper + two constants in `_patreon-auth.ts`, commented `PATREON_ENV_FILE` in env.example, filesystem scanner (vacuity ≥7 calls / ≥5 files) (T0, PR #220, d8c04ba). 3/3 red on 4ba11cc; live churn walk 29 s.
 - Before → after: unbounded calls 6 → 0; /go reach re-read: page_view 342 → 175 → 324 by week, `render` users 531 → 408 → 613 — the "−49 %" was a stale w1→w2 read against the E40 spike week.
@@ -54,11 +60,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: shipped, PR #177 1bb79f6, deploy-verify PASS. Cancels are a floor until the 10-01 charge run — do not read the rename on 10-02 as "no churn".
 - Next time: when the operator acts ahead of a gate, record the anchor and the pre-committed revert rule as a tool the same day; a threshold that lives only in a decision paragraph cannot be re-run. Operator-queue Q4/Q16 text and the "Operator-only actions" line still say "Support Tier"/"Tip Jar" — Quinn's daily PR should update to "unpublish the $1 'Espresso Shot' tier" and "paste the welcome note into the $3 'Cappuccino' tier". `gh pr merge --delete-branch` exits 1 when `main` is checked out in another worktree even though the merge succeeded; check `gh pr view N --json state` before retrying.
 
-## 2026-09-24
-- Tried: E99 — `/go` member CTA kept visible after the countdown (T0, PR #169, e1b5e94). The Connect / Become-a-patron line lived only in the countdown branch, so it unmounted when "Continue to Download" appeared: headless render of a logged-out `/go` showed connect=true at t+4s and connect=false continue=true at t+13s. New line under the button, own event `patreon_click_after_wait`, gated `canProceed && mod && membershipOn && !isMember && !showPostConnect`; scoreboard capture list carries it; 5 guard tests red on pre-fix main. Production render after deploy: afterWait=true at t+13s, .mv-ads 1, aside 1. Merged onto the unbuildable main (10:03→10:12, #167×#168); ledger row is Quinn's 10:20 `--check` PASS on the #171 build.
-- Before → after: patreon_click users/day 8.75 (09-08→09-11, two outlier days of 13 when /go pv spiked to 112/65) → 5.57 (09-16→09-22); click rate per render user 11.8% → 9.5%, per page_view user 28.7% → 28.1% (flat); /go render users 74 → 58.7/day (−21%) while mod-page page_view 877 → 888/day. The drop is /go reach, not CTA copy — E65 keep rule (≥4.375) is met. After-wait clicks 0 → read 10-01.
-- Guardrail: GREEN, demand-side — 09-22 $192.44 (+6.2% same-weekday), RPM $16.79 (+9.8%), sessions −3.2%; monetizable RPM $28.75 vs $27.43 30d; 7d $1,490.45 (−0.7%), 28d $5,904.06 (+5.1%). Mediavine MCP unavailable in-session.
-- Verdict: MORE DATA (E99 read 10-01; E65 09-26; E55/E60 09-29; E74 10-06).
-- Next time: (1) a CTA that only renders inside a timed branch has a lifetime equal to the timer — render at t+timer+3s before calling placement fine; (2) Patreon clicks are now two events — add `patreon_click_after_wait` to any denominator that sums them, never fold it into E65's read; (3) `gh pr merge --delete-branch` fails when another worktree holds `main`, and the retry loop then reports "already merged" forever — merge in the foreground, delete the remote branch via the API.
-
-_Older entries (up to 2026-09-23) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-24) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
