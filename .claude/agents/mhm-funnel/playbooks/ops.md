@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-09-30 — E148
+- Tried: runner step `daily-pr-ledger` after Quinn exits — finds today's `funnel: daily run DATE (#N)` on origin/main, skips if main's ledger has an after-merge row (7-char commit, or `PR #N … daily run` label), else `deploy-verify --after-merge` from `$WT` with a `Quinn:` label; polls ≤600 s, fetch failure = UNKNOWN, in-flight verify = wait, never silent (T0).
+- Before → after: daily PRs with a retroactive row 3 in 4 days (#190, #206, #224) → 0 expected; 9/9 tests red pre-fix. Real-data probe recognised #224/#206/#190 rows.
+- Verdict: pending, read 2026-10-07 (`grep 'daily-pr-ledger:' logs/funnel-daily.log` every run; 0 retroactive daily rows).
+- Next time: a row a later step "remembers" is a row that goes missing when that step is killed — put it in the step that outlives the session.
+
 ## 2026-09-29
 E141: a runway override made the writer flag 🔴 on 6 of 7 mornings. On 09-29 it was 🔴 while the writer had inserted 20 rows in 24 h and 168 in 7 d. Re-graded with the inflow-only rule, the same 7 mornings give 0 🔴, 1 🟡 (09-24, 27.1 h since last insert) and 6 🟢. One flag should answer one question: depth belongs to assessRunway, inflow to assessWriterLiveness. PR #218 `4e8cbe9`, PASS 07:46; 4/36 tests red pre-fix. Ledger audit 7d: 73/73 merges on main have a row after a retroactive #190 row (`8835a89`); `check-pinner.sh` still carries the old override (inbox).
 
@@ -68,11 +74,5 @@ E141: a runway override made the writer flag 🔴 on 6 of 7 mornings. On 09-29 i
 - Before → after: ledger rows 7 of 7 merges (all PASS, 5xx = 0), but `deploy-verify.sh` graded PASS against a build that did not contain the merged sha on 2 of 7 (#132 at 07:05, #136 at 07:09) — produ…
 - Verdict: a post-merge check that matches a deployment by timing is decoration once merges overlap; the prose rule ("wait 4 min") was chained into the same command as `gh pr merge` by one agent and c…
 - Next time: `deploy-verify.sh --after-merge` compares the alias build's sha to `origin/main` HEAD and promotes HEAD's build (Tier 0, 09-22); the serialization check becomes its own command that exits…
-
-## 2026-09-20
-- Tried: first digest to reach `main` since 09-16 — landed the operator's 09-17 "approve all #2 items" reply (stranded on two unmerged Quinn branches, `ce7c111` → `65e1756`), the 09-18/09-19 digest sk…
-- Before → after: ledger rows on `main` for the 7 PRs merged 09-18/09-19: 1 of 7 → 7 of 7; experiments registered for them: 0 of 5 → 5 of 5; the operator's Tier 2 approval existed on `main`: no → yes.…
-- Verdict: KEEP "paper trail first, merges second" — the skeleton + part-1 commit took 25 minutes and needed no agent; FIX the tool: the Edit tool is denied on every `.claude/` path in this session (6…
-- Next time: when a stranded branch is based on an older `main`, never `git merge` it — `git checkout <branch> -- <file>` for report files, and reconcile the team registries by hand (main had rolled E…
 
 _Older entries (up to 2026-09-10) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._

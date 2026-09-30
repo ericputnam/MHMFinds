@@ -471,6 +471,76 @@ fi
 for f in .claude/agents/mhm-funnel/operator-queue.md .claude/agents/mhm-funnel/experiments.md .claude/agents/mhm-funnel/ideas-inbox.md; do
   [ -f "$WT/$f" ] && ! cmp -s "$WT/$f" "$PROJECT_DIR/$f" && cp "$WT/$f" "$PROJECT_DIR/$f" && log "synced $f"
 done
+# >>> daily-pr-ledger
+# E148 (2026-09-30): the daily PR's own after-merge ledger row belongs to the step that sees the merge. Quinn's session
+# often ends before its own after-merge verify runs, so #173, #190, #198, #206 and #224 got their rows retroactively
+# (three in four days). After Quinn exits, find today's `funnel: daily run YYYY-MM-DD (#N)` squash commit on
+# origin/main; if the ledger on origin/main has no after-merge row for it (by 7-char commit, or by a "PR #N … daily
+# run" label — deploy-verify grades HEAD when main moved on), run deploy-verify --after-merge from $2, a tree that
+# still has node_modules (cleanup() only reaps the worktrees on EXIT, after this). Polls ≤ DPL_MAX_WAIT_S (default
+# 600 s), logging each poll; a fetch failure is UNKNOWN (never a write), and a step that finds nothing writes an
+# explicit DID NOT FIRE line — silence from a scheduled step is never the outcome. It never starts a second verify
+# while a deploy-verify --after-merge is still running. Self-contained: __tests__/unit/runner-daily-pr-ledger.test.ts
+# extracts this block and runs it under /bin/bash 3.2 against throwaway git repos.
+daily_pr_ledger() {  # $1 day (YYYY-MM-DD) · $2 tree to verify from. rc 0 row present/written · 2 did not fire / unknown
+  local day="$1" tree="$2" poll_s="${DPL_POLL_S:-60}" max_s="${DPL_MAX_WAIT_S:-600}" waited=0 polls=0
+  local title="funnel: daily run $1" state n sha sha7="" label rc row
+  while :; do
+    state=""; n=""; sha=""
+    if ! git -C "$tree" fetch -q origin main >/dev/null 2>&1; then
+      state="UNKNOWN (git fetch origin main failed — could not look)"
+    else
+      read -r sha n <<<"$(git -C "$tree" log origin/main -n 300 --format='%H %s' 2>/dev/null | awk -v t="$title" '
+        { c = substr($0, 42 + length(t), 1) }
+        substr($0, 42, length(t)) == t && (c == " " || c == "") && match($0, /\(#[0-9]+\)$/) {
+          print substr($0, 1, 40), substr($0, RSTART + 2, RLENGTH - 3); exit }')"
+      if [ -z "$sha" ] || [ -z "$n" ]; then
+        state="not merged to origin/main yet"
+      else
+        sha7="${sha:0:7}"
+        if git -C "$tree" show origin/main:reports/funnel/changelog.md 2>/dev/null | awk -F'|' -v s="$sha7" -v pr="PR #$n " '
+            function trim(x) { gsub(/^[ \t]+|[ \t]+$/, "", x); return x }
+            $3 ~ /after-merge/ && (trim($5) == s || (index($4 " ", pr) > 0 && $4 ~ /daily run/)) { f = 1 }
+            END { exit !f }'; then
+          log "daily-pr-ledger: PR #$n ($sha7) already has an after-merge row on origin/main — nothing to write"
+          return 0
+        fi
+        if "${DPL_PGREP:-pgrep}" -f 'deploy-verify\.sh --after-merge' >/dev/null 2>&1; then
+          state="merged as $sha7 (PR #$n), no row yet, a deploy-verify --after-merge is still running (not starting a second)"
+        else
+          break
+        fi
+      fi
+    fi
+    if [ "$waited" -ge "$max_s" ]; then
+      log "daily-pr-ledger: DID NOT FIRE — '$title' $state after ${waited}s / $polls poll(s); no after-merge row written (next run: write it retroactively)"
+      return 2
+    fi
+    polls=$((polls + 1))
+    log "daily-pr-ledger: poll $polls — '$title' $state (waited ${waited}s of ${max_s}s)"
+    ${DPL_SLEEP:-sleep} "$poll_s"; waited=$((waited + poll_s))
+  done
+  label="Quinn: PR #$n funnel: daily run $day (Tier 0 docs)"
+  if [ ! -x "$tree/scripts/agents/deploy-verify.sh" ]; then
+    log "daily-pr-ledger: DID NOT FIRE — PR #$n merged as $sha7 but $tree/scripts/agents/deploy-verify.sh is not executable; no row written"
+    return 2
+  fi
+  log "daily-pr-ledger: PR #$n merged as $sha7 with no after-merge row on origin/main — running deploy-verify --after-merge from $tree"
+  (cd "$tree" && ./scripts/agents/deploy-verify.sh --after-merge --sha "$sha" --label "$label") >>"$LOG_FILE" 2>&1
+  rc=$?
+  log "daily-pr-ledger: deploy-verify exit $rc (0 pass/superseded/inconclusive · 2 rolled back, build error or timeout · 3 still failing)"
+  row="$( { git -C "$tree" fetch -q origin main >/dev/null 2>&1 && git -C "$tree" show origin/main:reports/funnel/changelog.md 2>/dev/null
+            cat "$tree/reports/funnel/changelog.md" 2>/dev/null; } | grep -F -- "| $label |" | tail -n 1)"
+  if [ -n "$row" ]; then log "daily-pr-ledger: ROW $row"; return 0; fi
+  log "daily-pr-ledger: DID NOT FIRE — deploy-verify exit $rc wrote no row labelled '$label' (see logs/deploy-verify.log)"
+  return 2
+}
+# <<< daily-pr-ledger
+if [ "${FUNNEL_DAILY_PR_LEDGER:-1}" = "1" ]; then
+  daily_pr_ledger "$TODAY" "$WT"; log "daily-pr-ledger: exit $?"
+else
+  log "daily-pr-ledger: disabled (FUNNEL_DAILY_PR_LEDGER=0) — the daily PR's row is Quinn's to write by hand"
+fi
 # Ledger + incidents: deploy-verify.sh's ledger() already pushed each row DURABLY to origin/main via
 # ledger-commit.sh as it happened — this is now a same-run convenience mirror only (so the operator's
 # tree shows today's rows without a manual `git pull`), not the mechanism that makes them durable.
