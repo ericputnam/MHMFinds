@@ -32,7 +32,7 @@ day.
 
 ### Q17 · Sponsorship: price + send (Rio, E89, 2026-09-23)
 - Media kit from real numbers (`reports/funnel/drafts/sponsorship-media-kit-2026-09-23.md`): 354,348 sessions 28d; hub slot 6,300 pv/mo; homepage 17,000. Proposed **$300/mo hub slot, $750/mo site-wide**; 2 cold emails + 1 follow-up drafted in your name. Read 2026-10-07; keep if ≥10 sent AND ≥1 interested reply. Reply **"approve sponsorship"** or a price.
-- **Re-pitch on 09-30 if no reply (Rio, 7-day rule):** skip the price decision — send only the $300/mo "presented by" hub-slot email to the 2 drafted prospects. Reply **"send hub"** or a number. Silence to 10-07 = dropped and logged.
+- **Re-pitched 2026-09-30 (Rio, 7-day rule; no reply since 09-23):** skip the price decision — send only the $300/mo "presented by" hub-slot email to the 2 drafted prospects. Numbers re-checked 09-30 (GA4 09-02→09-29: 356,828 sessions, 93.6% desktop; hub ≈7,000 pv/mo) — emails under-claim. Reply **"send hub"** or a number. **Drop date 2026-10-07:** silence = dropped and logged.
 
 ### Q18 · Weekly newsletter cron line (Cass, E78) — Tier 2, only the `vercel.json` piece remains
 - **Part A merged 09-30 as PR #226** (Tier 0, verify PASS). The route, builder and tests are live but inert: nothing schedules the route, it 401s without the `CRON_SECRET` bearer, and it no-ops unless `NEWSLETTER_WEEKLY_ENABLED=true`. #144 is closed.

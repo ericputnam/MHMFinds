@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-29T10:38:00.533Z",
+  "generatedAt": "2026-09-30T10:38:11.002Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3164,9 +3164,9 @@
     },
     {
       "date": "2026-09-28",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 195.7,
+      "sessions": 12475,
+      "rpm": 15.68,
       "expectedRevenue": 195.9,
       "expectedSessions": 12508,
       "nonAdMonthly": 146,
@@ -3232,6 +3232,42 @@
         "Cass": 6,
         "Rowan": 6,
         "Nova": 7,
+        "manual": 10
+      }
+    },
+    {
+      "date": "2026-09-30",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 180.32,
+      "expectedSessions": 11294,
+      "nonAdMonthly": 149,
+      "ownedAdds7d": 121,
+      "pinterestSessions7d": 59439,
+      "returningShare7d": 0.5186015191509993,
+      "nonPinterestShare7d": 0.17273486430062635,
+      "pagesPerSession7d": 1.560331294321442,
+      "engagementRate7d": 0.7243652898825312,
+      "favorites7d": 1181,
+      "downloadClicks7d": 492,
+      "newMods7d": 27,
+      "catalogTotal": 16561,
+      "captureRatePer1k": 1.3074296581233522,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7857142857142857,
+      "opsMergeShare7d": 0.1044776119402985,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Pip": 7,
+        "Rio": 6,
+        "Sage": 8,
+        "Cass": 7,
+        "Ops": 7,
+        "Rowan": 6,
+        "Nova": 8,
+        "Quinn": 8,
         "manual": 10
       }
     }
@@ -4631,6 +4667,48 @@
       "kind": "merge",
       "label": "manual",
       "commit": "7b39d2c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "Nova: PR #217 page-rpm bucket /creator/* as app",
+      "commit": "949b536",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "Rio: PR #220 bound every patreonGet caller (E139)",
+      "commit": "d8c04ba",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "Sage: PR #221 sitemap-mods.xml lastmod from createdAt/lastScraped (E136)",
+      "commit": "72c8841",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "Pip: PR #222 writer plugin-schedule guard in the runway top-up + ranker (E135)",
+      "commit": "6b0b47a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "Cass: PR #219 hydrate /mods/[id] favorite state (E138)",
+      "commit": "9101e51",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-29",
+      "kind": "merge",
+      "label": "Ops: PR #218 writer-liveness flag inflow-only (E141)",
+      "commit": "4e8cbe9",
       "result": "PASS"
     }
   ]
