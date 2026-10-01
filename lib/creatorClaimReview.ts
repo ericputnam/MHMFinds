@@ -97,6 +97,21 @@ export function planPromotion(input: {
 }
 
 /**
+ * The write a promotion performs (E151, 2026-10-01).
+ *
+ * /creator/[slug]/ joins CreatorProfile on `handle === slug` and then gates
+ * BOTH the verified badge and the claim card (E144) on `isVerified`. The
+ * claim form creates the pending row at the schema default (false), and
+ * before E151 promotion changed only the handle — so the first promoted
+ * claimant would have landed on their own page still reading "Claim this
+ * page". Promotion *is* the human review, so it is what verifies the row.
+ * User.isCreator is still not touched here (its own admin screen).
+ */
+export function promotionData(handle: string): { handle: string; isVerified: true } {
+  return { handle, isVerified: true };
+}
+
+/**
  * Decide a rejection. A rejected claim's pending profile is deleted (so it
  * stops counting as "creators onboarded"), but never when mods already
  * point at it: Mod.creatorId would be silently nulled, detaching approved
