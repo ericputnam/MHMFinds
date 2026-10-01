@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-10-01 — E155
+- Tried: merge-gate mkdir lock in the git common dir, held through the caller's `&&` merge (frees on merge landing / shell exit / TTL ≤600 s); deploy-verify refuses a `PR #N` label not MERGED (T0, #239).
+- Before → after: PRs graded on one head 3 (09-30) → 0 expected; 15/20 tests red pre-fix. E101 KEEP.
+- Verdict: pending, read 10-08.
+- Next time: key a lock to the caller's shell pid, not a TTL alone.
+
 ## 2026-09-30 — E148
 - Tried: runner step `daily-pr-ledger` after Quinn exits — finds today's `funnel: daily run DATE (#N)` on origin/main, skips if main's ledger has an after-merge row (7-char commit, or `PR #N … daily run` label), else `deploy-verify --after-merge` from `$WT` with a `Quinn:` label; polls ≤600 s, fetch failure = UNKNOWN, in-flight verify = wait, never silent (T0).
 - Before → after: daily PRs with a retroactive row 3 in 4 days (#190, #206, #224) → 0 expected; 9/9 tests red pre-fix. Real-data probe recognised #224/#206/#190 rows.

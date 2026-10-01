@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T10:38:11.002Z",
+  "generatedAt": "2026-10-01T10:38:15.027Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3200,9 +3200,9 @@
     },
     {
       "date": "2026-09-29",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 185.62,
+      "sessions": 11762,
+      "rpm": 15.78,
       "expectedRevenue": 180.08,
       "expectedSessions": 11492,
       "nonAdMonthly": 145,
@@ -3268,6 +3268,42 @@
         "Rowan": 6,
         "Nova": 8,
         "Quinn": 8,
+        "manual": 10
+      }
+    },
+    {
+      "date": "2026-10-01",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 184.4,
+      "expectedSessions": 11292,
+      "nonAdMonthly": 155,
+      "ownedAdds7d": 119,
+      "pinterestSessions7d": 59670,
+      "returningShare7d": 0.5200115174200979,
+      "nonPinterestShare7d": 0.1727665945766096,
+      "pagesPerSession7d": 1.5711931836659476,
+      "engagementRate7d": 0.731010634261618,
+      "favorites7d": 750,
+      "downloadClicks7d": 474,
+      "newMods7d": 27,
+      "catalogTotal": 16561,
+      "captureRatePer1k": 1.2790335235761348,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7857142857142857,
+      "opsMergeShare7d": 0.10294117647058823,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Pip": 8,
+        "Cass": 8,
+        "Rowan": 6,
+        "Nova": 8,
+        "Sage": 7,
+        "Ops": 7,
+        "Quinn": 8,
+        "Rio": 6,
         "manual": 10
       }
     }
@@ -4709,6 +4745,90 @@
       "kind": "merge",
       "label": "Ops: PR #218 writer-liveness flag inflow-only (E141)",
       "commit": "4e8cbe9",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Sage: PR #225 mod JSON-LD dateModified from modLastmod (E143)",
+      "commit": "6a2887f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Pip: PR #227 E142 runway top-up #6 ledger + package + playbook",
+      "commit": "77c3a9e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Cass: PR #226 weekly newsletter pipeline, inert + unscheduled (E145)",
+      "commit": "77c3a9e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Ops: PR #229 runner writes the daily PR's after-merge ledger row (E148)",
+      "commit": "6970725",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Pip: PR #227 E142 runway top-up #6 ledger + package + playbook",
+      "commit": "6970725",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Nova: PR #228 creator claim card + fan-forward share (E144)",
+      "commit": "6970725",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Quinn: PR #223 /account/favorites/ page + Navbar heart link (E140, Tier 1)",
+      "commit": "c1f2522",
+      "result": "SUPERSEDED (production already on 32d2c5c, newer)"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Rio: PR #232 /go funnel read on the render denominator (E146)",
+      "commit": "8dc0302",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Rio: PR #233 Q17 sponsorship kit re-checked 2026-09-30",
+      "commit": "a282172",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Rowan: PR #230 room/lot-typed rows hand-fixed + ingest guard (E147)",
+      "commit": "b935114",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Cass: PR #231 Q18 = cron line only; playbook 09-30",
+      "commit": "4ea4f6c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-09-30",
+      "kind": "merge",
+      "label": "Quinn: PR #234 funnel: daily run 2026-09-30 (Tier 0 docs)",
+      "commit": "8c4710b",
       "result": "PASS"
     }
   ]

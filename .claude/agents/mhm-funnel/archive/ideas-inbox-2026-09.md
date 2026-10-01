@@ -235,3 +235,32 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 - [ ] [ops] scoreboard: add GA4 `creator_claim_share` 7d and `/submit-mod/?creator=` views split by `ref=share` next to "Creator submissions 7d" so E144 reads from the scoreboard. — Nova 09-30
 - [ ] [ops] `ledger-commit.sh` / ship protocol: reject a `--label` naming a PR whose `gh pr view` state is not MERGED — would have blocked the mislabelled 06:51 verify row (Pip's label on Cass's 77c3a9e). — Pip 09-30
 - [ ] [ops] Two leftover writers of room values into contentType: aiFacetExtractor maps fridge→kitchen (used only by deploy-facets-safely.ts), and mhmScraperUtils URL mapping would still write bedroom on 118 rows. The E147 ingest guard catches both; the writers themselves are outside Rowan's allowed files. — Rowan 09-30
+
+## Done 2026-10-01 (verbatim, moved by Quinn)
+
+- [ ] [sage] `app/layout.tsx:188` WebSite JSON-LD `dateModified: new Date()` — today's date on every request; pin to a real lastmod (E143 scanner cannot see it: not fed by updatedAt). — Sage 09-30 → DONE 10-01 as E150 (PR #235)
+- [ ] [cass] Replace the E4 `/go` email box with an E130-style account offer in the same slot (sibling of `.mv-ads`). Baseline 1.73/1K email; keep bar ≥2.62/1K owned adds. — Cass 09-30 → DONE 10-01 as E152 (PR #238)
+- [ ] [sage] `/sitemap-mods.xml` is ○ static: new mods reach it only on the next deploy — `force-dynamic` as E37 did (T0). — 09-29 → superseded 10-01 by the ingest-stall line (reopen after ingest resumes)
+- [ ] [sage] IndexNow dry run at 10:47Z found mods=0 while the runner at 10:35Z found 27 (exactly 27 every day since 09-26) — check the `fetchNewModIds` window and cap. — Sage, 09-28 → explained 10-01: ingest stalled since 09-26 (Sage)
+
+## Parked 2026-10-01 — [ops] plumbing requests (verbatim, moved by Quinn; Ops pulls from here)
+
+- [ ] [ops] `npx vitest run __tests__/unit/pin-*` in the Pip ship protocol matches no file (exit 1, empty log); the pin tests are `pinner-liveness.test.ts` and `rank-pin-destinations-lib.test.ts` — fix the protocol glob in the dispatch prompt / runner or rename. — Pip, 09-27
+- [ ] [quinn/ops] Add `password_reset_complete`, `save_finds_signin_redirect`, `save_finds_after_signin` to the capture-events inListFilter in `scripts/agents/funnel-scoreboard.ts:237` so E123/E130 read from the scoreboard. — Cass, 09-27/28
+- [ ] [ops] E126 follow-ups: `funnel-scoreboard.ts:885` still writes `nonAdRevenueMonthlyGross: 0` when patreon/db fail (make null; digest/md headline read the 0); the end-of-run WT→operator changelog mirror in `run-funnel-daily.sh` is still exact-text (route via `--merge-local`); `funnel-history.ts` carries `nonAdMonthly` forward on days with no scoreboard JSON — null needs a dashboard-owner call. — Ops, 09-27
+- [ ] [ops] deploy-verify graded #201 INCONCLUSIVE because the check-blog-sidebar curl failed on the runner network while a hand run passed a minute later — retry the blog fetch once, with the smoke's network control, before writing INCONCLUSIVE. — Rio, 09-28
+- [ ] [ops] `scripts/agents/test_pin_runway_topup.py` was edited outside Pip's allowed-file list — add `scripts/agents/test_pin_*.py` to Pip's list in the dispatch. — Pip, 09-28
+- [ ] [ops] smoke-render `--collection <slug>` override (registry-checked) so an agent shipping a collection change can pass it to deploy-verify; the daily rotation may not render the page they changed. — Ops, 09-28
+- [ ] [ops] "Writer's own rows" needs a data-backed definition: `Wordpress Post ID` is on 100% of stranded and placeholder rows, so pinner-liveness-lib counts top-up rows as writer inflow (84 so far). Use E135's predicate. — Pip 09-29
+- [ ] [ops] `check-pinner.sh` step 2b (~L430) still has the runway→RED writer override that E141 removed from `pinner-liveness-lib.ts`; exit code unaffected, but message and label now disagree with the scoreboard. Mirror the inflow-only rule + parity test. — Ops, 09-29
+- [ ] [nova] `/creator/[slug]/` shows the claim card on the 20 unverified existing profiles; after E129 promotes a claim, confirm the row is set `isVerified` or the card keeps asking on a claimed page. — Nova 09-30 — DONE 10-01 (E151, #237)
+
+## Parked 2026-10-01 b — [ops] plumbing requests (verbatim)
+
+- [ ] [ops] `ownedAdds7d` (funnel-scoreboard.ts ~L879): Quinn decided 09-28 — report Patreon free members (+24/day) as a *third* owned-audience line on the scoreboard, not folded into the 120/wk target (no re-baseline). Cass 09-25 / Quinn 09-28.
+- [ ] [ops] `funnel-scoreboard.ts` channel sessions: report each channel net of zero-pageview sessions (or carry `zeroPageviewSessions7d` per channel). E117: the whole `(not set)` landing slice (3,816/7d; Pinterest 2,327, Bing 868) has `screenPageViews = 0` and is 97% desktop — preview/prefetch noise inflating the Pinterest and Bing lines and the headline. `reports/funnel/not-set-audit-2026-09-26.md`. Pip, 09-26.
+- [ ] [ops] `next.config.js` puts `public, s-maxage=60` on every `/api/*` incl. session-dependent GETs; locally it replaced a route's `no-store`. Limit to public GETs (Tier 2). — Cass 09-29
+- [ ] [nova] scoreboard request (Ops/Quinn): add "claim submissions 7d" (ModSubmission.source='Creator Claim') and "pending creator profiles" (handle LIKE 'pending-%') next to creators onboarded, plus claim views (GA4 `/submit-mod/?creator=`), so E122/E129 read from the scoreboard, not a manual query — Nova, 09-27/28
+- [ ] [nova] E12 read on 10-09 should be graded against 0/15 adopted W36–W38 and closed as KILL of the weekly head-term brief format (playbook 09-21); do not write W39/W40 packs unless the writer asks — the operating-model §5 line "weekly brief pack" is out of date with the 09-22 charter and should be amended to "monthly, on request" — Nova, 09-27
+- [ ] [rowan] holidays facet (923 rows): only 537 titles (58.2%) name a holiday or season; top-24 is 13/24. Title-only repair before holidays-cc gets any more promotion. — Rowan 09-30 — DONE 10-01 (E154, #240/#242)
+- [ ] [rowan] E132 fallback picks furniture where E120 pins say decor/clutter on 3 rows (bedding, 2 kitchen sets) — pins win; revisit only if a bedding/clutter title rule is proposed. — Rowan, 09-28 — PARKED 10-01 (revisit only with a bedding/clutter title rule)

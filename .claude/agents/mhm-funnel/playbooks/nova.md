@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-01
+- Tried: E151 (T0, PR #237 `e50dba6`): claim promotion now sets `isVerified` with the handle. `/creator/[slug]/` gates both the badge and the E144 claim card on `profile.isVerified`; the claim form creates the row at the schema default (false) and E129's promote wrote only `handle`, so the first promoted claimant would have landed on their own page still reading "Claim this page". Pure `promotionData()` in `lib/creatorClaimReview.ts`; the test derives the flag name from its output and asserts it is the field the page reads (3 of 14 cases red on bea25bb).
+- Before → after: DB 2026-10-01: 20 profiles, 20 verified, 0 pending, 0 promotions ever — the 09-30 inbox premise ("20 unverified") was wrong; the bug was latent, not live. Fields the promote write sets of the fields the page reads: 0/1 → 1/1.
+- Verdict: MORE DATA (read 2026-10-11 with E122/E129; keep if every `creator-claim`/`promote` audit row's profile has isVerified=true, with /creator/* landing 7d ≥95% of 558).
+- Next time: check the before-snapshot before trusting an inbox line's count — one 5-line DB read turned "20 unverified profiles" into "0, latent write gap". And `gh pr merge` exit 1 after a win is "already merged", not "not merged": read `gh pr view --json state` before retrying. Onboarded is still 0 and Q23 (T2, 2 days unanswered) is the only feed into this path.
+
 ## 2026-09-30
 - Tried: E144 (T0, PR #228): diagnosed 0 claim starts on the population, not the CTA. GA4 09-23→09-29: /creator/* 558 landing sessions, /submit-mod/ 1 view total, 0 with `?creator=`; DB: 0 ModSubmission rows source='Creator Claim' ever, 4 submissions lifetime (last 2026-01-10), 0 pending profiles. The CTA was server-rendered above the grid but a slate-500 footnote — and the visitor is a fan (~1 landing/page/week), not the creator. Shipped `CreatorClaimCard` in the hero: visible "Claim this page" + fan-forward "Send them this page" (copies the claim URL with `&ref=share`, GA4 `creator_claim_share`), hidden on verified profiles; hub copy no longer routes claims through the bare form.
 - Before → after: claim views 0/wk, share events 0 (no surface) → read 2026-10-14.
@@ -55,10 +61,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read on 2026-10-22; keep if hub ≥50 landing sessions/28d AND leaves ≥600/wk AND ≥1 non-brand GSC query on the hub; else Navbar back to `/top-creators/`).
 - Next time: two green PRs from the same base can still break `main` — #167 and #168 each added `listCreators` to `lib/creators.ts`, the squash merged both, Vercel refused the build (main unbuildable 10:03→10:12, Rio's #169 merged into the window). Before merging on a day other agents touch your file, `git diff --name-only <base> origin/main` and rebuild if there is overlap; `lib-duplicate-exports.test.ts` now catches the repeat-export case. Also: the "smoke the preview URL" line in every incident file has never been executable here — previews are cancelled by the Ignored Build Step and sit behind SSO; smoke `next start` of the fix build locally instead.
 
-## 2026-09-23
-- Tried: public creator pages `/creator/[slug]/` from existing catalog data (T0, PR #159, E85) — the profile + attribution half of the Q14 memo (#141), no file hosting, no agreements. New `lib/creatorSlug.ts` (pure) + `lib/creators.ts` (loader), `app/creator/[slug]/`, `sitemap-creators.xml` in the index, `creator` in `NEXTJS_PREFIXES`, sidebar registry entry, and the mod-page author name now links to its creator page. Slug folds the scraper's spelling variants (Ravasheen 41 + RAVASHEEN 12 rows → one page); ≥5 SFW mods or 404; junk author strings (bare Patreon ids, "Kobe Sweats 135179830") never get a page or a link.
-- Before → after: creator landing pages on the catalog 0 → ~540 (542 slugs ≥5 mods of 6,597; 894 ≥3, 273 ≥10, read 2026-09-23); demand read: "nekoswirl" creator-name cluster 69 GSC clicks/28d to 2026-09-20 landing on one mod page, blog `/sims-4-cc-creators/` 1,314 landing sessions/28d, `/top-creators/` 9, `/creators/` 1 (GA4 08-26→09-22).
-- Verdict: MORE DATA (read 2026-10-21; keep if `/creator/*` landing sessions ≥ 200 in the 28d to the read date OR ≥ 20 distinct creator pages with ≥ 1 GSC click, with `/mods/*` GSC clicks ≥ 95% of 28d baseline and mod-page session RPM ≥ 95% of the prior 4 weeks).
-- Next time: the creator-name demand was hiding in `/mods/[id]` query data, not in any creator surface — read GSC queries by *page* for a name before assuming a hub page has no demand. Outreach to the top slugs (Seoulsoul-sims 19,270 downloads, brandysims, Syboulette 67 mods) now has a URL to offer; the template is still T2.
-
-_Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-23) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._

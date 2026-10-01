@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-01 — E153: E134 "pipe confirmed fixed" read; E99 / E146 graded
+- Tried: `affiliate-pipe-lib.ts` + `affiliate-pipe-read.ts` + 17 tests (T0, PR #241, c039df3). Rule frozen in `PIPE_RULE`: from 09-29 (first full day after #214), on-site `gtracing` clicks ≥10 AND Impact 18111 ÷ on-site ≥50 % (exact fraction) → confirmed, E134's 30-day $0 KILL clock starts; <10 → not-yet; share under floor → leaky; Impact leg down → unknown, never a verdict. Impact GET bounded 30 s, every print through `redactError`.
+- Before → after: pre-fix 07-01→09-28 Impact 9 / on-site 110 = 8.2 % → post-fix 09-29→09-30 2 / 2 = 100 % but NOT-YET (8 clicks short ≈ 8 d at 1/day). E99 KEEP: after-wait 23u / 6 reported d = 3.83/day (keep ≥1.0; 3,4,4,8,2,2). E146 KEEP (6/6 reported, render denominator). E108 pre-read: joins since 09-25 5 in 6.2 d = 24.5/mo PASS, cancels 0 (floor until the 10-01 charge run), connected 1/56 FAIL. Guardrail GREEN from files; MCP unavailable.
+- Verdict: shipped, deploy-verify PASS 07:05. Reads: E108 10-02, E134/E153 10-12.
+- Next time: (1) `partner_performance_by_day` silently ignores `CAMPAIGN_ID` (its filters are Brand/dates only) — by-program per window is the only per-campaign read; (2) `affiliate-daily-pulse` writes to the operator tree uncommitted — a report nobody commits is not a record; (3) 2 of 2 is not a rate — print the click floor before the share; (4) the merge gate's check-then-act race runs both ways: an open gate closed under me 2 s later when #236 landed — loop the gate, never assume one green poll holds.
+
 ## 2026-09-30 — E146: /go read on the render denominator; B2 September graded
 - Tried: go-funnel-read + lib, 17 tests, PR #232; first live run counted today's partial day (E99 3.5/day) — fixed to 4.2 before shipping. Q17 kit + emails re-checked (PR #233).
 - Before → after: page_view÷render 41.4% (227/548); E99 21u/5d = 4.2/day ON PACE (keep ≥1.0). B2 Sept: 49→55 paid, $129→$149 (+15%) vs $200 MISSED; connected 0/107. Guardrail GREEN from files.

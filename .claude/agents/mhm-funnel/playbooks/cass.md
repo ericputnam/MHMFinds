@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-01
+- Tried: E152 — "Save this mod for later" account offer in the E4 /go email-box slot (sibling below `.mv-ads`, wrapper still 2 children), copy split by session status, saved → /account/favorites/; own ref go-save, events go_save_signin_redirect / go_save_after_signin, marker ?save=1 (T0, PR #238, 1902a23, verify PASS 06:53). 7/8 GoClient cases red pre-fix.
+- Before → after: /go 2,931 sessions 14d (99% desktop; page_view only 15% of them); E4 0.68/1K GA4 14d, 1.45/1K DB 28d; go_save_* 0 → read 2026-10-15. Owned adds 7d 119 (28 email + 91 accounts) vs 200; capture 1.28/1K.
+- Verdict: PENDING. Keep if ≥2.62/1K /go sessions AND /go RPM ≥95% same weekdays (watch 10-08).
+- Next time: import a shared constant from its client-safe module (lib/favoritesPath.ts), never the Prisma-backed barrel. And `gh pr merge --delete-branch` exit 1 again meant MERGED — read state first.
+
 ## 2026-09-30
 - Tried: E145 = E78 Part A. Shipped #144's cron route, `newsletterWeekly` and tests without `vercel.json` (T0, PR #226, 77c3a9e, verify PASS 06:55). Production returns 401 with no bearer. Auth now fails closed on an unset `CRON_SECRET` (#144 skipped auth in that case; 1/20 tests red against it). #144 is closed. Q18 now asks only for the cron line.
 - Before → after: automated issues 0/wk, 56 subscribers, 1 issue ever. Read 10-07 (Q18 drop date).
@@ -48,29 +54,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: favorite on /mods/* 0/14d, sign_up 11/14d all on /sign-in/, accounts +68/7d → read 2026-10-09.
 - Verdict: PENDING. E34 graded MISSED (2 vs ≥79 confirmed); endpoint stays for E54/E68.
 - Next time: audit every capture CTA on the top-traffic page for a stub handler before building a new surface — the biggest capture leak today was a button that did nothing, not a missing placement. Give each placement its own event name; an event param is invisible without a custom dimension. When a PR ahead of you touches your file, `git merge-tree --write-tree` dry-run first, then rebase only after it merges and re-run its suite too. OAuth buttons on sign-in drop `redirect` — fix before reading any account-capture experiment that relies on returning to the page.
-
-## 2026-09-24
-- Tried: added the 5 day-2 bounce hashes (read-only DSN read --since 09-21, 3x 5.1.1 / 1x 5.2.2 / 1x 5.5.0; cross-check since 09-16 = 12 = 7+5). PR #165 `0acc882`.
-- Before → after: list 7 → 12; segment 384 → 383 (re-frozen on "favourited before the anchor"); day-3 dry 12/12 matched, 0 in slice, would-send 99.
-- Verdict: E54 MORE DATA; day-3 waits on "go repermission day3".
-- Next time: read a script's flag parsing before running a command someone else wrote. "--dry-run" against an includes('--dry') parser was a live send (now: unknown flags exit 1). And "frozen" must cover every predicate in the WHERE clause, not just the date: a favourite added after the anchor moved the list.
-
-## 2026-09-23
-- Tried: **default-off newsletter opt-in on the credentials sign-up form** (E86, T0): `app/sign-in/page.tsx` had NO email opt-in at all (the "sign-in" source is only `/api/waitlist`'s default). Ticked box -> `/api/waitlist` source `signup-optin` after the account exists; GA4 `newsletter_signup` only for a new row. Also graded E54/E68 day-2 (>=44 h): 5 hard of 100 (5.0%), 0 of the 7 excluded hashes re-attempted, 0 complaints, `re-permission` rows 2 total (1 from day-2) = 1.06 confirms/100 delivered -> MORE DATA.
-- Before -> after: `signup-optin` rows 0 (09-23); ~25 credential sign_up/wk (9 on /sign-in/ 09-21..23); /sign-in/ 56 sessions/7d; email adds 7d 4.
-- Verdict: MORE DATA (read 2026-10-07). Keep if >=2 `signup-optin` rows in 14 d AND opt-in >=10% of credential sign_ups.
-- Next time: `/api/waitlist` returns success for `alreadyExists`, so every GA4 `newsletter_signup` count overstates DB adds (E73: 1 event on `/`, 0 `home-hero` rows) - grade on DB rows only; add the 5 new bounce hashes before any day-3 batch.
-
-## 2026-09-21
-- Tried: **Homepage capture strip** (E73, Tier 0, PR #132): `components/HomeCapture.tsx` rendered in `HomePageClient.tsx` between the collections block and the grid/sidebar row — `NewsletterSignup sou…
-- Before → after: subscribers **26** (footer 17, go-interstitial 4, collection-page 3, re-permission 1, sign-in 1); email adds 7d 3, accounts 7d 51, owned adds 7d **52** vs 120; `home-hero` rows 0; GA…
-- Verdict: MORE DATA (read on 2026-10-05; RPM watch 2026-09-28). Keep if ≥2 home-hero adds (email + `sign_up{ref=home-hero}`) per 1K homepage sessions/7d AND page RPM ≥ $8.53 on a same-session re-pull…
-- Next time: (1) `ownedAdds7d` = email + accounts only (`funnel-scoreboard.ts:711`) — Patreon free members went 5,144 → 5,600 since 09-01 (≈+150/wk, more than everything else combined) and are in the…
-
-## 2026-09-20
-- Tried: the re-permission **day-2 batch under the operator's `go repermission day2`** (Q10, recorded by Quinn in `ce7c111` from the 09-17 chat reply "approve all #2 items"; E68 under E54). Did the >=…
-- Before -> after: dry run `--offset 100 --dry` (10:57Z): **frozen segment 383 = the 09-16 dry-run count exactly** (day-1 partition reproduced); 7 hashes -> 7 matched in the segment, **7 before offset…
-- Verdict: E68 **NO SEND — gate failed on the >=20 h read (7.0% >= 3%)**; 0 complaints, so the campaign is not killed. Needs a fresh operator word with the true number: `go repermission day2 at 7%` (d…
-- Next time: (1) a T+1 min bounce count is a floor, not a reading — MTAs retry for hours; only the >=20 h number counts, and the counter now makes it one command; (2) 5-7% dead addresses in "engaged,…
-
-_Older entries (up to 2026-09-15) live verbatim in `archive/playbooks/cass-2026-09.md`; nothing deleted._
