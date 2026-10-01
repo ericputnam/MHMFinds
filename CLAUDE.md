@@ -823,6 +823,9 @@ run died with `Prompt is too long`.
   own `no-store` (seen under `next start`, #219). A per-user GET (favorites, session state) must not
   depend on its own header. Add a per-request nonce, or exempt the path in `next.config.js`
   (Tier 2). Check `x-vercel-cache` after deploy.
+- **A secret check fails closed.** `if (secret && header !== …)` lets every request through
+  when the env var is unset — "works" in tests, open in production. Write `if (!secret || …)`
+  and a test with the var unset (#226).
 - **GET must never mutate** on any consent endpoint (unsubscribe, confirm). Link scanners and mail
   prefetchers follow GET links. Make the POST idempotent.
 - **Never let an email carrying a live secret ride the shared notifier's logging path** — pass
@@ -880,7 +883,11 @@ run died with `Prompt is too long`.
   Re-validate the second PR on the new `main` when both touch one file. **`gh pr merge` exit 1 does
   not mean "not merged"** — `--delete-branch` fails when another worktree holds `main` after the
   remote merge has landed (6 times on 09-24/25). Read `gh pr view N --json state,mergeCommit`,
-  never the exit code, before retrying or skipping the after-merge verify.
+  never the exit code, before retrying or skipping the after-merge verify. **The gate is
+  check-then-act with no lock:** on 09-30 three PRs passed one poll and merged within 6 s, and a
+  `gate; merge; verify` chain (`;`, not `&&`) graded Cass's #226 under Pip's #227 label (ledger
+  correction row). Chain only with `&&`, pass `verify --sha` the PR's `mergeCommit` oid (never
+  `origin/main`), and treat a label whose PR is not `MERGED` as an error.
 - **`npm run type-check` is never optional** — Vercel type-checks every `.ts` under `scripts/`.
 - **A merge without a ledger row did not happen** — and the row must be written by the step that
   merges, not by a later step of the same run. On 09-19 seven PRs landed on `main` and **one**
@@ -963,39 +970,36 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-29 — nine merges (#214, #216–#222, daily #224), zero incidents
+### 2026-09-30 — eleven merges (#223, #225–#234), zero incidents
 
-The 09-28 section is in the archive.
-- **Prisma `@updatedAt` is not a content date.** Every `downloadCount` increment and retag pass
-  bumps it, so `/sitemap-mods.xml` claimed 6,070 of 16,524 pages changed in 28 d on a catalog that
-  grew 673 — and new mods lost the one crawl signal a sitemap gives. Use `max(createdAt,
-  lastScraped)` (`lib/seo/modLastmod.ts`, #221). E37 had fixed the collection sitemap and left
-  this sibling on the same bug.
-- **A filter that removes 0 rows on every run is testing a field it cannot see.**
-  `filter_writer_rows` read `Wordpress Post ID`, which the revive `SELECT_COLS` never fetched, so
-  top-up #4 re-dated two of the writer plugin's scheduled rows (#222). Treat "dropped 0/0" as a
-  vacuity failure, and fail closed (exit 2, no write) when the attribution read fails.
-- **One flag answers one question.** The writer-liveness flag went 🔴 on low *runway* while the
-  writer was inserting 20 rows/day: 6 of 7 mornings were false reds, and the runway already had
-  its own 🟡 (#218). Depth and inflow are separate readings. Backtest a flag rule on the stored
-  scoreboard JSONs before you ship it.
-- **The host-split 301 redirects your own tools too.** A server-side `fetch` of `blog.*`
-  without `X-MHM-Proxy: nextjs-edge` follows the 301 without error. Staging checks were reading
-  prod (#216). Any probe of a specific host must send the header or use `redirect: 'manual'` and
-  assert the final URL. Same PR: `wp eval-file` silently no-ops on ~150–200 KB payloads (read a side
-  file), and JS `.length` counts UTF-16 units, not bytes (`Buffer.byteLength`).
-- **A one-off repair derives its targets from a query, asserts the approved plan shape, and
-  aborts with no writes on any mismatch.** It writes the rollback file before the first write
-  (#214 GTRacing: 4 host-fixes + 1 retire). A re-run is then safe and self-correcting.
-- **Still open:** `check-host-split.sh` is still not wired into `check-blog-sidebar.sh` or
-  `deploy-verify.sh`. `check-pinner.sh` step 2b still mirrors the old writer-runway override
-  (#218). The full `npx vitest run` reported 3 pre-existing failures on `main` (`play-page.test.ts`
-  `AD_KINDS` regex drift, `ModDetailPage.test.tsx` aria-name drift, #214), and the targeted
-  ship-protocol suites cannot see them.
+The 09-29 section is in the archive.
+- **`updatedAt` has now fed a content date three times** (collection sitemap E37, mod sitemap
+  #221, mod JSON-LD `dateModified` #225). #225 finally adds the class scanner
+  (`__tests__/unit/mod-jsonld-datemodified.test.ts`): any `dateModified`/`lastmod`/`lastModified`
+  fed by `updatedAt` under `app/` or `components/` fails CI. Extend it, don't add a fourth fix.
+- **A room is a theme, not a `contentType`.** 74 rows were typed `bathroom`/`kitchen`/`lot`/
+  `residential` because the scraper's URL category wrote the field (#230). The ingest guard in
+  `contentTypeDetector.ts` now never returns a room value; hand-fix rows via `--ids=` with a
+  rollback file, pin ambiguous ones in `hand-audited-content-types.ts`.
+- **Pick the denominator from what the page serves, not from `page_view`.** On `/go` GA4
+  `page_view` covers only 41.4% of `render` users, so per-page_view rates overstate conversion
+  ~2.4× (#232). And **today is unreported, not zero**: the first live E99 read averaged a partial
+  day in and printed 3.5/day instead of 4.2. Over reported days only; tag <2-day-old days
+  provisional.
+- **A save with no read surface is a dead feature.** 859 accounts held 22,477 favorites they
+  could not see — the Navbar heart was a `<button>` with no `href` or handler (#223). When a
+  feature writes user data, grep for the page that reads it back.
+- **A test must never append to a `reports/` ledger.** The newsletter send-path test wrote to
+  `newsletter-sends.jsonl` until the file ledger was intercepted (#226) — a test run is not a send.
+- **Still open:** two cron routes still **fail open** when `CRON_SECRET` is unset
+  (`app/api/cron/commission-sync/route.ts:13`, `monetization-agent/route.ts:21`,
+  `if (cronSecret && …)`); #226 fixed only the newsletter sibling. Auth → Tier 2. The merge gate
+  has no lock (see standing rule). `check-host-split.sh` is still not wired into
+  `check-blog-sidebar.sh` or `deploy-verify.sh`.
 
 ---
 
-*Last compound review: 2026-09-29*
+*Last compound review: 2026-09-30*
 
 ---
 

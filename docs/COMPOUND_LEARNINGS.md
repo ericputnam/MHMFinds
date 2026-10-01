@@ -2039,3 +2039,31 @@ The 09-27 section is in the archive.
 - **Fix the class at ingest, not only the rows.** #197 pinned 76 room-titled rows typed as CAS;
   #202 makes the detector *and* the scraper's URL-category fallback refuse a CAS type for a
   room-titled row unless the title itself names it (poses, lashes), falling back to NULL.
+
+### 2026-09-29 — nine merges (#214, #216–#222, daily #224), zero incidents
+
+The 09-28 section is in the archive.
+- **Prisma `@updatedAt` is not a content date.** Every `downloadCount` increment and retag pass
+  bumps it, so `/sitemap-mods.xml` claimed 6,070 of 16,524 pages changed in 28 d on a catalog that
+  grew 673 — and new mods lost the one crawl signal a sitemap gives. Use `max(createdAt,
+  lastScraped)` (`lib/seo/modLastmod.ts`, #221). E37 had fixed the collection sitemap and left
+  this sibling on the same bug.
+- **A filter that removes 0 rows on every run is testing a field it cannot see.**
+  `filter_writer_rows` read `Wordpress Post ID`, which the revive `SELECT_COLS` never fetched, so
+  top-up #4 re-dated two of the writer plugin's scheduled rows (#222). Treat "dropped 0/0" as a
+  vacuity failure, and fail closed (exit 2, no write) when the attribution read fails.
+- **One flag answers one question.** The writer-liveness flag went 🔴 on low *runway* while the
+  writer was inserting 20 rows/day: 6 of 7 mornings were false reds, and the runway already had
+  its own 🟡 (#218). Depth and inflow are separate readings. Backtest a flag rule on the stored
+  scoreboard JSONs before you ship it.
+- **The host-split 301 redirects your own tools too.** A server-side `fetch` of `blog.*`
+  without `X-MHM-Proxy: nextjs-edge` follows the 301 without error. Staging checks were reading
+  prod (#216). Any probe of a specific host must send the header or use `redirect: 'manual'` and
+  assert the final URL. Same PR: `wp eval-file` silently no-ops on ~150–200 KB payloads (read a side
+  file), and JS `.length` counts UTF-16 units, not bytes (`Buffer.byteLength`).
+- **A one-off repair derives its targets from a query, asserts the approved plan shape, and
+  aborts with no writes on any mismatch.** It writes the rollback file before the first write
+  (#214 GTRacing: 4 host-fixes + 1 retire). A re-run is then safe and self-correcting.
+- **Still open:** `check-host-split.sh` is still not wired into `check-blog-sidebar.sh` or
+  `deploy-verify.sh`. `check-pinner.sh` step 2b still mirrors the old writer-runway override
+  (#218). The full `npx vitest run` reported 3 pre-existing failures on `main` (`play-page.test.ts`
