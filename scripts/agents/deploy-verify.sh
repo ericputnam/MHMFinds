@@ -34,6 +34,11 @@
 # `failed` is empty, the row says INCONCLUSIVE (network) and fail_and_fix refuses to roll back. --check exits 2 in that
 # case (the runner already reads 2 as "could not run"); --after-merge keeps exit 0 + the INCONCLUSIVE row, because the ship
 # protocol tells agents that exit 2 means "it already rolled back — fix forward", which would be a second false alarm.
+# E155 (2026-10-01): an --after-merge --label naming "PR #N" is checked against `gh pr view N --json state,mergeCommit`
+# BEFORE anything else. Not MERGED → REFUSED, exit 2, no ledger row, nothing touched (09-30: a `;` chain verified #226
+# under #227's label). MERGED → --sha defaults to the mergeCommit, and the row records "PR #N mergeCommit X ≠ graded Y"
+# whenever the head actually graded differs. gh unreadable → WARN + "PR state unverified" in the row (could-not-check
+# never blocks the verify of a real merge, and never triggers anything).
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -51,7 +56,7 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-[ -n "$MODE" ] || { sed -n '2,30p' "$0"; exit 64; }
+[ -n "$MODE" ] || { sed -n '2,36p' "$0"; exit 64; }
 
 TS="$(date '+%Y-%m-%d %H:%M')"; STAMP="$(date '+%Y-%m-%d-%H%M%S')"
 INC_DIR="$ROOT/reports/funnel/incidents"; mkdir -p "$INC_DIR" "$ROOT/logs"
@@ -232,12 +237,30 @@ restore_functions_php() {
 # LAST_INCIDENT_FILE: set by incident() so a caller that writes the incident BEFORE calling ledger()
 # can hand the same file to ledger-commit.sh and land both in one durable commit on main.
 LAST_INCIDENT_FILE=""
+# ---------------------------------------------------------------- E155: the label's PR must be MERGED
+PR_NUM=""; PR_MC=""; PR_NOTE=""; GRADED=""
+label_pr() { printf '%s\n' "$1" | grep -oE 'PR #[0-9]+' | head -1 | sed 's/^PR #//'; }  # first "PR #N" in a label
+pr_mc_note() {  # $1 PR number, $2 PR mergeCommit, $3 graded head → note when they differ (prefix-tolerant), else ""
+  [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] || return 0
+  case "$2" in "$3"*) return 0 ;; esac
+  case "$3" in "$2"*) return 0 ;; esac
+  echo "PR #$1 mergeCommit ${2:0:7} ≠ graded head ${3:0:7} · "
+}
+pr_state() {  # $1 PR number → "STATE OID" (OID "-" when none); non-zero when gh cannot answer
+  local j
+  j="$( (cd "$ROOT" && gh pr view "$1" --json state,mergeCommit) 2>/dev/null)" || return 1
+  printf '%s' "$j" | python3 -c '
+import json,sys
+d=json.load(sys.stdin); m=d.get("mergeCommit") or {}
+print(d.get("state") or "?", m.get("oid") or "-")' 2>/dev/null
+}
 ledger() {  # $1 result, $2 notes
   # LOCAL append (for this run's own digest / same-run reads): $ROOT and Quinn's primary worktree only.
   # $OPERATOR_DIR is deliberately NOT written here any more — that tree carries untracked reports/
   # junk from interactive sessions, and a working-tree copy was never durable anyway (see below).
-  local row dir f seen=" "
-  row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$2" | tr '|' '/' | tr '\n' ' ')")"
+  local row dir f seen=" " notes
+  notes="${PR_NOTE}$(pr_mc_note "$PR_NUM" "$PR_MC" "$GRADED")$2"
+  row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$notes" | tr '|' '/' | tr '\n' ' ')")"
   for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
     [ "$dir" = "/reports/funnel" ] && continue  # FUNNEL_PRIMARY_WT unset (manual / standalone run)
     case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
@@ -305,6 +328,21 @@ fail_and_fix() {  # $1 = rollback target (may be empty)
 # ---------------------------------------------------------------- modes
 case "$MODE" in
   after-merge)
+    PR_NUM="$(label_pr "$LABEL")"
+    if [ -n "$PR_NUM" ]; then
+      if read -r PR_ST PR_OID <<<"$(pr_state "$PR_NUM")" && [ -n "${PR_ST:-}" ]; then
+        if [ "$PR_ST" != "MERGED" ]; then
+          log "REFUSED: --label names PR #$PR_NUM but gh says it is $PR_ST, not MERGED — not verifying, no ledger row, nothing rolled back. Re-run with the label of the PR you actually merged, after \`gh pr view N --json state,mergeCommit\` says MERGED."
+          exit 2
+        fi
+        [ "$PR_OID" = "-" ] || PR_MC="$PR_OID"
+        if [ -z "$SHA" ] && [ -n "$PR_MC" ]; then SHA="$PR_MC"; log "PR #$PR_NUM MERGED as ${PR_MC:0:7}; no --sha given → verifying its mergeCommit"
+        else log "PR #$PR_NUM MERGED as ${PR_MC:0:7}${SHA:+; caller --sha ${SHA:0:7}}"; fi
+      else
+        PR_NOTE="PR #$PR_NUM state unverified (gh pr view failed) · "
+        log "WARN: could not read PR #$PR_NUM state from gh — verifying anyway (could-not-check is not a refusal), row will say so"
+      fi
+    fi
     PREV="$(current_prod)"; log "production before: ${PREV:-unknown} · waiting for deploy of ${SHA:-newest} (≤${WAIT_MIN}m)"
     START=$(date +%s); DEPLOY_URL=""
     wait_ready() {  # sets DEPLOY_URL to the READY production build of $SHA; exits 2 on build error / timeout
@@ -343,6 +381,7 @@ case "$MODE" in
     fi
     log "deployment READY: $DEPLOY_URL"; sleep 15
     ensure_promoted "$DEPLOY_URL"; PROMO=$?
+    case "$PROMO" in 0) GRADED="$SHA" ;; 3) GRADED="$SERVED_SHA" ;; esac   # the head the verdict below is actually about
     if [ "$PROMO" -eq 3 ]; then
       # E110: production is already on a newer build that contains this commit. Leave it; grade production AS SERVED
       # (same semantics as --check: rollback target = the READY build before the served one).
