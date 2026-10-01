@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-01
+- Tried: E149 top-up #7 (T0, SD-10 floor; Supabase only, tool unchanged since #222): 21 sessions-ranked rows (ranker 23 destinations/124 ids; 10 used) to 10-01/02/03, 1/URL/day. Selectivity: ranker dropped 1 plugin row of the 1000-row pool (16 managed destinations), top-up 0, 2 for unposted sections, 0 blog.*. Ranker writes to `MHM_PROJECT_DIR` (default the main checkout) — set it to the worktree.
+- Before → after: runway 0.78 → 1.31 d (31 → 52 @ 39.79/day queue-posted-14d); SEO 56 → 88/100 (0/21 → 21/21) on `--ids` re-read; read-back 21/21, unposted, created_at ≤ 2026-03-25. E93: Bing 16,669/7d (09-24→09-30), zero-pv 763 = 4.6%, net 15,906 = 107.8% of 14,761.
+- Verdict: E93 KEEP. E149 MORE DATA (read 10-08: Pinterest sessions to the 10 destinations vs 2,668/7d, both hosts).
+- Next time: seven top-ups, runway never above 2.44 d — the floor is a treadmill until the plugin dates rows ahead (Q11).
+
 ## 2026-09-30
 - Tried: E142 top-up #6 (T0, SD-10 floor; Supabase only, tool unchanged since #222): 21 sessions-ranked rows (ranker 28 destinations/140 ids; 12 destinations used) to 09-30/10-01/10-02, 1/URL/day. Filter selectivity printed: plugin guard dropped 0 in the top-up but 1 in the ranker on the same 1000-row pool (16 managed destinations) — an upstream drop, not a blind filter.
 - Before → after: runway 0.94 → 1.46 d (38 → 59 @ 40.50/day queue-posted-14d); SEO 58 → 87/100 (0/21 → 21/21 passing) on an `--ids` re-read; read-back 21/21, created_at max 2026-03-25, 0 plugin rows. E76 read: 6 of 7 mornings (09-23→09-29) 🔴 while the writer inserted 48/0/24/28/0/48/20 — every 🔴 was the runway<3 d clause. E82 read: inserts/day 48/0/24/28/0/48/20/0 (168 in 8 d), 44 real-dated at insert, 151 plugin rows posted on their day, 310 at placeholder, 0 dated ahead — inflow alive and lumpy (2–3 articles/wk), never ≥12/day dated ahead. Direct +38.5%: top-70 landing×hour cells 760 vs 740 → the +2k is long-tail (9,278 cells), no page/hour spike.
@@ -47,17 +53,5 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: E26 graded KILL with a number (treated 6,325 → 5,842 Pinterest sessions, −7.6% vs site −0.1%); runway 1.83d → ~2.44d via 21 sessions-ranked rows (tool-gated, 7/day, cap-bound); pin-SEO mean 52 → 88/100 on 83 writer rows using the destination post's own copy instead of the template.
 - Verdict: **E26 KILL**. E102 and E103 pending (reads 10-03 and 10-05).
 - Next time: grade a revival by the destinations it pointed at, not by channel total — the channel was flat while the treated set fell 7.6%, and the same read would have called it a win. When a copy rule demands a keyword verbatim, check what the keyword actually is first: WordPress's "-2" dedupe suffix made "Sims 4 Couple Poses 2" the target and no real title could ever pass. Page copy beats template copy for the keyword rule but can erase per-pin specificity the writer put there; a hybrid that prepends a keyword lead to the writer's own sentence is the next iteration. The apex WP REST endpoint 308s without a trailing slash (`trailingSlash: true` applies to `/wp-json/*` too).
-
-## 2026-09-24
-- Tried: E75 shipped (T1, veto closed; PR #140 rebased onto main, merged `7554037`). E93 (T0 read + decision): Bing real-vs-bot, GA4 09-16→09-22.
-- Before → after: bing_organic 15,623/7d = 14,761 with pageviews + 862 zero-pageview `(not set)` landings (5.5%). Real part: 79% engaged, 1.8 pv/session, 393 s, 51% returning, desktop Edge across 263 device×browser×country rows, weekend-peaking. Runway 70 ÷ 33.4/day = 2.10 d ≥ 2.0 → no write; ≈1.9 d tomorrow.
-- Verdict: KEEP counting Bing net of the zero-pageview slice (read 2026-10-01). Writer cron fired 09-24 05:30 (`Inserted: 0, Duplicates: 294`): the 🔴 is the runway<3 d artifact, not inflow death.
-- Next time: verify a bucket by its zero-pageview share before its size — 12.6× Google is Google's collapse, not a Bing anomaly.
-
-## 2026-09-23
-- Tried: E77 shipped (T1, veto expired; PR #139 merged `b94082d`, deploy-verify PASS) — `--apply` **withheld**: today's audit (77 rows, 1 passing, mean 53/100) proposes one identical template description for 76 writer rows ("Browse the best Best Sims 4 Hair CC…", unverifiable "no dead links" claim) — machine copy on the writer's own pins, so the guard (re-scores clean) is not a quality gate. E82 (T0 read + decision): writer inflow vs drain.
-- Before → after: writer rows since the 09-21 cron: 268/25/48 per day (341), **341/341 dated `2025-01-01`** (Aug 1–Sep 4: 25/474 = 5%) → window inflow **0/day**. Forward queue = Q12 slice only, 7/day 09-24→10-04 (77 rows, dry **2026-10-05**); pins/24h already 35 → 15. Top-up formula 77 ÷ 32.5 = 2.37 d ≥ 2.0 → no write. No queue change.
-- Verdict: E82 decision row — runway is NOT self-healing; the cron writes drafts, not scheduled pins (`posts_2_supabase_server.py:401` hard-codes `post_date = '2025-01-01'`, "placeholder so n8n doesn't pick up entries prematurely"). Q11 follow-up is Tier 2 (operator's script) — package `reports/funnel/drafts/q11-writer-post-date-2026-09-23.md`. E77 MORE DATA (read 2026-10-05) only if a non-template proposal mode ships first.
-- Next time: a runway formula that divides inventory by the *trailing* drain reads healthier as the drip starves (77 ÷ 15 = 5.1 d) — threshold the allotment (rows/day dated ahead vs the posted rate you want), not the residue. Same conflation makes the 🔴 writer flag fire on runway <3 d with an insert 0.1 h old ([ops] request filed).
 
 _Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
