@@ -296,6 +296,41 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmil0xg41005moxeefi5ehy9p: { contentType: 'furniture', why: "E147 room-typed \"Rundown Fridge\" — was residential; a fridge" },
   cmil0l7ya0000oxeeoo53utnb: { contentType: 'furniture', why: "E147 room-typed \"Obal Shower\" — was residential; a shower" },
   cmil0lojq0008oxeeu68chtrt: { contentType: 'furniture', why: "E147 room-typed \"Regenerate Shower\" — was residential; a shower" },
+  // ── Audited 2026-10-01 (Rowan, E154) — `holidays` rows whose title names no
+  //    holiday are re-decided by guardHolidaysContentType (title-only detector
+  //    or NULL). These pins are the rows where that answer was read and found
+  //    wrong: typos of a holiday word (KEEP holidays), the detector's wrong
+  //    answer, or a NULL where the title plainly names the type. Rule:
+  //    lib/holidaysContentTypeRules.ts.
+  cmim9099u01duoxy826ccmd6f: { contentType: 'holidays', why: "E154 holidays-typed \"Chistmas Dress\" — was holidays; typo of Christmas; from the christmas-cc post" },
+  cmijp8bx600xooxc8kaho727a: { contentType: 'holidays', why: "E154 holidays-typed \"Simbrleen Pumpkin Bag\" — was holidays; typo of Simblreen (Halloween gift event)" },
+  cmijno4sm00gqoxc8q72hyq4a: { contentType: 'holidays', why: "E154 holidays-typed \"Halloweeny Welcome Mats\" — was holidays; 'Halloweeny' — the halloween rule needs the whole word" },
+  cmijjj8nc00aioxs34tv0chmm: { contentType: 'holidays', why: "E154 holidays-typed \"Moar Halloweeny Welcome Mats\" — was holidays; 'Halloweeny' — the halloween rule needs the whole word" },
+  cmim8v2nb00g7oxy8owrhcqlw: { contentType: 'holidays', why: "E154 holidays-typed \"Halloween_Eyes\" — was holidays; underscore defeats the word boundary" },
+  cmijnp42100h7oxc8sjf92qx8: { contentType: 'holidays', why: "E154 holidays-typed \"Helloween25 SET\" — was holidays; typo of Halloween 2025" },
+  cmknfc8f5009roxolw0stowkw: { contentType: 'holidays', why: "E154 holidays-typed \"Matt Holiday XL- Rough\" — was holidays; matte holiday nails from the christmas-nails post; KEEP" },
+  cmim9lfqn008yoxy7pdn1btzj: { contentType: null, why: "E154 holidays-typed \"Roman Holiday 50s CC Pack\" — was holidays; 'Roman Holiday' is the 1953 film; a mixed 50s pack, title names no single type" },
+  cmim8rhuw000qoxy8g4zntbgh: { contentType: 'jewelry', why: "E154 holidays-typed \"Emily Red Carpet Earring\" — was holidays; detector said rugs via 'carpet'; it is an earring" },
+  cmijloi8e006noxc8q2dtf5fw: { contentType: null, why: "E154 holidays-typed \"CAS Lighting\" — was holidays; detector said lighting (build/buy); it is a CAS lighting script, no right facet" },
+  cml5sicbk001voxxr4bb6m3b0: { contentType: 'decor', why: "E154 holidays-typed \"Decorative Items And Lamps\" — was holidays; detector said lighting; title leads with decorative items" },
+  cmim8ynex012voxy8cpwpl72y: { contentType: 'eyeliner', why: "E154 holidays-typed \"Gothic Eyeliner with 2D Eyelashes\" — was holidays; detector said lashes; the item is eyeliner" },
+  cmim8ulpn00dooxy829hlzl9t: { contentType: null, why: "E154 holidays-typed \"Pumpkin Accessory\" — was holidays; detector said accessories; scraped as a Poses item — pose prop or CAS, title does not say" },
+  cmijkw9150043oxc812j7uv94: { contentType: 'clutter', why: "E154 holidays-typed \"Romantic Breakfast In Bed Set\" — was holidays; detector said furniture via 'bed'; a breakfast tray set" },
+  cmim8rhmx000noxy8ucaoyuxc: { contentType: 'clutter', why: "E154 holidays-typed \"Romantic Breakfast In Bed Set\" — was holidays; detector said furniture via 'bed'; a breakfast tray set" },
+  cmijnoybo00h3oxc8dgi4pfb7: { contentType: null, why: "E154 holidays-typed \"Bat, Skulls, & Spider Wallpaper\" — was holidays; detector said decor; wallpaper is a build surface, no facet fits" },
+  cmim8z3a1016coxy8mbc6dbip: { contentType: 'shoes', why: "E154 holidays-typed \"Nike Air Force 1s\" — was holidays; detector NULL; sneakers (from the shoes-cc post)" },
+  cmim8vzts00lzoxy8dmudd84n: { contentType: 'shoes', why: "E154 holidays-typed \"Nike Airforce 1s\" — was holidays; detector NULL; sneakers (from the sneakers-cc post)" },
+  cmijlmg2h006hoxc8m14v8ww9: { contentType: 'gameplay-mod', why: "E154 holidays-typed \"Grannies Cookbook\" — was holidays; detector NULL; the recipe-framework mod" },
+  cmim8vcb900hxoxy8se7anvxj: { contentType: 'gameplay-mod', why: "E154 holidays-typed \"Autonomous Vampire Turning\" — was holidays; detector NULL; a behaviour mod" },
+  cmim8vbqy00hooxy81x9fhcbo: { contentType: 'gameplay-mod', why: "E154 holidays-typed \"Possessed Child Mod\" — was holidays; detector NULL; title says mod" },
+  cmikj1nog009soxnar7v4d21c: { contentType: 'furniture', why: "E154 holidays-typed \"Sony Wall Mounted TV\" — was holidays; detector NULL; TVs are furniture in this catalog (10 of 28)" },
+  cmil0piwr001uoxeeb59r2ru5: { contentType: 'wall-art', why: "E154 holidays-typed \"Wall Decals 5\" — was holidays; detector NULL; wall decals" },
+  cmim8rxqz0031oxy8hs5p1ctu: { contentType: 'accessories', why: "E154 holidays-typed \"Sweet Temptation Garters\" — was holidays; detector NULL; garters are a CAS accessory" },
+  cmil1arsu00bboxeetrvn931b: { contentType: 'accessories', why: "E154 holidays-typed \"Tiffany Stockings\" — was holidays; detector NULL; hosiery is accessories (8 of 24 'stocking' titles, the plurality)" },
+  cmjh4m14p006boxyv3n0c6td2: { contentType: 'full-body', why: "E154 holidays-typed \"Infant Elf Sleeper\" — was holidays; detector NULL; an infant sleeper is full-body (8 of 12 sleeper/onesie titles)" },
+  cmknfatmt006loxol1jnlvani: { contentType: 'accessories', why: "E154 holidays-typed \"Hearts Plush Ear Muffs\" — was holidays; detector NULL; earmuffs" },
+  cmknfats3006ooxols7w7t1pn: { contentType: 'accessories', why: "E154 holidays-typed \"S-Club WM Earmuffs\" — was holidays; detector NULL; earmuffs" },
+  cmijnoru600gzoxc8348r9xda: { contentType: 'accessories', why: "E154 holidays-typed \"Arm Bandages\" — was holidays; detector NULL; a CAS accessory" },
 };
 
 /**
