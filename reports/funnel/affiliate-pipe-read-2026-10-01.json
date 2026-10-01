@@ -1,0 +1,29 @@
+{
+  "status": "not-yet",
+  "reason": "2 on-site gtracing click(s) in 2 day(s), rule needs ≥ 10 — 8 more ≈ 8 day(s) at 1/day; Impact so far 2 click(s), 0 action(s)",
+  "windowStart": "2026-09-29",
+  "windowEnd": "2026-09-30",
+  "windowDays": 2,
+  "onSiteTotal": 2,
+  "onSitePartner": 2,
+  "onSiteRepaired": 2,
+  "recorded": 2,
+  "actions": 0,
+  "saleAmount": 0,
+  "recordedShare": 1,
+  "clicksToReadable": 8,
+  "daysToReadable": 8,
+  "killClockStartsOn": null,
+  "killReadOn": null,
+  "impactRows": [
+    {
+      "campaignId": "18111",
+      "campaign": "GTPLAYER-US",
+      "clicks": 2,
+      "actions": 0,
+      "saleAmount": 0
+    }
+  ],
+  "impactError": null,
+  "generatedAt": "2026-10-01T10:53:29.212Z"
+}

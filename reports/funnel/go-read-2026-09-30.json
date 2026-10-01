@@ -1,0 +1,208 @@
+{
+  "status": "ok",
+  "start": "2026-09-25",
+  "end": "2026-09-30",
+  "generatedAt": "2026-10-01T10:43:57.567Z",
+  "denominator": "render",
+  "days": [
+    "2026-09-25",
+    "2026-09-26",
+    "2026-09-27",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30"
+  ],
+  "reportedDays": [
+    "2026-09-25",
+    "2026-09-26",
+    "2026-09-27",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30"
+  ],
+  "unreportedDays": [],
+  "partialDays": [],
+  "provisionalDays": [
+    "2026-09-29",
+    "2026-09-30"
+  ],
+  "byDay": {
+    "2026-09-27": {
+      "render": {
+        "users": 103,
+        "events": 132
+      },
+      "page_view": {
+        "users": 31,
+        "events": 41
+      },
+      "patreon_click": {
+        "users": 9,
+        "events": 11
+      },
+      "patreon_post_connect_view": {
+        "users": 6,
+        "events": 12
+      },
+      "patreon_click_after_wait": {
+        "users": 4,
+        "events": 4
+      }
+    },
+    "2026-09-26": {
+      "render": {
+        "users": 100,
+        "events": 117
+      },
+      "page_view": {
+        "users": 29,
+        "events": 44
+      },
+      "patreon_click": {
+        "users": 11,
+        "events": 19
+      },
+      "patreon_click_after_wait": {
+        "users": 4,
+        "events": 4
+      },
+      "patreon_post_connect_view": {
+        "users": 3,
+        "events": 13
+      }
+    },
+    "2026-09-28": {
+      "render": {
+        "users": 96,
+        "events": 125
+      },
+      "page_view": {
+        "users": 53,
+        "events": 68
+      },
+      "patreon_click": {
+        "users": 9,
+        "events": 9
+      },
+      "patreon_post_connect_view": {
+        "users": 9,
+        "events": 11
+      },
+      "patreon_click_after_wait": {
+        "users": 8,
+        "events": 8
+      }
+    },
+    "2026-09-25": {
+      "render": {
+        "users": 87,
+        "events": 106
+      },
+      "page_view": {
+        "users": 39,
+        "events": 43
+      },
+      "patreon_click": {
+        "users": 9,
+        "events": 14
+      },
+      "patreon_post_connect_view": {
+        "users": 5,
+        "events": 9
+      },
+      "patreon_click_after_wait": {
+        "users": 3,
+        "events": 3
+      }
+    },
+    "2026-09-30": {
+      "render": {
+        "users": 80,
+        "events": 99
+      },
+      "page_view": {
+        "users": 35,
+        "events": 47
+      },
+      "patreon_click": {
+        "users": 9,
+        "events": 9
+      },
+      "patreon_click_after_wait": {
+        "users": 2,
+        "events": 2
+      },
+      "patreon_post_connect_view": {
+        "users": 2,
+        "events": 2
+      }
+    },
+    "2026-09-29": {
+      "render": {
+        "users": 76,
+        "events": 121
+      },
+      "page_view": {
+        "users": 37,
+        "events": 44
+      },
+      "patreon_click": {
+        "users": 7,
+        "events": 8
+      },
+      "patreon_post_connect_view": {
+        "users": 5,
+        "events": 6
+      },
+      "patreon_click_after_wait": {
+        "users": 2,
+        "events": 3
+      }
+    }
+  },
+  "stats": {
+    "render": {
+      "users": 542,
+      "perDay": 90.33,
+      "perDenominatorUser": 1
+    },
+    "page_view": {
+      "users": 224,
+      "perDay": 37.33,
+      "perDenominatorUser": 0.4133
+    },
+    "patreon_click": {
+      "users": 54,
+      "perDay": 9,
+      "perDenominatorUser": 0.0996
+    },
+    "patreon_click_after_wait": {
+      "users": 23,
+      "perDay": 3.83,
+      "perDenominatorUser": 0.0424
+    },
+    "member_skip_countdown": {
+      "users": 0,
+      "perDay": 0,
+      "perDenominatorUser": 0
+    },
+    "patreon_post_connect_view": {
+      "users": 30,
+      "perDay": 5,
+      "perDenominatorUser": 0.0554
+    }
+  },
+  "pageViewCoverage": 0.4133,
+  "e99": {
+    "id": "E99",
+    "event": "patreon_click_after_wait",
+    "window": "2026-09-25→2026-10-01",
+    "keepAtLeastUsersPerDay": 1,
+    "daysReported": 6,
+    "daysUnreported": 1,
+    "users": 23,
+    "perDay": 3.83,
+    "onPace": true,
+    "complete": false
+  }
+}
