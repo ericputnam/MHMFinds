@@ -9,7 +9,16 @@ import { useSession, signIn } from 'next-auth/react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
-import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { GoSaveOffer } from '@/components/GoSaveOffer';
+import {
+  GO_SAVE_EVENTS,
+  GO_SAVE_FAVORITES_PATH,
+  GO_SAVE_SOURCE,
+  goPath,
+  goSaveSignInHref,
+  hasGoSaveMarker,
+  stripGoSaveMarker,
+} from './goSaveOffer';
 import {
   isMembershipEnabled,
   PATREON_PAGE_URL,
@@ -111,6 +120,85 @@ export default function GoClient() {
     postConnectViewFired.current = true;
     gtag('event', 'patreon_post_connect_view', { mod_id: String(params.modId) });
   }, [showPostConnect, params.modId]);
+
+  // E152 (Cass, 2026-10-01) — "Save this mod" account offer in the slot the
+  // E4 email box used (killed 09-30, 1.45/1K < 2/1K). A signed-in click saves
+  // and fires `favorite` (source go-save); a signed-out click (401) fires
+  // go_save_signin_redirect and goes to sign-up with a redirect back here
+  // carrying `?save=1`, and the effect below finishes the save once. Never
+  // toggles a favorite off. No DOM inside `.mv-ads` changes.
+  const [goSaved, setGoSaved] = useState(false);
+  const [goSavePending, setGoSavePending] = useState(false);
+
+  const postGoSave = useCallback(
+    async (source: string): Promise<'saved' | 'unauthorized' | 'error'> => {
+      const modId = String(params.modId);
+      const response = await fetch(`/api/mods/${encodeURIComponent(modId)}/favorite/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.status === 401) return 'unauthorized';
+      if (response.ok) {
+        setGoSaved(true);
+        gtag('event', 'favorite', { source, mod_id: modId });
+        return 'saved';
+      }
+      if (response.status === 400) {
+        // "Already favorited" — idempotent, counts as saved.
+        setGoSaved(true);
+        return 'saved';
+      }
+      return 'error';
+    },
+    [params.modId],
+  );
+
+  const handleGoSave = useCallback(async () => {
+    if (goSavePending || goSaved) return;
+    setGoSavePending(true);
+    try {
+      const outcome = await postGoSave(GO_SAVE_SOURCE);
+      if (outcome === 'unauthorized') {
+        gtag('event', GO_SAVE_EVENTS.signinRedirect, {
+          source: GO_SAVE_SOURCE,
+          mod_id: String(params.modId),
+        });
+        router.push(goSaveSignInHref(String(params.modId)));
+      }
+    } catch (error) {
+      console.error('Error saving mod:', error);
+    } finally {
+      setGoSavePending(false);
+    }
+  }, [goSavePending, goSaved, postGoSave, params.modId, router]);
+
+  // Resume after sign-up: complete the save once, then remove only the
+  // `save` marker so a reload or a shared link does not repeat it.
+  const goSaveResumeAttempted = useRef(false);
+  useEffect(() => {
+    if (goSaveResumeAttempted.current) return;
+    if (!hasGoSaveMarker(window.location.search)) return;
+    goSaveResumeAttempted.current = true;
+    (async () => {
+      try {
+        const outcome = await postGoSave(`${GO_SAVE_SOURCE}-after-signin`);
+        if (outcome === 'saved') {
+          gtag('event', GO_SAVE_EVENTS.afterSignin, {
+            source: GO_SAVE_SOURCE,
+            mod_id: String(params.modId),
+          });
+        }
+      } catch (error) {
+        console.error('Error resuming save:', error);
+      } finally {
+        window.history.replaceState(
+          null,
+          '',
+          `${goPath(String(params.modId))}${stripGoSaveMarker(window.location.search)}`,
+        );
+      }
+    })();
+  }, [postGoSave, params.modId]);
 
   // Fetch mod details + related mods
   useEffect(() => {
@@ -536,20 +624,18 @@ export default function GoClient() {
             )}
 
             {/*
-              Email capture — sibling of mv-ads, never inside it.
-              Placed here so users see it while the countdown runs.
-              source="go-interstitial" lets the scoreboard attribute adds
-              to this surface specifically.
+              E152 account capture — the slot the E4 email box used
+              (source go-interstitial, KILLED 09-30). Sibling of the mv-ads
+              wrapper above, never inside it or the aside (SD-3); the
+              wrapper keeps exactly its two children.
             */}
-            <div className="bg-slate-800/50 border border-sims-pink/20 rounded-xl p-6 mb-8">
-              <p className="text-white font-semibold mb-1 text-center">
-                Get new mods weekly — straight to your inbox
-              </p>
-              <p className="text-sm text-slate-400 mb-4 text-center">
-                Join the list and never miss a Sims 4 CC drop.
-              </p>
-              <NewsletterSignup source="go-interstitial" />
-            </div>
+            <GoSaveOffer
+              signedIn={sessionStatus === 'authenticated'}
+              saved={goSaved}
+              pending={goSavePending}
+              onSave={handleGoSave}
+              favoritesHref={GO_SAVE_FAVORITES_PATH}
+            />
 
             {/* While You Wait — related mods during countdown */}
             {relatedMods.length > 0 && (
