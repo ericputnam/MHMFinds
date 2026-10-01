@@ -21,7 +21,7 @@ day.
 
 | Tier 1 | Owner | What | Reply to block |
 |---|---|---|---|
-| #223 | Rowan (E140) | `/account/favorites/` page + the Navbar heart becomes a link to it (it was a dead `<button>`; 859 accounts hold 22,477 saves with no way to view them). No ad slots, no ad anchors touched. Merges **2026-09-30** via the ship protocol. Read 10-07; keep if ≥50 pv/7d AND RPM ≥95% of 4 same weekdays. | "stop 223" |
+| — | — | Nothing queued. #223 (Rowan, E140, `/account/favorites/`) merged 2026-09-30 07:00Z when its window closed; read 10-07. | — |
 
 ## Tier 2 — needs your decision
 

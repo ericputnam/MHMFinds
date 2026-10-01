@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-01
+- Tried: title-only repair of `holidays` contentType + ingest guard, 29 pins (T0, E154, PR #240; rollback file PR #242). No live writer: legacy import.
+- Before -> after: 923 rows / 491 title-supported -> 503/503; 420 moved (176 NULL); top 24 12 -> 24/24. Season != holiday.
+- Verdict: MORE DATA (read 2026-10-29; keep if 100% titled, pins 29/29, page engaged >=43/28d).
+- Next time: collection pages are static — a data apply shows only after the next deploy; curl after one. The 176 new NULLs want an --ids pass.
+
 ## 2026-09-30
 - Tried: hand-fix of the 78 rows typed as a room/lot value (bathroom 22, kitchen 8, room-titled residential 20 / lot 22 / holidays 6) + guard: room values never a contentType, room-titled sets never `lot` unless the title names a building (T0, E147). Writer found by replaying ingest, not guessed: URL category `/bathroom/` etc.
 - Before → after: rows typed bathroom/kitchen 30 → 0; room-themed residential/lot/holidays 48 → 4 (kept: 1 house, 3 Christmas/Thanksgiving). 74 written (furniture 59, NULL 8, clutter 5), pins 78/78. Whole-catalog detector diff: 32 lot→NULL, all room-titled; ingest replay would have written `bedroom` on 118.
@@ -67,10 +73,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 2026-10-21; keep if ≥200 engaged sessions OR ≥5 favorites in 28d; 7-day RPM watch on the page).
 - Next time: every THEME_KEYWORDS entry has the same bug (substring over title+description) — `bedroom` 43.6%, `kitchen` 44.6%, `bathroom` 37.6% title-supported today. Fix a theme at the source before paging it; `pumpkin` and `ghost` were rejected by reading the dry run's ADD list, not the STRIP list.
 
-## 2026-09-21
-- Tried: `kids-cc` collection page **and the class bug behind it, in one PR** (T0, PR #136, `7816cbe`, E72). On 09-20 I rejected this cluster — 752 rows on infant/toddler/child, only 45.6% of titles carrying a kid word — and wrote…
-- Before → after: `ageGroups` kid axis **752 rows / 343 title-supported (45.6%) → 686 / 686 (100%)** — 362 added, 428 stripped, 35 rewritten, 289 no-ops over a 1,114-row union population, verified by a separate read of the changed…
-- Verdict: MORE DATA (read 2026-10-19; keep if ≥15 engaged sessions in the 7d to the read date **and** aggregate collection-page engaged sessions ≥95% of 1,069 **and** `/sims-4-kids-cc/` impressions ≥80% of 153 — i.e. the page has…
-- Next time: three things. **(1) Distinguish a class bug from heterogeneous junk by asking whether one rule is uniformly wrong, and check both directions.** 09-20's nails case was six wrong rows for six reasons and correctly got `…
-
-_Older entries (up to 2026-09-13) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._

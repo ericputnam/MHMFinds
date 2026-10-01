@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-01
+- Tried: E150 (T0, PR #235 `b20ca3b`). The site-wide WebPage JSON-LD (`/#webpage`, emitted by the root layout on every page) now uses `HOME_SHELL_LASTMOD` = APP_LASTMOD `2026-09-08` (`lib/seo/siteLastmod.ts`, kept Prisma-free; a test fails if the two drift). Before, `dateModified` was `new Date()`. The E143 scanner now also fails on a bare `new Date()`/`Date.now()` in a content date. Pre-fix tree: 2 of 11 tests red, with exactly 1 offender.
+- Before → after: live `dateModified` on `/` and hair-cc `2026-10-01` (render day) → `2026-09-08` at 06:49 (verify SUPERSEDED-PASS, 5xx 0). Graded E95 KEEP: bing/organic landings on /creator/* were 61 (09-24→30, prior 0); bing_organic 16,844 = 107.8% of 15,623. Credit is shared with E97 hub and E115.
+- Verdict: MORE DATA (read 2026-10-03: both pages still `2026-09-08`).
+- Next time: no eligible mod has been created since 09-26 10:42:55Z (16,524 = live sitemap count). Ingest stalled, which is why IndexNow says mods=0, and it made candidate (b), a force-dynamic mod sitemap, a vacuous read today. Check the newest createdAt before choosing a freshness move.
+
 ## 2026-09-29
 - Tried: E136 (T0, PR #221 `72c8841`): /sitemap-mods.xml <lastmod> from max(createdAt, lastScraped) via lib/seo/modLastmod.ts. Mod.updatedAt is @updatedAt and counter writes bump it: 685 rows "updated" in 24h with 0 created, 3,377/7d vs 50, 6,070/28d vs 673 (16,524 eligible). E37 fixed this class on the collection sitemap on 09-12 and left the 16.5K-URL mod sitemap on updatedAt. 3 of 11 tests red pre-fix.
 - Before → after: live lastmod-in-28d 6,070 → 673 of 16,524 (7d 50, 1d 0, newest 09-26); /mods/* clicks 28d 614 (08-30→09-26) → read 10-13, keep ≥584. Pre-read 09-30: ai_referral 7d 356 (+21.1%; chatgpt 323 / 90.7%): E2 not met (<385), E27 KEEP (≥300, share −0.5 pt), E42 EXTEND.

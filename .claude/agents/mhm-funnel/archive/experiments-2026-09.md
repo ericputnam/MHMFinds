@@ -473,3 +473,24 @@ KEEP/NO MOVE/MORE DATA (E39 E65 E119 E96 E105 E30 E51) archived 09-27. KEEP 09-2
 
 KILL: E1 Pip · E26 Pip · E34 Cass · E3 Nova brief · E4 Cass (EXTEND→09-30, KILL if <2/1K) · E6 Cass · E10 Cass (0 rows ever→E130) · E13 Rio affiliates (REOPENED, repair-only, as E134) · E15 Pip · E20 Pip · E38 Nova · E40 Rio · E46+E56 Pip (operator rollback 09-19→09-21) · E57 Sage ARTIFACT · E47+E52 Sage IndexNow→Bing (16,337 vs ≥17,032; kept).
 KEEP/EXTEND/CLOSED through 09-28: verbatim in the archive § "Kill log". CLOSED 09-29: E68 Cass folded into E54 (same 09-30 read; 0 of 7 hard-bounces re-attempted) · E55 Rio KEEP (CTR leg; $ leg void) · E60 Rio KEEP (tool as monitor) · E63 operator served+auth-gated · E0 Quinn KEEP (adds 120/wk = target on 09-29; non-ad leg $145 vs $200 graded as B2 09-30) · E88 Rio DROPPED (Q16 silence, 7-day rule). CLOSED 09-30: E2 KILL-hyp/keep rules (357<385) · E76 KILL (E141 replaced) · E82 keep-rule KILL, read kept (plugin posts 151/8d) · E91 KEEP (0 ceiling hits).
+
+## Closed 2026-09-30/10-01 (verbatim, moved by Quinn 2026-10-01)
+
+E4 Cass: KILL 09-30 (28d 6/4,125 = 1.45/1K vs ≥2/1K; 7d 2.14 is the only window over the bar) — replace with an E130-style account offer, not a drop.
+CLOSED 09-30: E2 KILL-hypothesis/keep rules (357<385) · E76 KILL (E141 replaced it) · E82 keep-rule KILL, read kept (plugin posts 151 rows/8 d) · E91 KEEP (0 ceiling hits, 7/7 runs). · E54 KILL (2/387 re-permission vs ≥39; 6.0% hard bounce).
+
+| E95 | 2026-09-24 | Sage | 0 | AUDIENCE | IndexNow `--creators` mode (P… | Bing-organic sessions landing on `/… | 0 (09-17→09-23; 39 landing sessions,… | 2026-10-01 | ≥20 AND bing_organic ≥95% of 15,623 | 10-01: 61 bing landings /crea… | KEEP (shared w/ E97/E115) |
+
+## Kill log (compact — full rows and grading notes verbatim in archive/experiments-2026-09.md)
+
+KILL through 09-29 (E1 E26 E34 E3 E6 E10 E13→E134 E15 E20 E38 E40 E46+E56 E57 E47+E52) and every KEEP/EXTEND/CLOSED line: verbatim in archive § "Compact kill-log lines moved out 2026-09-30". CLOSED 09-30 (E4 KILL → replaced by E152; E2, E76, E82, E54 KILL; E91 KEEP) and CLOSED 10-01 (E95 KEEP: 61 Bing landings on /creator/*, shared credit E97/E115): verbatim in archive § "Closed 2026-09-30/10-01".
+
+### E78 row moved out 2026-10-01 (verbatim; state tracked by Q18 and E145)
+
+| E78 | 2026-09-21 | Cass | 2 (re-tiered 09-23: edits `vercel.json`) | CAPTURE | Weekly newsletter cron pipeli… | automated issues sent/wk | 0 | after "approve 78" | first automated issue lands with boun… | Split 09-30: A=#226 merged; #… | Part B QUEUED-T2 Q18, drop 10-07 |
+
+### Graded 2026-10-01 and moved out verbatim (E93, E99, E146 — all KEEP)
+
+| E93 | 2026-09-24 | Pip | 0 | AUDIENCE | Bing real-vs-bot verification… | bing_organic sessions with ≥1 pagev… | 14,761/7d (09-16→09-22) | 2026-10-01 | zero-pageview share ≤8% AND net ≥95%… | KEEP: Bing net 15,906 = 107.8% | Bing 16,669/7d, zero-pv 763 = 4.6%; count… |
+| E99 | 2026-09-24 | Rio | 0 | CONVERT | `/go/[modId]` Connect Patreon… | `patreon_click_after_wait` users/da… | after-wait 0 (event new); `patreon_cl… | 2026-10-01 | after-wait ≥1.0 users/day 09-25→10-01… | KEEP: after-wait 3.83/day | 23u/6 reported d vs ≥1.0 on render denomi… |
+| E146 | 2026-09-30 | Rio | 0 | MEASURE-CONVERT | /go read: render denominator,… | after-wait users/day (per render) | pv covers 41.4% of render; no tool | 2026-10-01 | E99 ≥1.0/day over reported days | KEEP: 6/6 days, exit 0 | render denom; page_view covers 41.3% of r… |

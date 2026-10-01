@@ -128,9 +128,15 @@ How the team applies it:
    standalone script fails the production build (PR #19, 2026-09-02).
 3. PR body: `Tier:` / `Stage:` / `Metric:` / `Before:` / `Read on:` /
    `Keep if:` / `Rollback:` lines. Ends with the Claude Code footer.
-4. `gh pr merge --squash --delete-branch`, then read the merge sha
-   (`git fetch origin main && git rev-parse origin/main`).
-5. **`./scripts/agents/deploy-verify.sh --after-merge --sha <sha> --label "<agent>: PR #N <title>"`**.
+4. Merge in ONE Bash call, joined with `&&` only (#239, 2026-10-01):
+   `./scripts/agents/merge-gate.sh --wait --max-wait 600 && gh pr merge N --squash --delete-branch && gh pr view N --json state,mergeCommit`.
+   Exit 0 holds the merge lock until the merge lands or the shell exits; a gate
+   in one call and a merge in the next is unprotected. Exit 1 "held by <who>"
+   = another agent is merging: retry later. Never delete the lock by hand
+   (`--status`; it frees itself ≤600 s). `gh pr merge` exit 1 ≠ not merged —
+   read `state`. Pass `mergeCommit.oid` to step 5.
+5. **`./scripts/agents/deploy-verify.sh --after-merge --sha <mergeCommit.oid> --label "<agent>: PR #N <title>"`**.
+   PR #N not MERGED → REFUSED, exit 2, no ledger row, no rollback.
    It waits for the Vercel build, renders the key pages in headless Chromium,
    checks the Mediavine loader + `aside#secondary` + `.mv-ads`, runs
    `check-blog-sidebar.sh`, and counts 5xx. Exit 0 = shipped. Exit 2 = it
