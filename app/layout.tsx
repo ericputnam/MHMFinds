@@ -5,6 +5,7 @@ import { Providers } from './providers';
 import Script from 'next/script';
 import { ConditionalScripts } from './components/ConditionalScripts';
 import { Analytics } from "@vercel/analytics/next";
+import { HOME_SHELL_LASTMOD } from '@/lib/seo/siteLastmod';
 
 export const metadata: Metadata = {
   title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
@@ -185,7 +186,8 @@ export default function RootLayout({
                     '@id': 'https://musthavemods.com/#logo',
                   },
                   datePublished: '2024-01-01',
-                  dateModified: new Date().toISOString().split('T')[0],
+                  // E150: the homepage shell's real change date, not the render day.
+                  dateModified: HOME_SHELL_LASTMOD,
                   description: 'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
                   inLanguage: 'en-US',
                   potentialAction: [
