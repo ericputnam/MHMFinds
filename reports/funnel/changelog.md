@@ -267,3 +267,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-01 06:49 | after-merge | Cass: PR #238 E152 /go Save-this-mod account offer replaces E4 email box | 1902a23 | https://mhm-finds-dw5l-6y2nrthnn-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-01 06:53 | after-merge | Rowan: PR #240 holidays contentType title-only + ingest guard (E154) | e102b6f | https://mhm-finds-dw5l-ow7frod0p-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-01 06:57 | after-merge | Pip: PR #236 E149 runway top-up #7 ledger + package + playbook | 8aed166 | https://mhm-finds-dw5l-1gfpw68ka-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-01 07:01 | after-merge | Rio: PR #241 E153 affiliate pipe read — E134 confirmed-fixed rule as a tool | c039df3 | https://mhm-finds-dw5l-a6jn86mtc-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
