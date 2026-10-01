@@ -17,6 +17,7 @@
 import { BEDROOM_THEME, isBedroomTitle } from '../bedroomThemeRules';
 import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
 import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
+import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
 
 // ============================================
 // TYPES
@@ -845,6 +846,28 @@ function roomTitledFallback(title: string, suppressed: string): DetectionResult 
 }
 
 /**
+ * `holidays` is kept only when the TITLE names a holiday
+ * (`lib/holidaysContentTypeRules.ts`, E154). Otherwise the row is re-decided
+ * from the title alone — medium/high confidence or NULL, never a guess. No
+ * CONTENT_TYPE_RULES entry emits `holidays`, so the re-decision cannot loop
+ * back to it. Any other candidate is returned unchanged.
+ *
+ * Why: on 2026-10-01, 432 of the 923 `holidays` rows (46.8%) named no
+ * holiday — "Mary Dress", "Sony Wall Mounted TV", "Nike Air Force 1s" — all
+ * from a legacy import where the source blog post decided the type.
+ */
+export function guardHolidaysContentType(
+  title: string | null | undefined,
+  candidate: string | null | undefined,
+): string | undefined {
+  if (!candidate) return undefined;
+  if (candidate !== HOLIDAYS_CONTENT_TYPE) return candidate;
+  if (isHolidaysTitle(title)) return candidate;
+  const t = detectContentTypeWithConfidence(title || '');
+  return t.confidence === 'low' ? undefined : t.contentType;
+}
+
+/**
  * Apply the room rules to a content type that came from somewhere other than
  * `detectContentTypeWithConfidence` — at ingest, the blog post's URL category
  * (`detectContentTypeFromUrl`) outranks the detector, so a bathroom set
@@ -857,14 +880,16 @@ function roomTitledFallback(title: string, suppressed: string): DetectionResult 
  *   - `lot`/`residential` on a room-titled row is suppressed unless the title
  *     names a whole building (E147).
  *
- * Otherwise the candidate is returned unchanged. `holidays` is deliberately
- * untouched: a real 926-row facet with its own collection page.
+ * Otherwise the candidate is returned unchanged — except `holidays`, which
+ * since E154 (2026-10-01) passes through `guardHolidaysContentType` first:
+ * kept only when the title names a holiday.
  */
 export function guardRoomTitledContentType(
   title: string | null | undefined,
   candidate: string | null | undefined,
 ): string | undefined {
   if (!candidate) return undefined;
+  if (candidate === HOLIDAYS_CONTENT_TYPE) return guardHolidaysContentType(title, candidate);
   if (ROOM_VALUE_CONTENT_TYPES.has(candidate)) {
     // No rule emits a room value, so this re-decision cannot loop back to one.
     const t = detectContentTypeWithConfidence(title || '');

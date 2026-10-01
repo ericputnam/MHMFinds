@@ -56,6 +56,7 @@
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=nails --ids=id1,id2   # only those rows
  *   npx tsx scripts/retag-junk-build-facets.ts --room-titled-cas            # E132, see below
  *   ... --rollback-out=reports/funnel/x.json   # write {id,title,from,to} before any write
+ *   npx tsx scripts/retag-junk-build-facets.ts --holidays-untitled         # E154, see below
  *
  * Every run prints the STRIP list (rows leaving each current facet), the ADD
  * list (rows entering each new facet) and the filter's selectivity (facet
@@ -72,6 +73,15 @@
  * E120 pin and reports how many rows still hold their pinned value: those are
  * explicit no-ops, and a pin that has drifted is printed by id.
  * `--facets` is ignored in this mode.
+ *
+ * --holidays-untitled (Rowan, 2026-10-01, E154)
+ * ---------------------------------------------
+ * Population: every row typed `holidays` whose TITLE names no holiday
+ * (`lib/holidaysContentTypeRules.ts`), plus every pinned `holidays` row. Each
+ * is re-decided by `guardHolidaysContentType` — title-only detector answer at
+ * medium/high confidence, or NULL — unless pinned, in which case the pin wins.
+ * Rows whose title names a holiday are never loaded into scope. Reads back
+ * every E154 pin. `--facets` is ignored in this mode.
  */
 
 // CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
@@ -82,8 +92,10 @@ import {
   CAS_CONTENT_TYPES,
   detectContentTypeWithConfidence,
   guardRoomTitledContentType,
+  guardHolidaysContentType,
   isRoomTitle,
 } from '../lib/services/contentTypeDetector';
+import { isHolidaysTitle } from '../lib/holidaysContentTypeRules';
 import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
 import { mkdirSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
@@ -127,17 +139,26 @@ function parseArgs() {
   // ignored rather than rewritten.
   const ids = idsArg ? idsArg.slice('--ids='.length).split(',').map(s => s.trim()).filter(Boolean) : null;
   const roomTitledCas = argv.includes('--room-titled-cas');
+  const holidaysUntitled = argv.includes('--holidays-untitled');
   if (roomTitledCas && ids) throw new Error('--room-titled-cas and --ids= are separate modes; pass one.');
+  if (holidaysUntitled && (ids || roomTitledCas)) throw new Error('--holidays-untitled is its own mode; pass it alone.');
   const rollbackArg = argv.find(a => a.startsWith('--rollback-out='));
   const rollbackOut = rollbackArg ? rollbackArg.slice('--rollback-out='.length) : null;
-  return { apply, verbose, facets: roomTitledCas ? Array.from(CAS_CONTENT_TYPES) : facets, limit, ids, roomTitledCas, rollbackOut };
+  const modeFacets = roomTitledCas ? Array.from(CAS_CONTENT_TYPES) : holidaysUntitled ? ['holidays'] : facets;
+  return { apply, verbose, facets: modeFacets, limit, ids, roomTitledCas, holidaysUntitled, rollbackOut };
 }
 
 /** Decide the new content type for one row. Exported shape kept simple for testing. */
-function decide(row: Row, roomTitledCas = false): Change {
+function decide(row: Row, roomTitledCas = false, holidaysUntitled = false): Change {
   const override = OVERRIDES[row.id];
   if (override) {
     return { row, to: override.contentType, reason: `override: ${override.why}` };
+  }
+
+  if (holidaysUntitled) {
+    // E154: only the `holidays` answer is in question; the guard answers it.
+    const to = guardHolidaysContentType(row.title, row.contentType) ?? null;
+    return { row, to, reason: to ? 'holidays: title names no holiday; title-only type' : 'holidays: title names no holiday; NULL beats a guess' };
   }
 
   if (roomTitledCas) {
@@ -156,10 +177,10 @@ function decide(row: Row, roomTitledCas = false): Change {
 }
 
 async function main() {
-  const { apply, verbose, facets, limit, ids, roomTitledCas, rollbackOut } = parseArgs();
+  const { apply, verbose, facets, limit, ids, roomTitledCas, holidaysUntitled, rollbackOut } = parseArgs();
 
   console.log('='.repeat(72));
-  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}`);
+  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}${holidaysUntitled ? ' — untitled holidays (E154)' : ''}`);
   console.log(`Facets: ${facets.join(', ')} · row cap: ${limit}`);
   if (ids) console.log(`Restricted to ${ids.length} id(s): ${ids.join(', ')}`);
   console.log('='.repeat(72));
@@ -170,7 +191,7 @@ async function main() {
     orderBy: { downloadCount: 'desc' },
     // The room filter runs in code, so the CAS population is read whole and
     // the 5,000-row write cap is enforced on the filtered set below.
-    take: roomTitledCas ? 25000 : limit, // bounded read: catalog is ~16.6k rows
+    take: roomTitledCas || holidaysUntitled ? 25000 : limit, // bounded read: catalog is ~16.6k rows
   });
 
   // --room-titled-cas: keep only rows the guard would move (or that are pinned).
@@ -179,9 +200,20 @@ async function main() {
         .filter(r => isRoomTitle(r.title))
         .filter(r => OVERRIDES[r.id] || guardRoomTitledContentType(r.title, r.contentType) !== r.contentType)
         .slice(0, limit)
-    : loaded;
+    : holidaysUntitled
+      ? loaded.filter(r => OVERRIDES[r.id] || !isHolidaysTitle(r.title)).slice(0, limit)
+      : loaded;
 
-  console.log(`\nLoaded ${loaded.length} rows${roomTitledCas ? `; ${rows.length} room-titled CAS rows in scope` : ''}.\n`);
+  console.log(`\nLoaded ${loaded.length} rows${roomTitledCas ? `; ${rows.length} room-titled CAS rows in scope` : ''}${holidaysUntitled ? `; ${rows.length} untitled-or-pinned holidays rows in scope; ${loaded.length - rows.length} title-supported rows untouched` : ''}.\n`);
+
+  if (holidaysUntitled) {
+    // Read back every E154 pin: after an apply each must hold its pinned value.
+    const pinIds = Object.keys(OVERRIDES).filter(id => OVERRIDES[id].why.startsWith('E154 '));
+    const pinned = await prisma.mod.findMany({ where: { id: { in: pinIds } }, select: { id: true, contentType: true } });
+    const drifted = pinned.filter(p => p.contentType !== OVERRIDES[p.id].contentType);
+    console.log(`E154 pins: ${pinIds.length} · found ${pinned.length} · at pinned value ${pinned.length - drifted.length} · not yet / drifted ${drifted.length}`);
+    if (pinned.length !== pinIds.length) console.log(`    MISSING ${pinIds.length - pinned.length} pinned id(s) from the catalog`);
+  }
 
   if (roomTitledCas) {
     // Read back every E120 pin: each must still hold its pinned value (a no-op).
@@ -229,7 +261,7 @@ async function main() {
   let unchanged = 0;
 
   for (const row of rows) {
-    const change = decide(row, roomTitledCas);
+    const change = decide(row, roomTitledCas, holidaysUntitled);
     if (change.to === row.contentType) {
       unchanged++;
       continue;

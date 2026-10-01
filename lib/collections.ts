@@ -145,19 +145,22 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Holidays & Seasonal CC',
     heading: 'Sims 4 Holiday & Seasonal CC',
-    metaTitle: 'Sims 4 Holiday CC Finder — Browse 900+ Seasonal Mods | MustHaveMods',
+    metaTitle: 'Sims 4 Holiday CC Finder — Browse 500+ Seasonal Mods | MustHaveMods',
     metaDescription:
       'Browse every Sims 4 holiday and seasonal CC find in one filterable grid — Christmas, Halloween, Valentine\'s, and Easter decor, clothes, and gameplay sorted by downloads.',
     tagline: 'Christmas, Halloween, Easter, and every season in between',
     intro:
-      'Seasons expansion gave us weather. It did not give us holiday CC. If you want a sim house that actually looks like December — garland on the banister, a tree with presents that aren\'t recolored vanilla meshes, a dining table that reads "Thanksgiving" instead of "generic spread" — you need community CC.\n\nThis collection is the biggest one we run: nearly a thousand mods spanning Christmas decor, Halloween costumes and yard setups, Valentine\'s clutter, Easter decor, and the summer/fall seasonal pieces people forget exist. Creators like Syboubou, Felixandre, and HarrieCC come up a lot here, but the strength of the Sims holiday scene is really the volume of smaller builders shipping one good pumpkin set or one good Hanukkah table a year.\n\nUse it as a seasonal swap — archive half of it in the spring, swap back in October. The grid is sorted by downloads first, so the evergreen picks rise to the top, and seasonal one-offs live further down for the specific occasion you\'re building for.',
+      'Seasons expansion gave us weather. It did not give us holiday CC. If you want a sim house that actually looks like December — garland on the banister, a tree with presents that aren\'t recolored vanilla meshes, a dining table that reads "Thanksgiving" instead of "generic spread" — you need community CC.\n\nThis collection holds 500-odd mods, and every one names its holiday in its own title — Christmas decor, Halloween costumes and yard setups, Valentine\'s clutter, Thanksgiving tables, New Year\'s Eve outfits and the Winterfest pieces people forget exist. A plain winter coat or an autumn sweater lives in its own category, not here. Creators like Syboubou, Felixandre, and HarrieCC come up a lot here, but the strength of the Sims holiday scene is really the volume of smaller builders shipping one good pumpkin set or one good Thanksgiving table a year.\n\nUse it as a seasonal swap — archive half of it in the spring, swap back in October. The grid is sorted by downloads first, so the evergreen picks rise to the top, and seasonal one-offs live further down for the specific occasion you\'re building for.',
     filter: {
-      // 'holidays' is a real contentType in the prod DB (926 mods)
-      // even though it's not in seed-facet-definitions.ts. Logged
-      // in PRD backlog as seed/reality drift to fix later.
+      // 'holidays' is a real contentType in the prod DB even though it's not
+      // in seed-facet-definitions.ts. E154 (2026-10-01): 923 rows, only 491
+      // titles named a holiday ("Mary Dress", "Sony Wall Mounted TV" were
+      // cards #2-#3). Kept only where the title names one
+      // (lib/holidaysContentTypeRules.ts; ingest guard in contentTypeDetector);
+      // 420 re-decided by title or NULL → 503.
       contentType: 'holidays',
     },
-    expectedCount: 926,
+    expectedCount: 503,
     // 'furniture' was a dangling slug until 2026-09-07 (the real slug is
     // 'furniture-cc'); the renderer silently dropped it.
     related: ['clutter', 'halloween-cc', 'witch-cc'],
