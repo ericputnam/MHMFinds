@@ -96,6 +96,57 @@ describe('E143 scanner: no dateModified/lastmod fed by updatedAt in app/ or comp
   });
 });
 
+/**
+ * E150 (2026-10-01, Sage) — the same class, second leg: no content date is
+ * ever the render-time clock. `app/layout.tsx` stamped the site-wide
+ * WebPage node `dateModified: new Date()…` — "today" on every page, every
+ * day — which the updatedAt check above cannot see. A bare `new Date()` /
+ * `Date.now()` in a content-date expression always means "whenever this was
+ * rendered", never "when the content changed". (A generation timestamp such
+ * as llms-full.txt's `generated` is not a content-date key and is not
+ * matched.) Pre-fix tree: this case fails with exactly one offender,
+ * `app/layout.tsx: dateModified:`.
+ */
+const RENDER_CLOCK = /\bnew Date\(\s*\)|\bDate\.now\(\s*\)/;
+
+describe('E150 scanner: no dateModified/lastmod fed by the render-time clock', () => {
+  const files = ROOTS.flatMap((r) => walk(path.join(process.cwd(), r)));
+  const all = files.flatMap((f) =>
+    contentDateSites(stripComments(fs.readFileSync(f, 'utf8'))).map((s) => ({
+      file: path.relative(process.cwd(), f),
+      ...s,
+    })),
+  );
+
+  it('scans the root layout (vacuity guard: the file that had the bug is in the population)', () => {
+    expect(all.some((s) => s.file === path.join('app', 'layout.tsx'))).toBe(true);
+  });
+
+  it('no site feeds a content date from new Date() or Date.now()', () => {
+    const offenders = all.filter((s) => RENDER_CLOCK.test(s.expr)).map((s) => `${s.file}: ${s.key}`);
+    expect(offenders).toEqual([]);
+  });
+
+  it('flags the pre-fix layout shape and spares a date built from data (seen red)', () => {
+    const hit = (src: string) => contentDateSites(src).some((s) => RENDER_CLOCK.test(s.expr));
+    expect(hit(`datePublished: '2024-01-01',\n  dateModified: new Date().toISOString().split('T')[0],`)).toBe(true);
+    expect(hit('const lastmod = new Date( ).toISOString();')).toBe(true);
+    expect(hit('lastModified: Date.now(),')).toBe(true);
+    expect(hit('dateModified: new Date(mod.createdAt).toISOString(),')).toBe(false);
+    expect(hit('dateModified: HOME_SHELL_LASTMOD,')).toBe(false);
+  });
+
+  it('the layout WebPage dateModified is the homepage-shell date, equal to APP_LASTMOD', async () => {
+    const { HOME_SHELL_LASTMOD } = await import('@/lib/seo/siteLastmod');
+    const { APP_LASTMOD } = await import('@/lib/sitemapLastmod');
+    // Guard the constants, not a copy of their value: bump them together.
+    expect(HOME_SHELL_LASTMOD).toBe(APP_LASTMOD);
+    expect(HOME_SHELL_LASTMOD).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const layout = stripComments(fs.readFileSync(path.join(process.cwd(), 'app', 'layout.tsx'), 'utf8'));
+    expect(layout).toMatch(/dateModified:\s*HOME_SHELL_LASTMOD\b/);
+  });
+});
+
 function fixture(over: Partial<Mod> = {}): Mod {
   return {
     id: 'mod-e143',
