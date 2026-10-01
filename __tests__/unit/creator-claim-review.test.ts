@@ -24,6 +24,7 @@ import {
   parseReviewAction,
   planPromotion,
   planRejection,
+  promotionData,
   slugFromPendingHandle,
 } from '../../lib/creatorClaimReview';
 
@@ -105,6 +106,34 @@ describe('planPromotion', () => {
     expect(
       planPromotion({ currentHandle: pending, requestedSlug: 'pending-x', conflictingProfileId: null, profileId: 'p1' })
     ).toMatchObject({ ok: false, status: 400 });
+  });
+});
+
+describe('promotionData (E151)', () => {
+  // Red against pre-E151 origin/main (bea25bb): promotionData did not exist
+  // (cases 1–2 throw) and the route wrote `data: { handle: decision.handle }`
+  // (case 3), so a promoted claimant's own page kept asking to be claimed.
+  const PAGE_CLIENT = 'app/creator/[slug]/CreatorPageClient.tsx';
+
+  it('sets the public handle and verifies the row in one write', () => {
+    expect(promotionData('brandysims')).toEqual({ handle: 'brandysims', isVerified: true });
+  });
+
+  it('every flag it sets is a flag /creator/[slug]/ gates the claim card on (derived, not restated)', () => {
+    const page = stripComments(read(PAGE_CLIENT));
+    const flags = Object.keys(promotionData('brandysims')).filter((k) => k !== 'handle');
+    expect(flags.length).toBeGreaterThan(0);
+    for (const flag of flags) {
+      expect(page).toMatch(new RegExp(`claimed=\\{Boolean\\(data\\.profile\\?\\.${flag}\\)\\}`));
+    }
+  });
+
+  it('the action route writes promotionData(), never a bare handle', () => {
+    const src = stripComments(read(ACTION_ROUTE));
+    expect(src).toMatch(
+      /creatorProfile\.update\(\{\s*where:\s*\{\s*id:\s*profile\.id\s*\},\s*data:\s*promotionData\(decision\.handle\)/
+    );
+    expect(src).not.toMatch(/data:\s*\{\s*handle:\s*decision\.handle\s*\}/);
   });
 });
 

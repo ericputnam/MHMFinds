@@ -8,6 +8,7 @@ import {
   parseReviewAction,
   planPromotion,
   planRejection,
+  promotionData,
 } from '@/lib/creatorClaimReview';
 
 export const dynamic = 'force-dynamic';
@@ -17,16 +18,18 @@ export const dynamic = 'force-dynamic';
  *
  * body { action: 'promote', slug?: string }  → the pending profile's handle
  *   becomes the public creator slug, so /creator/<slug>/ (which joins
- *   CreatorProfile on handle === slug) now shows the claimant's profile.
- *   Only a `pending-*` handle can be promoted, only to a valid creator slug,
- *   and never onto a handle another profile holds (409).
+ *   CreatorProfile on handle === slug) now shows the claimant's profile,
+ *   and the row is set isVerified (E151) — the page gates the verified
+ *   badge and hides the claim card on that flag, so a promoted page stops
+ *   asking to be claimed. Only a `pending-*` handle can be promoted, only
+ *   to a valid creator slug, and never onto a handle another profile
+ *   holds (409).
  * body { action: 'reject', reason?: string } → the pending profile is
  *   deleted, unless mods already link to it (409).
  *
- * Neither action touches User.isCreator, isVerified, or the claimant's
- * submissions — those stay in their existing admin screens. Every action
- * writes an AdminAuditLog row (best-effort; a log failure never undoes
- * the review).
+ * Neither action touches User.isCreator or the claimant's submissions —
+ * those stay in their existing admin screens. Every action writes an
+ * AdminAuditLog row (best-effort; a log failure never undoes the review).
  */
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       try {
         await prisma.creatorProfile.update({
           where: { id: profile.id },
-          data: { handle: decision.handle },
+          data: promotionData(decision.handle),
         });
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -92,6 +95,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       await audit(session.user.id, 'promote', profile.id, {
         fromHandle: profile.handle,
         toHandle: decision.handle,
+        isVerified: 'true',
       });
       return NextResponse.json({ success: true, handle: decision.handle, page: `/creator/${decision.handle}/` });
     }
