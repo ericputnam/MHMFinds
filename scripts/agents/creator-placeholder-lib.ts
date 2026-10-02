@@ -43,6 +43,17 @@ export function planUnverify(rows: ProfileRow[]): PlanRow[] {
     .sort((a, b) => a.handle.localeCompare(b.handle));
 }
 
+/**
+ * The plan file is the rollback artifact. A dry run after --apply plans 0
+ * rows, and on 2026-10-02 the first version of this script overwrote the
+ * 20-row plan with that empty one. Only write when no plan with rows
+ * exists yet, unless the caller explicitly asks to replace it.
+ */
+export function shouldWritePlan(existingRows: number | null, replace: boolean): boolean {
+  if (replace) return true;
+  return existingRows === null || existingRows === 0;
+}
+
 /** Hard ceiling from autonomy.md "Catalog data" (<= 5,000 rows per run); far above today's 20. */
 export const MAX_ROWS = 5000;
 
