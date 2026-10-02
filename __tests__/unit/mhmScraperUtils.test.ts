@@ -753,4 +753,62 @@ describe('selectPostsToScrape', () => {
     const r = selectPostsToScrape([{ url: '' }, entries[1]]);
     expect(r.selected).toEqual([entries[1].url]);
   });
+
+  // E161 (2026-10-02): the writer refreshes old seasonal posts instead of publishing new ones.
+  // `--new-only` alone skipped every refreshed post; `sims-4-fall-decor-cc` (first ingested
+  // 2025-11-30, lastmod 2026-09-28) held 18 uningested mods while the daily job logged created=0.
+  describe('--refreshed', () => {
+    const known = ['https://musthavemods.com/sims-4-gym-lots/', 'https://musthavemods.com/sims-4-plus-size-poses/'];
+    const lastIngest = {
+      // edited 09-06, last ingested 2025-11-30 → refreshed
+      'https://musthavemods.com/sims-4-gym-lots': new Date('2025-11-30T12:00:00Z'),
+      // edited 08-05, last ingested 08-20 → not refreshed
+      'https://musthavemods.com/sims-4-plus-size-poses/': new Date('2026-08-20T10:00:00Z'),
+    };
+
+    it('re-selects a known post whose lastmod is newer than its last ingest, and counts it', () => {
+      const r = selectPostsToScrape(entries, { newOnly: true, knownSourceUrls: known, refreshed: true, knownSourceLastIngest: lastIngest });
+      expect(r.selected).toEqual([
+        'https://musthavemods.com/sims-4-goth-nails-cc/',
+        'https://musthavemods.com/sims-4-gym-lots/',
+        'https://musthavemods.com/how-to-download-sims-4-cc/',
+      ]);
+      expect(r.selectedRefreshed).toBe(1);
+      expect(r.skippedKnown).toBe(1);
+    });
+
+    it('is strict: a date-only lastmod equal to the ingest day does not re-select (ingested today ≠ edited after)', () => {
+      const r = selectPostsToScrape(entries, {
+        newOnly: true,
+        knownSourceUrls: known,
+        refreshed: true,
+        knownSourceLastIngest: { 'https://musthavemods.com/sims-4-gym-lots/': new Date('2026-09-06T10:42:55Z') },
+      });
+      expect(r.selected).not.toContain('https://musthavemods.com/sims-4-gym-lots/');
+      expect(r.selectedRefreshed).toBe(0);
+    });
+
+    it('without the flag, without newOnly, or without a last-ingest entry, a known post stays skipped', () => {
+      const noFlag = selectPostsToScrape(entries, { newOnly: true, knownSourceUrls: known, knownSourceLastIngest: lastIngest });
+      expect(noFlag.selectedRefreshed).toBe(0);
+      expect(noFlag.skippedKnown).toBe(2);
+      const noEntry = selectPostsToScrape(entries, { newOnly: true, knownSourceUrls: known, refreshed: true, knownSourceLastIngest: {} });
+      expect(noEntry.selectedRefreshed).toBe(0);
+      expect(noEntry.skippedKnown).toBe(2);
+      const noNewOnly = selectPostsToScrape(entries, { knownSourceUrls: known, refreshed: true, knownSourceLastIngest: lastIngest });
+      expect(noNewOnly.selected).toHaveLength(4);
+      expect(noNewOnly.selectedRefreshed).toBe(0);
+    });
+
+    it('a known post with no sitemap lastmod is never treated as refreshed', () => {
+      const r = selectPostsToScrape([{ url: 'https://musthavemods.com/how-to-download-sims-4-cc/' }], {
+        newOnly: true,
+        knownSourceUrls: ['https://musthavemods.com/how-to-download-sims-4-cc/'],
+        refreshed: true,
+        knownSourceLastIngest: { 'https://musthavemods.com/how-to-download-sims-4-cc/': new Date('2025-01-01T00:00:00Z') },
+      });
+      expect(r.selected).toEqual([]);
+      expect(r.skippedKnown).toBe(1);
+    });
+  });
 });

@@ -1,0 +1,112 @@
+{
+ "writtenAt": "2026-10-02T11:00:18.913Z",
+ "mode": "apply",
+ "facets": [
+  "tops",
+  "lot"
+ ],
+ "rows": [
+  {
+   "id": "cmuquijm0000ioxbqux8aaak5",
+   "title": "Porchfully Yours – Build & Buy Set",
+   "from": "lot",
+   "to": "decor"
+  },
+  {
+   "id": "cmuquijzh000noxbq4p9j908m",
+   "title": "KHD Orchard Apple Basket",
+   "from": "lot",
+   "to": "clutter"
+  },
+  {
+   "id": "cmuquj976002koxbq0p5bziue",
+   "title": "The Moss Collection",
+   "from": "tops",
+   "to": null
+  },
+  {
+   "id": "cmuquj9bx002loxbqlt9escus",
+   "title": "Ready for Fall Collection",
+   "from": "tops",
+   "to": null
+  },
+  {
+   "id": "cmuquj9ei002moxbqw6wregco",
+   "title": "The Crisp and Cozy Collection",
+   "from": "tops",
+   "to": null
+  },
+  {
+   "id": "cmuquj9jd002ooxbq3mw0iojd",
+   "title": "Little Fall Adventures Collection – Overall Dress",
+   "from": "tops",
+   "to": "dresses"
+  },
+  {
+   "id": "cmuquj9lo002poxbqgycapp7x",
+   "title": "Falling for November 2 – Overall Dress",
+   "from": "tops",
+   "to": "dresses"
+  },
+  {
+   "id": "cmuquj9qi002qoxbq3aq0jf9g",
+   "title": "Cozy Long Scarf",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmuquj9st002roxbqm0y0j167",
+   "title": "Autumn Girlish Outfit",
+   "from": "tops",
+   "to": "full-body"
+  },
+  {
+   "id": "cmuquj9v3002soxbq2xxmv3nj",
+   "title": "Angel Orange Season Collection",
+   "from": "tops",
+   "to": null
+  },
+  {
+   "id": "cmuquj9zn002uoxbqknwv2zsd",
+   "title": "Knitted Overknee Socks",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmuquja3n002voxbqe3w4t5jt",
+   "title": "Autumn 2026 “Get Famous” Female Dress",
+   "from": "tops",
+   "to": "dresses"
+  },
+  {
+   "id": "cmuquja62002woxbq2sxfsmqn",
+   "title": "Autumn Overalls",
+   "from": "tops",
+   "to": "full-body"
+  },
+  {
+   "id": "cmuqujaax002yoxbqrh1066cg",
+   "title": "Autumn Denim Collection – Harvest Threads",
+   "from": "tops",
+   "to": "bottoms"
+  },
+  {
+   "id": "cmuqujai30030oxbqwkpfgcqu",
+   "title": "Toddler Aspen Fall Jumpsuit",
+   "from": "tops",
+   "to": "full-body"
+  },
+  {
+   "id": "cmuqujakp0031oxbqhxwcwz7h",
+   "title": "The Cozy Corner Collection",
+   "from": "tops",
+   "to": null
+  },
+  {
+   "id": "cmuqujan50032oxbqmi6iucwh",
+   "title": "Autumn Leaves Set",
+   "from": "tops",
+   "to": null
+  }
+ ]
+}

@@ -331,6 +331,36 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmknfatmt006loxol1jnlvani: { contentType: 'accessories', why: "E154 holidays-typed \"Hearts Plush Ear Muffs\" — was holidays; detector NULL; earmuffs" },
   cmknfats3006ooxols7w7t1pn: { contentType: 'accessories', why: "E154 holidays-typed \"S-Club WM Earmuffs\" — was holidays; detector NULL; earmuffs" },
   cmijnoru600gzoxc8348r9xda: { contentType: 'accessories', why: "E154 holidays-typed \"Arm Bandages\" — was holidays; detector NULL; a CAS accessory" },
+  // ── Audited 2026-10-02 (Rowan, E161) — the 117 rows the first `--refreshed`
+  //    ingest created, read title + description. Two classes were wrong:
+  //    (a) the post URL category wins over the title in `saveModsToDatabase`
+  //        (`detectContentTypeFromUrl(sourceUrl) || detectContentType(title, …)`),
+  //        so every item on /sims-4-fall-cc-clothes/ was written `tops` — 20 of
+  //        20, of which the title supports 5. Dresses, overalls, socks and
+  //        mixed CAS collections all became tops.
+  //    (b) the description-inference class on /sims-4-fall-outdoor-cc/ (URL
+  //        maps to nothing, so title+description ran): "porch", "backyard"
+  //        in the prose tripped the lot rule for a basket and a decor set.
+  //    Pinned here (not a facet retag) because the two classes are a URL-rule
+  //    question for the ingest path, filed in ideas-inbox; the rows are fixed now.
+  cmuquj9jd002ooxbq3mw0iojd: { contentType: 'dresses', why: "E161 url-typed \"Little Fall Adventures Collection – Overall Dress\" — was tops; title says dress" },
+  cmuquj9lo002poxbqgycapp7x: { contentType: 'dresses', why: "E161 url-typed \"Falling for November 2 – Overall Dress\" — was tops; title says dress" },
+  cmuquja3n002voxbqe3w4t5jt: { contentType: 'dresses', why: "E161 url-typed \"Autumn 2026 “Get Famous” Female Dress\" — was tops; a sweater dress" },
+  cmuquj9qi002qoxbq3aq0jf9g: { contentType: 'accessories', why: "E161 url-typed \"Cozy Long Scarf\" — was tops; a scarf (detector's own accessories rule)" },
+  cmuquj9zn002uoxbqknwv2zsd: { contentType: 'accessories', why: "E161 url-typed \"Knitted Overknee Socks\" — was tops; socks (detector's own accessories rule)" },
+  cmuquj9st002roxbqm0y0j167: { contentType: 'full-body', why: "E161 url-typed \"Autumn Girlish Outfit\" — was tops; an outfit (top + suspenders + skirt)" },
+  cmuquja62002woxbq2sxfsmqn: { contentType: 'full-body', why: "E161 url-typed \"Autumn Overalls\" — was tops; overalls are full-body (detector's own rule)" },
+  cmuqujai30030oxbqwkpfgcqu: { contentType: 'full-body', why: "E161 url-typed \"Toddler Aspen Fall Jumpsuit\" — was tops; a one-piece jumpsuit" },
+  cmuqujaax002yoxbqrh1066cg: { contentType: 'bottoms', why: "E161 url-typed \"Autumn Denim Collection – Harvest Threads\" — was tops; description: a pair of denim pants" },
+  cmuquj976002koxbq0p5bziue: { contentType: null, why: "E161 url-typed \"The Moss Collection\" — was tops; a seven-piece CAS set (jacket, skirt, dresses, boots); no single facet" },
+  cmuquj9bx002loxbqlt9escus: { contentType: null, why: "E161 url-typed \"Ready for Fall Collection\" — was tops; a mixed CAS set; no single facet" },
+  cmuquj9ei002moxbqw6wregco: { contentType: null, why: "E161 url-typed \"The Crisp and Cozy Collection\" — was tops; seven mixed CAS items; no single facet" },
+  cmuquj9v3002soxbq2xxmv3nj: { contentType: null, why: "E161 url-typed \"Angel Orange Season Collection\" — was tops; a mixed CAS set; no single facet" },
+  cmuqujakp0031oxbqhxwcwz7h: { contentType: null, why: "E161 url-typed \"The Cozy Corner Collection\" — was tops; a loungewear set (knits, bottoms); no single facet" },
+  cmuqujan50032oxbqmi6iucwh: { contentType: null, why: "E161 url-typed \"Autumn Leaves Set\" — was tops; a two-piece (crop top + mini skirt); no single facet" },
+  cmuquijzh000noxbq4p9j908m: { contentType: 'clutter', why: "E161 description-typed \"KHD Orchard Apple Basket\" — was lot via 'porches … farmhouse builds' in the prose; a basket is clutter" },
+  cmuquijm0000ioxbqux8aaak5: { contentType: 'decor', why: "E161 description-typed \"Porchfully Yours – Build & Buy Set\" — was lot via 'Build' in the title; a 12-piece porch decor set" },
+  cmuquik41000poxbqyz2ge5fb: { contentType: 'lot', why: "E161 description-typed \"Cozy Autumn Camper Van\" — was lot; KEEP: a tiny-house lot (CurseForge rooms-lots), title alone says nothing" },
 };
 
 /**

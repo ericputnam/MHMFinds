@@ -1395,7 +1395,12 @@ export class MustHaveModsScraper {
           // Fix gameVersion for mods incorrectly saved as 'Sims 4'
           const detectedGame = mod.game || 'Sims 4';
           const gameNeedsUpdate = detectedGame !== 'Sims 4' && existing.gameVersion === 'Sims 4';
-
+          // E161 (2026-10-02): a re-scrape of a refreshed post walks every existing row of that
+          // post, so this path is now live daily. It never re-types an existing row: a NULL
+          // contentType may be a deliberate "no facet is right" from a retag pass (E33, E120,
+          // E147, E154 — only 29 of E154's 176 NULLs are pinned by id), and the retag scripts
+          // own that decision with their own dry run and spot-check. New rows still get the
+          // detector; existing rows keep what they have.
           const needsUpdate =
             (!existing.thumbnail && mod.thumbnail) ||
             (!existing.description && mod.description) ||
@@ -1404,7 +1409,6 @@ export class MustHaveModsScraper {
             (existing.author === 'posts' && mod.author) || // Fix "posts" placeholder
             (existing.title.match(/^\d+\./) && !mod.title.match(/^\d+\./)) || // Fix numbered titles
             (existing.downloadUrl && existing.downloadUrl.includes('musthavemods.com') && mod.downloadUrl && !mod.downloadUrl.includes('musthavemods.com')) || // Fix internal download links
-            (!existing.contentType && detectedContentType) || // Add missing content type
             (existing.themes.length === 0 && detectedThemes.length > 0) || // Add missing themes
             gameNeedsUpdate; // Fix incorrectly tagged game
 
@@ -1420,8 +1424,8 @@ export class MustHaveModsScraper {
                 shortDescription: mod.shortDescription || existing.shortDescription,
                 author: mod.author || existing.author,
                 tags: mod.tags.length > existing.tags.length ? mod.tags : existing.tags,
-                // Add content type and themes if detected and missing
-                contentType: existing.contentType || detectedContentType,
+                // Never re-type an existing row (E161, see above); themes only when the row has none
+                contentType: existing.contentType,
                 themes: existing.themes.length > 0 ? existing.themes : detectedThemes,
                 // Fix game version if incorrectly tagged
                 gameVersion: gameNeedsUpdate ? detectedGame : existing.gameVersion,
@@ -1483,6 +1487,8 @@ export class MustHaveModsScraper {
    * @param options.limit - Maximum number of posts to scrape
    * @param options.newOnly - Skip posts that already have a Mod row (DB-based freshness; safe from any checkout)
    * @param options.since - Only consider posts whose sitemap lastmod is on/after this date
+   * @param options.refreshed - With newOnly: also re-scrape known posts whose sitemap lastmod is newer than
+   *   the newest Mod row they produced (E161 — the writer refreshes old posts with new entries)
    * @param options.dryRun - Fetch and parse, report would-create/would-update, write nothing (DB or CSV)
    */
   async runFullScrape(options?: {
@@ -1492,6 +1498,7 @@ export class MustHaveModsScraper {
     limit?: number;
     newOnly?: boolean;
     since?: Date;
+    refreshed?: boolean;
     dryRun?: boolean;
   }): Promise<void> {
     console.log('🚀 Starting MustHaveMods.com scraper...\n');
@@ -1509,15 +1516,25 @@ export class MustHaveModsScraper {
       return;
     }
 
-    // Step 1b: Incremental selection (--new-only / --since)
+    // Step 1b: Incremental selection (--new-only / --since / --refreshed)
     let knownSourceUrls: string[] = [];
+    const knownSourceLastIngest: Record<string, Date> = {};
     if (options?.newOnly) {
       const grouped = await prisma.mod.groupBy({
         by: ['sourceUrl'],
         where: { sourceUrl: { startsWith: this.baseUrl } },
+        _max: { createdAt: true },
       });
       knownSourceUrls = grouped.map(g => g.sourceUrl).filter((u): u is string => !!u);
+      // E161: "last ingest" of a post is the newest Mod row it produced. createdAt, not
+      // updatedAt — @updatedAt is bumped by every counter write and retag pass.
+      grouped.forEach(g => {
+        if (g.sourceUrl && g._max.createdAt) knownSourceLastIngest[g.sourceUrl] = g._max.createdAt;
+      });
       console.log(`🗄️  --new-only: ${knownSourceUrls.length} blog posts already have mods in the database`);
+      if (options?.refreshed) {
+        console.log(`♻️  --refreshed: known posts whose sitemap lastmod is newer than their last ingest are re-scraped`);
+      }
     }
     if (options?.since) {
       console.log(`📆 --since: only posts with sitemap lastmod >= ${options.since.toISOString().slice(0, 10)}`);
@@ -1526,12 +1543,15 @@ export class MustHaveModsScraper {
       since: options?.since,
       newOnly: options?.newOnly,
       knownSourceUrls,
+      refreshed: options?.refreshed,
+      knownSourceLastIngest,
     });
     const postUrls = selection.selected;
     if (options?.since || options?.newOnly) {
       console.log(
         `🎯 Selected ${postUrls.length} of ${entries.length} posts` +
-          ` (skipped ${selection.skippedSince} older than --since, ${selection.skippedKnown} already in DB)\n`
+          ` (skipped ${selection.skippedSince} older than --since, ${selection.skippedKnown} already in DB,` +
+          ` ${selection.selectedRefreshed} refreshed since last ingest)\n`
       );
     }
     if (postUrls.length === 0) {

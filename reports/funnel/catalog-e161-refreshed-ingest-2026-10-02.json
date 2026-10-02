@@ -1,0 +1,726 @@
+{
+  "experiment": "E161",
+  "date": "2026-10-02",
+  "agent": "Rowan",
+  "what": "catalog-ingest-daily.sh --refreshed live apply: re-scrape of 9 blog posts edited after their last ingest",
+  "applyStartUtc": "2026-10-02T10:54:05.000Z",
+  "rollback": "DELETE the created ids (they did not exist before applyStartUtc); the 2 updated rows only gained thumbnail/images/description/author/themes — no contentType changed.",
+  "created": [
+    {
+      "id": "cmuquidwn0000oxbqsw1z3oox",
+      "title": "“Fall Has Begun” Poses",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquie0l0001oxbqndcxtf2c",
+      "title": "Pumpkin Pals Pose Pack",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquie560002oxbqzeff3nw3",
+      "title": "Little Leaf",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquie7n0003oxbqqjrsxn2a",
+      "title": "Autumn Winds",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquie9w0004oxbqe2r6f745",
+      "title": "Falling for You Poses",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquiedh0005oxbqpcrjntak",
+      "title": "Autumn Feelings",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquiefn0006oxbqnyv6084e",
+      "title": "Aesthetic Autumn Pose Pack",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquiejo0007oxbqcdstmf3t",
+      "title": "Animated Pose Oh Hey!",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquiem50008oxbqwypkv1sv",
+      "title": "Autumn Breeze Couple Pose Pack",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquieoc0009oxbqqmdygvx5",
+      "title": "Pose Pack Autumn Together",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquieqr000aoxbqih0to3ly",
+      "title": "Pose Pack Fall Girl",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquiet5000boxbqy6qeynnk",
+      "title": "Autumn Picnic Poses",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquievk000coxbqbwu3w848",
+      "title": "Sweet Apple Pose Pack",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquiezl000doxbqildgb8i0",
+      "title": "Pose Pack Autumn Swing Moments",
+      "contentType": "poses",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-poses/"
+    },
+    {
+      "id": "cmuquija3000eoxbqnqi37wy8",
+      "title": "Greenhouse – Part 2",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijef000foxbqr37zlchu",
+      "title": "Autumn Garden Living Set",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijgn000goxbqf3rpowh5",
+      "title": "Autumnal Decor",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijir000hoxbq4levn969",
+      "title": "Fall Yard Set",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijm0000ioxbqux8aaak5",
+      "title": "Porchfully Yours – Build & Buy Set",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijo5000joxbq3q56tb9h",
+      "title": "Autumn Mini Set",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijqb000koxbqs4rz7z0r",
+      "title": "Apple Harvest",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijv6000loxbq97q1m2zo",
+      "title": "Autumn Ground Leaves",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijx8000moxbqk4htgns9",
+      "title": "Autumn Mosaic Round Table",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquijzh000noxbq4p9j908m",
+      "title": "KHD Orchard Apple Basket",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquik1s000ooxbqyo5iydxk",
+      "title": "Fall Doormats",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquik41000poxbqyz2ge5fb",
+      "title": "Cozy Autumn Camper Van",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquik8q000qoxbqtdhrkzgo",
+      "title": "Autumn Cool-Off",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikb0000roxbqfq9bzgui",
+      "title": "Abby Autumn Garden",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikda000soxbqmaagex5q",
+      "title": "Little Garden Corner",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikfn000toxbqzo2ewm6j",
+      "title": "Cottage Days Garden Stripe Wallpapers",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikht000uoxbqrgoc86f5",
+      "title": "Fall Week: Table Centerpiece",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikm5000voxbqd5i5q4ln",
+      "title": "Briar Autumn Plant",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikoi000woxbqe18fq7yx",
+      "title": "Harvest Time Set",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquikqn000xoxbqt8ixwbat",
+      "title": "Autumn Embrace Entrance Cherry Wood – Room",
+      "contentType": "furniture",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-outdoor-cc/"
+    },
+    {
+      "id": "cmuquipag000yoxbqlhgmfuke",
+      "title": "Autumn Bar",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipcz000zoxbqu28v7ryy",
+      "title": "Fall Blanket",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipgv0010oxbqc9n6897l",
+      "title": "Fall Posters",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipje0011oxbq42qx9sub",
+      "title": "Fall Outdoor Decor",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiplu0012oxbq9ykb04ae",
+      "title": "The October Reading Nook – Autumn Build & Buy Collection",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipo60013oxbq7daolo2h",
+      "title": "Autumn Hearth Welcomes",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipqr0014oxbqce5gu844",
+      "title": "Autumn Wall Collection",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipvf0015oxbqkb2gl4rk",
+      "title": "Boo-tique Fall Decor",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquipxx0016oxbqutdl8p07",
+      "title": "Rustic Autumn Set",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiq0f0017oxbqe7xz4274",
+      "title": "Fall Decor",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiq300018oxbqynz5q1e1",
+      "title": "Autumn Embrace Decor",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiq5k0019oxbq2xg73wgc",
+      "title": "Goldfish Autumn Comfort Painting",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiq9z001aoxbqhdr0nncb",
+      "title": "Autumn Embrace Hallway",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiqdp001boxbqxm4ehq6d",
+      "title": "Autumn Paints",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiqg0001coxbqtbxa26uu",
+      "title": "Vintage Autumn Walls and Floors",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiqig001doxbq4xvghujh",
+      "title": "Autumn 2026 Build Buy Bundle 1",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiqks001eoxbqkqqtb32p",
+      "title": "Falling for Fall Part II",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquiqoj001foxbqt1q6vpmj",
+      "title": "Cozy Autumn Corner",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmuquixuf001goxbqc7kfy9lw",
+      "title": "A Wholesome Autumnal Family Home",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquixyo001hoxbqzssdlkjx",
+      "title": "Briarheart Cottage",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiy1b001ioxbq5bo0dlt4",
+      "title": "Sims 4 Autumnal Home",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiy3u001joxbqmd6i7c87",
+      "title": "One-Story Home – Autumn Cottage",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiy6c001koxbq95rcro2z",
+      "title": "Cozy Cottage",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiy90001loxbqc8p33wha",
+      "title": "Autumn Whisper",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyd8001moxbqkd0nydr5",
+      "title": "The Sims 4: Dark Autumn",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyfl001noxbqh05mc8m6",
+      "title": "Industrial Cozy House",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyhy001ooxbqgq5tk41v",
+      "title": "Amber Home",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiykb001poxbq5gxzds01",
+      "title": "Hearthwood Cottage",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiymd001qoxbqpljghxzb",
+      "title": "Kiss of Autumn",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyoh001roxbquqxx4pvc",
+      "title": "Autumn in the City",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyt6001soxbqhmhudgek",
+      "title": "Autumn House",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyvg001toxbqgte3c4kn",
+      "title": "Autumn Vibes",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiyxu001uoxbqsn8jjb2h",
+      "title": "Writer’s Autumnal Apartment",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiz1d001voxbqhn1dear1",
+      "title": "Autumn Forest House",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiz3m001woxbqb20q8hgd",
+      "title": "Dreamy Autumn 2",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiz7k001xoxbq9i708dj9",
+      "title": "Cozy Autumn Red Brick Family House",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquiz9w001yoxbq9vopltg4",
+      "title": "Cozy Autumn Artist’s Home",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquizc6001zoxbqzqfxr0xu",
+      "title": "Maplecroft Cottage",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquizej0020oxbqxycpvnpr",
+      "title": "Small Autumnal Home",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquizgw0021oxbqit0xz2qi",
+      "title": "Autumnal London Town House",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/best-sims-4-autumn-houses/"
+    },
+    {
+      "id": "cmuquj2yj0022oxbqlvjro6hn",
+      "title": "Pumpkin Spice Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj30r0023oxbqtffwjnl6",
+      "title": "Cozy Fall Loading Screens",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3420024oxbqpdmp6h6x",
+      "title": "Before The Fall Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj37z0025oxbqy7aesvbt",
+      "title": "Loading Screens – Pumpkin Spice Latte Pt. 2",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3aa0026oxbqwqfvbmzw",
+      "title": "Pack Complet Automne",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3dn0027oxbqrun4fucq",
+      "title": "Autumn 2026 Loading Screen 1",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3h90028oxbqux5hrmaw",
+      "title": "Cute Fall Fox Menu and Loading Screen for The Sims 4",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3ji0029oxbq3wuld4bd",
+      "title": "Autumn Woods Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3ns002aoxbq5ccs274m",
+      "title": "Fall Themed Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3q2002boxbqoam03zl6",
+      "title": "Autumn Sunshine",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3v8002coxbqh0g6ehzo",
+      "title": "Cozy Fall Alleyway Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj3yj002doxbqpt584tjl",
+      "title": "Anime Autumn Loading Screens",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj43g002eoxbqf0edx8xc",
+      "title": "Fall Winnie the Pooh Sims 4 Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj46j002foxbqyp5r9n2f",
+      "title": "Whispers of Fall – Loading Screens",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj4b7002goxbqsyib39ui",
+      "title": "Fall Scrapbook Loading Screens",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj4fs002hoxbq8i3k4x4r",
+      "title": "Hello Autumn Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj4i0002ioxbqep5gwlm4",
+      "title": "Autumn Cozy City Loading Screen",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj4m0002joxbql6gro2f7",
+      "title": "Autumn 2026 Loading Screen 2",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    },
+    {
+      "id": "cmuquj976002koxbq0p5bziue",
+      "title": "The Moss Collection",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9bx002loxbqlt9escus",
+      "title": "Ready for Fall Collection",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9ei002moxbqw6wregco",
+      "title": "The Crisp and Cozy Collection",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9h3002noxbq07scvcqk",
+      "title": "Fall Set 2025 – Suede Coats and Denim Jeans",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9jd002ooxbq3mw0iojd",
+      "title": "Little Fall Adventures Collection – Overall Dress",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9lo002poxbqgycapp7x",
+      "title": "Falling for November 2 – Overall Dress",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9qi002qoxbq3aq0jf9g",
+      "title": "Cozy Long Scarf",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9st002roxbqm0y0j167",
+      "title": "Autumn Girlish Outfit",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9v3002soxbq2xxmv3nj",
+      "title": "Angel Orange Season Collection",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9xc002toxbqkimo63gy",
+      "title": "Cozy Fair Isle Turtleneck Sweater",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquj9zn002uoxbqknwv2zsd",
+      "title": "Knitted Overknee Socks",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquja3n002voxbqe3w4t5jt",
+      "title": "Autumn 2026 “Get Famous” Female Dress",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquja62002woxbq2sxfsmqn",
+      "title": "Autumn Overalls",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuquja8f002xoxbqrv8duvz8",
+      "title": "Lonna Sweater",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujaax002yoxbqrh1066cg",
+      "title": "Autumn Denim Collection – Harvest Threads",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujad6002zoxbqbsbbb67p",
+      "title": "Hoodie With Flannel Jacket",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujai30030oxbqwkpfgcqu",
+      "title": "Toddler Aspen Fall Jumpsuit",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujakp0031oxbqhxwcwz7h",
+      "title": "The Cozy Corner Collection",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujan50032oxbqmi6iucwh",
+      "title": "Autumn Leaves Set",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujapq0033oxbqx23n3pu6",
+      "title": "Short Trench Coat",
+      "contentType": "tops",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-cc-clothes/"
+    },
+    {
+      "id": "cmuqujfmr0034oxbqsyd57ewy",
+      "title": "Artia No. 5",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-cc-finds-for-september-2026/"
+    },
+    {
+      "id": "cmuqujfri0035oxbqow1hvtfn",
+      "title": "Suburban Realistic House",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-cc-finds-for-september-2026/"
+    },
+    {
+      "id": "cmuqujftv0036oxbq7xblipic",
+      "title": "Honeybrook Corner",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-cc-finds-for-september-2026/"
+    },
+    {
+      "id": "cmuqujfw90037oxbqiqioahwj",
+      "title": "Brindleton Bay Coastal Duplex",
+      "contentType": "lot",
+      "sourceUrl": "https://musthavemods.com/sims-4-cc-finds-for-september-2026/"
+    },
+    {
+      "id": "cmuqujfzp0038oxbq36fi29mw",
+      "title": "Old High School for a Small Town",
+      "contentType": null,
+      "sourceUrl": "https://musthavemods.com/sims-4-cc-finds-for-september-2026/"
+    }
+  ],
+  "updated": [
+    {
+      "id": "cmim8u7tb00beoxy87g307cb2",
+      "title": "Pumpkin",
+      "contentType": "decor",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-decor-cc/"
+    },
+    {
+      "id": "cmim8u31200apoxy8y3tjiew5",
+      "title": "Fall Loading Screens",
+      "contentType": "loading-screen",
+      "sourceUrl": "https://musthavemods.com/sims-4-fall-loading-screen-cc/"
+    }
+  ]
+}
