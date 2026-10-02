@@ -101,3 +101,57 @@ export function pendingProfileHandle(slug: string, userId: string): string {
 export function isPendingHandle(handle: string): boolean {
   return handle.startsWith(PENDING_HANDLE_PREFIX);
 }
+
+/**
+ * Email domains of accounts no human ever signed in to (Nova, E158,
+ * 2026-10-02). Scripts and the aggregator mint a User purely to hang a
+ * CreatorProfile on:
+ *   - `musthavemods.generated` — scripts/seed-creators-manual.ts and
+ *     scripts/populateCreators.ts (every row seeded isVerified: true);
+ *   - `external.creator` — lib/services/privacyAggregator.ts, which
+ *     auto-verifies CurseForge/Reddit authors.
+ * DB 2026-10-02: all 20 CreatorProfile rows sit on `musthavemods.generated`,
+ * 20/20 isVerified=true, 0 OAuth accounts between them. Eight of their
+ * handles equal a live /creator/<slug>/ page (adeepindigo, dolilac,
+ * gegesims, littlemssam, lumpinou, rimings, sacrificialmods,
+ * shakeproductions), so those pages said "Verified creator" for people
+ * who never claimed them, and hid the E144 claim card from the only
+ * person who could.
+ */
+export const PLACEHOLDER_ACCOUNT_DOMAINS: readonly string[] = [
+  'musthavemods.generated',
+  'external.creator',
+];
+
+/** True when the email belongs to a script-minted placeholder account. */
+export function isPlaceholderAccountEmail(email: string | null | undefined): boolean {
+  if (typeof email !== 'string') return false;
+  const at = email.lastIndexOf('@');
+  if (at < 0) return false;
+  const domain = email.slice(at + 1).trim().toLowerCase();
+  return PLACEHOLDER_ACCOUNT_DOMAINS.includes(domain);
+}
+
+/**
+ * What /creator/[slug]/ may say about the CreatorProfile joined on its
+ * handle. A profile only "owns" the page — verified badge on, claim card
+ * off — when a real person promoted it (E129/E151) AND its account is not
+ * a placeholder. The owner's email is read on the server for this decision
+ * and is never part of the returned object, so it cannot reach the
+ * client props.
+ */
+export function pageProfileFrom(
+  row: {
+    website: string | null;
+    isVerified: boolean;
+    bio: string | null;
+    user?: { email: string | null } | null;
+  } | null,
+): { website: string | null; isVerified: boolean; bio: string | null } | null {
+  if (!row) return null;
+  return {
+    website: row.website,
+    isVerified: row.isVerified && !isPlaceholderAccountEmail(row.user?.email ?? null),
+    bio: row.bio,
+  };
+}

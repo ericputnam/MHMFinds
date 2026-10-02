@@ -24,6 +24,7 @@
 import { prisma } from './prisma';
 import type { Mod } from './api';
 import { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug } from './creatorSlug';
+import { pageProfileFrom } from './creatorClaim';
 
 export { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug };
 
@@ -184,7 +185,9 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
     prisma.mod.aggregate({ where, _sum: { downloadCount: true } }),
     prisma.creatorProfile.findUnique({
       where: { handle: slug },
-      select: { website: true, isVerified: true, bio: true },
+      // user.email is read only to tell a placeholder (seed/aggregator)
+      // profile from a claimed one; pageProfileFrom() drops it (E158).
+      select: { website: true, isVerified: true, bio: true, user: { select: { email: true } } },
     }),
   ]);
 
@@ -195,9 +198,7 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
     totalMods,
     totalDownloads: downloadAgg._sum.downloadCount ?? 0,
     mods: rawMods.map(serializeMod),
-    profile: profile
-      ? { website: profile.website, isVerified: profile.isVerified, bio: profile.bio }
-      : null,
+    profile: pageProfileFrom(profile),
   };
 }
 
