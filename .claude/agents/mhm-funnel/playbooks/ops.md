@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-10-02 — E162
+- Tried: replacing a whole-object-literal source match (`{ path: '/play/', kind: 'game' }`) in `play-page.test.ts` with a field-level parse, plus an import of the real constant (`AD_KINDS`); the gated merge chain into `funnel-daily-prompt.md` L24 (10,777 → 10,985 B of 12,000). PR #244 `c3cce17`, verify SUPERSEDED-PASS 06:46. CLAUDE.md 100 B trim (60,077 → 59,977) handed to Quinn's daily PR under the one-merge cap.
+- Before → after: main red 6 days (since #186 on 09-26) with ~30 merges past it; failing files 3 → 2 (→ 1 with the CLAUDE.md trim; `ModDetailPage.test.tsx` left, a behaviour failure → Cass). 4 of 4 one-line mutations still turn the test red. E110 graded KEEP: 93 ledger rows 09-25→10-02, 5 SUPERSEDED (correct), 0 backward promotions.
+- Verdict: KEEP (read 10-05).
+- Next time: when a source-guard test asserts a literal, ask which field it actually protects, and run the full `npx vitest run` before every Ops merge, not just the targeted suites.
+
 ## 2026-10-01 — E155
 - Tried: merge-gate mkdir lock in the git common dir, held through the caller's `&&` merge (frees on merge landing / shell exit / TTL ≤600 s); deploy-verify refuses a `PR #N` label not MERGED (T0, #239).
 - Before → after: PRs graded on one head 3 (09-30) → 0 expected; 15/20 tests red pre-fix. E101 KEEP.
@@ -63,22 +69,4 @@ E141: a runway override made the writer flag 🔴 on 6 of 7 mornings. On 09-29 i
 - Verdict: MORE DATA (read 2026-10-02: 0 `vercel promote` in logs/deploy-verify.log not preceded by "older than the new build").
 - Next time: a promote is a write like a rollback; give it the same "unknown ≠ go" state. And gh pr merge exit 1 ≠ not merged hit again (#174), so fix the ship protocol before it costs a verify.
 
-## 2026-09-24 — E101
-- Tried: runner `cleanup()` waits for processes with cwd inside a worktree (lsof), SIGTERMs past 1800 s, leaves a tree whose process survives or cannot be enumerated; stale prune uses the same check (T0, PR #166).
-- Before → after: worktrees deleted under a live process 1 (09-22 orphan) → 0 expected; new test fails 4/6 on pre-fix main.
-- Verdict: MORE DATA (read 2026-10-01: `cleanup: reaped` on every run in `logs/funnel-daily.log`, 0 `left in place` without a follow-up).
-- Next time: a behavioural test that extracts the real shell function beats a grep; and `gh pr merge --delete-branch` exit 1 ≠ not merged — read the PR state.
-
-## 2026-09-23 — E91
-- Tried: incident forensics for the 09-22 run (T0) + PR: `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS` exported in the runner (default 2 h), secondary-URL navigation retry in smoke-render, empty `check-blog-sidebar` → INCONCLUSIVE, curl failure → `[WARN]` + exit 2. Landed #147 + #142 rows and `incidents/2026-09-22-0655.md` on `main` via `ledger-commit.sh` before the PR.
-- Before → after: runs killed at the 600 s ceiling 3 of the last 5 (09-18, 09-19, 09-22) → 0 expected; ledger rows on `main` for 09-22 morning merges 0 of 2 → 2 of 2; false-alarm rollbacks 1 (09-22 07:10, harmless: identical app code, functions.php re-push failed on a missing path).
-- Verdict: MORE DATA (read on 2026-09-30: `grep -c "Background tasks still running" logs/funnel-daily.log` unchanged at 3, run success 14d ≥ 85%, 0 rollbacks whose "was" is a secondary-URL timeout or an empty blog check).
-- Next time: the deleted-worktree orphan is the real lesson — `cleanup()` removes trees while children may run; and deploy-verify still runs whichever `smoke-render.ts` sits in the first tree with playwright (the operator tree's stale 7-target copy on 09-22). Both filed as `[ops]`.
-
-## 2026-09-21
-- Tried: five agents shipping in parallel with a 4-minute merge-serialization rule stated in the prompt; 7 PRs merged in 24 minutes (#130–#137), 5 of them Tier 0 site or script changes.
-- Before → after: ledger rows 7 of 7 merges (all PASS, 5xx = 0), but `deploy-verify.sh` graded PASS against a build that did not contain the merged sha on 2 of 7 (#132 at 07:05, #136 at 07:09) — produ…
-- Verdict: a post-merge check that matches a deployment by timing is decoration once merges overlap; the prose rule ("wait 4 min") was chained into the same command as `gh pr merge` by one agent and c…
-- Next time: `deploy-verify.sh --after-merge` compares the alias build's sha to `origin/main` HEAD and promotes HEAD's build (Tier 0, 09-22); the serialization check becomes its own command that exits…
-
-_Older entries (up to 2026-09-10) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-24) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._

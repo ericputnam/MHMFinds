@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-02
+- Tried: E158 (T0, PR #247 `6c737f2` + fix-forward #250 `7dbae73`, data apply `e130a7d`): checking the competitor "8 missing creators" claim led to the profile table, and all 20 CreatorProfile rows were seed accounts (placeholder email domain, 0 OAuth), 20/20 isVerified. `pageProfileFrom()` now ignores the verified flag on placeholder accounts. `creator-placeholder-unverify.ts` flipped all 20 (dry run first, frozen plan = rollback file on main). Batch-1b paper for the favorites-ranked 8, not covered by Q23.
+- Before → after: claim card hidden on seed-backed live pages 8/8 → 0/8; seed profiles verified 20 → 0; mods with a false badge 71 → 0. The 8 pages drew 11 landing sessions/7d. Of the 8 favorites-ranked creators missing from E137, 5 have no page (1–3 SFW mods). E7 graded KILL: 147 engaged sessions 09-04→10-01 vs ≥200 (blog's makeup post: 2,031).
+- Verdict: MORE DATA (read 2026-10-16; keep if 0/8 hidden, 0 seed verified, /creator/* 7d ≥95%).
+- Next time: rank creators by slug, not raw author. Raw author missed SIMcredible (3 spellings, 138 mods) and double-counted Simenapule. Also, a dry run that writes the rollback file must refuse to overwrite it: my post-apply dry run emptied the 20-row plan in the worktree before #250.
+
 ## 2026-10-01
 - Tried: E151 (T0, PR #237 `e50dba6`): claim promotion now sets `isVerified` with the handle. `/creator/[slug]/` gates both the badge and the E144 claim card on `profile.isVerified`; the claim form creates the row at the schema default (false) and E129's promote wrote only `handle`, so the first promoted claimant would have landed on their own page still reading "Claim this page". Pure `promotionData()` in `lib/creatorClaimReview.ts`; the test derives the flag name from its output and asserts it is the field the page reads (3 of 14 cases red on bea25bb).
 - Before → after: DB 2026-10-01: 20 profiles, 20 verified, 0 pending, 0 promotions ever — the 09-30 inbox premise ("20 unverified") was wrong; the bug was latent, not live. Fields the promote write sets of the fields the page reads: 0/1 → 1/1.
@@ -49,16 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-24; keep if `/creator/*` landing sessions 7d ≥ 174 = 1.5× the 09-19→09-25 baseline of 116 (96 distinct pages, GA4) AND 0 `/creator/*` 404 hits from `/mods/*` referrers, with `/mods/*` sessions ≥95%).
 - Next time: read what already exists before choosing among dispatched options — all three were shipped; the real gap was leaf-to-leaf links.
 
-## 2026-09-25
-- Tried: server-render "More from <creator>" on /mods/[id] + crawlable "See all N mods by <creator>" link to /creator/[slug]/ (T0, PR #175 `8f3b5ed`, E106). New `lib/creatorMods.ts` (own file — Sage may touch lib/creators.ts the same day); loader folds spellings via findAuthorVariants, links the creator page only when ≥ MIN_MODS_FOR_PAGE, null on error; component is presentational, still a sibling of the InContentAd anchors.
-- Before → after: crawlable links from a mod page into its creator's other mods 0 → 6, and into /creator/[slug]/ 1 (author name) → 3 on the 8,404 SFW mods (50.9%) whose creator has ≥5 mods; 2,290 more get a block only. Ravasheen 41 + RAVASHEEN 12 now read as one "See all 53" (they were split). /creator/* landing 40 (09-23) / 28 (09-24), GSC impressions 0. Query cost 88 ms unindexed under 1 h ISR; prod raw-HTML check 6 links + 2 creator hrefs, .mv-ads 5 / aside#secondary 1 unchanged.
-- Verdict: MORE DATA (read 2026-10-23; keep if /creator/* landing 7d ≥ 2× the 09-23→09-29 week AND ≥30 creator pages with ≥1 GSC impression, /mods/* clicks ≥95% and mod-page RPM ≥95%).
-- Next time: read the *server* HTML of a "link block" before counting it as an internal-link surface — this one had shipped as a useEffect fetch and every audit since had counted its links; and the E85 author link still sends 2–4-mod creators to a 404 (dreamgirl), fixable in one line now that ModDetailClient receives totalMods.
-
-## 2026-09-24
-- Tried: `/creator/` crawlable hub for the 534 creator pages (T0, E97) — PR #168 `d748eaf` BUILD ERROR (never promoted) → fix-forward PR #171 `2e7627d` PASS. Top 24 by downloads + A–Z, plain `<a>` links; Navbar, leaf breadcrumb, sitemap-nextjs, llms.txt and smoke-render point at it; 7 platform "authors" excluded hub-only via `NON_CREATOR_SLUGS`.
-- Before → after: hub landing sessions 0 (404) → live; 534 creators / 8,132 mods linked from one server-rendered page; leaves already drew 43 landing sessions on day 1 with no hub; `/top-creators/` 9 sessions/28d.
-- Verdict: MORE DATA (read on 2026-10-22; keep if hub ≥50 landing sessions/28d AND leaves ≥600/wk AND ≥1 non-brand GSC query on the hub; else Navbar back to `/top-creators/`).
-- Next time: two green PRs from the same base can still break `main` — #167 and #168 each added `listCreators` to `lib/creators.ts`, the squash merged both, Vercel refused the build (main unbuildable 10:03→10:12, Rio's #169 merged into the window). Before merging on a day other agents touch your file, `git diff --name-only <base> origin/main` and rebuild if there is overlap; `lib-duplicate-exports.test.ts` now catches the repeat-export case. Also: the "smoke the preview URL" line in every incident file has never been executable here — previews are cancelled by the Ignored Build Step and sit behind SSO; smoke `next start` of the fix build locally instead.
-
-_Older entries (up to 2026-09-23) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-25) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T10:38:15.027Z",
+  "generatedAt": "2026-10-02T10:38:14.931Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3237,9 +3237,9 @@
     },
     {
       "date": "2026-09-30",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 151.76,
+      "sessions": 11212,
+      "rpm": 13.53,
       "expectedRevenue": 180.32,
       "expectedSessions": 11294,
       "nonAdMonthly": 149,
@@ -3304,6 +3304,42 @@
         "Ops": 7,
         "Quinn": 8,
         "Rio": 6,
+        "manual": 10
+      }
+    },
+    {
+      "date": "2026-10-02",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 208.17,
+      "expectedSessions": 12172,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": 119,
+      "pinterestSessions7d": 58418,
+      "returningShare7d": 0.523755312689739,
+      "nonPinterestShare7d": 0.17277220011611605,
+      "pagesPerSession7d": 1.5834047791773835,
+      "engagementRate7d": 0.7217569082635362,
+      "favorites7d": 584,
+      "downloadClicks7d": 393,
+      "newMods7d": 27,
+      "catalogTotal": 16561,
+      "captureRatePer1k": 1.300418538067294,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.8571428571428571,
+      "opsMergeShare7d": 0.10144927536231885,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Rowan": 7,
+        "Nova": 7,
+        "Sage": 7,
+        "Pip": 8,
+        "Cass": 8,
+        "Rio": 7,
+        "Ops": 7,
+        "Quinn": 8,
         "manual": 10
       }
     }
@@ -4829,6 +4865,69 @@
       "kind": "merge",
       "label": "Quinn: PR #234 funnel: daily run 2026-09-30 (Tier 0 docs)",
       "commit": "8c4710b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Sage: PR #235 seo(E150): site WebPage JSON-LD dateModified = homepage-shell date",
+      "commit": "b20ca3b",
+      "result": "SUPERSEDED (production already on 92f6d1b, newer)"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Cass: PR #238 E152 /go Save-this-mod account offer replaces E4 email box",
+      "commit": "1902a23",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Rowan: PR #240 holidays contentType title-only + ingest guard (E154)",
+      "commit": "e102b6f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Pip: PR #236 E149 runway top-up #7 ledger + package + playbook",
+      "commit": "8aed166",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Rio: PR #241 E153 affiliate pipe read — E134 confirmed-fixed rule as a tool",
+      "commit": "c039df3",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Nova: PR #237 fix: promoting a creator claim verifies the profile (E151)",
+      "commit": "4e5a449",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Ops: PR #239 merge-gate atomic lock + deploy-verify refuses unmerged PR label (E155)",
+      "commit": "4e5a449",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Rowan: PR #242 E154 rollback artifact (holidays retag, 420 rows)",
+      "commit": "dfce735",
+      "result": "SUPERSEDED (production already on ba18758, newer)"
+    },
+    {
+      "date": "2026-10-01",
+      "kind": "merge",
+      "label": "Quinn: PR #243 funnel: daily run 2026-10-01 (Tier 0 docs)",
+      "commit": "ad876cf",
       "result": "PASS"
     }
   ]

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-02
+- Tried: E159 — coverage read first: every Next.js group >1% of sessions already carries an offer (/mods/* 8.6%, / 3.6%, /games/* 2.8%, /go/* 1.7%); the 23 uncovered rows are all WordPress (27.9% of sessions). So shipped the offer-quality move: SaveFindsOffer copy split by useSession() status + saved state → FAVORITES_PATH, mirroring GoSaveOffer (T0, PR #246, 4ce2156, verify PASS 06:53). 4/19 red pre-fix.
+- Before → after: favorite src=mod-detail-save 4 users / 7 events (14d, 09-18→10-01); /account/favorites/ 0 of 9 views referred from /mods/* → read 2026-10-16. Owned adds 7d 119, capture 1.30/1K.
+- Verdict: PENDING. Keep if ≥8 signed-in offer-save users/14d OR ≥5 referred favorites views, with /mods/* RPM ≥95%.
+- Next time: `customEvent:source` IS a registered GA4 dimension — read it instead of assuming params are invisible; it split signed-in offer saves from the heart's in one query. And `grep -l … | xargs`-style lists silently collapse to one file under vitest 4 — pass paths explicitly.
+
 ## 2026-10-01
 - Tried: E152 — "Save this mod for later" account offer in the E4 /go email-box slot (sibling below `.mv-ads`, wrapper still 2 children), copy split by session status, saved → /account/favorites/; own ref go-save, events go_save_signin_redirect / go_save_after_signin, marker ?save=1 (T0, PR #238, 1902a23, verify PASS 06:53). 7/8 GoClient cases red pre-fix.
 - Before → after: /go 2,931 sessions 14d (99% desktop; page_view only 15% of them); E4 0.68/1K GA4 14d, 1.45/1K DB 28d; go_save_* 0 → read 2026-10-15. Owned adds 7d 119 (28 email + 91 accounts) vs 200; capture 1.28/1K.

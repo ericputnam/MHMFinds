@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-02 — E157 clothes-cc hub (Tier 0, shipped)
+- Tried: ungendered union collection for the bare "sims 4 clothes cc" head term the two gendered hubs could not answer (neither surfaced once in 28d). PR #248 `0207a8c`, verify PASS 07:03; only `lib/collections.ts` changed.
+- Before → after: page 404 / 0 impr → live 200 with 3,665 mods, 108 mod links, feed 50 items, in sitemap-nextjs + llms-full; read 10-16 / 10-30. E8 graded KEEP: 2,642 vs 2,106 clicks 28d (+25.5%), weekly 614 → 770, position ~42 → 12.5–15.
+- Verdict: pending.
+- Next time: (1) a `-c` grep counts lines, not matches — 1 looked like a broken grid, it was 108 links on one line; (2) `sitemap.xml` is an index — grep `sitemap-nextjs.xml` for collection URLs; (3) feeds live at `/feeds/<game>/<slug>/`; (4) merge-gate's 600 s ceiling is ~2.5 sibling merges — on a 4-agent day expect one retry, and read `gh pr view --json state` after the `--delete-branch` error; (5) `filterSpecificity` scores every contentType filter 0, so a union collection must sit *after* its gendered siblings in the registry or it steals every primary crumb.
+
 ## 2026-10-01
 - Tried: E150 (T0, PR #235 `b20ca3b`). The site-wide WebPage JSON-LD (`/#webpage`, emitted by the root layout on every page) now uses `HOME_SHELL_LASTMOD` = APP_LASTMOD `2026-09-08` (`lib/seo/siteLastmod.ts`, kept Prisma-free; a test fails if the two drift). Before, `dateModified` was `new Date()`. The E143 scanner now also fails on a bare `new Date()`/`Date.now()` in a content date. Pre-fix tree: 2 of 11 tests red, with exactly 1 offender.
 - Before → after: live `dateModified` on `/` and hair-cc `2026-10-01` (render day) → `2026-09-08` at 06:49 (verify SUPERSEDED-PASS, 5xx 0). Graded E95 KEEP: bing/organic landings on /creator/* were 61 (09-24→30, prior 0); bing_organic 16,844 = 107.8% of 15,623. Credit is shared with E97 hub and E115.
