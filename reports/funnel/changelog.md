@@ -280,3 +280,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-02 06:55 | after-merge | Pip: PR #245 E156 runway top-up #8 ledger + package + SEO re-read | 80f97a1 | https://mhm-finds-dw5l-4ikbof8k5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-02 06:59 | after-merge | Nova: PR #247 E158: seed creator profiles stop posing as claimed (+ batch-1b paper) | 6c737f2 | https://mhm-finds-dw5l-l02kiv3lr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-02 07:03 | after-merge | Sage: PR #248 E157 unified Sims 4 Clothes CC hub | 0207a8c | https://mhm-finds-dw5l-bhq4v8ky1-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-02 07:07 | after-merge | Nova: PR #250 E158 fix-forward: dry run never overwrites the rollback plan | 7dbae73 | https://mhm-finds-dw5l-fpyp329vl-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
