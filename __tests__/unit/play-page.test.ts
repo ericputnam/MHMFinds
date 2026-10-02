@@ -13,6 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { AD_KINDS } from '../../scripts/agents/smoke-render-lib';
 
 const read = (rel: string) =>
   fs.readFileSync(path.resolve(__dirname, '../../', rel), 'utf-8');
@@ -104,16 +105,32 @@ describe('/play is covered by the post-deploy runtime checks', () => {
   // if deploy-verify actually fetches it. Without the target entry a WordPress
   // proxy regression, a blank render or a lost ad anchor on /play/ is invisible
   // to every automated check the team relies on (found 2026-09-13, fixed E58).
-  const smoke = read('scripts/agents/smoke-render.ts');
+  // Comments in smoke-render.ts quote '/play/' in prose; strip them so the
+  // guard matches the target list, not its documentation.
+  const smoke = read('scripts/agents/smoke-render.ts')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+
+  // Match the fields this guard cares about, never the whole object literal:
+  // until E162 it asserted `{ path: '/play/', kind: 'game' }` verbatim, and
+  // #186 (09-26) adding `settledText` to the entry turned main red for 6 days.
+  const playEntries = (path: string) =>
+    Array.from(smoke.matchAll(/\{\s*path:\s*'([^']*)'([^{}]*)\}/g))
+      .filter((m) => m[1] === path)
+      .map((m) => m[0]);
 
   it('smoke-render.ts fetches /play/ after every deploy', () => {
-    expect(smoke).toContain("{ path: '/play/', kind: 'game' }");
+    const entries = playEntries('/play/');
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatch(/\bkind:\s*'game'/);
     // Bare /play would 308 and the check would grade the redirect, not the page.
-    expect(smoke).not.toContain("{ path: '/play', kind:");
+    expect(playEntries('/play')).toHaveLength(0);
   });
 
   it("the 'game' kind is asserted as an ad page (loader, aside#secondary, .mv-ads)", () => {
-    expect(smoke).toMatch(/const adPage =[^;]*r\.kind === 'game'/);
+    // Guard the constant, not a copy of it: AD_KINDS is the single list (E133).
+    expect(AD_KINDS.has('game')).toBe(true);
+    expect(smoke).toMatch(/const adPage = AD_KINDS\.has\(r\.kind\)/);
   });
 
   it('PlayClient is registered in the central sidebar registry', () => {
