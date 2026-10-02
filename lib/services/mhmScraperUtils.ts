@@ -352,12 +352,26 @@ export interface SelectPostsOptions {
   newOnly?: boolean;
   /** Distinct Mod.sourceUrl values already in the DB (any trailing-slash form). */
   knownSourceUrls?: readonly string[];
+  /**
+   * E161 (2026-10-02): with `newOnly`, re-select a known post when its sitemap
+   * `lastmod` is strictly newer than the post's last ingest. The writer refreshes
+   * old seasonal posts instead of publishing new ones (7 of the 15 posts modified
+   * 09-11 → 10-02 were first ingested in Nov 2025), and `newOnly` alone skipped
+   * every one of them: `sims-4-fall-decor-cc` (lastmod 09-28) carried 18
+   * uningested mods while the daily job logged `created=0` for six days.
+   * Needs `knownSourceLastIngest`; a known post with no entry stays skipped.
+   */
+  refreshed?: boolean;
+  /** Mod.sourceUrl → max(Mod.createdAt) for that post (any trailing-slash form). */
+  knownSourceLastIngest?: Readonly<Record<string, Date>>;
 }
 
 export interface SelectPostsResult {
   selected: string[];
   skippedSince: number;
   skippedKnown: number;
+  /** Known posts selected again because the sitemap says they changed after we last ingested them. */
+  selectedRefreshed: number;
 }
 
 /** Normalize a post URL for set membership: lowercase host, single trailing slash, no hash/query. */
@@ -390,11 +404,20 @@ export function selectPostsToScrape(
       if (k) known.add(normalizePostUrl(k));
     });
   }
+  const lastIngest = new Map<string, number>();
+  if (opts.newOnly && opts.refreshed && opts.knownSourceLastIngest) {
+    Object.keys(opts.knownSourceLastIngest).forEach(k => {
+      const d = opts.knownSourceLastIngest![k];
+      const t = d instanceof Date ? d.getTime() : new Date(d).getTime();
+      if (k && !Number.isNaN(t)) lastIngest.set(normalizePostUrl(k), t);
+    });
+  }
 
   const seen = new Set<string>();
   const selected: string[] = [];
   let skippedSince = 0;
   let skippedKnown = 0;
+  let selectedRefreshed = 0;
 
   for (const entry of entries) {
     if (!entry?.url) continue;
@@ -407,13 +430,25 @@ export function selectPostsToScrape(
       continue;
     }
     if (opts.newOnly && known.has(key)) {
-      skippedKnown++;
-      continue;
+      // Strictly newer: a date-only <lastmod> is UTC midnight, so a post ingested
+      // at 10:42Z and edited later the same day is a bounded miss (caught on its
+      // next edit), while a post ingested today is never re-fetched today.
+      const ingestedAt = lastIngest.get(key);
+      const isRefreshed =
+        opts.refreshed === true &&
+        ingestedAt !== undefined &&
+        entry.lastmod !== undefined &&
+        entry.lastmod.getTime() > ingestedAt;
+      if (!isRefreshed) {
+        skippedKnown++;
+        continue;
+      }
+      selectedRefreshed++;
     }
     selected.push(entry.url);
   }
 
-  return { selected, skippedSince, skippedKnown };
+  return { selected, skippedSince, skippedKnown, selectedRefreshed };
 }
 
 /** Parse a sitemap <lastmod> value ("2026-09-09" or full ISO); undefined when absent/invalid. */

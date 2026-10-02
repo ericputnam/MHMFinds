@@ -10,6 +10,13 @@
 # database (posts that already have a Mod row are skipped) and `--since` limits
 # the sitemap scan to recent posts, so a normal day fetches 0–3 pages.
 #
+# `--refreshed` (E161, 2026-10-02): a known post is re-scraped when its sitemap
+# lastmod is newer than the newest Mod row it produced. Without it, the writer's
+# refreshes of old seasonal posts were invisible — this job logged OK created=0
+# on 6 of the 7 mornings 09-26 → 10-02 while `sims-4-fall-decor-cc` (edited
+# 09-28) sat on 18 uningested mods. Existing rows are deduped by downloadUrl or
+# title+sourceUrl; hand-audited pins are never re-typed by the update path.
+#
 # Usage:
 #   ./scripts/agents/catalog-ingest-daily.sh            # live, last 21 days, <=25 posts
 #   ./scripts/agents/catalog-ingest-daily.sh --dry-run  # preview only
@@ -61,21 +68,24 @@ echo "== catalog-ingest $TODAY mode=$MODE since=$SINCE limit=$LIMIT" | tee -a "$
 # unbound variable, so the plain live run (no extra args) died before reaching the scraper on
 # 2026-09-10 ("EXTRA[@]: unbound variable"). The dry run had an element and never hit it.
 "$ROOT/node_modules/.bin/tsx" scripts/scrape-musthavemods.ts \
-  --new-only --since "$SINCE" --limit "$LIMIT" ${EXTRA[@]+"${EXTRA[@]}"} 2>&1 | tee -a "$RUN_LOG"
+  --new-only --refreshed --since "$SINCE" --limit "$LIMIT" ${EXTRA[@]+"${EXTRA[@]}"} 2>&1 | tee -a "$RUN_LOG"
 STATUS=${PIPESTATUS[0]}
 
 pages="$(grep -E '^📄 Pages scraped:' "$RUN_LOG" | tail -1 | grep -oE '[0-9]+$' || echo '?')"
 created="$(grep -E '^✅ Mods (that would be imported|imported) \(new\):' "$RUN_LOG" | tail -1 | grep -oE '[0-9]+$' || echo '?')"
 updated="$(grep -E '^🔄 Mods (that would be updated|updated):' "$RUN_LOG" | tail -1 | grep -oE '[0-9]+$' || echo '?')"
 errors="$(grep -E '^❌ Errors:' "$RUN_LOG" | tail -1 | grep -oE '[0-9]+$' || echo 0)"
+# How many of the selected posts were re-scrapes of edited posts (E161). The selection line is
+# printed before any page fetch, so it is present even on the "Nothing to do" path.
+refreshed="$(grep -E '^🎯 Selected [0-9]+ of' "$RUN_LOG" | tail -1 | grep -oE '[0-9]+ refreshed' | grep -oE '^[0-9]+' || echo '?')"
 # Early exit "Nothing to do" prints no summary block — that is a clean zero, not unknown.
 if grep -qE 'Nothing to do: every matching post already has mods' "$RUN_LOG"; then
   pages=0; created=0; updated=0
 fi
 
 if [[ "$STATUS" -eq 0 ]]; then
-  echo "$(date -u +%FT%TZ) catalog-ingest OK mode=$MODE since=$SINCE pages=$pages created=$created updated=$updated errors=$errors" | tee -a "$SUMMARY_LOG"
+  echo "$(date -u +%FT%TZ) catalog-ingest OK mode=$MODE since=$SINCE pages=$pages created=$created updated=$updated refreshed=$refreshed errors=$errors" | tee -a "$SUMMARY_LOG"
   exit 0
 fi
-echo "$(date -u +%FT%TZ) catalog-ingest FAIL mode=$MODE since=$SINCE exit=$STATUS pages=$pages created=$created log=$RUN_LOG" | tee -a "$SUMMARY_LOG"
+echo "$(date -u +%FT%TZ) catalog-ingest FAIL mode=$MODE since=$SINCE exit=$STATUS pages=$pages created=$created refreshed=$refreshed log=$RUN_LOG" | tee -a "$SUMMARY_LOG"
 exit 1

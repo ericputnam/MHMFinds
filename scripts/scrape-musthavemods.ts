@@ -15,6 +15,7 @@ async function main() {
     let limit: number | undefined;
     let newOnly = false;
     let since: Date | undefined;
+    let refreshed = false;
     let dryRun = false;
 
     // Check for flags
@@ -22,6 +23,9 @@ async function main() {
       if (args[i] === '--new-only') {
         newOnly = true;
         console.log(`🗄️  New-only mode: skipping posts that already have mods in the database`);
+      } else if (args[i] === '--refreshed') {
+        refreshed = true;
+        console.log(`♻️  Refreshed mode: known posts edited after their last ingest are re-scraped (needs --new-only)`);
       } else if (args[i] === '--dry-run') {
         dryRun = true;
         console.log(`🧪 Dry run: nothing will be written`);
@@ -57,7 +61,8 @@ Usage:
   npm run scrape:mhm -- --start-url "https://..." # Resume from specific URL
   npm run scrape:mhm -- --limit 10                # Only scrape 10 posts
   npm run scrape:mhm -- --new-only --since 2026-08-10 --dry-run   # Preview an incremental run
-  npm run scrape:mhm -- --new-only --since 2026-08-10             # Ingest only new posts (daily job)
+  npm run scrape:mhm -- --new-only --since 2026-08-10             # Ingest only new posts
+  npm run scrape:mhm -- --new-only --refreshed --since 2026-09-11 # + posts edited since we ingested them (daily job)
 
 Options:
   --start-index <number>    Resume scraping from a specific post number (1-based)
@@ -67,6 +72,8 @@ Options:
   --new-only                Skip posts that already have >=1 mod row in the DB (freshness from the
                             database, not data/mhm-scraped-urls.csv — safe from any checkout)
   --since <YYYY-MM-DD>      Only consider posts whose sitemap <lastmod> is on/after this date
+  --refreshed               With --new-only: also re-scrape a known post whose sitemap <lastmod> is newer
+                            than the newest mod row it produced (E161: the writer refreshes old posts)
   --dry-run                 Fetch + parse and report would-create/would-update; write nothing
   --help, -h                Show this help message
 
@@ -84,7 +91,11 @@ Examples:
       }
     }
 
-    await mhmScraper.runFullScrape({ startUrl, startIndex, forceRescrape, limit, newOnly, since, dryRun });
+    if (refreshed && !newOnly) {
+      console.error(`❌ --refreshed only means something with --new-only (it re-selects *known* posts)`);
+      process.exit(1);
+    }
+    await mhmScraper.runFullScrape({ startUrl, startIndex, forceRescrape, limit, newOnly, since, refreshed, dryRun });
   } catch (error) {
     console.error('Fatal error:', error);
     process.exit(1);
