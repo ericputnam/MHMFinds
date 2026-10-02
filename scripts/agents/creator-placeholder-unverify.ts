@@ -20,7 +20,7 @@ if (process.env.DIRECT_DATABASE_URL && /^prisma(\+postgres)?:\/\//.test(process.
 
 import { PrismaClient } from '@prisma/client';
 import { PLACEHOLDER_ACCOUNT_DOMAINS } from '../../lib/creatorClaim';
-import { MAX_ROWS, idsStillTargets, planUnverify, type PlanRow, type ProfileRow } from './creator-placeholder-lib';
+import { MAX_ROWS, idsStillTargets, planUnverify, shouldWritePlan, type PlanRow, type ProfileRow } from './creator-placeholder-lib';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? resolve(__dirname, '..', '..');
 const PLAN_PATH = resolve(PROJECT_DIR, 'reports/funnel/triage/creator-placeholder-unverify-2026-10-02.json');
@@ -74,6 +74,11 @@ async function main(): Promise<number> {
       const plan = planUnverify(live);
       console.log(`DRY RUN: ${live.length} profiles read; ${plan.length} placeholder+verified+never-signed-in targets; ${plan.filter((p) => p.pageMods >= 5).length} back a live /creator/ page`);
       for (const p of plan) console.log(`  ${p.handle.padEnd(20)} pageMods=${p.pageMods}`);
+      const existing = readPlan();
+      if (!shouldWritePlan(existing ? existing.length : null, process.argv.includes('--replace-plan'))) {
+        console.log(`plan NOT written: ${PLAN_PATH} already holds ${existing?.length} rows (the rollback artifact); pass --replace-plan to overwrite`);
+        return 0;
+      }
       writeFileSync(
         PLAN_PATH,
         JSON.stringify({ experiment: 'E158', written: new Date().toISOString().slice(0, 10), change: 'creator_profiles.isVerified true -> false', rows: plan }, null, 2) + '\n',

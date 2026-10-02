@@ -18,6 +18,7 @@ import {
   idsStillTargets,
   isUnverifyTarget,
   planUnverify,
+  shouldWritePlan,
   type ProfileRow,
 } from '../../scripts/agents/creator-placeholder-lib';
 
@@ -106,6 +107,23 @@ describe('placeholder un-verify planner', () => {
     const plan = planUnverify([row({ id: 'b', handle: 'zerbu' }), row({ id: 'a', handle: 'adeepindigo', pageMods: 5 }), row({ id: 'c', handle: 'real', placeholderAccount: false })]);
     expect(plan.map((p) => p.handle)).toEqual(['adeepindigo', 'zerbu']);
     expect(plan.every((p) => p.priorIsVerified === true)).toBe(true);
+  });
+
+  it('a dry run never overwrites a plan that already holds rows (the rollback artifact)', () => {
+    expect(shouldWritePlan(null, false)).toBe(true);
+    expect(shouldWritePlan(0, false)).toBe(true);
+    expect(shouldWritePlan(20, false)).toBe(false);
+    expect(shouldWritePlan(20, true)).toBe(true);
+  });
+
+  it('the script consults shouldWritePlan before its writeFileSync', () => {
+    const src = readFileSync(resolve(__dirname, '../../scripts/agents/creator-placeholder-unverify.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const guard = src.indexOf('shouldWritePlan(');
+    const write = src.indexOf('writeFileSync(');
+    expect(guard).toBeGreaterThan(0);
+    expect(write).toBeGreaterThan(guard);
   });
 
   it('apply re-checks the frozen plan: a row that signed in or vanished is skipped', () => {
