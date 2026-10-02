@@ -21,6 +21,11 @@
  *      and fires afterSignin.
  *   6. No first-paint blocker, no email input, no `.mv-ads` token in the
  *      component.
+ *   7. (E159, 2026-10-02) Copy is split by session status — a signed-in
+ *      visitor is never told to "create a free account" — and the saved
+ *      state links to the real favorites page (FAVORITES_PATH, #223), wired
+ *      from the real `useSession()` status, via the client-safe module and
+ *      never the Prisma-backed `lib/favorites`.
  *
  * Constants are imported from the real module. Comments are stripped before
  * any source assertion — files in this repo quote the patterns they warn
@@ -28,6 +33,8 @@
  *
  * Red against pre-E130 `origin/main` (e765da5): the ModDetailClient and E10
  * blocks fail (no offer rendered, email box still present, no save events).
+ * Red against pre-E159 `origin/main` (2adcfe3): the 4 "E159" cases fail
+ * (no ternary, no Link, no signedIn / favoritesHref props).
  */
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -44,6 +51,7 @@ import {
   resumeSaveHref,
   saveFindsSignInHref,
 } from '../../lib/capture/modDetailFavorite';
+import { FAVORITES_PATH } from '../../lib/favoritesPath';
 
 const ROOT = join(__dirname, '..', '..');
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
@@ -110,9 +118,26 @@ describe('SaveFindsOffer component', () => {
     expect(src).not.toContain('id="secondary"');
   });
 
-  it('promises only what exists: a favorite on the account (no list page, no alerts)', () => {
+  it('promises only what exists: a favorite on the account and the favorites page (no alerts)', () => {
     expect(src).toMatch(/saved to your favorites/i);
     expect(src).not.toMatch(/alert|notify|update you|one list/i);
+  });
+
+  it('E159: splits copy by session status — "create a free account" only when signed out', () => {
+    const ternary = src.match(/\{signedIn\s*\?\s*'([^']*)'\s*:\s*'([^']*)'\s*\}/);
+    expect(ternary).not.toBeNull();
+    const [, signedInCopy, signedOutCopy] = ternary!;
+    expect(signedInCopy).not.toMatch(/create|account|sign/i);
+    expect(signedOutCopy).toMatch(/create a free account/i);
+    // Exactly one occurrence, inside the signed-out branch.
+    expect((src.match(/create a free account/gi) ?? []).length).toBe(1);
+  });
+
+  it('E159: saved state links to the favorites page through the owner-supplied href', () => {
+    expect(src).toMatch(/<Link[\s\S]*?href=\{favoritesHref\}/);
+    expect(src).toMatch(/View your favorites/);
+    // The component never hard-codes the path; the owner passes the constant.
+    expect(src).not.toContain('/account/favorites');
   });
 });
 
@@ -144,6 +169,19 @@ describe('ModDetailClient — offer placement and wiring', () => {
   it('shares the favorite state with the button (one truth for "saved")', () => {
     expect(src).toMatch(/<SaveFindsOffer[\s\S]*?saved=\{isFavorited\}/);
     expect(src).toMatch(/<SaveFindsOffer[\s\S]*?pending=\{favoritePending\}/);
+  });
+
+  it('E159: copy split is driven by the real session status', () => {
+    expect(src).toMatch(/from ['"]next-auth\/react['"]/);
+    expect(src).toMatch(/<SaveFindsOffer[\s\S]*?signedIn=\{sessionStatus === 'authenticated'\}/);
+  });
+
+  it('E159: the favorites link is the real FAVORITES_PATH from the client-safe module', () => {
+    expect(FAVORITES_PATH.endsWith('/')).toBe(true);
+    expect(src).toMatch(/from ['"]@\/lib\/favoritesPath['"]/);
+    expect(src).toMatch(/<SaveFindsOffer[\s\S]*?favoritesHref=\{FAVORITES_PATH\}/);
+    // Never the Prisma-backed barrel — that would pull Prisma into the client bundle.
+    expect(src).not.toMatch(/from ['"]@\/lib\/favorites['"]/);
   });
 
   it('the E10 email box is gone from the mod page', () => {

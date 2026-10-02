@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Mod } from '@/lib/api';
 import Link from 'next/link';
 import {
@@ -40,6 +41,7 @@ import {
   saveFindsSignInHref,
 } from '@/lib/capture/modDetailFavorite';
 import { useModFavoriteState } from '@/lib/capture/useModFavoriteState';
+import { FAVORITES_PATH } from '@/lib/favoritesPath';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -92,6 +94,10 @@ export default function ModDetailClient({
   // signed-in visitors only (anonymous visitors make no request), so someone
   // who already saved this mod sees "Favorited" and the saved offer state.
   const [isFavorited, setIsFavorited] = useModFavoriteState(mod.id);
+  // E159 (Cass, 2026-10-02): the offer's copy is split by session status —
+  // a signed-in visitor is never told to "create a free account". Same
+  // context read the hook above already does; no extra request.
+  const { status: sessionStatus } = useSession();
   const [selectedImage, setSelectedImage] = useState<string | null>(
     initialMod.thumbnail || initialMod.images?.[0] || null
   );
@@ -353,11 +359,15 @@ export default function ModDetailClient({
               wrapper that holds the heart is Mediavine's geometry. Replaces
               the E10 email box that used to sit after RelatedMods (0 waitlist
               rows, source mod-detail, in its whole life — killed 09-21).
+              E159: copy split by session status; the saved state links to
+              the favorites page (FAVORITES_PATH, client-safe module).
             */}
             <SaveFindsOffer
+              signedIn={sessionStatus === 'authenticated'}
               saved={isFavorited}
               pending={favoritePending}
               onSave={handleSaveFinds}
+              favoritesHref={FAVORITES_PATH}
             />
 
             {/* Description Section */}
