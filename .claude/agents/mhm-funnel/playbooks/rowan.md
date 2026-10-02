@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-02
+- Tried: E161 ingest stall — traced the runner log → selector → DB instead of trusting "catalog-ingest OK created=0" (Tier 0, PR #249). The stall was a selector invariant (`--new-only` = skip any post with a Mod row, forever), not a crash: `Selected 0 of 678 (663 older than --since, 15 already in DB)` on 6 of 7 mornings while the writer only re-edited old seasonal posts. `--refreshed` re-selects a known post whose sitemap `lastmod` is newer than `max(Mod.createdAt)` for its sourceUrl; the update path no longer re-types an existing row's contentType.
+- Before → after: selected 0 of 678 → 9 of 678 (9 refreshed); created 0 → 117 in one run; catalog 16,561 → 16,678; new mods 7d 27 → 144 (read 10-09). Spot-check of the 117 found 17 (14.5%) wrong, all from two rules (URL category beats title; `lot` reads description) — 18 pinned in `hand-audited-content-types.ts`, 17 applied via `--ids=`, read-back 18/18.
+- Verdict: MORE DATA (read 10-09: new mods 7d ≥ 100, 0 refresh churn, 0 rows created unverified).
+- Next time: a summary line that prints `created=0` must also print *why* 0 (skipped-known vs skipped-since) — `refreshed=N` is now on the line; and any "already in DB" count larger than the created count is the first thing to read.
+
 ## 2026-10-01
 - Tried: title-only repair of `holidays` contentType + ingest guard, 29 pins (T0, E154, PR #240; rollback file PR #242). No live writer: legacy import.
 - Before -> after: 923 rows / 491 title-supported -> 503/503; 420 moved (176 NULL); top 24 12 -> 24/24. Season != holiday.
@@ -61,16 +67,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read on 2026-10-23; keep if ≥200 engaged sessions OR ≥5 favorites in 28d and RPM ≥95%).
 - Next time: bathroom (439 rows, Wicked Whims card #1) is the last room theme on the substring rule — same repair, and read the ambiguous-word rows' descriptions as a spot-check (never as rule input). The kitchen grid exposed mistyped contentType (fridges as glasses/tops/makeup) — an `--ids=` contentType hand-fix, not a retag.
 
-## 2026-09-24
-- Tried: `bedroom-cc` collection page + title-only repair of the `bedroom` theme, one PR (T0, E100, PR #170 `565f35d`). Picked bedroom over kitchen/bathroom on demand: GSC 28d bedroom listicle cluster ~394 impr / 7 clicks vs bathroom 105 / 1, kitchen 45 / 0, and bedroom queries ("bed frame cc" pos 16.8, "teen bedroom cc" 21.9) hit no browse page. Room themes are NOT in `THEME_KEYWORDS` — they come from `ROOM_THEME_RULES` in `contentTypeDetector.ts` (`String.includes` over title then description); the fix went there, not in the extractor.
-- Before → after: `bedroom` theme 523 rows / 195 title-supported (37.3%) → 250 / 250 (100%); 39 added, 312 stripped; top 40 read 40/40. The old `'sleeping'` keyword was the worst single word (9 of 16 `sleep*` titles are pose packs). A bare "bed" needed a veto list — the first dry run's ADD list had "Bed Cuddle", "Read in Bed", "Cat Window Hanging Bed" and three bed pose packs. Titles-only cost the old #1 card ("Teen Space", 7,998 dl, bedroom clutter per description).
-- Verdict: MORE DATA (read on 2026-10-22; keep if ≥200 engaged sessions OR ≥5 favorites in 28d and RPM ≥95%).
-- Next time: kitchen (345 rows / 33.6%) and bathroom (439 / 20.7%, Wicked Whims is card #1) have the same `ROOM_THEME_RULES` bug; copy the two-level rule (strong words never vetoed, bare noun + veto list). Four beds are typed tops/shoes/makeup (Yuna Double Bed, Duality Bed, University Life Beds, Allie Bedframe) — a contentType hand-fix via `--ids=`, not a retag.
-
-## 2026-09-23
-- Tried: `halloween-cc` collection page + title-only repair of the `halloween` theme, one PR (T0, E90). Picked on demand + timing: lots/houses had the biggest GSC cluster (hospital-lots 3,529 impr) but `residential`+`lot` were 55.5% title-clean with a Love Island challenge at #2; `glasses` 41.8% (the word "glass"); beard 93% but 80 impr. Halloween: 9 articles, ~519 impr/28d **before** the October peak.
-- Before → after: `halloween` theme 547 rows / 190 title-supported (34.7%) → 190 / 190 (100%); 53 added, 410 stripped; top 40 read 38/40. Source fixed: THEME_KEYWORDS no longer maps witch/vampire/ghost/pumpkin → halloween; `lib/halloweenThemeRules.ts` is title-only and also filters AI-only tags. Collection routes 23 → 24.
-- Verdict: MORE DATA (read 2026-10-21; keep if ≥200 engaged sessions OR ≥5 favorites in 28d; 7-day RPM watch on the page).
-- Next time: every THEME_KEYWORDS entry has the same bug (substring over title+description) — `bedroom` 43.6%, `kitchen` 44.6%, `bathroom` 37.6% title-supported today. Fix a theme at the source before paging it; `pumpkin` and `ghost` were rejected by reading the dry run's ADD list, not the STRIP list.
-
-_Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-24) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._

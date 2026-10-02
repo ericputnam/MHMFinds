@@ -494,3 +494,14 @@ KILL through 09-29 (E1 E26 E34 E3 E6 E10 E13→E134 E15 E20 E38 E40 E46+E56 E57 
 | E93 | 2026-09-24 | Pip | 0 | AUDIENCE | Bing real-vs-bot verification… | bing_organic sessions with ≥1 pagev… | 14,761/7d (09-16→09-22) | 2026-10-01 | zero-pageview share ≤8% AND net ≥95%… | KEEP: Bing net 15,906 = 107.8% | Bing 16,669/7d, zero-pv 763 = 4.6%; count… |
 | E99 | 2026-09-24 | Rio | 0 | CONVERT | `/go/[modId]` Connect Patreon… | `patreon_click_after_wait` users/da… | after-wait 0 (event new); `patreon_cl… | 2026-10-01 | after-wait ≥1.0 users/day 09-25→10-01… | KEEP: after-wait 3.83/day | 23u/6 reported d vs ≥1.0 on render denomi… |
 | E146 | 2026-09-30 | Rio | 0 | MEASURE-CONVERT | /go read: render denominator,… | after-wait users/day (per render) | pv covers 41.4% of render; no tool | 2026-10-01 | E99 ≥1.0/day over reported days | KEEP: 6/6 days, exit 0 | render denom; page_view covers 41.3% of r… |
+
+## Graded 2026-10-02 (verbatim rows moved out of experiments.md by Quinn)
+
+| ID | Shipped | Owner | Tier | Stage | Move | Metric | Before | Read on | Keep if | Result | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| E7 | 2026-09-04 | Nova | 0 | CONTENT | makeup-cc collection page add… | engaged sessions /games/sims-4/make… | 0 -- page did not exist (2026… | 2026-10-02 | >=200 engaged sessions by read date | 147 eng sess 09-04→10-01 (73.… | KILL (page stays; Rowan) |
+| E8 | 2026-09-04 | Sage | 0 | AUDIENCE | Google collapse diagnosis (PR… | GSC clicks 28d | 2,106 (-1.2%) (2026-09-04) | 2026-10-30 | first shipped fix moves clicks WoW po… | 2,642 vs 2,106 clicks 28d (+2… | KEEP → track to 10-30 |
+| E101 | 2026-09-24 | Ops | 0 | OPS | Runner `cleanup()` never dele… | worktrees deleted under a live proc… | 1 (09-22 orphan rolled prod back into… | 2026-10-01 | every run logs `cleanup: reaped N`; 0… | KEEP: 12/12 reap lines, 0 left | 6/6 end reaps + 6/6 prunes; 0 SIGTERM |
+| E110 | 2026-09-25 | Ops | 0 | OPS | deploy-verify promotes only f… | backwards promotions | 1 (09-24 #167 over #170) | 2026-10-02 | 0 backwards promotions 7d; overlaps l… | 93 rows 09-25→10-02: 5 SUPERS… | KEEP |
+| E75 | 2026-09-21 | Pip | 1 | AUDIENCE | `rank-pin-destinations` produ… | Pinterest sessions to the slice's d… | — (script only) | after merge | dry run reproduces a sessions-ranked… | tool fed top-ups #4–#8 (09-24→10-02) | KEEP |
+| E160 | 2026-10-02 | Rio | 0 | MONETIZE | post 5848 amzn.to tag invento… | short links carrying tag≠04-20 (of 10) | 27 occ / 10 distinct, tag UNKNOWN (09-29) | 2026-10-02 | 0 of 10 need an edit; item D stays 7 swaps | 10/10 resolve to musthavemod0… | DONE — no edit needed |

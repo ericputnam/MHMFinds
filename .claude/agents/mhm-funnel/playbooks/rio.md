@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-02 — yellow diagnosis (WATCH); E108/E125 read; E160 closed
+- Tried: split the 09-30 yellow (−15.8% rev, −15.2% RPM, Wed) into requests vs fill vs CPM using `/reports/pages` `impressions` + `unfilled_impressions` (top-25) and site-level `paid_impressions_per_pageview` + `cpm` (Mediavine MCP unavailable; `scripts/mcp-mediavine/client.ts` direct). E160: 27 `amzn.to` occurrences on post 5848 = 10 distinct short links, 10/10 resolve (first hop only) to `tag=musthavemod04-20` — no edit.
+- Before → after: fill 68.2% (09-23) → 52.3% (09-30); unfilled/pv 5.3 → 6.6 with requests/pv flat; imp/pv 11.05 → 9.60; CPM 0.96 → 0.89; GA4 pages/session 1.565 → 1.576; every partner down on impressions at flat CPM. E108: paid joins 9/7.2 d = 38.1/mo pace (floor 17), cancels 0 → KEEP joins, cancels 10-09. E125: KEEP 1/2.
+- Verdict: demand-side (end-of-quarter fill), WATCH, no rollback. Trigger: finalized 10-01 AND 10-02 both <90% revenue with imp/pv <10.0 → ESCALATE 10-03.
+- Next time: read fill rate before RPM — a page-RPM drop with flat requests/pv and flat CPM per partner is never on-site; the pages report has no host field, so the host leg of a 301 must be read from GA4 pv/session, not Mediavine. Run the Patreon pre-read with `-r dotenv/config` or it reports "token not set".
+
 ## 2026-10-01 — E153: E134 "pipe confirmed fixed" read; E99 / E146 graded
 - Tried: `affiliate-pipe-lib.ts` + `affiliate-pipe-read.ts` + 17 tests (T0, PR #241, c039df3). Rule frozen in `PIPE_RULE`: from 09-29 (first full day after #214), on-site `gtracing` clicks ≥10 AND Impact 18111 ÷ on-site ≥50 % (exact fraction) → confirmed, E134's 30-day $0 KILL clock starts; <10 → not-yet; share under floor → leaky; Impact leg down → unknown, never a verdict. Impact GET bounded 30 s, every print through `redactError`.
 - Before → after: pre-fix 07-01→09-28 Impact 9 / on-site 110 = 8.2 % → post-fix 09-29→09-30 2 / 2 = 100 % but NOT-YET (8 clicks short ≈ 8 d at 1/day). E99 KEEP: after-wait 23u / 6 reported d = 3.83/day (keep ≥1.0; 3,4,4,8,2,2). E146 KEEP (6/6 reported, render denominator). E108 pre-read: joins since 09-25 5 in 6.2 d = 24.5/mo PASS, cancels 0 (floor until the 10-01 charge run), connected 1/56 FAIL. Guardrail GREEN from files; MCP unavailable.
@@ -53,17 +59,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: shipped; deploy-verify INCONCLUSIVE (curl leg failed on the runner's network, markers not judged) → hand smoke 14/14 OK with control 3/3, sidebar healthy. E55/E60 → KEEP on 09-29.
 - Next time: (1) a helper whose persistence target is "cwd" must be asked which cwd every caller actually runs in before it is trusted with a single-use secret — the runner's copy-per-worktree made the default silently wrong for 8 of 8 daily callers; (2) INCONCLUSIVE is not PASS — run the two hand checks before quoting the row, and give the curl leg the same network control the smoke has.
 
-## 2026-09-26
-- Tried: no code move (E119 unused). E65 graded; Q4 `--anchor rename` pre-read attempted twice (fetch failed; terminated at 240 s).
-- Before → after: patreon_click 3.43 users/day (09-12→09-18) → 7.00 (09-20→09-25: 7,9,5,5,7,9); /go pv users 24→39/day; click rate per pv user 22.1%; RPM 100.6% of $17.24. After-wait 2, 3 users on 09-24/25.
-- Verdict: E65 KEEP. E99 reads 10-01, E108 10-02/10-09, Q16 silence 09-29.
-- Next time: (1) `customEvent:source` is not a GA4 custom dimension — connect vs join was never splittable; ask the operator to register it; (2) the pre-read's `Promise.all` throws away the reachable half on a degraded morning — make it `allSettled` with exit 2 before the 10-02 read.
-
-## 2026-09-25 — E108: the operator renamed the tiers on a HOLD
-- Tried: `RENAME_WATCH` constant (anchor 2026-09-25T04:54:06Z, thresholds imported from `Q4_GATE`) + `--anchor rename|<ISO>` on `patreon-q4-gate-preread.ts`; before-snapshot report; three operator drafts moved to Espresso Shot / Cappuccino / Large Latte. Grep found zero on-site tier-name copy, so no app change.
-- Before → after: 55 paid ≈ $153.50/mo, joins 7d 4, cancels 7d 0, connected 0/55 → same (snapshot only; reads 10-02 / 10-09). Q4 gate still HOLD on the connected leg (joins 22.7/mo PASS, connected 0/55 FAIL); renames are a fact, $10 tier stays Tier 2. E65 pre-read 6.6 patreon_click users/day (keep ≥ 4.375). E99 after-wait 2 users on 09-24.
-- Guardrail: GREEN from files (MCP unavailable) — 09-22 $192.44 +6.2%, RPM +9.8%, 28d +5.1%.
-- Verdict: shipped, PR #177 1bb79f6, deploy-verify PASS. Cancels are a floor until the 10-01 charge run — do not read the rename on 10-02 as "no churn".
-- Next time: when the operator acts ahead of a gate, record the anchor and the pre-committed revert rule as a tool the same day; a threshold that lives only in a decision paragraph cannot be re-run. Operator-queue Q4/Q16 text and the "Operator-only actions" line still say "Support Tier"/"Tip Jar" — Quinn's daily PR should update to "unpublish the $1 'Espresso Shot' tier" and "paste the welcome note into the $3 'Cappuccino' tier". `gh pr merge --delete-branch` exits 1 when `main` is checked out in another worktree even though the merge succeeded; check `gh pr view N --json state` before retrying.
-
-_Older entries (up to 2026-09-24) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-26) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._

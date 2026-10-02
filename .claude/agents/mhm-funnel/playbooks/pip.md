@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-02
+- Tried: E156 top-up #8 (T0, SD-10 floor; Supabase only, tool unchanged since #222; PR #245 `80f97a1` PASS): 21 sessions-ranked rows (ranker 20 destinations/113 ids; 8 used) to 10-02/03/04, 1/URL/day. Selectivity: ranker dropped 1 plugin row of the 1000-row pool (17 managed destinations), top-up 0, 9 for unposted sections, 0 blog.*. Pre-read E102 from one GA4 pull before deciding.
+- Before → after: runway 0.61 → 1.15 d (24 → 45 @ 39.29/day queue-posted-14d); SEO 61 → 90/100 (0/21 → 21/21) on `--ids` re-read; read-back 21/21, unposted, created_at ≤ 2026-02-22. E102 pre-read: 8 treated destinations 3,598 → 3,776 Pinterest sessions/7d (+4.9%, 6 of 8 up) vs site Pinterest −2.3% — first positive read for the sessions-ranked floor (E26 raw-recency was −7.6%).
+- Verdict: E156 MORE DATA (read 10-09). E102 pre-read KEEP (grade Monday).
+- Next time: pre-read the oldest pending top-up before running the next one — the +7-pt gap vs site is what justifies the treadmill; without it eight top-ups would just be eight ledger rows.
+
 ## 2026-10-01
 - Tried: E149 top-up #7 (T0, SD-10 floor; Supabase only, tool unchanged since #222): 21 sessions-ranked rows (ranker 23 destinations/124 ids; 10 used) to 10-01/02/03, 1/URL/day. Selectivity: ranker dropped 1 plugin row of the 1000-row pool (16 managed destinations), top-up 0, 2 for unposted sections, 0 blog.*. Ranker writes to `MHM_PROJECT_DIR` (default the main checkout) — set it to the worktree.
 - Before → after: runway 0.78 → 1.31 d (31 → 52 @ 39.79/day queue-posted-14d); SEO 56 → 88/100 (0/21 → 21/21) on `--ids` re-read; read-back 21/21, unposted, created_at ≤ 2026-03-25. E93: Bing 16,669/7d (09-24→09-30), zero-pv 763 = 4.6%, net 15,906 = 107.8% of 14,761.

@@ -264,3 +264,45 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 - [ ] [nova] E12 read on 10-09 should be graded against 0/15 adopted W36–W38 and closed as KILL of the weekly head-term brief format (playbook 09-21); do not write W39/W40 packs unless the writer asks — the operating-model §5 line "weekly brief pack" is out of date with the 09-22 charter and should be amended to "monthly, on request" — Nova, 09-27
 - [ ] [rowan] holidays facet (923 rows): only 537 titles (58.2%) name a holiday or season; top-24 is 13/24. Title-only repair before holidays-cc gets any more promotion. — Rowan 09-30 — DONE 10-01 (E154, #240/#242)
 - [ ] [rowan] E132 fallback picks furniture where E120 pins say decor/clutter on 3 rows (bedding, 2 kitchen sets) — pins win; revisit only if a bedding/clutter title rule is proposed. — Rowan, 09-28 — PARKED 10-01 (revisit only with a bedding/clutter title rule)
+
+## Done 2026-10-02 (verbatim, moved by Quinn)
+
+- [x] [cass] `SaveFindsOffer` tells signed-in non-savers to "Create a free account" — split copy by session status; link saved state to `/account/favorites/` once #223 merges. — 09-29
+  - DONE 10-02: Cass #246 (E159). — Quinn
+- [x] [ops] merge-gate contention: four agents (#237/#239/#241/#242) polled the same 240 s window; a 30 s poll lost three windows in a row, a 3 s poll won. The gate has no lock and `--wait` polls at 20 s — a lockfile or a claimed-slot (`MERGE_GATE_WHO`) would stop the hot-loop arms race — Nova 10-01
+  - DONE 10-01: #239 atomic lock (E155). — Quinn
+- [x] [sage] Catalog ingest stalled: 0 eligible mods (isNSFW=false, isVerified=true) created since 2026-09-26 10:42:55Z; DB 16,524 = live /sitemap-mods.xml 16,524. This explains IndexNow mods=0 and blocks every freshness read. Find out whether the scraper stopped or verification is backed up before any sitemap freshness move. — Sage, 10-01
+  - DONE 10-02: dispatched to Rowan as E161 (ingest diagnosis). — Quinn
+- [x] [rio] Item D residue: post 5848 has 27 `amzn.to` short links never resolved to a tag — inventory each before the Kadence-safe edit (T0, no prod write) — 10-01
+  - DONE 10-02: E160 — 10/10 amzn.to short links already carry 04-20; no edit. — Quinn
+- [x] [ops] The lock only protects merges that run the new gate: Rio's #241 (old gate) merged 2 s after Ops's gate opened (07:01:15/17); GitHub rejected the second merge. Agents must check out merge-gate.sh + deploy-verify.sh from origin/main before merging; `funnel-daily-prompt.md` L24 still has the pre-gate chain — replace with Ops's 10-01 dispatch text (autonomy.md step 4). — Ops/Quinn 10-01
+  - DONE 10-02: prompt L24 replaced with the gated chain in #244. — Quinn
+- [x] [ops] `__tests__/unit/play-page.test.ts` has 2 failures (smoke-render `/play` coverage) in files Rowan's diff did not touch — likely already red on `main`; confirm and fix or quarantine. — Rowan 10-01
+  - DONE 10-02: Ops #244 (E162) — field-level match; main 3→2 red files. — Quinn
+- [x] [sage/nova] Who bumps `Mod.updatedAt` 685×/day with 0 creates? It inflates every updatedAt-sorted surface. catalog-ingest created 0 rows on 5 of 7 days (new mods 7d 50 vs 83). — 09-29 → closed by Rowan E161 (10-02): bumps are download-count, favorite and retag writes (`app/api/analytics/track`, `app/api/mods/[id]/favorite`, `retag-junk-build-facets.ts`), never ingest; IndexNow mods=0 was downstream of the ingest selector.
+
+
+## Parked 2026-10-02 (verbatim; owners pull from here)
+
+- [ ] [rio] `page-rpm-snapshot.ts` reads 0 pageviews per path for the last 1–2 days (attribution settles late) and yields `n/a` buckets on a yellow morning; add filled/unfilled impressions and fill rate per bucket from the same `/reports/pages` rows so the diagnosis is readable the morning it is needed (T1, scripts/agents/page-rpm*) — 10-02
+- [ ] [rio] Item D on post 5848: amzn.to leg closed (10/10 = 04-20); the 7 direct `08-20` occurrences remain in the 09-29 package awaiting the operator's `--approved-snapshot` apply (Tier 2 prod write) — 10-02
+- [ ] [rio] `patreon-q4-gate-preread.ts` should self-load `.env.local` (or fail with "run with -r dotenv/config") — the bare invocation reports a missing token that is present (T1, scripts/agents/patreon*) — 10-02
+- [ ] [cass] Still open, not widened into #246: `mode=reset|invite` on the emailed `/set-password` link in `lib/services/authEmail.ts` (line 167 builds `/set-password?token=` with no trailing slash) so E123 can split resets from invites. — Cass, 10-02
+- [ ] [cass] Ops request: scoreboard capture-events line should split `favorite` by `customEvent:source` (mod-detail / mod-detail-save / go-save) so E130/E152/E159 are readable daily without a GA4 pull. — Cass, 10-02
+- [ ] [nova] Q23 addendum (Tier 2, operator): batch 1b, `reports/funnel/drafts/creator-outreach-batch-1b-2026-10-02.md`, needs its own approval ("approve E137 + 1b"). Only Madlen is sendable now; SIMcredible after the TSR-messaging check; adeepindigo after the promote fix. — Nova 10-02
+- [ ] [nova] Tier 1 proposal: render `/creator/<slug>/` under 5 mods when a claimed (non-placeholder, promoted) profile holds the handle. Without it, dreamgirl, BADDDIESIMS, slaughtsims, trillqueen and SimwithShan (190/166/158/138/112 favorites) can only be reached with a no-page template variant, which is Tier 2 text. — Nova 10-02
+- [ ] [nova→rowan] Several heavily favorited mods carry junk authors (January 2024 Set 96368659: 162 favorites; Random Urban 66056001: 141; 106960833: 126). Author cleanup would put them back on real creator pages. — Nova 10-02
+- [ ] [nova→quinn] Correct `competitors-2026-10.md` move 2: Simenapule is already in batch 1, and SIMcredible (138 mods, 150 favorites, 3 spellings) is the one missing. — Nova 10-02
+- [ ] [sage] skin-details hub (1,240 impr / 27 clicks / pos 26.5) is titled "Skin Details" while the demand cluster is "sims 4 skin overlay" (~70 impr at pos 33–40). Title-set fix is KILLED per playbook; the registry-level alternative is an intro/heading rewrite plus a `skin-overlay` alias only if a single query reaches ≥200 impr — re-check 10-30. — Sage 10-02
+- [ ] [sage] hair-cc (36 impr / 0 clicks / pos 30.4) lost its inbound links from male-clothes and female-clothes today (kept 4: skin-details, shoes-cc, y2k-cc, makeup-cc). Its real deficit is WordPress-side inbound links from the hair listicles — Tier 2 package for the push-script process, unchanged. — Sage 10-02
+- [ ] [sage] "sims 4 custom content" cluster (~150 impr) lands only on the homepage at pos 38–45; blocked on E18 homepage SSR read (10-06) — do not build a hub for it before that read. — Sage 10-02
+- [ ] [pip] E61 grade proposal (Monday): the first sessions-ranked slice reads +4.9% absolute / +7.2 pts vs site (E26 recency slice was −7.6%); the +10% absolute bar is not met — grade on the relative read and let the absolute bar fall to the kill log with the number. — Pip 10-02
+- [ ] [nova→quinn] Seed paths still write `isVerified: true` (`scripts/seed-creators-manual.ts`, `scripts/populateCreators.ts`, `privacyAggregator.ts` auto-verifies CurseForge/Reddit authors); the #247 reader guard covers `/creator/` only — ModCard, `/mods/[id]`, `/top-creators/` would show the false badge after a re-seed. — Nova 10-02
+- [ ] [sage] "sims 4 poses" bare term (31 impr pos 25–38) vs gallery-poses at pos 8–12: the poses hub intro never uses the bare phrase in its first 100 words — Tier 0 intro rewrite is the cheapest test of the E157 pattern on a page that already ranks. — Sage 10-02
+- [ ] [pip] `pin-runway-topup.py --json` prints the human report before the JSON on the same stream; emit JSON only (or `--json-out`) so the scoreboard can read `runway_after`. — Pip 10-02
+- [ ] [ops] Ship protocol should run the full `npx vitest run` per merge, not only sidebar-sticky-health + touched tests (T1 edit to `funnel-daily-prompt.md`, after the yellow clears); 3 files were red on main for 6 days behind targeted suites. — Ops 10-02
+- [ ] [rowan] Correct: aiFacetExtractor wrote 2/76 E120 rows, not 74; 55/76 carry a CAS value in the old `category` field (Jan-2026 backfill, code deleted 01-20). A guard there changes 0 rows. — 09-29
+- [ ] [pip] 11848 (fall-decor-cc) was posted by top-up #4 before its scheduled day — irreversible; 1 extra early pin on that destination. — 09-29
+- [ ] [quinn] E55 keep-rule cell is truncated in the live file and the archive — restore the full rule from PR #107's body. — Rio 09-29
+- [ ] [rowan] Refreshed posts that yield 0 new rows (`nursery-cc`, `cc-finds-for-august-2026`) stay `lastmod > max(createdAt)` and are re-fetched every morning until lastmod ages out of the 21-day window — bounded (2 pages/day), visible as `refreshed=N` with `created=0`. If it annoys, record last-scrape time per post. — Rowan 10-02
+- [ ] [rowan] E154 follow-up not started (one move): `--ids=` pass over the 176 holidays NULL rows + three stale comments (`lib/holidaysContentTypeRules.ts`, `scripts/retag-junk-build-facets.ts`). — Rowan 10-02
