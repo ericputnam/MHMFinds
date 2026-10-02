@@ -2067,3 +2067,31 @@ The 09-28 section is in the archive.
 - **Still open:** `check-host-split.sh` is still not wired into `check-blog-sidebar.sh` or
   `deploy-verify.sh`. `check-pinner.sh` step 2b still mirrors the old writer-runway override
   (#218). The full `npx vitest run` reported 3 pre-existing failures on `main` (`play-page.test.ts`
+  `AD_KINDS` regex drift, `ModDetailPage.test.tsx` aria-name drift, #214), and the targeted
+  ship-protocol suites cannot see them.
+
+### 2026-09-30 — eleven merges (#223, #225–#234), zero incidents
+
+- **`updatedAt` has now fed a content date three times** (collection sitemap E37, mod sitemap
+  #221, mod JSON-LD `dateModified` #225). #225 finally adds the class scanner
+  (`__tests__/unit/mod-jsonld-datemodified.test.ts`): any `dateModified`/`lastmod`/`lastModified`
+  fed by `updatedAt` under `app/` or `components/` fails CI. Extend it, don't add a fourth fix.
+- **A room is a theme, not a `contentType`.** 74 rows were typed `bathroom`/`kitchen`/`lot`/
+  `residential` because the scraper's URL category wrote the field (#230). The ingest guard in
+  `contentTypeDetector.ts` now never returns a room value; hand-fix rows via `--ids=` with a
+  rollback file, pin ambiguous ones in `hand-audited-content-types.ts`.
+- **Pick the denominator from what the page serves, not from `page_view`.** On `/go` GA4
+  `page_view` covers only 41.4% of `render` users, so per-page_view rates overstate conversion
+  ~2.4× (#232). And **today is unreported, not zero**: the first live E99 read averaged a partial
+  day in and printed 3.5/day instead of 4.2. Over reported days only; tag <2-day-old days
+  provisional.
+- **A save with no read surface is a dead feature.** 859 accounts held 22,477 favorites they
+  could not see — the Navbar heart was a `<button>` with no `href` or handler (#223). When a
+  feature writes user data, grep for the page that reads it back.
+- **A test must never append to a `reports/` ledger.** The newsletter send-path test wrote to
+  `newsletter-sends.jsonl` until the file ledger was intercepted (#226) — a test run is not a send.
+- **Still open:** two cron routes still **fail open** when `CRON_SECRET` is unset
+  (`app/api/cron/commission-sync/route.ts:13`, `monetization-agent/route.ts:21`,
+  `if (cronSecret && …)`); #226 fixed only the newsletter sibling. Auth → Tier 2. The merge gate
+  has no lock (see standing rule). `check-host-split.sh` is still not wired into
+  `check-blog-sidebar.sh` or `deploy-verify.sh`.

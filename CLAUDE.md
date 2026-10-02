@@ -883,8 +883,8 @@ run died with `Prompt is too long`.
   Re-validate the second PR on the new `main` when both touch one file. **`gh pr merge` exit 1 does
   not mean "not merged"** — `--delete-branch` fails when another worktree holds `main` after the
   remote merge has landed (6 times on 09-24/25). Read `gh pr view N --json state,mergeCommit`,
-  never the exit code, before retrying or skipping the after-merge verify. **The gate is
-  check-then-act with no lock:** on 09-30 three PRs passed one poll and merged within 6 s, and a
+  never the exit code, before retrying or skipping the after-merge verify. **Until #239 the gate
+  was check-then-act with no lock:** on 09-30 three PRs passed one poll and merged within 6 s, and a
   `gate; merge; verify` chain (`;`, not `&&`) graded Cass's #226 under Pip's #227 label (ledger
   correction row). Chain only with `&&`, pass `verify --sha` the PR's `mergeCommit` oid (never
   `origin/main`), and treat a label whose PR is not `MERGED` as an error.
@@ -970,36 +970,39 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-09-30 — eleven merges (#223, #225–#234), zero incidents
+### 2026-10-01 — eight merges (#235–#243), zero incidents
 
-The 09-29 section is in the archive.
-- **`updatedAt` has now fed a content date three times** (collection sitemap E37, mod sitemap
-  #221, mod JSON-LD `dateModified` #225). #225 finally adds the class scanner
-  (`__tests__/unit/mod-jsonld-datemodified.test.ts`): any `dateModified`/`lastmod`/`lastModified`
-  fed by `updatedAt` under `app/` or `components/` fails CI. Extend it, don't add a fourth fix.
-- **A room is a theme, not a `contentType`.** 74 rows were typed `bathroom`/`kitchen`/`lot`/
-  `residential` because the scraper's URL category wrote the field (#230). The ingest guard in
-  `contentTypeDetector.ts` now never returns a room value; hand-fix rows via `--ids=` with a
-  rollback file, pin ambiguous ones in `hand-audited-content-types.ts`.
-- **Pick the denominator from what the page serves, not from `page_view`.** On `/go` GA4
-  `page_view` covers only 41.4% of `render` users, so per-page_view rates overstate conversion
-  ~2.4× (#232). And **today is unreported, not zero**: the first live E99 read averaged a partial
-  day in and printed 3.5/day instead of 4.2. Over reported days only; tag <2-day-old days
-  provisional.
-- **A save with no read surface is a dead feature.** 859 accounts held 22,477 favorites they
-  could not see — the Navbar heart was a `<button>` with no `href` or handler (#223). When a
-  feature writes user data, grep for the page that reads it back.
-- **A test must never append to a `reports/` ledger.** The newsletter send-path test wrote to
-  `newsletter-sends.jsonl` until the file ledger was intercepted (#226) — a test run is not a send.
-- **Still open:** two cron routes still **fail open** when `CRON_SECRET` is unset
-  (`app/api/cron/commission-sync/route.ts:13`, `monetization-agent/route.ts:21`,
-  `if (cronSecret && …)`); #226 fixed only the newsletter sibling. Auth → Tier 2. The merge gate
-  has no lock (see standing rule). `check-host-split.sh` is still not wired into
-  `check-blog-sidebar.sh` or `deploy-verify.sh`.
+The 09-30 section is in the archive.
+- **A red test on `main` is a defect, not weather.** `play-page.test.ts` has failed on `main` since
+  #186 (09-26) added `settledText` to the `/play/` entry its literal `{ path: '/play/', kind:
+  'game' }` matches. ~30 merges went green past it on targeted suites; 09-29 and 10-01 noted it and
+  moved on. Match the field, not a whole object literal any new key breaks. Run the full `npx
+  vitest run` before merge; a pre-existing failure is a same-day `[ops]` fix, not a footnote.
+- **A gate fix does not protect the run that ships it.** #239 gave `merge-gate.sh` an atomic lock,
+  yet #237 and #239 merged 4 s apart on one graded head — siblings ran the pre-fix gate from their
+  morning checkout. `deploy-verify --after-merge` now refuses a label whose PR is not `MERGED`; its
+  test caught a greedy `sed` taking the *last* `PR #N` — run shell tests under `/bin/bash` 3.2.
+- **A write path must set every field the reader gates on.** Promote set only `handle`;
+  `/creator/[slug]` gates the claim card on `isVerified` (#237). The test derives the field from
+  `promotionData()` and matches the reader. The inbox premise "20 unverified" was false (20/20
+  verified) — query before you build on an inbox line.
+- **Restate a constant only when importing it costs more, and test both copies.**
+  `lib/seo/siteLastmod.ts` keeps Prisma out of `app/layout.tsx`; the test imports both (#235). The
+  E143 scanner now also fails any `dateModified`/`lastmod` fed by a bare `new Date()`/`Date.now()`.
+- **`holidays` is the first `contentType` (not theme) cleaned of description inference:** 923 rows,
+  53.2% title-supported, "Mary Dress" at card #2 (#240). Title-only + ingest guard, 420 retagged.
+  Seasons are not holidays (winter: 108 titles, 26 typed holidays). Land the rollback
+  file on `main` (#242), not in the ephemeral worktree.
+- **A headline number can be a sum of things you are not measuring:** E134's "133 Impact clicks"
+  was six partners; the one under repair had 9 (#241).
+- **Ledger time column mixes zones** (`10:42` UTC among `06:4x` local) — order rows by commit.
+- **Still open:** `play-page.test.ts` red on `main`. Cron routes `commission-sync/route.ts:13` and
+  `monetization-agent/route.ts:21` fail open without `CRON_SECRET` (Tier 2). `check-host-split.sh`
+  not wired into `check-blog-sidebar.sh` / `deploy-verify.sh`.
 
 ---
 
-*Last compound review: 2026-09-30*
+*Last compound review: 2026-10-01*
 
 ---
 
