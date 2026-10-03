@@ -2095,3 +2095,34 @@ The 09-28 section is in the archive.
   `if (cronSecret && …)`); #226 fixed only the newsletter sibling. Auth → Tier 2. The merge gate
   has no lock (see standing rule). `check-host-split.sh` is still not wired into
   `check-blog-sidebar.sh` or `deploy-verify.sh`.
+
+### 2026-10-01 — eight merges (#235–#243), zero incidents (rotated from CLAUDE.md 2026-10-02)
+
+The 09-30 section is in the archive.
+- **A red test on `main` is a defect, not weather.** `play-page.test.ts` has failed on `main` since
+  #186 (09-26) added `settledText` to the `/play/` entry its literal `{ path: '/play/', kind:
+  'game' }` matches; ~30 merges passed it on targeted suites (fixed #244). Match the
+  field, not a whole literal any new key breaks. Run the full `npx vitest run` before merge; a
+  pre-existing failure is a same-day `[ops]` fix, not a footnote.
+- **A gate fix does not protect the run that ships it.** #239 gave `merge-gate.sh` an atomic lock,
+  yet #237 and #239 merged 4 s apart on one graded head — siblings ran the pre-fix gate from their
+  morning checkout. `deploy-verify --after-merge` now refuses a label whose PR is not `MERGED`; its
+  test caught a greedy `sed` taking the *last* `PR #N` — run shell tests under `/bin/bash` 3.2.
+- **A write path must set every field the reader gates on.** Promote set only `handle`;
+  `/creator/[slug]` gates the claim card on `isVerified` (#237). The test derives the field from
+  `promotionData()` and matches the reader. The inbox's "20 unverified" was false (20/20
+  verified) — query before building on an inbox line.
+- **Restate a constant only when importing it costs more, and test both copies.**
+  `lib/seo/siteLastmod.ts` keeps Prisma out of `app/layout.tsx`; the test imports both (#235). The
+  E143 scanner also fails any `dateModified`/`lastmod` fed by a bare `new Date()`/`Date.now()`.
+- **`holidays` is the first `contentType` (not theme) cleaned of description inference:** 923 rows,
+  53.2% title-supported, "Mary Dress" at card #2 (#240). Title-only + ingest guard, 420 retagged.
+  Seasons are not holidays (winter: 108 titles, 26 typed holidays). Land the rollback
+  file on `main` (#242), not in a worktree.
+- **A headline number can be a sum of things you are not measuring:** E134's "133 Impact clicks"
+  was six partners; the one under repair had 9 (#241).
+- **Ledger time column mixes zones** (`10:42` UTC among `06:4x` local) — order rows by commit.
+- **Still open:** cron routes `commission-sync/route.ts:13` and
+  `monetization-agent/route.ts:21` fail open without `CRON_SECRET` (Tier 2). `check-host-split.sh`
+  not wired into `check-blog-sidebar.sh` / `deploy-verify.sh`.
+

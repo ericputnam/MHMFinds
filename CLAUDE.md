@@ -970,39 +970,32 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-01 — eight merges (#235–#243), zero incidents
+### 2026-10-02 — seven merges (#244–#250), zero incidents, one compound regression
 
-The 09-30 section is in the archive.
-- **A red test on `main` is a defect, not weather.** `play-page.test.ts` has failed on `main` since
-  #186 (09-26) added `settledText` to the `/play/` entry its literal `{ path: '/play/', kind:
-  'game' }` matches; ~30 merges passed it on targeted suites (fixed #244). Match the
-  field, not a whole literal any new key breaks. Run the full `npx vitest run` before merge; a
-  pre-existing failure is a same-day `[ops]` fix, not a footnote.
-- **A gate fix does not protect the run that ships it.** #239 gave `merge-gate.sh` an atomic lock,
-  yet #237 and #239 merged 4 s apart on one graded head — siblings ran the pre-fix gate from their
-  morning checkout. `deploy-verify --after-merge` now refuses a label whose PR is not `MERGED`; its
-  test caught a greedy `sed` taking the *last* `PR #N` — run shell tests under `/bin/bash` 3.2.
-- **A write path must set every field the reader gates on.** Promote set only `handle`;
-  `/creator/[slug]` gates the claim card on `isVerified` (#237). The test derives the field from
-  `promotionData()` and matches the reader. The inbox's "20 unverified" was false (20/20
-  verified) — query before building on an inbox line.
-- **Restate a constant only when importing it costs more, and test both copies.**
-  `lib/seo/siteLastmod.ts` keeps Prisma out of `app/layout.tsx`; the test imports both (#235). The
-  E143 scanner also fails any `dateModified`/`lastmod` fed by a bare `new Date()`/`Date.now()`.
-- **`holidays` is the first `contentType` (not theme) cleaned of description inference:** 923 rows,
-  53.2% title-supported, "Mary Dress" at card #2 (#240). Title-only + ingest guard, 420 retagged.
-  Seasons are not holidays (winter: 108 titles, 26 typed holidays). Land the rollback
-  file on `main` (#242), not in a worktree.
-- **A headline number can be a sum of things you are not measuring:** E134's "133 Impact clicks"
-  was six partners; the one under repair had 9 (#241).
-- **Ledger time column mixes zones** (`10:42` UTC among `06:4x` local) — order rows by commit.
-- **Still open:** cron routes `commission-sync/route.ts:13` and
-  `monetization-agent/route.ts:21` fail open without `CRON_SECRET` (Tier 2). `check-host-split.sh`
-  not wired into `check-blog-sidebar.sh` / `deploy-verify.sh`.
+The 10-01 section is in the archive.
+- **The compound itself turned `main` red.** The 10-01 run left `CLAUDE.md` at 60,077 B and
+  `funnel-context-budget.test.ts` failed until #251 trimmed it. Before committing this file run
+  `npx vitest run __tests__/unit/funnel-context-budget.test.ts`; `wc -c` alone does not gate.
+- **"OK" with zero output is a selector bug until the log says why.** `catalog-ingest` logged
+  `OK created=0` on 6 of 7 mornings because `--new-only` skips any post with a Mod row *forever*,
+  and the writer was refreshing old posts instead of publishing new ones (0 of 678 selected).
+  `--refreshed` re-selects a post whose sitemap `lastmod` > its newest Mod row (#249, 117 mods). A
+  re-scrape's update path must not re-type an existing `contentType` (NULL may be deliberate).
+  Open: the post URL category (`clothes` → `tops`) overrides the title on ingest.
+- **A rollback plan is write-once.** A dry run after `--apply` overwrote E158's 20-row plan with 0
+  rows (#250): a dry run never overwrites a non-empty plan, and the plan lands on `main` first.
+- **Seed rows must not pose as real ones.** All 20 `CreatorProfile`s were seed accounts
+  (`musthavemods.generated`, 0 logins) with `isVerified=true`, which hid the claim card on 8 live
+  `/creator/` pages. The reader now ignores placeholder-domain profiles (#247).
+- **Prove a guard with mutations, listed in the PR** (#244: four mutations, each red). Fix the
+  runbook too: the prompt still taught the pre-#239 unlocked merge chain until #244.
+- **Still open:** `ModDetailPage.test.tsx` red on `main` since #219. Cron routes
+  `commission-sync/route.ts:13` and `monetization-agent/route.ts:21` fail open (Tier 2).
+  `check-host-split.sh` not wired into `deploy-verify.sh`.
 
 ---
 
-*Last compound review: 2026-10-01*
+*Last compound review: 2026-10-02*
 
 ---
 
