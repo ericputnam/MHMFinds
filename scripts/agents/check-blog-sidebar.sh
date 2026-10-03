@@ -31,6 +31,10 @@ CRITICAL_MARKERS=(
   'id="secondary"|Mediavine sidebar element'
   'mhm-mv-sidebar|Mediavine sidebar wrapper class'
   'scripts.mediavine.com|Mediavine script loader'
+  # E167: end-of-post email capture card (markup id only — the CSS uses the
+  # #selector form, so this cannot match a stylesheet left behind by a wipe).
+  # Both TEST_URLS are single posts, where the card renders.
+  'id="mhm-post-end-capture"|End-of-post email capture (E167)'
 )
 
 FAIL=0
