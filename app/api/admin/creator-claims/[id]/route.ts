@@ -3,12 +3,16 @@ import { getServerSession } from 'next-auth';
 import { Prisma } from '@prisma/client';
 import { authOptions } from '@/lib/authOptions';
 import { prisma } from '@/lib/prisma';
+import { isPlaceholderAccountEmail } from '@/lib/creatorClaim';
 import {
   CLAIM_AUDIT_RESOURCE,
+  isSeedHolder,
   parseReviewAction,
   planPromotion,
   planRejection,
   promotionData,
+  seedHandleFor,
+  seedHolderWhere,
 } from '@/lib/creatorClaimReview';
 
 export const dynamic = 'force-dynamic';
@@ -22,8 +26,10 @@ export const dynamic = 'force-dynamic';
  *   and the row is set isVerified (E151) — the page gates the verified
  *   badge and hides the claim card on that flag, so a promoted page stops
  *   asking to be claimed. Only a `pending-*` handle can be promoted, only
- *   to a valid creator slug, and never onto a handle another profile
- *   holds (409).
+ *   to a valid creator slug, and never onto a handle a real profile holds
+ *   (409). A handle held by a seed profile (placeholder account, never
+ *   signed in) is freed instead: the seed row is renamed to seed-<handle>
+ *   in the same transaction and keeps its mods (E166).
  * body { action: 'reject', reason?: string } → the pending profile is
  *   deleted, unless mods already link to it (409).
  *
@@ -70,18 +76,51 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       }
       const conflict = await prisma.creatorProfile.findFirst({
         where: { handle: probe.handle, NOT: { id: profile.id } },
-        select: { id: true },
+        select: { id: true, user: { select: { email: true, _count: { select: { accounts: true } } } } },
       });
-      const decision = planPromotion({ ...base, conflictingProfileId: conflict?.id ?? null });
+      // Reduce the holder's email to a boolean here; it never leaves this block.
+      const holder = conflict
+        ? {
+            id: conflict.id,
+            placeholderAccount: isPlaceholderAccountEmail(conflict.user?.email ?? null),
+            oauthAccounts: conflict.user?._count.accounts ?? 0,
+          }
+        : null;
+      const conflictingIsSeed = isSeedHolder(holder);
+      const seedHandleTaken = conflictingIsSeed
+        ? (await prisma.creatorProfile.count({ where: { handle: seedHandleFor(probe.handle) } })) > 0
+        : undefined;
+      const decision = planPromotion({
+        ...base,
+        conflictingProfileId: holder?.id ?? null,
+        conflictingIsSeed,
+        seedHandleTaken,
+      });
       if (!decision.ok) {
         return NextResponse.json({ error: decision.error }, { status: decision.status });
       }
 
-      try {
-        await prisma.creatorProfile.update({
+      // E166: the seed rename and the promote are one transaction. The rename
+      // re-asserts the seed predicate; if it no longer holds, it matches 0 rows,
+      // the promote hits the unique handle (P2002 → 409) and both roll back.
+      const writes: Prisma.PrismaPromise<unknown>[] = [];
+      if (decision.displaceSeed) {
+        writes.push(
+          prisma.creatorProfile.updateMany({
+            where: { id: decision.displaceSeed.profileId, handle: decision.handle, ...seedHolderWhere() },
+            data: { handle: decision.displaceSeed.toHandle },
+          })
+        );
+      }
+      writes.push(
+        prisma.creatorProfile.update({
           where: { id: profile.id },
           data: promotionData(decision.handle),
-        });
+        })
+      );
+
+      try {
+        await prisma.$transaction(writes);
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
           return NextResponse.json(
@@ -96,8 +135,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         fromHandle: profile.handle,
         toHandle: decision.handle,
         isVerified: 'true',
+        displacedSeedProfileId: decision.displaceSeed?.profileId ?? null,
+        displacedSeedHandle: decision.displaceSeed?.toHandle ?? null,
       });
-      return NextResponse.json({ success: true, handle: decision.handle, page: `/creator/${decision.handle}/` });
+      return NextResponse.json({
+        success: true,
+        handle: decision.handle,
+        page: `/creator/${decision.handle}/`,
+        displacedSeedHandle: decision.displaceSeed?.toHandle ?? null,
+      });
     }
 
     const rejection = planRejection({ currentHandle: profile.handle, linkedModCount: profile._count.mods });
