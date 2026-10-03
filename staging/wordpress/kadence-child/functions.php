@@ -4876,3 +4876,154 @@ add_filter( 'rank_math/sitemap/entry', function ( $entry, $type, $object ) {
     }
     return $entry;
 }, 10, 3 );
+
+/* ============================================================================
+ * END-OF-POST EMAIL CAPTURE (E167, Cass — Tier 2, operator-approved only)
+ * ============================================================================
+ *
+ * One email-capture card on single blog posts, rendered on Kadence's
+ * `kadence_single_after_inner_content` hook. In Kadence's single-entry.php
+ * that hook fires inside .entry-content-wrap AFTER the `.entry-content` div
+ * (and the optional .entry-footer) has closed, so the card is:
+ *   - a SIBLING after .entry-content — never inside Mediavine's in-content
+ *     ad zone, so it cannot change in-content ad placement or count;
+ *   - inside <article>, i.e. inside .content-wrap — never inside or next to
+ *     <aside id="secondary"> (that is injected on kadence_after_main_content);
+ *   - static, in-flow: no position property at all, no overflow rules, no
+ *     modal, nothing above the article. The title is a <p>, not an <h2>, so
+ *     the card adds no heading to the post outline.
+ *
+ * Do NOT move this to a `the_content` filter (that puts it inside
+ * .entry-content) and NEVER use add_filter('kadence_post_layout', ...).
+ *
+ * The form POSTs JSON to the existing Next.js endpoint /api/waitlist/
+ * (trailing slash: next.config.js trailingSlash:true applies to /api/*),
+ * the same endpoint the footer / home-hero / /go forms use, with
+ * source=blog-post-end so the funnel scoreboard attributes it. GA4:
+ * capture_impression (once, when the card scrolls into view) and
+ * newsletter_signup (new rows only), both with {source:'blog-post-end'}.
+ *
+ * Guarded by CRITICAL_MARKERS (`mhm_post_end_capture`) in both push scripts
+ * and by the live-HTML check in scripts/agents/check-blog-sidebar.sh
+ * (`id="mhm-post-end-capture"`). Rollback = delete this block AND those
+ * three marker lines in one commit, then push-blog-functions-prod.sh.
+ * ============================================================================
+ */
+function mhm_post_end_capture_enabled() {
+    return ! is_admin() && ! is_feed() && is_singular( 'post' );
+}
+
+function mhm_post_end_capture() {
+    if ( ! mhm_post_end_capture_enabled() ) {
+        return;
+    }
+    echo <<<'HTML'
+<section id="mhm-post-end-capture" class="mhm-pec" aria-labelledby="mhm-pec-heading" data-source="blog-post-end">
+  <p id="mhm-pec-heading" class="mhm-pec-title">Get the best new Sims 4 CC by email</p>
+  <p class="mhm-pec-sub">We round up new mods and CC finds like the ones above and email you the best of them. Free. Unsubscribe anytime.</p>
+  <form class="mhm-pec-form" novalidate>
+    <input id="mhm-pec-email" class="mhm-pec-input" type="email" name="email" required autocomplete="email" placeholder="your@email.com" aria-label="Email address">
+    <input class="mhm-pec-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button type="submit" class="mhm-pec-btn">Sign me up</button>
+  </form>
+  <p class="mhm-pec-msg" role="status" aria-live="polite"></p>
+  <p class="mhm-pec-fine">We only use your email for this newsletter. <a href="https://musthavemods.com/privacy-policy/">Privacy policy</a>.</p>
+</section>
+<script id="mhm-post-end-capture-js">
+(function () {
+  var box = document.getElementById('mhm-post-end-capture');
+  if (!box || box.getAttribute('data-ready')) { return; }
+  box.setAttribute('data-ready', '1');
+  var SOURCE = 'blog-post-end';
+  var ENDPOINT = 'https://musthavemods.com/api/waitlist/';
+  var form = box.querySelector('form');
+  var input = box.querySelector('.mhm-pec-input');
+  var hp = box.querySelector('.mhm-pec-hp');
+  var btn = box.querySelector('.mhm-pec-btn');
+  var msg = box.querySelector('.mhm-pec-msg');
+  function ga(name) {
+    if (typeof window.gtag === 'function') { window.gtag('event', name, { source: SOURCE }); }
+  }
+  if ('IntersectionObserver' in window) {
+    var seen = false;
+    var io = new IntersectionObserver(function (entries) {
+      if (!seen && entries[0] && entries[0].isIntersecting) { seen = true; ga('capture_impression'); io.disconnect(); }
+    }, { threshold: 0.5 });
+    io.observe(box);
+  }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (btn.disabled) { return; }
+    if (hp && hp.value) { msg.textContent = 'Thanks!'; return; }
+    var email = (input.value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Please enter a valid email address.'; input.focus(); return; }
+    btn.disabled = true;
+    msg.textContent = 'Signing you up...';
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, source: SOURCE })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, d: d }; }, function () { return { ok: false, d: {} }; });
+    }).then(function (res) {
+      if (res.ok && res.d && res.d.success) {
+        form.style.display = 'none';
+        if (res.d.alreadyExists) {
+          msg.textContent = "You're already on the list. Thanks for reading!";
+        } else {
+          msg.textContent = "You're on the list! Look out for our next email.";
+          ga('newsletter_signup');
+        }
+      } else {
+        btn.disabled = false;
+        msg.textContent = (res.d && res.d.message) ? res.d.message : 'Something went wrong. Please try again.';
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      msg.textContent = 'Something went wrong. Please try again.';
+    });
+  });
+})();
+</script>
+HTML;
+}
+add_action( 'kadence_single_after_inner_content', 'mhm_post_end_capture', 20 );
+
+/**
+ * Scoped CSS for the end-of-post card. Every selector is under
+ * #mhm-post-end-capture. No position, no overflow, no z-index.
+ * !important only on properties Kadence's global form/button/heading
+ * styles override.
+ */
+function mhm_post_end_capture_css() {
+    if ( ! mhm_post_end_capture_enabled() ) {
+        return;
+    }
+    echo <<<'CSS'
+<style id="mhm-post-end-capture-css">
+#mhm-post-end-capture{margin:2rem 0 0;padding:1.5rem;background:#151B2B;border:1px solid #334155;border-radius:12px;color:#f1f5f9}
+#mhm-post-end-capture .mhm-pec-title{margin:0 0 .4rem!important;padding:0!important;font-size:1.25rem!important;font-weight:700!important;line-height:1.3!important;color:#f1f5f9!important}
+#mhm-post-end-capture .mhm-pec-sub{margin:0 0 1rem!important;font-size:1rem!important;line-height:1.5!important;color:#94a3b8!important}
+#mhm-post-end-capture .mhm-pec-form{display:flex;flex-wrap:wrap;gap:.5rem;margin:0}
+#mhm-post-end-capture .mhm-pec-input{flex:1 1 220px;min-width:0;margin:0!important;padding:.7rem .9rem!important;font-size:1rem!important;color:#f1f5f9!important;background:#0B0F19!important;border:1px solid #334155!important;border-radius:8px!important;box-shadow:none!important}
+#mhm-post-end-capture .mhm-pec-btn{flex:0 0 auto;margin:0!important;padding:.7rem 1.2rem!important;font-size:1rem!important;font-weight:600!important;color:#ffffff!important;background:#ec4899!important;border:0!important;border-radius:8px!important;cursor:pointer}
+#mhm-post-end-capture .mhm-pec-btn:hover,#mhm-post-end-capture .mhm-pec-btn:focus{background:#db2777!important}
+#mhm-post-end-capture .mhm-pec-btn[disabled]{opacity:.6;cursor:default}
+#mhm-post-end-capture .mhm-pec-msg{margin:.6rem 0 0!important;font-size:.95rem!important;color:#f1f5f9!important}
+#mhm-post-end-capture .mhm-pec-msg:empty{display:none}
+#mhm-post-end-capture .mhm-pec-fine{margin:.6rem 0 0!important;font-size:.8rem!important;color:#64748b!important}
+#mhm-post-end-capture .mhm-pec-fine a{color:#94a3b8!important;text-decoration:underline}
+#mhm-post-end-capture .mhm-pec-hp{display:none!important}
+</style>
+CSS;
+}
+add_action( 'wp_head', 'mhm_post_end_capture_css', 100300 );
+
+// Keep the card's inline script out of Perfmatters "delay JS" so the submit
+// handler is bound at parse time (same pattern as the exclusions above).
+function mhm_post_end_capture_perfmatters_exclusions( $exclusions ) {
+    $exclusions[] = 'mhm-post-end-capture-js';
+    return $exclusions;
+}
+add_filter( 'perfmatters_delay_js_exclusions', 'mhm_post_end_capture_perfmatters_exclusions' );
+add_filter( 'perfmatters_delayed_scripts_exclusions', 'mhm_post_end_capture_perfmatters_exclusions' );

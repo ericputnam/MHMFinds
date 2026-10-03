@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-03
+- Tried: E167. WP end-of-post email card as a Tier 2 package: `kadence_single_after_inner_content` (a sibling after .entry-content, outside the in-content zone and #secondary), POST /api/waitlist/ source=blog-post-end, markers in both push scripts and check-blog-sidebar. Status QUEUED-T2, unmerged and not pushed (RED-RPM day).
+- Before → after: WP article landings 74,074/88,736 = 83.5% of sessions with no capture (GA4 09-25→10-01; the audit's "25.4%" counted only posts above 1%). Blog page RPM $14.88 (floor $14.14). Owned adds 7d 115, email 65 (+26), 1.27/1K. Read 14d after the purge.
+- Verdict: PENDING (Q25). Keep if ≥0.59 rows/1K (2× email-only 0.29) AND blog RPM ≥95%.
+- Next time: a live-HTML marker added to check-blog-sidebar is a deploy trigger. Merge it before the push and deploy-verify's restore pushes the change unattended, so push → purge (`wp bs_cache purge_cache`, s-maxage=1y) → check → merge.
+
 ## 2026-10-02
 - Tried: E159 — coverage read first: every Next.js group >1% of sessions already carries an offer (/mods/* 8.6%, / 3.6%, /games/* 2.8%, /go/* 1.7%); the 23 uncovered rows are all WordPress (27.9% of sessions). So shipped the offer-quality move: SaveFindsOffer copy split by useSession() status + saved state → FAVORITES_PATH, mirroring GoSaveOffer (T0, PR #246, 4ce2156, verify PASS 06:53). 4/19 red pre-fix.
 - Before → after: favorite src=mod-detail-save 4 users / 7 events (14d, 09-18→10-01); /account/favorites/ 0 of 9 views referred from /mods/* → read 2026-10-16. Owned adds 7d 119, capture 1.30/1K.
