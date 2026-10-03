@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-10-03 — E169
+- Tried: revenue-guardrail pages `vercel ls --next` until a READY prod deploy older than the window start (or API exhausted; cap 30 pages / 240 s), prints `vercel coverage: COMPLETE|TRUNCATED (…)`; TRUNCATED → in-window UNKNOWN → `investigate` + `actionDetail: vercel coverage unknown`. Pure lib `revenue-guardrail-lib.ts`, 18 tests on a real 10-page replay. HELD-RED (T0).
+- Before → after: 10-03 RED-RPM saw 1 page (20 rows, oldest 10-02 06:55 > window 09-28 00:00) → 0 of 114 in-window deploys, `investigate`; fixed: 200 rows / 10 pages / 12.5 s, COMPLETE, `rollback` → lr7rk0e3o (91866e4). Pre-fix: all 18 red (no lib), 3 wiring red with lib; 4 mutations each red.
+- Verdict: pending, read 10-10 (7/7 coverage lines, 0 TRUNCATED-without-UNKNOWN).
+- Next time: any "is X in the window" read off a paged API needs a coverage grade before its answer can drive an action — `action` stays one word because the runner `read -r`s it.
+
 ## 2026-10-02 — E162
 - Tried: replacing a whole-object-literal source match (`{ path: '/play/', kind: 'game' }`) in `play-page.test.ts` with a field-level parse, plus an import of the real constant (`AD_KINDS`); the gated merge chain into `funnel-daily-prompt.md` L24 (10,777 → 10,985 B of 12,000). PR #244 `c3cce17`, verify SUPERSEDED-PASS 06:46. CLAUDE.md 100 B trim (60,077 → 59,977) handed to Quinn's daily PR under the one-merge cap.
 - Before → after: main red 6 days (since #186 on 09-26) with ~30 merges past it; failing files 3 → 2 (→ 1 with the CLAUDE.md trim; `ModDetailPage.test.tsx` left, a behaviour failure → Cass). 4 of 4 one-line mutations still turn the test red. E110 graded KEEP: 93 ledger rows 09-25→10-02, 5 SUPERSEDED (correct), 0 backward promotions.

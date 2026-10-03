@@ -22,6 +22,7 @@
 import { execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action } from './revenue-guardrail-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -36,9 +37,9 @@ const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.l
 
 interface Row { date: string; revenue: number; sessions: number; rpm: number; }
 interface Change { kind: 'vercel' | 'commit' | 'functions.php'; at: string; ref: string; text: string; url?: string; }
-type Status = 'green' | 'yellow' | 'red-rpm' | 'red-traffic' | 'red-health';
 interface Verdict {
-  status: Status; action: 'none' | 'watch' | 'rollback' | 'investigate';
+  status: Status; action: Action; actionDetail: string | null;
+  vercelCoverage: Coverage & { line: string; inWindow: InWindow };
   day: string; expectedDay: Row; actualDay: Row;
   window3: { actualRevenue: number; expectedRevenue: number; actualRpm: number; expectedRpm: number; actualSessions: number; expectedSessions: number };
   rollbackTo: string | null; changes: Change[]; health: Record<string, unknown>; reasons: string[];
@@ -57,31 +58,37 @@ async function pull(): Promise<{ rows: Row[]; health: Record<string, unknown> }>
   return { rows, health };
 }
 
-function recentChanges(sinceIso: string, untilIso: string, cwd: string): { changes: Change[]; rollbackTo: string | null } {
+// Each `vercel ls` call returns one 20-row page; the window routinely holds 100+ deploys, so we page
+// (E169). Budget: per-call 60 s, whole listing 240 s — past that, coverage is TRUNCATED (UNKNOWN).
+const VERCEL_LIST_BUDGET_MS = 240_000;
+function fetchVercelPage(cwd: string, deadline: number) {
+  return (next: number | null): VercelPage => {
+    if (Date.now() > deadline) throw new Error(`time budget ${VERCEL_LIST_BUDGET_MS / 1000}s spent`);
+    const cmd = `vercel ls --format json --yes${next !== null ? ` --next ${Math.floor(next)}` : ''}`;
+    const out = execSync(cmd, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 60000 });
+    const j = JSON.parse(out) as { deployments?: VercelDeployment[]; pagination?: { next?: number | null } };
+    return { deployments: j.deployments ?? [], next: j.pagination?.next ?? null };
+  };
+}
+
+function recentChanges(sinceIso: string, untilIso: string, cwd: string): { changes: Change[]; rollbackTo: string | null; inWindow: InWindow; coverage: Coverage } {
   const changes: Change[] = [];
-  let rollbackTo: string | null = null;
   const sinceMs = new Date(`${sinceIso}T00:00:00`).getTime();
   const untilMs = new Date(`${untilIso}T00:00:00`).getTime(); // deploys after the judged day cannot have caused it; listed as unjudged
-  try {
-    const out = execSync('vercel ls --format json --yes', { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 60000 });
-    const deps = (JSON.parse(out).deployments as Array<Record<string, unknown>>).filter((d) => d.target === 'production');
-    const inWindow = deps.filter((d) => Number(d.createdAt) >= sinceMs && Number(d.createdAt) < untilMs);
-    const after = deps.filter((d) => Number(d.createdAt) >= untilMs);
-    for (const d of [...inWindow, ...after]) {
-      const m = (d.meta ?? {}) as Record<string, string>;
-      const unjudged = Number(d.createdAt) >= untilMs ? ' [after judged day — judged tomorrow]' : '';
-      changes.push({ kind: 'vercel', at: new Date(Number(d.createdAt)).toISOString(), ref: (m.githubCommitSha ?? '').slice(0, 7), text: `${d.state} ${(m.githubCommitMessage ?? '').split('\n')[0].slice(0, 90)}${unjudged}`, url: `https://${d.url}` });
-    }
-    const before = deps.filter((d) => Number(d.createdAt) < sinceMs && d.state === 'READY').sort((a, b) => Number(b.createdAt) - Number(a.createdAt))[0];
-    if (inWindow.length && before) rollbackTo = `https://${before.url}`;
-  } catch (e) { changes.push({ kind: 'vercel', at: '', ref: '', text: `vercel ls failed: ${(e as Error).message.slice(0, 80)}` }); }
+  const { deployments, coverage } = listDeploymentsPaged(fetchVercelPage(cwd, Date.now() + VERCEL_LIST_BUDGET_MS), sinceMs);
+  const { inWindowDeps, afterDeps, inWindow, rollbackTo } = classifyWindow(deployments, sinceMs, untilMs, coverage);
+  for (const d of [...afterDeps, ...inWindowDeps].sort((a, b) => Number(b.createdAt) - Number(a.createdAt))) {
+    const m = (d.meta ?? {}) as Record<string, string>;
+    const unjudged = Number(d.createdAt) >= untilMs ? ' [after judged day — judged tomorrow]' : '';
+    changes.push({ kind: 'vercel', at: new Date(Number(d.createdAt)).toISOString(), ref: (m.githubCommitSha ?? '').slice(0, 7), text: `${d.state} ${(m.githubCommitMessage ?? '').split('\n')[0].slice(0, 90)}${unjudged}`, url: `https://${d.url}` });
+  }
   try {
     const log = execSync(`git log origin/main --since="${sinceIso}" --format='%h|%cI|%s'`, { cwd, encoding: 'utf8', timeout: 20000 }).trim();
     for (const l of log.split('\n').filter(Boolean)) { const [h, at, ...s] = l.split('|'); changes.push({ kind: 'commit', at, ref: h, text: s.join('|').slice(0, 90) }); }
     const fp = execSync(`git log origin/main --since="${sinceIso}" --format='%h|%cI|%s' -- staging/wordpress/kadence-child-prod/functions.php`, { cwd, encoding: 'utf8', timeout: 20000 }).trim();
     for (const l of fp.split('\n').filter(Boolean)) { const [h, at, ...s] = l.split('|'); changes.push({ kind: 'functions.php', at, ref: h, text: s.join('|').slice(0, 90) }); }
   } catch { /* offline: git changes unknown */ }
-  return { changes, rollbackTo };
+  return { changes, rollbackTo, inWindow, coverage };
 }
 
 async function main() {
@@ -124,16 +131,16 @@ async function main() {
   }
   if (status === 'green') reasons.push(`Revenue ${money(actualDay.revenue)} (${pct(actualDay.revenue, expectedDay.revenue)}), RPM ${actualDay.rpm.toFixed(2)} (${pct(actualDay.rpm, expectedDay.rpm)}), sessions ${pct(actualDay.sessions, expectedDay.sessions)} vs same weekday, prior 4 weeks · 3-day revenue ${pct(window3.actualRevenue, window3.expectedRevenue)}`);
 
-  const { changes, rollbackTo } = recentChanges(shift(day, -3), shift(day, 1), cwd);
-  const vercelInWindow = changes.some((c) => c.kind === 'vercel' && !c.text.includes('[after judged day'));
-  let action: Verdict['action'] = 'none';
-  if (status === 'red-rpm') action = vercelInWindow && rollbackTo ? 'rollback' : 'investigate';
-  else if (status === 'red-traffic' || status === 'red-health') action = 'investigate';
-  else if (status === 'yellow') action = 'watch';
+  const { changes, rollbackTo, inWindow, coverage } = recentChanges(shift(day, -3), shift(day, 1), cwd);
+  const covLine = coverageLine(coverage);
+  // Never claim "no deploy in window" on a truncated list: inWindow is 'unknown' then, and unknown never rolls back.
+  const { action, detail: actionDetail } = decideAction(status, inWindow, rollbackTo);
+  if (status !== 'green' && inWindow === 'unknown') reasons.push(`${covLine} — whether a deploy landed in the window is UNKNOWN`);
 
-  const v: Verdict = { status, action, day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, changes, health, reasons };
+  const v: Verdict = { status, action, actionDetail, vercelCoverage: { ...coverage, line: covLine, inWindow }, day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, changes, health, reasons };
   const icon = status === 'green' ? '🟢' : status === 'yellow' ? '🟡' : '🔴';
-  let md = `# Revenue guardrail — ${daysAgo(0)} (last finalized day ${day})\n\n${icon} **${status.toUpperCase()}** → action: **${action}**${v.rollbackTo ? ` → ${v.rollbackTo}` : ''}\n\n`;
+  const actionText = `${action}${actionDetail ? ` (${actionDetail})` : ''}`;
+  let md = `# Revenue guardrail — ${daysAgo(0)} (last finalized day ${day})\n\n${icon} **${status.toUpperCase()}** → action: **${actionText}**${v.rollbackTo ? ` → ${v.rollbackTo}` : ''}\n\n${covLine} · deploy in window: ${inWindow}\n\n`;
   for (const r of reasons) md += `- ${r}\n`;
   md += `\n| | ${day} | expected (same weekday, 4-wk avg) | Δ |\n|---|---|---|---|\n`;
   md += `| revenue | ${money(actualDay.revenue)} | ${money(expectedDay.revenue)} | ${pct(actualDay.revenue, expectedDay.revenue)} |\n`;
@@ -144,13 +151,13 @@ async function main() {
   md += `\nMediavine health: ${healthBad.length ? healthBad.map(([k, v]) => `${k}=${String(v)}`).join(', ') : 'all ok'}\n`;
   md += `\n## Production changes since ${shift(day, -3)} (72h before the judged day)\n\n`;
   md += changes.length ? changes.map((c) => `- ${c.kind} ${c.at.slice(0, 16)} \`${c.ref}\` ${c.text}${c.url ? ` — ${c.url}` : ''}`).join('\n') + '\n' : '- none\n';
-  md += `\n## Rules\n\n- red-rpm + a Vercel deploy in the window → the runner rolls production back to the last READY deployment before the window, re-runs the smoke test, then Quinn investigates. Rolling back a harmless deploy is cheap; a day of broken ads is not.\n- red-rpm with no deploy in the window → run \`check-blog-sidebar.sh\`; if it fails, re-push functions.php from git (\`push-blog-functions-prod.sh --yes\`); otherwise Rio opens a Mediavine ticket and the digest leads with it.\n- red-traffic → Pip/Sage incident (Pinterest/Google), no rollback.\n- yellow → no Tier 1 merges today; Tier 0 continues.\n`;
+  md += `\n## Rules\n\n- red-rpm + a Vercel deploy in the window → the runner rolls production back to the last READY deployment before the window, re-runs the smoke test, then Quinn investigates. Rolling back a harmless deploy is cheap; a day of broken ads is not.\n- red-rpm with the window's deploys UNKNOWN (vercel coverage TRUNCATED) → no rollback; Quinn pages \`vercel ls --next <ms>\` by hand before anything else — never read it as "no deploy".\n- red-rpm with no deploy in the window (coverage COMPLETE) → run \`check-blog-sidebar.sh\`; if it fails, re-push functions.php from git (\`push-blog-functions-prod.sh --yes\`); otherwise Rio opens a Mediavine ticket and the digest leads with it.\n- red-traffic → Pip/Sage incident (Pinterest/Google), no rollback.\n- yellow → no Tier 1 merges today; Tier 0 continues.\n`;
 
   const jsonOut = arg('--json'), mdOut = arg('--md');
   if (jsonOut) { mkdirSync(dirname(jsonOut), { recursive: true }); writeFileSync(jsonOut, JSON.stringify(v, null, 2)); }
   if (mdOut) { mkdirSync(dirname(mdOut), { recursive: true }); writeFileSync(mdOut, md); }
   if (!QUIET) console.log(md);
-  else console.log(`${icon} ${status} → ${action}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]}`);
+  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine}`);
   process.exit(status.startsWith('red') ? 2 : 0);
 }
 
