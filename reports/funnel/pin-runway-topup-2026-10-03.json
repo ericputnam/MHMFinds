@@ -1,0 +1,171 @@
+{
+  "generated": "2026-10-03",
+  "script": "scripts/agents/pin-runway-topup.py",
+  "experiment": "SD-22-topup",
+  "updated": 21,
+  "entries": [
+    {
+      "id": 2142,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-wedges-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2055,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-urban-tattoos/",
+      "board_name": "Sims 4 Tattoos - sims 4 tattoo cc"
+    },
+    {
+      "id": 5026,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-furniture-cc/",
+      "board_name": "Sims 4 Furniture CC"
+    },
+    {
+      "id": 2070,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-male-urban-hair/",
+      "board_name": "Sims 4 Male Hair CC"
+    },
+    {
+      "id": 8106,
+      "old_date": "2026-03-05",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-toddler-cc/",
+      "board_name": "Sims 4 CC Toddlers - Sims 4 Toddler Mods"
+    },
+    {
+      "id": 2329,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-plants-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2282,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-03",
+      "post_url": "https://musthavemods.com/sims-4-urban-hair-cc/",
+      "board_name": "Sims 4 CC Hair"
+    },
+    {
+      "id": 2143,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-wedges-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2056,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-urban-tattoos/",
+      "board_name": "Sims 4 Tattoos - sims 4 tattoo cc"
+    },
+    {
+      "id": 2072,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-male-urban-hair/",
+      "board_name": "Sims 4 Male Hair CC"
+    },
+    {
+      "id": 2330,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-plants-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2283,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-urban-hair-cc/",
+      "board_name": "Sims 4 CC Hair"
+    },
+    {
+      "id": 2692,
+      "old_date": "2025-07-17",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-room-ideas/",
+      "board_name": "Sims 4 House CC"
+    },
+    {
+      "id": 2372,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-04",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2144,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-wedges-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2057,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-urban-tattoos/",
+      "board_name": "Sims 4 Tattoos - sims 4 tattoo cc"
+    },
+    {
+      "id": 2073,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-male-urban-hair/",
+      "board_name": "Sims 4 Male Hair CC"
+    },
+    {
+      "id": 2331,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-plants-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2284,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-urban-hair-cc/",
+      "board_name": "Sims 4 CC Hair"
+    },
+    {
+      "id": 2693,
+      "old_date": "2025-07-17",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-room-ideas/",
+      "board_name": "Sims 4 House CC"
+    },
+    {
+      "id": 2373,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-05",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    }
+  ],
+  "seo_pass": {
+    "source": "page",
+    "status": "applied",
+    "reason": null,
+    "total": 21,
+    "passing": 0,
+    "need_fix": 21,
+    "fixable": 21,
+    "page_unavailable": 0,
+    "mean_score": 63,
+    "resolved": 9,
+    "slug_count": 9,
+    "updated": 21,
+    "skipped": 0,
+    "ledger": "reports/funnel/pin-seo-rollback-2026-10-03-topup.json"
+  }
+}
