@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-03 — E163: 🔴 RED-RPM root cause (incident file, no rollback)
+- Tried: pre-committed the rule in `reports/funnel/incidents/2026-10-03-red-rpm.md` before pulling; read fill (ad-unit totals), CPM, requests/pv, 16 partners, devices, page-class buckets, GA4 `hostName`; then two seasonal controls — this site's Q2→Q3 boundary (06-27→07-01) and last year's 09-27→10-04 — as the discriminator between host split (#208, 09-28 20:48) and quarter end.
+- Before → after: 10-01 $137.06 vs $184.40 (−25.7%); fill 64.8% (4-Wed) → 56.0%; CPM 0.89 → 0.84; requests/pv 17.23 → 17.37 across the split, 16.90 → 16.73 across E152 (no step); 14/14 partners down, Criteo+SeedTag+Conversant $11.79 → $0; all 4 ad units −31…−36%; blog requests/monetizable pv 24.00 → 23.93 on the first apex day. Controls: 07-01 −41%, 2025-10-01 −42%, both starting 09-29/06-29; 2026 −27% is the smallest of the three. 10-02 NOT finalized (partial $152.46, fill 60.4%).
+- Verdict: CLOSED — Mediavine-side. Residual E163-b (read 10-04): blog-bucket fill still ≥ 8 pts under the remainder's with site fill ≥ 60% → reopen as host split.
+- Next time: (1) a drop that starts on the last 2 days of a quarter needs the same calendar window from the prior year *before* a commit is blamed — one earnings pull settles what six page-class tables cannot; (2) a `/reports/pages` day whose rows carry `pageviews: 0` is unjoined — never read its page-class split as a verdict; (3) derive the remainder's fill (site requests − bucket requests) — the buckets alone made the blog look singled out.
+
 ## 2026-10-02 — yellow diagnosis (WATCH); E108/E125 read; E160 closed
 - Tried: split the 09-30 yellow (−15.8% rev, −15.2% RPM, Wed) into requests vs fill vs CPM using `/reports/pages` `impressions` + `unfilled_impressions` (top-25) and site-level `paid_impressions_per_pageview` + `cpm` (Mediavine MCP unavailable; `scripts/mcp-mediavine/client.ts` direct). E160: 27 `amzn.to` occurrences on post 5848 = 10 distinct short links, 10/10 resolve (first hop only) to `tag=musthavemod04-20` — no edit.
 - Before → after: fill 68.2% (09-23) → 52.3% (09-30); unfilled/pv 5.3 → 6.6 with requests/pv flat; imp/pv 11.05 → 9.60; CPM 0.96 → 0.89; GA4 pages/session 1.565 → 1.576; every partner down on impressions at flat CPM. E108: paid joins 9/7.2 d = 38.1/mo pace (floor 17), cancels 0 → KEEP joins, cancels 10-09. E125: KEEP 1/2.
@@ -45,18 +51,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: shipped, PASS 06:56. Reads: E99 10-01, E139 10-06, E134 10-12.
 - Next time: (1) a WoW "−49 %" quoted from a note is a window, not a trend — re-pull three weeks before diagnosing code; (2) `/go` GA4 page_view captures ~40 % of `render` users every week (205/531, 248/613) — use `render` users as the /go denominator until the page_view gap is explained; (3) Cass #219 was still open at 06:51 when the gate opened — merged sixth by the gate, not by the roster; no file overlap.
 
-## 2026-09-28 — E134 items B+C: shared validator + GTRacing DB repair
-- Tried: shared affiliate-link validator (T1, ok/broken/unknown, unknown never writes) wired into the 3 call sites that set `validationStatus:'validated'` unconditionally; query-derived GTRacing DB repair (T0/1, operator pre-approved, ran ahead of the source-fix merging) with an expected-shape abort-gate, not a hardcoded id list (PR #214, `f47abfe`).
-- Before → after: 5 GTRacing rows deep-linking to the Impact-rejected `gtplayer.com` host, zero link checks anywhere → 4 "GT890MF Edition" rows host-fixed to `gtracing.com` (active), 1 bare-slug row retired (still 404 post-fix). 1 deliberate verification click: `irclickid=`/`irgwc=1` present, landed on `deal.gtracing.com` HTTP 200. 30 new tests incl. a filesystem-walking scanner (>20 scripts).
-- Guardrail: not re-read (no ad/pricing touch). deploy-verify PASS 22:41 (f47abfe), 5xx=0.
-- Verdict: shipped. E134 stays PENDING, reads 2026-10-12. Optimizer launchd job stays paused until confirmed durable.
-- Next time: (1) a red-before-green proof via `git show HEAD:<file>` stops proving anything once the fix and test share a commit (or a squash collapses both) — HEAD becomes the fixed content and the check passes for the wrong reason; freeze the pre-fix snippet as an inline fixture instead. (2) confirm a full-suite failure is outside your diff (`git diff origin/main --stat`) before treating it as yours.
-
-## 2026-09-28
-- Tried: E131 — Patreon refresh persists to the operator's `.env.local` (linked worktree → main checkout via the `.git` gitdir pointer; `PATREON_ENV_FILE` override; else refuse before the token endpoint), adopt-before-refresh, `patreonGet(url, init)` with `AbortSignal.timeout`, bounded scoreboard walk (T0, PR #201, `f2c8244`). 9/10 guard cases red on `e765da5`.
-- Before → after: refreshes persisted to the operator repo 0 (none ever; tokens issued 09-07, first expiry ≈10-07) → read 10-09. Live: worktree → `/Users/eputnam/java_projects/MHMFinds/.env.local`, `/tmp` → null, 1 ms signal → TimeoutError, real GET 2.5 s no 401. E55 pre-read: site page RPM $11.10 → $10.98, remainder $10.43 → $10.23 (both ≥ floor); E60 tool 14/14 × 2.
-- Guardrail: GREEN from files — 09-26 $295.20 (+10.7 %), RPM $19.38 (+4.9 %), 28d $5,995.90 (+6.5 %); MCP not retried.
-- Verdict: shipped; deploy-verify INCONCLUSIVE (curl leg failed on the runner's network, markers not judged) → hand smoke 14/14 OK with control 3/3, sidebar healthy. E55/E60 → KEEP on 09-29.
-- Next time: (1) a helper whose persistence target is "cwd" must be asked which cwd every caller actually runs in before it is trusted with a single-use secret — the runner's copy-per-worktree made the default silently wrong for 8 of 8 daily callers; (2) INCONCLUSIVE is not PASS — run the two hand checks before quoting the row, and give the curl leg the same network control the smoke has.
-
-_Older entries (up to 2026-09-26) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._
