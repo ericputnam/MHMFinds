@@ -11,9 +11,14 @@
  *     bedroom/kitchen/bathroom rule) unless the title names a whole building.
  *     Writers: the detector's `lot` rule reading "cottage"/"farmhouse" in a
  *     title, and "house"/"home" in a shared blog-post description.
- *  3. `holidays` is deliberately NOT guarded: it is a real 926-row facet with
- *     its own collection page, 3 of the 6 room-titled holidays rows name the
- *     holiday in their title, and no current writer emits it.
+ *  3. `holidays` was deliberately NOT guarded here on 2026-09-30 (a real
+ *     926-row facet, no current writer). Since E154 (2026-10-01) it IS guarded,
+ *     by `guardHolidaysContentType` inside `guardRoomTitledContentType` — kept
+ *     only when the title names a holiday; see holidays-facet-rules.test.ts.
+ *
+ * E168 (2026-10-03): the ingest composition moved into
+ * `resolveIngestContentType` (confident title → URL category → description →
+ * guard); the `ingest` helper below calls the real one instead of restating it.
  *
  * Replay 2026-09-30 over the 78 audited rows (pre-fix ingest path): 10 rows
  * re-written `bathroom`, 6 `kitchen`, 13 room-titled non-lots `lot`.
@@ -32,6 +37,7 @@ import {
   detectContentType,
   guardRoomTitledContentType,
   isRoomTitle,
+  resolveIngestContentType,
 } from '../../lib/services/contentTypeDetector';
 import { detectContentTypeFromUrl } from '../../lib/services/mhmScraperUtils';
 import { HAND_AUDITED_CONTENT_TYPES } from '../../scripts/lib/hand-audited-content-types';
@@ -42,9 +48,9 @@ const pins = Object.entries(HAND_AUDITED_CONTENT_TYPES)
   .filter((p) => p.m !== null)
   .map((p) => ({ id: p.id, title: p.m![1], was: p.m![2], pin: p.entry.contentType }));
 
-/** The ingest composition in mhmScraper.saveModsToDatabase. */
+/** The ingest composition in mhmScraper.saveModsToDatabase (the real one, E168). */
 const ingest = (title: string, url: string, description?: string) =>
-  guardRoomTitledContentType(title, detectContentTypeFromUrl(url) || detectContentType(title, description));
+  resolveIngestContentType(title, description, detectContentTypeFromUrl(url));
 
 describe('room values are never a content type (E147)', () => {
   it('the set is the four room words the URL mapping can emit', () => {

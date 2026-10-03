@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-03
+- Tried: E168 — ingest precedence (confident title > URL category > description) + `lot` rule title-only (`lib/lotContentTypeRules.ts`), 70 E168 pins (T0, PR HELD-RED: breaker RED, nothing applied). Dry run `--lot-untitled`: 362 rows → 80 change (71 NULL, 4 decor, 3 full-body, 1 gameplay-mod, 1 hair), 124 no-ops (57 URL-category, 67 pinned real lots). Plan: `reports/funnel/catalog-e168-lot-retag-2026-10-03.json`.
+- Before → after: lot 362 / 152 title-supported (42.0%) → after apply 282 / 158 (56.0%) + 57 URL + 67 pins = 0 prose-typed. Part (a) replay: 5,412 URL-category rows differ on 861 (15.9%), never to NULL.
+- Verdict: MORE DATA (read 10-10: ≤5% wrong on next 100 ingested rows; lot 0 prose-typed; pins 70/70).
+- Next time: an inherited keyword is re-measured the moment precedence changes — `home` (76 titles) would have flipped 12 furniture/gym sets to `lot` once the title beat the URL; measure against the URL-category rows, not just the catalog. Reading all 137 NULL strips row by row found 67 real lots on slugs the URL map does not know (`-lots/`, `/castles/`, monthly finds) — the STRIP list is where the cost hides.
+
 ## 2026-10-02
 - Tried: E161 ingest stall — traced the runner log → selector → DB instead of trusting "catalog-ingest OK created=0" (Tier 0, PR #249). The stall was a selector invariant (`--new-only` = skip any post with a Mod row, forever), not a crash: `Selected 0 of 678 (663 older than --since, 15 already in DB)` on 6 of 7 mornings while the writer only re-edited old seasonal posts. `--refreshed` re-selects a known post whose sitemap `lastmod` is newer than `max(Mod.createdAt)` for its sourceUrl; the update path no longer re-types an existing row's contentType.
 - Before → after: selected 0 of 678 → 9 of 678 (9 refreshed); created 0 → 117 in one run; catalog 16,561 → 16,678; new mods 7d 27 → 144 (read 10-09). Spot-check of the 117 found 17 (14.5%) wrong, all from two rules (URL category beats title; `lot` reads description) — 18 pinned in `hand-audited-content-types.ts`, 17 applied via `--ids=`, read-back 18/18.

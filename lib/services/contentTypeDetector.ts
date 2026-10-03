@@ -18,6 +18,7 @@ import { BEDROOM_THEME, isBedroomTitle } from '../bedroomThemeRules';
 import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
 import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
+import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
 
 // ============================================
 // TYPES
@@ -43,11 +44,18 @@ export interface RoomThemeResult {
 // Higher priority keywords are checked first and take precedence
 // ============================================
 
-interface KeywordRule {
+export interface KeywordRule {
   keywords: string[];  // Keywords to match (case-insensitive)
   negativeKeywords?: string[];  // Keywords that should NOT be present
   contentType: string;
   priority: number;  // Higher = checked first, takes precedence
+  /**
+   * E168: the rule is evidence only when a keyword is in the TITLE; the
+   * description pass skips it. A blog post's description is shared by every
+   * mod scraped from it, so a description-read rule pollutes whole facets at
+   * once (lighting #61, gameplay-mod #79, jewelry, every room theme, lot).
+   */
+  titleOnly?: boolean;
 }
 
 // Priority levels:
@@ -518,14 +526,14 @@ export const CONTENT_TYPE_RULES: KeywordRule[] = [
     priority: 14,
   },
 
-  // Lot/Build
+  // Lot/Build — TITLE ONLY since E168 (2026-10-03). Keyword list, counts and
+  // rejections live in lib/lotContentTypeRules.ts; this is the same array, not
+  // a copy (guard the constant, not a copy of its value).
   {
-    keywords: ['lot', 'house', 'home', 'apartment', 'mansion', 'cottage', 'residential',
-               'venue', 'community lot', 'starter', 'build', 'renovation',
-               'estate', 'villa', 'colonial', 'townhouse', 'farmhouse', 'manor',
-               'chateau', 'bungalow'],
-    contentType: 'lot',
+    keywords: LOT_TITLE_KEYWORDS,
+    contentType: LOT_CONTENT_TYPE,
     priority: 12,
+    titleOnly: true,
   },
 ];
 
@@ -900,6 +908,36 @@ export function guardRoomTitledContentType(
   return r.confidence === 'low' ? undefined : r.contentType;
 }
 
+/**
+ * The ingest composition (`mhmScraper.saveModsToDatabase`), E168 (2026-10-03):
+ *
+ *   1. a CONFIDENT title answer — `detectContentTypeWithConfidence(title)` at
+ *      medium or high, the detector's own threshold, the same one every retag
+ *      script uses — wins;
+ *   2. otherwise the blog post's URL category (`detectContentTypeFromUrl`) is
+ *      the fallback;
+ *   3. otherwise the title+description detector, exactly as before;
+ *   4. and whatever came out passes the room / holidays guards.
+ *
+ * Before E168 the order was URL → title+description, so every row on
+ * /sims-4-fall-cc-clothes/ was written `tops` (20 of 20, 5 title-supported)
+ * and 17 of the first 117 `--refreshed` rows (14.5%) were wrong (E161).
+ * Whole-catalog replay on 2026-10-03: 5,412 rows carry a URL category; the
+ * new order differs on 861 (15.9%), never to NULL; where it differs the stored
+ * value agrees with the new answer 468 times and with the old 224. NULL beats
+ * a guess, so nothing here invents a type the three sources did not produce.
+ */
+export function resolveIngestContentType(
+  title: string | null | undefined,
+  description: string | null | undefined,
+  urlContentType: string | null | undefined,
+): string | undefined {
+  const t = detectContentTypeWithConfidence(title || '');
+  const titleAnswer = t.confidence !== 'low' ? t.contentType : undefined;
+  const candidate = titleAnswer ?? urlContentType ?? detectContentType(title || '', description || undefined);
+  return guardRoomTitledContentType(title, candidate);
+}
+
 function detectWithRules(
   title: string,
   description: string | undefined,
@@ -938,9 +976,10 @@ function detectWithRules(
     }
   }
 
-  // PASS 2: description-only matches, used when the title was uninformative
+  // PASS 2: description-only matches, used when the title was uninformative.
+  // A `titleOnly` rule (E168: lot) is never evidence here.
   for (const rule of sortedRules) {
-    if (hasNegative(rule)) {
+    if (rule.titleOnly || hasNegative(rule)) {
       continue;
     }
 

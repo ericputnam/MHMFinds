@@ -57,6 +57,7 @@
  *   npx tsx scripts/retag-junk-build-facets.ts --room-titled-cas            # E132, see below
  *   ... --rollback-out=reports/funnel/x.json   # write {id,title,from,to} before any write
  *   npx tsx scripts/retag-junk-build-facets.ts --holidays-untitled         # E154, see below
+ *   npx tsx scripts/retag-junk-build-facets.ts --lot-untitled              # E168, see below
  *
  * Every run prints the STRIP list (rows leaving each current facet), the ADD
  * list (rows entering each new facet) and the filter's selectivity (facet
@@ -82,6 +83,25 @@
  * medium/high confidence, or NULL — unless pinned, in which case the pin wins.
  * Rows whose title names a holiday are never loaded into scope. Reads back
  * every E154 pin. `--facets` is ignored in this mode.
+ *
+ * --lot-untitled (Rowan, 2026-10-03, E168)
+ * ----------------------------------------
+ * Population: every row typed `lot` whose TITLE carries no lot word
+ * (`lib/lotContentTypeRules.ts`), plus every pinned `lot` row. Each is
+ * re-decided by the ingest composition WITHOUT its description —
+ * `resolveIngestContentType(title, undefined, detectContentTypeFromUrl(sourceUrl))`:
+ * a confident title answer, else the blog post's URL category (so a house
+ * named after a person on /sims-4-houses/ stays `lot`), else NULL — unless
+ * pinned, in which case the pin wins. The description is never consulted: it
+ * is what typed these rows in the first place. Rows whose title carries a lot
+ * word are never loaded into scope. Reads back every E161 pin. `--facets` is
+ * ignored in this mode. Read the STRIP list as hard as the ADD list: a real
+ * lot with an uninformative title and no URL category WILL be stripped to
+ * NULL — pin it by id (hand-audited-content-types.ts) before `--apply`.
+ *
+ * --rollback-out (#250): a DRY RUN never overwrites a non-empty plan file. The
+ * plan an `--apply` was signed off against must survive a later dry run at the
+ * same path; pass a new path instead.
  */
 
 // CRITICAL: Import setup-env FIRST to configure DATABASE_URL for scripts
@@ -94,10 +114,13 @@ import {
   guardRoomTitledContentType,
   guardHolidaysContentType,
   isRoomTitle,
+  resolveIngestContentType,
 } from '../lib/services/contentTypeDetector';
+import { detectContentTypeFromUrl } from '../lib/services/mhmScraperUtils';
 import { isHolidaysTitle } from '../lib/holidaysContentTypeRules';
+import { LOT_CONTENT_TYPE, isLotTitle } from '../lib/lotContentTypeRules';
 import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
-import { mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
 
 /** autonomy.md: catalog scripts touch at most 5,000 rows per run. */
@@ -117,7 +140,7 @@ const DEFAULT_FACETS = ['lighting', 'curtains'];
  */
 const OVERRIDES = HAND_AUDITED_CONTENT_TYPES;
 
-type Row = { id: string; title: string; contentType: string | null; downloadCount: number };
+type Row = { id: string; title: string; contentType: string | null; downloadCount: number; sourceUrl?: string | null };
 type Change = { row: Row; to: string | null; reason: string };
 
 function parseArgs() {
@@ -140,19 +163,40 @@ function parseArgs() {
   const ids = idsArg ? idsArg.slice('--ids='.length).split(',').map(s => s.trim()).filter(Boolean) : null;
   const roomTitledCas = argv.includes('--room-titled-cas');
   const holidaysUntitled = argv.includes('--holidays-untitled');
+  const lotUntitled = argv.includes('--lot-untitled');
   if (roomTitledCas && ids) throw new Error('--room-titled-cas and --ids= are separate modes; pass one.');
   if (holidaysUntitled && (ids || roomTitledCas)) throw new Error('--holidays-untitled is its own mode; pass it alone.');
+  if (lotUntitled && (ids || roomTitledCas || holidaysUntitled)) throw new Error('--lot-untitled is its own mode; pass it alone.');
   const rollbackArg = argv.find(a => a.startsWith('--rollback-out='));
   const rollbackOut = rollbackArg ? rollbackArg.slice('--rollback-out='.length) : null;
-  const modeFacets = roomTitledCas ? Array.from(CAS_CONTENT_TYPES) : holidaysUntitled ? ['holidays'] : facets;
-  return { apply, verbose, facets: modeFacets, limit, ids, roomTitledCas, holidaysUntitled, rollbackOut };
+  const modeFacets = roomTitledCas
+    ? Array.from(CAS_CONTENT_TYPES)
+    : holidaysUntitled
+      ? ['holidays']
+      : lotUntitled
+        ? [LOT_CONTENT_TYPE]
+        : facets;
+  return { apply, verbose, facets: modeFacets, limit, ids, roomTitledCas, holidaysUntitled, lotUntitled, rollbackOut };
 }
 
 /** Decide the new content type for one row. Exported shape kept simple for testing. */
-function decide(row: Row, roomTitledCas = false, holidaysUntitled = false): Change {
+function decide(row: Row, roomTitledCas = false, holidaysUntitled = false, lotUntitled = false): Change {
   const override = OVERRIDES[row.id];
   if (override) {
     return { row, to: override.contentType, reason: `override: ${override.why}` };
+  }
+
+  if (lotUntitled) {
+    // E168: the ingest order without the description — title (confident),
+    // else the post's URL category, else NULL. Never the prose.
+    const url = detectContentTypeFromUrl(row.sourceUrl || '');
+    const to = resolveIngestContentType(row.title, undefined, url) ?? null;
+    const reason = to === LOT_CONTENT_TYPE
+      ? `lot: title names no lot word; URL category ${url} keeps it`
+      : to
+        ? `lot: title names no lot word; ${url && url === to ? `URL category ${url}` : 'title-only type'}`
+        : 'lot: title names no lot word, no URL category; NULL beats a guess';
+    return { row, to, reason };
   }
 
   if (holidaysUntitled) {
@@ -177,21 +221,22 @@ function decide(row: Row, roomTitledCas = false, holidaysUntitled = false): Chan
 }
 
 async function main() {
-  const { apply, verbose, facets, limit, ids, roomTitledCas, holidaysUntitled, rollbackOut } = parseArgs();
+  const { apply, verbose, facets, limit, ids, roomTitledCas, holidaysUntitled, lotUntitled, rollbackOut } = parseArgs();
+  const wholeFacetMode = roomTitledCas || holidaysUntitled || lotUntitled;
 
   console.log('='.repeat(72));
-  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}${holidaysUntitled ? ' — untitled holidays (E154)' : ''}`);
+  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}${holidaysUntitled ? ' — untitled holidays (E154)' : ''}${lotUntitled ? ' — untitled lot (E168)' : ''}`);
   console.log(`Facets: ${facets.join(', ')} · row cap: ${limit}`);
   if (ids) console.log(`Restricted to ${ids.length} id(s): ${ids.join(', ')}`);
   console.log('='.repeat(72));
 
   const loaded: Row[] = await prisma.mod.findMany({
     where: { contentType: { in: facets }, ...(ids ? { id: { in: ids } } : {}) },
-    select: { id: true, title: true, contentType: true, downloadCount: true },
+    select: { id: true, title: true, contentType: true, downloadCount: true, sourceUrl: true },
     orderBy: { downloadCount: 'desc' },
     // The room filter runs in code, so the CAS population is read whole and
     // the 5,000-row write cap is enforced on the filtered set below.
-    take: roomTitledCas || holidaysUntitled ? 25000 : limit, // bounded read: catalog is ~16.6k rows
+    take: wholeFacetMode ? 25000 : limit, // bounded read: catalog is ~16.7k rows
   });
 
   // --room-titled-cas: keep only rows the guard would move (or that are pinned).
@@ -202,9 +247,32 @@ async function main() {
         .slice(0, limit)
     : holidaysUntitled
       ? loaded.filter(r => OVERRIDES[r.id] || !isHolidaysTitle(r.title)).slice(0, limit)
-      : loaded;
+      : lotUntitled
+        ? loaded.filter(r => OVERRIDES[r.id] || !isLotTitle(r.title)).slice(0, limit)
+        : loaded;
 
-  console.log(`\nLoaded ${loaded.length} rows${roomTitledCas ? `; ${rows.length} room-titled CAS rows in scope` : ''}${holidaysUntitled ? `; ${rows.length} untitled-or-pinned holidays rows in scope; ${loaded.length - rows.length} title-supported rows untouched` : ''}.\n`);
+  const scopeNote = roomTitledCas
+    ? `; ${rows.length} room-titled CAS rows in scope`
+    : holidaysUntitled
+      ? `; ${rows.length} untitled-or-pinned holidays rows in scope; ${loaded.length - rows.length} title-supported rows untouched`
+      : lotUntitled
+        ? `; ${rows.length} untitled-or-pinned lot rows in scope; ${loaded.length - rows.length} title-supported rows untouched (${loaded.length > 0 ? ((100 * (loaded.length - rows.length)) / loaded.length).toFixed(1) : 'n/a'}% title-supported before)`
+        : '';
+  console.log(`\nLoaded ${loaded.length} rows${scopeNote}.\n`);
+
+  if (lotUntitled) {
+    // Read back every E161 pin: after an apply each must hold its pinned value.
+    const pinIds = Object.keys(OVERRIDES).filter(id => OVERRIDES[id].why.startsWith('E161 '));
+    const pinned = await prisma.mod.findMany({ where: { id: { in: pinIds } }, select: { id: true, contentType: true } });
+    const drifted = pinned.filter(p => p.contentType !== OVERRIDES[p.id].contentType);
+    console.log(`E161 pins: ${pinIds.length} · found ${pinned.length} · at pinned value ${pinned.length - drifted.length} · not yet / drifted ${drifted.length}`);
+    for (const d of drifted) console.log(`    DRIFT ${d.id}: now ${d.contentType}, pin ${OVERRIDES[d.id].contentType}`);
+    if (pinned.length !== pinIds.length) console.log(`    MISSING ${pinIds.length - pinned.length} pinned id(s) from the catalog`);
+    // Where the in-scope rows came from: the URL category is the only thing
+    // that can keep an untitled row `lot`, so show how many have one.
+    const withUrlCat = rows.filter(r => detectContentTypeFromUrl(r.sourceUrl || '')).length;
+    console.log(`In scope: ${withUrlCat} rows carry a URL category, ${rows.length - withUrlCat} carry none (title or NULL decides).`);
+  }
 
   if (holidaysUntitled) {
     // Read back every E154 pin: after an apply each must hold its pinned value.
@@ -261,7 +329,7 @@ async function main() {
   let unchanged = 0;
 
   for (const row of rows) {
-    const change = decide(row, roomTitledCas, holidaysUntitled);
+    const change = decide(row, roomTitledCas, holidaysUntitled, lotUntitled);
     if (change.to === row.contentType) {
       unchanged++;
       continue;
@@ -313,7 +381,23 @@ async function main() {
       ` -> changing ${changes.length} (${pct(changes.length, rows.length)} of scope); unchanged/pinned no-op ${unchanged}`,
   );
   if (changes.length === 0) console.log('WARNING: the filter changes 0 rows — check it can see the field it tests.');
-  if (rollbackOut) {
+  let planRefused = false;
+  if (rollbackOut && !apply && existsSync(rollbackOut)) {
+    // #250: a dry run after an --apply once overwrote E158's 20-row plan with
+    // 0 rows. A dry run never overwrites a non-empty (or unreadable) plan.
+    let priorRows = -1;
+    try {
+      priorRows = (JSON.parse(readFileSync(rollbackOut, 'utf8')).rows ?? []).length;
+    } catch {
+      priorRows = -1;
+    }
+    if (priorRows !== 0) {
+      planRefused = true;
+      console.log(`Rollback file   : REFUSED — ${rollbackOut} already holds a ${priorRows < 0 ? 'non-JSON' : `${priorRows}-row`} plan and this is a dry run (#250). Pass a new --rollback-out path.`);
+      process.exitCode = 1;
+    }
+  }
+  if (rollbackOut && !planRefused) {
     mkdirSync(dirname(rollbackOut), { recursive: true });
     writeFileSync(
       rollbackOut,
