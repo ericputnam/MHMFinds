@@ -5,9 +5,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { modBlockParser } from './modBlockParser';
 import {
-  detectContentType,
   detectRoomThemes,
-  guardRoomTitledContentType,
+  resolveIngestContentType,
 } from './contentTypeDetector';
 import {
   detectGame,
@@ -1360,13 +1359,14 @@ export class MustHaveModsScraper {
 
     for (const mod of mods) {
       try {
-        // Detect content type: URL-based (from blog post category) is the strongest signal,
-        // title-based detection is a fallback for generic/mixed-category posts
+        // Detect content type (E168, 2026-10-03): a confident TITLE answer beats
+        // the blog post's URL category; the URL category is the fallback when the
+        // title says nothing; the shared description is the last resort; and
+        // the room/holidays guards (E132/E147/E154) apply to whatever came out.
+        // The order lives in one place — resolveIngestContentType — so the
+        // guard tests exercise the real composition, not a restated copy.
         const urlContentType = detectContentTypeFromUrl(mod.sourceUrl);
-        const titleContentType = detectContentType(mod.title, mod.description);
-        // E132: a room-titled row (bedroom/kitchen/bathroom, title-only rules)
-        // is never Create-a-Sim, even when the blog post's URL category says so.
-        const detectedContentType = guardRoomTitledContentType(mod.title, urlContentType || titleContentType);
+        const detectedContentType = resolveIngestContentType(mod.title, mod.description, urlContentType);
         const detectedThemes = detectRoomThemes(mod.title, mod.description);
 
         // Check if mod already exists by download URL (most reliable)

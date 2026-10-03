@@ -93,12 +93,20 @@ describe('room-titled rows are never CAS (E132)', () => {
     }
   });
 
-  it('ingest (mhmScraper.saveModsToDatabase) passes the URL-or-detector type through the guard', () => {
+  it('ingest (mhmScraper.saveModsToDatabase) decides the type through resolveIngestContentType, which ends in the guard (E168)', () => {
     const src = readFileSync(join(__dirname, '../../lib/services/mhmScraper.ts'), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/(^|[^:])\/\/.*$/gm, '$1');
     expect(src).toMatch(
-      /const detectedContentType = guardRoomTitledContentType\(\s*mod\.title,\s*urlContentType \|\| titleContentType\s*\)/,
+      /const detectedContentType = resolveIngestContentType\(\s*mod\.title,\s*mod\.description,\s*urlContentType\s*\)/,
     );
+    // No second, un-guarded composition may creep back in beside it.
+    expect(src).not.toMatch(/urlContentType \|\| titleContentType/);
+    const detector = readFileSync(join(__dirname, '../../lib/services/contentTypeDetector.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/(^|[^:])\/\/.*$/gm, '$1');
+    const fn = detector.slice(detector.indexOf('export function resolveIngestContentType('));
+    const body = fn.slice(0, fn.indexOf('\n}\n') + 3);
+    expect(body).toMatch(/return guardRoomTitledContentType\(title, candidate\);/);
   });
 });
