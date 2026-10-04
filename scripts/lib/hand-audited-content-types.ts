@@ -361,6 +361,98 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmuquijzh000noxbq4p9j908m: { contentType: 'clutter', why: "E161 description-typed \"KHD Orchard Apple Basket\" — was lot via 'porches … farmhouse builds' in the prose; a basket is clutter" },
   cmuquijm0000ioxbqux8aaak5: { contentType: 'decor', why: "E161 description-typed \"Porchfully Yours – Build & Buy Set\" — was lot via 'Build' in the title; a 12-piece porch decor set" },
   cmuquik41000poxbqyz2ge5fb: { contentType: 'lot', why: "E161 description-typed \"Cozy Autumn Camper Van\" — was lot; KEEP: a tiny-house lot (CurseForge rooms-lots), title alone says nothing" },
+  // ── Audited 2026-10-03 (Rowan, E168) — the `lot` rule became title-only and
+  //    the retag (`retag-junk-build-facets.ts --lot-untitled`) would NULL every
+  //    lot row whose title carries no lot word and whose post URL maps to no
+  //    category. 137 such rows; each was read against its description and
+  //    source post. 67 are real lots (hospitals, gyms, hotels, police stations,
+  //    cemeteries, yachts, monthly-finds houses) — explicit KEEP no-ops, because
+  //    the title alone says nothing and the URL slugs (`/sims-4-gym-lots/`,
+  //    `/sims-4-hotel-lots/`, `/sims-4-castles/`, `/sims-4-cc-finds-for-…/`) are
+  //    deliberately NOT widened into `SIMS_4_CONTENT_MAPPINGS` (never widen —
+  //    filed in ideas-inbox). Two are decorative boats (decor). The other 68
+  //    (clothing packs, cars, travel mods, moving clutter, toys) go NULL.
+  //    The `why` quotes the description sentence that settles it.
+  cmsmc1rb700iwoxeu4kndt4bp: { contentType: 'lot', why: "E168 lot-untitled \"Willow Creek Hospital\" — KEEP lot; If you want a clean, modern hospital for your save, you’ll love this build. [/sims-4-hospital-lots/]" },
+  cmoistmuf0002oxvto4jmieqr: { contentType: 'lot', why: "E168 lot-untitled \"Everwyn Tower\" — KEEP lot; If you want a compact castle build with a classic fairytale feel, get the Everwyn Tower. [/sims-4-castles/]" },
+  cmsmcmv0z00udoxeur7m3sl1d: { contentType: 'lot', why: "E168 lot-untitled \"Sims 4 Stranger Things Hawkins Police Station\" — KEEP lot; Sims 4 Stranger Things Hawkins Police Station is a detailed no-CC build inspired by the iconic Hawkins… [/sims-4-police-station-lot/]" },
+  cmsmcucl000yeoxeuecdnndpf: { contentType: 'lot', why: "E168 lot-untitled \"Keratin Salon\" — KEEP lot; Keratin Salon is a luxurious beauty space designed with a modern urban aesthetic. [/sims-4-salon-cc/]" },
+  cmsmcb1t800o5oxeuiuf2yps7: { contentType: 'lot', why: "E168 lot-untitled \"Medieval Village\" — KEEP lot; Medieval Village is a sprawling medieval-inspired rental lot built around an impressive castle estate and… [/sims-4-medieval-cc/]" },
+  cmsmc2ykg00jmoxeu9wcomuh2: { contentType: 'lot', why: "E168 lot-untitled \"Grand Reef Hotel\" — KEEP lot; If you’re looking for a luxurious tropical getaway, the Grand Reef Hotel is an excellent choice. [/sims-4-hotel-lots/]" },
+  cmsmd0ulv0121oxeu7b37sufo: { contentType: 'lot', why: "E168 lot-untitled \"Simbledon Tennis Club\" — KEEP lot; Simbledon Tennis Club is a luxury tennis venue inspired by prestigious country clubs and professional… [/sims-4-tennis-cc/]" },
+  cmsmc3any00jvoxeulv3t9m9o: { contentType: 'lot', why: "E168 lot-untitled \"Florence Motel\" — KEEP lot; Florence Motel is a charming Mediterranean-inspired getaway perfect for romantic vacations and destination… [/sims-4-hotel-lots/]" },
+  cmsmc3mzh00k5oxeuqqi6nr4q: { contentType: 'lot', why: "E168 lot-untitled \"Torres Amanecer Hotel\" — KEEP lot; Torres Amanecer Hotel is a modern, luxurious hotel designed with Mediterranean-inspired architecture. [/sims-4-hotel-lots/]" },
+  cmu144kcn000eoxtzb6sfhk0m: { contentType: 'lot', why: "E168 lot-untitled \"Yacht Serenity\" — KEEP lot; The Yacht Serenity is a modern luxury boat designed for tropical getaways and relaxing holidays in Sulani. [/sims-4-boat-cc/]" },
+  cmttzicye00aqoxfeajpoai1f: { contentType: 'lot', why: "E168 lot-untitled \"Mesa Pop Residence\" — KEEP lot; Mesa Pop Residence is a colorful two-bedroom home inspired by American modernism. [/sims-4-cc-finds-for-august-2026/]" },
+  cmsmby3gf00gvoxeulnirms4t: { contentType: 'lot', why: "E168 lot-untitled \"Funeral Home CC\" — KEEP lot; Funeral Home CC is a spacious funeral home and crematorium built on a 64×64 lot in Windenburg. [/sims-4-funeral-cc/]" },
+  cmqpxz97i002woxeeut4qrcr5: { contentType: 'lot', why: "E168 lot-untitled \"Medieval Tournament\" — KEEP lot; If you want a medieval-themed venue for storytelling or historical gameplay, get the Medieval Tournament lot. [/sims-4-cc-finds-for-march-2026/]" },
+  cmu144k0f0009oxtz1r985gqy: { contentType: 'lot', why: "E168 lot-untitled \"Bar Captain Cook\" — KEEP lot; Bar Captain Cook is an incredible pirate ship build designed as a fully furnished bar on a 40×30 lot. [/sims-4-boat-cc/]" },
+  cmu144k50000boxtz92a0nm60: { contentType: 'lot', why: "E168 lot-untitled \"Finn Boat\" — KEEP lot; Finn Boat is a modern three-story yacht designed for luxurious vacations with family or friends. [/sims-4-boat-cc/]" },
+  cmu144jgr0002oxtzhycsu4op: { contentType: 'lot', why: "E168 lot-untitled \"The Bima Samudra – Luxury Power Yacht\" — KEEP lot; The Bima Samudra is a massive luxury power yacht built for Sims with serious money to spend. [/sims-4-boat-cc/]" },
+  cml5sivsn003loxxrstsmtjlw: { contentType: 'lot', why: "E168 lot-untitled \"Phosphorescent Flower Shop\" — KEEP lot; Last on this list is the Phosphorescent Flower Shop, a striking Victorian–steampunk build that blends dark… [/sims-4-victorian-cc/]" },
+  cmoipycu10021oxkjwxb2fv1z: { contentType: 'lot', why: "E168 lot-untitled \"66 Newcrest Street\" — KEEP lot; 66 Newcrest Street is a residential lot built on a 30×20 plot with 2 bedrooms and 2 bathrooms. [/sims-4-cc-finds-for-april-2026/]" },
+  cmu144k2q000aoxtzlhx91kv1: { contentType: 'lot', why: "E168 lot-untitled \"Houseboat\" — KEEP lot; House boat is a modern, fully furnished home built to look like it’s floating right on the water. [/sims-4-boat-cc/]" },
+  cmqpy8m8p008boxeeusr8yll1: { contentType: 'lot', why: "E168 lot-untitled \"215 Sim Lane\" — KEEP lot; The 215 Sim Lane build is a fully furnished, renovated, pleasant family home designed to preserve its… [/sims-4-cc-finds-for-january-2026/]" },
+  cmoipycwt0022oxkj130anrrh: { contentType: 'lot', why: "E168 lot-untitled \"Grand Kinship Residence\" — KEEP lot; Grand Kinship Residence is a spacious, modern family home designed for big households and… [/sims-4-cc-finds-for-april-2026/]" },
+  cmttzijst00bhoxfe16cxbv3d: { contentType: 'lot', why: "E168 lot-untitled \"Rooftop Gym & Fitness Center\" — KEEP lot; Rooftop Gym & Fitness Center is a spacious 40 x 30 fitness lot with everything your active Sims require… [/sims-4-gym-lots/]" },
+  cmqpykdtv008goxeeeazrbd45: { contentType: 'lot', why: "E168 lot-untitled \"Plasma Vampire Nightclub\" — KEEP lot; The Plasma Vampire Nightclub is a neon fortress, glowing with electric pinks and purples and eerie… [/sims-4-vampire-cc/]" },
+  cmuqujfmr0034oxbqsyd57ewy: { contentType: 'lot', why: "E168 lot-untitled \"Artia No. 5\" — KEEP lot; Artia No. [/sims-4-cc-finds-for-september-2026/]" },
+  cmuqujftv0036oxbq7xblipic: { contentType: 'lot', why: "E168 lot-untitled \"Honeybrook Corner\" — KEEP lot; Honeybrook Corner is a cozy two-bedroom family home surrounded by flowers, greenery, and plenty of outdoor… [/sims-4-cc-finds-for-september-2026/]" },
+  cmsmbce45005ooxeu4zpk6ze9: { contentType: 'lot', why: "E168 lot-untitled \"Ander\" — KEEP lot; Ander is a modern two-story home designed in a clean, neutral style. [/sims-4-cc-finds-for-july-2026/]" },
+  cmttzicpq00amoxfedyw094h4: { contentType: 'lot', why: "E168 lot-untitled \"Build 01\" — KEEP lot; Build 01 is an abandoned, overgrown two-story home on a 20 x 15 residential lot. [/sims-4-cc-finds-for-august-2026/]" },
+  cmttzicru00anoxfepywe5jw5: { contentType: 'lot', why: "E168 lot-untitled \"Seabreeze Terrace\" — KEEP lot; Seabreeze Terrace is a three-story tropical home built on a 40×30 lot in Sulani. [/sims-4-cc-finds-for-august-2026/]" },
+  cmttzicw700apoxfemkw1pl5h: { contentType: 'lot', why: "E168 lot-untitled \"Glasswood Cabin 3\" — KEEP lot; Glasswood Cabin 3 is a modern two-story home with extensive glass windows, warm wood finishes, and outdoor… [/sims-4-cc-finds-for-august-2026/]" },
+  cmsmbe2mh006noxeujfn9s0df: { contentType: 'lot', why: "E168 lot-untitled \"Casa Oasis de Cobre\" — KEEP lot; Casa Oasis de Cobre is a Spanish-inspired family home built on a 40×30 lot. [/sims-4-cc-finds-for-june-2026/]" },
+  cmsmbe6el006qoxeu3mfxlc8c: { contentType: 'lot', why: "E168 lot-untitled \"Auralith\" — KEEP lot; Auralith is a bright contemporary villa with layered terraces and a private backyard pool, creating a… [/sims-4-cc-finds-for-june-2026/]" },
+  cmttzijie00bdoxfeq8s0ga4b: { contentType: 'lot', why: "E168 lot-untitled \"Fit Box Gym\" — KEEP lot; Fit Box Gym is a functional fitness center designed for Sims who love staying active. [/sims-4-gym-lots/]" },
+  cmttzijpq00bgoxfespws86id: { contentType: 'lot', why: "E168 lot-untitled \"Town Gym\" — KEEP lot; Town Gym is one of the best Sims 4 gym lots to add to your game in 2026. [/sims-4-gym-lots/]" },
+  cmttzijxe00bjoxfe7892b8cj: { contentType: 'lot', why: "E168 lot-untitled \"Sculpt Lab\" — KEEP lot; Sculpt Lab is a high-end Pilates studio with a soft, luxurious aesthetic. [/sims-4-gym-lots/]" },
+  cmttzike000bpoxfe8u7jy57a: { contentType: 'lot', why: "E168 lot-untitled \"Willow Creek Gym & Pool\" — KEEP lot; If you’re looking for a multipurpose fitness lot where your Sims can work out and enjoy a swim afterward,… [/sims-4-gym-lots/]" },
+  cmttzikgh00bqoxfe6iaf8mey: { contentType: 'lot', why: "E168 lot-untitled \"Harbor Quarter Gym\" — KEEP lot; Harbor Quarter Gym is a spacious, modern fitness center designed as a replacement gym for the contemporary… [/sims-4-gym-lots/]" },
+  cmttzikj400broxfeh7653tfr: { contentType: 'lot', why: "E168 lot-untitled \"Orchid Wellness Row\" — KEEP lot; Orchid Wellness Row is a modern three-story wellness center located in Del Sol Valley. [/sims-4-gym-lots/]" },
+  cmttziklo00bsoxfepyyqwess: { contentType: 'lot', why: "E168 lot-untitled \"Gym “Triceps”\" — KEEP lot; Gym “Triceps” is a vibrant gym lot with a bold European-inspired exterior, perfect for those who want… [/sims-4-gym-lots/]" },
+  cmttzikof00btoxfec57pe25z: { contentType: 'lot', why: "E168 lot-untitled \"Willow Athletic Club\" — KEEP lot; If you’re looking for a stylish gym your Sims can actually run as a small business, Willow Athletic Club… [/sims-4-gym-lots/]" },
+  cmsmbghgz007toxeu598qe8pm: { contentType: 'lot', why: "E168 lot-untitled \"MonoLeaf Coffee Shop\" — KEEP lot; The Monolaf Coffee Shop is a modern two-floor build created for a 20×30 lot in Windenburg. [/sims-4-cc-finds-for-may-2026/]" },
+  cmsmbgijy007uoxeub52pao1q: { contentType: 'lot', why: "E168 lot-untitled \"Dockside Tavern\" — KEEP lot; This is another of my favorite Sims 4 cc finds for May 2026. [/sims-4-cc-finds-for-may-2026/]" },
+  cmttziktv00bvoxfe1c09dyps: { contentType: 'lot', why: "E168 lot-untitled \"Sudor Gym\" — KEEP lot; Sudor Gym is a modern 30×20 fitness lot built in Ciudad Enamorada. [/sims-4-gym-lots/]" },
+  cmttzil3v00bzoxfe2xnxbtpx: { contentType: 'lot', why: "E168 lot-untitled \"The G Spot\" — KEEP lot; The G Spot is an all-girls gym with a bright pink and white aesthetic. [/sims-4-gym-lots/]" },
+  cmqpykfa00090oxeeykxb3g6w: { contentType: 'lot', why: "E168 lot-untitled \"Ws Vampire Home Dimitrescu\" — KEEP lot; Fans of gothic architecture and Resident Evil, this one’s for you! The massive Vampire Home Dimitrescu is… [/sims-4-vampire-cc/]" },
+  cmqpykev8008voxeej56n8d1l: { contentType: 'lot', why: "E168 lot-untitled \"St. Fiacre Cemetery\" — KEEP lot; The St. [/sims-4-vampire-cc/]" },
+  cmsmbycj400h2oxeud7e4ljkv: { contentType: 'lot', why: "E168 lot-untitled \"Eternal Hollow Funeral Home\" — KEEP lot; Eternal Hollow Funeral Home is an elaborate 64×64 build with grand Gothic architecture, tall towers,… [/sims-4-funeral-cc/]" },
+  cmmvarpz500bboxzglf8s0sp9: { contentType: 'lot', why: "E168 lot-untitled \"Glasswood Cabin 2\" — KEEP lot; Glasswood Cabin 2 is a stunning modern woodland home with sleek glass architecture and cozy cabin charm. [/sims-4-cc-finds-for-february-2026/]" },
+  cmmvarqf400bdoxzg80u2a7gg: { contentType: 'lot', why: "E168 lot-untitled \"Valley Cabins\" — KEEP lot; Valley Cabins is a cozy residential rental lot designed as a small cabin-style community with three… [/sims-4-cc-finds-for-february-2026/]" },
+  cmqpy0zz10064oxee0in9i29a: { contentType: 'lot', why: "E168 lot-untitled \"Blood Elf Village\" — KEEP lot; Blood Elf Village is a large fantasy build inspired by the Eversong Woods area from World of Warcraft. [/sims-4-elf-cc/]" },
+  cmsmc1yjy00j2oxeunkqaf930: { contentType: 'lot', why: "E168 lot-untitled \"Modern Vet Clinic\" — KEEP lot; This modern vet clinic is a must-have for pet healthcare. [/sims-4-hospital-lots/]" },
+  cmsmc238f00j5oxeu4dtmmw7l: { contentType: 'lot', why: "E168 lot-untitled \"Magnolia Grace Hospital\" — KEEP lot; Magnolia Grace Hospital is a realistic, fully functional medical center for the base game. [/sims-4-hospital-lots/]" },
+  cmsmc30tc00jnoxeu2q48nr2x: { contentType: 'lot', why: "E168 lot-untitled \"Tartosa Grand Hotel\" — KEEP lot; If you want a luxurious Mediterranean-inspired hotel, Tartosa Grand Hotel is an excellent choice. [/sims-4-hotel-lots/]" },
+  cmsmc31v600jooxeud96kx7z7: { contentType: 'lot', why: "E168 lot-untitled \"Enamorada Love Hotel\" — KEEP lot; Enamorada Love Hotel is a gorgeous multi-story build ideal for romantic getaways and couples-focused gameplay. [/sims-4-hotel-lots/]" },
+  cmsmc36l400jsoxeugpfzabsp: { contentType: 'lot', why: "E168 lot-untitled \"Imperial Hotel for Rent\" — KEEP lot; Imperial Hotel for Rent is one of my favorite Sims 4 hotel lots. [/sims-4-hotel-lots/]" },
+  cmsmc37ot00jtoxeusgclwz0z: { contentType: 'lot', why: "E168 lot-untitled \"Harborfront Motel\" — KEEP lot; If you’re looking for a cozy waterfront motel with realistic charm, Harborfront Motel is an excellent choice. [/sims-4-hotel-lots/]" },
+  cmsmc3iwp00k2oxeujaer7c6h: { contentType: 'lot', why: "E168 lot-untitled \"Namuri Resort – Sims 4 Island Hotel\" — KEEP lot; Namuri Resort draws inspiration from Jeju Island and Sulani with its tranquil tropical design. [/sims-4-hotel-lots/]" },
+  cmsmc3sij00k9oxeu8qkrbkwf: { contentType: 'lot', why: "E168 lot-untitled \"Grand Budapest Hotel 50×40\" — KEEP lot; Grand Budapest Hotel 50×40 is an impressive eight-level hotel inspired by Wes Anderson’s The Grand… [/sims-4-hotel-lots/]" },
+  cmsmce6ib00pooxeu695hx8yc: { contentType: 'lot', why: "E168 lot-untitled \"Off-Grid Earthship\" — KEEP lot; Off-Grid Earthship is a fully furnished, eco-friendly homestead built for sustainable living. [/sims-4-off-the-grid-cc/]" },
+  cmsmchyn400rxoxeutrix85ec: { contentType: 'lot', why: "E168 lot-untitled \"Pirate Bay Beach Area\" — KEEP lot; Pirate Bay Beach Area is the perfect pirate-inspired getaway with a massive docked ship, tropical scenery,… [/sims-4-pirate-cc/]" },
+  cmsmcmhel00u3oxeu9eugpliw: { contentType: 'lot', why: "E168 lot-untitled \"Bridgecreek Police Station CC\" — KEEP lot; Bridgecreek Police Station CC is a small-town police department with a cozy, rustic design. [/sims-4-police-station-lot/]" },
+  cmsmcmo1q00u8oxeuzfmo7p07: { contentType: 'lot', why: "E168 lot-untitled \"Police Station Gotham\" — KEEP lot; Police Station Gotham is a dark, dramatic police department inspired by Gotham. [/sims-4-police-station-lot/]" },
+  cmsmcmrcz00uaoxeu7fhamj8n: { contentType: 'lot', why: "E168 lot-untitled \"Playtested Police Station\" — KEEP lot; Playtested Police Station is a one-story, CC-free build designed to make your Detective Career gameplay… [/sims-4-police-station-lot/]" },
+  cmsmcmspc00uboxeu6ek1wrds: { contentType: 'lot', why: "E168 lot-untitled \"Stranger Things Police Station\" — KEEP lot; Stranger Things Police Station is a no-CC build inspired by the Hawkins Police Station from Stranger Things. [/sims-4-police-station-lot/]" },
+  cmsmcnjvt00uroxeun7gbcx6x: { contentType: 'lot', why: "E168 lot-untitled \"Zora Ceramics\" — KEEP lot; Zora Ceramics is a charming custom pottery shop built inside a pink three-story townhouse. [/sims-4-pottery-cc/]" },
+  cmsmcntx100uzoxeuw4b6oxyp: { contentType: 'lot', why: "E168 lot-untitled \"Pottery Business & Dream Home – Korean Inspired\" — KEEP lot; Pottery Business & Dream Home – Korean Inspired is a beautiful build with a pottery business and a cozy… [/sims-4-pottery-cc/]" },
+  cmsmcqmq500wdoxeulr3l7h2u: { contentType: 'lot', why: "E168 lot-untitled \"Big Ranch\" — KEEP lot; If you want a sprawling countryside estate with plenty of room for horses, Big Ranch is one of the best… [/sims-4-ranch-cc/]" },
+  cmsmcu7rn00yaoxeuc2xfa0bw: { contentType: 'lot', why: "E168 lot-untitled \"Old Town Salon\" — KEEP lot; Old Town Salon is a beautiful makeover of an old Tudor-style home in Windenburg. [/sims-4-salon-cc/]" },
+  cmu144jpl0005oxtzp3uxf9n1: { contentType: 'decor', why: "E168 lot-untitled \"Kativip’s Medieval Boat\" — decor, not a lot; Kativip’s Medieval Boat is a decorative sailing boat converted from The Sims 2 for creating medieval… [/sims-4-boat-cc/]" },
+  cmu144jy00008oxtz59ys6y09: { contentType: 'decor', why: "E168 lot-untitled \"Sea Yachts\" — decor, not a lot; If you’re looking for decorative yachts to make your Sims 4 waterfront lots feel more realistic, check out… [/sims-4-boat-cc/]" },
+  // Three rows whose title names nothing and whose post URL maps to `tops`:
+  //    the URL fallback would stand (by design), but a clothes PACK is a mixed
+  //    CAS set with no single facet — same call as E161's "The Moss Collection".
+  cmijpfntx0112oxc8ckst022u: { contentType: null, why: "E168 lot-untitled \"Vetiver Menswear Clothing\" — NULL; a menswear clothing pack, mixed CAS set, no single facet; the URL category tops is a guess [/sims-4-male-clothes-cc/]" },
+  cmim9mw7000gyoxy7nuevnqp7: { contentType: null, why: "E168 lot-untitled \"70s Summer Flow Pack\" — NULL; a mixed CAS pack, no single facet; the URL category tops is a guess [/sims-4-cc-clothes-packs/]" },
+  cmim9mv1n00geoxy7rysxoa2z: { contentType: null, why: "E168 lot-untitled \"Sims 4 CC Clothes Pack: City Adventurer\" — NULL; a mixed CAS pack, no single facet; the URL category tops is a guess [/sims-4-cc-clothes-packs/]" },
+  // ── Audited 2026-10-04 (Rowan, E168 apply top-24 spot-check) — 23 of the
+  //    top 24 lot rows by downloads after the 80-row apply are lots; this one
+  //    is a CAS set whose title carries the lot word `villa` (rule header:
+  //    villa 38/8/12). Title-supported, so `--lot-untitled` never loads it.
+  cmttzibbj00a1oxfefuotnlq2: { contentType: null, why: "E168 top24 \"Villa Amour Collection\" — NULL; a Love Island-inspired outfit set (dresses, a romper, accessories), mixed CAS, no single facet; `villa` is the lot word [/sims-4-cc-finds-for-august-2026/]" },
 };
 
 /**

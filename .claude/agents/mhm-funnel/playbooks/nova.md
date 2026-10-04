@@ -19,6 +19,18 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-04
+- Tried: E172 submissions triage (T0, PR pending, NOT merged — RED-RPM breaker). Read-only DB: 11 submissions = 4 approved (Nov 29–Jan 10: 2 anonymous, 2 creator accounts) + 7 pending, all from ONE creator account created 10-03 via `/api/creator/submissions`, posted 10:51–11:09, unreviewed. All 20 CreatorProfile rows are seeds; 0 submitters hold one. The scoreboard counted `CreatorProfile ∩ submitter`, and the dashboard path and the approve route never create a profile, so only E122 claimants could ever count. Fix: `lib/funnel/creatorOnboarding.ts` (non-admin isCreator-or-profile account with ≥1 submission) + "Submissions pending review" row. Guard red pre-fix on 4/7.
+- Before → after: onboarded 0 → 3 (2 with ≥1 approved); pending 7, oldest 1d (DB 2026-10-04). E17 pre-read: decor-cc 54 engaged / 70 sessions 28d (09-06→10-03, GA4 apex) vs ≥200 bar.
+- Verdict: MORE DATA (read 2026-10-11: keep if the scoreboard prints 3/7 and pending is reviewed in ≤7d).
+- Next time: before trusting a zero, follow one row through every path that writes it. Approving a dashboard submission still links no `creatorId` (no profile), so hosting is by `author` string only. That is the next supply gap.
+
+## 2026-10-03
+- Tried: E166 (T0, PR pending, HELD-RED): a real creator claiming any of the 8 seed-held pages got a 409 at promote ("handle already belongs to another profile", for a profile nobody owns). `planPromotion` now returns `displaceSeed` when the holder is a placeholder account with 0 OAuth logins, and the route renames the seed to `seed-<handle>` in the same `prisma.$transaction` as the promote. The rename re-asserts the seed predicate (`seedHolderWhere()`, built from PLACEHOLDER_ACCOUNT_DOMAINS), so if it no longer holds, the promote hits P2002 and both writes roll back. The predicate fails closed on an unchecked `seed-<handle>`. isCreator was not touched.
+- Before → after: seed-held handles that 409 at promote 8/20 → 0 (code; no DB write today). Tests 13 new, 8 red on de969ec; 4 mutations each red. /creator/* landings 7d (09-26→10-02) were 587 vs a baseline of 558 (105%).
+- Verdict: MORE DATA (read 2026-10-17; keep if 0 seed-handle 409s AND ≥1 promotion when a claim arrives).
+- Next time: the claim path has no blockers left that code can fix. Every remaining 0 sits upstream at Q23 (0 sent, drop date 10-06).
+
 ## 2026-10-02
 - Tried: E158 (T0, PR #247 `6c737f2` + fix-forward #250 `7dbae73`, data apply `e130a7d`): checking the competitor "8 missing creators" claim led to the profile table, and all 20 CreatorProfile rows were seed accounts (placeholder email domain, 0 OAuth), 20/20 isVerified. `pageProfileFrom()` now ignores the verified flag on placeholder accounts. `creator-placeholder-unverify.ts` flipped all 20 (dry run first, frozen plan = rollback file on main). Batch-1b paper for the favorites-ranked 8, not covered by Q23.
 - Before → after: claim card hidden on seed-backed live pages 8/8 → 0/8; seed profiles verified 20 → 0; mods with a false badge 71 → 0. The 8 pages drew 11 landing sessions/7d. Of the 8 favorites-ranked creators missing from E137, 5 have no page (1–3 SFW mods). E7 graded KILL: 147 engaged sessions 09-04→10-01 vs ≥200 (blog's makeup post: 2,031).
@@ -49,10 +61,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-11 with E122).
 - Next time: the claim path now works end to end but nobody is being sent to it. Outreach (the T2 template) is the only move that feeds it, and E33-style facet coverage has drifted to 96.87% as ingests land NULL.
 
-## 2026-09-26
-- Tried: E113 (T0, one PR): (a) mod-page author link now takes its href from the server-resolved `moreFromCreator.creatorHref` (count-gated `creatorHrefFor`) instead of `creatorHref(authorSlug(mod.author))`; (b) "More Sims 4 CC creators" on every `/creator/[slug]/` — 8 server-rendered links to the creators ranked next to it by downloads, hub population only, memoised 1 h, 800 ms cap. Sitemap/IndexNow (E95), hub ItemList schema and server-rendered hub counts (E97) already existed, so none of the three suggested lifts was new.
-- Before → after: author links to a 404 on the 2,290 SFW mods whose creator has 2–4 mods → 0 (single-mod creators' links also gone); inbound peer links per leaf 0 → ~8 (534 leaves). `listCreators` read 4.9 s cold / one 610 s stall from the operator host today — do not await it unbounded on a force-dynamic page.
-- Verdict: MORE DATA (read 2026-10-24; keep if `/creator/*` landing sessions 7d ≥ 174 = 1.5× the 09-19→09-25 baseline of 116 (96 distinct pages, GA4) AND 0 `/creator/*` 404 hits from `/mods/*` referrers, with `/mods/*` sessions ≥95%).
-- Next time: read what already exists before choosing among dispatched options — all three were shipped; the real gap was leaf-to-leaf links.
-
-_Older entries (up to 2026-09-25) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-26) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._

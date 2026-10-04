@@ -2126,3 +2126,26 @@ The 09-30 section is in the archive.
   `monetization-agent/route.ts:21` fail open without `CRON_SECRET` (Tier 2). `check-host-split.sh`
   not wired into `check-blog-sidebar.sh` / `deploy-verify.sh`.
 
+
+### 2026-10-02 — seven merges (#244–#250), zero incidents, one compound regression (rotated from CLAUDE.md 2026-10-03)
+
+The 10-01 section is in the archive.
+- **The compound itself turned `main` red.** The 10-01 run left `CLAUDE.md` at 60,077 B and
+  `funnel-context-budget.test.ts` failed until #251 trimmed it. Before committing this file run
+  `npx vitest run __tests__/unit/funnel-context-budget.test.ts`; `wc -c` alone does not gate.
+- **"OK" with zero output is a selector bug until the log says why.** `catalog-ingest` logged
+  `OK created=0` on 6 of 7 mornings because `--new-only` skips any post with a Mod row *forever*,
+  and the writer was refreshing old posts instead of publishing new ones (0 of 678 selected).
+  `--refreshed` re-selects a post whose sitemap `lastmod` > its newest Mod row (#249, 117 mods). A
+  re-scrape's update path must not re-type an existing `contentType` (NULL may be deliberate).
+  Open: the post URL category (`clothes` → `tops`) overrides the title on ingest.
+- **A rollback plan is write-once.** A dry run after `--apply` overwrote E158's 20-row plan with 0
+  rows (#250): a dry run never overwrites a non-empty plan, and the plan lands on `main` first.
+- **Seed rows must not pose as real ones.** All 20 `CreatorProfile`s were seed accounts
+  (`musthavemods.generated`, 0 logins) with `isVerified=true`, which hid the claim card on 8 live
+  `/creator/` pages. The reader now ignores placeholder-domain profiles (#247).
+- **Prove a guard with mutations, listed in the PR** (#244: four mutations, each red). Fix the
+  runbook too: the prompt still taught the pre-#239 unlocked merge chain until #244.
+- **Still open:** `ModDetailPage.test.tsx` red on `main` since #219. Cron routes
+  `commission-sync/route.ts:13` and `monetization-agent/route.ts:21` fail open (Tier 2).
+  `check-host-split.sh` not wired into `deploy-verify.sh`.

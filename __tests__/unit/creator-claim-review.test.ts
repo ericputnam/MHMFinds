@@ -85,7 +85,7 @@ describe('planPromotion', () => {
   it('promotes a pending handle to its own slug by default', () => {
     expect(
       planPromotion({ currentHandle: pending, requestedSlug: null, conflictingProfileId: null, profileId: 'p1' })
-    ).toEqual({ ok: true, handle: 'brandysims' });
+    ).toEqual({ ok: true, handle: 'brandysims', displaceSeed: null });
   });
 
   it('refuses a non-pending profile, a squatted handle, and an invalid target', () => {
