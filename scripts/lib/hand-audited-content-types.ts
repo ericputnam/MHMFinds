@@ -448,6 +448,11 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmijpfntx0112oxc8ckst022u: { contentType: null, why: "E168 lot-untitled \"Vetiver Menswear Clothing\" — NULL; a menswear clothing pack, mixed CAS set, no single facet; the URL category tops is a guess [/sims-4-male-clothes-cc/]" },
   cmim9mw7000gyoxy7nuevnqp7: { contentType: null, why: "E168 lot-untitled \"70s Summer Flow Pack\" — NULL; a mixed CAS pack, no single facet; the URL category tops is a guess [/sims-4-cc-clothes-packs/]" },
   cmim9mv1n00geoxy7rysxoa2z: { contentType: null, why: "E168 lot-untitled \"Sims 4 CC Clothes Pack: City Adventurer\" — NULL; a mixed CAS pack, no single facet; the URL category tops is a guess [/sims-4-cc-clothes-packs/]" },
+  // ── Audited 2026-10-04 (Rowan, E168 apply top-24 spot-check) — 23 of the
+  //    top 24 lot rows by downloads after the 80-row apply are lots; this one
+  //    is a CAS set whose title carries the lot word `villa` (rule header:
+  //    villa 38/8/12). Title-supported, so `--lot-untitled` never loads it.
+  cmttzibbj00a1oxfefuotnlq2: { contentType: null, why: "E168 top24 \"Villa Amour Collection\" — NULL; a Love Island-inspired outfit set (dresses, a romper, accessories), mixed CAS, no single facet; `villa` is the lot word [/sims-4-cc-finds-for-august-2026/]" },
 };
 
 /**
