@@ -291,3 +291,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-03 06:56 | after-merge | Rio: PR #254 E163 red-rpm 10-01 root cause (incident file) | aada199 | https://mhm-finds-dw5l-lh22o29hm-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-03 07:01 | after-merge | Nova: PR #252 promoting a claim on a seed-held handle renames the seed (E166) | 7312738 | https://mhm-finds-dw5l-dt8o1lwe2-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-03 07:05 | after-merge | Pip: PR #256 E164 runway top-up #9 ledger + package + SEO re-read (Tier 0, SD-10 floor) | e3e2b1d | https://mhm-finds-dw5l-2bd7b9oqn-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-04 06:36 | check | morning-check |  | https://mhm-finds-dw5l-ke62svan5-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
