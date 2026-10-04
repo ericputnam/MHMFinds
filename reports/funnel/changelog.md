@@ -302,3 +302,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-04 07:09 | after-merge | Rio: PR #262 E163-b read 2026-10-04 — SAME-INCIDENT, residual CLOSED | 75c3111 | https://mhm-finds-dw5l-fadmz7sis-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-04 07:14 | after-merge | Sage: PR #263 E171 build-cc category hub (registry-only, Tier 0) | 069c690 | https://mhm-finds-dw5l-a0v48tzc9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-04 07:18 | after-merge | Ops: PR #255 E169 revenue-guardrail pages the Vercel list, grades window coverage, rollback bound (E169-b) | 6a4203f | https://mhm-finds-dw5l-5uegpnnne-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-04 07:22 | after-merge | Quinn: PR #264 funnel: daily run 2026-10-04 | 432e40f | https://mhm-finds-dw5l-54uwik7td-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
