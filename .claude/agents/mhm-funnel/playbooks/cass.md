@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-04
+- Tried: E173 — DB split of new accounts by provider: since 09-23 credentials 80 (37 ticked signup-optin, 46%), Patreon OAuth 66 (2 subscribed, via other surfaces; 43 of 93 accounts in the last 7d). Patreon connect never shows the opt-in. Shipped a one-click "Email me weekly" on /go for signed-in ?patreon=connected returners (session address, source patreon-connect-optin, view event patreon_connect_optin_view), inside the mod card above .mv-ads (T0, PR #260, HELD-RED — touches app/go + components/, merges on the first non-red morning). GoClient cases 3/14 red pre-fix.
+- Before → after: patreon-connect-optin rows 0; patreon_post_connect_view 93 ev / ≤62 users (09-21→10-03) → read 14d after merge.
+- Verdict: PENDING. Pre-reads: E86 on track KEEP (37 rows, 46%); E73 below bar (≤1.9/1K vs ≥2); E145 prod cron 401 without bearer.
+- Next time: split owned adds by account provider before choosing a surface. The biggest unasked group was Patreon OAuth accounts, not a missing placement. customEvent:ref is not registered, so read sign_up by source.
+
 ## 2026-10-02
 - Tried: E159 — coverage read first: every Next.js group >1% of sessions already carries an offer (/mods/* 8.6%, / 3.6%, /games/* 2.8%, /go/* 1.7%); the 23 uncovered rows are all WordPress (27.9% of sessions). So shipped the offer-quality move: SaveFindsOffer copy split by useSession() status + saved state → FAVORITES_PATH, mirroring GoSaveOffer (T0, PR #246, 4ce2156, verify PASS 06:53). 4/19 red pre-fix.
 - Before → after: favorite src=mod-detail-save 4 users / 7 events (14d, 09-18→10-01); /account/favorites/ 0 of 9 views referred from /mods/* → read 2026-10-16. Owned adds 7d 119, capture 1.30/1K.

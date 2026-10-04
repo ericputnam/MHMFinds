@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-04 — E163-b read: second 🔴 RED (10-02) = same incident; residual CLOSED
+- Tried: restated the rule, then pulled 10-02 vs 4 prior Thursdays + matured 10-01 page classes (`client.ts` direct; `/tmp/rio-e163b-*.ts`). Fast verdict to Quinn 11:05Z (`rio-verdict-2026-10-04.md`): SAME-INCIDENT · MERGES CLEAR (T0, no ad surface) · ROLLBACK none. PR #262 docs-only.
+- Before → after: $152.46 vs $208.17 (−26.8%) = paid imp −15.5% × CPM 0.94→0.81; fill 56.0→60.4% (4-Thu 66.0%); requests/pv 17.07 vs 17.46 (−2.2%); 4/4 units −25…−34%; 15/15 partners down. **Matured 10-01 blog fill 58.7% vs remainder 54.3% = +4.4 pts** (every day since 09-18: +3.5…+4.5; the −9 on 10-03 was the unjoined artifact); blog req/monPv 23.80 vs 24.00; 3-day RPM ratio 1.18× (was 1.87× unjoined). 2025-10-02 same-weekday: −35.9%.
+- Verdict: E163 CLOSED holds; E163-b CLOSED (confirm 10-05 when 10-02 rows join: keep if matured gap > −8 pts). Expect RED through ~10-07 — 4-point same-incident test is in the incident file.
+- Next time: (1) per-path rows join ~2 days after the day — print `rowsWithPv` beside every bucket table and never grade a 0/100 day; (2) unjoined days under-attribute impressions to seen paths (coverage 46.5% vs 54–58%), so the derived remainder's fill reads *high* — the artifact always points at the blog; (3) a RED run on a quarter boundary needs a standing re-grade test or the breaker holds the whole team for a week.
+
 ## 2026-10-03 — E163: 🔴 RED-RPM root cause (incident file, no rollback)
 - Tried: pre-committed the rule in `reports/funnel/incidents/2026-10-03-red-rpm.md` before pulling; read fill (ad-unit totals), CPM, requests/pv, 16 partners, devices, page-class buckets, GA4 `hostName`; then two seasonal controls — this site's Q2→Q3 boundary (06-27→07-01) and last year's 09-27→10-04 — as the discriminator between host split (#208, 09-28 20:48) and quarter end.
 - Before → after: 10-01 $137.06 vs $184.40 (−25.7%); fill 64.8% (4-Wed) → 56.0%; CPM 0.89 → 0.84; requests/pv 17.23 → 17.37 across the split, 16.90 → 16.73 across E152 (no step); 14/14 partners down, Criteo+SeedTag+Conversant $11.79 → $0; all 4 ad units −31…−36%; blog requests/monetizable pv 24.00 → 23.93 on the first apex day. Controls: 07-01 −41%, 2025-10-01 −42%, both starting 09-29/06-29; 2026 −27% is the smallest of the three. 10-02 NOT finalized (partial $152.46, fill 60.4%).

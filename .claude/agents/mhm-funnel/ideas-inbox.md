@@ -8,9 +8,18 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
-## Operator watch 2026-10-02 — ON LINE run 6, normal weighting
-Sessions 28d 357,997 vs line 358,384 = 99.89% (09-03→09-30); revenue $6,125 vs $5,798 = 105.7%. Re-arms if a run reads <97%.
+## Operator watch 2026-10-04 — ON LINE run 7, normal weighting
+Sessions 28d 357,447 vs line 356,887 = 100.16% (09-05→10-02); revenue $6,052.22 vs $5,808.44 = 104.2%. Re-arms if a run reads <97%. (10-02 read: 99.89% / 105.7%, run 6.)
 
+- [ ] [nova] approving a dashboard submission links the mod to the creator only by author name — no CreatorProfile exists for any real submitter (3/3). Next: create the profile on approval (Nova, 10-04).
+- [ ] [nova] 338 accounts carry the creator flag, 3 have ever submitted — the next supply leak to classify (Nova, 10-04).
+- [ ] [ops] `retag-junk-build-facets.ts --apply --rollback-out=<existing path>` overwrites a signed-off plan; extend the #250 write-once guard to applies (Rowan, 10-04).
+- [ ] [rowan] after #259: pin Villa Amour Collection (outfit set, title word "villa") NULL — 1 row, dry run in `reports/funnel/catalog-e168-villa-amour-2026-10-04.json`; two hub top-20 mis-tags as furniture: "Functional Skincare Mod", "Mini Pochette Bags" (Sage, 10-04).
+- [ ] [pip] tally top-up rows by the posting date they are scheduled for, not the run that wrote them — every date 09-27→10-03 carried 21 top-up rows (3× the 7/day limit) because the cap was per run (Pip, 10-04; tool fixed in #261).
+- [ ] [ops] add `patreon_connect_optin_view` to the capture-events filter in `funnel-scoreboard.ts` once #260 merges; register `ref` as a GA4 custom dimension so `sign_up` splits by sending surface (Cass, 10-04).
+- [ ] [sage] next hubs: top-level CC hub for "custom content"/"cc finds" (Tier 1, after red clears); retitle skin-details for "skin overlay"; IndexNow log should print the guide URLs it pushes; ingest resumed 10-04 (132 mods pushed) — `/sitemap-mods.xml` dynamic item unblocked (Sage, 10-04).
+- [ ] [ops] E176: the runner refuses to exit while any PR merged today lacks an after-merge row — generalize `daily_pr_ledger` from "the daily PR" to `gh pr list --state merged --search "merged:>=$TODAY"`, run `deploy-verify --after-merge --sha <mergeCommit>` from `$WT` for each missing row (T1: runner step). Companion prompt rule: never `run_in_background` a deploy-verify in the final step — 10-03 #257's verify was the day's only background one and died with the CLI at 07:27:46 (no row, no daily PR, DID NOT FIRE). The stale merge lock was that exit's own chain; auto-broken 10-04 06:56, nothing deleted by hand (Ops, 10-04).
+- [ ] [ops] persist `logs/deploy-verify.log` (or per-run smoke JSON) at the operator path — last written Sep 8, so E133 cannot be graded (Ops, 10-04).
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — for a real P&L
 
 - [ ] [ops] Earlier plumbing requests (09-23→10-01) are parked verbatim in `archive/ideas-inbox-2026-09.md` (§ Parked 2026-09-29 / 09-30 / 10-01 / 10-01 b); Ops pulls from there. — Quinn

@@ -25,6 +25,20 @@ day.
 
 ## Tier 2 — needs your decision
 
+### Q26 · Review 7 pending creator submissions (Nova, E172, filed 2026-10-04, re-pitch/drop 10-11)
+- A real creator signed up 10-03 and submitted 7 mods through the creator dashboard (10:51–11:09Z); nobody has reviewed them. Approving = hosting a creator's mods (Tier 2, creator agreement). Reply **"E172 APPROVE"** and Nova reviews/approves them in `/admin/submissions/`; onboarded-with-approved goes 2 → 3 and the catalog gains 7 hosted mods. Silence: the queue turns 7 days old on 10-10.
+- Reply: _(pending)_
+
+### Q27 · SD-10 wording: "≤7 rows/day" (Pip, E170, filed 2026-10-04) — no action needed unless you disagree
+- The tool only capped 7 rows per posting date *within one run*, so daily top-ups stacked: every posting date 09-27→10-03 carried 21 top-up rows. From 10-04 the tool (#261) enforces 7 per posting date across runs, and Pip also held today's apply to 7 rows. At that pace the floor cannot lift runway (0.5 d vs ~40 posts/day); the lever is still writer inflow (Q11). Reply **"SD-10 7 per run"** only if you meant the looser reading.
+- Reply: _(pending)_
+
+### Q25 · End-of-post email capture on WordPress articles (Cass, E167, PR #253, filed 2026-10-03, re-pitch/drop 10-10)
+- What: a `mhm_post_end_capture` block in `functions.php` (both copies) + the marker in both push scripts' `CRITICAL_MARKERS` + `check-blog-sidebar.sh`. WP article pages are 83.5% of landing sessions (74,074 of 88,736, GA4 09-25→10-01) and carry **no** capture surface today. Owned adds 7d 114 vs the 160/wk B1 line.
+- Keep if: ≥0.59 waitlist rows per 1K WP-article sessions over 14 days AND blog page RPM ≥95% of the 4 prior same weekdays (one-sided). Rollback: revert + `push-blog-functions-prod.sh --yes` + cache purge + `check-blog-sidebar.sh`.
+- Reply **"approve E167"**. Then the apply order in the PR body (operator runs the prod push and the BigScoots purge — the team never pushes `functions.php`). Nothing merges before that.
+- Reply: _(pending)_
+
 ### Q11-b · Writer pins — **CLOSED 2026-09-28; the E82 diagnosis was wrong**
 - **Correction (Claude, 09-28, after the operator showed the WP "Pin Schedule" screen):** the writer's plugin schedule *does* work. Rows sit at `Post Date = 2025-01-01` until the article's Scheduled Date, then get dated that day and post. Supabase shows it: pumpkin-recipes was created 09-22, dated 09-27, 25/25 posted; fall-cc-clothes 09-21→09-25, 51/51; cardigan-cc 09-21→09-23, 31/31. The placeholder means "waiting for its scheduled day", not "stranded". Upcoming on 09-28: fall-loading-screen 09-29 (43), autumn-houses 10-01 (24), kissing-poses 10-03 (25) = 92 rows. Do not treat plugin-scheduled placeholder rows as a backlog or promote them.
 - **Operator direction (09-28):** focus on the writer's scheduled pins and make them the best Pinterest SEO they can be; do not overwhelm the algorithm (SD-10). Volume and timing stay with the writer; no auto-dating, no re-pitch.
