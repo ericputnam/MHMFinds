@@ -38,6 +38,7 @@ CRITICAL_MARKERS=(
   "mhm_consolidated_post_map|Legacy canonical map (un-consolidated pairs, PR #63)"
   "mhm_host_split_301|Host-split 301 (blog.* -> apex, Pinterest consolidation Q13)"
   "mhm_host_split_js|Host-split JS fallback (cached blog.* HTML -> apex)"
+  "mhm_post_end_capture|End-of-post email capture (E167, owned audience)"
 )
 
 FORCE=0
