@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T10:38:14.931Z",
+  "generatedAt": "2026-10-04T10:39:06.273Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3273,9 +3273,9 @@
     },
     {
       "date": "2026-10-01",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 137.06,
+      "sessions": 11139,
+      "rpm": 12.3,
       "expectedRevenue": 184.4,
       "expectedSessions": 11292,
       "nonAdMonthly": 155,
@@ -3309,9 +3309,9 @@
     },
     {
       "date": "2026-10-02",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 152.46,
+      "sessions": 11710,
+      "rpm": 13.01,
       "expectedRevenue": 208.17,
       "expectedSessions": 12172,
       "nonAdMonthly": 159,
@@ -3340,6 +3340,68 @@
         "Rio": 7,
         "Ops": 7,
         "Quinn": 8,
+        "manual": 10
+      }
+    },
+    {
+      "date": "2026-10-03",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 280.48,
+      "expectedSessions": 14747,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-04",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 286.01,
+      "expectedSessions": 15973,
+      "nonAdMonthly": 163,
+      "ownedAdds7d": 114,
+      "pinterestSessions7d": 57453,
+      "returningShare7d": 0.5279487783272222,
+      "nonPinterestShare7d": 0.17080879806027016,
+      "pagesPerSession7d": 1.6343649056996978,
+      "engagementRate7d": 0.7320343162793929,
+      "favorites7d": 430,
+      "downloadClicks7d": 343,
+      "newMods7d": 132,
+      "catalogTotal": 16693,
+      "captureRatePer1k": 1.2705205790899061,
+      "creatorsOnboarded": 0,
+      "creatorSubmissions7d": 7,
+      "runSuccess14d": 0.8571428571428571,
+      "opsMergeShare7d": 0.09230769230769231,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Sage": 6,
+        "Pip": 8,
+        "Cass": 7,
+        "Rio": 7,
+        "Rowan": 6,
+        "Ops": 6,
+        "Quinn": 7,
+        "Nova": 8,
         "manual": 10
       }
     }
@@ -4929,6 +4991,88 @@
       "label": "Quinn: PR #243 funnel: daily run 2026-10-01 (Tier 0 docs)",
       "commit": "ad876cf",
       "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Ops: PR #244 E162 un-red play-page.test.ts + gated merge chain in prompt",
+      "commit": "c3cce17",
+      "result": "SUPERSEDED (production already on 2bafed6, newer)"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Cass: PR #246 E159 SaveFindsOffer copy by session status + favorites link",
+      "commit": "4ce2156",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Pip: PR #245 E156 runway top-up #8 ledger + package + SEO re-read",
+      "commit": "80f97a1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Nova: PR #247 E158: seed creator profiles stop posing as claimed (+ batch-1b paper)",
+      "commit": "6c737f2",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Sage: PR #248 E157 unified Sims 4 Clothes CC hub",
+      "commit": "0207a8c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Nova: PR #250 E158 fix-forward: dry run never overwrites the rollback plan",
+      "commit": "7dbae73",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Rowan: PR #249 E161 catalog ingest re-scrapes refreshed posts (--refreshed); 117 mods + 18 pins",
+      "commit": "1f222bc",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-02",
+      "kind": "merge",
+      "label": "Quinn: PR #251 funnel: daily run 2026-10-02 (Tier 0 docs)",
+      "commit": "5dd970a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-03",
+      "kind": "merge",
+      "label": "Rio: PR #254 E163 red-rpm 10-01 root cause (incident file)",
+      "commit": "aada199",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-03",
+      "kind": "merge",
+      "label": "Nova: PR #252 promoting a claim on a seed-held handle renames the seed (E166)",
+      "commit": "7312738",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-03",
+      "kind": "merge",
+      "label": "Pip: PR #256 E164 runway top-up #9 ledger + package + SEO re-read (Tier 0, SD-10 floor)",
+      "commit": "e3e2b1d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-03",
+      "kind": "incident",
+      "label": "Incident 2026-10-03 — 🔴 RED-RPM on finalized 2026-10-01 (E163)"
     }
   ]
 }
