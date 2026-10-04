@@ -483,6 +483,9 @@ def _wire_low_runway_main(topup, monkeypatch, tmp_path, log, seo_fail=False,
     monkeypatch.setattr(topup, 'compute_daily_posted_rate',
                         lambda config, now=None, window_days=14: 20.0)
     monkeypatch.setattr(topup, 'count_writer_rows_for_date', lambda config, day: 0)
+    # E170: no earlier top-up rows on any date in these fixtures.
+    monkeypatch.setattr(topup, 'count_prior_topup_rows_for_date',
+                        lambda config, day: 0, raising=False)
     rows = [_plan_row(i) for i in range(1, 31)]
     monkeypatch.setattr(topup, 'select_candidates',
                         lambda config, today, ids_from: (rows, {}, ['stubbed selection']))
@@ -776,3 +779,79 @@ def test_main_refuses_when_managed_set_cannot_be_read(topup, monkeypatch, tmp_pa
         '--seo-source', 'none', '--ledger-dir', str(tmp_path)])
     assert topup.main() == 2
     assert not any(e[0] == 'redate' for e in log)
+
+
+# --------------------------------------------------------------------------
+# E170 (2026-10-04): the 7/day cap counts rows EARLIER top-ups put on a date.
+# Pre-fix, three consecutive daily runs put 21 top-up rows on 10-02 and on
+# 10-03 (7 each) — the per-invocation cap never saw the previous runs.
+# --------------------------------------------------------------------------
+
+def test_prior_topup_rows_count_against_seven_per_day(topup):
+    prior = {TODAY: 14, TODAY + timedelta(days=1): 7}
+    out = topup.decide_topup(inventory=0, rate=40, writer_rows_by_day=lambda d: 0,
+                              today=TODAY,
+                              prior_topup_rows_by_day=lambda d: prior.get(d, 0))
+    dates = [d['date'] for d in out['day_plan']]
+    assert str(TODAY) not in dates
+    assert str(TODAY + timedelta(days=1)) not in dates
+    assert dates[0] == str(TODAY + timedelta(days=2))
+    for d in out['day_plan']:
+        assert d['rows'] + d['prior_topup_rows_that_day'] <= 7
+
+
+def test_prior_topup_partial_day(topup):
+    out = topup.decide_topup(inventory=0, rate=40, writer_rows_by_day=lambda d: 0,
+                              today=TODAY,
+                              prior_topup_rows_by_day=lambda d: 3 if d == TODAY else 0)
+    assert out['day_plan'][0] == {'date': str(TODAY), 'rows': 4,
+                                  'writer_rows_that_day': 0,
+                                  'prior_topup_rows_that_day': 3}
+
+
+def test_unreadable_prior_count_is_fail_closed(topup):
+    out = topup.decide_topup(inventory=0, rate=40, writer_rows_by_day=lambda d: 0,
+                              today=TODAY, prior_topup_rows_by_day=lambda d: None)
+    assert out['rows_planned'] == 0
+    assert out['day_plan'] == []
+
+
+def test_max_rows_lowers_but_never_raises_hard_cap(topup):
+    out = topup.decide_topup(inventory=0, rate=40, writer_rows_by_day=lambda d: 0,
+                              today=TODAY, hard_cap=7)
+    assert out['rows_planned'] == 7
+    assert out['bound_rule'] == 'hard_cap_7'
+    out = topup.decide_topup(inventory=0, rate=1000, writer_rows_by_day=lambda d: 0,
+                              today=TODAY, hard_cap=500)
+    assert out['rows_planned'] == 21
+
+
+def test_ledger_rows_by_date_counts_and_fails_closed(topup, tmp_path):
+    led = tmp_path / (topup.LEDGER_PREFIX + '2026-10-03.json')
+    led.write_text(json.dumps({'entries': [
+        {'id': 1, 'old_date': '2025-01-01', 'new_date': '2026-10-03'},
+        {'id': 2, 'old_date': '2025-01-01', 'new_date': '2026-10-04'},
+        {'id': 3, 'old_date': '2025-01-01', 'new_date': '2026-10-04'}]}))
+    (tmp_path / (topup.LEDGER_PREFIX + '2026-09-28-writer-revert.json')).write_text(
+        json.dumps({'entries': [{'id': 9, 'old_date': '2026-10-04',
+                                 'new_date': '2026-10-04'}]}))
+    counts = topup.ledger_rows_by_date(str(tmp_path))
+    assert counts == {'2026-10-03': 1, '2026-10-04': 2}
+    (tmp_path / (topup.LEDGER_PREFIX + '2026-10-04.json')).write_text('{not json')
+    assert topup.ledger_rows_by_date(str(tmp_path)) is None
+
+
+def test_combine_prior_counts(topup):
+    assert topup.combine_prior_counts({'2026-10-04': 14}, 21, '2026-10-04') == 21
+    assert topup.combine_prior_counts({'2026-10-04': 14}, 0, '2026-10-04') == 14
+    assert topup.combine_prior_counts(None, 0, '2026-10-04') is None
+    assert topup.combine_prior_counts({}, None, '2026-10-04') is None
+
+
+def test_real_ledgers_on_main_show_the_stacking(topup):
+    """Vacuity-guarded read of the committed ledgers: the bug this fix closes
+    is visible in the repo's own history (>=2 dates with >7 top-up rows)."""
+    ledger_dir = os.path.join(HERE, '..', '..', 'reports', 'funnel')
+    counts = topup.ledger_rows_by_date(ledger_dir)
+    assert counts is not None and len(counts) >= 5, counts
+    assert sum(1 for n in counts.values() if n > 7) >= 2, counts

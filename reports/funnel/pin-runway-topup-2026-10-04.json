@@ -1,0 +1,73 @@
+{
+  "generated": "2026-10-04",
+  "script": "scripts/agents/pin-runway-topup.py",
+  "experiment": "SD-22-topup",
+  "updated": 7,
+  "entries": [
+    {
+      "id": 2145,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-wedges-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2058,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-urban-tattoos/",
+      "board_name": "Sims 4 Tattoos - sims 4 tattoo cc"
+    },
+    {
+      "id": 2071,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-male-urban-hair/",
+      "board_name": "Sims 4 Male Hair CC"
+    },
+    {
+      "id": 2319,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-plants-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2285,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-urban-hair-cc/",
+      "board_name": "Sims 4 CC Hair"
+    },
+    {
+      "id": 2694,
+      "old_date": "2025-07-17",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-room-ideas/",
+      "board_name": "Sims 4 House CC"
+    },
+    {
+      "id": 2374,
+      "old_date": "2025-01-01",
+      "new_date": "2026-10-06",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    }
+  ],
+  "seo_pass": {
+    "source": "page",
+    "status": "applied",
+    "reason": null,
+    "total": 7,
+    "passing": 0,
+    "need_fix": 7,
+    "fixable": 7,
+    "page_unavailable": 0,
+    "mean_score": 61,
+    "resolved": 7,
+    "slug_count": 7,
+    "updated": 7,
+    "skipped": 0,
+    "ledger": "reports/funnel/pin-seo-rollback-2026-10-04-topup.json"
+  }
+}

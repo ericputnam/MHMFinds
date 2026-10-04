@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-04
+- Tried: E170 top-up #10 (T0, SD-10 floor; Supabase apply ledger `e7f1e09`; PR held, circuit breaker 🔴). **Found the tool broke the written "≤7 rows/day":** its 7/day cap applied per posting date only *within one invocation*, so daily runs stacked. Ledgers show 21 top-up rows on every posting date 09-27→10-03 (7 days at 3× the bound) and 14 on 09-26 and 10-04. Fix on the branch: earlier top-up rows on a date count against its 7 (max of own ledgers and Supabase pre-Q11 rows on that date; unreadable → cap 0), plus a lower-only `--max-rows`. 7 new tests red on pre-fix, 62/62 green. Applied 7 rows, all on 10-06 (10-04/05 capped to 0), ranker 18 dests/113 ids, 0 plugin rows dropped.
+- Before → after: runway 0.33 → 0.50 d (13 → 20 @ 40.0/day); SEO 61 → 86 (0/7 → 7/7) on `--ids` re-read; read-back 7/7. Grades (GA4 non-host Pinterest, 09-27→10-03): E116 treated +1.3% vs site +0.8% (gap +0.5 < +3), runway never ≥1.5 d → KILL. E124 pre −1.8% vs 0.0% → KILL-leaning. E103 pre +1.4% vs +2.0%, SEO 89/100 in 14d window → KEEP. E81 pv/s 1.518 (≥1.51), blog.* 0.20% → KEEP.
+- Verdict: E170 MORE DATA (read 10-11: Pinterest sessions to the 7 dests vs 2,290/7d ranker basis 09-26→10-02).
+- Next time: before trusting a cap, tally the ledgers by the date the cap is about, not by the run that wrote them. One `Counter(new_date)` would have shown the stacking on 09-27.
+
 ## 2026-10-03
 - Tried: E164 top-up #9 (T0, SD-10 floor; Supabase only, tool unchanged since #222; PR HELD — circuit breaker 🔴 RED-RPM, no merge; ledger `f09532a`): 21 sessions-ranked rows (ranker 18 destinations/101 ids; 9 used) to 10-03/04/05, 1/URL/day. Selectivity: ranker dropped 1 plugin row of the 1000-row pool (18 managed destinations), top-up 0, 9 for unposted sections, 0 blog.*. Ranker run with `MHM_PROJECT_DIR` + `--out` pointed at the worktree (default still the operator's checkout).
 - Before → after: runway 0.44 → 0.99 d (17 → 38 @ 38.57/day queue-posted-14d); SEO 63 → 88/100 (0/21 → 21/21) on `--ids` re-read; read-back 21/21, unposted, created_at ≤ 2026-02-22. Reads: E102 8 dests 3,328 → 3,501 Pinterest sessions/7d (+5.2%) vs site −3.5% → KEEP; E61 absolute bar 3,598 → 3,501 (−2.7%) → KILL the +10% bar; E117 `(not set)` 4,118 sessions / 0 pv → KEEP. E81 pulled forward (`pinterest-read-2026-10-03.md`): pv/s all hosts 1.51 → 1.552, blog.* share 31% → 0.43%, Tue–Thu Pinterest −2.4% WoW — the audience did not move the size of a −25% RPM day; the 09-28 20:48 host split moved ~30% of the channel to apex and is the only traffic-side change in the window.
@@ -49,10 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-07). QUEUED-T2: writer Upcoming pin-SEO apply, 353 rows, mean 54/100.
 - Next time: check a filter's selectivity (rows dropped per run) before trusting it — 0 dropped on 4 runs was the tell.
 
-## 2026-09-28
-- Tried: E127 — moved the E103 `--source page` pin-SEO rewrite INSIDE `pin-runway-topup.py` so it runs on exactly the plan's rows before the re-date (fail-open, own undo file, `seo_pass` in the ledger); shipped PR #205 (deploy-verify PASS) and used it for SD-10 floor top-up #4 the same morning.
-- Before → after: top-up rows scored mean 67/100 (2/21 passing) → 89/100 (21/21 passing) on a re-read of the changed field; runway 1.34 → 1.89 d (52 → 73 rows ÷ 38.71/day); 21 re-dated 7×09-28/29/30 over 9 destinations; 19 rewritten, 0 skipped, 9/9 destination pages resolved.
-- Verdict: pending (read 2026-10-06 — sessions to the 9 destinations vs 2,644 baseline). E66 EXTEND to 10-05 (Tue–Fri 7,776/day = 97.2%), E70 KEEP (4 applies 21/21). The floor mechanics: four 21-row top-ups have never lifted runway above 2.44 d; the cap is a treadmill, not a fix.
-- Next time: a copy pass that shares rows with a scheduling tool must (1) re-read the rows with its own columns so the rollback carries the real old description, (2) be fail-open to the scheduler, and (3) verify with a separate `--ids` read of the changed field, not the dry-run preview. Grade E66/E70 with the GA4 daily series and quote the rule's window exactly (Tue–Fri), not the visually nicer week.
-
-_Older entries (up to 2026-09-26) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
