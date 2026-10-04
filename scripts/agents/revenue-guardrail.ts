@@ -22,7 +22,7 @@
 import { execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action } from './revenue-guardrail-lib';
+import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts } from './revenue-guardrail-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -40,9 +40,15 @@ interface Change { kind: 'vercel' | 'commit' | 'functions.php'; at: string; ref:
 interface Verdict {
   status: Status; action: Action; actionDetail: string | null;
   vercelCoverage: Coverage & { line: string; inWindow: InWindow };
+  /** E169-b: the facts the rollback bound was judged on, the bound itself, and the one-line verdict. */
+  rollbackBound: RollbackFacts & { maxInWindowDeploys: number; maxTargetAgeHours: number; line: string };
   day: string; expectedDay: Row; actualDay: Row;
   window3: { actualRevenue: number; expectedRevenue: number; actualRpm: number; expectedRpm: number; actualSessions: number; expectedSessions: number };
-  rollbackTo: string | null; changes: Change[]; health: Record<string, unknown>; reasons: string[];
+  /** Set only when action is `rollback` — the runner acts on this field. */
+  rollbackTo: string | null;
+  /** The newest READY production deploy before the window, whatever the action — what a manual rollback would target. */
+  rollbackCandidate: string | null;
+  changes: Change[]; health: Record<string, unknown>; reasons: string[];
 }
 
 async function pull(): Promise<{ rows: Row[]; health: Record<string, unknown> }> {
@@ -71,12 +77,12 @@ function fetchVercelPage(cwd: string, deadline: number) {
   };
 }
 
-function recentChanges(sinceIso: string, untilIso: string, cwd: string): { changes: Change[]; rollbackTo: string | null; inWindow: InWindow; coverage: Coverage } {
+function recentChanges(sinceIso: string, untilIso: string, cwd: string): { changes: Change[]; rollbackTo: string | null; inWindow: InWindow; coverage: Coverage; facts: RollbackFacts } {
   const changes: Change[] = [];
   const sinceMs = new Date(`${sinceIso}T00:00:00`).getTime();
   const untilMs = new Date(`${untilIso}T00:00:00`).getTime(); // deploys after the judged day cannot have caused it; listed as unjudged
   const { deployments, coverage } = listDeploymentsPaged(fetchVercelPage(cwd, Date.now() + VERCEL_LIST_BUDGET_MS), sinceMs);
-  const { inWindowDeps, afterDeps, inWindow, rollbackTo } = classifyWindow(deployments, sinceMs, untilMs, coverage);
+  const { inWindowDeps, afterDeps, inWindow, rollbackTo, facts } = classifyWindow(deployments, sinceMs, untilMs, coverage);
   for (const d of [...afterDeps, ...inWindowDeps].sort((a, b) => Number(b.createdAt) - Number(a.createdAt))) {
     const m = (d.meta ?? {}) as Record<string, string>;
     const unjudged = Number(d.createdAt) >= untilMs ? ' [after judged day — judged tomorrow]' : '';
@@ -88,7 +94,7 @@ function recentChanges(sinceIso: string, untilIso: string, cwd: string): { chang
     const fp = execSync(`git log origin/main --since="${sinceIso}" --format='%h|%cI|%s' -- staging/wordpress/kadence-child-prod/functions.php`, { cwd, encoding: 'utf8', timeout: 20000 }).trim();
     for (const l of fp.split('\n').filter(Boolean)) { const [h, at, ...s] = l.split('|'); changes.push({ kind: 'functions.php', at, ref: h, text: s.join('|').slice(0, 90) }); }
   } catch { /* offline: git changes unknown */ }
-  return { changes, rollbackTo, inWindow, coverage };
+  return { changes, rollbackTo, inWindow, coverage, facts };
 }
 
 async function main() {
@@ -131,16 +137,26 @@ async function main() {
   }
   if (status === 'green') reasons.push(`Revenue ${money(actualDay.revenue)} (${pct(actualDay.revenue, expectedDay.revenue)}), RPM ${actualDay.rpm.toFixed(2)} (${pct(actualDay.rpm, expectedDay.rpm)}), sessions ${pct(actualDay.sessions, expectedDay.sessions)} vs same weekday, prior 4 weeks · 3-day revenue ${pct(window3.actualRevenue, window3.expectedRevenue)}`);
 
-  const { changes, rollbackTo, inWindow, coverage } = recentChanges(shift(day, -3), shift(day, 1), cwd);
+  const since = shift(day, -3);
+  const { changes, rollbackTo, inWindow, coverage, facts } = recentChanges(since, shift(day, 1), cwd);
   const covLine = coverageLine(coverage);
+  const bLine = boundLine(facts, rollbackTo);
   // Never claim "no deploy in window" on a truncated list: inWindow is 'unknown' then, and unknown never rolls back.
-  const { action, detail: actionDetail } = decideAction(status, inWindow, rollbackTo);
+  // E169-b: a known in-window deploy still only rolls back inside ROLLBACK_BOUNDS (one day of deploys, target ≤ 48 h).
+  const { action, detail: actionDetail } = decideAction(status, inWindow, rollbackTo, facts);
   if (status !== 'green' && inWindow === 'unknown') reasons.push(`${covLine} — whether a deploy landed in the window is UNKNOWN`);
+  if (status === 'red-rpm' && inWindow === 'yes' && rollbackTo && action !== 'rollback') {
+    reasons.push(`rollback withheld — ${actionDetail}. The newest READY production deploy before the window is ${rollbackTo}; rolling back to it would revert every production deploy since ${since} (${facts.inWindowCount} deploys), which is not a single-bad-deploy hypothesis. Quinn: Rio reads the Mediavine side first; a manual rollback is Tier 1 (\`./scripts/agents/deploy-verify.sh --rollback --to <url>\`), or roll back one PR by reverting its commit.`);
+  }
 
-  const v: Verdict = { status, action, actionDetail, vercelCoverage: { ...coverage, line: covLine, inWindow }, day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, changes, health, reasons };
+  const v: Verdict = {
+    status, action, actionDetail, vercelCoverage: { ...coverage, line: covLine, inWindow },
+    rollbackBound: { ...facts, maxInWindowDeploys: ROLLBACK_BOUNDS.maxInWindowDeploys, maxTargetAgeHours: ROLLBACK_BOUNDS.maxTargetAgeMs / 3_600_000, line: bLine },
+    day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, rollbackCandidate: rollbackTo, changes, health, reasons,
+  };
   const icon = status === 'green' ? '🟢' : status === 'yellow' ? '🟡' : '🔴';
   const actionText = `${action}${actionDetail ? ` (${actionDetail})` : ''}`;
-  let md = `# Revenue guardrail — ${daysAgo(0)} (last finalized day ${day})\n\n${icon} **${status.toUpperCase()}** → action: **${actionText}**${v.rollbackTo ? ` → ${v.rollbackTo}` : ''}\n\n${covLine} · deploy in window: ${inWindow}\n\n`;
+  let md = `# Revenue guardrail — ${daysAgo(0)} (last finalized day ${day})\n\n${icon} **${status.toUpperCase()}** → action: **${actionText}**${v.rollbackTo ? ` → ${v.rollbackTo}` : ''}\n\n${covLine} · deploy in window: ${inWindow}\n\n${bLine}\n\n`;
   for (const r of reasons) md += `- ${r}\n`;
   md += `\n| | ${day} | expected (same weekday, 4-wk avg) | Δ |\n|---|---|---|---|\n`;
   md += `| revenue | ${money(actualDay.revenue)} | ${money(expectedDay.revenue)} | ${pct(actualDay.revenue, expectedDay.revenue)} |\n`;
@@ -151,13 +167,13 @@ async function main() {
   md += `\nMediavine health: ${healthBad.length ? healthBad.map(([k, v]) => `${k}=${String(v)}`).join(', ') : 'all ok'}\n`;
   md += `\n## Production changes since ${shift(day, -3)} (72h before the judged day)\n\n`;
   md += changes.length ? changes.map((c) => `- ${c.kind} ${c.at.slice(0, 16)} \`${c.ref}\` ${c.text}${c.url ? ` — ${c.url}` : ''}`).join('\n') + '\n' : '- none\n';
-  md += `\n## Rules\n\n- red-rpm + a Vercel deploy in the window → the runner rolls production back to the last READY deployment before the window, re-runs the smoke test, then Quinn investigates. Rolling back a harmless deploy is cheap; a day of broken ads is not.\n- red-rpm with the window's deploys UNKNOWN (vercel coverage TRUNCATED) → no rollback; Quinn pages \`vercel ls --next <ms>\` by hand before anything else — never read it as "no deploy".\n- red-rpm with no deploy in the window (coverage COMPLETE) → run \`check-blog-sidebar.sh\`; if it fails, re-push functions.php from git (\`push-blog-functions-prod.sh --yes\`); otherwise Rio opens a Mediavine ticket and the digest leads with it.\n- red-traffic → Pip/Sage incident (Pinterest/Google), no rollback.\n- yellow → no Tier 1 merges today; Tier 0 continues.\n`;
+  md += `\n## Rules\n\n- red-rpm + a Vercel deploy in the window + at most ${ROLLBACK_BOUNDS.maxInWindowDeploys} in-window production deploys + a READY target no more than ${ROLLBACK_BOUNDS.maxTargetAgeMs / 3_600_000} h before the window start → the runner rolls production back to that target, re-runs the smoke test, then Quinn investigates. Rolling back one harmless deploy is cheap; a day of broken ads is not.\n- red-rpm with a deploy in the window but OUTSIDE the bound (E169-b: more than a day's worth of deploys, or a target more than 48 h back) → no automatic rollback; the headline names the bound and the "rollback withheld" reason gives the candidate target. Rio reads the Mediavine side first (10-01 and 10-02 were both Mediavine-side at the quarter boundary); a manual rollback is Tier 1.\n- red-rpm with the window's deploys UNKNOWN (vercel coverage TRUNCATED) → no rollback; Quinn pages \`vercel ls --next <ms>\` by hand before anything else — never read it as "no deploy".\n- red-rpm with no deploy in the window (coverage COMPLETE) → run \`check-blog-sidebar.sh\`; if it fails, re-push functions.php from git (\`push-blog-functions-prod.sh --yes\`); otherwise Rio opens a Mediavine ticket and the digest leads with it.\n- red-traffic → Pip/Sage incident (Pinterest/Google), no rollback.\n- yellow → no Tier 1 merges today; Tier 0 continues.\n`;
 
   const jsonOut = arg('--json'), mdOut = arg('--md');
   if (jsonOut) { mkdirSync(dirname(jsonOut), { recursive: true }); writeFileSync(jsonOut, JSON.stringify(v, null, 2)); }
   if (mdOut) { mkdirSync(dirname(mdOut), { recursive: true }); writeFileSync(mdOut, md); }
   if (!QUIET) console.log(md);
-  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine}`);
+  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine} · ${bLine}`);
   process.exit(status.startsWith('red') ? 2 : 0);
 }
 

@@ -15,6 +15,7 @@ import {
   listDeploymentsPaged, gradeCoverage, classifyWindow, decideAction, coverageLine,
   type VercelPage, type VercelDeployment,
 } from '../../scripts/agents/revenue-guardrail-lib';
+import * as lib from '../../scripts/agents/revenue-guardrail-lib';
 
 const ROOT = join(__dirname, '..', '..');
 const fx = JSON.parse(readFileSync(join(ROOT, '__tests__/fixtures/revenue-guardrail/vercel-pages-2026-10-03.json'), 'utf8')) as {
@@ -128,7 +129,7 @@ describe('E169 — paging completes', () => {
   });
 });
 
-describe('E169 — window has deploys → rollbackTo is set (policy unchanged)', () => {
+describe('E169 — window has deploys → rollbackTo is set', () => {
   const { fetchPage } = fakeCli(fx.pages);
   const { coverage, deployments } = listDeploymentsPaged(fetchPage, fx.windowStartMs);
   const cw = classifyWindow(deployments, fx.windowStartMs, fx.windowEndMs, coverage);
@@ -143,12 +144,12 @@ describe('E169 — window has deploys → rollbackTo is set (policy unchanged)',
     expect(cw.rollbackTo).toBe(fx.expectedRollbackTo);
   });
 
-  it('red-rpm + known in-window deploy + target → rollback; other statuses unchanged', () => {
-    expect(decideAction('red-rpm', cw.inWindow, cw.rollbackTo)).toEqual({ action: 'rollback', detail: null });
-    expect(decideAction('red-traffic', 'yes', cw.rollbackTo).action).toBe('investigate');
+  it('red-rpm with the real 10-03 window (114 deploys) is investigate, not rollback (E169-b); other statuses unchanged', () => {
+    expect(decideAction('red-rpm', cw.inWindow, cw.rollbackTo, cw.facts).action).toBe('investigate');
+    expect(decideAction('red-traffic', 'yes', cw.rollbackTo, cw.facts).action).toBe('investigate');
     expect(decideAction('red-health', 'unknown', null).action).toBe('investigate');
-    expect(decideAction('yellow', 'yes', cw.rollbackTo).action).toBe('watch');
-    expect(decideAction('green', 'yes', cw.rollbackTo).action).toBe('none');
+    expect(decideAction('yellow', 'yes', cw.rollbackTo, cw.facts).action).toBe('watch');
+    expect(decideAction('green', 'yes', cw.rollbackTo, cw.facts).action).toBe('none');
   });
 
   it('non-production and non-READY rows are never the rollback target', () => {
@@ -161,6 +162,86 @@ describe('E169 — window has deploys → rollbackTo is set (policy unchanged)',
     ];
     const cov = gradeCoverage(deps, fx.windowStartMs, false);
     expect(classifyWindow(deps, fx.windowStartMs, fx.windowEndMs, cov).rollbackTo).toBe('https://good.vercel.app');
+  });
+});
+
+/**
+ * E169-b (2026-10-04) — the automatic rollback is bounded. With paging fixed, a red-rpm over a 4-day window
+ * that holds ~114 production deploys (the team merges 6–17 PRs/day; each merge is 2 deploys) would revert
+ * ~5 days of work to cure a drop two reads (E163, 10-02) attributed to Mediavine-side fill. `rollback` now
+ * needs BOTH: in-window production deploys ≤ ROLLBACK_BOUNDS.maxInWindowDeploys (one day's worth) AND a
+ * READY target no more than ROLLBACK_BOUNDS.maxTargetAgeMs before the window start. Otherwise `investigate`
+ * with a detail naming the bound. The new symbols are reached through the namespace import so this file
+ * still loads against the pre-E169-b lib and the red below is behavioural, not a module-load failure.
+ */
+describe('E169-b — the automatic rollback is bounded (one day of deploys, target ≤ 48 h before the window)', () => {
+  const B = lib.ROLLBACK_BOUNDS;
+  const H = 3_600_000;
+  const { fetchPage } = fakeCli(fx.pages);
+  const { coverage, deployments } = listDeploymentsPaged(fetchPage, fx.windowStartMs);
+  const cw = classifyWindow(deployments, fx.windowStartMs, fx.windowEndMs, coverage);
+  const facts = (inWindowCount: number, targetAgeMs: number | null = 1.5 * H): lib.RollbackFacts => ({
+    inWindowCount, rollbackTargetMs: targetAgeMs === null ? null : fx.windowStartMs - targetAgeMs, windowStartMs: fx.windowStartMs,
+  });
+  const target = 'https://good.vercel.app';
+
+  it('the bound is below the real 10-03 window, so that morning\'s shape never auto-rolls back', () => {
+    expect(cw.inWindowDeps.length).toBe(114);
+    expect(B.maxInWindowDeploys).toBeLessThan(cw.inWindowDeps.length);
+    expect(B.maxTargetAgeMs).toBeGreaterThan(0);
+  });
+
+  it('classifyWindow reports the rollback facts: in-window count, target createdAt, window start', () => {
+    expect(cw.facts).toEqual({
+      inWindowCount: 114,
+      rollbackTargetMs: deployments.find((d) => `https://${d.url}` === fx.expectedRollbackTo)!.createdAt,
+      windowStartMs: fx.windowStartMs,
+    });
+    expect(cw.facts.rollbackTargetMs!).toBeLessThan(fx.windowStartMs);
+  });
+
+  it('the real 10-03 window (114 in-window deploys) → investigate naming the count and the bound, never rollback', () => {
+    expect(decideAction('red-rpm', cw.inWindow, cw.rollbackTo, cw.facts)).toEqual({
+      action: 'investigate', detail: `in-window deploys 114 exceed rollback bound ${B.maxInWindowDeploys}`,
+    });
+  });
+
+  it('a quiet window (≤ bound, READY target 1.5 h before the window start) → rollback', () => {
+    expect(decideAction('red-rpm', 'yes', target, facts(3))).toEqual({ action: 'rollback', detail: null });
+  });
+
+  it('exactly the bound rolls back; bound + 1 does not (exact comparison at the boundary)', () => {
+    expect(decideAction('red-rpm', 'yes', target, facts(B.maxInWindowDeploys)).action).toBe('rollback');
+    expect(decideAction('red-rpm', 'yes', target, facts(B.maxInWindowDeploys + 1))).toEqual({
+      action: 'investigate', detail: `in-window deploys ${B.maxInWindowDeploys + 1} exceed rollback bound ${B.maxInWindowDeploys}`,
+    });
+  });
+
+  it('a target more than 48 h older than the window start → investigate "rollback target too old"', () => {
+    const r = decideAction('red-rpm', 'yes', target, facts(3, B.maxTargetAgeMs + H));
+    expect(r.action).toBe('investigate');
+    expect(r.detail).toMatch(/^rollback target too old \(49\.0 h before window start, bound 48 h\)$/);
+    expect(decideAction('red-rpm', 'yes', target, facts(3, B.maxTargetAgeMs)).action).toBe('rollback');
+  });
+
+  it('facts missing or target time unknown → investigate, never rollback (fail closed)', () => {
+    expect(decideAction('red-rpm', 'yes', target).action).toBe('investigate');
+    expect(decideAction('red-rpm', 'yes', target).detail).toMatch(/rollback bound facts missing/);
+    expect(decideAction('red-rpm', 'yes', target, facts(3, null)).action).toBe('investigate');
+  });
+
+  it('the bound never upgrades a non-rollback: unknown / no / no-target keep their details', () => {
+    expect(decideAction('red-rpm', 'unknown', target, facts(1)).detail).toBe('vercel coverage unknown');
+    expect(decideAction('red-rpm', 'no', null, facts(0)).detail).toBe('no Vercel deploy in window (coverage complete)');
+    expect(decideAction('red-rpm', 'yes', null, facts(1)).detail).toMatch(/no READY production deploy before the window/);
+  });
+
+  it('boundLine names the count, the bound, the target age and the verdict', () => {
+    expect(lib.boundLine(cw.facts, cw.rollbackTo)).toMatch(
+      new RegExp(`^rollback bound: in-window production deploys 114 \\(≤${B.maxInWindowDeploys} to auto-rollback\\) · target \\d+\\.\\d h before window start \\(≤48 h\\) → withheld: in-window deploys 114 exceed rollback bound ${B.maxInWindowDeploys}$`),
+    );
+    expect(lib.boundLine(facts(3), target)).toMatch(/→ eligible$/);
+    expect(lib.boundLine(undefined, target)).toMatch(/facts unknown/);
   });
 });
 
@@ -181,5 +262,10 @@ describe('E169 — the script is wired to the lib (no single-page listing left)'
 
   it('no longer infers "deploy in window" from change text', () => {
     expect(src).not.toMatch(/includes\('\[after judged day'\)/);
+  });
+
+  it('E169-b: hands decideAction the rollback facts and prints the bound line', () => {
+    expect(src).toMatch(/decideAction\([^)]*\bfacts\b/);
+    expect(src).toMatch(/boundLine\(/);
   });
 });

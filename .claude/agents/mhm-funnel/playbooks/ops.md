@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-10-04 — E169-b
+- Tried: bound on the guardrail's automatic rollback (amends #255, HELD-RED, T0): `rollback` only if in-window production deploys ≤ 24 AND the READY target is ≤ 48 h before the window start; else `investigate` + detail + a "rollback withheld" reason, `rollbackCandidate` in the JSON. Bound from the ledger: after-merge rows/day 09-21→10-03 median 8, p90 12, max 17, ×2 deploys per merge; real Vercel 09-28→10-02 = 42/21/29/22/22 deploys/day. 10 new tests, 9/28 red pre-change, 4 mutations each red.
+- Before → after: live 10-04 read: #255 as written → `rollback` to 5qn2heb7w (94 deploys, 5 days, for a Mediavine-side drop); bounded → `investigate (in-window deploys 94 exceed rollback bound 24)`, 12 s. 10-03 early exit: #257's verify was the day's only `run_in_background` deploy-verify (07:26:38); Quinn `end_turn` 07:27:40 "as soon as it reports", CLI gone 07:27:46 → no row, no daily PR. The merge-gate lock that exit left (pid 39402) auto-broke 06:56:30 by TTL (84,604 s) — by design, no hand delete.
+- Verdict: pending, read 10-10 with E169 (0 auto-rollbacks with > 24 in-window deploys; bound line printed 7/7 mornings).
+- Next time: a verify launched in the background at the end of a turn is a row that never lands — the runner, not Quinn, must own "every PR merged today has its after-merge row" (E176).
+
 ## 2026-10-03 — E169
 - Tried: revenue-guardrail pages `vercel ls --next` until a READY prod deploy older than the window start (or API exhausted; cap 30 pages / 240 s), prints `vercel coverage: COMPLETE|TRUNCATED (…)`; TRUNCATED → in-window UNKNOWN → `investigate` + `actionDetail: vercel coverage unknown`. Pure lib `revenue-guardrail-lib.ts`, 18 tests on a real 10-page replay. HELD-RED (T0).
 - Before → after: 10-03 RED-RPM saw 1 page (20 rows, oldest 10-02 06:55 > window 09-28 00:00) → 0 of 114 in-window deploys, `investigate`; fixed: 200 rows / 10 pages / 12.5 s, COMPLETE, `rollback` → lr7rk0e3o (91866e4). Pre-fix: all 18 red (no lib), 3 wiring red with lib; 4 mutations each red.
@@ -63,16 +69,4 @@ E141: a runway override made the writer flag 🔴 on 6 of 7 mornings. On 09-29 i
 - Verdict: pending, read 2026-10-04 (0 dup rows and 0 null→0 across 7 morning runs; runner log shows `ledger: flush skipped N`).
 - Next time: an exact-text dedupe is not idempotency once a human relabels or corrects a row on main — key on (when, mode, commit), and never let a stale tree bring back a row main already accounts for. Source still writes `nonAdRevenueMonthlyGross: 0` (`funnel-scoreboard.ts:885`) — queued.
 
-## 2026-09-26 — E111
-- Tried: deploy-verify grades on positive evidence only — smoke-render retries a navigation timeout on ANY target and an unsettled slow 200 on a fresh page (60 s goto / 40 s idle / 3× settle); an independent network control (google/vercel/cloudflare, 8 s cap, ≥2 of 3 in ≤4 s) before and after; a twice-timed-out page gets a direct fetch as tie-breaker; control degraded → whole smoke INCONCLUSIVE (network), `failed` empty, `fail_and_fix` refuses to roll back, `--check` exits 2 with a WARN row and no incident (T0, PR #186).
-- Before → after: false-alarm rollbacks 2 in 5 days (09-22 sitemap timeout, 09-26 four ad-page timeouts + homepage at 1,788 of ≈9,600 chars after 27.8 s while Vercel CLI/Prisma/Pinterest all timed out from the host) → 0 expected; guard tests 21/29 red on pre-fix main (5 behavioural: real smoke()/fail_and_fix() under bash 3.2 with the CLI stubbed).
-- Verdict: MORE DATA (read 2026-10-03: 0 rows `ROLLED BACK` whose "was" is only `HTTP no response` / `anchors missing` with text < settled floor; count of `INCONCLUSIVE (network)` rows — if > 2 in 7d the control thresholds are too tight, not the site).
-- Next time: the 06:58 log line said "smoke INCONCLUSIVE" and rolled back anyway — an INCONCLUSIVE that lives in a note string is not a state; make it a variable the destructive branch checks first.
-
-## 2026-09-25 — E110
-- Tried: deploy-verify ensure_promoted() promotes only forward — git merge-base --is-ancestor served vs candidate, createdAt fallback; newer served → SUPERSEDED row, production graded as served, exit 0; "can't tell what's serving" → no promote (T0, PR #174).
-- Before → after: backwards promotions 1 (09-24, bedroom-cc 404 with a PASS row) → 0 expected; guard test 7/12 red on pre-fix main. Merged last of 7 today (06:50→07:16), 0 collisions under the dispatch merge order.
-- Verdict: MORE DATA (read 2026-10-02: 0 `vercel promote` in logs/deploy-verify.log not preceded by "older than the new build").
-- Next time: a promote is a write like a rollback; give it the same "unknown ≠ go" state. And gh pr merge exit 1 ≠ not merged hit again (#174), so fix the ship protocol before it costs a verify.
-
-_Older entries (up to 2026-09-24) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-26) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._
