@@ -44,6 +44,18 @@ BOUNDS (operator standing approval, 2026-09-22 — all enforced, not advisory)
       the target is reached.
     * dry run is the default; `--apply` is required to write.
     * hard cap of 21 rows per invocation, whatever the flags say.
+      `--max-rows N` can only LOWER it (1..21), never raise it.
+    * the 7/day cap counts rows EARLIER top-ups already put on that posting
+      date (E170, 2026-10-04). Before this, each invocation enforced 7 per
+      date only within itself, so consecutive daily runs stacked: every
+      posting date 09-27..10-03 carried 21 top-up rows (three runs x 7) —
+      three times the operator's "<= 7 rows/day" — and 09-26/10-04 had 14. The
+      prior count is max(this tool's own ledgers for that date, Supabase rows
+      dated that day with created_at before PLUGIN_SCHEDULE_SINCE, posted or
+      not). The Supabase leg exists because a ledger JSON can sit on an
+      unmerged PR branch for a day; it over-counts (it also sees old rows
+      the plugin dated), which only makes the cap stricter. Fail-closed: an
+      unreadable count gives that day a cap of 0, never 7.
     * writes an undo ledger in the exact shape revive-stranded-pins.py's
       `--rollback` already reads (`entries[].{id,old_date,new_date}`), so the
       rollback command is that script, not a second rollback path.
@@ -529,14 +541,21 @@ def decide_topup(inventory, rate, writer_rows_by_day, today,
                   target_runway=TOPUP_TARGET_RUNWAY_DAYS,
                   max_per_day=MAX_ROWS_PER_DAY,
                   hard_cap=HARD_CAP,
-                  max_fill_horizon=MAX_FILL_HORIZON_DAYS):
+                  max_fill_horizon=MAX_FILL_HORIZON_DAYS,
+                  prior_topup_rows_by_day=None):
     """Decide whether to top up, and if so, how many rows on which days.
 
     `writer_rows_by_day(day)` -> int, rows the writer already has scheduled
     for that date. Does NOT select actual rows — only the day-by-day count
     plan. Returns a dict; see the module docstring for the guarantees this
     encodes.
+
+    `prior_topup_rows_by_day(day)` -> int or None: rows earlier top-ups
+    already scheduled on that posting date. They count against the 7/day
+    cap (E170). None means "could not read" and gives the day a cap of 0.
+    Omitted (None callable) -> 0 for every day (pure-logic callers/tests).
     """
+    hard_cap = max(0, min(int(hard_cap), HARD_CAP))
     if inventory is None or rate is None or rate <= 0:
         return {
             'level': 'unknown',
@@ -571,11 +590,18 @@ def decide_topup(inventory, rate, writer_rows_by_day, today,
     while placed < rows_needed and offset < max_fill_horizon:
         day = today + timedelta(days=offset)
         writer_that_day = max(0, int(writer_rows_by_day(day)))
-        day_cap = max(0, min(max_per_day, int(math.floor(rate)) - writer_that_day))
+        if prior_topup_rows_by_day is None:
+            prior_that_day = 0
+        else:
+            prior_raw = prior_topup_rows_by_day(day)
+            prior_that_day = max_per_day if prior_raw is None else max(0, int(prior_raw))
+        day_cap = max(0, min(max_per_day - prior_that_day,
+                             int(math.floor(rate)) - writer_that_day))
         take = min(day_cap, rows_needed - placed, hard_cap - placed)
         if take > 0:
             day_plan.append({'date': str(day), 'rows': take,
-                              'writer_rows_that_day': writer_that_day})
+                              'writer_rows_that_day': writer_that_day,
+                              'prior_topup_rows_that_day': prior_that_day})
             placed += take
         if placed >= hard_cap:
             hit_hard_cap = True
@@ -587,7 +613,7 @@ def decide_topup(inventory, rate, writer_rows_by_day, today,
     if placed == 0:
         bound_rule = 'posted_rate_minus_writer_rows_exhausted'
     elif hit_hard_cap or placed >= hard_cap:
-        bound_rule = 'hard_cap_21'
+        bound_rule = 'hard_cap_{}'.format(hard_cap)
     elif placed < rows_needed:
         bound_rule = 'posted_rate_minus_writer_rows_or_fill_horizon'
     elif any(d['rows'] >= max_per_day for d in day_plan) and \
@@ -614,6 +640,45 @@ def decide_topup(inventory, rate, writer_rows_by_day, today,
 # ---------------------------------------------------------------------------
 # Once-per-UTC-day apply guard
 # ---------------------------------------------------------------------------
+
+def ledger_rows_by_date(ledger_dir):
+    """posting date -> rows this tool's own ledgers re-dated onto it.
+    Returns None (fail-closed) if any ledger file cannot be parsed."""
+    counts = defaultdict(int)
+    try:
+        names = sorted(os.listdir(ledger_dir))
+    except OSError:
+        return {}
+    for name in names:
+        if not (name.startswith(LEDGER_PREFIX) and name.endswith('.json')):
+            continue
+        if 'writer-revert' in name:
+            continue  # reverts move rows back to the placeholder, not onto a day
+        try:
+            with open(os.path.join(ledger_dir, name)) as fh:
+                data = json.load(fh)
+            for entry in data.get('entries', []):
+                counts[str(entry['new_date'])[:10]] += 1
+        except Exception:
+            return None
+    return dict(counts)
+
+
+def count_prior_topup_rows_for_date(config, day, since=PLUGIN_SCHEDULE_SINCE):
+    """Supabase leg of the E170 prior count: rows (posted or not) dated
+    `day` that were created before the Q11 deploy, i.e. revived rows. None
+    if the count cannot be read."""
+    query = ('%22Post%20Date%22=eq.{day}&created_at=lt.{since}'
+             ).format(day=q(str(day)), since=q(since))
+    return count_exact(config, query)
+
+
+def combine_prior_counts(ledger_counts, db_count, day):
+    """max(ledger, db); None if either source is unreadable."""
+    if ledger_counts is None or db_count is None:
+        return None
+    return max(int(ledger_counts.get(str(day), 0)), int(db_count))
+
 
 def already_applied_today(ledger_dir, today):
     pattern = os.path.join(ledger_dir, '{}{}.json'.format(LEDGER_PREFIX, today))
@@ -1154,6 +1219,9 @@ def main():
                         help='verify board sections against sections posted to '
                              'in the last 14d (queue table) instead of the '
                              'Pinterest sections API')
+    parser.add_argument('--max-rows', type=int, default=HARD_CAP,
+                        help='lower the per-invocation hard cap (1..{}); can '
+                             'never raise it'.format(HARD_CAP))
     parser.add_argument('--max-per-url', type=int, default=2)
     parser.add_argument('--max-per-board', type=int, default=3)
     parser.add_argument('--seo-source', choices=SEO_SOURCES, default='page',
@@ -1178,6 +1246,11 @@ def main():
               '--allow-unranked-emergency to override (this is recorded).')
         return 2
 
+    if not 1 <= args.max_rows <= HARD_CAP:
+        print('ERROR: --max-rows must be between 1 and {} (it can only lower '
+              'the hard cap)'.format(HARD_CAP))
+        return 2
+
     config = load_config()
     today = date.today()
 
@@ -1195,7 +1268,15 @@ def main():
         n = count_writer_rows_for_date(config, day)
         return n if n is not None else 0
 
-    decision = decide_topup(inventory, rate, writer_rows_by_day, today)
+    ledger_counts = ledger_rows_by_date(args.ledger_dir)
+
+    def prior_topup_rows_by_day(day):
+        return combine_prior_counts(
+            ledger_counts, count_prior_topup_rows_for_date(config, day), day)
+
+    decision = decide_topup(inventory, rate, writer_rows_by_day, today,
+                            hard_cap=args.max_rows,
+                            prior_topup_rows_by_day=prior_topup_rows_by_day)
 
     print('=== {}: pin-runway top-up ==='.format('APPLY' if args.apply else 'DRY RUN'))
     print('Inventory: {}  Trailing-{}d posted rate: {} (basis: {})'.format(
@@ -1307,7 +1388,7 @@ def main():
 
     plan = allocate_topup(usable, decision['day_plan'],
                           max_per_url=args.max_per_url, max_per_board=args.max_per_board)
-    plan = plan[:HARD_CAP]
+    plan = plan[:min(HARD_CAP, args.max_rows)]
 
     by_day = defaultdict(list)
     for row, day in plan:
@@ -1316,9 +1397,12 @@ def main():
           '{:.2f}d to ~{:.2f}d) ---'.format(
               len(plan), len(by_day), decision['runway_before'],
               decision.get('runway_after', decision['runway_before'])))
+    prior_by_date = {d['date']: d.get('prior_topup_rows_that_day', 0)
+                     for d in decision['day_plan']}
     for day in sorted(by_day):
         rows = by_day[day]
-        print('  {}  {:>2} pins'.format(day, len(rows)))
+        print('  {}  {:>2} pins  (earlier top-up rows already on this date: {})'
+              .format(day, len(rows), prior_by_date.get(str(day), '?')))
 
     per_url = defaultdict(int)
     for row, _ in plan:
