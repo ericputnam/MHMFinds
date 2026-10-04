@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-04 — E171 build-cc hub (Tier 0, PR HELD-RED)
+- Tried: first category hub from the 7-term competitor gap: `/games/sims-4/build-cc/`, a registry-only union over 8 build/buy facets (2,207 mods, 1,912 free), appended last; furniture/bedroom/bathroom now link to it. New guard `collection-primary-crumb-order.test.ts`: 2/4 red pre-fix, 3/4 with build-cc misordered.
+- Before → after: page 404, "sims 4 build cc" 0 impr (GSC 09-03→09-30) → read 10-18 / 11-01. Grades: E114 KEEP (ai_referral 7d 374, chatgpt 324); E115 KEEP (62 bing /creator/ landings, 43 pages); E62 MORE DATA (51 clicks vs 55); E121 MORE DATA, leaning KILL (full-window guide got 2); E128 7/7 OK.
+- Verdict: MORE DATA (red day, unmerged).
+- Next time: spot-check a union's top 20 before writing the copy (#7, #20 were furniture mis-tags), and confirm the WP article URL is live: three /sims-4-build-*/ slugs 404.
+
 ## 2026-10-02 — E157 clothes-cc hub (Tier 0, shipped)
 - Tried: ungendered union collection for the bare "sims 4 clothes cc" head term the two gendered hubs could not answer (neither surfaced once in 28d). PR #248 `0207a8c`, verify PASS 07:03; only `lib/collections.ts` changed.
 - Before → after: page 404 / 0 impr → live 200 with 3,665 mods, 108 mod links, feed 50 items, in sitemap-nextjs + llms-full; read 10-16 / 10-30. E8 graded KEEP: 2,642 vs 2,106 clicks 28d (+25.5%), weekly 614 → 770, position ~42 → 12.5–15.
@@ -49,16 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA. Two findings with numbers: (a) IndexNow never pushes blog guides — the class that is 16,250/16,434 Bing sessions; 10 guides modified 09-04→09-17 earned 66 Bing sessions the next week (inbox, next move). (b) `blog.musthavemods.com/robots.txt` is an nginx 404 and Google indexes ~17% of blog clicks (424/2,482 28d) on the blog host despite apex canonicals — T2, inbox. GSC sitemap API "0 indexed" is the index entry only (17,765 submitted; children never submitted separately) — an API artifact, not a coverage fact.
 - Next time: ship the `--guides` IndexNow leg first thing; do not spend MCP calls re-deriving the AI breakdown — it is noise unless a non-chatgpt source moves.
 
-## 2026-09-25
-- Tried: E104 (T0, PR #176 `0492290`): `/llms-full.txt` names the top 40 of 534 creators with `/creator/{slug}/` URLs and links a mod's creator page only when its author slug is in `listHubCreators()` — the hub (E97) and leaves (E85) had been live two days with 0 `/creator/` URLs in the AI surface. Pattern: when a new page class ships, grep llms-full.txt for its path the same day; the test mocks `@/lib/creators` (a `$queryRaw` the prisma mock cannot serve) and keeps the real slug helpers via `importActual`. Second slot: E37 pre-read → KEEP (hair-cc "Submitted and indexed", crawled 09-24T02:12Z) and the `/games/*` title-fix candidate killed with numbers (all pos 24–32, exposed query rows < 20% of impressions, no title-miss cluster).
-- Before → after: AI-referral sessions landing on `/creator/*` 28d 0 (08-26→09-22) → read 2026-10-09 / 10-23, keep if ≥10 or ≥3 distinct pages with ai_referral 7d ≥250. Live file 0 → 130 creator URLs.
-- Verdict: E104 MORE DATA; E37 KEEP; title-set fix KILLED (no data supports it — re-propose only at pos ≤15 on a non-brand query ≥200 impr).
-- Next time: `gh pr merge --delete-branch` fails on the local `main` checkout when another agent's worktree holds `main` — the merge still lands; check `gh pr view --json state,mergeCommit` and delete the remote branch by hand. Next: E18 final read 10-06; hair-cc needs inbound links from the hair blog posts (T2 package), not titles.
-
-## 2026-09-24
-- Tried: E95 (T0, PR #167 `6b525b5`): IndexNow `--creators` mode — 541 creator pages pushed in one POST (590 URLs, http=200). Pattern: when a sitemap and a push script select the same population, move the query into the lib (`listCreators()`) and make both consume it; guard the sitemap file for the import and against `regexp_replace`. Ceiling lifts only with the flag; new kinds append last so the cap truncates them before the daily payload.
-- Before → after: Bing-organic sessions landing on `/creator/*` 7d: 0 (09-17→09-23; 39 landing sessions, all direct) → read 2026-10-01, keep if ≥20 with bing_organic ≥95% of 15,623. Move 2 (E96 `/creator/` hub) was shipped by Nova as E97 (#168) 13 min before I could branch; ai_referral 312→287 is −19 chatgpt.com sessions inside its normal band, not structural.
-- Verdict: E95 MORE DATA; E96 NOT SHIPPED (pre-empted).
-- Next time: check the other agents' in-flight PRs before choosing move 2 — E97 shipped my E96 while E95 was in the merge gate. Next: homepage SSR shell (T1) as a single full-session move.
-
-_Older entries (up to 2026-09-21) live verbatim in `archive/playbooks/sage-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-25) live verbatim in `archive/playbooks/sage-2026-09.md`; nothing deleted._
