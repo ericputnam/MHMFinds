@@ -51,6 +51,7 @@ import { redactError } from './operator-did-probe-lib';
 import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/captureMath';
 import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
+import { summarizeCreatorSubmissions, type CreatorOnboardingSummary } from '../../lib/funnel/creatorOnboarding';
 import {
   E40_ANCHOR,
   E40_CLICK_BASELINE,
@@ -405,8 +406,14 @@ interface DbData {
   newMods7d: number; newModsPrior7d: number;
   /** ModSubmission.createdAt >= 7d ago (any submitter, linked account or not). */
   submissions7d: number;
-  /** CreatorProfile.userId that also appears on >=1 ModSubmission.userId — "has shipped something", not just signed up. */
+  /** Distinct non-admin creator accounts (isCreator or CreatorProfile) with >=1 ModSubmission (E172, lib/funnel/creatorOnboarding.ts). */
   creatorsOnboarded: number;
+  /** Of those, accounts with >=1 approved submission. */
+  creatorsOnboardedApproved: number;
+  /** ModSubmission rows in status pending, any submitter. */
+  submissionsPendingReview: number;
+  /** Whole days since the oldest pending submission; null when none. */
+  oldestPendingSubmissionDays: number | null;
 }
 
 async function pullDb(): Promise<DbData> {
@@ -448,22 +455,27 @@ async function pullDb(): Promise<DbData> {
     const subscribersBySource: Record<string, number> = {};
     for (const r of subsBySource as Array<{ source: string; _count: { _all: number } }>) subscribersBySource[r.source] = r._count._all;
 
-    // Two-step join: ModSubmission.userId is nullable (anonymous submissions
-    // allowed) and there's no direct Prisma relation from CreatorProfile to
-    // ModSubmission, so "creator profiles with >=1 submission" needs a
-    // distinct-userIds query followed by a count against CreatorProfile.
-    let creatorsOnboarded = 0;
+    // E172: "onboarded" = distinct signed-in, non-admin creator accounts
+    // (isCreator OR CreatorProfile) with >=1 submission. The old
+    // CreatorProfile ∩ submitter join could only count E122 claimants — the
+    // creator-dashboard path never creates a profile — so it read 0 while a
+    // creator had 7 submissions pending. See lib/funnel/creatorOnboarding.ts.
+    let onboarding: CreatorOnboardingSummary = { onboarded: 0, onboardedApproved: 0, pendingReview: 0, oldestPendingDays: null };
     try {
-      const submitterIds = await prisma.modSubmission.findMany({
-        where: { userId: { not: null } },
-        select: { userId: true },
-        distinct: ['userId'],
+      const subRows = await prisma.modSubmission.findMany({
+        select: {
+          userId: true, status: true, createdAt: true,
+          user: { select: { isCreator: true, isAdmin: true, creatorProfile: { select: { id: true } } } },
+        },
       });
-      const ids = submitterIds.map((s) => s.userId).filter((id): id is string => !!id);
-      creatorsOnboarded = ids.length ? await prisma.creatorProfile.count({ where: { userId: { in: ids } } }) : 0;
+      onboarding = summarizeCreatorSubmissions(subRows.map((r) => ({
+        userId: r.userId, status: r.status, createdAt: r.createdAt,
+        isCreator: !!r.user?.isCreator, isAdmin: !!r.user?.isAdmin, hasCreatorProfile: !!r.user?.creatorProfile,
+      })), new Date());
     } catch {
-      creatorsOnboarded = 0;
+      // leave zeros; the DB block's other counts still render
     }
+    const creatorsOnboarded = onboarding.onboarded;
 
     return {
       users, users7d, users30d,
@@ -473,6 +485,9 @@ async function pullDb(): Promise<DbData> {
       affiliateClicks7d, affiliateClicks30d, affiliateEarnings30d: Number(affEarn._sum.commissionAmount ?? 0),
       creatorProfiles, modSubmissions, mods, collections,
       newMods7d, newModsPrior7d, submissions7d, creatorsOnboarded,
+      creatorsOnboardedApproved: onboarding.onboardedApproved,
+      submissionsPendingReview: onboarding.pendingReview,
+      oldestPendingSubmissionDays: onboarding.oldestPendingDays,
     };
   } finally {
     await prisma.$disconnect();
@@ -1046,7 +1061,8 @@ async function main() {
   md += `| New mods 7d (prior 7d) | ${db.ok ? `${num(db.data.newMods7d)} (${num(db.data.newModsPrior7d)})` : '—'} | ${owners.newMods7d ?? '?'} |\n`;
   md += `| Catalog total | ${db.ok ? num(db.data.mods) : '—'} | ${owners.catalogTotal ?? '?'} |\n`;
   md += `| Capture rate /1k sessions 7d | ${captureRatePer1kSessions7d != null ? captureRatePer1kSessions7d.toFixed(2) : '—'} | ${owners.captureRatePer1k ?? '?'} |\n`;
-  md += `| Creators onboarded (>=1 submission) | ${db.ok ? num(db.data.creatorsOnboarded) : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
+  md += `| Creators onboarded (>=1 submission) | ${db.ok ? `${num(db.data.creatorsOnboarded)} (${num(db.data.creatorsOnboardedApproved)} with >=1 approved)` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
+  md += `| Submissions pending review | ${db.ok ? `${num(db.data.submissionsPendingReview)}${db.data.oldestPendingSubmissionDays != null ? ` (oldest ${db.data.oldestPendingSubmissionDays}d)` : ''}` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Creator submissions 7d | ${db.ok ? num(db.data.submissions7d) : '—'} | ${owners.creatorSubmissions7d ?? '?'} |\n\n`;
 
   md += `## Team health\n\n`;
@@ -1085,7 +1101,10 @@ async function main() {
     },
     creators: {
       onboarded: db.ok ? db.data.creatorsOnboarded : null,
+      onboardedApproved: db.ok ? db.data.creatorsOnboardedApproved : null,
       submissions7d: db.ok ? db.data.submissions7d : null,
+      pendingReview: db.ok ? db.data.submissionsPendingReview : null,
+      oldestPendingDays: db.ok ? db.data.oldestPendingSubmissionDays : null,
     },
     team,
     owners,
