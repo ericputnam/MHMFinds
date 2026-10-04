@@ -1,0 +1,15 @@
+{
+ "writtenAt": "2026-10-04T10:54:47.621Z",
+ "mode": "dry-run",
+ "facets": [
+  "lot"
+ ],
+ "rows": [
+  {
+   "id": "cmttzibbj00a1oxfefuotnlq2",
+   "title": "Villa Amour Collection",
+   "from": "lot",
+   "to": null
+  }
+ ]
+}
