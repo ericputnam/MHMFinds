@@ -429,7 +429,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-09-25: 'kids-cc' → 'kitchen-cc' so the new page has an anchored
     // inbound source (kids-cc keeps 3 inbound: pregnancy-mods, hair-cc,
     // bedroom-cc).
-    related: ['bedroom-cc', 'kitchen-cc', 'decor-cc'],
+    // 2026-10-04 (E171): 'decor-cc' → 'build-cc' so the build hub has an
+    // anchored inbound source (decor-cc keeps 4 inbound: clutter,
+    // kitchen-cc, bathroom-cc, build-cc).
+    related: ['bedroom-cc', 'kitchen-cc', 'build-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -884,7 +887,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       themesAny: ['bedroom'],
     },
     expectedCount: 250,
-    related: ['furniture-cc', 'decor-cc', 'kids-cc'],
+    // 2026-10-04 (E171): 'decor-cc' → 'build-cc' (the room page links up to
+    // the build hub, which contains every decor-cc mod anyway).
+    related: ['furniture-cc', 'build-cc', 'kids-cc'],
     // Differentiated pair: /sims-4-beds/ keeps the editorial "best beds"
     // intent, this page owns browse/filter intent. It is live (HTTP 200,
     // no redirect, verified 2026-09-24) and not in vercel.json; 204
@@ -981,11 +986,80 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       themesAny: ['bathroom'],
     },
     expectedCount: 123,
-    related: ['furniture-cc', 'decor-cc', 'kitchen-cc'],
+    // 2026-10-04 (E171): 'furniture-cc' → 'build-cc' (furniture-cc keeps 6
+    // inbound, build-cc included).
+    related: ['build-cc', 'decor-cc', 'kitchen-cc'],
     // Differentiated pair: /sims-4-bathroom-cc/ keeps the editorial "best
     // bathroom CC" intent, this page owns browse/filter intent. 95
     // impressions / 1 click at position 43.9 over the 28d to 2026-09-23.
     blogUrl: '/sims-4-bathroom-cc/',
+  },
+  {
+    // Deliberately LAST. This is the union of every build/buy object facet,
+    // so it must never take the primary breadcrumb from the narrower
+    // furniture-cc / decor-cc / clutter pages that already own those mods —
+    // registry order is the tie-break when `filterSpecificity()` scores two
+    // contentType collections equal (both 0). Enforced by
+    // __tests__/unit/collection-primary-crumb-order.test.ts. The 51
+    // `lighting` + `pet-furniture` mods had no contentType collection before
+    // this page; this becomes their primary crumb.
+    //
+    // Why this page exists (E171, 2026-10-04): the first category hub from
+    // the competitor read (reports/funnel/competitors-2026-10.md, move 1).
+    // "sims 4 build cc" is one of 7 bare category terms where CurseForge
+    // holds #1 and we do not surface at all — GSC 09-03→09-30 has zero
+    // impressions on the bare term while the long tail ranks
+    // ("sims 4 hospital build cc" pos 6.2, "sims 4 hospital build" pos 7.4).
+    // Of the 7 terms, hair / clothes / poses / skin overlay already have a
+    // collection; build cc, custom content and cc finds had none, and build
+    // cc is the only one that maps to a facet union rather than to a new
+    // page type (a top-level CC hub would be a new structural page — Tier 1).
+    // No build-cc legacy article: /sims-4-build-cc/, /sims-4-build-mode-cc/
+    // and /sims-4-build-buy-cc/ all 404 (checked 2026-10-04). blogUrl points
+    // at the closest editorial picks post instead (see below).
+    slug: 'build-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Build CC',
+    heading: 'Sims 4 Build CC',
+    metaTitle: 'Sims 4 Build CC Finder — Browse 2,200+ Furniture, Decor & Clutter Finds | MustHaveMods',
+    metaDescription:
+      'Browse 2,200+ Sims 4 build and buy CC in one filterable grid — furniture sets, decor, clutter, plants, rugs, and lighting sorted by downloads, links checked.',
+    tagline: 'Furniture, decor, clutter, and lighting for every room',
+    intro:
+      "Build CC is the half of the Sims 4 custom content scene that never shows up in a CAS screenshot. It is the sofa, the shelf above it, the rug under the coffee table and the lamp that stops a living room looking like a furniture showroom at closing time. Base-game Buy mode covers the basics; it does not cover the room you actually had in mind when you started the build.\n\nThis page is every build and buy find in our catalog in one grid — 2,207 of them as of today. Furniture is the bulk at 1,149: full bedroom, living room, dining and kitchen sets, plus the single statement pieces like bunk beds, TV beds and desk nooks. Decor is 672 more, and then the finishing layer: 192 clutter packs, 68 plants, 42 rugs, 33 wall art sets, 26 lighting sets and 25 pieces of pet furniture. 1,912 of them are free.\n\nThe names that come up most are the ones who build whole rooms rather than single objects — Severinka, SIMcredible!, Syboulette, Soloriya and Ravasheen — and their sets tend to sit near the top of the download counts because one download furnishes a room. Further down the grid are the one-off lamps, rugs and plants that the big roundup posts never get to.\n\nIf you already know what you are looking for, the narrower pages are faster: furniture, decor and clutter each have their own collection, and the bedroom, kitchen and bathroom pages are cut by room. Whole houses and lots are not in this grid — it holds the objects, not the builds.\n\nTwo practical notes. Big sets often ship in parts, so check the creator's page if a set looks incomplete. And functional objects can depend on a specific pack — read the requirements before you build a room around one.\n\nEverything here is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the sets half the community already has installed, or scroll for the ones nobody has written up yet.",
+    filter: {
+      // furniture 1,149 + decor 672 + clutter 192 + plants 68 + rugs 42 +
+      // wall-art 33 + lighting 26 + pet-furniture 25 = 2,207 SFW Sims 4 mods,
+      // verified against prod 2026-10-04 (2,207 isVerified, 1,912 free).
+      // Spot-checked: top 20 by downloads read 18/20 as build/buy (#7
+      // "Functional Skincare Mod" and #20 "Mini Pochette Bags" are existing
+      // mis-tags on the `furniture` facet that furniture-cc already shows —
+      // handed to Rowan, not fixed here); a 15-row sample at offset 1,000 is
+      // 15/15; `lighting` 12/12 and `pet-furniture` 12/12 by title.
+      // Excluded on purpose: `builds` (18, mostly whole houses plus a tooth
+      // gem and a grill), `residential` / `lot` / `commercial` / `community`
+      // (lots, not objects), `outdoor` (1 row), `holidays` (mixed CAS and
+      // build — holidays-cc owns it).
+      contentTypeIn: [
+        'furniture',
+        'decor',
+        'clutter',
+        'plants',
+        'rugs',
+        'wall-art',
+        'lighting',
+        'pet-furniture',
+      ],
+    },
+    expectedCount: 2207,
+    related: ['furniture-cc', 'decor-cc', 'clutter'],
+    // Differentiated pair: "30+ Sims 4 CC Furniture Packs" keeps the editorial
+    // picks intent, this page owns browse/filter intent. Live 200, self-
+    // canonical, not redirected (checked 2026-10-04); 34 impressions at pos
+    // 41.9 in GSC 09-03→09-30. Distinct from furniture-cc's
+    // /sims-4-furniture-cc/, so the two hubs do not share one cross-link.
+    blogUrl: '/sims-4-cc-furniture/',
   },
 ];
 
