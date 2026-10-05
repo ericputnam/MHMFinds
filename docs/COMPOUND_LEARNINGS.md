@@ -2149,3 +2149,31 @@ The 10-01 section is in the archive.
 - **Still open:** `ModDetailPage.test.tsx` red on `main` since #219. Cron routes
   `commission-sync/route.ts:13` and `monetization-agent/route.ts:21` fail open (Tier 2).
   `check-host-split.sh` not wired into `deploy-verify.sh`.
+
+
+### 2026-10-03 — four merges (#252, #254, #256, #257), one closed RED-RPM, two missing records (rotated from CLAUDE.md 2026-10-04)
+
+The 10-02 section is in the archive.
+- **A RED-RPM on a quarter's last days needs last year's same window before a commit is blamed.**
+  10-01 read −25.7% revenue (fill 64.8% → 56.0%, 14/14 partners down) right after the #208 host
+  split. Rio wrote the rule first, then showed requests/pv flat across both candidate deploys and
+  the same drop on 2025-10-01 (−42%) and 2026-07-01 (−41%). CLOSED, no rollback (#254).
+- **Changing rule precedence re-weights every inherited keyword. Re-measure them all.** Making a
+  confident title beat the URL category (#257) would have turned `home` (76 titles) into a
+  `lot` flip on 12 furniture/gym sets. Measure against the rows whose winner *changes*
+  (861 of 5,412 URL-category rows), not the whole catalog. Read the NULL list row by row too:
+  67 of 137 strips were real lots on slugs the URL map does not know.
+- **A uniqueness collision with a placeholder row is a rename, not a 409.** 8 of 20 seed profiles
+  held live `/creator/` handles, so a real claim would have failed at promote. #252 renames
+  the seed to `seed-<handle>` in the same `$transaction` and re-asserts the seed predicate on that
+  write. If the predicate no longer matches, P2002 rolls both writes back. Fail closed.
+- **GA4 `landingPage` has no trailing slash.** An `inListFilter` built from this site's `/…/` paths
+  returns 0 rows with no error. Use `FULL_REGEXP` with `/?$`.
+- **The last merge of a run went unverified, and the run's own PR never opened.** #257 (ingest
+  code in `mhmScraper.ts`) merged at 07:26. Quinn exited at 07:27 with `<!-- DV257 -->` unfilled
+  in the digest, and there is no `deploy-verify` and no ledger row (Vercel status: success).
+  `daily-pr-ledger` then logged `DID NOT FIRE` because no `funnel: daily run 2026-10-03` PR
+  existed, so the digest, experiments and history are not on `main`. The runner should refuse to exit while a merged PR lacks its after-merge row.
+- **Still open:** #257's 80-row apply (next run's first move) and a retroactive ledger row for
+  #257. `ModDetailPage.test.tsx` red since #219. Cron routes `commission-sync`/`monetization-agent`
+  fail open (Tier 2). `check-host-split.sh` not wired into `deploy-verify.sh`.
