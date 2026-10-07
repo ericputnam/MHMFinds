@@ -40,6 +40,68 @@ MAX_TURNS="${FUNNEL_MAX_TURNS:-400}"
 mkdir -p "$PROJECT_DIR/logs" "$WORKTREE_ROOT" "$PROJECT_DIR/reports/funnel"
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"; }
 
+# >>> day-lock
+# E176 (2026-10-07): one runner per calendar day. On 10-07 the Claude app resumed the 10-05 scheduled session after a
+# 2-day sleep (runner pid 78149, 06:52:52) and, once that session's query ended while its runner kept going, also
+# spawned the 10-07 catch-up session (runner pid 80394, 06:55:00): two scoreboards, two guardrails, a duplicate Quinn
+# that had to be SIGTERMed, and a second runner polling the ledger. The app's per_task_limit counts live *queries*,
+# not live runners, so the guard has to live here. `mkdir` is atomic (macOS bash 3.2 has no flock). The holder writes
+# its pid inside; a second start on the same TODAY logs DUPLICATE RUN and exits 0 BEFORE it touches a worktree, sets a
+# cleanup trap or writes a digest. The holder's EXIT trap releases the lock (so a deliberate later re-run still works);
+# a holder that died without its trap (kill -9, power loss) leaves a stale lock, broken with a log line when its pid is
+# dead (or, if no pid was ever written, once the lock is older than DAY_LOCK_EMPTY_GRACE_S). A live-but-unsignalable
+# pid (EPERM) counts as alive: "could not tell" never breaks a lock. FUNNEL_ALLOW_SECOND_RUN=1 skips the lock (manual
+# use only). Self-contained: __tests__/unit/runner-day-lock.test.ts extracts this block and runs it under /bin/bash 3.2.
+DAY_LOCK="${FUNNEL_DAY_LOCK_DIR:-$PROJECT_DIR/logs}/funnel-run-$TODAY.lock"
+day_lock_holder_alive() {  # $1 pid -> rc 0 alive (or cannot tell), 1 dead
+  kill -0 "$1" 2>/dev/null && return 0
+  [ "$(ps -p "$1" -o pid= 2>/dev/null | tr -d ' ')" = "$1" ]
+}
+day_lock_acquire() {  # rc 0 this run owns TODAY · 3 another live run owns it (caller exits 0)
+  local holder m age tries=0
+  while [ "$tries" -lt 2 ]; do
+    tries=$((tries + 1))
+    if mkdir "$DAY_LOCK" 2>/dev/null; then
+      echo "$$" >"$DAY_LOCK/pid"
+      log "day-lock: pid $$ owns $TODAY ($DAY_LOCK)"
+      return 0
+    fi
+    holder="$(cat "$DAY_LOCK/pid" 2>/dev/null)"
+    case "$holder" in
+      '' | *[!0-9]*)
+        m="$(stat -f %m "$DAY_LOCK" 2>/dev/null || stat -c %Y "$DAY_LOCK" 2>/dev/null)"
+        age=$(( $(date +%s) - ${m:-$(date +%s)} ))
+        if [ "$age" -lt "${DAY_LOCK_EMPTY_GRACE_S:-60}" ]; then
+          log "DUPLICATE RUN — pid ? owns $TODAY (lock ${age}s old, holder pid not written yet), exiting 0"
+          return 3
+        fi
+        log "day-lock: stale lock for $TODAY — no holder pid after ${age}s, breaking it"
+        ;;
+      *)
+        if day_lock_holder_alive "$holder"; then
+          log "DUPLICATE RUN — pid $holder owns $TODAY, exiting 0"
+          return 3
+        fi
+        log "day-lock: stale lock for $TODAY — holder pid $holder is dead, breaking it"
+        ;;
+    esac
+    rm -rf "$DAY_LOCK"
+  done
+  log "DUPLICATE RUN — another start re-took the $TODAY lock while this one broke a stale one, exiting 0"
+  return 3
+}
+day_lock_release() {  # only the holder releases; never someone else's lock
+  [ "$(cat "$DAY_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$DAY_LOCK" && log "day-lock: pid $$ released $TODAY"
+  return 0
+}
+if [ "${FUNNEL_ALLOW_SECOND_RUN:-0}" = "1" ]; then
+  log "day-lock: FUNNEL_ALLOW_SECOND_RUN=1 — not taking the $TODAY lock (manual run)"
+else
+  day_lock_acquire || exit 0
+  trap day_lock_release EXIT   # replaced below by `trap 'cleanup; day_lock_release' EXIT` once worktrees exist
+fi
+# <<< day-lock
+
 # >>> worktree-reap — never delete a worktree while a process still runs inside it.
 # 09-22 (incident 2026-09-22-0655): cleanup() removed every agent worktree while an orphaned deploy-verify was still
 # running in one; the orphan rolled production back, wrote its incident file into the deleted directory and its
@@ -129,7 +191,7 @@ cleanup() {
   [ "${#dirs[@]}" -gt 0 ] && reap_worktrees "${FUNNEL_CLEANUP_WAIT_S:-1800}" "${FUNNEL_CLEANUP_TERM_GRACE_S:-30}" "${dirs[@]}"
   git worktree prune >/dev/null 2>&1 || true
 }
-trap cleanup EXIT
+trap 'cleanup; day_lock_release' EXIT   # day-lock (E176): release only after the trees are reaped
 
 cd "$WT" || exit 1
 # Secrets: COPY .env.local into the throwaway worktrees — never symlink it. Webpack follows the link and
