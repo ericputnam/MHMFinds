@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-07
+- Tried: E180 — 34 `--ids=` hand pins on the two posts behind Sage's hub flags: `/best-sims-4-realistic-mods/` 12 → gameplay-mod (were accessories ×9, hair, furniture, workout) and `/sims-4-bags-cc/` 16 → accessories, 3 → decor (trusted TSR/CurseForge category over the post wording), 2 → NULL, 1 kept; 16 already-right rows untouched. PR #267 `e004314`, Tier 0, merged after Rio's CLEAR (first gate attempt sat behind an "owner not written yet" lock ~10 min); verify PASS 07:33; `/games/sims-4/furniture-cc/` no longer lists Functional Skincare or Pochette. Pins file now 338 entries.
+- Before → after: 34 wrong of 41 rows on the two posts → 33 written, 34/34 read-back at the pinned value; read 10-14. Reads: E140 KILL on usage (14 pv / 9 users vs 50; route stays), E147 KEEP (0 room values, 78/78 pins), E162 KEEP (1 failing file of 126 at d62016d). Catalog 16,771 mods, 813 NULL (4.8%), 210 new in 7d.
+- Verdict: MORE DATA (read 2026-10-14).
+- Next time: when a hub flag names two rows, read the whole source post — 34 of its 41 rows were wrong, not 2; and a NULL beats a guess on a mixed set ("CC #47.2").
+
 ## 2026-10-04
 - Tried: E168 apply, `--lot-untitled --apply` with a new write-once rollback file (T0; ledger `3e4ff73`; PR for pin + playbook). The dry run reproduced the 10-03 plan exactly first: 80/80 same (id, from, to), E161 18/18.
 - Before → after: lot 362 → 282 = 158 title + 52 URL + 72 pinned, 0 prose-typed (separate read-back query). 80/80 at target. E168 pins 72/72; the 10-03 report said 70, but 67+2+3=72. Top 24 by downloads: 23/24 lots. Villa Amour Collection is an outfit set titled with the lot word `villa`, now NULL-pinned (dry run only, not applied). Live read: 1 row ingested since 3d9eb80 (Automne Set → furniture, right), so it is partial.

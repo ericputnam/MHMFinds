@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-07
+- Tried: E170 top-up #11 (T0, SD-10 floor; Supabase apply ledger on main `864d50f`; report files PR #268 `811705a`, verify PASS 07:17). 21 sessions-ranked rows, 7×10-07/08/09, 1/URL/day; tool counted 0 earlier top-up rows per date and a post-apply dry run skipped those dates and planned 10-10..12, so the #261 cross-run cap holds. 0 writer rows touched (1 dropped upstream in the ranker). Poster alive: 10-04's 7 rows all posted 10-06.
+- Before → after: runway 0.00 → 0.63 d (0 → 21 @ 33.5/day; hard_cap_21 is the bound); SEO 64 → 89 (21/21). Reads: E135 KEEP (0/133 writer rows; 8 dests −4.6% vs site −2.4%, gap −2.3 ≥ −5; recorded baseline 2,996 ≠ fresh GA4 2,714, graded on the fresh pull); E81 KEEP (pv/s 1.506 = 99.7% of 1.51, blog.* 0.27%).
+- Verdict: E170 MORE DATA (read 10-11 for #10, 10-14 for #11). Writer's 136 rows/7d (~19.4/day vs 33.5 posted/day) cannot hold runway alone; on 10-06 the 7 top-up rows were the only pins that posted.
+- Next time: re-pull the baseline week before grading a destination set — a stored 2,996 was 10% above what GA4 returns for the same window today; and a 21-row cap buys 0.63 d, so say the ceiling in the digest instead of implying the floor can reach 2 d.
+
 ## 2026-10-04
 - Tried: E170 top-up #10 (T0, SD-10 floor; Supabase apply ledger `e7f1e09`; PR held, circuit breaker 🔴). **Found the tool broke the written "≤7 rows/day":** its 7/day cap applied per posting date only *within one invocation*, so daily runs stacked. Ledgers show 21 top-up rows on every posting date 09-27→10-03 (7 days at 3× the bound) and 14 on 09-26 and 10-04. Fix on the branch: earlier top-up rows on a date count against its 7 (max of own ledgers and Supabase pre-Q11 rows on that date; unreadable → cap 0), plus a lower-only `--max-rows`. 7 new tests red on pre-fix, 62/62 green. Applied 7 rows, all on 10-06 (10-04/05 capped to 0), ranker 18 dests/113 ids, 0 plugin rows dropped.
 - Before → after: runway 0.33 → 0.50 d (13 → 20 @ 40.0/day); SEO 61 → 86 (0/7 → 7/7) on `--ids` re-read; read-back 7/7. Grades (GA4 non-host Pinterest, 09-27→10-03): E116 treated +1.3% vs site +0.8% (gap +0.5 < +3), runway never ≥1.5 d → KILL. E124 pre −1.8% vs 0.0% → KILL-leaning. E103 pre +1.4% vs +2.0%, SEO 89/100 in 14d window → KEEP. E81 pv/s 1.518 (≥1.51), blog.* 0.20% → KEEP.

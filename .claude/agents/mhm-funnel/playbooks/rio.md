@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-07 — third 🔴 RED (10-05) = same incident; E174 sidebar residual dated
+- Tried: four-point same-incident re-grade on finalized 10-03/04/05 (+10-06 ad-server rows) via `scripts/mcp-mediavine/client.ts` (MCP down), verdict filed 07:13 MDT (deadline 07:50): SAME-INCIDENT / MERGES CLEAR / rollback none. PR #269 `f1beac1` (docs only), verify PASS 07:41. Two literal misses declared: (a) 10-03 requests/pv −6.8% is the month-long slide, not a step; (b) Universal Player *recovered* +6…+15%, so Sidebar Sticky reads 1.53×/1.56× against a diluted denominator (1.27× ex-Player). Delivery intact: `sticky_sidebar_ads` 10.04/10.16 (April wipe read 0.1).
+- Before → after: 10-05 $157.98 vs $207.31 (−23.8%, −16.3% ex-Labor-Day), RPM 13.77 vs 16.50; sidebar/content 0.74 (09-24) → 0.61 → 0.65 on 10-06; 10-06 revenue $197.91 = +6.0% vs Tuesday mean (the 2025-trace lift expected 10-07 arrived a day early). Reads: E163-b CLOSED confirmed (matured 10-02 blog fill 63.0% vs 58.3% = +4.7); E19 KEEP-feature/KILL-lever (linked 149, paid 59 vs 60, connected 2/149); E89 NOT-RUN (Q17 dropped); E99 KEEP (2.71/day); E153 NOT-YET → 10-12; E60 MORE DATA; B2 killIf not triggered (joins 7d 9 ≥5).
+- Verdict: E174 OPEN, read 10-09 (close if sidebar/content ≥0.68 either day or within 10 pts of Content; reopen ON-SITE as a T2 package only if <0.65 both days AND ≥10 pts worse AND sticky_sidebar_ads <9.0). Non-ad: $159/mo vs the $450 bet; `_rioOctoberRead` $200–225 stands — $450 needed the Q17 send, now dropped.
+- Next time: ratio each ad unit against the site ex its best unit, not the blended drop — a recovering unit mechanically fails every other unit on point (b); and strip the holiday from a same-weekday mean before quoting the gap (−23.8% read −16.3% ex-Labor-Day).
+
 ## 2026-10-04 — E163-b read: second 🔴 RED (10-02) = same incident; residual CLOSED
 - Tried: restated the rule, then pulled 10-02 vs 4 prior Thursdays + matured 10-01 page classes (`client.ts` direct; `/tmp/rio-e163b-*.ts`). Fast verdict to Quinn 11:05Z (`rio-verdict-2026-10-04.md`): SAME-INCIDENT · MERGES CLEAR (T0, no ad surface) · ROLLBACK none. PR #262 docs-only.
 - Before → after: $152.46 vs $208.17 (−26.8%) = paid imp −15.5% × CPM 0.94→0.81; fill 56.0→60.4% (4-Thu 66.0%); requests/pv 17.07 vs 17.46 (−2.2%); 4/4 units −25…−34%; 15/15 partners down. **Matured 10-01 blog fill 58.7% vs remainder 54.3% = +4.4 pts** (every day since 09-18: +3.5…+4.5; the −9 on 10-03 was the unjoined artifact); blog req/monPv 23.80 vs 24.00; 3-day RPM ratio 1.18× (was 1.87× unjoined). 2025-10-02 same-weekday: −35.9%.
@@ -48,13 +54,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: page_view÷render 41.4% (227/548); E99 21u/5d = 4.2/day ON PACE (keep ≥1.0). B2 Sept: 49→55 paid, $129→$149 (+15%) vs $200 MISSED; connected 0/107. Guardrail GREEN from files.
 - Verdict: shipped, reads 10-01 (E99) / 10-06 (E74) / 10-12 (E134).
 - Next time: (1) a partial today needs its own state or it drags every mean; (2) `redact()` treats `E99=…` as KEY=value — keep printed report keys lowercase.
-
-## 2026-09-29
-- Tried: E139 — bounded every `patreonGet(` caller (6 calls / 4 scripts) with `signal: AbortSignal.timeout(nextPageTimeoutMs(...))`, one exported helper + two constants in `_patreon-auth.ts`, commented `PATREON_ENV_FILE` in env.example, filesystem scanner (vacuity ≥7 calls / ≥5 files) (T0, PR #220, d8c04ba). 3/3 red on 4ba11cc; live churn walk 29 s.
-- Before → after: unbounded calls 6 → 0; /go reach re-read: page_view 342 → 175 → 324 by week, `render` users 531 → 408 → 613 — the "−49 %" was a stale w1→w2 read against the E40 spike week.
-- E55 KEEP (CTR leg 59/30d grid-only vs 51; site page RPM $11.10 → $11.17); E60 KEEP (14/14 ×2, home coverage 81.7 %; remainder $8.74 below its $10.12 floor = long-tail geometry, T2).
-- Guardrail: GREEN from files — 09-27 $299.13 (+10.9 %), 28d $6,061.48 (+7.0 %); MCP unavailable.
-- Verdict: shipped, PASS 06:56. Reads: E99 10-01, E139 10-06, E134 10-12.
-- Next time: (1) a WoW "−49 %" quoted from a note is a window, not a trend — re-pull three weeks before diagnosing code; (2) `/go` GA4 page_view captures ~40 % of `render` users every week (205/531, 248/613) — use `render` users as the /go denominator until the page_view gap is explained; (3) Cass #219 was still open at 06:51 when the gate opened — merged sixth by the gate, not by the roster; no file overlap.
-
-_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/rio-2026-09.md`; nothing deleted._

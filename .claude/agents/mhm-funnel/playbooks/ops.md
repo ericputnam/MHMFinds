@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-10-07
+- Tried: E176 — per-day runner lock (atomic mkdir, holder pid, dead-holder break, released by the exit trap after the reap); PR #271 `983a046`, PASS 07:25. New test 7/7 red on the pre-fix runner. Landed MISSED rows for 10-05 and 10-06 via `ledger-commit.sh` plus incident `2026-10-05-063000.md`.
+- Before → after: 2 runner starts + 1 duplicate Quinn on 10-07 → read 10-14 (1 `owns` line per morning, 0 second Quinns). Root cause of the two missed days was the host, not the runner: lid closed on battery 10-05 03:31 MDT, no full wake until 10-07 06:50; the app also still reads the `30 6 * * *` schedule in Eastern (= 04:30 MDT). E148 read: 4/4 daily PRs got same-morning rows from Quinn's verify, but 10-04 was a false DID NOT FIRE — the step matches the subject exactly (`funnel: daily run DATE`) and #264 was scoped `funnel(quinn): …`.
+- Verdict: E176 MORE DATA (read 2026-10-14); E148 MORE DATA (fix the subject match first).
+- Next time: a "did not fire" row needs the host's power log before it blames the job — `pmset -g log` showed the sleep in one line; and a scheduler limit that counts live *sessions* will double-start a *runner* the moment a stale session ends.
+
 ## 2026-10-04 — E169-b
 - Tried: bound on the guardrail's automatic rollback (amends #255, HELD-RED, T0): `rollback` only if in-window production deploys ≤ 24 AND the READY target is ≤ 48 h before the window start; else `investigate` + detail + a "rollback withheld" reason, `rollbackCandidate` in the JSON. Bound from the ledger: after-merge rows/day 09-21→10-03 median 8, p90 12, max 17, ×2 deploys per merge; real Vercel 09-28→10-02 = 42/21/29/22/22 deploys/day. 10 new tests, 9/28 red pre-change, 4 mutations each red.
 - Before → after: live 10-04 read: #255 as written → `rollback` to 5qn2heb7w (94 deploys, 5 days, for a Mediavine-side drop); bounded → `investigate (in-window deploys 94 exceed rollback bound 24)`, 12 s. 10-03 early exit: #257's verify was the day's only `run_in_background` deploy-verify (07:26:38); Quinn `end_turn` 07:27:40 "as soon as it reports", CLI gone 07:27:46 → no row, no daily PR. The merge-gate lock that exit left (pid 39402) auto-broke 06:56:30 by TTL (84,604 s) — by design, no hand delete.

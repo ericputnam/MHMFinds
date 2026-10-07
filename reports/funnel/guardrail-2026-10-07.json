@@ -1,0 +1,615 @@
+{
+  "status": "red-rpm",
+  "action": "investigate",
+  "actionDetail": "in-window deploys 52 exceed rollback bound 24",
+  "vercelCoverage": {
+    "state": "COMPLETE",
+    "rows": 80,
+    "pages": 4,
+    "oldestMs": 1790853596861,
+    "windowStartMs": 1790920800000,
+    "exhausted": false,
+    "stoppedBy": null,
+    "line": "vercel coverage: COMPLETE (80 rows over 4 pages, oldest 2026-10-01T11:19Z ≤ window start 2026-10-02T06:00Z)",
+    "inWindow": "yes"
+  },
+  "rollbackBound": {
+    "inWindowCount": 52,
+    "rollbackTargetMs": 1790908293237,
+    "windowStartMs": 1790920800000,
+    "maxInWindowDeploys": 24,
+    "maxTargetAgeHours": 48,
+    "line": "rollback bound: in-window production deploys 52 (≤24 to auto-rollback) · target 3.5 h before window start (≤48 h) → withheld: in-window deploys 52 exceed rollback bound 24"
+  },
+  "day": "2026-10-05",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 207.305,
+    "sessions": 12490.25,
+    "rpm": 16.5
+  },
+  "actualDay": {
+    "date": "2026-10-05",
+    "revenue": 157.98,
+    "sessions": 11470,
+    "rpm": 13.77
+  },
+  "window3": {
+    "actualRevenue": 606.62,
+    "expectedRevenue": 773.7950000000001,
+    "actualSessions": 41430,
+    "expectedSessions": 43209.5,
+    "actualRpm": 14.64204682597152,
+    "expectedRpm": 17.906997848424194
+  },
+  "rollbackTo": null,
+  "rollbackCandidate": "https://mhm-finds-dw5l-mw2guo205-ericputnams-projects.vercel.app",
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T12:56:39.149Z",
+      "ref": "69cf4a1",
+      "text": "BUILDING funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-jr66tm1y3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-05T02:32:11.232Z",
+      "ref": "0c04ce0",
+      "text": "READY chore: compound learnings from 2026-10-04",
+      "url": "https://mhm-finds-dw5l-bf4azyloo-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:27:21.884Z",
+      "ref": "f462823",
+      "text": "READY funnel(ledger): after-merge: Quinn: PR #264 funnel: daily run 2026-10-04",
+      "url": "https://mhm-finds-dw5l-fvy14wmoj-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:22:51.538Z",
+      "ref": "432e40f",
+      "text": "READY funnel(quinn): daily run 2026-10-04 — RED same-incident, 6 merges verified, registry parke",
+      "url": "https://mhm-finds-dw5l-54uwik7td-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:21:32.264Z",
+      "ref": "146d506",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #255 E169 revenue-guardrail pages the Vercel list, gr",
+      "url": "https://mhm-finds-dw5l-97l1kocvx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:18:19.791Z",
+      "ref": "6a4203f",
+      "text": "READY fix(ops): revenue-guardrail pages the Vercel list, grades coverage, and bounds the automat",
+      "url": "https://mhm-finds-dw5l-5uegpnnne-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:17:28.500Z",
+      "ref": "89ee857",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #263 E171 build-cc category hub (registry-only, Tier",
+      "url": "https://mhm-finds-dw5l-p88xe7ckq-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:14:02.633Z",
+      "ref": "069c690",
+      "text": "READY funnel(sage): E171 Sims 4 Build CC category hub — first of the 7-term gap (Tier 0) (#263)",
+      "url": "https://mhm-finds-dw5l-a0v48tzc9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:13:16.430Z",
+      "ref": "a199988",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #262 E163-b read 2026-10-04 — SAME-INCIDENT, residual",
+      "url": "https://mhm-finds-dw5l-jvbpzjkxm-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:09:55.421Z",
+      "ref": "75c3111",
+      "text": "READY funnel(rio): E163-b read 2026-10-04 — SAME-INCIDENT, residual CLOSED (docs only) (#262)",
+      "url": "https://mhm-finds-dw5l-fadmz7sis-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:09:29.202Z",
+      "ref": "3c5ce80",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #261 E170 runway top-up #10 (Tier 0, SD-10 floor)",
+      "url": "https://mhm-finds-dw5l-ig2lf7oro-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:07:45.668Z",
+      "ref": "63a267d",
+      "text": "READY funnel(ledger): Quinn for Rowan: E168 Villa Amour NULL pin apply (1 row)",
+      "url": "https://mhm-finds-dw5l-bn8rvk907-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:05:49.116Z",
+      "ref": "2716f60",
+      "text": "READY funnel(pip): E170 runway top-up #10 (Tier 0, SD-10 floor) (#261)",
+      "url": "https://mhm-finds-dw5l-5w2pr48oh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:05:24.335Z",
+      "ref": "d15a875",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #259 E168 lot apply — 80 rows (Tier 0)",
+      "url": "https://mhm-finds-dw5l-ou236e2vr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:03:49.344Z",
+      "ref": "127ed9a",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #258 E172 creators-onboarded counts creator accounts",
+      "url": "https://mhm-finds-dw5l-2yn7a4kwb-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T11:01:35.593Z",
+      "ref": "1cbc4bb",
+      "text": "READY catalog(rowan): E168 lot apply — 80 rows (Tier 0) (#259)",
+      "url": "https://mhm-finds-dw5l-akdqxl13p-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T10:56:37.150Z",
+      "ref": "c90cb3b",
+      "text": "READY funnel(nova): E172 creators-onboarded counts creator accounts, not seed profiles; pending-",
+      "url": "https://mhm-finds-dw5l-lf9fz6etr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T10:55:47.473Z",
+      "ref": "e7f1e09",
+      "text": "READY funnel(ledger): Pip: E170 runway top-up #10 (7 rows, SD-10 floor)",
+      "url": "https://mhm-finds-dw5l-p30wowe14-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T10:55:09.180Z",
+      "ref": "3e4ff73",
+      "text": "READY funnel(ledger): Rowan: E168 lot apply 80 rows",
+      "url": "https://mhm-finds-dw5l-4hzqh5pcg-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T10:46:32.344Z",
+      "ref": "2491373",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #257 confident title beats URL category at ingest; ",
+      "url": "https://mhm-finds-dw5l-323pjtgl7-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T10:38:33.045Z",
+      "ref": "02f35d4",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-ohkh6f391-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-04T02:31:42.445Z",
+      "ref": "8d18752",
+      "text": "READY chore: compound learnings from 2026-10-03",
+      "url": "https://mhm-finds-dw5l-ke62svan5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T11:26:32.157Z",
+      "ref": "3d9eb80",
+      "text": "READY catalog(rowan): confident title beats URL category at ingest; lot rule title-only (E168) (",
+      "url": "https://mhm-finds-dw5l-mykiovndm-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T11:08:19.653Z",
+      "ref": "700edab",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #256 E164 runway top-up #9 ledger + package + SEO re-",
+      "url": "https://mhm-finds-dw5l-qj1uvkr1v-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T11:05:04.470Z",
+      "ref": "e3e2b1d",
+      "text": "READY funnel(pip): E164 runway top-up #9 ledger + package + SEO re-read (Tier 0, SD-10 floor) (#",
+      "url": "https://mhm-finds-dw5l-2bd7b9oqn-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T11:04:46.010Z",
+      "ref": "dfb63fa",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #252 promoting a claim on a seed-held handle renames",
+      "url": "https://mhm-finds-dw5l-acy2nug0g-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T11:00:55.809Z",
+      "ref": "7312738",
+      "text": "READY fix(nova): promoting a claim on a seed-held handle renames the seed to seed-<handle> (E166",
+      "url": "https://mhm-finds-dw5l-dt8o1lwe2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T11:00:09.728Z",
+      "ref": "b7f91ec",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #254 E163 red-rpm 10-01 root cause (incident file)",
+      "url": "https://mhm-finds-dw5l-kb7l0eovd-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T10:56:45.702Z",
+      "ref": "aada199",
+      "text": "READY funnel(rio): E163 red-rpm 10-01 root cause — CLOSED Mediavine-side (incident file) (#254)",
+      "url": "https://mhm-finds-dw5l-lh22o29hm-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T10:55:45.326Z",
+      "ref": "f09532a",
+      "text": "READY funnel(ledger): Pip: E164 runway top-up #9 apply",
+      "url": "https://mhm-finds-dw5l-a9prqepfa-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T10:38:17.988Z",
+      "ref": "de969ec",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-q4d127kj0-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-03T02:31:18.061Z",
+      "ref": "a5cc519",
+      "text": "READY chore: compound learnings from 2026-10-02",
+      "url": "https://mhm-finds-dw5l-4c31wozni-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:24:37.898Z",
+      "ref": "528c98a",
+      "text": "READY funnel(ledger): after-merge: Quinn: PR #251 funnel: daily run 2026-10-02 (Tier 0 docs)",
+      "url": "https://mhm-finds-dw5l-donqf7gxd-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:20:44.540Z",
+      "ref": "5dd970a",
+      "text": "READY funnel: daily run 2026-10-02 (Tier 0 docs) (#251)",
+      "url": "https://mhm-finds-dw5l-dz0opc4g3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:15:35.575Z",
+      "ref": "512cc98",
+      "text": "READY funnel(ledger): Rowan: E161 spot-check pins apply",
+      "url": "https://mhm-finds-dw5l-pqmd8at07-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:15:32.467Z",
+      "ref": "0884df7",
+      "text": "READY funnel(ledger): Rowan: E161 refreshed ingest apply",
+      "url": "https://mhm-finds-dw5l-e8nwcrpcx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:15:08.144Z",
+      "ref": "b33d268",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #249 E161 catalog ingest re-scrapes refreshed posts",
+      "url": "https://mhm-finds-dw5l-lw92qg7en-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:11:54.517Z",
+      "ref": "1f222bc",
+      "text": "READY E161: ingest re-scrapes known posts the writer refreshed (--refreshed) (#249)",
+      "url": "https://mhm-finds-dw5l-5yhrlisd2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:11:07.226Z",
+      "ref": "e130a7d",
+      "text": "READY funnel(ledger): Nova: E158 placeholder unverify apply",
+      "url": "https://mhm-finds-dw5l-1x6hw24n5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:10:53.709Z",
+      "ref": "f21ff89",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #250 E158 fix-forward: dry run never overwrites the ",
+      "url": "https://mhm-finds-dw5l-ad4m1a18p-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:07:32.902Z",
+      "ref": "7dbae73",
+      "text": "READY funnel(nova): E158 dry run never overwrites the rollback plan (#250)",
+      "url": "https://mhm-finds-dw5l-fpyp329vl-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:07:09.108Z",
+      "ref": "bdd6ba1",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #248 E157 unified Sims 4 Clothes CC hub",
+      "url": "https://mhm-finds-dw5l-62dt887s2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:03:23.255Z",
+      "ref": "0207a8c",
+      "text": "READY seo(collections): add unified Sims 4 Clothes CC hub (E157) (#248)",
+      "url": "https://mhm-finds-dw5l-bhq4v8ky1-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T11:02:53.519Z",
+      "ref": "8965e0a",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #247 E158: seed creator profiles stop posing as clai",
+      "url": "https://mhm-finds-dw5l-j0pk9vt6l-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:59:19.916Z",
+      "ref": "6c737f2",
+      "text": "READY funnel(nova): E158 seed creator profiles stop posing as claimed + batch-1b paper (#247)",
+      "url": "https://mhm-finds-dw5l-l02kiv3lr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:59:15.699Z",
+      "ref": "8a8088a",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #245 E156 runway top-up #8 ledger + package + SEO re-",
+      "url": "https://mhm-finds-dw5l-4c8h6r00t-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:55:08.969Z",
+      "ref": "80f97a1",
+      "text": "READY funnel(pip): E156 runway top-up #8 ledger + package + SEO re-read (Tier 0, SD-10 floor) (#",
+      "url": "https://mhm-finds-dw5l-4ikbof8k5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:53:58.775Z",
+      "ref": "11e6f17",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #246 E159 SaveFindsOffer copy by session status + fa",
+      "url": "https://mhm-finds-dw5l-c0ykgmxys-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:51:09.503Z",
+      "ref": "6c10ab4",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #244 E162 un-red play-page.test.ts + gated merge chai",
+      "url": "https://mhm-finds-dw5l-m43dochy2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:50:54.946Z",
+      "ref": "4ce2156",
+      "text": "READY E159: SaveFindsOffer copy by session status + favorites link (Cass, T0) (#246)",
+      "url": "https://mhm-finds-dw5l-k5b5832rx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:48:01.303Z",
+      "ref": "2bafed6",
+      "text": "READY funnel(ledger): Pip: E156 runway top-up #8 apply",
+      "url": "https://mhm-finds-dw5l-dksj5l0rx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:46:52.417Z",
+      "ref": "c3cce17",
+      "text": "READY funnel(ops): E162 play-page test matches fields, not a whole literal; prompt uses the gate",
+      "url": "https://mhm-finds-dw5l-8c76efph5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-02T10:37:40.857Z",
+      "ref": "2adcfe3",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-kyykkmgbb-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T22:32:06-04:00",
+      "ref": "0c04ce0",
+      "text": "chore: compound learnings from 2026-10-04"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:27:18-04:00",
+      "ref": "f462823",
+      "text": "funnel(ledger): after-merge: Quinn: PR #264 funnel: daily run 2026-10-04"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:22:48-04:00",
+      "ref": "432e40f",
+      "text": "funnel(quinn): daily run 2026-10-04 — RED same-incident, 6 merges verified, registry parke"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:21:29-04:00",
+      "ref": "146d506",
+      "text": "funnel(ledger): after-merge: Ops: PR #255 E169 revenue-guardrail pages the Vercel list, gr"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:18:16-04:00",
+      "ref": "6a4203f",
+      "text": "fix(ops): revenue-guardrail pages the Vercel list, grades coverage, and bounds the automat"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:17:25-04:00",
+      "ref": "89ee857",
+      "text": "funnel(ledger): after-merge: Sage: PR #263 E171 build-cc category hub (registry-only, Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:13:57-04:00",
+      "ref": "069c690",
+      "text": "funnel(sage): E171 Sims 4 Build CC category hub — first of the 7-term gap (Tier 0) (#263)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:13:12-04:00",
+      "ref": "a199988",
+      "text": "funnel(ledger): after-merge: Rio: PR #262 E163-b read 2026-10-04 — SAME-INCIDENT, residual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:09:51-04:00",
+      "ref": "75c3111",
+      "text": "funnel(rio): E163-b read 2026-10-04 — SAME-INCIDENT, residual CLOSED (docs only) (#262)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:09:26-04:00",
+      "ref": "3c5ce80",
+      "text": "funnel(ledger): after-merge: Pip: PR #261 E170 runway top-up #10 (Tier 0, SD-10 floor)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:07:42-04:00",
+      "ref": "63a267d",
+      "text": "funnel(ledger): Quinn for Rowan: E168 Villa Amour NULL pin apply (1 row)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:05:46-04:00",
+      "ref": "2716f60",
+      "text": "funnel(pip): E170 runway top-up #10 (Tier 0, SD-10 floor) (#261)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:05:20-04:00",
+      "ref": "d15a875",
+      "text": "funnel(ledger): after-merge: Rowan: PR #259 E168 lot apply — 80 rows (Tier 0)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:03:46-04:00",
+      "ref": "127ed9a",
+      "text": "funnel(ledger): after-merge: Nova: PR #258 E172 creators-onboarded counts creator accounts"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T07:01:32-04:00",
+      "ref": "1cbc4bb",
+      "text": "catalog(rowan): E168 lot apply — 80 rows (Tier 0) (#259)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T06:56:33-04:00",
+      "ref": "c90cb3b",
+      "text": "funnel(nova): E172 creators-onboarded counts creator accounts, not seed profiles; pending-"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T06:55:44-04:00",
+      "ref": "e7f1e09",
+      "text": "funnel(ledger): Pip: E170 runway top-up #10 (7 rows, SD-10 floor)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T06:55:05-04:00",
+      "ref": "3e4ff73",
+      "text": "funnel(ledger): Rowan: E168 lot apply 80 rows"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T06:46:28-04:00",
+      "ref": "2491373",
+      "text": "funnel(ledger): after-merge: Rowan: PR #257 confident title beats URL category at ingest; "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-04T06:38:28-04:00",
+      "ref": "02f35d4",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T22:31:37-04:00",
+      "ref": "8d18752",
+      "text": "chore: compound learnings from 2026-10-03"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T07:26:29-04:00",
+      "ref": "3d9eb80",
+      "text": "catalog(rowan): confident title beats URL category at ingest; lot rule title-only (E168) ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T07:08:16-04:00",
+      "ref": "700edab",
+      "text": "funnel(ledger): after-merge: Pip: PR #256 E164 runway top-up #9 ledger + package + SEO re-"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T07:05:01-04:00",
+      "ref": "e3e2b1d",
+      "text": "funnel(pip): E164 runway top-up #9 ledger + package + SEO re-read (Tier 0, SD-10 floor) (#"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T07:04:42-04:00",
+      "ref": "dfb63fa",
+      "text": "funnel(ledger): after-merge: Nova: PR #252 promoting a claim on a seed-held handle renames"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T07:00:52-04:00",
+      "ref": "7312738",
+      "text": "fix(nova): promoting a claim on a seed-held handle renames the seed to seed-<handle> (E166"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T07:00:06-04:00",
+      "ref": "b7f91ec",
+      "text": "funnel(ledger): after-merge: Rio: PR #254 E163 red-rpm 10-01 root cause (incident file)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T06:56:42-04:00",
+      "ref": "aada199",
+      "text": "funnel(rio): E163 red-rpm 10-01 root cause — CLOSED Mediavine-side (incident file) (#254)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T06:55:42-04:00",
+      "ref": "f09532a",
+      "text": "funnel(ledger): Pip: E164 runway top-up #9 apply"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-03T06:38:14-04:00",
+      "ref": "de969ec",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-02T22:31:10-04:00",
+      "ref": "a5cc519",
+      "text": "chore: compound learnings from 2026-10-02"
+    }
+  ],
+  "health": {
+    "date": "2026/10/07",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "RPM 13.77 vs expected 16.50 (-16.5%) on 2026-10-05; revenue $157.98 vs $207.31 (-23.8%); 3-day revenue -21.6%, 3-day RPM -18.2%",
+    "rollback withheld — in-window deploys 52 exceed rollback bound 24. The newest READY production deploy before the window is https://mhm-finds-dw5l-mw2guo205-ericputnams-projects.vercel.app; rolling back to it would revert every production deploy since 2026-10-02 (52 deploys), which is not a single-bad-deploy hypothesis. Quinn: Rio reads the Mediavine side first; a manual rollback is Tier 1 (`./scripts/agents/deploy-verify.sh --rollback --to <url>`), or roll back one PR by reverting its commit."
+  ]
+}
