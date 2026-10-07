@@ -1,0 +1,217 @@
+{
+ "writtenAt": "2026-10-07T13:11:42.950Z",
+ "mode": "apply",
+ "facets": [
+  "furniture",
+  "accessories",
+  "hair",
+  "workout",
+  "full-body",
+  "tops",
+  "decor",
+  "dresses",
+  "makeup",
+  "poses",
+  "shoes"
+ ],
+ "rows": [
+  {
+   "id": "cmim8s8h2004koxy8ajzs531l",
+   "title": "Functional Skincare Mod",
+   "from": "furniture",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8s99e004toxy8p0ys4h6w",
+   "title": "100 Base Game Traits",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wmne00q6oxy8comhg52b",
+   "title": "Mini Pochette Bags",
+   "from": "furniture",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8s9wg0051oxy8e36hxnvv",
+   "title": "Slice of Life",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wmte00q9oxy88ll7g3yc",
+   "title": "Birkin Collection",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wml700q5oxy8gpan8gmx",
+   "title": "CC #47.2",
+   "from": "shoes",
+   "to": null
+  },
+  {
+   "id": "cmim8s8nt004moxy8zhs2x9hw",
+   "title": "Let’s Get Fit Modpack",
+   "from": "workout",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8s8lc004loxy8xxhxh6sk",
+   "title": "Life Tragedies",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wnky00qmoxy8tysfuiq5",
+   "title": "University Nike Backpack",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wmh000q3oxy8mdy0cmay",
+   "title": "Prada Hobo Bag",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8s9oh004zoxy8x2g128gv",
+   "title": "Functional Personal Care Products",
+   "from": "hair",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8s8tm004ooxy8kw3ul4xd",
+   "title": "The One with All the Romance",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8s9m9004yoxy8maisds25",
+   "title": "Family Therapy",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8s966004soxy8xldd1qz7",
+   "title": "SimCity Loans 2.0",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wnzh00qtoxy8lenvqmr9",
+   "title": "Metal Framed Clutch",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8s9fg004voxy8gxuwhbvm",
+   "title": "Better Seasonal Changes",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wmjc00q4oxy847wdx53i",
+   "title": "Vintage Coach Hb Bag Accessory",
+   "from": "makeup",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wofd00r1oxy8ybeesymt",
+   "title": "Early Access-Hanging Spring Leather Bag",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8s9hm004woxy89r4grtpm",
+   "title": "SimNation Travel",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wo9c00qyoxy8jxtu84pg",
+   "title": "Sac a Main",
+   "from": "full-body",
+   "to": "decor"
+  },
+  {
+   "id": "cmim8s941004roxy8a9cdspnw",
+   "title": "Functional Broom",
+   "from": "accessories",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wntd00qqoxy825yfi4zj",
+   "title": "Luxe D’Tote Bag",
+   "from": "dresses",
+   "to": "decor"
+  },
+  {
+   "id": "cmim8wohn00r2oxy8shmd418j",
+   "title": "Teddy Kelly Bag",
+   "from": "decor",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wnxi00qsoxy8f5kj29cy",
+   "title": "Mini Box Bag",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wmvj00qaoxy8zj7vpeob",
+   "title": "Horsebit Bag",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wn6l00qfoxy8s4wurdrv",
+   "title": "Prada Cleo Bags V2",
+   "from": "furniture",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wngv00qkoxy895t4pdtu",
+   "title": "Rimings",
+   "from": "furniture",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wo3d00qvoxy8alt72di3",
+   "title": "Sports Bag",
+   "from": "workout",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wo7c00qxoxy8c70vxacz",
+   "title": "Simkea Pose Accessory Bag",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim8wmxt00qboxy84not54r8",
+   "title": "Fanny Pack",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wn2900qdoxy8cw8ulspr",
+   "title": "Square One Shoulder Leather Big Bag With Pose",
+   "from": "poses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wnve00qroxy876ncv3lo",
+   "title": "BCP Deco Schoolbags",
+   "from": "full-body",
+   "to": "decor"
+  },
+  {
+   "id": "cmim8wnco00qioxy80z6od00s",
+   "title": "YUNSEOL Leather Square Hand Bag",
+   "from": "full-body",
+   "to": "accessories"
+  }
+ ]
+}
