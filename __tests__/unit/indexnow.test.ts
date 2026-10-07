@@ -29,6 +29,8 @@ import {
   resolveCap,
   selectUrls,
   summaryLine,
+  modsCheck,
+  ageHours,
 } from '../../scripts/agents/indexnow-lib';
 import { fetchWpGuidesModifiedSince, wpModifiedAfterParam } from '@/lib/seo/wpGuides';
 import { SIMS4_COLLECTIONS } from '@/lib/collections';
@@ -326,13 +328,54 @@ describe('summaryLine', () => {
       http: 200,
       reason: 'ok',
     });
-    expect(line).toBe('2026-09-14T11:00:00Z indexnow mode=live status=OK urls=42 mods=22 collections=20 creators=0 guides=0 guides_fetch=- dropped=0 cap=500 days=7 http=200 reason=ok');
+    expect(line).toBe('2026-09-14T11:00:00Z indexnow mode=live status=OK urls=42 mods=22 newest_mod_age_h=- mods_check=- collections=20 creators=0 guides=0 guides_fetch=- dropped=0 cap=500 days=7 http=200 reason=ok');
     expect(line.includes('\n')).toBe(false);
   });
 
   it('prints "-" for unknown http and reason', () => {
     const line = summaryLine({ when: new Date(0), mode: 'dry-run', status: 'DRY-RUN', urls: 0, mods: 0, collections: 0, dropped: 0, cap: 500, days: 7 });
     expect(line).toContain('http=- reason=-');
+  });
+});
+
+/**
+ * E177: `mods=0` was unfalsifiable — 6 of 14 runner lines 09-23→10-07 read mods=0 and none said
+ * whether ingest had created nothing or the selection missed rows (10-07: 12:54Z mods=0, 12:57Z
+ * mods=78). The line now carries the newest eligible row's age and a self-grading mods_check.
+ */
+describe('newest_mod_age_h / mods_check (E177)', () => {
+  const when = new Date('2026-10-07T12:54:30Z');
+  const base = { when, mode: 'live' as const, status: 'OK' as const, urls: 33, collections: 31, dropped: 0, cap: 500, days: 2 };
+
+  it('mods=0 with the newest row older than the window reads no-new-rows', () => {
+    const line = summaryLine({ ...base, mods: 0, newestModAgeH: 71.3 });
+    expect(line).toContain('mods=0 newest_mod_age_h=71.3 mods_check=no-new-rows ');
+  });
+
+  it('mods=0 with an eligible row inside the window reads MISMATCH', () => {
+    expect(modsCheck(0, 47.9, 2)).toBe('MISMATCH');
+    expect(modsCheck(0, 48, 2)).toBe('MISMATCH'); // exactly on the boundary is inside the window
+    expect(modsCheck(0, 48.1, 2)).toBe('no-new-rows');
+  });
+
+  it('mods>0 is ok; an unread DB is "-", never a verdict', () => {
+    expect(modsCheck(78, 0.4, 2)).toBe('ok');
+    expect(modsCheck(0, null, 2)).toBe('-');
+    expect(modsCheck(0, undefined, 2)).toBe('-');
+    expect(modsCheck(0, Number.NaN, 2)).toBe('-');
+  });
+
+  it('ageHours rounds to one decimal, clamps clock skew to 0, and is null for no row', () => {
+    expect(ageHours(new Date('2026-10-04T10:36:00Z'), when)).toBe(74.3);
+    expect(ageHours(new Date('2026-10-07T13:00:00Z'), when)).toBe(0);
+    expect(ageHours(null, when)).toBeNull();
+  });
+
+  it('the submit script reads the newest row with the sitemap where-clause and puts it on the line', () => {
+    const src = stripComments(read('scripts/agents/indexnow-submit.ts'));
+    expect(src).toMatch(/findFirst\(\{\s*where: \{ isNSFW: false, isVerified: true \},\s*select: \{ createdAt: true \},\s*orderBy: \{ createdAt: 'desc' \}/);
+    expect(src).toMatch(/newestModAgeH = ageHours\(/);
+    expect(src).toMatch(/dropped: sel\.dropped\.length,\s*newestModAgeH,/);
   });
 });
 

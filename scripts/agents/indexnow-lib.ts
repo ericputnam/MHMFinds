@@ -318,6 +318,37 @@ export interface RunSummary {
   days: number;
   http?: number | null;
   reason?: string | null;
+  /**
+   * Hours since the newest mod in the sitemap population (isNSFW=false,
+   * isVerified=true) was created, measured at run time (E177). Null when the
+   * DB was not read. Printed as `newest_mod_age_h=`, so a `mods=0` line says
+   * by itself whether nothing was ingested or the selection missed rows.
+   */
+  newestModAgeH?: number | null;
+}
+
+/**
+ * Whether a run's `mods=` count agrees with the newest eligible row (E177).
+ *   - `-`            the DB was not read (no age to compare)
+ *   - `ok`           mods > 0, or mods = 0 and the newest row is older than the window
+ *   - `no-new-rows`  mods = 0 because nothing was created inside --days: an ingest
+ *                    question, not an IndexNow one
+ *   - `MISMATCH`     mods = 0 although an eligible row was created inside --days:
+ *                    the selection is broken. Printed, never acted on.
+ */
+export type ModsCheck = '-' | 'ok' | 'no-new-rows' | 'MISMATCH';
+
+export function modsCheck(mods: number, newestModAgeH: number | null | undefined, days: number): ModsCheck {
+  if (newestModAgeH === null || newestModAgeH === undefined || !Number.isFinite(newestModAgeH)) return '-';
+  if (mods > 0) return 'ok';
+  return newestModAgeH > days * 24 ? 'no-new-rows' : 'MISMATCH';
+}
+
+/** Hours between a row's createdAt and `now`, one decimal, never negative. Null for no row. */
+export function ageHours(createdAt: Date | null | undefined, now: Date): number | null {
+  if (!createdAt) return null;
+  const h = (now.getTime() - createdAt.getTime()) / 3600e3;
+  return Math.max(0, Math.round(h * 10) / 10);
 }
 
 /**
@@ -332,6 +363,8 @@ export function summaryLine(r: RunSummary): string {
     `status=${r.status}`,
     `urls=${r.urls}`,
     `mods=${r.mods}`,
+    `newest_mod_age_h=${r.newestModAgeH ?? '-'}`,
+    `mods_check=${modsCheck(r.mods, r.newestModAgeH, r.days)}`,
     `collections=${r.collections}`,
     `creators=${r.creators ?? 0}`,
     `guides=${r.guides ?? 0}`,
