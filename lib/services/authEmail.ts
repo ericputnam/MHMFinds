@@ -145,6 +145,23 @@ function layout(heading: string, body: string, ctaUrl: string, ctaLabel: string,
 }
 
 /**
+ * The link the email carries (E179, 2026-10-07).
+ *
+ * - Trailing slash: `next.config.js` sets `trailingSlash: true`, which 308s the
+ *   bare `/set-password?token=…` form. Browsers follow it, but every other
+ *   hand-authored URL we email already carries the slash, and a redirect on a
+ *   single-use link is one more place for a mail prefetcher to get in the way.
+ * - `mode`: the page fires GA4 `password_reset_complete` (E123) on success, and
+ *   `page_location` carries this query string, so invites (subscriber →
+ *   account) read apart from ordinary resets without a custom dimension. The
+ *   token stays the only credential; `mode` is informational and the page
+ *   ignores it.
+ */
+export function passwordLinkUrl(rawToken: string, mode: PasswordTokenMode): string {
+  return `${baseUrl()}/set-password/?token=${rawToken}&mode=${mode}`;
+}
+
+/**
  * Send the set-password email. `invite` is for converted subscribers who never
  * asked for an account, so the copy explains why they're hearing from us.
  */
@@ -164,7 +181,7 @@ export async function sendPasswordEmail(
     return false;
   }
 
-  const url = `${baseUrl()}/set-password?token=${rawToken}`;
+  const url = passwordLinkUrl(rawToken, mode);
 
   const subject =
     mode === 'invite'

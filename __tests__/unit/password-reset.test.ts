@@ -39,6 +39,7 @@ vi.mock('@/lib/services/emailNotifier', () => ({
 import {
   consumePasswordToken,
   createPasswordToken,
+  passwordLinkUrl,
   peekPasswordToken,
   sendPasswordEmail,
 } from '@/lib/services/authEmail';
@@ -176,7 +177,7 @@ describe('sendPasswordEmail', () => {
     const [to, subject, html, options] = mail.send.mock.calls[0] as [string, string, string, Record<string, unknown>];
     expect(to).toBe(EMAIL);
     expect(subject).toMatch(/reset/i);
-    expect(html).toContain(`https://musthavemods.com/set-password?token=${RAW}`);
+    expect(html).toContain(`https://musthavemods.com/set-password/?token=${RAW}&mode=reset`);
     expect(html).not.toContain('localhost');
     expect(options).toMatchObject({ skipLog: true });
   });
@@ -184,12 +185,35 @@ describe('sendPasswordEmail', () => {
   it('falls back to NEXTAUTH_URL, then to production', async () => {
     process.env.NEXTAUTH_URL = 'https://staging.example.com';
     await sendPasswordEmail(EMAIL, RAW, 'reset');
-    expect(mail.send.mock.calls[0][2]).toContain(`https://staging.example.com/set-password?token=${RAW}`);
+    expect(mail.send.mock.calls[0][2]).toContain(`https://staging.example.com/set-password/?token=${RAW}&mode=reset`);
 
     mail.send.mockClear();
     delete process.env.NEXTAUTH_URL;
     await sendPasswordEmail(EMAIL, RAW, 'reset');
-    expect(mail.send.mock.calls[0][2]).toContain(`https://musthavemods.com/set-password?token=${RAW}`);
+    expect(mail.send.mock.calls[0][2]).toContain(`https://musthavemods.com/set-password/?token=${RAW}&mode=reset`);
+  });
+
+  // E179 (2026-10-07): the emailed link carries the trailing slash
+  // (`trailingSlash: true` 308s the bare form) and a `mode` so E123's
+  // password_reset_complete splits invites from resets via page_location.
+  it('emails the trailing-slash /set-password/ link, never the bare 308 form', async () => {
+    await sendPasswordEmail(EMAIL, RAW, 'reset');
+    const html = mail.send.mock.calls[0][2] as string;
+    expect(html).toContain(`/set-password/?token=${RAW}`);
+    expect(html).not.toContain(`/set-password?token=`);
+    // Both the button href and the paste-this-URL fallback carry the same link.
+    expect(html.match(new RegExp(`/set-password/\\?token=${RAW}&mode=reset`, 'g'))?.length).toBe(2);
+  });
+
+  it('tags the link with the mode so invites read apart from resets', async () => {
+    expect(passwordLinkUrl(RAW, 'reset')).toBe(`https://musthavemods.com/set-password/?token=${RAW}&mode=reset`);
+    expect(passwordLinkUrl(RAW, 'invite')).toBe(`https://musthavemods.com/set-password/?token=${RAW}&mode=invite`);
+
+    await sendPasswordEmail(EMAIL, RAW, 'invite');
+    const html = mail.send.mock.calls[0][2] as string;
+    expect(html).toContain(`&mode=invite`);
+    expect(html).not.toContain(`&mode=reset`);
+    expect(mail.send.mock.calls[0][1]).toMatch(/account is ready/i);
   });
 
   it('fails closed with no transport: returns false, sends nothing, prints no token', async () => {
