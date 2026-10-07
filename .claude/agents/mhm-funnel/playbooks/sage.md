@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-07 — E177 IndexNow newest_mod_age_h (Tier 0, PR #265 f0edb05, SUPERSEDED-PASS)
+- Tried: IndexNow summary line now prints `newest_mod_age_h` and a `mods_check` verdict (new tests 6/60 red against pre-fix main). Merged after Rio's 07:12 CLEAR; scripts/ only.
+- Before → after: 0/14 lines carried an age → dry run mods=78 newest_mod_age_h=0.2 mods_check=ok; read 10-14. Grades: E27 KEEP (378, ChatGPT 28d share 89.5% vs 88.5%), E42 KEEP on the OR leg, E83 KILL (3.464%), E84 KILL (1,606), E18 KEEP traffic leg (pos 32.98), E21 revert-per-rule held (55 vs 95, canonical met), E128 KEEP, E71 MORE DATA → 10-19.
+- Verdict: MORE DATA (read on 2026-10-14).
+- Next time: recount a baseline with the same script before grading (E84 1,607 and E18 512 reproduced exactly), and never set a 28-day read only 14 days after shipping (E83's window was 57% pre-ship).
+
 ## 2026-10-04 — E171 build-cc hub (Tier 0, PR HELD-RED)
 - Tried: first category hub from the 7-term competitor gap: `/games/sims-4/build-cc/`, a registry-only union over 8 build/buy facets (2,207 mods, 1,912 free), appended last; furniture/bedroom/bathroom now link to it. New guard `collection-primary-crumb-order.test.ts`: 2/4 red pre-fix, 3/4 with build-cc misordered.
 - Before → after: page 404, "sims 4 build cc" 0 impr (GSC 09-03→09-30) → read 10-18 / 11-01. Grades: E114 KEEP (ai_referral 7d 374, chatgpt 324); E115 KEEP (62 bing /creator/ landings, 43 pages); E62 MORE DATA (51 clicks vs 55); E121 MORE DATA, leaning KILL (full-window guide got 2); E128 7/7 OK.

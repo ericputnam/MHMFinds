@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T10:39:06.273Z",
+  "generatedAt": "2026-10-07T12:57:14.406Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3345,9 +3345,9 @@
     },
     {
       "date": "2026-10-03",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 221.02,
+      "sessions": 14772,
+      "rpm": 14.96,
       "expectedRevenue": 280.48,
       "expectedSessions": 14747,
       "nonAdMonthly": 159,
@@ -3371,9 +3371,9 @@
     },
     {
       "date": "2026-10-04",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 227.62,
+      "sessions": 15188,
+      "rpm": 14.98,
       "expectedRevenue": 286.01,
       "expectedSessions": 15973,
       "nonAdMonthly": 163,
@@ -3403,6 +3403,93 @@
         "Quinn": 7,
         "Nova": 8,
         "manual": 10
+      }
+    },
+    {
+      "date": "2026-10-05",
+      "revenue": 157.98,
+      "sessions": 11470,
+      "rpm": 13.77,
+      "expectedRevenue": 207.31,
+      "expectedSessions": 12490,
+      "nonAdMonthly": 163,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-06",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 186.79,
+      "expectedSessions": 11546,
+      "nonAdMonthly": 163,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-07",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 178.21,
+      "expectedSessions": 11280,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": 112,
+      "pinterestSessions7d": 58536,
+      "returningShare7d": 0.5385300566416956,
+      "nonPinterestShare7d": 0.15256102151315976,
+      "pagesPerSession7d": 1.547746511095859,
+      "engagementRate7d": 0.733276138183482,
+      "favorites7d": 617,
+      "downloadClicks7d": 345,
+      "newMods7d": 155,
+      "catalogTotal": 16716,
+      "captureRatePer1k": 1.262740146117074,
+      "creatorsOnboarded": 3,
+      "creatorSubmissions7d": 7,
+      "runSuccess14d": 0.7857142857142857,
+      "opsMergeShare7d": 0.08823529411764706,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Quinn": 5,
+        "Rio": 5,
+        "Rowan": 6,
+        "Cass": 3,
+        "Sage": 3,
+        "Pip": 4,
+        "Nova": 5,
+        "Ops": 3
       }
     }
   ],
@@ -5073,6 +5160,62 @@
       "date": "2026-10-03",
       "kind": "incident",
       "label": "Incident 2026-10-03 — 🔴 RED-RPM on finalized 2026-10-01 (E163)"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Rowan: PR #257 confident title beats URL category at ingest; lot rule title-only (E168) [retroactive 10-04; merged 10-03 11:26Z, no same-day verify]",
+      "commit": "3d9eb80",
+      "result": "SUPERSEDED (production already on 02f35d4, newer)"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Nova: PR #258 E172 creators-onboarded counts creator accounts, not seed profiles; pending-review row (Tier 0)",
+      "commit": "c90cb3b",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Rowan: PR #259 E168 lot apply — 80 rows (Tier 0)",
+      "commit": "1cbc4bb",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Pip: PR #261 E170 runway top-up #10 (Tier 0, SD-10 floor)",
+      "commit": "2716f60",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Rio: PR #262 E163-b read 2026-10-04 — SAME-INCIDENT, residual CLOSED",
+      "commit": "75c3111",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Sage: PR #263 E171 build-cc category hub (registry-only, Tier 0)",
+      "commit": "069c690",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Ops: PR #255 E169 revenue-guardrail pages the Vercel list, grades window coverage, rollback bound (E169-b)",
+      "commit": "6a4203f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-04",
+      "kind": "merge",
+      "label": "Quinn: PR #264 funnel: daily run 2026-10-04",
+      "commit": "432e40f",
+      "result": "PASS"
     }
   ]
 }

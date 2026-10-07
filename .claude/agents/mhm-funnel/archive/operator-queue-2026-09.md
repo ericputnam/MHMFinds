@@ -252,3 +252,32 @@ Compressed to the newest 1-2 status lines per item; full history (every dated st
 - **Status 2026-09-23 (Cass, E54 + E68 read):** day-2 batch **5 hard bounces / 100 (5.0%, gate 3%)**, 0 of the 7 excluded re-sent, 0 complaints, 2 re-permission confirms total (1.06 per 100 delivered). Day-3 is held by its own rule: Cass adds the 5 new bounce hashes to `lib/services/sendExclusions.ts` first (Tier 0, 09-24), then it needs your **"go repermission day3"**. Recommendation: go at 7% once the hashes are in; kill the leg if day-3 bounces ≥3% again.
 
 - **Status 2026-09-24 (Cass, PR #165 `0acc882`):** precondition (a) done. The 5 day-2 bounce hashes are excluded (list 12), and the day-3 dry run shows 12/12 matched, 0 in the slice, 99 would-send. Also fixed: `--dry-run` was silently a live send (now refused), and the segment drifted 383→384 (re-frozen). **Needs your "go repermission day3".** Recommendation: go at 7%. Kill the leg if day-3 hard bounces are ≥3%.
+
+## Dropped 2026-10-07 (7-day rule) — verbatim as they stood in operator-queue.md
+
+### Q17 · Sponsorship: price + send (Rio, E89, 2026-09-23)
+- Media kit from real numbers (`reports/funnel/drafts/sponsorship-media-kit-2026-09-23.md`): 354,348 sessions 28d; hub slot 6,300 pv/mo; homepage 17,000. Proposed **$300/mo hub slot, $750/mo site-wide**; 2 cold emails + 1 follow-up drafted in your name. Read 2026-10-07; keep if ≥10 sent AND ≥1 interested reply. Reply **"approve sponsorship"** or a price.
+- **Re-pitched 2026-09-30 (Rio, 7-day rule; no reply since 09-23):** skip the price decision — send only the $300/mo "presented by" hub-slot email to the 2 drafted prospects. Numbers re-checked 09-30 (GA4 09-02→09-29: 356,828 sessions, 93.6% desktop; hub ≈7,000 pv/mo) — emails under-claim. Reply **"send hub"** or a number. **Drop date 2026-10-07:** silence = dropped and logged.
+
+### Q18 · Weekly newsletter cron line (Cass, E78) — Tier 2, only the `vercel.json` piece remains
+- **Part A merged 09-30 as PR #226** (Tier 0, verify PASS). The route, builder and tests are live but inert: nothing schedules the route, it 401s without the `CRON_SECRET` bearer, and it no-ops unless `NEWSLETTER_WEEKLY_ENABLED=true`. #144 is closed.
+- **Part B** is one cron line in `vercel.json` (`/api/cron/weekly-newsletter/`, Monday 15:00 UTC). Reply **"approve 78-cron"**. Turning the flag on remains a separate Tier 1 send decision.
+- Cost of waiting: 56 subscribers × 1 issue ever (09-14). No reply by 10-07 = dropped and logged.
+
+## Closed items parked 2026-10-07 (verbatim, moved out of operator-queue.md by Quinn for byte room)
+
+### Q8 · Pinterest poster poison-row hardening (Pip, E36) — **APPROVED 09-12, deployed 09-21 with Q11** (MHMUtils `7037ffe`). Nothing left for you; closes with Q11-b.
+
+### Q4 · Patreon tier relaunch — **CLOSED 2026-09-28 by operator: won't do**
+- Operator (chat, 09-28): the writer controls the Patreon pay plans and "it ain't broke", so the remaining dashboard steps (unpublish the $1 Espresso Shot tier, paste the $3 welcome note) will not be done. Tiers stay as they are (Espresso Shot $1 / Cappuccino $3 / Large Latte $5). **Do not re-pitch tier or pricing changes.** Rio keeps reading paid count and gross as a guardrail only. History is in the archive.
+
+### Q5 · Site membership via Patreon OAuth (Rio, E19/E24) — **SHIPPED 09-07/09-08**, env vars live in Production. Read 2026-10-07. Nothing for you.
+
+### Q6 · Un-consolidate the pregnancy-mods + y2k-cc pairs (Sage, E21) — **SHIPPED 09-12**; one cache purge left (checklist below).
+
+Q10 (re-permission day-3, Cass/E54) **dropped 2026-09-28** under the 7-day rule (filed 09-16, re-pitched smaller 09-24, no reply); E54/E68 grade 09-30 on the two batches that went; a later "go repermission day3" still executes as written. 09-24: Q14/Q15 triage memos (Nova, E79/E80) landed on `main` via the daily PR (`reports/funnel/triage/`), PR #141 closed. Two incidents today, both closed by 10:21: #168 build error (fixed forward by #171) and a verify that promoted an older deploy over a newer one (Quinn rolled back at 10:11); `[ops]` PRIORITY 1 for 09-25 is the newer-than check. Next free experiment ID: E102. Renumbering from the 09-21 parallel batch applied 09-22/23: E75=#140, E76=#142, E77=#139, E78=#144, E79/E80=#141, E81=#143 (full note in the archive). Q9 (PR #17 video-first ad slot) closed 09-22 unmerged; PR closed. Q16 (one Patreon post in the operator's voice, Rio/E88) **dropped 2026-09-29** under the 7-day rule (filed 09-22, no reply, no re-pitch by its own note); the draft stays at `reports/funnel/drafts/patreon-connect-post-2026-09-22.md` and a later "posted patreon <date>" still starts the E88 read. Next free experiment ID: **E142** (E135–E141 assigned 09-29).
+
+### Q11-b · Writer pins — **CLOSED 2026-09-28; the E82 diagnosis was wrong**
+- **Correction (Claude, 09-28, after the operator showed the WP "Pin Schedule" screen):** the writer's plugin schedule *does* work. Rows sit at `Post Date = 2025-01-01` until the article's Scheduled Date, then get dated that day and post. Supabase shows it: pumpkin-recipes was created 09-22, dated 09-27, 25/25 posted; fall-cc-clothes 09-21→09-25, 51/51; cardigan-cc 09-21→09-23, 31/31. The placeholder means "waiting for its scheduled day", not "stranded". Upcoming on 09-28: fall-loading-screen 09-29 (43), autumn-houses 10-01 (24), kissing-poses 10-03 (25) = 92 rows. Do not treat plugin-scheduled placeholder rows as a backlog or promote them.
+- **Operator direction (09-28):** focus on the writer's scheduled pins and make them the best Pinterest SEO they can be; do not overwhelm the algorithm (SD-10). Volume and timing stay with the writer; no auto-dating, no re-pitch.
+- **Pin-SEO pass:** the next-14-day window cannot see writer rows (placeholder date until their day), so the pass must target the plugin's Upcoming articles by id (`pin-seo-audit.py --source page --ids`). 09-28 read-only baseline on the 92 upcoming rows: 1/92 passing, mean 59/100, mostly descriptions over 400 chars and the keyword not in the first sentence. 49 of the 92 point at `blog.musthavemods.com` (now a 301). Applying copy or URL changes to the writer's rows waits for the operator's yes.
