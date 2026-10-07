@@ -453,6 +453,55 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   //    is a CAS set whose title carries the lot word `villa` (rule header:
   //    villa 38/8/12). Title-supported, so `--lot-untitled` never loads it.
   cmttzibbj00a1oxfefuotnlq2: { contentType: null, why: "E168 top24 \"Villa Amour Collection\" — NULL; a Love Island-inspired outfit set (dresses, a romper, accessories), mixed CAS, no single facet; `villa` is the lot word [/sims-4-cc-finds-for-august-2026/]" },
+  // ── Audited 2026-10-07 (Rowan, E180). Sage flagged two `furniture` rows in a
+  //    hub top-20 (10-04): "Functional Skincare Mod" and "Mini Pochette Bags".
+  //    Both sit on blog posts whose every sibling was read row by row: the
+  //    gameplay mods on /best-sims-4-realistic-mods/ were typed accessories /
+  //    hair / furniture / workout, and the bags on /sims-4-bags-cc/ were typed
+  //    full-body / furniture / workout / tops / dresses / makeup / poses /
+  //    shoes. Heterogeneous wrong values on legacy rows (cmim8… ids), so each is
+  //    pinned here, not re-decided by a facet-wide tool. Rows already right on
+  //    those posts (5 gameplay-mod, 2 script-mod, 34 accessories) are untouched.
+  //    Download-host category beats the blogger's prose where they disagree
+  //    (TSR objects-decor-clutter, CurseForge build-buy).
+  // /best-sims-4-realistic-mods/
+  cmim8s8h2004koxy8ajzs531l: { contentType: 'gameplay-mod', why: 'E180 "Functional Skincare Mod" — gameplay-mod, was furniture; adds functional face washes/lotions with buffs and moods (Sage hub top-20 flag 10-04)' },
+  cmim8s9oh004zoxy8x2g128gv: { contentType: 'gameplay-mod', why: 'E180 "Functional Personal Care Products" — gameplay-mod, was hair; a shop-online-for-products gameplay mod, not hair CC' },
+  cmim8s9wg0051oxy8e36hxnvv: { contentType: 'gameplay-mod', why: 'E180 "Slice of Life" — gameplay-mod, was accessories; the KawaiiStacie life-sim overhaul' },
+  cmim8s99e004toxy8p0ys4h6w: { contentType: 'gameplay-mod', why: 'E180 "100 Base Game Traits" — gameplay-mod, was accessories; a traits mod' },
+  cmim8s9hm004woxy89r4grtpm: { contentType: 'gameplay-mod', why: 'E180 "SimNation Travel" — gameplay-mod, was accessories; a travel gameplay mod' },
+  cmim8s941004roxy8a9cdspnw: { contentType: 'gameplay-mod', why: 'E180 "Functional Broom" — gameplay-mod, was accessories; brooms with sweep interactions' },
+  cmim8s9fg004voxy8gxuwhbvm: { contentType: 'gameplay-mod', why: 'E180 "Better Seasonal Changes" — gameplay-mod, was accessories; changes seasonal parameters' },
+  cmim8s9m9004yoxy8maisds25: { contentType: 'gameplay-mod', why: 'E180 "Family Therapy" — gameplay-mod, was accessories; a therapy gameplay mod' },
+  cmim8s8lc004loxy8xxhxh6sk: { contentType: 'gameplay-mod', why: 'E180 "Life Tragedies" — gameplay-mod, was accessories; Sacrificial life-events mod' },
+  cmim8s966004soxy8xldd1qz7: { contentType: 'gameplay-mod', why: 'E180 "SimCity Loans 2.0" — gameplay-mod, was accessories; a loans gameplay mod' },
+  cmim8s8tm004ooxy8kw3ul4xd: { contentType: 'gameplay-mod', why: 'E180 "The One with All the Romance" — gameplay-mod, was accessories; a relationship interactions mod' },
+  cmim8s8nt004moxy8zhs2x9hw: { contentType: 'gameplay-mod', why: 'E180 "Let’s Get Fit Modpack" — gameplay-mod, was workout; functional workout items, not workout clothing' },
+  // /sims-4-bags-cc/ — wearable bags → accessories
+  cmim8wmne00q6oxy8comhg52b: { contentType: 'accessories', why: 'E180 "Mini Pochette Bags" — accessories, was furniture; three wearable pochette bags (Sage hub top-20 flag 10-04)' },
+  cmim8wn6l00qfoxy8s4wurdrv: { contentType: 'accessories', why: 'E180 "Prada Cleo Bags V2" — accessories, was furniture; a wearable flap bag' },
+  cmim8wngv00qkoxy895t4pdtu: { contentType: 'accessories', why: 'E180 "Rimings" — accessories, was furniture; desc: "the best bag set to add to your Sim’s wardrobe"' },
+  cmim8wnco00qioxy80z6od00s: { contentType: 'accessories', why: 'E180 "YUNSEOL Leather Square Hand Bag" — accessories, was full-body' },
+  cmim8wnxi00qsoxy8f5kj29cy: { contentType: 'accessories', why: 'E180 "Mini Box Bag" — accessories, was full-body' },
+  cmim8wmte00q9oxy88ll7g3yc: { contentType: 'accessories', why: 'E180 "Birkin Collection" — accessories, was full-body; Birkin bags in 8 swatches' },
+  cmim8wmvj00qaoxy8zj7vpeob: { contentType: 'accessories', why: 'E180 "Horsebit Bag" — accessories, was full-body' },
+  cmim8wnzh00qtoxy8lenvqmr9: { contentType: 'accessories', why: 'E180 "Metal Framed Clutch" — accessories, was full-body' },
+  cmim8wmxt00qboxy84not54r8: { contentType: 'accessories', why: 'E180 "Fanny Pack" — accessories, was full-body; TSR sims4-accessories download' },
+  cmim8wofd00r1oxy8ybeesymt: { contentType: 'accessories', why: 'E180 "Early Access-Hanging Spring Leather Bag" — accessories, was full-body' },
+  cmim8wmh000q3oxy8mdy0cmay: { contentType: 'accessories', why: 'E180 "Prada Hobo Bag" — accessories, was tops; title names the bag (a crop top ships alongside)' },
+  cmim8wnky00qmoxy8tysfuiq5: { contentType: 'accessories', why: 'E180 "University Nike Backpack" — accessories, was tops' },
+  cmim8wo3d00qvoxy8alt72di3: { contentType: 'accessories', why: 'E180 "Sports Bag" — accessories, was workout; a wearable unisex bag' },
+  cmim8wmjc00q4oxy847wdx53i: { contentType: 'accessories', why: 'E180 "Vintage Coach Hb Bag Accessory" — accessories, was makeup; ring-slot accessory (a decor version ships too)' },
+  cmim8wohn00r2oxy8shmd418j: { contentType: 'accessories', why: 'E180 "Teddy Kelly Bag" — accessories, was decor; "both accessory and decor versions", listed as wearable' },
+  cmim8wn2900qdoxy8cw8ulspr: { contentType: 'accessories', why: 'E180 "Square One Shoulder Leather Big Bag With Pose" — accessories, was poses; the bag is the item, the pose is a bonus' },
+  // /sims-4-bags-cc/ — decor objects (download-host category wins over prose)
+  cmim8wo9c00qyoxy8jxtu84pg: { contentType: 'decor', why: 'E180 "Sac a Main" — decor, was full-body; TSR download is sims4-objects-furnishing-decor-clutter ("gabrielle-handbag")' },
+  cmim8wntd00qqoxy825yfi4zj: { contentType: 'decor', why: 'E180 "Luxe D’Tote Bag" — decor, was dresses; CurseForge download is build-buy' },
+  cmim8wnve00qroxy876ncv3lo: { contentType: 'decor', why: 'E180 "BCP Deco Schoolbags" — decor, was full-body; title says Deco (Leo-4-Sims deco objects)' },
+  cmim8wniv00qloxy8il1umjjw: { contentType: 'decor', why: 'E180 "Dior Tote Decor" — KEEP decor (no-op); title says Decor' },
+  // /sims-4-bags-cc/ — no single facet
+  cmim8wml700q5oxy8gpan8gmx: { contentType: null, why: 'E180 "CC #47.2" — NULL, was shoes; mixed CAS set (bags, lenses, sandals, bodysuits), title names nothing' },
+  cmim8wo7c00qxoxy8c70vxacz: { contentType: null, why: 'E180 "Simkea Pose Accessory Bag" — NULL, was workout; pose-accessory object vs wearable is unclear from title and desc; NULL beats a guess' },
 };
 
 /**
