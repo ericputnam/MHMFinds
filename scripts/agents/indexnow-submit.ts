@@ -46,6 +46,7 @@ import { fetchWpGuidesModifiedSince } from '../../lib/seo/wpGuides';
 
 import {
   CREATORS_HARD_CAP,
+  ageHours,
   DEFAULT_DAYS,
   HARD_CAP,
   INDEXNOW_KEY,
@@ -124,7 +125,12 @@ function usage(): void {
   );
 }
 
-async function fetchNewModIds(days: number, cap: number): Promise<string[]> {
+/**
+ * New mod ids in the window, plus the createdAt of the newest eligible row
+ * regardless of window (E177) — the same where-clause minus the date bound,
+ * so `mods=0` can be told apart from "ingest created nothing".
+ */
+async function fetchNewModIds(days: number, cap: number): Promise<{ ids: string[]; newestCreatedAt: Date | null }> {
   const since = new Date(Date.now() - days * 24 * 3600e3);
   // Imported lazily so DATABASE_URL is in place before lib/prisma.ts builds its client.
   const { prisma } = await import('../../lib/prisma');
@@ -135,7 +141,12 @@ async function fetchNewModIds(days: number, cap: number): Promise<string[]> {
       orderBy: { createdAt: 'desc' },
       take: cap,
     });
-    return rows.map((r) => r.id);
+    const newest = await prisma.mod.findFirst({
+      where: { isNSFW: false, isVerified: true },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { ids: rows.map((r) => r.id), newestCreatedAt: newest?.createdAt ?? null };
   } finally {
     await prisma.$disconnect().catch(() => undefined);
   }
@@ -196,8 +207,11 @@ async function main(): Promise<void> {
   }
 
   let modIds: string[];
+  let newestModAgeH: number | null = null;
   try {
-    modIds = await fetchNewModIds(args.days, args.cap);
+    const m = await fetchNewModIds(args.days, args.cap);
+    modIds = m.ids;
+    newestModAgeH = ageHours(m.newestCreatedAt, base.when);
   } catch (err) {
     console.error(`[indexnow] DB query failed: ${String((err as Error).message ?? err).slice(0, 200)}`);
     finish({ ...base, reason: 'db-error' });
@@ -238,6 +252,7 @@ async function main(): Promise<void> {
     guides: sel.guides,
     guidesFetch,
     dropped: sel.dropped.length,
+    newestModAgeH,
   };
   if (sel.dropped.length) {
     console.error(`[indexnow] dropped ${sel.dropped.length} non-canonical URL(s):`);
