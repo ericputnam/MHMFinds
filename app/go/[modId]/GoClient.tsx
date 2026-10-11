@@ -10,6 +10,8 @@ import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { GoSaveOffer } from '@/components/GoSaveOffer';
+import { ConnectEmailOptIn } from '@/components/ConnectEmailOptIn';
+import { shouldShowConnectOptIn } from '@/lib/capture/patreonConnectOptIn';
 import {
   GO_SAVE_EVENTS,
   GO_SAVE_FAVORITES_PATH,
@@ -90,6 +92,12 @@ export default function GoClient() {
     setPostConnect(hasPostConnectMarker(window.location.search));
   }, []);
   const showPostConnect = membershipOn && postConnect && sessionStatus === 'authenticated' && !isMember;
+  // E173 (Cass): members see it too — the opt-in is about email, not Patreon.
+  const showConnectOptIn = shouldShowConnectOptIn({
+    postConnect,
+    sessionStatus,
+    email: session?.user?.email,
+  });
 
   const handleConnectPatreon = useCallback(() => {
     gtag('event', 'patreon_click', { source: 'go-member-cta-connect', mod_id: String(params.modId) });
@@ -540,6 +548,16 @@ export default function GoClient() {
                       Already a patron? Reconnect
                     </button>
                   </p>
+                )}
+                {/*
+                  E173 (Cass) — one-click weekly-email opt-in for a visitor
+                  just back from Patreon connect. Patreon OAuth creates the
+                  account without the sign-up form's opt-in (E86), so this is
+                  the first ask. Inside the mod card, a sibling of the mv-ads
+                  wrapper below — never inside it or the aside (SD-3).
+                */}
+                {showConnectOptIn && !loading && session?.user?.email && (
+                  <ConnectEmailOptIn email={session.user.email} modId={String(params.modId)} />
                 )}
               </div>
             </div>
