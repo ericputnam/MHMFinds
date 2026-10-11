@@ -2177,3 +2177,29 @@ The 10-02 section is in the archive.
 - **Still open:** #257's 80-row apply (next run's first move) and a retroactive ledger row for
   #257. `ModDetailPage.test.tsx` red since #219. Cron routes `commission-sync`/`monetization-agent`
   fail open (Tier 2). `check-host-split.sh` not wired into `deploy-verify.sh`.
+
+### 2026-10-04 — six merges (#255, #258, #259, #261–#263), RED same-incident, no rollback (rotated from CLAUDE.md 2026-10-11)
+
+The 10-03 section is in the archive.
+- **An automatic destructive action needs a blast-radius bound, not just a trigger.** With the
+  Vercel list fixed, the guardrail's honest rollback target was 114 (10-03) and 94 (10-04)
+  production deploys back for a Mediavine-side drop. `rollback` now also needs ≤24 in-window
+  deploys and a READY target ≤48 h old (from the ledger: p90 12 merges/day × 2 deploys), else
+  `investigate` (#255, E169-b).
+- **A CLI list's first page is not the population.** `vercel ls --format json` returns 20 rows;
+  page 1 reached only 10-02, so 114 in-window deploys were invisible and RED read as "no deploy
+  in window". Page with `--next` past the window start, print `COMPLETE|TRUNCATED`, and treat
+  TRUNCATED as *unknown*, never "no". Keep `action` one bare word (the runner `read -r`s it).
+- **A cap enforced per invocation is not a cap per day.** `pin-runway-topup.py` held "≤7 rows/day"
+  inside one run, so three runs stacked 21 rows on every posting date 09-27→10-03. Earlier rows
+  now count against the date's 7 and unreadable state → cap 0 (#261). Count across runs.
+- **A number from a join is only as good as the join.** "Creators onboarded 0" joined
+  `CreatorProfile`, which the dashboard path never creates: the true count was 3 (#258). 10-03's
+  "blog fill −9 pts" came from per-path rows that had not joined yet (0/100). Once they joined, blog
+  fill was +4.4 pts *above* the rest (#262). Check the join rate first.
+- **Never end a run with an after-merge verify still in the background.** 10-03's missing #257 row
+  was the day's only `run_in_background` deploy-verify, which died with the CLI 6 s after Quinn
+  ended its turn: no row, no daily PR. Run the verify in the foreground.
+- **Still open:** #260 (Cass E173, `app/go`) held on RED. `ModDetailPage.test.tsx` has been red
+  since #219. Cron routes `commission-sync`/`monetization-agent` fail open (Tier 2).
+  `check-host-split.sh` is not wired into `deploy-verify.sh`.

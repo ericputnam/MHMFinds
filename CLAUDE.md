@@ -970,35 +970,36 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-04 — six merges (#255, #258, #259, #261–#263), RED same-incident, no rollback
+### 2026-10-07 → 10-11 — seven merges on 10-07 (#265–#271), then four days with no Quinn
 
-The 10-03 section is in the archive.
-- **An automatic destructive action needs a blast-radius bound, not just a trigger.** With the
-  Vercel list fixed, the guardrail's honest rollback target was 114 (10-03) and 94 (10-04)
-  production deploys back for a Mediavine-side drop. `rollback` now also needs ≤24 in-window
-  deploys and a READY target ≤48 h old (from the ledger: p90 12 merges/day × 2 deploys), else
-  `investigate` (#255, E169-b).
-- **A CLI list's first page is not the population.** `vercel ls --format json` returns 20 rows;
-  page 1 reached only 10-02, so 114 in-window deploys were invisible and RED read as "no deploy
-  in window". Page with `--next` past the window start, print `COMPLETE|TRUNCATED`, and treat
-  TRUNCATED as *unknown*, never "no". Keep `action` one bare word (the runner `read -r`s it).
-- **A cap enforced per invocation is not a cap per day.** `pin-runway-topup.py` held "≤7 rows/day"
-  inside one run, so three runs stacked 21 rows on every posting date 09-27→10-03. Earlier rows
-  now count against the date's 7 and unreadable state → cap 0 (#261). Count across runs.
-- **A number from a join is only as good as the join.** "Creators onboarded 0" joined
-  `CreatorProfile`, which the dashboard path never creates: the true count was 3 (#258). 10-03's
-  "blog fill −9 pts" came from per-path rows that had not joined yet (0/100). Once they joined, blog
-  fill was +4.4 pts *above* the rest (#262). Check the join rate first.
-- **Never end a run with an after-merge verify still in the background.** 10-03's missing #257 row
-  was the day's only `run_in_background` deploy-verify, which died with the CLI 6 s after Quinn
-  ended its turn: no row, no daily PR. Run the verify in the foreground.
-- **Still open:** #260 (Cass E173, `app/go`) held on RED. `ModDetailPage.test.tsx` has been red
-  since #219. Cron routes `commission-sync`/`monetization-agent` fail open (Tier 2).
-  `check-host-split.sh` is not wired into `deploy-verify.sh`.
+The 10-04 section is in the archive.
+- **A timeout counted in awake time is not a wall-clock bound on a laptop.** The runner's
+  `perl -e 'alarm 240'` preflight began 10-08 20:30 and 10-10 08:15 and returned on 10-11 at
+  10:55:46 — *both in the same second*, ~62 h and ~27 h late, each with a 0-byte output file.
+  An empty preflight file is its own diagnosis (hung), not `OTHER` with `excerpt: none`; a step
+  that can hang needs a wall-clock deadline checked against `date +%s`, not only a signal timer.
+- **A degraded digest in the operator's tree is not a record.** The 10-08 and 10-10 "Quinn did not
+  run" digests landed in `PROJECT_DIR` three days late, never on `main`; 10-09 has no run and no
+  `MISSED` row. "Quinn did not run" must be a `ledger-commit.sh` row the moment it is known.
+- **A scheduler's concurrency guard counts what *it* runs, not what your job runs.** The app's
+  `per_task_limit` counted live queries: a stale 10-05 catch-up session resumed on 10-07 and a new
+  catch-up spawned beside it — two runners, two Quinns (#271). The job guards itself: atomic
+  `mkdir` day-lock before any side effect; a holder that cannot be checked counts as alive. The
+  app keeps the cron timezone it started in; battery clamshell sleep beats its no-sleep assertion.
+- **A zero needs a field that says which zero it is.** 6 of 14 IndexNow `mods=0` lines could not
+  tell "no new rows" from "selection broke"; the line now self-grades `mods_check=` (#265).
+- **A self-reported checkbox is not a role.** The 343 `isCreator` accounts read as a supply leak
+  ("onboarded 3 of 343") until the audit showed they act like unflagged accounts (57.1% vs 55.9%
+  download-click rate) (#270). Before you funnel on a flag, compare flagged against unflagged.
+- **`/games/[game]/[topic]` is fully static:** a catalog retag (#267) reaches the live hub only
+  with the next production deploy. Read a data fix's effect after a deploy, not after the apply.
+- **Still open:** Quinn cannot start until the host's CLI auth is fixed (token expired 10-07).
+  10-08/10-10 lock dirs never released. `ModDetailPage.test.tsx` red since #219. `commission-sync`/
+  `monetization-agent` fail open (Tier 2). `check-host-split.sh` not wired into `deploy-verify.sh`.
 
 ---
 
-*Last compound review: 2026-10-04*
+*Last compound review: 2026-10-11*
 
 ---
 
