@@ -1,0 +1,499 @@
+{
+ "writtenAt": "2026-10-11T15:13:46.378Z",
+ "mode": "apply",
+ "facets": [
+  "accessories",
+  "full-body",
+  "furniture",
+  "gameplay-mod",
+  "glasses",
+  "hair",
+  "makeup",
+  "residential",
+  "skin",
+  "tops",
+  "workout"
+ ],
+ "rows": [
+  {
+   "id": "cmil3nd7s00gxoxpzgy3qacfv",
+   "title": "Baby Face Kit",
+   "from": "full-body",
+   "to": null
+  },
+  {
+   "id": "cmim932l901upoxy8ja1dwyff",
+   "title": "Nike Skull Cap",
+   "from": "hair",
+   "to": "hats"
+  },
+  {
+   "id": "cmil3nhgc00h0oxpz5wna25az",
+   "title": "Lips Preset N23 To 30",
+   "from": "skin",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3nejf00gyoxpz4yt5z6lv",
+   "title": "Love Yourself Presets Collection",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3n9ad00gvoxpzzfji5iuz",
+   "title": "Lucky Lip Presets",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3no6e00h5oxpzn7mhtzz7",
+   "title": "Lip Set",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmim933oj01v7oxy8ew3xfdii",
+   "title": "Ushanka Hat Set",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmknfblvs0089oxolf8hjbmv0",
+   "title": "The Balance Collection",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmil3nr9f00h7oxpzwp16s6ub",
+   "title": "Gloss Collection",
+   "from": "accessories",
+   "to": null
+  },
+  {
+   "id": "cmknfbllx0084oxol4f15daui",
+   "title": "February 2025 Set 1: Luxury Fitness",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim8yimc011xoxy8a9ihlltj",
+   "title": "Health And Fitness Clutter",
+   "from": "workout",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8yio6011yoxy8g8if1ozq",
+   "title": "Fitness CC Sims 4",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim8yig7011voxy85al0l2rh",
+   "title": "Set Fitness 2",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmil3nk8600h2oxpzqbduym5t",
+   "title": "Lucian Mouth Preset N11",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3o5ov00hhoxpzyb6w2opy",
+   "title": "Lip Preset",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3nfq300gzoxpzbvnw891j",
+   "title": "Sims 4 Lip Preset 11 To 25",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3o2f200hfoxpzmf1l3zfu",
+   "title": "Sweet Lip Presets",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmknfblny0085oxolyfihcxls",
+   "title": "Lots Of Gym Equipment",
+   "from": "workout",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil3nlky00h3oxpz0dsj6jf3",
+   "title": "Lip Kit",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmknfblrr0087oxolcp544ebu",
+   "title": "Yoga Set",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmil3o4i300hgoxpz6gjcyh2p",
+   "title": "Redefined Nat Lips",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmil3npzm00h6oxpz69rhmvpb",
+   "title": "Lip Preset No. 2",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3obul00hmoxpz3ob6u93e",
+   "title": "Female Lips Preset",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8yjas0129oxy8wjsgrpzm",
+   "title": "Sports And Gym",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmil3nb2c00gwoxpz06nt3qiy",
+   "title": "Presets And Makeup Set",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmim8yjgi012coxy81wfwae06",
+   "title": "Sims 4 Functional Gymnastics Chalk Bowl",
+   "from": "workout",
+   "to": "clutter"
+  },
+  {
+   "id": "cmknfbli20082oxol7nat5enq",
+   "title": "Functional Treadmill",
+   "from": "workout",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim9337n01uzoxy83dfj5efr",
+   "title": "Bear Hat",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8yiuf0121oxy8ah90f096",
+   "title": "Crossfit Treadmill",
+   "from": "workout",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim933gh01v3oxy80wzs20ap",
+   "title": "Hala Hala Hat And Mask",
+   "from": "glasses",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8yjr4012hoxy8ok6c9t7t",
+   "title": "Yosef Decor",
+   "from": "workout",
+   "to": "decor"
+  },
+  {
+   "id": "cmil3nwps00hboxpzl3qdh68y",
+   "title": "Lips Preset",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil3nsle00h8oxpza7oiyidy",
+   "title": "Female Lips Preset And Makeup",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmil3o6t500hioxpzhawe52x8",
+   "title": "Mouth Preset D1 To 5",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8yjuw012joxy88998ppu4",
+   "title": "Boxing Collaboration",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim933eg01v2oxy89fxvr74w",
+   "title": "Denim Bunny Cap",
+   "from": "gameplay-mod",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8yjom012goxy8hx4anyap",
+   "title": "C4 Set S3 And S4",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim8yis80120oxy8n91lii38",
+   "title": "Crossfit Set",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim8yj8x0128oxy8ukrw20i8",
+   "title": "Hype Sports Drink",
+   "from": "workout",
+   "to": "clutter"
+  },
+  {
+   "id": "cmil3nivt00h1oxpzttxembde",
+   "title": "Summer Equinox",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmil3oalj00hloxpzxiute46t",
+   "title": "Mouth Preset",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim9333o01uxoxy8zzbvqujt",
+   "title": "His And Hers Adidas Cap",
+   "from": "workout",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8yjeq012boxy8wijxy68q",
+   "title": "Gym Equipment Set",
+   "from": "workout",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8yike011woxy8mmjdqb0l",
+   "title": "Strong Hex Dumbbell Ruck V1",
+   "from": "workout",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8yiyl0123oxy8shsu7uay",
+   "title": "Body Language",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmil3o7wb00hjoxpz39n9ag7a",
+   "title": "Lips Set",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmim8yj2k0125oxy8784d4yjg",
+   "title": "Sport and Gym set",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmil3nvlj00haoxpzlkd65l9f",
+   "title": "Locking Lips",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmil3nu3o00h9oxpzybzj3oqj",
+   "title": "CyFi Lip Cuff",
+   "from": "makeup",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmim932n901uqoxy8odnnmvpm",
+   "title": "Paper Clip Rabbit Hat",
+   "from": "furniture",
+   "to": "hats"
+  },
+  {
+   "id": "cmil3o9bo00hkoxpzxjc5dt80",
+   "title": "Gpme Gold Natural Lips",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmim931yj01ueoxy8d3ohnvs3",
+   "title": "Hat Tiffany Version With Lace And Bow",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmil3nz0b00hdoxpzjud8a62p",
+   "title": "Pout Lip Slider",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim932d401uloxy81bg3na87",
+   "title": "Sometimes Fur Hat",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim933ch01v1oxy8jhip4zb4",
+   "title": "Helene Hat",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim9335n01uyoxy881h6z1vp",
+   "title": "Chasm DIY Bucket Hat",
+   "from": "furniture",
+   "to": "hats"
+  },
+  {
+   "id": "cmim932rq01usoxy83dtle5sn",
+   "title": "Denim Bucket Hat",
+   "from": "tops",
+   "to": "hats"
+  },
+  {
+   "id": "cmil3nxti00hcoxpzowqeu3xx",
+   "title": "Cleft Lip",
+   "from": "accessories",
+   "to": null
+  },
+  {
+   "id": "cmim8yjmi012foxy8ew7eivz2",
+   "title": "Ats4-Fitness Set",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim932pk01uroxy8kq953eyx",
+   "title": "Pina Colada Hat",
+   "from": "tops",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8yj4u0126oxy8sliqk69p",
+   "title": "Whey Protein, Slimming Shakes, Meal Replacements, And Gummy Supplements",
+   "from": "accessories",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8yj6u0127oxy8knjjximn",
+   "title": "Gym Stuff",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim933al01v0oxy8zttf4tbi",
+   "title": "Cowboy Hat Recolor",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim933mi01v6oxy83sin3j46",
+   "title": "May Beret",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8yjkh012eoxy8jbfafkk5",
+   "title": "Gym Posters",
+   "from": "workout",
+   "to": "decor"
+  },
+  {
+   "id": "cmim8yjcn012aoxy8svur96cx",
+   "title": "Home Fitness Set",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmim8yjt2012ioxy8m1090gb8",
+   "title": "Protein Shaker And Protein Powder Tub",
+   "from": "workout",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim932h401unoxy8uklp0fws",
+   "title": "Freshman Year Collection Beret",
+   "from": "furniture",
+   "to": "hats"
+  },
+  {
+   "id": "cmim9331s01uwoxy818lep6ne",
+   "title": "Devil Hat",
+   "from": "tops",
+   "to": "hats"
+  },
+  {
+   "id": "cmil3nmx000h4oxpzg5ffx7o5",
+   "title": "Lip Presets For Latest Skin",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8yjih012doxy8y7reneua",
+   "title": "Strong Exercise Bench",
+   "from": "workout",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8yiwj0122oxy8773bexpk",
+   "title": "Crossfit Gymbag",
+   "from": "workout",
+   "to": null
+  },
+  {
+   "id": "cmknfblpw0086oxolc0evuxmn",
+   "title": "Clutter Dump: Functional Clutter Items",
+   "from": "workout",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim9320h01ufoxy86hf2htzd",
+   "title": "Sunrise Hat",
+   "from": "tops",
+   "to": "hats"
+  },
+  {
+   "id": "cmim9328v01ujoxy8jf4euod7",
+   "title": "S-Club WM Hat",
+   "from": "residential",
+   "to": "hats"
+  },
+  {
+   "id": "cmim932j101uooxy8a6ohxh91",
+   "title": "Cowboy Hat",
+   "from": "gameplay-mod",
+   "to": "hats"
+  },
+  {
+   "id": "cmim932f801umoxy8chexuh8k",
+   "title": "Maoni Cat",
+   "from": "full-body",
+   "to": null
+  },
+  {
+   "id": "cmil3o04v00heoxpz7xy7oprk",
+   "title": "Asymmetrical Lips",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmim932zs01uvoxy8iprvw4lw",
+   "title": "Summer In Mount Koromebi Set",
+   "from": "full-body",
+   "to": null
+  },
+  {
+   "id": "cmim9324v01uhoxy8365r2316",
+   "title": "Niche Noir Hat Collection",
+   "from": "full-body",
+   "to": "hats"
+  }
+ ]
+}

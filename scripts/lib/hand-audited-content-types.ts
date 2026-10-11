@@ -502,6 +502,103 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   // /sims-4-bags-cc/ — no single facet
   cmim8wml700q5oxy8gpan8gmx: { contentType: null, why: 'E180 "CC #47.2" — NULL, was shoes; mixed CAS set (bags, lenses, sandals, bodysuits), title names nothing' },
   cmim8wo7c00qxoxy8c70vxacz: { contentType: null, why: 'E180 "Simkea Pose Accessory Bag" — NULL, was workout; pose-accessory object vs wearable is unclear from title and desc; NULL beats a guess' },
+
+  // ── Audited 2026-10-11 (Rowan, E186). `scripts/agents/catalog-post-disagreement.ts`
+  //    ranked 166 posts by the share of typed rows whose contentType disagrees
+  //    with the post's own URL category; these are the worst three, read row
+  //    by row from TITLES ONLY (the prose is what typed them). NULL beats a guess.
+  // /sims-4-lips-presets-cc/ (URL category preset): 28 of 28 typed rows disagreed — 24
+  // were `makeup`, so lip-shape presets sat on the live makeup-cc page. Title says
+  // preset/slider -> preset; a lip cuff -> jewelry; anything a title cannot settle (shape
+  // vs lipstick, "Kit"/"Set", two types named) -> NULL.
+  cmil3nu3o00h9oxpzybzj3oqj: { contentType: 'jewelry', why: 'E186 "CyFi Lip Cuff" — jewelry, was makeup; a lip cuff is a piercing' },
+  cmil3obul00hmoxpz3ob6u93e: { contentType: 'preset', why: 'E186 "Female Lips Preset" — preset, was makeup; title says preset' },
+  cmil3o5ov00hhoxpzyb6w2opy: { contentType: 'preset', why: 'E186 "Lip Preset" — preset, was makeup; title says preset' },
+  cmil3npzm00h6oxpz69rhmvpb: { contentType: 'preset', why: 'E186 "Lip Preset No. 2" — preset, was makeup; title says preset' },
+  cmil3nmx000h4oxpzg5ffx7o5: { contentType: 'preset', why: 'E186 "Lip Presets For Latest Skin" — preset, was makeup; title says preset' },
+  cmil3nwps00hboxpzl3qdh68y: { contentType: 'preset', why: 'E186 "Lips Preset" — preset, was makeup; title says preset' },
+  cmil3nhgc00h0oxpz5wna25az: { contentType: 'preset', why: 'E186 "Lips Preset N23 To 30" — preset, was skin; title says preset' },
+  cmil3nejf00gyoxpz4yt5z6lv: { contentType: 'preset', why: 'E186 "Love Yourself Presets Collection" — preset, was makeup; title says presets' },
+  cmil3nk8600h2oxpzqbduym5t: { contentType: 'preset', why: 'E186 "Lucian Mouth Preset N11" — preset, was makeup; title says preset' },
+  cmil3n9ad00gvoxpzzfji5iuz: { contentType: 'preset', why: 'E186 "Lucky Lip Presets" — preset, was makeup; title says presets' },
+  cmil3oalj00hloxpzxiute46t: { contentType: 'preset', why: 'E186 "Mouth Preset" — preset, was makeup; title says preset' },
+  cmil3o6t500hioxpzhawe52x8: { contentType: 'preset', why: 'E186 "Mouth Preset D1 To 5" — preset, was makeup; title says preset' },
+  cmil3nz0b00hdoxpzjud8a62p: { contentType: 'preset', why: 'E186 "Pout Lip Slider" — preset, was makeup; a lip shape slider, preset class' },
+  cmil3nfq300gzoxpzbvnw891j: { contentType: 'preset', why: 'E186 "Sims 4 Lip Preset 11 To 25" — preset, was makeup; title says preset' },
+  cmil3o2f200hfoxpzmf1l3zfu: { contentType: 'preset', why: 'E186 "Sweet Lip Presets" — preset, was makeup; title says presets' },
+  cmil3o04v00heoxpz7xy7oprk: { contentType: null, why: 'E186 "Asymmetrical Lips" — NULL, was makeup; shape or lipstick, title cannot tell' },
+  cmil3nd7s00gxoxpzgy3qacfv: { contentType: null, why: 'E186 "Baby Face Kit" — NULL, was full-body; not an outfit; kit contents unnamed' },
+  cmil3nxti00hcoxpzowqeu3xx: { contentType: null, why: 'E186 "Cleft Lip" — NULL, was accessories; preset or skin detail, title cannot tell' },
+  cmil3nsle00h8oxpza7oiyidy: { contentType: null, why: 'E186 "Female Lips Preset And Makeup" — NULL, was makeup; title names two types' },
+  cmil3nr9f00h7oxpzwp16s6ub: { contentType: null, why: 'E186 "Gloss Collection" — NULL, was accessories; likely lipgloss but unsure; not accessories' },
+  cmil3o9bo00hkoxpzxjc5dt80: { contentType: null, why: 'E186 "Gpme Gold Natural Lips" — NULL, was makeup; shape or lipstick, title cannot tell' },
+  cmil3nlky00h3oxpz0dsj6jf3: { contentType: null, why: 'E186 "Lip Kit" — NULL, was makeup; presets or lipstick, title cannot tell' },
+  cmil3no6e00h5oxpzn7mhtzz7: { contentType: null, why: 'E186 "Lip Set" — NULL, was makeup; presets or lipstick, title cannot tell' },
+  cmil3o7wb00hjoxpz39n9ag7a: { contentType: null, why: 'E186 "Lips Set" — NULL, was makeup; presets or lipstick, title cannot tell' },
+  cmil3nvlj00haoxpzlkd65l9f: { contentType: null, why: 'E186 "Locking Lips" — NULL, was makeup; shape or lipstick, title cannot tell' },
+  cmil3nb2c00gwoxpz06nt3qiy: { contentType: null, why: 'E186 "Presets And Makeup Set" — NULL, was makeup; title names two types' },
+  cmil3o4i300hgoxpz6gjcyh2p: { contentType: null, why: 'E186 "Redefined Nat Lips" — NULL, was makeup; shape or lipstick, title cannot tell' },
+  cmil3nivt00h1oxpzttxembde: { contentType: null, why: 'E186 "Summer Equinox" — NULL, was makeup; title names nothing' },
+  // /sims-4-hats-cc/ (URL category hats): 23 of 29 typed rows disagreed (full-body 10,
+  // tops 4, furniture 3, gameplay-mod 2, ...). Every title that names a hat/cap/beret ->
+  // hats; two titles that name nothing -> NULL.
+  cmim9337n01uzoxy83dfj5efr: { contentType: 'hats', why: 'E186 "Bear Hat" — hats, was full-body; title says hat' },
+  cmim9335n01uyoxy881h6z1vp: { contentType: 'hats', why: 'E186 "Chasm DIY Bucket Hat" — hats, was furniture; title says hat' },
+  cmim932j101uooxy8a6ohxh91: { contentType: 'hats', why: 'E186 "Cowboy Hat" — hats, was gameplay-mod; title says hat' },
+  cmim933al01v0oxy8zttf4tbi: { contentType: 'hats', why: 'E186 "Cowboy Hat Recolor" — hats, was full-body; title says hat' },
+  cmim932rq01usoxy83dtle5sn: { contentType: 'hats', why: 'E186 "Denim Bucket Hat" — hats, was tops; title says hat' },
+  cmim933eg01v2oxy89fxvr74w: { contentType: 'hats', why: 'E186 "Denim Bunny Cap" — hats, was gameplay-mod; title says cap' },
+  cmim9331s01uwoxy818lep6ne: { contentType: 'hats', why: 'E186 "Devil Hat" — hats, was tops; title says hat' },
+  cmim932h401unoxy8uklp0fws: { contentType: 'hats', why: 'E186 "Freshman Year Collection Beret" — hats, was furniture; title says beret' },
+  cmim933gh01v3oxy80wzs20ap: { contentType: 'hats', why: 'E186 "Hala Hala Hat And Mask" — hats, was glasses; hat named first; the mask is the bonus' },
+  cmim931yj01ueoxy8d3ohnvs3: { contentType: 'hats', why: 'E186 "Hat Tiffany Version With Lace And Bow" — hats, was full-body; title says hat' },
+  cmim933ch01v1oxy8jhip4zb4: { contentType: 'hats', why: 'E186 "Helene Hat" — hats, was full-body; title says hat' },
+  cmim9333o01uxoxy8zzbvqujt: { contentType: 'hats', why: 'E186 "His And Hers Adidas Cap" — hats, was workout; title says cap' },
+  cmim933mi01v6oxy83sin3j46: { contentType: 'hats', why: 'E186 "May Beret" — hats, was full-body; title says beret' },
+  cmim9324v01uhoxy8365r2316: { contentType: 'hats', why: 'E186 "Niche Noir Hat Collection" — hats, was full-body; title says hat' },
+  cmim932l901upoxy8ja1dwyff: { contentType: 'hats', why: 'E186 "Nike Skull Cap" — hats, was hair; a skull cap is headwear, not hair' },
+  cmim932n901uqoxy8odnnmvpm: { contentType: 'hats', why: 'E186 "Paper Clip Rabbit Hat" — hats, was furniture; title says hat' },
+  cmim932pk01uroxy8kq953eyx: { contentType: 'hats', why: 'E186 "Pina Colada Hat" — hats, was tops; title says hat' },
+  cmim9328v01ujoxy8jf4euod7: { contentType: 'hats', why: 'E186 "S-Club WM Hat" — hats, was residential; title says hat' },
+  cmim932d401uloxy81bg3na87: { contentType: 'hats', why: 'E186 "Sometimes Fur Hat" — hats, was full-body; title says hat' },
+  cmim9320h01ufoxy86hf2htzd: { contentType: 'hats', why: 'E186 "Sunrise Hat" — hats, was tops; title says hat' },
+  cmim933oj01v7oxy8ew3xfdii: { contentType: 'hats', why: 'E186 "Ushanka Hat Set" — hats, was full-body; title says hat' },
+  cmim932f801umoxy8chexuh8k: { contentType: null, why: 'E186 "Maoni Cat" — NULL, was full-body; title names nothing' },
+  cmim932zs01uvoxy8iprvw4lw: { contentType: null, why: 'E186 "Summer In Mount Koromebi Set" — NULL, was full-body; set of unnamed items' },
+  // /sims-4-fitness-clutter-cc/ (URL category decor): 29 of 43 typed rows disagreed — 28
+  // were `workout`, the CAS gym-clothes facet, on a post about objects. Equipment ->
+  // furniture, tabletop items -> clutter, posters/decor -> decor; every "Fitness Set"/"Gym
+  // set" title that could be an outfit -> NULL. `gym` was not used: it is itself mixed
+  // (Flow Motion Clothes Set, Pilates Princess).
+  cmknfblpw0086oxolc0evuxmn: { contentType: 'clutter', why: 'E186 "Clutter Dump: Functional Clutter Items" — clutter, was workout; title says clutter' },
+  cmim8yimc011xoxy8a9ihlltj: { contentType: 'clutter', why: 'E186 "Health And Fitness Clutter" — clutter, was workout; title says clutter' },
+  cmim8yj8x0128oxy8ukrw20i8: { contentType: 'clutter', why: 'E186 "Hype Sports Drink" — clutter, was workout; a drink object' },
+  cmim8yjt2012ioxy8m1090gb8: { contentType: 'clutter', why: 'E186 "Protein Shaker And Protein Powder Tub" — clutter, was workout; tabletop objects' },
+  cmim8yjgi012coxy81wfwae06: { contentType: 'clutter', why: 'E186 "Sims 4 Functional Gymnastics Chalk Bowl" — clutter, was workout; a functional object' },
+  cmim8yj4u0126oxy8sliqk69p: { contentType: 'clutter', why: 'E186 "Whey Protein, Slimming Shakes, Meal Replacements, And Gummy Supplements" — clutter, was accessories; tabletop objects' },
+  cmim8yiuf0121oxy8ah90f096: { contentType: 'furniture', why: 'E186 "Crossfit Treadmill" — furniture, was workout; exercise equipment object' },
+  cmknfbli20082oxol7nat5enq: { contentType: 'furniture', why: 'E186 "Functional Treadmill" — furniture, was workout; exercise equipment object' },
+  cmim8yjeq012boxy8wijxy68q: { contentType: 'furniture', why: 'E186 "Gym Equipment Set" — furniture, was workout; exercise equipment objects' },
+  cmknfblny0085oxolyfihcxls: { contentType: 'furniture', why: 'E186 "Lots Of Gym Equipment" — furniture, was workout; exercise equipment objects' },
+  cmim8yjih012doxy8y7reneua: { contentType: 'furniture', why: 'E186 "Strong Exercise Bench" — furniture, was workout; exercise equipment object' },
+  cmim8yike011woxy8mmjdqb0l: { contentType: 'furniture', why: 'E186 "Strong Hex Dumbbell Ruck V1" — furniture, was workout; a dumbbell rack object' },
+  cmim8yjkh012eoxy8jbfafkk5: { contentType: 'decor', why: 'E186 "Gym Posters" — decor, was workout; wall posters' },
+  cmim8yjr4012hoxy8ok6c9t7t: { contentType: 'decor', why: 'E186 "Yosef Decor" — decor, was workout; title says decor' },
+  cmim8yjmi012foxy8ew7eivz2: { contentType: null, why: 'E186 "Ats4-Fitness Set" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmim8yiyl0123oxy8shsu7uay: { contentType: null, why: 'E186 "Body Language" — NULL, was workout; title names nothing' },
+  cmim8yjuw012joxy88998ppu4: { contentType: null, why: 'E186 "Boxing Collaboration" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmim8yjom012goxy8hx4anyap: { contentType: null, why: 'E186 "C4 Set S3 And S4" — NULL, was workout; title names nothing' },
+  cmim8yiwj0122oxy8773bexpk: { contentType: null, why: 'E186 "Crossfit Gymbag" — NULL, was workout; wearable or object, title cannot tell' },
+  cmim8yis80120oxy8n91lii38: { contentType: null, why: 'E186 "Crossfit Set" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmknfbllx0084oxol4f15daui: { contentType: null, why: 'E186 "February 2025 Set 1: Luxury Fitness" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmim8yio6011yoxy8g8if1ozq: { contentType: null, why: 'E186 "Fitness CC Sims 4" — NULL, was workout; title names no type' },
+  cmim8yj6u0127oxy8knjjximn: { contentType: null, why: 'E186 "Gym Stuff" — NULL, was workout; title names no type' },
+  cmim8yjcn012aoxy8svur96cx: { contentType: null, why: 'E186 "Home Fitness Set" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmim8yig7011voxy85al0l2rh: { contentType: null, why: 'E186 "Set Fitness 2" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmim8yj2k0125oxy8784d4yjg: { contentType: null, why: 'E186 "Sport and Gym set" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmim8yjas0129oxy8wjsgrpzm: { contentType: null, why: 'E186 "Sports And Gym" — NULL, was workout; objects or outfit, title cannot tell' },
+  cmknfblvs0089oxolf8hjbmv0: { contentType: null, why: 'E186 "The Balance Collection" — NULL, was workout; title names nothing' },
+  cmknfblrr0087oxolcp544ebu: { contentType: null, why: 'E186 "Yoga Set" — NULL, was workout; yoga mat or yoga outfit, title cannot tell' },
 };
 
 /**
