@@ -97,6 +97,17 @@ export type CollectionDefinition = {
    * legacy pages are WordPress proxied at the apex by middleware.ts).
    */
   blogUrl?: string;
+  /**
+   * Parent hub over every other collection in the game (E182, `cc`).
+   *
+   * A hub page renders a "browse by category" link to every non-hub
+   * collection above its grid, and it is deliberately **not** a mod-level
+   * membership: `getCollectionsForMod()` skips it, so no `/mods/[id]`
+   * breadcrumb, "Also in" row or BreadcrumbList changes because a hub
+   * exists. (Its union matches ~13.6K mods; as a membership it would have
+   * added an "Also in" row to the sticky header of ~10K mod pages.)
+   */
+  hub?: boolean;
 };
 
 /**
@@ -399,7 +410,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body'],
     },
     expectedCount: 3665,
-    related: ['female-clothes', 'male-clothes', 'shoes-cc'],
+    // 2026-10-11 (E182): 'shoes-cc' → 'cc', the second anchored inbound
+    // source for the CC hub (shoes-cc keeps 2: male-clothes, female-clothes).
+    related: ['female-clothes', 'male-clothes', 'cc'],
     // Differentiated pair: the legacy editorial post keeps the "best CC
     // clothes" picks intent, this page owns browse/filter intent.
     // /sims-4-cc-clothes/ is live (200) and not redirected (verified
@@ -1053,13 +1066,102 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       ],
     },
     expectedCount: 2207,
-    related: ['furniture-cc', 'decor-cc', 'clutter'],
+    // 2026-10-11 (E182): 'clutter' → 'cc' so the new top-level CC hub has an
+    // anchored inbound source (clutter keeps 2: holidays-cc, decor-cc).
+    related: ['furniture-cc', 'decor-cc', 'cc'],
     // Differentiated pair: "30+ Sims 4 CC Furniture Packs" keeps the editorial
     // picks intent, this page owns browse/filter intent. Live 200, self-
     // canonical, not redirected (checked 2026-10-04); 34 impressions at pos
     // 41.9 in GSC 09-03→09-30. Distinct from furniture-cc's
     // /sims-4-furniture-cc/, so the two hubs do not share one cross-link.
     blogUrl: '/sims-4-cc-furniture/',
+  },
+  {
+    // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
+    // hub from the 7-query category gap (competitors-2026-10.md): nothing on
+    // the site answers the bare head term. GSC 09-11→10-08: "sims 4 cc",
+    // "cc sims 4", "the sims 4 cc", "cc the sims 4" = 439 impressions /
+    // 19 clicks, 395 of them landing on the homepage at position 31.9–40.5;
+    // "custom content sims 4" family ≈70 impressions at 40–56; "cc finds"
+    // 20 at 22–50. The legacy listicle /sims-4-cc/ draws 27 impressions at
+    // position 35.0.
+    //
+    // `hub: true` keeps it out of mod-level memberships (see the type), and
+    // the page renders a link to every other collection above the grid.
+    // Appended last so registry order never puts it ahead of a sibling.
+    slug: 'cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'CC Finds',
+    heading: 'Sims 4 CC',
+    metaTitle: 'Sims 4 CC Finder — Browse 13,600+ Custom Content Finds | MustHaveMods',
+    metaDescription:
+      'Every Sims 4 CC find in one filterable grid — 13,600+ hair, clothes, skin, makeup, furniture and decor downloads sorted by downloads, links checked. 11,700+ are free.',
+    tagline: 'Hair, clothes, skin, makeup, furniture, and decor in one grid',
+    hub: true,
+    intro:
+      "Most Sims 4 custom content searches start broad and get specific fast. You want CC, then you want hair, then you want braids that work on a teen sim and don't clip through a hoodie. This page is the broad end of that: every CC find in our catalog in one grid, sorted by how often people actually download it. The category links above the grid take you to the narrow end.\n\nThere are 13,656 finds here as of today. Create-a-Sim is most of it — about 11,400 between hair (just over 2,000 on its own), full outfits, tops, bottoms, dresses, shoes, accessories and jewelry, makeup, skin overlays and details, tattoos, eyes, brows and lashes, body presets and poses. Build and buy is the other 2,200: furniture, decor, clutter, plants, rugs, wall art and lighting. 11,781 of them are free.\n\nWhat is not here is gameplay. Script mods, careers, gameplay overhauls and whole-house lots live in the main finder; this grid is the stuff your sims wear and the stuff you put in their houses. Holiday finds are left out too, because that category mixes decorations with event mods, and the holiday and Halloween collections already sort them.\n\nThe names that come up most often are Madlen, Severinka, SIMcredible!, Syboulette, Mermalade, Dissia and Pralinesims — creators who release in sets, so one download tends to cover a whole outfit or a whole room. The top of the download counts is streetwear, braids and skin packs; scroll down and you reach the single releases the big roundup posts never get to.\n\nTwo practical notes. Check a creator's page for required packs and for multi-part sets before you download. And keep an eye on art style: alpha (realistic) and Maxis Match CC look out of place next to each other, so pick one per save.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link.",
+    filter: {
+      // CAS 11,423 (incl. poses / CAS backgrounds / loading screens 1,213)
+      // + build/buy 2,233 = 13,656 SFW Sims 4 mods, 11,781 free — counted on
+      // prod 2026-10-11 with the page's own where (gameVersion + !isNSFW).
+      // Spot-checked: top 24 by downloads are 24/24 CC (tops, makeup,
+      // furniture, hair, skin, body presets, poses); a 10-row sample at
+      // offset 6,000 is 10/10 hair.
+      // Excluded on purpose: `holidays` (502 — its top 10 includes "Holiday
+      // Drama Mod" and "More Holiday Traditions", gameplay mods), every
+      // gameplay/script/career type, `lot` / `residential` / `commercial` /
+      // `community` / `builds` (lots, not objects), the ambiguous small
+      // themes (`workout`, `gym`, `royals`, `princess`, `easter`, `infant`,
+      // `food`, `vehicles`, `entertainment`, `outdoor`, `pregnancy`) and
+      // the 827 NULL rows — a missing tag is not evidence of CC.
+      contentTypeIn: [
+        'hair',
+        'full-body',
+        'tops',
+        'bottoms',
+        'dresses',
+        'shoes',
+        'accessories',
+        'jewelry',
+        'hats',
+        'glasses',
+        'watches',
+        'makeup',
+        'eyebrows',
+        'eyes',
+        'lashes',
+        'eyeliner',
+        'lipstick',
+        'blush',
+        'nails',
+        'skin',
+        'tattoos',
+        'beard',
+        'facial-hair',
+        'preset',
+        'body-preset',
+        'poses',
+        'cas-background',
+        'loading-screen',
+        'pet-accessories',
+        'pet-clothing',
+        'furniture',
+        'decor',
+        'clutter',
+        'plants',
+        'rugs',
+        'wall-art',
+        'lighting',
+        'pet-furniture',
+      ],
+    },
+    expectedCount: 13656,
+    related: ['hair-cc', 'clothes-cc', 'build-cc'],
+    // Differentiated pair: "The Best Sims 4 CC" (/sims-4-cc/) keeps the
+    // editorial picks intent; this page owns browse/filter intent. Live 200,
+    // self-canonical, not redirected (checked 2026-10-11).
+    blogUrl: '/sims-4-cc/',
   },
 ];
 
@@ -1291,8 +1393,10 @@ function filterSpecificity(filter: CollectionFacetQuery): number {
  */
 export function getCollectionsForMod(mod: ModFacetInput): CollectionDefinition[] {
   if (mod.isNSFW) return [];
+  // Hubs (E182) are parents of the category pages, not a membership: they
+  // never appear in a mod's breadcrumb, "Also in" row or BreadcrumbList.
   const matches = SIMS4_COLLECTIONS.filter(
-    (c) => c.game === mod.gameVersion && modMatchesFilter(mod, c.filter),
+    (c) => !c.hub && c.game === mod.gameVersion && modMatchesFilter(mod, c.filter),
   );
   return matches
     .map((c, i) => ({ c, i, s: filterSpecificity(c.filter) }))

@@ -33,6 +33,11 @@ interface CollectionPageClientProps {
   /** Mods ranked just below the grid, rendered as crawlable text links (E84). */
   moreLinks?: ModLink[];
   relatedCollections: CollectionDefinition[];
+  /**
+   * Hub pages only (E182): a link to every category collection, rendered
+   * in the header above the grid. Empty everywhere else (section hidden).
+   */
+  categoryLinks?: Array<{ href: string; heading: string }>;
 }
 
 export default function CollectionPageClient({
@@ -41,6 +46,7 @@ export default function CollectionPageClient({
   totalCount,
   moreLinks = [],
   relatedCollections,
+  categoryLinks = [],
 }: CollectionPageClientProps) {
   const [mods] = useState<Mod[]>(initialMods);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -134,6 +140,32 @@ export default function CollectionPageClient({
                   Full article on the blog →
                 </a>
               </p>
+            )}
+
+            {/* Hub category links (E182). Inside the header, above the
+                main/aside split — never inside .mv-ads or beside
+                <aside id="secondary">. Plain <Link>s so they are in the
+                first-paint HTML for crawlers. */}
+            {categoryLinks.length > 0 && (
+              <nav aria-labelledby="hub-categories-heading" className="mt-6">
+                <h2
+                  id="hub-categories-heading"
+                  className="text-sm font-semibold text-slate-400 mb-2"
+                >
+                  Browse {collection.game} CC by category
+                </h2>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  {categoryLinks.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors"
+                    >
+                      {l.heading}
+                    </Link>
+                  ))}
+                </div>
+              </nav>
             )}
           </div>
         </header>
