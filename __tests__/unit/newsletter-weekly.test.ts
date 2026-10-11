@@ -395,3 +395,117 @@ describe('sendWeeklyNewsletter — flag on, real send path, mailer mocked', () =
     }
   });
 });
+
+/**
+ * E184 (2026-10-11): the `--weekly` script path shares this one function with the
+ * cron. Options: `dryRun` (preflight, flag not required, no durable row),
+ * injected `prisma` (standalone scripts cannot use the Accelerate singleton),
+ * `source` on the file-ledger line. Every on-site href — including the two
+ * brand links — carries `utm_campaign=weekly-issue-NN`.
+ */
+describe('sendWeeklyNewsletter — E184 options (dry run, injected client, campaign tag)', () => {
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    vi.doUnmock('@/lib/prisma');
+    vi.doUnmock('@/lib/services/bulkMailer');
+    vi.doUnmock('fs');
+    vi.resetModules();
+  });
+
+  function fakeClient() {
+    const rows = [mod({ id: 'a' }), mod({ id: 'b' }), mod({ id: 'c' })];
+    const logCreate = vi.fn().mockResolvedValue({});
+    const client = {
+      mod: { findMany: vi.fn().mockResolvedValue(rows), count: vi.fn().mockResolvedValue(42) },
+      favorite: { groupBy: vi.fn().mockResolvedValue([]) },
+      waitlist: { findMany: vi.fn().mockResolvedValue([{ email: 'one@example.com' }, { email: 'two@example.com' }]) },
+      notificationLog: { create: logCreate },
+    };
+    return { client, logCreate };
+  }
+
+  async function mockFsAndMailer() {
+    vi.doMock('fs', async (orig) => {
+      const actual = await orig<typeof import('fs')>();
+      const patched = { ...actual, appendFileSync: vi.fn(), mkdirSync: vi.fn() };
+      return { ...patched, default: patched };
+    });
+    // Read the spy back through the registry: when the whole file runs, vitest keeps the
+    // builtin `fs` mock instance from the previous describe alive across doUnmock/resetModules,
+    // so a locally-captured vi.fn() can be a different object from the one the lib calls.
+    const fsm = await import('fs');
+    const appendFileSync = fsm.appendFileSync as unknown as ReturnType<typeof vi.fn>;
+    // Refuse to run against the real fs — a dry run would append to the tracked ledger.
+    expect(vi.isMockFunction(appendFileSync)).toBe(true);
+    appendFileSync.mockClear();
+    let renderedHtml = '';
+    const sendBulk = vi.fn(async (opts: any) => {
+      renderedHtml = opts.build({ email: opts.recipients[0], unsubscribeUrl: 'https://musthavemods.com/api/unsubscribe/?e=abc&t=def', index: 0 }).html;
+      return { attempted: opts.recipients.length, sent: opts.dryRun ? 0 : opts.recipients.length, failed: 0, skipped: [], deferred: [], transport: opts.dryRun ? 'none' : 'mock', batches: 1, hourlyLimit: 100 };
+    });
+    vi.doMock('@/lib/services/bulkMailer', () => ({ sendBulk, resolvePostalAddress: () => '123 Test St, Testville' }));
+    return { appendFileSync, sendBulk, html: () => renderedHtml };
+  }
+
+  it('dry run works with the flag UNSET, passes dryRun to sendBulk, writes no NotificationLog row, tags the file-ledger line with its source', async () => {
+    vi.resetModules();
+    delete process.env.NEWSLETTER_WEEKLY_ENABLED;
+    // The singleton must not be touched when a client is injected.
+    vi.doMock('@/lib/prisma', () => { throw new Error('singleton must not be imported when prisma is injected'); });
+    const { appendFileSync, sendBulk } = await mockFsAndMailer();
+    const { client, logCreate } = fakeClient();
+
+    const { sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    const now = new Date('2026-10-11T16:00:00Z');
+    const result = await sendWeeklyNewsletter({ dryRun: true, prisma: client as any, source: 'script', now });
+
+    expect(result.skipped).toBeUndefined();
+    expect(result.mode).toBe('dry');
+    expect(result.campaign).toBe('weekly-issue-05');
+    expect(result.recipients).toBe(2);
+    expect(sendBulk).toHaveBeenCalledTimes(1);
+    expect(sendBulk.mock.calls[0][0].dryRun).toBe(true);
+    expect(logCreate).not.toHaveBeenCalled();
+    // One line to each of logs/newsletter-send.log and reports/funnel/newsletter-sends.jsonl.
+    expect(appendFileSync).toHaveBeenCalledTimes(2);
+    const line = String(appendFileSync.mock.calls[0][1]);
+    expect(line).toContain('"source":"script"');
+    expect(line).toContain('"mode":"dry"');
+    expect(line).not.toMatch(/@example\.com/);
+  });
+
+  it('live with the flag unset is skipped even with an injected client (the lib defence survives the new caller)', async () => {
+    vi.resetModules();
+    delete process.env.NEWSLETTER_WEEKLY_ENABLED;
+    const { sendBulk } = await mockFsAndMailer();
+    const { client, logCreate } = fakeClient();
+    const { sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    const result = await sendWeeklyNewsletter({ prisma: client as any, source: 'script' });
+    expect(result.skipped).toBe(true);
+    expect(sendBulk).not.toHaveBeenCalled();
+    expect(logCreate).not.toHaveBeenCalled();
+    expect(client.waitlist.findMany).not.toHaveBeenCalled();
+  });
+
+  it('every on-site href in the rendered issue — brand links included — carries utm_campaign=weekly-issue-NN', async () => {
+    vi.resetModules();
+    process.env.NEWSLETTER_WEEKLY_ENABLED = 'true';
+    const { sendBulk, html } = await mockFsAndMailer();
+    const { client, logCreate } = fakeClient();
+    const { sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    const result = await sendWeeklyNewsletter({ prisma: client as any, source: 'script', now: new Date('2026-10-11T16:00:00Z') });
+
+    expect(result.mode).toBe('live');
+    expect(sendBulk).toHaveBeenCalledTimes(1);
+    expect(logCreate).toHaveBeenCalledTimes(1);
+    const hrefs = Array.from(html().matchAll(/href="([^"]+)"/g)).map((m) => m[1].replace(/&amp;/g, '&'));
+    const onSite = hrefs.filter((h) => /^https:\/\/(www\.)?musthavemods\.com\//.test(h) && !h.includes('/api/unsubscribe/'));
+    const brand = onSite.filter((h) => new URL(h).pathname === '/');
+    // Footer brand link always; "Browse and filter all N" only when the fake has saved mods (groupBy → [] here).
+    expect(brand.length).toBeGreaterThanOrEqual(1);
+    expect(onSite.length).toBeGreaterThan(3);
+    for (const h of onSite) {
+      expect(new URL(h).searchParams.get('utm_campaign'), `untagged: ${h}`).toBe('weekly-issue-05');
+    }
+  });
+});
