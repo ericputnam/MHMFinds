@@ -78,6 +78,13 @@ export interface RenderContext {
   /** From EMAIL_POSTAL_ADDRESS via resolvePostalAddress(). Empty → line omitted. */
   postalAddress: string;
   site?: string;
+  /**
+   * Href for the two brand links ("Browse and filter all N at musthavemods.com",
+   * footer "musthavemods.com"). Defaults to `${site}/`. The weekly send passes
+   * a UTM-tagged home URL so every on-site click attributes to the issue
+   * (E184, 2026-10-11) — before that, these two were the only untagged on-site links.
+   */
+  homeUrl?: string;
 }
 
 export interface RenderedIssue {
@@ -174,6 +181,7 @@ export function renderIssueHtml(issue: IssueData, ctx: RenderContext): string {
   if (issue.posts.length < 1) throw new Error('renderIssue: at least one post is required');
   if (issue.saved.length > 4) throw new Error('renderIssue: at most 4 most-saved mods fit the row');
   const site = ctx.site ?? SITE_DEFAULT;
+  const home = ctx.homeUrl ?? `${site}/`;
   const [lead, ...rest] = issue.posts;
   const issueNo = String(issue.number).padStart(2, '0');
   const postal = ctx.postalAddress ? `${escapeHtml(ctx.postalAddress)}<br>\n` : '';
@@ -189,7 +197,7 @@ export function renderIssueHtml(issue: IssueData, ctx: RenderContext): string {
 <td align="right" style="${FONT}font-size:12px;color:${MUTED};">by everyone on the site</td>
 </tr></table></td></tr>
 <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${issue.saved.map(savedCell).join('')}</tr></table></td></tr>
-<tr><td style="${FONT}padding:16px 0 0;font-size:13px;color:${MUTED};">Browse and filter all ${formatCount(issue.catalogCount)} at <a href="${escapeHtml(site)}/" style="color:#ffffff;font-weight:600;">musthavemods.com</a>.</td></tr>`
+<tr><td style="${FONT}padding:16px 0 0;font-size:13px;color:${MUTED};">Browse and filter all ${formatCount(issue.catalogCount)} at <a href="${escapeHtml(home)}" style="color:#ffffff;font-weight:600;">musthavemods.com</a>.</td></tr>`
     : '';
 
   return `<!DOCTYPE html>
@@ -225,7 +233,7 @@ ${saved}
 <tr><td style="${FONT}padding:26px 0 0;border-top:2px solid #ffffff;font-size:12px;color:${MUTED};line-height:1.7;">
 ${escapeHtml(issue.signoff)}<br>
 You're getting this because you signed up at musthavemods.com.<br>
-${postal}<a href="${ctx.unsubscribeUrl}" style="color:${MUTED};">Unsubscribe</a> &nbsp;&middot;&nbsp; <a href="${escapeHtml(site)}/" style="color:${MUTED};">musthavemods.com</a>
+${postal}<a href="${ctx.unsubscribeUrl}" style="color:${MUTED};">Unsubscribe</a> &nbsp;&middot;&nbsp; <a href="${escapeHtml(home)}" style="color:${MUTED};">musthavemods.com</a>
 </td></tr>
 </table></td></tr></table></body></html>
 `;
@@ -233,11 +241,12 @@ ${postal}<a href="${ctx.unsubscribeUrl}" style="color:${MUTED};">Unsubscribe</a>
 
 export function renderIssueText(issue: IssueData, ctx: RenderContext): string {
   const site = ctx.site ?? SITE_DEFAULT;
+  const home = ctx.homeUrl ?? `${site}/`;
   const posts = issue.posts.map((p, i) => `${i + 1}. ${p.title}\n   ${p.url}`).join('\n\n');
   const saved = issue.saved.length
     ? `\n--\n\nMost-saved this week, by everyone on the site\n\n${issue.saved
         .map((m) => `  ${m.name} (${m.category}, ${formatCount(m.saves)} saves)\n  ${m.url}`)
-        .join('\n')}\n\nBrowse and filter all ${formatCount(issue.catalogCount)}: ${site}/\n`
+        .join('\n')}\n\nBrowse and filter all ${formatCount(issue.catalogCount)}: ${home}\n`
     : '';
   const asks = issue.asks.map((a) => `${a.title}. ${a.body}\n${a.ctaUrl}`).join('\n\n');
   return `MustHaveMods — Issue ${String(issue.number).padStart(2, '0')} — ${issue.dateLabel}

@@ -126,7 +126,7 @@ export interface NewsletterDb {
 /** Exact allowlist on the parsed host — never a suffix test (`evilmusthavemods.com`). */
 const UTM_HOSTS: readonly string[] = ['musthavemods.com', 'www.musthavemods.com'];
 
-function withUtm(url: string, campaign: string): string {
+export function withUtm(url: string, campaign: string): string {
   try {
     const u = new URL(url);
     if (!UTM_HOSTS.includes(u.hostname)) return url;
@@ -400,7 +400,11 @@ export interface WeeklySendResult {
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  /** `dry` = rendered and counted only, nothing reached a transport. Absent when `skipped`. */
+  mode?: 'dry' | 'live';
   issueNumber?: number;
+  /** GA4 `utm_campaign` every on-site link in the issue carries, e.g. `weekly-issue-05`. */
+  campaign?: string;
   subject?: string;
   recipients?: number;
   attempted?: number;
@@ -412,23 +416,58 @@ export interface WeeklySendResult {
   hardCap?: number;
 }
 
+/**
+ * The slice of `PrismaClient` the send path reads and writes. The cron route
+ * passes nothing and gets the shared serverless-safe singleton; the standalone
+ * script passes a direct connection (`directPrisma()` in
+ * `newsletter-send-test.ts`), because the Accelerate-proxied singleton is
+ * Next.js-runtime-only.
+ */
+export type WeeklySendPrisma = PrismaLike & {
+  waitlist: { findMany: (args: any) => Promise<Array<{ email: string }>> };
+  notificationLog: { create: (args: any) => Promise<unknown> };
+};
+
+export interface WeeklySendOptions {
+  /**
+   * Render and count only. `sendBulk` never touches a transport on a dry run,
+   * so a dry run is allowed WITHOUT `NEWSLETTER_WEEKLY_ENABLED` — it is the
+   * recipient-count preflight the Tier 1 send row asks for. A live send still
+   * needs the flag, whoever the caller is.
+   */
+  dryRun?: boolean;
+  /** Injected client; defaults to `@/lib/prisma`. */
+  prisma?: WeeklySendPrisma;
+  /** Ledger tag for who triggered the run. */
+  source?: 'cron' | 'script';
+  /** Issue date (number, label, 7-day window). Defaults to now. */
+  now?: Date;
+}
+
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
 /**
- * The only function the cron route calls. Re-checks `NEWSLETTER_WEEKLY_ENABLED`
- * itself (the route already gates on it) so no future caller — an admin
- * button, a script, a test — can trigger a live send just by skipping the
- * route. Recipients are every `waitlist` row (the same single/double
- * opt-in universe `--from-db` uses for the manual issue send) minus the
- * hard-bounce exclusion list.
+ * The only function the cron route calls, and the only send path the
+ * `newsletter-send-test.ts --weekly` script uses (E184, 2026-10-11) — one
+ * recipient rule, one exclusion list, one template, whoever triggers it.
+ * Re-checks `NEWSLETTER_WEEKLY_ENABLED` itself for every LIVE send (the route
+ * already gates on it) so no future caller — an admin button, a script, a
+ * test — can trigger a live send just by skipping the route. Recipients are
+ * every `waitlist` row (the same single/double opt-in universe `--from-db`
+ * uses for the manual issue send; unsubscribing deletes the row, so an
+ * unsubscribed reader is never in it) minus the hard-bounce exclusion list.
  */
-export async function sendWeeklyNewsletter(): Promise<WeeklySendResult> {
-  if (process.env.NEWSLETTER_WEEKLY_ENABLED !== 'true') {
+export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promise<WeeklySendResult> {
+  const dryRun = opts.dryRun === true;
+  const mode: 'dry' | 'live' = dryRun ? 'dry' : 'live';
+  const source = opts.source ?? 'cron';
+
+  if (!dryRun && process.env.NEWSLETTER_WEEKLY_ENABLED !== 'true') {
     return { success: true, skipped: true, reason: 'NEWSLETTER_WEEKLY_ENABLED is not "true"' };
   }
 
-  const { prisma } = await import('../prisma');
-  const issue = await buildLiveWeeklyIssueData();
+  const prisma: WeeklySendPrisma = opts.prisma ?? (await import('../prisma')).prisma;
+  const issue = await buildWeeklyIssueData(createPrismaDataSource(prisma), { now: opts.now });
 
   const rows = await prisma.waitlist.findMany({ select: { email: true } });
   const allEmails = Array.from(
@@ -436,12 +475,15 @@ export async function sendWeeklyNewsletter(): Promise<WeeklySendResult> {
   );
   const { kept: recipients, excluded } = partitionExcluded(allEmails);
 
-  const kind = `weekly-issue-${pad2(issue.number)}`;
+  const campaign = `weekly-issue-${pad2(issue.number)}`;
+  const kind = campaign;
 
   if (!recipients.length) {
     const summary: WeeklySendResult = {
       success: true,
+      mode,
       issueNumber: issue.number,
+      campaign,
       subject: issue.subject,
       recipients: 0,
       attempted: 0,
@@ -450,26 +492,30 @@ export async function sendWeeklyNewsletter(): Promise<WeeklySendResult> {
       excludedCount: excluded.length,
       hardCap: WEEKLY_NEWSLETTER_HARD_CAP,
     };
-    appendFileLedger({ kind, subject: issue.subject, mode: 'live', source: 'cron', ...summary });
-    await writeNotificationLog(kind, issue.subject, summary, true);
+    appendFileLedger({ kind, subject: issue.subject, mode, source, ...summary });
+    if (!dryRun) await writeNotificationLog(prisma, kind, issue.subject, summary, true);
     return summary;
   }
 
   const postalAddress = resolvePostalAddress();
+  // Brand links get the same campaign tag as the content, so every on-site click attributes.
+  const homeUrl = withUtm(`${SITE}/`, campaign);
   const result = await sendBulk({
     recipients,
-    dryRun: false,
+    dryRun,
     maxMessages: WEEKLY_NEWSLETTER_HARD_CAP,
     site: SITE,
     replyTo: REPLY_TO,
     fromName: 'MustHaveMods',
     postalAddress,
-    build: ({ unsubscribeUrl }) => renderIssue(issue, { unsubscribeUrl, postalAddress, site: SITE }),
+    build: ({ unsubscribeUrl }) => renderIssue(issue, { unsubscribeUrl, postalAddress, site: SITE, homeUrl }),
   });
 
   const summary: WeeklySendResult = {
     success: result.failed === 0,
+    mode,
     issueNumber: issue.number,
+    campaign,
     subject: issue.subject,
     recipients: recipients.length,
     attempted: result.attempted,
@@ -483,15 +529,16 @@ export async function sendWeeklyNewsletter(): Promise<WeeklySendResult> {
   appendFileLedger({
     kind,
     subject: issue.subject,
-    mode: 'live',
-    source: 'cron',
+    mode,
+    source,
     site: SITE,
     transport: result.transport,
     batches: result.batches,
     hourlyLimit: result.hourlyLimit,
     ...summary,
   });
-  await writeNotificationLog(kind, issue.subject, summary, summary.success);
+  // A dry run is a preflight, not a send: the durable DB ledger records sends only.
+  if (!dryRun) await writeNotificationLog(prisma, kind, issue.subject, summary, summary.success);
   return summary;
 }
 
@@ -502,13 +549,13 @@ export async function sendWeeklyNewsletter(): Promise<WeeklySendResult> {
  * JSON — never a recipient address or a per-recipient status.
  */
 async function writeNotificationLog(
+  prisma: WeeklySendPrisma,
   event: string,
   subject: string,
   summary: WeeklySendResult,
   success: boolean
 ): Promise<void> {
   try {
-    const { prisma } = await import('../prisma');
     await prisma.notificationLog.create({
       data: {
         type: 'digest',

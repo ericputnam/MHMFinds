@@ -5,6 +5,19 @@
  *   npx tsx scripts/agents/newsletter-send-test.ts --to a@b.com[,c@d.com] [--only issue|repermission] [--dry]
  *   npx tsx scripts/agents/newsletter-send-test.ts --from-db --only issue [--dry]
  *   npx tsx scripts/agents/newsletter-send-test.ts --accounts-from-db --only repermission [--limit N] [--offset N] [--dry]
+ *   npx tsx scripts/agents/newsletter-send-test.ts --weekly --dry [--preview-out <path>]
+ *   NEWSLETTER_WEEKLY_ENABLED=true npx tsx scripts/agents/newsletter-send-test.ts --weekly --live
+ *
+ * --weekly (E184, 2026-10-11) is the manual trigger for the DB-built weekly issue. It calls
+ * the SAME `sendWeeklyNewsletter()` the (unscheduled) cron route calls — same recipient rule
+ * (every `waitlist` row; unsubscribing deletes the row), same hard-bounce exclusion list,
+ * same template, same hard cap — with a direct DB connection and `source: 'script'` on the
+ * ledger line. `--dry` renders and counts only and is allowed without the flag (nothing can
+ * reach a transport); `--live` is refused unless `NEWSLETTER_WEEKLY_ENABLED=true` is in
+ * THIS process's environment — that is the Tier 1 send authorization, set on the command
+ * line for one run, never written to `.env.local`. Exactly one of --dry/--live is required:
+ * on this path there is no default. `--preview-out` writes the rendered message for a
+ * sample address (never a subscriber's) so the record of the send carries the copy.
  *
  * --from-db loads every row of `waitlist` (people who typed their address into a
  * signup form or ticked the sign-in box; unsubscribes delete the row) so no address
@@ -26,10 +39,16 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local', override: true });
 import { appendFileSync, mkdirSync, writeFileSync } from 'fs';
 import { PrismaClient } from '@prisma/client';
-import { sendBulk, resolvePostalAddress } from '../../lib/services/bulkMailer';
+import { sendBulk, previewBulkSend, resolvePostalAddress } from '../../lib/services/bulkMailer';
 import { buildConfirmUrl } from '../../lib/services/subscribeConfirm';
 import { ISSUE_01, renderIssue } from '../../lib/services/newsletterIssue';
 import { partitionExcluded, EXCLUDED_RECIPIENT_HASHES } from '../../lib/services/sendExclusions';
+import {
+  buildWeeklyIssueData,
+  createPrismaDataSource,
+  sendWeeklyNewsletter,
+  withUtm,
+} from '../../lib/services/newsletterWeekly';
 
 const SITE = 'https://musthavemods.com';
 const REPLY_TO = 'simsnews@musthavemods.com';
@@ -66,6 +85,9 @@ const fromDb = args.includes('--from-db');
 const accountsFromDb = args.includes('--accounts-from-db');
 const only = arg('--only');
 const dry = args.includes('--dry');
+const weekly = args.includes('--weekly');
+const live = args.includes('--live');
+const previewOut = arg('--preview-out');
 const limitArg = Number(arg('--limit') ?? 0);
 const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
 /**
@@ -74,8 +96,8 @@ const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
  * match — that typo would have been a LIVE send to 100 accounts. On a script whose
  * default is "send", an unrecognised flag must stop the run, never be ignored.
  */
-const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset']);
-const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset']);
+const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset', '--weekly', '--live', '--preview-out']);
+const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset', '--preview-out']);
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (!KNOWN_FLAGS.has(a)) {
@@ -84,7 +106,18 @@ for (let i = 0; i < args.length; i++) {
   }
   if (FLAGS_WITH_VALUE.has(a)) i++;
 }
-if (!fromDb && !accountsFromDb && !arg('--to')) { console.error('need --to a@b.com[,c@d.com], --from-db or --accounts-from-db'); process.exit(1); }
+// --weekly is its own path: no address list, no --only, and an EXPLICIT --dry or --live.
+if (weekly) {
+  if (fromDb || accountsFromDb || arg('--to') || only) { console.error('--weekly takes no --to/--from-db/--accounts-from-db/--only: recipients are every waitlist row'); process.exit(1); }
+  if (dry === live) { console.error('--weekly needs exactly one of --dry (render + count) or --live (send)'); process.exit(1); }
+  if (live && process.env.NEWSLETTER_WEEKLY_ENABLED !== 'true') {
+    console.error('--weekly --live refused: NEWSLETTER_WEEKLY_ENABLED=true must be set in this process\'s environment (the Tier 1 send authorization). Run the --dry preflight first.');
+    process.exit(1);
+  }
+} else if (live || previewOut) {
+  console.error('--live and --preview-out belong to the --weekly path'); process.exit(1);
+}
+if (!weekly && !fromDb && !accountsFromDb && !arg('--to')) { console.error('need --to a@b.com[,c@d.com], --from-db, --accounts-from-db or --weekly'); process.exit(1); }
 if (fromDb && accountsFromDb) { console.error('pick one of --from-db / --accounts-from-db'); process.exit(1); }
 if (fromDb && only !== 'issue') { console.error('--from-db is the issue send path: pass --only issue'); process.exit(1); }
 if (accountsFromDb && only !== 'repermission') { console.error('--accounts-from-db is the re-permission path: pass --only repermission'); process.exit(1); }
@@ -272,6 +305,51 @@ ${ADDRESS_LINE}
 `;
 }
 
+/** Sample address for the --preview-out render. Never a subscriber: the file is committed. */
+const PREVIEW_RECIPIENT = 'preview@example.com';
+
+/**
+ * The weekly issue through the one shared send path. Counts only reach the
+ * terminal; the lib appends the ledger line (mode dry|live, source script).
+ */
+async function runWeekly(): Promise<void> {
+  const now = new Date();
+  const prisma = directPrisma();
+  try {
+    const r = await sendWeeklyNewsletter({ dryRun: dry, prisma, source: 'script', now });
+    if (r.skipped) { console.error(`weekly: skipped — ${r.reason}`); process.exit(1); }
+    console.log(
+      `weekly ${r.mode} → issue #${r.issueNumber} (${r.campaign}) "${r.subject}": ` +
+        `recipients ${r.recipients} (waitlist minus ${r.excludedCount} excluded; cap ${r.hardCap}) ` +
+        `attempted ${r.attempted} sent ${r.sent} failed ${r.failed} skipped ${r.skippedRecipients ?? 0} deferred ${r.deferred ?? 0}`
+    );
+    console.log(`ledger → ${LEDGER_PATH}`);
+    if (dry) {
+      // Same `now` → same deterministic picks as the counted run above.
+      const issue = await buildWeeklyIssueData(createPrismaDataSource(prisma), { now });
+      const homeUrl = withUtm(`${SITE}/`, r.campaign!);
+      const preview = await previewBulkSend({
+        recipients: [PREVIEW_RECIPIENT],
+        site: SITE,
+        build: ({ unsubscribeUrl }) => renderIssue(issue, { unsubscribeUrl, postalAddress: POSTAL_ADDRESS, site: SITE, homeUrl }),
+      });
+      const html = preview.results[0].preview!.html;
+      const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map((m) => m[1].replace(/&amp;/g, '&'));
+      const onSite = hrefs.filter((h) => /^https:\/\/(www\.)?musthavemods\.com\//.test(h) && !h.includes('/api/unsubscribe/'));
+      const untagged = onSite.filter((h) => new URL(h).searchParams.get('utm_campaign') !== r.campaign);
+      console.log(
+        `links: ${onSite.length} on-site, ${onSite.length - untagged.length} carry utm_campaign=${r.campaign}` +
+          (untagged.length ? ` — UNTAGGED: ${Array.from(new Set(untagged)).join(' ')}` : '')
+      );
+      console.log(`picks: ${issue.posts.map((p) => new URL(p.url).pathname).join(' ')}`);
+      if (previewOut) { writeFileSync(previewOut, html); console.log(`preview (${PREVIEW_RECIPIENT}) → ${previewOut}`); }
+    }
+    if (!r.success) process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 async function main() {
   if (!POSTAL_ADDRESS) {
     console.warn(
@@ -279,6 +357,7 @@ async function main() {
         'Dry runs still render; a real send will be refused by bulkMailer.'
     );
   }
+  if (weekly) return runWeekly();
   const recipients = await loadRecipients();
   if (!recipients.length) { console.error('no recipients'); process.exit(1); }
   const common = {
