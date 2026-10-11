@@ -105,7 +105,11 @@ lock_stale_reason() {  # prints why the current lock is stale; empty = live. Nee
   now=$(date +%s)
   case "$epoch" in ''|*[!0-9]*)
     # mkdir done, owner not yet written: give the writer a moment, then treat by the dir's own mtime
-    epoch="$(stat -c %Y "$LOCK" 2>/dev/null || stat -f %m "$LOCK" 2>/dev/null || echo "$now")" ;;
+    epoch="$(stat -c %Y "$LOCK" 2>/dev/null || stat -f %m "$LOCK" 2>/dev/null || echo "$now")"
+    # E187 (10-07 07:23–07:33): an owner-less lock sat the full TTL and expired a --wait. write_owner runs
+    # microseconds after mkdir, so an owner still missing after the grace means the writer died — break it.
+    age=$(( now - epoch ))
+    [ "$age" -ge "${MERGE_GATE_EMPTY_GRACE_S:-60}" ] && { echo "owner never written after ${age}s"; return; } ;;
   esac
   age=$(( now - epoch ))
   [ "$age" -ge "$TTL" ] && { echo "older than TTL ${TTL}s (${age}s)"; return; }

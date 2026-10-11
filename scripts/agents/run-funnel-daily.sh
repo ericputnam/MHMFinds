@@ -552,10 +552,12 @@ daily_pr_ledger() {  # $1 day (YYYY-MM-DD) · $2 tree to verify from. rc 0 row p
     if ! git -C "$tree" fetch -q origin main >/dev/null 2>&1; then
       state="UNKNOWN (git fetch origin main failed — could not look)"
     else
-      read -r sha n <<<"$(git -C "$tree" log origin/main -n 300 --format='%H %s' 2>/dev/null | awk -v t="$title" '
-        { c = substr($0, 42 + length(t), 1) }
-        substr($0, 42, length(t)) == t && (c == " " || c == "") && match($0, /\(#[0-9]+\)$/) {
-          print substr($0, 1, 40), substr($0, RSTART + 2, RLENGTH - 3); exit }')"
+      # E148-b (10-07): also accept a scoped prefix — #264 "funnel(quinn): daily run 2026-10-04 — …" read as DID NOT FIRE.
+      read -r sha n <<<"$(git -C "$tree" log origin/main -n 300 --format='%H %s' 2>/dev/null | awk -v d="daily run $day" '
+        { s = substr($0, 42) }
+        match(s, /^funnel(\([a-z0-9_-]*\))?: /) { s = substr(s, RLENGTH + 1); c = substr(s, length(d) + 1, 1)
+          if (substr(s, 1, length(d)) == d && (c == " " || c == "") && match($0, /\(#[0-9]+\)$/)) {
+            print substr($0, 1, 40), substr($0, RSTART + 2, RLENGTH - 3); exit } }')"
       if [ -z "$sha" ] || [ -z "$n" ]; then
         state="not merged to origin/main yet"
       else

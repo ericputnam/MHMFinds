@@ -154,6 +154,22 @@ describe('run-funnel-daily.sh daily-pr-ledger block (E148)', () => {
     expect(out).toContain(`LOG daily-pr-ledger: ROW | 2026-09-30 08:00 | after-merge | ${LABEL} | ${sha.slice(0, 7)} |`);
   });
 
+  it('E148-b: a scoped subject "funnel(quinn): daily run DATE — … (#N)" is today\'s daily PR (10-04 #264 false DID NOT FIRE)', () => {
+    const sha = landOnOrigin(`funnel(quinn): daily run ${DAY} — RED same-incident, 7 merges verified (Tier 0) (#300)`);
+    const { rc, dvCalls } = run();
+    expect(rc).toBe(0);
+    expect(dvCalls).toEqual([`--after-merge --sha ${sha} --label ${LABEL}`]);
+  });
+
+  it('E148-b: other scoped subjects that merely mention the date are not the daily PR', () => {
+    landOnOrigin(`funnel(ops): fix daily run ${DAY} subject match (#301)`);
+    landOnOrigin(`funnel(quinn): daily run ${DAY}0 typo (#302)`);
+    landOnOrigin(`chore(funnel): daily run ${DAY} (#303)`);
+    const { rc, dvCalls } = run({ DPL_MAX_WAIT_S: '1' });
+    expect(rc).toBe(2);
+    expect(dvCalls).toEqual([]);
+  });
+
   it('idempotent by commit: a row with the merge sha already on origin/main → no verify', () => {
     const sha = landOnOrigin(`funnel: daily run ${DAY} (#300)`);
     landOnOrigin('funnel(ledger): after-merge: Quinn: PR #300', [
