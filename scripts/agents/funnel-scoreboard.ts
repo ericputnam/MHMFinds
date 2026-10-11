@@ -48,6 +48,7 @@ import {
   type WriterLivenessAssessment,
 } from './pinner-liveness-lib';
 import { redactError } from './operator-did-probe-lib';
+import { assessRunLiveness, formatRunLiveness, type RunLiveness } from './run-liveness-lib';
 import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/captureMath';
 import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
@@ -66,6 +67,8 @@ import {
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? '/Users/eputnam/java_projects/MHMFinds';
 const OUT_DIR = join(PROJECT_DIR, 'reports', 'funnel');
+// The runner's own logs (preflight JSON, funnel-daily.log) live in the operator tree, never in $WT (MHM_PROJECT_DIR).
+const FUNNEL_LOG_DIR = process.env.FUNNEL_LOG_DIR ?? '/Users/eputnam/java_projects/MHMFinds/logs';
 const GA4_PROPERTY = process.env.GA4_PROPERTY_ID ?? '437117335';
 const GSC_SITE = process.env.GSC_SITE ?? 'sc-domain:musthavemods.com';
 const PATREON_URL = 'https://www.patreon.com/MustHaveModsOfficial';
@@ -501,6 +504,33 @@ interface TeamData {
   totalMerges7d: number;
   opsMergeShare7d: number | null;
   paperOnlyMerges7d: number;
+  /** E187: per-day RAN/MISSED/UNKNOWN for the 7 days before today (preflight file, runner start, digest on main). */
+  runLiveness: RunLiveness;
+}
+
+/** Reads the evidence for assessRunLiveness: preflight files + funnel-daily.log from FUNNEL_LOG_DIR, digests from OUT_DIR (main). */
+function readRunLiveness(todayIso: string): RunLiveness {
+  let logDirReadable = false;
+  const preflightByDate = new Map<string, string | null>();
+  let logText: string | null = null;
+  try {
+    for (const f of readdirSync(FUNNEL_LOG_DIR)) {
+      const m = f.match(/^funnel-preflight-(\d{4}-\d{2}-\d{2})\.json$/);
+      if (m) preflightByDate.set(m[1], readFileSync(join(FUNNEL_LOG_DIR, f), 'utf8'));
+    }
+    logDirReadable = true;
+    logText = readFileSync(join(FUNNEL_LOG_DIR, 'funnel-daily.log'), 'utf8');
+  } catch {
+    /* unreadable → the signal is unknown, never "missed" */
+  }
+  const digestsOnMain = new Map<string, string>();
+  if (existsSync(OUT_DIR)) {
+    for (const f of readdirSync(OUT_DIR)) {
+      const m = f.match(/^digest-(\d{4}-\d{2}-\d{2})\.md$/);
+      if (m) digestsOnMain.set(m[1], readFileSync(join(OUT_DIR, f), 'utf8'));
+    }
+  }
+  return assessRunLiveness({ todayIso, logDirReadable, preflightByDate, logText, digestsOnMain });
 }
 
 /**
@@ -532,6 +562,7 @@ async function pullTeam(): Promise<TeamData> {
     totalMerges7d: stats.totalMerges,
     opsMergeShare7d: stats.opsMergeShare,
     paperOnlyMerges7d: stats.paperOnlyMerges,
+    runLiveness: readRunLiveness(iso(new Date())),
   };
 }
 
@@ -960,6 +991,10 @@ async function main() {
       flags.push(`${wl.level === 'red' ? '🔴' : '🟡'} Pinner writer: ${wl.message}`);
     }
   } else flags.push(`🟡 Pinner liveness unknown: ${errOf(pinner)}`);
+  if (team.ok && team.data.runLiveness.missed > 0) {
+    const rl = team.data.runLiveness;
+    flags.push(`🔴 Loop MISSED ${rl.missed} of the last ${rl.window.days} mornings: ${rl.days.filter((d) => d.verdict === 'MISSED').map((d) => d.date).join(', ')} — see Team health (E187)`);
+  }
   if (ga4.ok && ga4.data.sessionsPrev7d && ga4.data.sessions7d / ga4.data.sessionsPrev7d < 0.9) flags.push(`🔴 GA4 sessions 7d ${pct(ga4.data.sessions7d, ga4.data.sessionsPrev7d)} WoW`);
   if (ga4.ok && Object.keys(ga4.data.captureEvents7d).length === 0) flags.push(`🟡 GA4: no capture events fired in 7d (newsletter_signup/account_signup/patreon_click not instrumented)`);
   if (wp.ok && wp.data.posts7d === 0) flags.push(`🟡 No blog posts published in 7 days`);
@@ -1069,6 +1104,7 @@ async function main() {
   if (team.ok) {
     const t = team.data;
     md += `- Run success 14d: **${frac(t.runSuccess14d)}** (owner: ${owners.runSuccess14d ?? '?'})\n`;
+    md += formatRunLiveness(t.runLiveness).map((l) => `${l}\n`).join('');
     md += `- Merges 7d by owner: ${Object.entries(t.mergesByOwner7d).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'} (${t.totalMerges7d} total)\n`;
     md += `- Ops merge share 7d: ${t.opsMergeShare7d != null ? frac(t.opsMergeShare7d) : '—'} (cap 20%, owner: ${owners.opsMergeShare7d ?? '?'})\n`;
     md += `- Paper-only merges 7d: ${t.paperOnlyMerges7d} (owner: ${owners.paperOnlyMerges7d ?? '?'})\n\n`;

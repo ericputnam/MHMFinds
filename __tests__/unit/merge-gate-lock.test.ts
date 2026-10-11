@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { type ChildProcess, execFileSync, spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -142,6 +142,17 @@ describe('merge-gate.sh lock (E155)', () => {
     const r = gate([], 'nova');
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/broke stale lock .*older than TTL/);
+    expect(owner()).toMatch(/^who=nova$/m);
+  });
+
+  it('E187: an owner-less lock is held for the 60 s grace, then broken (10-07: one sat the full 600 s TTL)', () => {
+    mkdirSync(lock);
+    expect(gate([], 'nova').code).toBe(1); // fresh: the writer may still be about to write
+    const old = new Date(Date.now() - 90_000);
+    utimesSync(lock, old, old);
+    const r = gate([], 'nova');
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/broke stale lock .*owner never written after \d+s/);
     expect(owner()).toMatch(/^who=nova$/m);
   });
 
