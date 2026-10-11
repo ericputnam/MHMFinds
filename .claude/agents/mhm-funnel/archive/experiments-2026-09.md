@@ -565,3 +565,60 @@ KILL through 09-29 (E1 E26 E34 E3 E6 E10 E13→E134 E15 E20 E38 E40 E46+E56 E57 
 | E19 | 2026-09-07 | Rio | 2 | PRODUCT | Site membership via Patreon O… | non-ad $/mo (Patreon paid count, $… | 47 paid / $127/mo gross ($1×7… | 2026-10-07 (re-pitch if… | ≥20 linked accounts and ≥60 paid with… | 10-07: linked 149 ≥20 PASS; paid 59 vs 60 (47→59 since 09-07, gross $127→$161.50 API / $159 public); Q4 leg void (closed won't-do 09-28); /go page-RPM leg not pulled; paid-and-connected 2/149 (3.4% of paid), premium-flagged 3 — Connect is a follow funnel (09-28 diagnosis stands) | KEEP 2026-10-07 as a live feature / KILL as a revenue lever — no further build, no re-pitch |
 | E89 | 2026-09-23 | Rio | 0 (+T2 price/send Q17) | MONETIZE | Sponsorship media kit + 2 col… | sponsorship $/mo; emails sent | $0 / 0 sent | 2026-10-07 | ≥10 sent AND ≥1 interested reply | 0 sent / 0 replies vs ≥10 sent AND ≥1 reply; Q17 dropped 10-07 under the 7-day rule; drafts kept at reports/funnel/drafts/sponsorship-media-kit-2026-09-23.md (a later "send hub" starts the read) | NOT-RUN 2026-10-07 |
 | E18 | 2026-09-07 | Sage | 1 | AUDIENCE | Homepage SSR shell (PR #48, Q… | GSC homepage clicks + avg position… | 512 clicks / 14,314 impr / po… | 2026-09-22 (first), 202… | pos ≤37 or clicks ≥589, and homepage… | 10-06 read (done 10-07): traffic leg 449 clicks / 6,617 impr / pos 32.98 / CTR 6.79% vs baseline 512 / 14,314 / 42.22 / 3.58% — pos ≤37 MET; RPM leg not gradeable while the 10-05 breaker is red and graded Mediavine-side (E163) | KEEP 2026-10-07 (traffic leg; RPM leg void under the E163 demand reset) |
+
+## Graded 2026-10-11 (verbatim rows; grades by Pip/Sage/Nova/Rowan/Rio/Ops/Cass, written by Quinn)
+
+| ID | Shipped | Owner | Tier | Stage | Move | Metric | Before | Read on | Keep if | Result | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| E61 | 2026-09-19 | Pip | 0 | AUDIENCE | Pinterest read-back by landin… | Pinterest sessions 7d to ≥50-sessio… | GA4 2026-09-11→09-17: pintere… | 2026-10-03 | sessions-ranked slice delivers ≥+10%… | Shipped 2026-09-19 07:17 as `… |  |
+| E66 | 2026-09-20 | Pip | 0 (+T2 pkg E66-A) | AUDIENCE | Apex Pinterest decline read (… | Pinterest sessions Tue–Fri daily me… | 8,003/day (09-15→09-18, dated… | 2026-09-28 first, 2026-… | final ≥ 97% (≥ 7,763/day) → coupling… | 09-28: Tue–Fri 09-22→25 7,776… | EXTEND → 2026-10-05 |
+| E102 | 2026-09-25 | Pip | 0 | AUDIENCE | E26 graded KILL (14 treated d… | Pinterest sessions 7d to the 8 topp… | 3,598/7d (09-17→09-23); runway 1.83d | 2026-10-03 | 8 destinations' Pinterest WoW beats s… | Shipped 09-25 07:03 PASS; 21/… | pending |
+| E103 | 2026-09-25 | Pip | 0 | AUDIENCE | pin-seo-audit `--source page`… | mean pin-SEO score 14d window; Pint… | mean 52/100, 1/84 pass (09-25) | 2026-10-05 | mean ≥88 holds next window AND treate… | treated +1.4% vs site +2.0%; copy 89/100 | pre-read KEEP → 10-05 |
+| E117 | 2026-09-26 | Pip | 0 | AUDIENCE | `(not set)` landing audit → p… | zero-pageview share of `(not set)`… | 100% (3,816, 09-18→09-24) | 2026-10-03 | holds if ≥95%; reopen if >5% carry pa… | decision row | pending |
+| E121 | 2026-09-27 | Sage | 0 | AUDIENCE | IndexNow `--guides` leg (PR #… | Bing-organic sessions/guide first 7… | 6.6/guide/wk (10 guides edited 09-04→… | 2026-10-04 (final 10-11) | ≥8.0 sess/guide AND bing_organic ≥95%… | only guide with full 7d: 2 sessions | MORE DATA, leaning KILL → 10-11 |
+| E122 | 2026-09-27 | Nova | 1 | PRODUCT | Creator "claim this page" → /… | creators onboarded; submissions sou… | onboarded 0; claim subs 0; /submit-mo… | 2026-10-11 | ≥10 claim views in 14d AND ≥1 claim s… | QUEUED-T1 09-27, merges 09-28… | PENDING |
+| E124 | 2026-09-27 | Pip | 0 | AUDIENCE | Runway top-up #3 (SD-10 floor… | Pinterest sessions 7d to the 8 dest… | 3,479/7d (09-19→09-25; 28d 12,158); 5… | 2026-10-05 | 8 destinations' Pinterest WoW ≥ site-… | treated −1.8% vs site 0.0% | pre-read leaning KILL → 10-05 |
+| E127 | 2026-09-28 | Pip | 0 | AUDIENCE | pin-SEO `--source page` copy … | top-up rows SEO mean on re-read + P… | 67/100 (2/21 pass, 09-28 06:52); 2,64… | 2026-10-06 | every ledger seo_pass ok, mean ≥85 AN… | PASS 07:08 (1xfln4wyo); 89/10… | PENDING |
+| E142 | 2026-09-30 | Pip | 0 | AUDIENCE | Runway top-up #6: 21 sessions… | Pinterest sessions to the 12 treated dest… | 4,500/7d (GA4 09-22→09-28); runway 0.94 d… | 2026-10-08 | ≥4,500/7d (one-sided) AND 0 plugin rows i… | APPLIED 06:46 (runway 0.94→1.… | PENDING |
+| E149 | 2026-10-01 | Pip | 0 | AUDIENCE | Runway top-up #7: 21 ranked r… | Pinterest sess 7d to 10 treated dests | 2,668/7d (09-24→09-30); runway 0.78 d | 2026-10-08 | ≥2,668/7d (one-sided) AND 0 plugin rows | APPLIED; runway 0.78→1.31 d | PENDING |
+| E156 | 2026-10-02 | Pip | 0 | AUDIENCE | Runway top-up #8: 21 ranked r… | Pinterest sess 7d to 8 treated dests | 2,759/7d (09-24→09-30); runway 0.61 d | 2026-10-09 | ≥2,759/7d (one-sided) AND 0 plugin rows | APPLIED; runway 0.61→1.15 d | PENDING |
+| E164 | 2026-10-03 | Pip | 0 | AUDIENCE | runway top-up #9, 21 rows (PR… | Pinterest sessions 7d to 9 destinatio… | 2,785/7d; runway 0.44 d; SEO 63/100 | 2026-10-10 | ≥2,785/7d (one-sided) AND 0 writer row… |  | PENDING |
+| E108 | 2026-09-25 | Rio | 0 | PRODUCT | Post-rename Patreon watch: `R… | paid cancels/mo pace since the rena… | 55 paid ≈ $153.50/mo; joins 7d 4, can… | 2026-10-02 (joins), 202… | cancels pace ≤16/mo on 10-09 (joins <… | cancels 7d 1 | read 10-09 |
+| E125 | 2026-09-27 | Rio | 0 | MEASURE | Pre-read settles sources inde… | pre-read runs returning the Members… | 09-26: 3 runs, 0 gate numbers. 09-27… | 2026-10-02 (joins), 202… | both E108 reads return the API leg (e… | cancels 7d 1 | read 10-09 |
+| E150 | 2026-10-01 | Sage | 0 | AUDIENCE | WebPage JSON-LD dateModified… | live #webpage dateModified on / + hair-cc | "2026-10-01" (render day) both, 10-01 10:… | 2026-10-03 | both = 2026-09-08, not render day; 5xx 0 | PASS 06:48 (SUPERSEDED); live… | PENDING |
+| E129 | 2026-09-28 | Nova | 0 | PRODUCT | Admin creator-claim review `/… | creators with a promoted profile; c… | 0 promoted / 0 pending / 0 claim subs… | 2026-10-11 | all claims visible, ≥1 reviewed, 0 5x… | PASS 06:55 (miz286mzt); 11 te… | PENDING |
+| E151 | 2026-10-01 | Nova | 0 | PRODUCT | Claim promote sets isVerified | promoted profiles with isVerified=false | 20 prof/20 verif/0 pend/0 promoted (10-01) | 2026-10-11 | promoted rows isVerified; /creator/* ≥95% | PASS 07:09 #237 e50dba6 | PENDING |
+| E161 | 2026-10-02 | Rowan | 0 | CONTENT | ingest --refreshed re-scrapes… | new mods/7d; ingest created=0 days | 27/7d; created=0 on 6 of 7 days (10-02) | 2026-10-09 | new mods 7d ≥100, no refresh churn | +117 mods day 1, 17 pins; #24… | PENDING |
+| E168 | 2026-10-03 | Rowan | 0 | CONTENT | title beats URL category at i… | wrong-type share of new ingest + lot… | 17/117 wrong (14.5%); lot 152/362 ti… | 2026-10-10 | ≤5% wrong next 100 AND 0 prose-typed l… | apply 10-04: lot 362→282, pins 72/72, 0 prose-typed; 1 row ingested since deploy (0 wrong) | PENDING apply done |
+| E132 | 2026-09-28 | Rowan | 0 | CONTENT | Room-titled row (bedroom/kitc… | room-titled rows with CAS contentTy… | 0/532 room-titled CAS; pins 76/76 no-… | 2026-10-05 | CAS count stays 0, pins 76/76 no drif… | room-titled rows with CAS type 0/533 | pre-read on track |
+| E155 | 2026-10-01 | Ops | 0 | OPS | Gate lock; unmerged-PR refusal | merges <240 s apart; PRs per graded head | 3 PRs in 6 s on 1 head (09-30) | 2026-10-08 | 0 merges <240s apart; 0 locks >600s | PASS 07:13 4e5a449; 15/20 red | PENDING |
+| E169 | 2026-10-03 | Ops | 0 | OPS | guardrail pages `vercel ls` +… | mornings whose verdict rests on a tru… | 10-03: 114 deploys in window invisibl… | 2026-10-10 | 7/7 mornings print coverage; 0 TRUNCA… | #255 amended 10-04 (E169-b): rollback also needs in-window deploys ≤24 AND READY target ≤48 h old, else investigate (fail closed); 10-03 (114) and 10-04 (94) would both have fired under v1; 9/28 red pre-fix | PENDING — merged 10-04 (#255, 6a4203f), read 10-10 |
+
+Grades:
+- E61 — KILL 2026-10-11 (Pip): sessions-ranked slice +2.0% vs ≥+10%
+- E66 — KILL-close 2026-10-11 (Pip): Tue–Fri 7,584/day = 94.8% of 8,003 (<97%); E66-A package stays parked, no T2 ask
+- E102 — KEEP 2026-10-11 (Pip): 8 destinations beat site Pinterest WoW
+- E103 — KEEP 2026-10-11 (Pip): treated 97.7% of base vs site 94.7%; copy 89/100 held
+- E117 — KEEP 2026-10-11 (Pip): 3,747 (not set) sessions 7d, 100% zero-pageview — decision row holds
+- E121 — KILL 2026-10-11 (Sage): 5 no-prior-Bing guides avg 3.8 sessions vs ≥8.0; bing_organic 90.6% vs 95% floor (GA4 landingPage has no trailing slash — the 10-04 read under-counted)
+- E122 — KILL 2026-10-11 (Nova): 22 claim views/14d, 20 with an empty ?creator= slug, 0 claim submissions
+- E124 — KILL 2026-10-11 (Pip): treated −4.0% vs site −3.9%
+- E127 — KILL 2026-10-11 (Pip): copy 86–90 passes the bar but sessions 2,191 vs 2,512
+- E142 — KILL 2026-10-11 (Pip): 3,506 vs ≥4,500
+- E149 — KILL 2026-10-11 (Pip): 2,153 vs ≥2,668
+- E156 — KILL 2026-10-11 (Pip): 2,250 vs ≥2,759
+- E164 — KILL 2026-10-11 (Pip): 2,288 vs ≥2,785
+- E108 — KEEP 2026-10-11 (Rio): cancels 3.7/mo vs >16 revert; joins 24.1/mo pace but 10 of 13 post-rename joins clustered 09-30→10-03; patreon_click mean 7.6/day
+- E125 — KEEP 2026-10-11 (Rio): both E108 reads returned the Members API leg (2/2)
+- E150 — KEEP 2026-10-11 (Sage): live #webpage dateModified = 2026-09-08 on / and hair-cc, not render day
+- E129 — MORE DATA 2026-10-11 (Nova): 0 claims to review; the read moves to E183 (2026-10-25)
+- E151 — MORE DATA 2026-10-11 (Nova): 0 promotions; /creator/* 323 vs 558 = 57.9% is a Direct drop (413→75→165), not E151; read moves to E183 (2026-10-25)
+- E161 — KEEP 2026-10-11 (Rowan): new mods 7d 130 vs ≥100; 0 of 262 rows since 10-01 duplicate an older row; 0 re-scrapes in 7d
+- E168 — KEEP 2026-10-11 (Rowan): 5/100 wrong vs ≤5% (exactly on the line); lot prose-typed 0 of 124; pins 73/73
+- E132 — KEEP 2026-10-11 (Rowan): room-titled rows with a CAS type 0; E120 pins 76/76, drift 0
+- E155 — KEEP 2026-10-11 (Ops): 31 merge gaps since 10-01, 0 under 240 s; 1 lock >600 s (10-07, no owner file — #278 breaks owner-less locks at 60 s)
+- E169 — KEEP 2026-10-11 (Ops): coverage COMPLETE on all 4 readings with network; 10-08 unknown took no action; 10-07 red held at investigate (52 deploys > 24 bound)
+| E107 | 2026-09-25 | Cass | 0 | CAPTURE | /mods/[id] favorite button wi… | favorite_after_signin + favorite_si… | 2026-09-25: both events 0; accounts +… | 2026-10-09 | favorite_after_signin ≥2/1K /mods/* l… | Shipped 09-25 07:08 PASS (56e… | pending |
+| E123 | 2026-09-27 | Cass | 0 | CAPTURE | GA4 password_reset_complete o… | password_reset_complete events/14d… | event absent (0); /set-password/ view… | 2026-10-11 | events ≤ views and ≥1 per consumed to… | verify PASS 06:54; event stri… | PENDING |
+- E107 — KILL 2026-10-11 (Cass): favorite_after_signin 3 events / 10,709 /mods/* landing sessions (09-25→10-08) = 0.28/1K vs ≥2/1K; 23 redirects → 3 completes
+- E123 — KEEP 2026-10-11 (Cass): password_reset_complete 4 ≤ 4 /set-password/ views (09-27→10-10); "≥1 per consumed token" unmeasurable by construction (consumed tokens are deleted)

@@ -1,0 +1,376 @@
+{
+  "status": "green",
+  "action": "none",
+  "actionDetail": null,
+  "vercelCoverage": {
+    "state": "COMPLETE",
+    "rows": 40,
+    "pages": 2,
+    "oldestMs": 1791112648500,
+    "windowStartMs": 1791259200000,
+    "exhausted": false,
+    "stoppedBy": null,
+    "line": "vercel coverage: COMPLETE (40 rows over 2 pages, oldest 2026-10-04T11:17Z ≤ window start 2026-10-06T04:00Z)",
+    "inWindow": "yes"
+  },
+  "rollbackBound": {
+    "inWindowCount": 21,
+    "rollbackTargetMs": 1791167531232,
+    "windowStartMs": 1791259200000,
+    "maxInWindowDeploys": 24,
+    "maxTargetAgeHours": 48,
+    "line": "rollback bound: in-window production deploys 21 (≤24 to auto-rollback) · target 25.5 h before window start (≤48 h) → eligible"
+  },
+  "day": "2026-10-09",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 196.67000000000002,
+    "sessions": 12054.5,
+    "rpm": 16.285
+  },
+  "actualDay": {
+    "date": "2026-10-09",
+    "revenue": 208.34,
+    "sessions": 11569,
+    "rpm": 18
+  },
+  "window3": {
+    "actualRevenue": 589.26,
+    "expectedRevenue": 552.4675,
+    "actualSessions": 33805,
+    "expectedSessions": 34606,
+    "actualRpm": 17.431149238278362,
+    "expectedRpm": 15.94854417210942
+  },
+  "rollbackTo": null,
+  "rollbackCandidate": "https://mhm-finds-dw5l-bf4azyloo-ericputnams-projects.vercel.app",
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-10-11T15:01:21.046Z",
+      "ref": "212e48d",
+      "text": "BUILDING funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-rnmqclmsr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-11T14:59:01.647Z",
+      "ref": "246e0a5",
+      "text": "READY chore: compound learnings from 2026-10-11 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-hg8pf5oor-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-10T12:14:03.732Z",
+      "ref": "bf37b41",
+      "text": "READY funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ik7l4vjur-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-10T12:04:12.633Z",
+      "ref": "6b33fd3",
+      "text": "READY funnel(ledger): flush: check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-g96ncsudp-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:51:28.303Z",
+      "ref": "34b7761",
+      "text": "READY funnel(ledger): after-merge: Quinn: PR #272 funnel: daily run 2026-10-07 (Tier 0 docs)",
+      "url": "https://mhm-finds-dw5l-8stknx35k-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:47:46.743Z",
+      "ref": "e6c83a1",
+      "text": "READY funnel(quinn): daily run 2026-10-07 — RED same-incident (CLEAR), 7 merges verified, 22 rea",
+      "url": "https://mhm-finds-dw5l-c2asdu1xr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:41:32.925Z",
+      "ref": "43eb717",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #269 E174 red-rpm re-grades 10-03/04/05 — SAME-INCIDE",
+      "url": "https://mhm-finds-dw5l-knup6sbnr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:37:59.463Z",
+      "ref": "f1beac1",
+      "text": "READY funnel(rio): E174 red-rpm re-grades 10-03/04/05 — SAME-INCIDENT, E163-b confirmed, sidebar",
+      "url": "https://mhm-finds-dw5l-o08poav4z-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:37:20.635Z",
+      "ref": "2ea8db7",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #267 E180 pin 34 hand-audited rows on the bags and ",
+      "url": "https://mhm-finds-dw5l-9ymdbdvw8-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:33:43.976Z",
+      "ref": "e004314",
+      "text": "READY funnel(rowan): E180 pin 34 hand-audited rows on the bags and realistic-mods posts (Tier 0)",
+      "url": "https://mhm-finds-dw5l-dyrvewm8q-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:33:25.668Z",
+      "ref": "57fcc9e",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #270 E178 creator-flag audit (Tier 0)",
+      "url": "https://mhm-finds-dw5l-hsfo6l2gu-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:29:40.289Z",
+      "ref": "efdf3d0",
+      "text": "READY funnel(nova): E178 creator-flag audit — the 343 isCreator accounts are self-described play",
+      "url": "https://mhm-finds-dw5l-pihiflp5e-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:29:01.490Z",
+      "ref": "829c68e",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #271 E176 runner per-day lock — a second start on the",
+      "url": "https://mhm-finds-dw5l-nbt0aumyr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:25:27.857Z",
+      "ref": "983a046",
+      "text": "READY fix(ops): runner takes a per-day lock — a second start on the same day exits 0 (E176) (#27",
+      "url": "https://mhm-finds-dw5l-offnu10jz-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:25:08.084Z",
+      "ref": "b6b6d3c",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #266 emailed /set-password link gets trailing slash ",
+      "url": "https://mhm-finds-dw5l-nzb7unutl-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:21:31.505Z",
+      "ref": "b4d9c0a",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #268 E170 runway top-up #11 report files",
+      "url": "https://mhm-finds-dw5l-6z8zukbsh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:21:25.604Z",
+      "ref": "afad9e1",
+      "text": "READY feat(capture): emailed /set-password link carries the trailing slash and mode=reset|invite",
+      "url": "https://mhm-finds-dw5l-8iw3rvo9u-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:17:19.143Z",
+      "ref": "811705a",
+      "text": "READY funnel(pip): E170 runway top-up #11 report files (Tier 0, SD-10 floor) (#268)",
+      "url": "https://mhm-finds-dw5l-9x9r1bp4i-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:16:46.013Z",
+      "ref": "b5946a8",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #265 ops(E177): IndexNow summary line prints newest_",
+      "url": "https://mhm-finds-dw5l-pjv7y9kz2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:15:53.731Z",
+      "ref": "dfcac9c",
+      "text": "READY funnel(ledger): Ops: MISSED mhm-funnel-daily 2026-10-06",
+      "url": "https://mhm-finds-dw5l-65w7r27ve-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:15:49.141Z",
+      "ref": "256c627",
+      "text": "READY funnel(ledger): Ops: MISSED mhm-funnel-daily 2026-10-05",
+      "url": "https://mhm-finds-dw5l-ksurr2q2s-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:13:26.574Z",
+      "ref": "864d50f",
+      "text": "READY funnel(ledger): Pip: E170 runway top-up #11 apply",
+      "url": "https://mhm-finds-dw5l-jnwwdekgw-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T13:13:14.668Z",
+      "ref": "f0edb05",
+      "text": "READY ops(E177): IndexNow summary line prints newest_mod_age_h and mods_check (#265)",
+      "url": "https://mhm-finds-dw5l-69597cta8-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T12:59:19.563Z",
+      "ref": "d62016d",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-dcty1dgca-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-10-07T12:56:39.149Z",
+      "ref": "69cf4a1",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-jr66tm1y3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-11T10:58:56-04:00",
+      "ref": "246e0a5",
+      "text": "chore: compound learnings from 2026-10-11"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-10T08:14:00-04:00",
+      "ref": "bf37b41",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-10T08:04:08-04:00",
+      "ref": "6b33fd3",
+      "text": "funnel(ledger): flush: check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:51:23-06:00",
+      "ref": "34b7761",
+      "text": "funnel(ledger): after-merge: Quinn: PR #272 funnel: daily run 2026-10-07 (Tier 0 docs)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:47:42-04:00",
+      "ref": "e6c83a1",
+      "text": "funnel(quinn): daily run 2026-10-07 — RED same-incident (CLEAR), 7 merges verified, 22 rea"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:41:29-06:00",
+      "ref": "43eb717",
+      "text": "funnel(ledger): after-merge: Rio: PR #269 E174 red-rpm re-grades 10-03/04/05 — SAME-INCIDE"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:37:56-04:00",
+      "ref": "f1beac1",
+      "text": "funnel(rio): E174 red-rpm re-grades 10-03/04/05 — SAME-INCIDENT, E163-b confirmed, sidebar"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:37:16-06:00",
+      "ref": "2ea8db7",
+      "text": "funnel(ledger): after-merge: Rowan: PR #267 E180 pin 34 hand-audited rows on the bags and "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:33:40-04:00",
+      "ref": "e004314",
+      "text": "funnel(rowan): E180 pin 34 hand-audited rows on the bags and realistic-mods posts (Tier 0)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:33:22-06:00",
+      "ref": "57fcc9e",
+      "text": "funnel(ledger): after-merge: Nova: PR #270 E178 creator-flag audit (Tier 0)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:29:37-04:00",
+      "ref": "efdf3d0",
+      "text": "funnel(nova): E178 creator-flag audit — the 343 isCreator accounts are self-described play"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:28:57-06:00",
+      "ref": "829c68e",
+      "text": "funnel(ledger): after-merge: Ops: PR #271 E176 runner per-day lock — a second start on the"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:25:24-04:00",
+      "ref": "983a046",
+      "text": "fix(ops): runner takes a per-day lock — a second start on the same day exits 0 (E176) (#27"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:25:04-06:00",
+      "ref": "b6b6d3c",
+      "text": "funnel(ledger): after-merge: Cass: PR #266 emailed /set-password link gets trailing slash "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:21:27-06:00",
+      "ref": "b4d9c0a",
+      "text": "funnel(ledger): after-merge: Pip: PR #268 E170 runway top-up #11 report files"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:21:22-04:00",
+      "ref": "afad9e1",
+      "text": "feat(capture): emailed /set-password link carries the trailing slash and mode=reset|invite"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:17:15-04:00",
+      "ref": "811705a",
+      "text": "funnel(pip): E170 runway top-up #11 report files (Tier 0, SD-10 floor) (#268)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:16:42-06:00",
+      "ref": "b5946a8",
+      "text": "funnel(ledger): after-merge: Sage: PR #265 ops(E177): IndexNow summary line prints newest_"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:15:49-06:00",
+      "ref": "dfcac9c",
+      "text": "funnel(ledger): Ops: MISSED mhm-funnel-daily 2026-10-06"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:15:43-06:00",
+      "ref": "256c627",
+      "text": "funnel(ledger): Ops: MISSED mhm-funnel-daily 2026-10-05"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T07:13:22-06:00",
+      "ref": "864d50f",
+      "text": "funnel(ledger): Pip: E170 runway top-up #11 apply"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T09:13:11-04:00",
+      "ref": "f0edb05",
+      "text": "ops(E177): IndexNow summary line prints newest_mod_age_h and mods_check (#265)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T06:59:16-06:00",
+      "ref": "d62016d",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-10-07T06:56:35-06:00",
+      "ref": "69cf4a1",
+      "text": "funnel(ledger): check: morning-check"
+    }
+  ],
+  "health": {
+    "date": "2026/10/11",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $208.34 (5.9%), RPM 18.00 (10.5%), sessions -4.0% vs same weekday, prior 4 weeks · 3-day revenue 6.7%"
+  ]
+}
