@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/middleware/auth';
+import { planApprovalProfile } from '@/lib/submissionApprovalProfile';
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * Create the submitter's pending CreatorProfile, idempotently. A P2002 means
+ * a concurrent approval (or claim) created the user's row first — reuse it.
+ * If the unique hit was the handle instead (two users sharing an id tail and
+ * a slug), return null: the mod is still approved, just unlinked, exactly as
+ * before E183. The profile is written before the mod, so a failed mod create
+ * leaves a profile the retry reuses rather than a mod with no profile.
+ */
+async function ensureApprovalProfile(data: {
+  userId: string;
+  handle: string;
+  isVerified: false;
+}): Promise<string | null> {
+  try {
+    const created = await prisma.creatorProfile.create({ data, select: { id: true } });
+    return created.id;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const existing = await prisma.creatorProfile.findUnique({
+        where: { userId: data.userId },
+        select: { id: true },
+      });
+      return existing?.id ?? null;
+    }
+    throw error;
+  }
+}
 
 export async function POST(
   request: NextRequest,
@@ -43,6 +75,7 @@ export async function POST(
     }
 
     let mod;
+    let profileHandle: string | null = null;
 
     // Check if this is an edit submission
     if (submission.isEdit && submission.approvedModId) {
@@ -92,9 +125,25 @@ export async function POST(
         isNSFW: submission.isNSFW,
       };
 
-      // Link to creator profile if submission has userId and creatorProfile exists
-      if (submission.userId && submission.user?.creatorProfile) {
-        modData.creatorId = submission.user.creatorProfile.id;
+      // E183: link to the submitter's CreatorProfile, creating a pending
+      // (unverified) one when they have none — see lib/submissionApprovalProfile.ts.
+      const plan = planApprovalProfile({
+        isEdit: submission.isEdit,
+        userId: submission.userId,
+        submitterIsAdmin: submission.user?.isAdmin === true,
+        existingProfileId: submission.user?.creatorProfile?.id ?? null,
+        author: submission.author,
+        displayName: submission.user?.displayName ?? null,
+        username: submission.user?.username ?? null,
+      });
+      if (plan.kind === 'link') {
+        modData.creatorId = plan.profileId;
+      } else if (plan.kind === 'create') {
+        const profileId = await ensureApprovalProfile(plan.data);
+        if (profileId) {
+          modData.creatorId = profileId;
+          profileHandle = plan.data.handle;
+        }
       }
 
       mod = await prisma.mod.create({
@@ -116,6 +165,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       mod,
+      createdCreatorProfileHandle: profileHandle,
       message: submission.isEdit
         ? 'Edit approved and mod updated successfully'
         : 'Submission approved and mod created successfully',
