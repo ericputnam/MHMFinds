@@ -135,7 +135,12 @@ describe('modMatchesFilter mirrors buildWhereClause for every registry filter', 
         if (where.occultTypes?.hasSome) mod.occultTypes = where.occultTypes.hasSome;
       }
       expect(modMatchesFilter(mod as any, c.filter)).toBe(true);
-      expect(getCollectionsForMod(mod as any).map((x) => x.slug)).toContain(c.slug);
+      // Hubs (E182) match in memory but are deliberately not a membership.
+      if (c.hub) {
+        expect(getCollectionsForMod(mod as any).map((x) => x.slug)).not.toContain(c.slug);
+      } else {
+        expect(getCollectionsForMod(mod as any).map((x) => x.slug)).toContain(c.slug);
+      }
     });
   }
 

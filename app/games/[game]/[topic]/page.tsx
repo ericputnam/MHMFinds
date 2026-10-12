@@ -25,6 +25,7 @@ import {
   getAllCollectionRoutes,
   buildWhereClause,
   getCollectionsForGame,
+  collectionHref,
   type CollectionDefinition,
 } from '../../../../lib/collections';
 import { prisma } from '../../../../lib/prisma';
@@ -266,6 +267,14 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
     .map((slug) => allInGame.find((c) => c.slug === slug))
     .filter((c): c is CollectionDefinition => !!c);
 
+  // A hub (E182) links down to every category page above its grid. Slim
+  // projection so the sibling intros stay out of the client bundle.
+  const categoryLinks = collection.hub
+    ? allInGame
+        .filter((c) => !c.hub && c.slug !== collection.slug)
+        .map((c) => ({ href: collectionHref(c), heading: c.heading }))
+    : [];
+
   const jsonLd = buildJsonLd(collection, mods, totalCount);
 
   return (
@@ -282,6 +291,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         totalCount={totalCount}
         moreLinks={moreLinks}
         relatedCollections={relatedCollections}
+        categoryLinks={categoryLinks}
       />
     </>
   );

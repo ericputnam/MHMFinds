@@ -27,6 +27,10 @@ const KEYWORD_FALLBACKS = new Set(['__pregnancy_keyword__', '__witch_keyword__']
 
 /** The contentType set of a collection whose filter is *only* a contentType facet, else null. */
 function pureContentTypeSet(c: CollectionDefinition): Set<string> | null {
+  // A hub (E182, `cc`) is never a mod-level membership — getCollectionsForMod
+  // skips it — so it cannot be anyone's primary crumb and is out of scope
+  // here. collection-hub.test.ts pins that exclusion.
+  if (c.hub) return null;
   const keys = Object.keys(c.filter).filter(
     (k) => (c.filter as Record<string, unknown>)[k] !== undefined,
   );
