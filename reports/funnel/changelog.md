@@ -333,3 +333,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-11 11:32 | after-merge | Rowan: PR #276 E186 rank posts by URL-category disagreement, pin worst 3 (80 rows) | cbae818 | https://mhm-finds-dw5l-v2fgujwmk-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-11 11:36 | after-merge | Cass: PR #279 E184 weekly newsletter --weekly send path + issue 05 send record (Tier 0) | 44afd58 | https://mhm-finds-dw5l-gljea1l1f-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-11 11:47 | after-merge | Quinn: PR #280 funnel: daily run 2026-10-11 | 6cb65b6 | https://mhm-finds-dw5l-20en23cjp-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-12 06:35 | check | morning-check |  | https://mhm-finds-dw5l-7gutv217a-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
