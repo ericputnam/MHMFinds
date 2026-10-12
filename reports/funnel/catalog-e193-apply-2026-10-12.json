@@ -1,0 +1,408 @@
+{
+ "writtenAt": "2026-10-12T10:47:49.530Z",
+ "mode": "apply",
+ "facets": [
+  "accessories",
+  "body-preset",
+  "clutter",
+  "eyebrows",
+  "eyes",
+  "full-body",
+  "furniture",
+  "hair",
+  "makeup",
+  "shoes",
+  "skin",
+  "tattoos",
+  "tops",
+  "bottoms",
+  "workout",
+  "null"
+ ],
+ "rows": [
+  {
+   "id": "cmim8t8xh006eoxy8qx4jzmo4",
+   "title": "THOR with Veins",
+   "from": "full-body",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim92jc701rroxy85diy5j0e",
+   "title": "Cloop Eyes 13-24",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmim8t8sk006coxy8o5ipbech",
+   "title": "Ivy Preset",
+   "from": "skin",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim8t94q006hoxy89x0fe8mc",
+   "title": "Body Classique Physique",
+   "from": "skin",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim92iud01rjoxy8ycch3yb6",
+   "title": "Set For Eyes",
+   "from": "skin",
+   "to": null
+  },
+  {
+   "id": "cmim8t8kr0069oxy8tipo8lad",
+   "title": "Bodies",
+   "from": "full-body",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim8t8uu006doxy8ucqughqa",
+   "title": "Vain Preset",
+   "from": "skin",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmikiogou003foxnavrpg6xdk",
+   "title": "Makeup Clutter",
+   "from": "furniture",
+   "to": "clutter"
+  },
+  {
+   "id": "cmikio8ny003aoxnalxrx0kfe",
+   "title": "Before Bed Set",
+   "from": "furniture",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92jje01ruoxy8tff2ojaw",
+   "title": "Eyes N44",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmikiomje003ioxnadaz9vs3a",
+   "title": "Miranda Vanity Beauty Set",
+   "from": "shoes",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92jej01rsoxy8pg985fsy",
+   "title": "Eye Contacts N4-15 Infant Update",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmikip0c2003qoxnayp9tzq3n",
+   "title": "Myxdoll Functional Bratz Collection",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8t8io0068oxy82mjmurre",
+   "title": "BodyCare Kit",
+   "from": "tattoos",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim8t8nw006aoxy8cso7vton",
+   "title": "Hourglass",
+   "from": "skin",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim8t9nh006poxy8bzrzldik",
+   "title": "Strong-bod Preset",
+   "from": "workout",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmikio4n00038oxna7zgee9ws",
+   "title": "GRWM Beauty Essentials",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92iyq01rloxy8i7lvlrho",
+   "title": "Eyes N134",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmim8t9eg006loxy8yk3oezsz",
+   "title": "Cleavage Mask",
+   "from": "skin",
+   "to": null
+  },
+  {
+   "id": "cmim8t97h006ioxy8yp8uplmk",
+   "title": "Juicy Preset",
+   "from": "skin",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmikioyw5003poxnal5ez8k0p",
+   "title": "Luxe Hair Tools Set",
+   "from": "hair",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92kqq01s8oxy8f1ekj4da",
+   "title": "Cora Eyes N87",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmv2cn5u7000poxj214tbbhjt",
+   "title": "Ditto Legwarmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmim92jw601rzoxy82ebh8sx1",
+   "title": "Eyes N32",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmikip38f003soxna6mheasoq",
+   "title": "Slodie Beauty Makeup Set",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92k8001s2oxy8z0r8pf7m",
+   "title": "S-Club WM Ts4 Eye Colors",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmikiokio003hoxna3ek2nhzc",
+   "title": "HK Mac Makeup Set",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8t9s5006roxy8qqq79obl",
+   "title": "Foot Model",
+   "from": "full-body",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmv2cnamm001foxj2rq5k29ha",
+   "title": "Dawls’ Equinox Nesa Ribbed Warmers",
+   "from": "shoes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmikip5zy003toxnaqcn9e8v7",
+   "title": "Dior Backstage Foundation",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmv2cn9p9001boxj29cnubotv",
+   "title": "Monster High Leg Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmikioi2n003goxnaxdowxkf2",
+   "title": "Chic Cosmetics Part 2",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmikiouzu003noxnaekzsana9",
+   "title": "Bathroom Industry Cosmetics Clutter",
+   "from": "furniture",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92jnw01rwoxy83urmre8t",
+   "title": "Kira Eyes",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmim92jtq01ryoxy83yz3hi3z",
+   "title": "Quartzo Eyes",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmim92jrb01rxoxy8xrvmxy05",
+   "title": "Rue Eyes",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmikiopnd003koxnaa1qdz09t",
+   "title": "Pink Makeup Set",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmv2cn63d000qoxj2i7czdsxk",
+   "title": "Knit Leg Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn6ag000roxj2q11ydrsx",
+   "title": "Salty & Sweet Legwarmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn6ef000soxj2kbsfq4qs",
+   "title": "Madelynn Leg Warmers",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn6tt000uoxj22ovaj552",
+   "title": "Puffy Leg Warmers",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn6wf000voxj2k96o2xry",
+   "title": "Kitty Cat Leg Warmers",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn720000woxj2gx9umvie",
+   "title": "Harajuku Leg Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn77l000xoxj2w0v870cx",
+   "title": "Amina – Leg Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn7ik000zoxj2yl0zvl4g",
+   "title": "Amanda – Leg Warmers",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn7o40010oxj24zaxhmq3",
+   "title": "Gyaru Leg Warmers V2",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn7tx0011oxj2wpjdec31",
+   "title": "Rita Leg Warmers",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn84n0013oxj24uygl1a4",
+   "title": "Leg Warmers – Kids Set",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn7d2000yoxj2a0b2s9tg",
+   "title": "Leg Warmers",
+   "from": "shoes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn8l70014oxj2388lmiof",
+   "title": "Lilian Leg Warmers",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn8qs0015oxj286ixuo2p",
+   "title": "Kitty Leg Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn8wb0016oxj2g6pw2my7",
+   "title": "Leg Warmers Set",
+   "from": "shoes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn91r0017oxj2bmvsfrdj",
+   "title": "Cinnamoroll Back to School Collection – Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn95i0018oxj2lol159g6",
+   "title": "Kiera Leg Warmers",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn9kb001aoxj2zrhnnlge",
+   "title": "Ballet Leg Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cn9y4001coxj2gcboi0uo",
+   "title": "Star Leg Warmers",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cna43001doxj27x0qq22h",
+   "title": "Angelic Leg Warmers",
+   "from": "bottoms",
+   "to": "accessories"
+  },
+  {
+   "id": "cmv2cnae0001eoxj2q63me7n4",
+   "title": "Halloween 2024 – Warmers",
+   "from": null,
+   "to": "accessories"
+  },
+  {
+   "id": "cmikipa3s003voxnax9wh9r2q",
+   "title": "Pink Skin Things",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmikip202003roxnanaoy9vj0",
+   "title": "Glow Up Essentials Pack Part 1",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmikiotnr003moxnatqwc13ta",
+   "title": "Chic Cosmetic Part 1",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmikionwx003joxnaivc6x1tn",
+   "title": "Bauble and Bandera Beauty Supplies",
+   "from": "accessories",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim92j9y01rqoxy8u1m6hmse",
+   "title": "Comet Eyes Heterochromia",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmim92kcv01s4oxy8yj3i7zf6",
+   "title": "Savannah Eyes N109",
+   "from": "makeup",
+   "to": "eyes"
+  }
+ ]
+}
