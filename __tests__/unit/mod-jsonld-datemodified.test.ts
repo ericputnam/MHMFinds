@@ -70,7 +70,7 @@ describe('E143 scanner: no dateModified/lastmod fed by updatedAt in app/ or comp
 
   it('finds the content-date sites it is meant to police (vacuity guard)', () => {
     expect(files.length).toBeGreaterThan(100);
-    // ModJsonLd, layout.tsx and the five sitemap routes all set one.
+    // ModJsonLd, HomeJsonLd and the five sitemap routes all set one.
     expect(all.length).toBeGreaterThanOrEqual(8);
     expect(all.some((s) => s.file === path.join('components', 'ModJsonLd.tsx'))).toBe(true);
   });
@@ -118,8 +118,9 @@ describe('E150 scanner: no dateModified/lastmod fed by the render-time clock', (
     })),
   );
 
-  it('scans the root layout (vacuity guard: the file that had the bug is in the population)', () => {
-    expect(all.some((s) => s.file === path.join('app', 'layout.tsx'))).toBe(true);
+  it('scans the homepage WebPage builder (vacuity guard: the node that had the bug is in the population)', () => {
+    // E189 moved the node from app/layout.tsx to components/HomeJsonLd.tsx.
+    expect(all.some((s) => s.file === path.join('components', 'HomeJsonLd.tsx'))).toBe(true);
   });
 
   it('no site feeds a content date from new Date() or Date.now()', () => {
@@ -136,14 +137,14 @@ describe('E150 scanner: no dateModified/lastmod fed by the render-time clock', (
     expect(hit('dateModified: HOME_SHELL_LASTMOD,')).toBe(false);
   });
 
-  it('the layout WebPage dateModified is the homepage-shell date, equal to APP_LASTMOD', async () => {
+  it('the homepage WebPage dateModified is the homepage-shell date, equal to APP_LASTMOD', async () => {
     const { HOME_SHELL_LASTMOD } = await import('@/lib/seo/siteLastmod');
     const { APP_LASTMOD } = await import('@/lib/sitemapLastmod');
     // Guard the constants, not a copy of their value: bump them together.
     expect(HOME_SHELL_LASTMOD).toBe(APP_LASTMOD);
     expect(HOME_SHELL_LASTMOD).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    const layout = stripComments(fs.readFileSync(path.join(process.cwd(), 'app', 'layout.tsx'), 'utf8'));
-    expect(layout).toMatch(/dateModified:\s*HOME_SHELL_LASTMOD\b/);
+    const home = stripComments(fs.readFileSync(path.join(process.cwd(), 'components', 'HomeJsonLd.tsx'), 'utf8'));
+    expect(home).toMatch(/dateModified:\s*HOME_SHELL_LASTMOD\b/);
   });
 });
 

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import HomePageClient from './HomePageClient';
 import { HomeCollections, homeCollectionLinks } from './HomeCollections';
+import { HomeJsonLd } from '@/components/HomeJsonLd';
 
 /**
  * Homepage route entry — a server shell around the client search page.
@@ -49,6 +50,8 @@ function CollectionsJsonLd() {
 export default function HomePage() {
   return (
     <>
+      {/* E189: homepage WebPage + FAQPage live here, not in the root layout. */}
+      <HomeJsonLd />
       <CollectionsJsonLd />
       <Suspense
         fallback={
