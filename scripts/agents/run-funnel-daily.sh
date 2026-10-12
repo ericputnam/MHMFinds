@@ -433,22 +433,73 @@ if [ "${FUNNEL_DRY_RUN:-0}" = "1" ]; then log "Dry run — stopping after scoreb
 CLAUDE_CLEAN=(env -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH -u CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH \
   -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_TOKEN \
   -u CLAUDE_CODE_HOST_SESSION_ID -u CLAUDE_CODE_SESSION_ID -u CLAUDE_CODE_CHILD_SESSION -u CLAUDE_PID)
+# >>> preflight-watch
+# E194 (2026-10-12): on 10-08 and 10-10 the preflight hung at 0 bytes for 2.5 days while the host slept and returned
+# only when the operator woke it (both at 10-11 10:55:46). `perl alarm 240` kills a hung CLI on an awake host (rc 142
+# in 3 s, tested 10-11) but did not fire across sleep, and the CLI's stderr went untagged into funnel-daily.log, so both
+# days were diagnosed OTHER with no excerpt. Now: (a) stderr goes to its own file, logs/funnel-preflight-DATE.stderr,
+# and its redacted tail is the excerpt when stdout is empty; (b) a wall-clock watcher OUTSIDE the preflight (this
+# runner's poll loop, `date +%s`, which keeps counting across sleep) kills the process tree once
+# FUNNEL_PREFLIGHT_WALL_S (300, above the 240 s alarm so the alarm stays first on an awake host) has passed and
+# diagnoses HANG; (c) every poll gap longer than FUNNEL_PREFLIGHT_GAP_S is counted as "asleep/suspended", so the
+# cause is a number in the log, not an inference. A stopped process does not act on TERM, so it gets TERM, then CONT,
+# then KILL. Self-contained: __tests__/unit/runner-preflight-watch.test.ts extracts this block and runs it.
 PREFLIGHT_OUT="$PROJECT_DIR/logs/funnel-preflight-$TODAY.json"
+PREFLIGHT_ERR="$PROJECT_DIR/logs/funnel-preflight-$TODAY.stderr"
+PREFLIGHT_WALL_S="${FUNNEL_PREFLIGHT_WALL_S:-300}"
+PREFLIGHT_POLL_S="${FUNNEL_PREFLIGHT_POLL_S:-2}"
+PREFLIGHT_GAP_S="${FUNNEL_PREFLIGHT_GAP_S:-30}"
+PREFLIGHT_HANG=0; PREFLIGHT_WALL=0; PREFLIGHT_SLEPT=0
+pf_signal_tree() {  # $1 pid $2 signal — children first, so nothing is reparented and missed
+  local c
+  for c in $(pgrep -P "$1" 2>/dev/null); do pf_signal_tree "$c" "$2"; done
+  kill "-$2" "$1" 2>/dev/null
+  return 0
+}
+pf_redact() { tr '\n\r\t' '   ' | sed -E 's/[A-Za-z0-9_-]{25,}/<redacted>/g; s/[`|]/ /g; s/  +/ /g'; }
 claude_preflight() {
+  local start now last gap pid rc
+  : >"$PREFLIGHT_OUT"; : >"$PREFLIGHT_ERR"
+  PREFLIGHT_HANG=0; PREFLIGHT_SLEPT=0
+  start="$(date +%s)"; last="$start"
+  log "preflight: start (wall deadline ${PREFLIGHT_WALL_S}s, stderr → logs/funnel-preflight-$TODAY.stderr)"
   perl -e 'alarm 240; exec @ARGV' "${CLAUDE_CLEAN[@]}" claude -p "Reply with exactly: ok" --model "$MODEL" --max-turns 1 \
-    --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null >"$PREFLIGHT_OUT" 2>>"$LOG_FILE"
-  grep -q '"is_error":false' "$PREFLIGHT_OUT"
+    --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null >"$PREFLIGHT_OUT" 2>"$PREFLIGHT_ERR" &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    sleep "$PREFLIGHT_POLL_S"
+    now="$(date +%s)"; gap=$((now - last)); last="$now"
+    [ "$gap" -gt "$PREFLIGHT_GAP_S" ] && PREFLIGHT_SLEPT=$((PREFLIGHT_SLEPT + gap))
+    if [ $((now - start)) -ge "$PREFLIGHT_WALL_S" ] && kill -0 "$pid" 2>/dev/null; then
+      PREFLIGHT_HANG=1
+      pf_signal_tree "$pid" TERM; pf_signal_tree "$pid" CONT
+      sleep 3
+      pf_signal_tree "$pid" KILL
+      break
+    fi
+  done
+  wait "$pid" 2>/dev/null; rc=$?
+  PREFLIGHT_WALL=$(( $(date +%s) - start ))
+  log "preflight: rc=$rc wall=${PREFLIGHT_WALL}s asleep/suspended=${PREFLIGHT_SLEPT}s hang=$PREFLIGHT_HANG stdout=$(wc -c <"$PREFLIGHT_OUT" | tr -d ' ')B stderr=$(wc -c <"$PREFLIGHT_ERR" | tr -d ' ')B"
+  [ "$PREFLIGHT_HANG" = 0 ] && grep -q '"is_error":false' "$PREFLIGHT_OUT"
 }
 # Why the preflight failed — the fix differs, so the digest must not blame auth for everything
 # (2026-09-06/07: the CLI was 2.1.108, Fable needs >= 2.1.251; the digest said "run claude auth login" and
-# two days were lost). Echoes one of: CLI_TOO_OLD | AUTH | OTHER, plus a short sanitized excerpt.
+# two days were lost). Echoes one of: CLI_TOO_OLD | AUTH | HANG | OTHER, plus a short sanitized excerpt.
+# AUTH reads stdout broadly but stderr only on strict patterns (stderr can mention OAuth without failing on it).
 preflight_diagnosis() {
-  local out; out="$(tr -d '\n\r' <"$PREFLIGHT_OUT" 2>/dev/null | head -c 4000)"
-  local excerpt; excerpt="$(printf '%s' "$out" | grep -oE '"(error|message)":"[^"]{0,200}' | head -2 | tr '\n' ' ' | sed -E 's/[A-Za-z0-9_-]{25,}/<redacted>/g')"
-  if printf '%s' "$out" | grep -q 'claude_code_version_too_old'; then echo "CLI_TOO_OLD|$excerpt"
-  elif printf '%s' "$out" | grep -qiE 'authentication|not logged in|401|invalid.*token|oauth'; then echo "AUTH|$excerpt"
+  local out err; out="$(tr -d '\n\r' <"$PREFLIGHT_OUT" 2>/dev/null | head -c 4000)"
+  err="$(tail -c 2000 "$PREFLIGHT_ERR" 2>/dev/null | pf_redact)"
+  local excerpt; excerpt="$(printf '%s' "$out" | grep -oE '"(error|message)":"[^"]{0,200}' | head -2 | pf_redact)"
+  [ -z "$excerpt" ] && [ -n "${err// /}" ] && excerpt="stderr: $(printf '%s' "$err" | tail -c 200)"
+  [ "$PREFLIGHT_SLEPT" -gt 0 ] && excerpt="asleep/suspended ${PREFLIGHT_SLEPT}s of ${PREFLIGHT_WALL}s wall; ${excerpt:-no output}"
+  if printf '%s %s' "$out" "$err" | grep -q 'claude_code_version_too_old'; then echo "CLI_TOO_OLD|$excerpt"
+  elif printf '%s' "$out" | grep -qiE 'authentication|not logged in|401|invalid.*token|oauth' \
+    || printf '%s' "$err" | grep -qiE 'not logged in|401|authentication_error|invalid.*token'; then echo "AUTH|$excerpt"
+  elif [ "$PREFLIGHT_HANG" = 1 ]; then echo "HANG|killed after ${PREFLIGHT_WALL}s wall; $excerpt"
   else echo "OTHER|$excerpt"; fi
 }
+# <<< preflight-watch
 token_expiry() {
   security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | python3 -c 'import json,sys,datetime
 try:
@@ -465,6 +516,7 @@ if ! claude_preflight; then
   case "$DIAG_KIND" in
     CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
     AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth token expiry: $EXP; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
+    HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
     *)           CAUSE="The Claude CLI preflight failed for a reason that is neither auth nor version — see logs/funnel-preflight-$TODAY.json (excerpt: ${DIAG_EXCERPT:-none}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
   esac
   log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"
