@@ -482,7 +482,8 @@ def _wire_low_runway_main(topup, monkeypatch, tmp_path, log, seo_fail=False,
     monkeypatch.setattr(topup, 'count_inventory', lambda config, today: 20)
     monkeypatch.setattr(topup, 'compute_daily_posted_rate',
                         lambda config, now=None, window_days=14: 20.0)
-    monkeypatch.setattr(topup, 'count_writer_rows_for_date', lambda config, day: 0)
+    monkeypatch.setattr(topup, 'count_writer_rows_for_date',
+                        lambda config, day, *a, **k: 0)
     # E170: no earlier top-up rows on any date in these fixtures.
     monkeypatch.setattr(topup, 'count_prior_topup_rows_for_date',
                         lambda config, day: 0, raising=False)
@@ -855,3 +856,89 @@ def test_real_ledgers_on_main_show_the_stacking(topup):
     counts = topup.ledger_rows_by_date(ledger_dir)
     assert counts is not None and len(counts) >= 5, counts
     assert sum(1 for n in counts.values() if n > 7) >= 2, counts
+
+
+# --------------------------------------------------------------------------
+# E188 (2026-10-12): writer rows on a posting date use the plugin's
+# predicate, not `Wordpress Post ID` (set on every stranded row, so the old
+# count reported Pip's own top-up rows as writer rows: 7 on each of
+# 10-13..10-17 vs 0 by the plugin's predicate, live read 2026-10-12).
+# --------------------------------------------------------------------------
+
+_MANAGED = {'musthavemods.com/sims-4-halloween-mods/'}
+
+
+def test_writer_row_predicate(topup):
+    pred = topup.is_writer_row_on_date
+    # created by the plugin after the Q11 deploy -> writer's
+    assert pred({'id': 1, 'created_at': '2026-10-01T00:00:00+00:00',
+                 'Post URL': 'https://musthavemods.com/x/'}, set(), set())
+    # pre-deploy row on a plugin-managed destination (either host) -> writer's
+    assert pred({'id': 2, 'created_at': '2025-06-01',
+                 'Post URL': 'https://blog.musthavemods.com/sims-4-halloween-mods'},
+                _MANAGED, set())
+    # the bug: a revived pre-deploy row on an unmanaged destination is NOT
+    # the writer's, even though it carries a Wordpress Post ID
+    assert not pred({'id': 3, 'created_at': '2025-06-01', 'Wordpress Post ID': 99,
+                     'Post URL': 'https://musthavemods.com/sims-4-urban-tattoos/'},
+                    _MANAGED, set())
+    # any id a top-up ledger re-dated is never the writer's
+    assert not pred({'id': 2, 'created_at': '2025-06-01',
+                     'Post URL': 'https://musthavemods.com/sims-4-halloween-mods/'},
+                    _MANAGED, {2})
+
+
+class _WriterCountRevive:
+    def __init__(self, rows=None, exc=None):
+        self.rows, self.exc, self.queries = rows, exc, []
+
+    def supabase(self, config, method, query):
+        self.queries.append(query)
+        if self.exc:
+            raise self.exc
+        return self.rows
+
+
+def test_count_writer_rows_for_date_uses_plugin_predicate(topup, monkeypatch):
+    rows = [
+        {'id': 10, 'created_at': '2025-01-05', 'Post URL': 'https://musthavemods.com/a/'},
+        {'id': 11, 'created_at': '2025-01-05', 'Post URL': 'https://musthavemods.com/b/'},
+        {'id': 12, 'created_at': '2026-10-10', 'Post URL': 'https://musthavemods.com/c/'},
+        {'id': 13, 'created_at': '2025-01-05',
+         'Post URL': 'https://musthavemods.com/sims-4-halloween-mods/'},
+    ]
+    fake = _WriterCountRevive(rows)
+    monkeypatch.setattr(topup, 'revive', lambda: fake)
+    n = topup.count_writer_rows_for_date({}, date(2026, 10, 13), _MANAGED, {10, 11})
+    assert n == 2  # 12 (plugin-created) + 13 (managed); 10/11 are top-up rows
+    assert 'Wordpress%20Post%20ID' not in fake.queries[0]
+    assert 'Is%20Posted%22=eq.false' in fake.queries[0]
+
+
+def test_count_writer_rows_for_date_unknown_is_none(topup, monkeypatch):
+    monkeypatch.setattr(topup, 'revive', lambda: _WriterCountRevive(exc=RuntimeError('x')))
+    assert topup.count_writer_rows_for_date({}, date(2026, 10, 13), set(), set()) is None
+    full = [{'id': i, 'created_at': '2025-01-01', 'Post URL': 'u'} for i in range(1000)]
+    monkeypatch.setattr(topup, 'revive', lambda: _WriterCountRevive(full))
+    assert topup.count_writer_rows_for_date({}, date(2026, 10, 13), set(), set()) is None
+
+
+def test_unknown_writer_count_closes_the_day(topup):
+    def writer(d):
+        return None if d == TODAY else 0
+    out = topup.decide_topup(inventory=0, rate=10, writer_rows_by_day=writer,
+                              today=TODAY)
+    assert str(TODAY) not in [d['date'] for d in out['day_plan']]
+
+
+def test_ledger_topup_ids(topup, tmp_path):
+    (tmp_path / (topup.LEDGER_PREFIX + '2026-10-11.json')).write_text(json.dumps(
+        {'entries': [{'id': 5, 'new_date': '2026-10-12'},
+                     {'id': 6, 'new_date': '2026-10-13'}]}))
+    (tmp_path / (topup.LEDGER_PREFIX + '2026-09-28-writer-revert.json')).write_text(
+        json.dumps({'entries': [{'id': 9, 'new_date': '2025-01-01'}]}))
+    assert topup.ledger_topup_ids(str(tmp_path)) == {5, 6}
+    (tmp_path / (topup.LEDGER_PREFIX + '2026-10-12.json')).write_text('{bad')
+    assert topup.ledger_topup_ids(str(tmp_path)) is None
+    real = topup.ledger_topup_ids(os.path.join(HERE, '..', '..', 'reports', 'funnel'))
+    assert real is not None and len(real) >= 100  # vacuity guard on main's ledgers
