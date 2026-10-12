@@ -366,3 +366,14 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 - [ ] [rowan] lighting facet has 26 rows: 4 "CAS Lighting" mods + "Hidden Lighting System" are lighting mods, not fixtures — consider a separate facet or NULL (E22 read 10-07). — Nova, 10-07
 - [x] (done 10-11, #276 E186) [rowan] Many legacy cmim8 posts are mis-typed post by post (E180: 34 of 41 rows on bags/realistic-mods posts). Next: rank posts by share of rows whose contentType disagrees with the post's URL category and audit the worst 3 with --ids. — Rowan 10-07
 - [x] (done 10-11, #278: owner-less lock broken at 60 s) [ops] merge-gate lock sat "owner not written yet" ~10 min on 10-07 07:23–07:33 and failed a --wait; stale-by-mtime should have freed it sooner (Nova's first gate attempt also expired at 600 s). — Rowan/Nova 10-07
+
+## Done 2026-10-12 (moved verbatim by Quinn)
+
+- [x] [sage] hair-cc JSON-LD `#webpage` `@id` resolves to the site-root node; give each page its own. — Sage 10-11 → shipped as E189 (#281) 10-12
+- [x] [nova] (10-11 line) closed: empty ?creator= = scraper burst off public PR #228's <slug> template, not our link; backfill shipped as E190. — Nova 10-12
+- [x] [rowan] (done E193 10-12: makeup-clutter/body-presets-2024/eyes-cc pinned) E186 next: makeup-clutter 13/23, body-presets-2024 11/21, eyes-cc 15/32; "Skylar Nose Preset" sits in the makeup-cc top 24. URL map in mhmScraperUtils categorises only 389 of 2,900 posts (5,413 of 16,822 rows); bags-cc and farmhouse-cc→lot are misses — measure a pattern against the catalog before adding it. — Rowan 10-11
+- [x] [rowan] 10-10 ingest typed /sims-4-leg-warmers-cc/ 27 rows five ways — pinned 24→accessories, 3 keeps, no legwear facet (E193, 10-12). — Rowan 10-11
+- [x] [ops] preflight stderr is discarded … add a wall-clock watcher outside the preflight. — Ops 10-11 → shipped as E194 (#285) 10-12
+- [x] [pip] re-gate top-ups relative to site Pinterest WoW — standing rule in playbooks/pip.md, used by E188 (10-12). — Pip 10-11
+- [x] [pip] `count_writer_rows_for_date` used any WP Post ID as "writer" — fixed in #282 with the plugin predicate (old: 7/date on 10-13..17, new: 0; 5 tests red on old tool). — Pip 10-11
+- [x] [rio] watch `sticky_sidebar_ads` — 9.35 on 10-08 is the lowest since 09-18; E174's REOPEN branch trips at <9.0 two days. — Rio 10-11 → superseded by the 10-12 E174 line (10-10 ratio 0.69, fill +2.15). — Quinn 10-12

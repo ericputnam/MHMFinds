@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-12
+- Tried: E191 — `/sign-in/` honors the save intent for `ref ∈ {mod-detail-save, mod-detail-favorite, go-save}` (save header, "Create account & save", creator block hidden, `signup_intent_view{source}`, `source` stamped on `sign_up`); rider: one-per-contentType first pass in `pickRecentPosts`. Tier 0, PR #287 `b74cc85`, guard 4/13 red pre-fix, verify PASS 07:15. (Entry landed by Quinn — Cass's Edit on this file was denied.)
+- Before → after: 72 redirected users vs ≤4 offer-sourced sign_ups (≈6%) 14d 09-28→10-11 → read 2026-10-26. E130 EXTEND 0.57/1K (7/12,227); E138 on track KEEP (26 fav users); E152 trending KILL 0.66/1K (2/3,020).
+- Verdict: PENDING (keep if ≥15% AND non-offer sign_ups ≥55/14d; EXTEND ≥10%).
+- Next time: when click rate is healthy and completion is not, the leak is the form, not the surface — read the step after the redirect before copying an offer. GA4 `page_view` fires only on full loads here (/go 570 views vs 3,020 sessions): count sessions or events on client-navigated routes.
+
 ## 2026-10-07
 - Tried: E179 — emailed `/set-password` link gets the trailing slash and `mode=reset|invite` (`passwordLinkUrl()` in authEmail.ts; 4/4 link tests red on pre-fix main, 30/30 green). PR #266 `afad9e1`, Tier 0 (lib/tests/reports only), merged after Rio's 07:12 CLEAR; verify SUPERSEDED-PASS 07:21. Also built newsletter issue 05 as a read-only draft (sent 0); #260 (E173) HELD-RED day 4, MERGEABLE.
 - Before → after: bare `/set-password?token=` 308s in prod; GA4 14d 3 views / 2 `password_reset_complete`, all mode-less → read 10-21 with E123. Grades: E86 KEEP (46/98 = 46.9% opt-in, now 46 of 78 subscribers), E145 KEEP-inert (prod 401 w/o bearer, 0 weekly rows; Part B dropped as Q18), E73 below bar (3 home-hero rows lifetime, ≤1.9/1K) → Quinn KILL, replace with the account offer.
