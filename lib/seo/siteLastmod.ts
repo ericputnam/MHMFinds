@@ -1,9 +1,9 @@
 /**
- * `dateModified` for the site-wide WebPage node in `app/layout.tsx`
- * (E150, 2026-10-01, Sage).
+ * `dateModified` for the homepage WebPage node, `components/HomeJsonLd.tsx`
+ * (E150, 2026-10-01, Sage; node moved out of `app/layout.tsx` by E189).
  *
  * That node is `@id: https://musthavemods.com/#webpage` — the homepage
- * entity — and the root layout emits it on every Next.js page. Until E150
+ * entity. Until E189 the root layout emitted it on every Next.js page. Until E150
  * its `dateModified` was `new Date()`: whatever day the page happened to be
  * rendered (live 2026-10-01: "2026-10-01" on `/` and on
  * `/games/sims-4/hair-cc/`, a page built that morning). A date that is
