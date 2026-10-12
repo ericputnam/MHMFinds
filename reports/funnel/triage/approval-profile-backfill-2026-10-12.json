@@ -1,0 +1,31 @@
+{
+  "experiment": "E190",
+  "written": "2026-10-12",
+  "change": "create pending CreatorProfile (isVerified=false) + set Mod.creatorId (was null) for pre-#274 approvals",
+  "skipped": [
+    {
+      "submissionId": "cmijnwx5r0000k104d0n4ezlr",
+      "action": "skip",
+      "reason": "no-mod"
+    },
+    {
+      "submissionId": "cmk1wk7v90005oxusxfk1lfte",
+      "action": "skip",
+      "reason": "author-not-account"
+    },
+    {
+      "submissionId": "cmk7vpwk60009l504chiiao71",
+      "action": "skip",
+      "reason": "anonymous"
+    }
+  ],
+  "rows": [
+    {
+      "submissionId": "cmk8nm31x0002l804ksu4jnsn",
+      "action": "create",
+      "userId": "cmk5vu7c60017ky04f6zr2idz",
+      "modId": "cmkao6wev000cjs04614w3llv",
+      "handle": "pending-dor-e-f6zr2idz"
+    }
+  ]
+}

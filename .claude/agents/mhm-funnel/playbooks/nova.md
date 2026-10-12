@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-12
+- Tried: E190 (T0, PR pending at write) — backfill of the E183 pending profile + `Mod.creatorId` for pre-#274 approvals. Planner reuses `planApprovalProfile` and adds a backfill-only rule (author must name the account). 12 tests, 2 mutations red. Plan: 4 read, 1 write (doree), 3 skip (no-mod, anonymous, author-not-account).
+- Before → after: approvals linked 0/4 → 1/4 (3 can never qualify); pending profiles 0 → 1. 20 of 22 empty `?creator=` claim views = one 09-30 06–09 ET burst (direct, all new users, 4 browsers, 3 countries) right after public PR #228 printed `…?creator=<slug>`: extractors stop at `<`. Real claim views 2. The 01-06 approval came from a non-admin account named after the operator.
+- Verdict: MORE DATA (read 2026-10-25 with E183).
+- Next time: never put a URL template with `<slug>` in a public PR body. Scrapers fetch it and pollute the read.
+
 ## 2026-10-07
 - Tried: E178 — read-only creator-flag audit (`creator-flag-audit.ts` + lib, 9 tests, 2 mutations red). PR #270 `efdf3d0`, Tier 0, merged after Rio's CLEAR (first gate attempt timed out at 600 s, retry passed); verify PASS 07:29.
 - Before → after: 343 isCreator accounts = 20 seed + 1 admin + 322 form ticks; 3 submitted, 0 profiles, 1 weak catalog match, 221 player-active, 79 dormant; download-click 57.1% vs 55.9% unflagged control, favorites 41.9% vs 53.3% → read 10-14. Reads: E137-b KEEP/close, E139 KEEP (4/7 rows, durability → Ops), E141 KEEP (5/5), E17 KILL (61 engaged vs 200), E22 KEEP (lighting 18/25 fixtures; CAS-lighting cleanup → Rowan).
@@ -49,14 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-11 with E122/E129; keep if every `creator-claim`/`promote` audit row's profile has isVerified=true, with /creator/* landing 7d ≥95% of 558).
 - Next time: check the before-snapshot before trusting an inbox line's count — one 5-line DB read turned "20 unverified profiles" into "0, latent write gap". And `gh pr merge` exit 1 after a win is "already merged", not "not merged": read `gh pr view --json state` before retrying. Onboarded is still 0 and Q23 (T2, 2 days unanswered) is the only feed into this path.
 
-## 2026-09-30
-- Tried: E144 (T0, PR #228): diagnosed 0 claim starts on the population, not the CTA. GA4 09-23→09-29: /creator/* 558 landing sessions, /submit-mod/ 1 view total, 0 with `?creator=`; DB: 0 ModSubmission rows source='Creator Claim' ever, 4 submissions lifetime (last 2026-01-10), 0 pending profiles. The CTA was server-rendered above the grid but a slate-500 footnote — and the visitor is a fan (~1 landing/page/week), not the creator. Shipped `CreatorClaimCard` in the hero: visible "Claim this page" + fan-forward "Send them this page" (copies the claim URL with `&ref=share`, GA4 `creator_claim_share`), hidden on verified profiles; hub copy no longer routes claims through the bare form.
-- Before → after: claim views 0/wk, share events 0 (no surface) → read 2026-10-14.
-- Verdict: MORE DATA (read 2026-10-14; keep if ≥10 `creator_claim_share` events OR ≥3 `/submit-mod/?creator=` views in 14d, with /creator/* landing 7d ≥95% of 558).
-- Next time: when a CTA reads 0 on 500+ sessions, ask who is in the sessions first — an ask aimed at 1-in-500 visitors needs the other 499 to carry it. Outreach (Q23) is still the only direct feed.
-
-## 2026-09-29
-- Tried: (a) E137 creator outreach package (T2, queued): top 20 hub creators by 28d download clicks, page + claim URL per row, template, and the isCreator decision in one file. (b) E137-b (T0, PR #217 `949b536`): 'creator' added to page-rpm OTHER_APP_PREFIXES; class test covers every NEXTJS_PREFIXES entry and every app/ route dir, red pre-fix on exactly /creator/ (2 cases).
-- Before → after: /creator/* landing sessions 116 (09-15→09-21) → 558 (09-22→09-28, GA4 apex). The top 20 hold only 202/1,408 28d clicks, 5–26 each; 11/20 publish mainly on TSR, and 8 are TSR-only with no contact route of their own. Onboarded 0, claims 0.
-- Verdict: MORE DATA (read 2026-10-13).
-- Next time: `sourceUrl` on scraped mods is the MHM blog post, not the creator. Read `downloadUrl` for a creator's channel. And if the next batch skips TSR-only creators, rank from 21+ rather than re-sorting.
+_Older entries (up to 2026-09-30) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
