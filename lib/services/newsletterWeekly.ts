@@ -164,6 +164,35 @@ function toIssueMod(m: SavedModRow): IssueMod {
 }
 
 /**
+ * One-per-contentType first (Cass, E191 rider, 2026-10-12): `findRecentMods`
+ * orders by download count, and a single busy post (one blog post is scraped
+ * into many rows) can fill all six "new this week" slots with the same facet.
+ * First pass takes the first row of each contentType in the input order (a
+ * null type is its own bucket); the second pass tops up from the remainder,
+ * still in input order, so a catalog with fewer types than `need` loses
+ * nothing. Pure and order-preserving, so a diverse input is returned unchanged.
+ */
+export function diversifyByContentType<T extends { contentType: string | null }>(
+  rows: readonly T[],
+  need: number
+): T[] {
+  if (need <= 0) return [];
+  const seen = new Set<string>();
+  const first: T[] = [];
+  const rest: T[] = [];
+  for (const row of rows) {
+    const key = row.contentType ?? '';
+    if (seen.has(key)) {
+      rest.push(row);
+    } else {
+      seen.add(key);
+      first.push(row);
+    }
+  }
+  return first.concat(rest).slice(0, need);
+}
+
+/**
  * Pick `need` recent mods with an image on an allowed host
  * (`newsletterIssue.ts` throws otherwise — most mod images are hosted on
  * blog.musthavemods.com, but some source hosts (Patreon, TSR, Tumblr CDNs)
@@ -179,7 +208,7 @@ async function pickRecentPosts(db: NewsletterDb, now: Date, need: number): Promi
     const candidates = await db.findRecentMods({ since, take: Math.max(need * 5, 25) });
     const eligible = candidates.filter((m) => m.thumbnail && isAllowedImageUrl(m.thumbnail));
     if (eligible.length >= Math.min(need, 2)) {
-      return eligible.slice(0, need).map(toIssuePost);
+      return diversifyByContentType(eligible, need).map(toIssuePost);
     }
   }
   throw new Error(
