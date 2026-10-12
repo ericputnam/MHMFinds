@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, useSession } from 'next-auth/react';
@@ -8,6 +8,7 @@ import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Sparkles, Crown, CheckCircle2, Download, X } from 'lucide-react';
 import { resolveSignInReturn } from './returnTo';
+import { SIGNUP_INTENT_VIEW_EVENT, resolveSignupIntent } from './signupIntent';
 
 /** waitlist.source for the sign-up form's email opt-in (Cass, E86). */
 const SIGNUP_OPTIN_SOURCE = 'signup-optin';
@@ -20,6 +21,19 @@ export default function SignInPage() {
   // Get initial mode from query parameter (e.g., ?mode=premium)
   const modeParam = searchParams?.get('mode') as 'signin' | 'signup' | 'premium' | null;
   const [mode, setMode] = useState<'signin' | 'signup' | 'premium'>(modeParam || 'signup');
+
+  // Who sent the visitor (Cass, E191): a save offer's `ref` switches the
+  // header to the save intent and hides the creator block. Everything else
+  // keeps the generic copy. Fired once per page load so the cohort has a
+  // denominator on this page, not only on the surface that linked here.
+  const intent = resolveSignupIntent(searchParams?.get('ref'));
+  useEffect(() => {
+    (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+      'event',
+      SIGNUP_INTENT_VIEW_EVENT,
+      { source: intent.source, intent: intent.kind }
+    );
+  }, [intent.source, intent.kind]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -128,10 +142,17 @@ export default function SignInPage() {
 
       // GA4 conversion event — the account was created (Cass, E73). Analytics
       // only; `ref` names the surface that sent the visitor (e.g. home-hero).
+      // `source` carries the same value on the registered dimension
+      // (`customEvent:source` is registered, `customEvent:ref` is not — E173).
       (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
         'event',
         'sign_up',
-        { method: 'credentials', ref: searchParams?.get('ref') || 'direct' }
+        {
+          method: 'credentials',
+          ref: searchParams?.get('ref') || 'direct',
+          source: intent.source,
+          intent: intent.kind,
+        }
       );
 
       // Newsletter opt-in (Cass, E86): only when the visitor ticked the box,
@@ -225,13 +246,18 @@ export default function SignInPage() {
             <div className="inline-flex items-center gap-2 bg-sims-pink/10 border border-sims-pink/20 rounded-full px-6 py-2 mb-6">
               <Crown className="h-4 w-4 text-sims-pink" />
               <span className="text-sm font-semibold text-sims-pink">
-                {mode === 'premium' ? 'Upgrade to Premium' : 'Join MustHaveMods'}
+                {mode === 'premium' ? 'Upgrade to Premium' : intent.pill}
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+            <h1
+              className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight"
+              data-signup-intent={mode === 'premium' ? 'premium' : intent.kind}
+            >
               {mode === 'premium' ? (
                 <>Your Free Downloads <span className="text-white">Are Up!</span></>
+              ) : intent.kind === 'save' ? (
+                <>Save this find to <span className="text-white">your favorites</span></>
               ) : (
                 <>Discover <span className="text-white">Amazing</span> Sims Mods</>
               )}
@@ -241,8 +267,8 @@ export default function SignInPage() {
               {mode === 'premium'
                 ? 'Upgrade to Premium for unlimited downloads and ad-free browsing'
                 : mode === 'signup'
-                ? 'Create a free account to start discovering amazing Sims mods'
-                : 'Welcome back! Sign in to continue discovering amazing mods'}
+                ? intent.signupBody
+                : intent.signinBody}
             </p>
           </div>
 
@@ -332,7 +358,7 @@ export default function SignInPage() {
                     )}
                   </div>
 
-                  {mode === 'signup' && (
+                  {mode === 'signup' && !intent.hideCreator && (
                     <div className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all">
                       <label className="flex items-start gap-4 cursor-pointer">
                         <div className="flex items-center h-6">
@@ -377,7 +403,7 @@ export default function SignInPage() {
                     disabled={isSubmitting}
                     className="w-full bg-sims-pink hover:bg-sims-pink/90 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-sims-pink/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8"
                   >
-                    {isSubmitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Free Account'}
+                    {isSubmitting ? 'Please wait...' : mode === 'signin' ? 'Sign In' : intent.submitLabel}
                   </button>
                 </form>
               </div>

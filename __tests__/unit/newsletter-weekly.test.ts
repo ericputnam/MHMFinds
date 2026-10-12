@@ -33,6 +33,7 @@ vi.mock('@/lib/prisma', () => ({
 import {
   buildWeeklyIssueData,
   computeIssueNumber,
+  diversifyByContentType,
   formatDateLabel,
   pickCollectionDefinition,
   type ModRow,
@@ -169,6 +170,40 @@ describe('buildWeeklyIssueData', () => {
     const issue = await buildWeeklyIssueData(db, { now });
     expect(issue.posts.length).toBeGreaterThanOrEqual(2);
     expect(calls).toContain(28);
+  });
+
+  it('spreads the "new this week" slots across content types before repeating one (E191 rider)', async () => {
+    // Nine eligible rows, download-ordered: six hair first, then furniture,
+    // makeup and a null type. Pre-rider the issue was six hair.
+    const rows = [
+      ...[1, 2, 3, 4, 5, 6].map((n) => mod({ id: `hair-${n}`, contentType: 'hair' })),
+      mod({ id: 'furn-1', contentType: 'furniture' }),
+      mod({ id: 'makeup-1', contentType: 'makeup' }),
+      mod({ id: 'untyped-1', contentType: null }),
+    ];
+    const db = fakeDb({
+      async findRecentMods() {
+        return rows;
+      },
+    });
+    const issue = await buildWeeklyIssueData(db, { now: new Date('2026-09-22T15:00:00Z') });
+    const ids = issue.posts.map((p) => p.url.match(/\/mods\/([^/]+)\//)?.[1]);
+    expect(ids).toEqual(['hair-1', 'furn-1', 'makeup-1', 'untyped-1', 'hair-2', 'hair-3']);
+  });
+
+  it('diversifyByContentType is pure, order-preserving and a no-op on diverse input', () => {
+    const diverse = [
+      mod({ id: 'a', contentType: 'hair' }),
+      mod({ id: 'b', contentType: 'furniture' }),
+      mod({ id: 'c', contentType: 'poses' }),
+    ];
+    expect(diversifyByContentType(diverse, 6).map((m) => m.id)).toEqual(['a', 'b', 'c']);
+    expect(diversifyByContentType(diverse, 2).map((m) => m.id)).toEqual(['a', 'b']);
+    expect(diversifyByContentType(diverse, 0)).toEqual([]);
+    // A single-type catalog still fills every slot — diversity never costs a post.
+    const mono = [1, 2, 3].map((n) => mod({ id: `h${n}`, contentType: 'hair' }));
+    expect(diversifyByContentType(mono, 6).map((m) => m.id)).toEqual(['h1', 'h2', 'h3']);
+    expect(diverse.map((m) => m.id)).toEqual(['a', 'b', 'c']);
   });
 
   it('throws rather than sending a hollow issue when no window has enough eligible mods', async () => {
