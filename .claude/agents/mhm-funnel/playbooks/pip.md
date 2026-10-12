@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-12
+- Tried: E188 top-up #13 (T0, SD-10 floor; apply ledger on main `cda6c05`): 21 sessions-ranked rows 7×10-15/16/17 — the cross-run cap skipped 10-12/13/14 (E181's 7/date); post-apply dry run plans 10-18..20. Fixed inbox [pip]: `count_writer_rows_for_date` used `Wordpress Post ID`; live read showed old 7 vs plugin-predicate 0 "writer rows" on each of 10-13..10-17 — all were Pip's own top-up rows. 5 new tests red pre-fix, 67/67 green.
+- Before → after: runway 0.58 → 1.45 d (14 → 35 @ 24.14/day pinterest-14d); SEO 64 → 96 (0/21 → 21/21). Ranker: 15 dests/83 ids, 47 writer rows dropped upstream.
+- Verdict: MORE DATA (read 10-19). Standing keep-if for every top-up from E181 on: treated-destination Pinterest WoW ≥ site Pinterest WoW (same GA4 def, freshly re-pulled base), never an absolute count.
+- Next time: when a guard counts "someone else's rows", diff it against your own ledger ids first — 7 = exactly one top-up date was the tell.
+
 ## 2026-10-07
 - Tried: E170 top-up #11 (T0, SD-10 floor; Supabase apply ledger on main `864d50f`; report files PR #268 `811705a`, verify PASS 07:17). 21 sessions-ranked rows, 7×10-07/08/09, 1/URL/day; tool counted 0 earlier top-up rows per date and a post-apply dry run skipped those dates and planned 10-10..12, so the #261 cross-run cap holds. 0 writer rows touched (1 dropped upstream in the ranker). Poster alive: 10-04's 7 rows all posted 10-06.
 - Before → after: runway 0.00 → 0.63 d (0 → 21 @ 33.5/day; hard_cap_21 is the bound); SEO 64 → 89 (21/21). Reads: E135 KEEP (0/133 writer rows; 8 dests −4.6% vs site −2.4%, gap −2.3 ≥ −5; recorded baseline 2,996 ≠ fresh GA4 2,714, graded on the fresh pull); E81 KEEP (pv/s 1.506 = 99.7% of 1.51, blog.* 0.27%).
@@ -49,16 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: E93 KEEP. E149 MORE DATA (read 10-08: Pinterest sessions to the 10 destinations vs 2,668/7d, both hosts).
 - Next time: seven top-ups, runway never above 2.44 d — the floor is a treadmill until the plugin dates rows ahead (Q11).
 
-## 2026-09-30
-- Tried: E142 top-up #6 (T0, SD-10 floor; Supabase only, tool unchanged since #222): 21 sessions-ranked rows (ranker 28 destinations/140 ids; 12 destinations used) to 09-30/10-01/10-02, 1/URL/day. Filter selectivity printed: plugin guard dropped 0 in the top-up but 1 in the ranker on the same 1000-row pool (16 managed destinations) — an upstream drop, not a blind filter.
-- Before → after: runway 0.94 → 1.46 d (38 → 59 @ 40.50/day queue-posted-14d); SEO 58 → 87/100 (0/21 → 21/21 passing) on an `--ids` re-read; read-back 21/21, created_at max 2026-03-25, 0 plugin rows. E76 read: 6 of 7 mornings (09-23→09-29) 🔴 while the writer inserted 48/0/24/28/0/48/20 — every 🔴 was the runway<3 d clause. E82 read: inserts/day 48/0/24/28/0/48/20/0 (168 in 8 d), 44 real-dated at insert, 151 plugin rows posted on their day, 310 at placeholder, 0 dated ahead — inflow alive and lumpy (2–3 articles/wk), never ≥12/day dated ahead. Direct +38.5%: top-70 landing×hour cells 760 vs 740 → the +2k is long-tail (9,278 cells), no page/hour spike.
-- Verdict: E142 MORE DATA (read 10-08: Pinterest sessions to the 12 destinations vs 4,500/7d (GA4 09-22→09-28)). E76 KILL as shipped (E141 #218 replaced the rule; 09-30 reads 🟡 correctly). E82 KILL the ≥12/day rule, KEEP the read.
-- Next time: the cap is a treadmill — six 21-row top-ups and runway has never held above 2.44 d (0.94 d this morning). Grade the floor by rows the plugin dates on schedule, not by top-ups landed.
-
-## 2026-09-29
-- Tried: E135 (T0, PR #222 `6b0b47a`) — "writer's own rows" cannot be read from `Wordpress Post ID`: it is set on 1610/1610 stranded rows and 1445/1445 placeholder rows, so the top-up's writer filter dropped 0 rows on every run and top-up #4 promoted 2 plugin-scheduled rows (11848 posted, 11849 reverted). The writer's schedule is placeholder date + (created_at ≥ 2026-09-21 OR destination has a row created since); the ranker now drops those at the source (1 of 1000 today, 16 managed destinations) and the top-up refuses (exit 2) if attribution cannot be read. Tests 6/6 red pre-fix.
-- Before → after: top-up #5 with the guarded tool: 21 rows / 8 destinations / 0 plugin rows; runway 1.13 → 1.67 d (44 → 65 @ 39.0/day, queue-posted-14d basis); SEO 60 → 89 on re-read. Pre-reads 09-30: E76 4 false 🔴 in 7 mornings (fix is Ops #218); E82 writer rows/day 25/48/0/24/28/0/48/20, 107 plugin rows posted in 7d.
-- Verdict: MORE DATA (read 2026-10-07). QUEUED-T2: writer Upcoming pin-SEO apply, 353 rows, mean 54/100.
-- Next time: check a filter's selectivity (rows dropped per run) before trusting it — 0 dropped on 4 runs was the tell.
-
-_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-30) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._

@@ -333,15 +333,49 @@ def count_inventory(config, today, horizon_days=RUNWAY_HORIZON_DAYS,
     return count_exact(config, query)
 
 
-def count_writer_rows_for_date(config, day):
-    """Writer-attributed rows (Wordpress Post ID set — see
-    pinner-liveness-lib.ts's writer-liveness section for why that column is
-    the identifying marker) already scheduled for `day`. These are never
-    touched by this tool; they only shrink the day's remaining capacity."""
-    day_str = str(day)
-    query = ('%22Is%20Posted%22=eq.false&%22Post%20Date%22=eq.{day}'
-             '&%22Wordpress%20Post%20ID%22=not.is.null').format(day=q(day_str))
-    return count_exact(config, query)
+def count_writer_rows_for_date(config, day, managed_keys=None, topup_ids=None):
+    """Rows the WRITER already has scheduled for `day` (unposted). These are
+    never touched by this tool; they only shrink the day's remaining capacity.
+
+    2026-10-12 fix (E188, inbox [pip] 10-11): this used to count every row
+    with `Wordpress Post ID` set — but that column is set on every stranded
+    row too (E135: 1610/1610), so after top-up #12 it reported Pip's own 7
+    revived rows on each of 10-12/13/14 as "writer rows". It now uses the
+    plugin's predicate (`is_writer_row_on_date`): created on/after the Q11
+    deploy, or pointing at a destination the plugin manages — and never a
+    row any top-up ledger re-dated. Returns None if the read cannot
+    complete (the caller treats None as fail-closed, never as 0)."""
+    r = revive()
+    query = ('select=id,created_at,%22Post%20URL%22'
+             '&%22Is%20Posted%22=eq.false&%22Post%20Date%22=eq.{day}'
+             '&limit=1000').format(day=q(str(day)))
+    try:
+        rows = r.supabase(config, 'GET', query)
+    except Exception:
+        return None
+    if rows is None or len(rows) >= 1000:
+        return None  # truncated read is unknown, not a count
+    return sum(1 for row in rows
+               if is_writer_row_on_date(row, managed_keys, topup_ids))
+
+
+def is_writer_row_on_date(row, managed_keys, topup_ids,
+                          since=PLUGIN_SCHEDULE_SINCE):
+    """Pure predicate for a row already dated on a real posting day: the
+    writer's if a top-up did NOT put it there AND (the plugin created it,
+    created_at >= since, OR the plugin manages its destination). Same
+    attribution rule as `is_plugin_scheduled_row`, minus the placeholder
+    test (the plugin has already dated it)."""
+    try:
+        if topup_ids and int(row.get('id')) in topup_ids:
+            return False
+    except (TypeError, ValueError):
+        pass
+    created = str(row.get('created_at') or '')[:10]
+    if created and created >= since:
+        return True
+    key = destination_key(row.get('Post URL'))
+    return bool(key) and key in (managed_keys or set())
 
 
 def fetch_pinterest_pins_created_since(config, since, page_size=100,
@@ -589,7 +623,10 @@ def decide_topup(inventory, rate, writer_rows_by_day, today,
     hit_hard_cap = False
     while placed < rows_needed and offset < max_fill_horizon:
         day = today + timedelta(days=offset)
-        writer_that_day = max(0, int(writer_rows_by_day(day)))
+        writer_raw = writer_rows_by_day(day)
+        # E188: an unreadable writer count closes the day (never reads as 0).
+        writer_that_day = int(math.floor(rate)) if writer_raw is None \
+            else max(0, int(writer_raw))
         if prior_topup_rows_by_day is None:
             prior_that_day = 0
         else:
@@ -662,6 +699,29 @@ def ledger_rows_by_date(ledger_dir):
         except Exception:
             return None
     return dict(counts)
+
+
+def ledger_topup_ids(ledger_dir):
+    """Every row id this tool's own ledgers re-dated (all runs). None
+    (fail-closed) if any ledger cannot be parsed."""
+    ids = set()
+    try:
+        names = sorted(os.listdir(ledger_dir))
+    except OSError:
+        return set()
+    for name in names:
+        if not (name.startswith(LEDGER_PREFIX) and name.endswith('.json')):
+            continue
+        if 'writer-revert' in name:
+            continue
+        try:
+            with open(os.path.join(ledger_dir, name)) as fh:
+                data = json.load(fh)
+            for entry in data.get('entries', []):
+                ids.add(int(entry['id']))
+        except Exception:
+            return None
+    return ids
 
 
 def count_prior_topup_rows_for_date(config, day, since=PLUGIN_SCHEDULE_SINCE):
@@ -1264,9 +1324,16 @@ def main():
     inventory = count_inventory(config, today)
     rate, rate_basis = resolve_posted_rate(config, today, source=args.rate_source)
 
+    # E188: writer rows by the plugin's predicate, excluding ids any top-up
+    # re-dated. Unreadable inputs -> None -> that day is closed (fail-closed).
+    plan_managed_keys = fetch_plugin_managed_keys(config)
+    plan_topup_ids = ledger_topup_ids(args.ledger_dir)
+
     def writer_rows_by_day(day):
-        n = count_writer_rows_for_date(config, day)
-        return n if n is not None else 0
+        if plan_managed_keys is None or plan_topup_ids is None:
+            return None
+        return count_writer_rows_for_date(config, day, plan_managed_keys,
+                                          plan_topup_ids)
 
     ledger_counts = ledger_rows_by_date(args.ledger_dir)
 
