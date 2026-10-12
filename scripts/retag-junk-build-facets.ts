@@ -54,6 +54,7 @@
  *   npx tsx scripts/retag-junk-build-facets.ts --apply
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=lighting --limit=50
  *   npx tsx scripts/retag-junk-build-facets.ts --facets=nails --ids=id1,id2   # only those rows
+ *   ... --facets=shoes,null --ids=id1,id2   # `null` also loads NULL rows; --ids only (E193)
  *   npx tsx scripts/retag-junk-build-facets.ts --room-titled-cas            # E132, see below
  *   ... --rollback-out=reports/funnel/x.json   # write {id,title,from,to} before any write
  *   npx tsx scripts/retag-junk-build-facets.ts --holidays-untitled         # E154, see below
@@ -119,6 +120,7 @@ import {
 import { detectContentTypeFromUrl } from '../lib/services/mhmScraperUtils';
 import { isHolidaysTitle } from '../lib/holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, isLotTitle } from '../lib/lotContentTypeRules';
+import { assertNullFacetNeedsIds, contentTypeScope } from './lib/content-type-scope';
 import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
@@ -167,6 +169,8 @@ function parseArgs() {
   if (roomTitledCas && ids) throw new Error('--room-titled-cas and --ids= are separate modes; pass one.');
   if (holidaysUntitled && (ids || roomTitledCas)) throw new Error('--holidays-untitled is its own mode; pass it alone.');
   if (lotUntitled && (ids || roomTitledCas || holidaysUntitled)) throw new Error('--lot-untitled is its own mode; pass it alone.');
+  // E193: `--facets=...,null` also loads NULL rows — only with --ids= (all pinned).
+  assertNullFacetNeedsIds(facets, ids);
   const rollbackArg = argv.find(a => a.startsWith('--rollback-out='));
   const rollbackOut = rollbackArg ? rollbackArg.slice('--rollback-out='.length) : null;
   const modeFacets = roomTitledCas
@@ -231,7 +235,7 @@ async function main() {
   console.log('='.repeat(72));
 
   const loaded: Row[] = await prisma.mod.findMany({
-    where: { contentType: { in: facets }, ...(ids ? { id: { in: ids } } : {}) },
+    where: { ...contentTypeScope(facets), ...(ids ? { id: { in: ids } } : {}) },
     select: { id: true, title: true, contentType: true, downloadCount: true, sourceUrl: true },
     orderBy: { downloadCount: 'desc' },
     // The room filter runs in code, so the CAS population is read whole and
@@ -361,7 +365,7 @@ async function main() {
 
   // STRIP / ADD lists and selectivity (E147): read both directions, and never
   // take "changed 0" as a pass without knowing how many rows the filter saw.
-  const population = await prisma.mod.count({ where: { contentType: { in: facets } } });
+  const population = await prisma.mod.count({ where: contentTypeScope(facets) });
   const strip = new Map<string, number>();
   const add = new Map<string, number>();
   for (const c of changes) {

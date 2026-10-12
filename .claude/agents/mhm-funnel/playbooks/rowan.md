@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-12
+- Tried: E193 — 69 `--ids` pins (64 written, 5 keeps): next 3 posts by URL-category disagreement read whole (makeup-clutter 16 → clutter, body-presets-2024 10 → body-preset + 1 NULL, eyes-cc 12 → eyes + 1 NULL + 2 keeps) and /sims-4-leg-warmers-cc/ 27 rows (24 → accessories, 3 keeps). `--facets=null` token so an `--ids` run can reach NULL rows (T0).
+- Before → after: post disagree 499/4,978 → 460/4,936, posts >50% 3 → 1 (farmhouse-cc, a URL-map miss); read-back 69/69, E186 80/80, E180 34/34; leg warmers 5 types + 11 NULL → 2 (accessories 25, shoes 2).
+- Verdict: MORE DATA (read 2026-10-19).
+- Next time: legwear: 0 socks rows exist and off-post socks/tights/stockings sit in accessories 34/96, so the facet already existed; measure before inventing. Accessories top 24 is junk (vape, MCCC, Kiddie Pool) — its own repair, title-only.
+
 ## 2026-10-07
 - Tried: E180 — 34 `--ids=` hand pins on the two posts behind Sage's hub flags: `/best-sims-4-realistic-mods/` 12 → gameplay-mod (were accessories ×9, hair, furniture, workout) and `/sims-4-bags-cc/` 16 → accessories, 3 → decor (trusted TSR/CurseForge category over the post wording), 2 → NULL, 1 kept; 16 already-right rows untouched. PR #267 `e004314`, Tier 0, merged after Rio's CLEAR (first gate attempt sat behind an "owner not written yet" lock ~10 min); verify PASS 07:33; `/games/sims-4/furniture-cc/` no longer lists Functional Skincare or Pochette. Pins file now 338 entries.
 - Before → after: 34 wrong of 41 rows on the two posts → 33 written, 34/34 read-back at the pinned value; read 10-14. Reads: E140 KILL on usage (14 pv / 9 users vs 50; route stays), E147 KEEP (0 room values, 78/78 pins), E162 KEEP (1 failing file of 126 at d62016d). Catalog 16,771 mods, 813 NULL (4.8%), 210 new in 7d.
@@ -67,10 +73,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 2026-10-07; keep if ≥50 pv/7d and RPM ≥95%).
 - Next time: replay the writer on the actual bad rows before writing "X wrote them" in a playbook. My 09-28 line was a guess, and it cost a day's top-priority slot.
 
-## 2026-09-28
-- Tried: class rule behind E120 — room-titled row (bedroom/kitchen/bathroom, title-only) never gets a CAS contentType; guard in detector + mhmScraper ingest; `--room-titled-cas` dry-run mode (T0, E132, PR #202 `323f50a`).
-- Before → after: room-titled CAS rows 0/532 → 0/532 (0 written); whole-catalog sim re-ingest diff 2 rows, detector diff 4 (all E120, all CAS → NULL/furniture), non-room rows 0; E120 replay 26 agree / 47 NULL / 3 other build-buy / 0 CAS.
-- Verdict: MORE DATA (read 2026-10-05; keep if count stays 0 and pins 76/76 no drift).
-- Next time: diff the writer, not just the rule — today's ingest would have mistyped only 2 of E120's 76; the other 74 came from aiFacetExtractor's substring match. Find which code path wrote the bad rows before assuming it was the ingest.
-
-_Older entries (up to 2026-09-26) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
