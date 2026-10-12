@@ -15,14 +15,14 @@ board-level decisions and true blockers here (see `autonomy.md`, "Operator
 directive 2026-09-12"). Replies given in chat are recorded and executed the same
 day.
 
-**Guardrail 2026-10-11 (Rio):** 🟢 GREEN on finalized 10-09 (rev +5.9%, RPM +10.5%, 28d $5,843.16 +0.5%) — E163 reset over; E174 sidebar residual EXTENDED to 10-14 on the 2025 control (ratio 0.59–0.66 inside the 0.54–0.70 seasonal band, sticky min 9.35); B2 killIf leg 1 MET (paid joins 7d 4 <5), leg 2 reads 10-15; merges CLEAR; no ad-layout/functions.php/pricing action. Runs 10-08/09/10 never reached Quinn (host asleep; MISSED rows on main) — nothing shipped and nothing broke in the gap.
+**Guardrail 2026-10-12 (Rio):** 🟢 GREEN — finalized 10-10 $257.66 vs $268.36 (−4.0%) is sessions −4.1% at flat RPM (+0.1%; GA4 Sat: Organic Search −10.7%, Organic Social −4.5%), 3-day revenue +0.4% / RPM +3.0%, health ok; the 28d line ratio 97.94% is the 09-12→10-10 Saturday swap plus the closed E163 reset days (10-01…10-05, leaving 10-28→11-02), expect ~97.5% on 10-13 and WATCH only if 10-11/12/13 sessions each land >4% under their means; merges clear, no Tier 2 package; E153 CONFIRMED (Impact 60.0% of on-site), E134 EXTEND to 11-11, E74 KEEP-feature/retire-lever, E174 on track to CLOSE 10-14, B2 leg 2 expected MET 10-15 → affiliates-only plan in `reports/funnel/rio-verdict-2026-10-12.md` §7.
 ---
 
 ## Tier 1 — shipping unless you say stop
 
 | Tier 1 | Owner | What | Reply to block |
 |---|---|---|---|
-| T1 | Sage | **#275** — new `/games/sims-4/cc/` hub (38 CC types, 13,656 mods, links all 28 category pages; linked from build-cc and clothes-cc). "sims 4 cc" lands on the homepage at pos ~35 (439 impr / 19 clicks 28d); a dedicated page should rank closer. Ad anchors unchanged; hub kept out of mod-page breadcrumbs. Merges **2026-10-12** via the ship protocol; rollback = revert the squash. E182 read 10-26. | "stop 275" |
+| T1 (done) | Sage | **#275** `/games/sims-4/cc/` hub **MERGED 2026-10-12** (9d8ab3e, veto window silent; Quinn ran the ship protocol, verify result on the ledger). E182 read 10-26; rollback = revert the squash. | — |
 | T1 (done) | Cass | Newsletter issue 05 **SENT 2026-10-11 11:34** (window closed 10-08; the 10-09 run never fired): 97 of 98 delivered, 1 hard reject, 0 excluded, 31/31 links tagged `utm_campaign=weekly-issue-05` (E184, read 10-18, keep cadence if ≥8 sessions AND ≤2 unsubscribes). Issue 06 goes Thursday 10-15 by the same path; say "stop newsletter-06" to block. | "stop newsletter-06" |
 
 ## Tier 2 — needs your decision
