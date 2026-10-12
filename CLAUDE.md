@@ -970,32 +970,33 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-07 → 10-11 — seven merges on 10-07 (#265–#271), then four days with no Quinn
+### 2026-10-11 — seven merges (#260, #273, #274, #276–#280), first run after three MISSED mornings
 
-The 10-04 section is in the archive.
-- **A timeout counted in awake time is not a wall-clock bound on a laptop.** The runner's
-  `perl -e 'alarm 240'` preflight began 10-08 20:30 and 10-10 08:15 and returned on 10-11 at
-  10:55:46 — *both in the same second*, ~62 h and ~27 h late, each with a 0-byte output file.
-  An empty preflight file is its own diagnosis (hung), not `OTHER` with `excerpt: none`; a step
-  that can hang needs a wall-clock deadline checked against `date +%s`, not only a signal timer.
-- **A degraded digest in the operator's tree is not a record.** The 10-08 and 10-10 "Quinn did not
-  run" digests landed in `PROJECT_DIR` three days late, never on `main`; 10-09 has no run and no
-  `MISSED` row. "Quinn did not run" must be a `ledger-commit.sh` row the moment it is known.
-- **A scheduler's concurrency guard counts what *it* runs, not what your job runs.** The app's
-  `per_task_limit` counted live queries: a stale 10-05 catch-up session resumed on 10-07 and a new
-  catch-up spawned beside it — two runners, two Quinns (#271). The job guards itself: atomic
-  `mkdir` day-lock before any side effect; a holder that cannot be checked counts as alive. The
-  app keeps the cron timezone it started in; battery clamshell sleep beats its no-sleep assertion.
-- **A zero needs a field that says which zero it is.** 6 of 14 IndexNow `mods=0` lines could not
-  tell "no new rows" from "selection broke"; the line now self-grades `mods_check=` (#265).
-- **A self-reported checkbox is not a role.** The 343 `isCreator` accounts read as a supply leak
-  ("onboarded 3 of 343") until the audit showed they act like unflagged accounts (57.1% vs 55.9%
-  download-click rate) (#270). Before you funnel on a flag, compare flagged against unflagged.
-- **`/games/[game]/[topic]` is fully static:** a catalog retag (#267) reaches the live hub only
-  with the next production deploy. Read a data fix's effect after a deploy, not after the apply.
-- **Still open:** Quinn cannot start until the host's CLI auth is fixed (token expired 10-07).
-  10-08/10-10 lock dirs never released. `ModDetailPage.test.tsx` red since #219. `commission-sync`/
-  `monetization-agent` fail open (Tier 2). `check-host-split.sh` not wired into `deploy-verify.sh`.
+The 10-07 section is in the archive.
+- **A past credential expiry proves only that nothing ran since — not that auth is why.** This
+  morning's entry blamed an expired CLI token for 10-08/09/10; the incident (`2026-10-08-063000.md`)
+  found the laptop asleep, 0-byte preflights with no 401, and the CLI refreshing its token on wake.
+  Check `pmset -g log` and require an auth error before blaming a credential.
+- **A liveness proxy must key on the artifact the job exists to produce.** "Run success" counted a
+  scoreboard JSON as a run, so 5 of 7 misses were found by hand. `run-liveness-lib.ts` (#278) grades
+  on the **digest on `main`** (DEGRADED = MISSED; unreadable logs = UNKNOWN, never MISSED).
+- **A matcher on a string format must accept every format the producer emits.** `daily_pr_ledger`
+  missed `funnel(<scope>): daily run …`, so #264 read as DID NOT FIRE.
+- **A `mkdir` lock has an owner-less window** before the pid is written; break such locks after a
+  60 s grace, not the 600 s TTL (#278).
+- **Gate a lever on a relative bar when its channel moves.** 8 of 9 pin top-ups graded KILL on
+  absolute counts in a week Pinterest fell 3.9%. Keep-if = "≥ site WoW", never a fixed count.
+- **Free text never mints an identity.** A submission's `author` can name someone else, so
+  approval creates a *pending* CreatorProfile; verification stays on the claims promote path (#274).
+- **Tag every link in a send and assert tagged == on-site** — the weekly issue's brand/footer links
+  were the untagged ones (#279).
+- **A post's URL category is free ground truth for its rows' facets.** `catalog-post-disagreement.ts`
+  (#276) found a lip-presets post 28/28 mistyped; use it to pick posts to hand-audit.
+- **GA4 `landingPage` drops trailing slashes**; normalize both sides before joining to routes/URLs.
+- **`for (… of s.matchAll(re))` fails `type-check` (TS2802, target es5)** and so the Vercel build.
+  Use `Array.from(s.matchAll(re))`.
+- **Still open:** 10-08/10-10 day-lock dirs in main's `logs/`. `ModDetailPage.test.tsx` red since
+  #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Run mornings need AC.
 
 ---
 

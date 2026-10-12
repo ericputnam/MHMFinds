@@ -2203,3 +2203,32 @@ The 10-03 section is in the archive.
 - **Still open:** #260 (Cass E173, `app/go`) held on RED. `ModDetailPage.test.tsx` has been red
   since #219. Cron routes `commission-sync`/`monetization-agent` fail open (Tier 2).
   `check-host-split.sh` is not wired into `deploy-verify.sh`.
+
+### 2026-10-07 → 10-11 — seven merges on 10-07 (#265–#271), then four days with no Quinn (rotated from CLAUDE.md 2026-10-11)
+
+The 10-04 section is in the archive.
+- **A timeout counted in awake time is not a wall-clock bound on a laptop.** The runner's
+  `perl -e 'alarm 240'` preflight began 10-08 20:30 and 10-10 08:15 and returned on 10-11 at
+  10:55:46 — *both in the same second*, ~62 h and ~27 h late, each with a 0-byte output file.
+  An empty preflight file is its own diagnosis (hung), not `OTHER` with `excerpt: none`; a step
+  that can hang needs a wall-clock deadline checked against `date +%s`, not only a signal timer.
+- **A degraded digest in the operator's tree is not a record.** The 10-08 and 10-10 "Quinn did not
+  run" digests landed in `PROJECT_DIR` three days late, never on `main`; 10-09 has no run and no
+  `MISSED` row. "Quinn did not run" must be a `ledger-commit.sh` row the moment it is known.
+- **A scheduler's concurrency guard counts what *it* runs, not what your job runs.** The app's
+  `per_task_limit` counted live queries: a stale 10-05 catch-up session resumed on 10-07 and a new
+  catch-up spawned beside it — two runners, two Quinns (#271). The job guards itself: atomic
+  `mkdir` day-lock before any side effect; a holder that cannot be checked counts as alive. The
+  app keeps the cron timezone it started in; battery clamshell sleep beats its no-sleep assertion.
+- **A zero needs a field that says which zero it is.** 6 of 14 IndexNow `mods=0` lines could not
+  tell "no new rows" from "selection broke"; the line now self-grades `mods_check=` (#265).
+- **A self-reported checkbox is not a role.** The 343 `isCreator` accounts read as a supply leak
+  ("onboarded 3 of 343") until the audit showed they act like unflagged accounts (57.1% vs 55.9%
+  download-click rate) (#270). Before you funnel on a flag, compare flagged against unflagged.
+- **`/games/[game]/[topic]` is fully static:** a catalog retag (#267) reaches the live hub only
+  with the next production deploy. Read a data fix's effect after a deploy, not after the apply.
+- **Still open:** Quinn cannot start until the host's CLI auth is fixed (token expired 10-07).
+  10-08/10-10 lock dirs never released. `ModDetailPage.test.tsx` red since #219. `commission-sync`/
+  `monetization-agent` fail open (Tier 2). `check-host-split.sh` not wired into `deploy-verify.sh`.
+- **Correction (2026-10-11 afternoon):** the "CLI auth" item above was wrong — the host was asleep;
+  see `reports/funnel/incidents/2026-10-08-063000.md` and the 10-11 section.
