@@ -20,23 +20,24 @@ interface ModJsonLdProps {
 }
 
 /**
- * `dateModified` for the SoftwareApplication node. Never fed by `updatedAt`
- * (see lib/seo/modLastmod.ts); omitted rather than thrown if createdAt is
- * unparseable, and never earlier than `datePublished`.
+ * `dateModified` for the SoftwareApplication node: exactly the page's sitemap
+ * `<lastmod>` (one function, lib/seo/modLastmod.ts — E196 moved the
+ * `publishedAt` floor there so the two surfaces cannot drift). Never fed by
+ * `updatedAt`; omitted rather than thrown if createdAt is unparseable; never
+ * earlier than `datePublished` because `publishedAt` is one of its inputs.
  */
 function contentDateModified(mod: Mod): { dateModified?: string } {
-  let modified: string;
   try {
-    modified = modLastmod({ createdAt: mod.createdAt, lastScraped: mod.lastScraped });
+    return {
+      dateModified: modLastmod({
+        createdAt: mod.createdAt,
+        lastScraped: mod.lastScraped,
+        publishedAt: mod.publishedAt,
+      }),
+    };
   } catch {
     return {};
   }
-  const published = mod.publishedAt ? new Date(mod.publishedAt) : null;
-  if (published && !Number.isNaN(published.getTime())) {
-    const p = published.toISOString().slice(0, 10);
-    if (p > modified) modified = p;
-  }
-  return { dateModified: modified };
 }
 
 /**
