@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { modLastmod } from '@/lib/seo/modLastmod';
 
-// <lastmod> is max(createdAt, lastScraped) — never the @updatedAt column,
-// which counter writes bump ~685×/day on a catalog that adds ~7 mods/day
-// (E136, 2026-09-29; rationale and numbers in lib/seo/modLastmod.ts).
+// <lastmod> is max(createdAt, lastScraped, publishedAt) — never the @updatedAt
+// column, which counter writes bump ~685×/day on a catalog that adds ~7 mods/day
+// (E136, 2026-09-29; publishedAt floor E196, 2026-10-13; rationale and numbers
+// in lib/seo/modLastmod.ts). The same function feeds the page's JSON-LD
+// dateModified (components/ModJsonLd.tsx), so the two surfaces always agree.
 // Selection mirrors scripts/agents/indexnow-submit.ts (isNSFW=false, isVerified=true).
 
 export async function GET() {
@@ -12,7 +14,7 @@ export async function GET() {
 
   const mods = await prisma.mod.findMany({
     where: { isNSFW: false, isVerified: true },
-    select: { id: true, createdAt: true, lastScraped: true },
+    select: { id: true, createdAt: true, lastScraped: true, publishedAt: true },
     orderBy: { createdAt: 'desc' },
   });
 

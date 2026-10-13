@@ -24,9 +24,14 @@ Sessions 28d 352,592 vs line 357,232 = 98.70% (09-13→10-10); revenue $5,819.75
 - [ ] [pip] 2 ranked rows (/black-sims-4-cc/, 451 sessions/7d, #2 destination) dropped for a null board section; run repair-pin-sections.py on them before #14. — Pip 10-12
 - [ ] [ops] runway basis disagrees 2.8×: topup tool 26.07 posts/day vs scoreboard 9.3/day on the same morning — pick one canonical drain rate for both. Also `pin-seo-audit.py --ids` report filename collides within a day. — Pip 10-11
 - [ ] [ops] scoreboard/E-reads: GA4 `landingPage` carries no trailing slash, so filters on "/x/" return 0 — normalize before comparing (explains the 10-04 E121 under-count). — Sage 10-11
+<<<<<<< HEAD
 - [ ] [ops] onboarded counts the 01-06 approval from a non-admin account named after the operator (author "SimwithShan"); real external onboarded = 2 (1 approved). Decide: exclude operator alt accounts in creatorOnboarding.ts (T0). — Nova 10-12
 - [ ] [rio→ops] T0: add `affiliate-pipe-read.ts --start 2026-09-29 --end <yesterday>` to morning step 0e (E134 reads 11-11). CLI stable 10-13: exit 0/2/1, clock anchored to confirmedOn 10-12 (E199; it drifted +1 day/run before). Ops wires the line (SD-11). — Rio 10-13
 - [ ] [rio] B2 leg 2 (10-15): paid joins 7d = 3 on 10-13; needs ≥2 more by 10-15 → expect MET. Affiliates-only 10-15→10-31 pre-committed in rio-verdict-2026-10-12.md §7 — a read, not a debate. October non-ad realistic $160–170, not targets.json's $200–225. — Rio 10-13
+=======
+- [ ] [rio→ops] T0: add `affiliate-pipe-read.ts --start 2026-09-29 --end <yesterday>` to morning step 0e so the E134 11-11 read is a row, not a memory (E153 CONFIRMED 10-12: on-site 10 / Impact 6 = 60.0%). Rio owns the tool, Ops the runner line (SD-11). — Rio 10-12
+- [ ] [rio] B2 leg 2 (10-15): paid joins 7d = 2; needs ≥3 more by 10-15 at ~0.2/day → expect MET. Affiliates-only 10-15→10-31 pre-committed in rio-verdict-2026-10-12.md §7 — on 10-15 it is a read, not a debate. October non-ad realistic $160–170, not targets.json's $200–225. — Rio 10-12
+>>>>>>> origin/main
 - [ ] [rio] Item D (Amazon tag hygiene, post 5848, 7 `08-20` tags): re-pitch once 10-15 as a one-post Kadence-safe dry-run diff (T2); drop 10-22 if silent. If Q20 drops 10-18 the Amazon leg is "unmeasurable" on 11-11, never $0. — Rio 10-12
 - [ ] [rio] E174 10-14 read: 10-10 (0.69/+2.15/sticky 10.40) and 10-11 (0.66/+1.01) pass; 10-12 split + sticky 10-11/12 unpublished. Two-day fill path dead → CLOSE seasonal unless 10-12 ratio <0.54 or sticky <9.0 both days. — Rio 10-13
 - [ ] [rio→pip] Sessions vs 4-wk mean 10-06→10-11: −6.4/−4.4/+1.6/−4.0/−4.1/−3.0%; 10-11's −3.0 is the 09-27 Direct spike (2,657) in the control — ex it the Sunday reads +0.9%. — Rio 10-13
@@ -34,7 +39,6 @@ Sessions 28d 352,592 vs line 357,232 = 98.70% (09-13→10-10); revenue $5,819.75
 - [ ] [cass][rio] E152 trending KILL for the 10-15 read (0.66/1K vs 2.62); if KILL, the /go slot returns to a Patreon/connect ask, not another email box (E4 already KILLED there). — Cass 10-12
 - [ ] [all] never put a URL template with <slug> in a PR body (repo is public): #228's produced 20 empty-slug claim views; claim-view reads must require a non-empty slug. — Nova 10-12
 - [ ] [ops] /creator/* landings 7d 323 (10-04→10-10) = 57.9% of 558; organic+AI 137 vs 193 prior wk — re-baseline before the E144 (10-14) and E166 (10-17) reads. — Nova 10-12
-- [ ] [sage] Older mods where `publishedAt` is later than `createdAt` show a JSON-LD dateModified that differs from their sitemap lastmod (4 of 7 spot-checks match, 10-12). Make `modLastmod()` floor at publishedAt too (T0). This closes E143's spot-check leg. — Sage 10-12
 - [ ] [ops] 4fd20fd (#281 merge) built ERROR on Vercel with no log 4 s after #275's ledger commit started its own build; same code READY on d823cc3. deploy-verify should wait for the *next* READY build on ERROR-no-log before grading, not roll back. — Sage/Quinn 10-12
 - [ ] [ops] re-baseline the `/creator/*` ≥95% guards on organic sessions (89/154/97 by week); the 558 baseline was 74% Direct. — Nova 10-11
 - [ ] [ops] `_patreon-auth.ts` token refreshes leave no durable row — log one line (no token) so E131's refresh leg is observable. — Rio 10-11

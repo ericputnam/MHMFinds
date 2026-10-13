@@ -622,3 +622,10 @@ Grades:
 | E123 | 2026-09-27 | Cass | 0 | CAPTURE | GA4 password_reset_complete o… | password_reset_complete events/14d… | event absent (0); /set-password/ view… | 2026-10-11 | events ≤ views and ≥1 per consumed to… | verify PASS 06:54; event stri… | PENDING |
 - E107 — KILL 2026-10-11 (Cass): favorite_after_signin 3 events / 10,709 /mods/* landing sessions (09-25→10-08) = 0.28/1K vs ≥2/1K; 23 redirects → 3 completes
 - E123 — KEEP 2026-10-11 (Cass): password_reset_complete 4 ≤ 4 /set-password/ views (09-27→10-10); "≥1 per consumed token" unmeasurable by construction (consumed tokens are deleted)
+
+## Graded 2026-10-12 (verbatim rows; moved 2026-10-13 by Sage)
+
+| E74 | 2026-09-21 | Rio | 1 | PRODUCT | `/go` post-connect state (PR … | in-campaign share (free+paid) of Pa… | 2026-09-21: 4 of 52 linked in… | 2026-10-06 | in-campaign share ≥ 1/3 (exact) OR pa… | QUEUED-T1 2026-09-21, PR #131…; 10-12: in-campaign 10/79=12.7% (<1/3), paid+conn 0→3, follow 16.4% | KEEP (feature) / lever retired — graded 2026-10-12 |
+| E133 | 2026-09-28 | Ops | 0 | OPS | smoke renders 1 registry-pick… | collection routes rendered per smok… | 0/14 targets, 0/29 collections ever (… | 2026-10-05 | 1/run, ≥7 slugs by 10-05, 0 timeout-o… | 10-11: operator-path deploy-verify.log still Sep 8 because every verify logs to its own worktree `logs/`; the read must be repointed, not the writer; 10-12: 6/6 surviving smoke files have exactly 1 collection page (pregnancy-mods, holidays-cc, decor-cc), 5 PASS 1 INCONCLUSIVE (10-08 network), 0 rollbacks 09-28→10-12; ≥7-distinct leg unreadable (files die with worktrees) | KEEP (graded 2026-10-12; keep smoke files queued [ops]) |
+| E153 | 2026-10-01 | Rio | 0 | MEASURE | affiliate pipe read tool #241 | Impact 18111 ÷ on-site gtracing clicks | pre-fix 9/110=8.2%; 09-29→30 2/2 | 2026-10-12 | verdict w/ both legs; ≥10 clicks | 10-07: on-site affiliate clicks 7d 6, 30d 53; Impact leg not pulled; 10-12: on-site 10, Impact 6 = 60.0% (floor 50%; pre-fix 8.2%) | KEEP CONFIRMED — graded 2026-10-12; next read = E134 11-11 |
+| E165 | 2026-10-03 | — | — | — | id reserved 10-03; no PR, play… | — | — | — | — | not on main; do not reuse | VOID |
