@@ -8,8 +8,8 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
-## Operator watch 2026-10-12 — ON LINE run 10, normal weighting
-Sessions 28d 352,592 vs line 357,232 = 98.70% (09-13→10-10); revenue $5,819.75 vs $5,942.27 = 97.94% (WATCH bar 97% — 0.9 pt of headroom, 10-10 Saturday read −4.0% on sessions −4.1%, RPM flat). Run 9 (10-11) read 98.98% / 98.60%. Re-arms if a run reads <97%.
+## Operator watch 2026-10-13 — ON LINE run 11, normal weighting
+Sessions 28d 352,686 vs line 358,212 = 98.46% (09-14→10-11); revenue $5,796.84 vs $5,959.11 = 97.28% (WATCH bar 97% — 0.3 pt of headroom; the Saturday swap Rio called on 10-12 landed, RPM +0.4%, sessions −3.0% on 10-11). Run 10 (10-12) read 98.70% / 97.94%. Re-arms if a run reads <97%: one more sub-mean weekday does it.
 
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — for a real P&L
 - [ ] [quinn] Older `/api/cron/*` routes fail open when `CRON_SECRET` is unset (`if (cronSecret && …)`). One PR + scanner test over `app/api/cron/**`; pattern in #226. — Cass 09-30
