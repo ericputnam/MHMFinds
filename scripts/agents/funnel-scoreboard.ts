@@ -413,6 +413,8 @@ interface DbData {
   creatorsOnboarded: number;
   /** Of those, accounts with >=1 approved submission. */
   creatorsOnboardedApproved: number;
+  /** House (team) accounts with submissions left out of creatorsOnboarded (E197). */
+  creatorsHouseExcluded: number;
   /** ModSubmission rows in status pending, any submitter. */
   submissionsPendingReview: number;
   /** Whole days since the oldest pending submission; null when none. */
@@ -463,7 +465,7 @@ async function pullDb(): Promise<DbData> {
     // CreatorProfile ∩ submitter join could only count E122 claimants — the
     // creator-dashboard path never creates a profile — so it read 0 while a
     // creator had 7 submissions pending. See lib/funnel/creatorOnboarding.ts.
-    let onboarding: CreatorOnboardingSummary = { onboarded: 0, onboardedApproved: 0, pendingReview: 0, oldestPendingDays: null };
+    let onboarding: CreatorOnboardingSummary = { onboarded: 0, onboardedApproved: 0, pendingReview: 0, oldestPendingDays: null, houseExcluded: 0 };
     try {
       const subRows = await prisma.modSubmission.findMany({
         select: {
@@ -489,6 +491,7 @@ async function pullDb(): Promise<DbData> {
       creatorProfiles, modSubmissions, mods, collections,
       newMods7d, newModsPrior7d, submissions7d, creatorsOnboarded,
       creatorsOnboardedApproved: onboarding.onboardedApproved,
+      creatorsHouseExcluded: onboarding.houseExcluded,
       submissionsPendingReview: onboarding.pendingReview,
       oldestPendingSubmissionDays: onboarding.oldestPendingDays,
     };
@@ -1096,7 +1099,7 @@ async function main() {
   md += `| New mods 7d (prior 7d) | ${db.ok ? `${num(db.data.newMods7d)} (${num(db.data.newModsPrior7d)})` : '—'} | ${owners.newMods7d ?? '?'} |\n`;
   md += `| Catalog total | ${db.ok ? num(db.data.mods) : '—'} | ${owners.catalogTotal ?? '?'} |\n`;
   md += `| Capture rate /1k sessions 7d | ${captureRatePer1kSessions7d != null ? captureRatePer1kSessions7d.toFixed(2) : '—'} | ${owners.captureRatePer1k ?? '?'} |\n`;
-  md += `| Creators onboarded (>=1 submission) | ${db.ok ? `${num(db.data.creatorsOnboarded)} (${num(db.data.creatorsOnboardedApproved)} with >=1 approved)` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
+  md += `| Creators onboarded (>=1 submission) | ${db.ok ? `${num(db.data.creatorsOnboarded)} (${num(db.data.creatorsOnboardedApproved)} with >=1 approved${db.data.creatorsHouseExcluded ? `; ${num(db.data.creatorsHouseExcluded)} house account excluded` : ''})` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Submissions pending review | ${db.ok ? `${num(db.data.submissionsPendingReview)}${db.data.oldestPendingSubmissionDays != null ? ` (oldest ${db.data.oldestPendingSubmissionDays}d)` : ''}` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Creator submissions 7d | ${db.ok ? num(db.data.submissions7d) : '—'} | ${owners.creatorSubmissions7d ?? '?'} |\n\n`;
 
@@ -1138,6 +1141,7 @@ async function main() {
     creators: {
       onboarded: db.ok ? db.data.creatorsOnboarded : null,
       onboardedApproved: db.ok ? db.data.creatorsOnboardedApproved : null,
+      houseExcluded: db.ok ? db.data.creatorsHouseExcluded : null,
       submissions7d: db.ok ? db.data.submissions7d : null,
       pendingReview: db.ok ? db.data.submissionsPendingReview : null,
       oldestPendingDays: db.ok ? db.data.oldestPendingSubmissionDays : null,

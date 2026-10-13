@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { summarizeCreatorSubmissions, type SubmissionRow } from '@/lib/funnel/creatorOnboarding';
+import { summarizeCreatorSubmissions, HOUSE_ACCOUNT_USER_IDS, type SubmissionRow } from '@/lib/funnel/creatorOnboarding';
 
 const NOW = new Date('2026-10-04T12:00:00Z');
 const row = (o: Partial<SubmissionRow>): SubmissionRow => ({
@@ -47,6 +47,47 @@ describe('summarizeCreatorSubmissions (E172)', () => {
     const s = summarizeCreatorSubmissions([row({ status: 'approved' })], NOW);
     expect(s.pendingReview).toBe(0);
     expect(s.oldestPendingDays).toBeNull();
+  });
+});
+
+describe('house accounts (E197)', () => {
+  const HOUSE = Object.keys(HOUSE_ACCOUNT_USER_IDS);
+
+  it('lists at least one house account, each a cuid with a written reason (vacuity guard)', () => {
+    expect(HOUSE.length).toBeGreaterThanOrEqual(1);
+    for (const id of HOUSE) {
+      expect(id).toMatch(/^c[a-z0-9]{20,30}$/);
+      expect(HOUSE_ACCOUNT_USER_IDS[id].length).toBeGreaterThan(10);
+    }
+  });
+
+  it('the 2026-10-13 population reads 2 onboarded / 1 approved, not 3 / 2', () => {
+    // DB 2026-10-13: the operator's non-admin test account (1 approved, 01-06),
+    // doree (1 approved, 01-10), atino00 (7 pending, 10-03), 2 anonymous approvals.
+    const rows = [
+      row({ userId: HOUSE[0], status: 'approved', createdAt: new Date('2026-01-06T00:00:00Z') }),
+      row({ userId: 'doree', status: 'approved', createdAt: new Date('2026-01-10T00:00:00Z') }),
+      ...Array.from({ length: 7 }, () => row({ userId: 'atino00' })),
+      row({ userId: null, isCreator: false, status: 'approved' }),
+      row({ userId: null, isCreator: false, status: 'approved' }),
+    ];
+    const s = summarizeCreatorSubmissions(rows, NOW);
+    expect(s.onboarded).toBe(2);
+    expect(s.onboardedApproved).toBe(1);
+    expect(s.houseExcluded).toBe(1);
+    expect(s.pendingReview).toBe(7);
+  });
+
+  it('still queues a house account\'s pending row for review', () => {
+    const s = summarizeCreatorSubmissions([row({ userId: HOUSE[0] })], NOW);
+    expect(s.onboarded).toBe(0);
+    expect(s.pendingReview).toBe(1);
+  });
+
+  it('house ids live in the library, so the scoreboard inherits them without its own list', () => {
+    const sb = readFileSync(join(process.cwd(), 'scripts/agents/funnel-scoreboard.ts'), 'utf8');
+    for (const id of HOUSE) expect(sb).not.toContain(id);
+    expect(sb).toMatch(/creatorsHouseExcluded/);
   });
 });
 

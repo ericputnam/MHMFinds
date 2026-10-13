@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-13
+- Tried: E197 (T0) — `HOUSE_ACCOUNT_USER_IDS` in `lib/funnel/creatorOnboarding.ts`. It excludes the operator's non-admin test account (username = operator's name, the 01-06 "SimwithShan" approval) from onboarded, and its pending rows still queue. The scoreboard prints "N house account excluded". 4 tests, 3 red pre-fix. E137 graded NOT-RUN (0 sent, Q23 14 d unanswered, drops 10-14, no 3rd pitch).
+- Before → after: onboarded 3 (2 approved) → 2 (1 approved), from a live read through the lib (DB 10-13). The only approved external creator is doree (01-10). Pending 7, oldest 9 d, all Atino00.
+- Verdict: MORE DATA (read 2026-10-20: the scoreboard prints 2/1/1 house).
+- Next time: `isAdmin` is not "is the team". Before counting a population, check every account in it by username and author string. With n=3, one test account was 33% of the charter number for 9 days.
+
 ## 2026-10-12
 - Tried: E190 (T0, PR pending at write) — backfill of the E183 pending profile + `Mod.creatorId` for pre-#274 approvals. Planner reuses `planApprovalProfile` and adds a backfill-only rule (author must name the account). 12 tests, 2 mutations red. Plan: 4 read, 1 write (doree), 3 skip (no-mod, anonymous, author-not-account).
 - Before → after: approvals linked 0/4 → 1/4 (3 can never qualify); pending profiles 0 → 1. 20 of 22 empty `?creator=` claim views = one 09-30 06–09 ET burst (direct, all new users, 4 browsers, 3 countries) right after public PR #228 printed `…?creator=<slug>`: extractors stop at `<`. Real claim views 2. The 01-06 approval came from a non-admin account named after the operator.
