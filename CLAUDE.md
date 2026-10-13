@@ -970,37 +970,38 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-11 — seven merges (#260, #273, #274, #276–#280), first run after three MISSED mornings
+### 2026-10-12 — eight merges (#275, #281–#287), one platform build ERROR
 
-The 10-07 section is in the archive.
-- **A past credential expiry proves only that nothing ran since — not that auth is why.** This
-  morning's entry blamed an expired CLI token for 10-08/09/10; the incident (`2026-10-08-063000.md`)
-  found the laptop asleep, 0-byte preflights with no 401, and the CLI refreshing its token on wake.
-  Check `pmset -g log` and require an auth error before blaming a credential.
-- **A liveness proxy must key on the artifact the job exists to produce.** "Run success" counted a
-  scoreboard JSON as a run, so 5 of 7 misses were found by hand. `run-liveness-lib.ts` (#278) grades
-  on the **digest on `main`** (DEGRADED = MISSED; unreadable logs = UNKNOWN, never MISSED).
-- **A matcher on a string format must accept every format the producer emits.** `daily_pr_ledger`
-  missed `funnel(<scope>): daily run …`, so #264 read as DID NOT FIRE.
-- **A `mkdir` lock has an owner-less window** before the pid is written; break such locks after a
-  60 s grace, not the 600 s TTL (#278).
-- **Gate a lever on a relative bar when its channel moves.** 8 of 9 pin top-ups graded KILL on
-  absolute counts in a week Pinterest fell 3.9%. Keep-if = "≥ site WoW", never a fixed count.
-- **Free text never mints an identity.** A submission's `author` can name someone else, so
-  approval creates a *pending* CreatorProfile; verification stays on the claims promote path (#274).
-- **Tag every link in a send and assert tagged == on-site** — the weekly issue's brand/footer links
-  were the untagged ones (#279).
-- **A post's URL category is free ground truth for its rows' facets.** `catalog-post-disagreement.ts`
-  (#276) found a lip-presets post 28/28 mistyped; use it to pick posts to hand-audit.
-- **GA4 `landingPage` drops trailing slashes**; normalize both sides before joining to routes/URLs.
-- **`for (… of s.matchAll(re))` fails `type-check` (TS2802, target es5)** and so the Vercel build.
-  Use `Array.from(s.matchAll(re))`.
-- **Still open:** 10-08/10-10 day-lock dirs in main's `logs/`. `ModDetailPage.test.tsx` red since
-  #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Run mornings need AC.
+10-11 is in the archive.
+- **A Vercel build ERROR with no build log is not a code failure until a READY build of the same
+  SHA says so.** #281's merge commit ERRORed 4 s after #275's ledger commit started its own build;
+  the next commit (same code) built READY. On ERROR-no-log, wait for a READY build containing the
+  SHA before writing a BUILD ERROR incident ([ops] inbox).
+- **A timeout inside the process it times out shares that process's fate.** The preflight's
+  `perl alarm` did not fire across host sleep (10-08/10-10 hung 2.5 d). #285 puts a wall clock
+  in the runner's poll loop and kills TERM → CONT → KILL (a stopped process ignores TERM).
+- **Page-identity JSON-LD never goes in the root layout.** The layout's `WebPage` (`/#webpage`) +
+  `FAQPage` made every page claim to be the homepage; now only `app/page.tsx` renders them (#281).
+- **A guard that counts "someone else's rows" must use the producer's own predicate.**
+  `count_writer_rows_for_date` keyed on `Wordpress Post ID`, which every row carries, so it counted
+  Pip's own top-ups as writer rows. An unreadable count now closes the day instead of reading 0 (#282).
+- **Healthy click rate + poor completion means the leak is the next step.** 72 users followed save
+  offers to `/sign-in/` and ≤4 signed up: fix the form, not the surface (#287). **GA4 `page_view`
+  fires only on full loads here** — on client-navigated routes, count sessions or events.
+- **Never put a URL template like `?creator=<slug>` in a public PR body.** Scrapers hit it:
+  20 of 22 "empty claim views" (#283).
+- **A rolling-window ratio moves on what exits as much as on what enters.** Revenue line 98.6% →
+  97.9% at flat RPM was a Saturday swap. Name the day that rolled out before calling it a signal.
+- **Measure before inventing a facet:** legwear already lived in `accessories` (#284). A hub
+  collection (`hub: true`, #275) is excluded from `getCollectionsForMod`, so it is never a crumb.
+- **Edit is denied under `.claude/` in the funnel harness**; patch via `python3`, assert count==1.
+- **Still open:** 10-08/10-10 locks. Accessories top 24 junk. `ModDetailPage.test.tsx` red
+  since #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh`
+  unwired. Runway needs Q11. Mornings need AC.
 
 ---
 
-*Last compound review: 2026-10-11*
+*Last compound review: 2026-10-12*
 
 ---
 

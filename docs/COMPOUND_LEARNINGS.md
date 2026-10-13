@@ -2232,3 +2232,31 @@ The 10-04 section is in the archive.
   `monetization-agent` fail open (Tier 2). `check-host-split.sh` not wired into `deploy-verify.sh`.
 - **Correction (2026-10-11 afternoon):** the "CLI auth" item above was wrong — the host was asleep;
   see `reports/funnel/incidents/2026-10-08-063000.md` and the 10-11 section.
+
+### 2026-10-11 — seven merges (#260, #273, #274, #276–#280), first run after three MISSED mornings (rotated from CLAUDE.md 2026-10-12)
+
+The 10-07 section is in the archive.
+- **A past credential expiry proves only that nothing ran since — not that auth is why.** This
+  morning's entry blamed an expired CLI token for 10-08/09/10; the incident (`2026-10-08-063000.md`)
+  found the laptop asleep, 0-byte preflights with no 401, and the CLI refreshing its token on wake.
+  Check `pmset -g log` and require an auth error before blaming a credential.
+- **A liveness proxy must key on the artifact the job exists to produce.** "Run success" counted a
+  scoreboard JSON as a run, so 5 of 7 misses were found by hand. `run-liveness-lib.ts` (#278) grades
+  on the **digest on `main`** (DEGRADED = MISSED; unreadable logs = UNKNOWN, never MISSED).
+- **A matcher on a string format must accept every format the producer emits.** `daily_pr_ledger`
+  missed `funnel(<scope>): daily run …`, so #264 read as DID NOT FIRE.
+- **A `mkdir` lock has an owner-less window** before the pid is written; break such locks after a
+  60 s grace, not the 600 s TTL (#278).
+- **Gate a lever on a relative bar when its channel moves.** 8 of 9 pin top-ups graded KILL on
+  absolute counts in a week Pinterest fell 3.9%. Keep-if = "≥ site WoW", never a fixed count.
+- **Free text never mints an identity.** A submission's `author` can name someone else, so
+  approval creates a *pending* CreatorProfile; verification stays on the claims promote path (#274).
+- **Tag every link in a send and assert tagged == on-site** — the weekly issue's brand/footer links
+  were the untagged ones (#279).
+- **A post's URL category is free ground truth for its rows' facets.** `catalog-post-disagreement.ts`
+  (#276) found a lip-presets post 28/28 mistyped; use it to pick posts to hand-audit.
+- **GA4 `landingPage` drops trailing slashes**; normalize both sides before joining to routes/URLs.
+- **`for (… of s.matchAll(re))` fails `type-check` (TS2802, target es5)** and so the Vercel build.
+  Use `Array.from(s.matchAll(re))`.
+- **Still open:** 10-08/10-10 day-lock dirs in main's `logs/`. `ModDetailPage.test.tsx` red since
+  #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Run mornings need AC.
