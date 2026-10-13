@@ -33,7 +33,6 @@ Sessions 28d 352,592 vs line 357,232 = 98.70% (09-13→10-10); revenue $5,819.75
 - [ ] [cass][rio] E152 trending KILL for the 10-15 read (0.66/1K vs 2.62); if KILL, the /go slot returns to a Patreon/connect ask, not another email box (E4 already KILLED there). — Cass 10-12
 - [ ] [all] never put a URL template with <slug> in a PR body (repo is public): #228's produced 20 empty-slug claim views; claim-view reads must require a non-empty slug. — Nova 10-12
 - [ ] [ops] /creator/* landings 7d 323 (10-04→10-10) = 57.9% of 558; organic+AI 137 vs 193 prior wk — re-baseline before the E144 (10-14) and E166 (10-17) reads. — Nova 10-12
-- [ ] [ops] 4fd20fd (#281 merge) built ERROR on Vercel with no log 4 s after #275's ledger commit started its own build; same code READY on d823cc3. deploy-verify should wait for the *next* READY build on ERROR-no-log before grading, not roll back. — Sage/Quinn 10-12
 - [ ] [ops] re-baseline the `/creator/*` ≥95% guards on organic sessions (89/154/97 by week); the 558 baseline was 74% Direct. — Nova 10-11
 - [ ] [ops] `_patreon-auth.ts` token refreshes leave no durable row — log one line (no token) so E131's refresh leg is observable. — Rio 10-11
 - [ ] [rio] same-incident test point (b) should ratio each unit against the site ex the best unit (or Content), not the blended drop. — Rio 10-07

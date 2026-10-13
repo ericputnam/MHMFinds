@@ -24,6 +24,12 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
+## 2026-10-13 — E201
+- Tried: deploy-verify grades an own-build ERROR/CANCELED only after waiting ≤20 m for a READY build that contains the sha (ancestry) with no app file changed (`same_code`: reports/, docs/, logs/, .claude/, *.md exempt); a `build-watch` row lands first so its ledger commit is the proving build on the day's last merge. Found → `BUILD ERROR (platform) → READY via <sha7> · <verdict>`, no incident; the path never rolls back or re-pushes functions.php. (T0)
+- Before → after: 10-12 false BUILD ERROR incidents 2 of 2 ERRORs (4fd20fd, 817064a), each "No Tier 1 merges" until Quinn closed it by hand. New test 13 cases, 9 red on pre-fix main (4 green = old-behaviour controls). The first draft read `$PLATFORM_RES` bare and broke the E111 "positive evidence still rolls back" test under `set -u`. Caught by the existing suite, fixed with `${…:-}`.
+- Verdict: MORE DATA (read 2026-10-20).
+- Next time: grade on a READY build of the same code, never on the absence of a log. Every new global a helper reads needs `${X:-}`, because the tests extract helpers standalone.
+
 ## 2026-10-12 — E194
 - Tried: preflight watch (T0): stderr to its own `logs/funnel-preflight-DATE.stderr` (redacted tail = excerpt); a wall-clock watcher in the runner's poll loop kills the CLI tree at 300 s (TERM, CONT, KILL — a stopped process ignores TERM) → `HANG`; poll gaps > 30 s summed as `asleep/suspended=Ns`; `preflight: start` and `preflight: rc=…` lines every run.
 - Before → after: 2 of 5 MISSED mornings (10-08, 10-10) were 0-byte preflights diagnosed OTHER, no excerpt, hung ~2.5 d. New test 7/7 red on the pre-fix block (the SIGSTOPped CLI hung until the test's 25 s kill), 7/7 green after.

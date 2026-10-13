@@ -39,12 +39,20 @@
 # under #227's label). MERGED → --sha defaults to the mergeCommit, and the row records "PR #N mergeCommit X ≠ graded Y"
 # whenever the head actually graded differs. gh unreadable → WARN + "PR state unverified" in the row (could-not-check
 # never blocks the verify of a real merge, and never triggers anything).
+# E201 (2026-10-13): a Vercel ERROR/CANCELED for <sha>'s own build is NOT graded on the spot. 10-12: 4fd20fd (#281) and
+# 817064a (#288, docs-only) both built ERROR with no build log while the next commit of the same code built READY, and
+# each left a false "No Tier 1 merges" incident. Now: write a `build-watch` row (its own ledger commit is a build that
+# contains <sha>), then wait ≤ --platform-wait-min (default 20) for a READY production build whose commit CONTAINS <sha>
+# AND changes no application file since it — positive evidence the ERROR was the platform, not the code. Found → grade
+# that build; the row says "BUILD ERROR (platform) → READY via <sha7> · <verdict>", no build incident. This path NEVER
+# rolls back (a failing smoke on it writes an incident and leaves production alone). Not found → BUILD ERROR + incident
+# exactly as before. Unreadable git / vercel ls / a code change in between all count as "not found", never as platform.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OPERATOR_DIR="/Users/eputnam/java_projects/MHMFinds"
 PROD_ALIAS="musthavemods.com"
-MODE=""; SHA=""; LABEL="manual"; TO=""; WAIT_MIN=25
+MODE=""; SHA=""; LABEL="manual"; TO=""; WAIT_MIN=25; PLATFORM_WAIT_MIN=20
 while [ $# -gt 0 ]; do
   case "$1" in
     --after-merge|--check|--rollback|--smoke-only) MODE="${1#--}" ;;
@@ -52,11 +60,13 @@ while [ $# -gt 0 ]; do
     --label) LABEL="$2"; shift ;;
     --to) TO="$2"; shift ;;
     --wait-min) WAIT_MIN="$2"; shift ;;
+    --platform-wait-min) PLATFORM_WAIT_MIN="$2"; shift ;;
     *) echo "unknown argument: $1"; exit 64 ;;
   esac
   shift
 done
-[ -n "$MODE" ] || { sed -n '2,36p' "$0"; exit 64; }
+[ -n "$MODE" ] || { sed -n '2,/^set -uo/p' "$0" | sed '$d'; exit 64; }
+case "$PLATFORM_WAIT_MIN" in ''|*[!0-9]*) echo "--platform-wait-min needs a whole number of minutes"; exit 64 ;; esac
 
 TS="$(date '+%Y-%m-%d %H:%M')"; STAMP="$(date '+%Y-%m-%d-%H%M%S')"
 INC_DIR="$ROOT/reports/funnel/incidents"; mkdir -p "$INC_DIR" "$ROOT/logs"
@@ -94,6 +104,31 @@ for x in d:
     if not sha or ((x.get("meta") or {}).get("githubCommitSha","")).startswith(sha):
         print(x["state"], "https://"+x["url"]); break
 ' "$1"
+}
+same_code() {  # E201: $1 older sha, $2 newer sha → 0 ONLY if git can diff them and no application file changed between
+  # them. Exempt = paths no build reads: reports/, docs/, logs/, .claude/ and *.md. A diff git cannot produce is NOT same.
+  local files
+  files="$(cd "$ROOT" && git diff --name-only "$1" "$2" 2>/dev/null)" || return 1
+  ! printf '%s\n' "$files" | grep -vE '^$|^(reports|docs|logs|\.claude)/|\.md$' | grep -q .
+}
+find_containing_ready() {  # E201: $1 = sha whose own build failed → "sha https://url" of the newest READY production
+  # build whose commit contains $1 (ancestry, not timing) with the same application code. Non-zero = none found (yet).
+  local s u
+  (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1)
+  while read -r s u; do
+    [ -n "${u:-}" ] || continue
+    (cd "$ROOT" && git merge-base --is-ancestor "$1" "$s") 2>/dev/null || continue  # unknown commit = not proof
+    same_code "$1" "$s" || continue
+    echo "$s $u"; return 0
+  done <<<"$(vls | python3 -c '
+import json,sys
+d=[x for x in json.load(sys.stdin)["deployments"] if x.get("target")=="production" and x.get("state")=="READY"]
+d.sort(key=lambda x:x["createdAt"], reverse=True)
+for x in d:
+    s=(x.get("meta") or {}).get("githubCommitSha") or ""
+    if s: print(s, "https://"+x["url"])
+' 2>/dev/null)"
+  return 1
 }
 
 # ---------------------------------------------------------------- checks
@@ -239,6 +274,7 @@ restore_functions_php() {
 LAST_INCIDENT_FILE=""
 # ---------------------------------------------------------------- E155: the label's PR must be MERGED
 PR_NUM=""; PR_MC=""; PR_NOTE=""; GRADED=""
+PLATFORM_RES=""; PLATFORM_NOTE=""; VIA_SHA=""; HEAD_NOTE=""  # E201: set only when a same-code READY build proves a platform ERROR
 label_pr() { printf '%s\n' "$1" | grep -oE 'PR #[0-9]+' | head -1 | sed 's/^PR #//'; }  # first "PR #N" in a label
 pr_mc_note() {  # $1 PR number, $2 PR mergeCommit, $3 graded head → note when they differ (prefix-tolerant), else ""
   [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] || return 0
@@ -258,9 +294,11 @@ ledger() {  # $1 result, $2 notes
   # LOCAL append (for this run's own digest / same-run reads): $ROOT and Quinn's primary worktree only.
   # $OPERATOR_DIR is deliberately NOT written here any more — that tree carries untracked reports/
   # junk from interactive sessions, and a working-tree copy was never durable anyway (see below).
-  local row dir f seen=" " notes
+  local row dir f seen=" " notes res="$1"
+  # E201: an after-merge result graded past a platform ERROR says so in the result column itself
+  case "$MODE:$res" in after-merge:"${PLATFORM_RES:-}"*) ;; after-merge:*) [ -n "${PLATFORM_RES:-}" ] && res="$PLATFORM_RES · $res" ;; esac
   notes="${PR_NOTE}$(pr_mc_note "$PR_NUM" "$PR_MC" "$GRADED")$2"
-  row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$1" "$(echo "$notes" | tr '|' '/' | tr '\n' ' ')")"
+  row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$res" "$(echo "$notes" | tr '|' '/' | tr '\n' ' ')")"
   for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
     [ "$dir" = "/reports/funnel" ] && continue  # FUNNEL_PRIMARY_WT unset (manual / standalone run)
     case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
@@ -311,6 +349,11 @@ fail_and_fix() {  # $1 = rollback target (may be empty)
     incident "verification failed" "FUNNEL_NO_ROLLBACK=1 — nothing rolled back. Operator must act."
     ledger "FAIL (no-rollback mode)" "$first"; exit 2
   fi
+  if [ -n "${PLATFORM_RES:-}" ]; then
+    # E201: the platform-ERROR path grades a build other than the PR's own; it may report, never write production.
+    incident "verification failed after $PLATFORM_RES" "Nothing rolled back, functions.php not re-pushed: the E201 platform-ERROR path never acts. Re-run \`deploy-verify.sh --check\` (it may roll back on positive evidence) or act by hand."
+    ledger "$PLATFORM_RES · FAIL (not rolled back)" "${HEAD_NOTE:-}$first"; exit 2
+  fi
   if echo "$first" | grep -q "smoke-render\|5xx"; then
     if [ -n "$1" ]; then do_rollback "$1"; else log "no rollback target known"; fi
   fi
@@ -345,13 +388,41 @@ case "$MODE" in
     fi
     PREV="$(current_prod)"; log "production before: ${PREV:-unknown} · waiting for deploy of ${SHA:-newest} (≤${WAIT_MIN}m)"
     START=$(date +%s); DEPLOY_URL=""
+    platform_wait() {  # E201: $1 state, $2 URL of $SHA's own failed build → 0 + DEPLOY_URL/VIA_SHA/PLATFORM_* when a
+      # READY production build contains $SHA with the same application code; 1 = no such evidence (grade as before).
+      local st="$1" errurl="$2" t0 n=0 vs vu m="$MODE"
+      [ -n "$SHA" ] && [ "$PLATFORM_WAIT_MIN" -gt 0 ] || return 1
+      log "build $st for ${SHA:0:7} ($errurl) — not graded yet: waiting ≤${PLATFORM_WAIT_MIN}m for a READY build that contains it with the same app code (could be the platform: 10-12 4fd20fd, 817064a)"
+      # Durable interim row (mode build-watch: not an after-merge row). Its own ledger commit is a build that contains
+      # $SHA, so even the day's last merge gets the evidence it needs — Vercel builds ledger-only commits too (36a2277).
+      DEPLOY_URL="$errurl"; MODE="build-watch"
+      ledger "BUILD $st (unconfirmed)" "own build $errurl $st; no incident yet — waiting ≤${PLATFORM_WAIT_MIN}m for a READY build containing ${SHA:0:7} with the same app code; the after-merge row follows"
+      MODE="$m"; LAST_INCIDENT_FILE=""; t0=$(date +%s)
+      while :; do
+        if read -r vs vu <<<"$(find_containing_ready "$SHA")" && [ -n "${vu:-}" ]; then
+          VIA_SHA="$vs"; DEPLOY_URL="$vu"
+          PLATFORM_RES="BUILD $st (platform) → READY via ${vs:0:7}"
+          PLATFORM_NOTE="own build $errurl $st; same app code built READY as $vu (${vs:0:7} contains ${SHA:0:7}, no app file changed) · "
+          log "$PLATFORM_RES ($vu) — grading that build; no build incident"
+          return 0
+        fi
+        n=$((n + 1))
+        # bounded by wall clock AND by polls, so a suspended host or a stubbed clock cannot wait forever
+        if [ $(( $(date +%s) - t0 )) -ge $(( PLATFORM_WAIT_MIN * 60 )) ] || [ "$n" -ge $(( PLATFORM_WAIT_MIN * 2 )) ]; then break; fi
+        sleep 30
+      done
+      log "no READY build containing ${SHA:0:7} with the same app code after ${PLATFORM_WAIT_MIN}m / $n poll(s) — grading BUILD $st"
+      DEPLOY_URL="$errurl"; return 1
+    }
     wait_ready() {  # sets DEPLOY_URL to the READY production build of $SHA; exits 2 on build error / timeout
+      VIA_SHA=""
       while :; do
         read -r STATE URL <<<"$(find_deploy "$SHA")"
         if [ -n "${URL:-}" ] && { [ -n "$SHA" ] || [ "$URL" != "$PREV" ]; }; then
           case "$STATE" in
             READY) DEPLOY_URL="$URL"; return 0 ;;
             ERROR|CANCELED)
+              platform_wait "$STATE" "$URL" && return 0
               DEPLOY_URL="$URL"; FAILS="Vercel build $STATE for ${SHA:-newest} ($URL)"
               incident "build $STATE" "Nothing to roll back — the build failed before promotion. Production still serves $PREV. Fix the build (vercel inspect $URL --logs)."
               ledger "BUILD $STATE" "never promoted; production still $PREV"; exit 2 ;;
@@ -368,20 +439,20 @@ case "$MODE" in
     # graded PASS against the caller's sha while production served its parent. Production must serve origin/main
     # HEAD, so if main moved past the caller's sha while we waited, re-target: wait for HEAD's build, promote and
     # verify THAT, and say so in the ledger row. The caller's sha is a lower bound, never the thing we certify.
-    HEAD_NOTE=""
+    HEAD_NOTE="$PLATFORM_NOTE"
     HEAD_SHA="$( (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1 && git rev-parse origin/main) 2>/dev/null)"
     if [ -n "$HEAD_SHA" ] && [ -n "$SHA" ] && [ "${HEAD_SHA#"${SHA:0:7}"}" = "$HEAD_SHA" ]; then
       if is_ledger_only_commit "$HEAD_SHA"; then
         log "origin/main moved to a ledger-only commit ${HEAD_SHA:0:7} (funnel(ledger): ...) while waiting — exempt from its own verify/ledger row; keeping target ${SHA:0:7}"
       else
         log "origin/main moved past ${SHA:0:7} → ${HEAD_SHA:0:7} while waiting; verifying HEAD's build instead (the alias must serve main HEAD)"
-        HEAD_NOTE="main moved past caller ${SHA:0:7}; graded HEAD ${HEAD_SHA:0:7} · "
+        HEAD_NOTE="${HEAD_NOTE}main moved past caller ${SHA:0:7}; graded HEAD ${HEAD_SHA:0:7} · "
         SHA="$HEAD_SHA"; wait_ready
       fi
     fi
     log "deployment READY: $DEPLOY_URL"; sleep 15
     ensure_promoted "$DEPLOY_URL"; PROMO=$?
-    case "$PROMO" in 0) GRADED="$SHA" ;; 3) GRADED="$SERVED_SHA" ;; esac   # the head the verdict below is actually about
+    case "$PROMO" in 0) GRADED="${VIA_SHA:-$SHA}" ;; 3) GRADED="$SERVED_SHA" ;; esac   # the head the verdict below is actually about
     if [ "$PROMO" -eq 3 ]; then
       # E110: production is already on a newer build that contains this commit. Leave it; grade production AS SERVED
       # (same semantics as --check: rollback target = the READY build before the served one).
