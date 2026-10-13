@@ -19,6 +19,7 @@ import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
 import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
+import { ACCESSORIES_CONTENT_TYPE, ACCESSORIES_TITLE_KEYWORDS } from '../accessoriesContentTypeRules';
 
 // ============================================
 // TYPES
@@ -413,12 +414,14 @@ export const CONTENT_TYPE_RULES: KeywordRule[] = [
     priority: 28,
   },
 
-  // Accessories (generic - lower priority than specific types)
+  // Accessories (generic - lower priority than specific types) — TITLE ONLY
+  // since E200 (2026-10-13). Keyword list, counts and the words measured and
+  // not added live in lib/accessoriesContentTypeRules.ts; same array, not a copy.
   {
-    keywords: ['accessory', 'accessories', 'bag', 'bags', 'handbag', 'purse', 'backpack',
-               'belt', 'scarf', 'scarves', 'gloves', 'watch', 'watches', 'socks', 'tights'],
-    contentType: 'accessories',
+    keywords: ACCESSORIES_TITLE_KEYWORDS,
+    contentType: ACCESSORIES_CONTENT_TYPE,
     priority: 25,
+    titleOnly: true,
   },
 
   // Makeup (generic - only if no specific face type matched)

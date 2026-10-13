@@ -59,6 +59,7 @@
  *   ... --rollback-out=reports/funnel/x.json   # write {id,title,from,to} before any write
  *   npx tsx scripts/retag-junk-build-facets.ts --holidays-untitled         # E154, see below
  *   npx tsx scripts/retag-junk-build-facets.ts --lot-untitled              # E168, see below
+ *   npx tsx scripts/retag-junk-build-facets.ts --accessories-untitled      # E200, see below
  *
  * Every run prints the STRIP list (rows leaving each current facet), the ADD
  * list (rows entering each new facet) and the filter's selectivity (facet
@@ -100,6 +101,17 @@
  * lot with an uninformative title and no URL category WILL be stripped to
  * NULL — pin it by id (hand-audited-content-types.ts) before `--apply`.
  *
+ * --accessories-untitled (Rowan, 2026-10-13, E200)
+ * ------------------------------------------------
+ * Same decision as --lot-untitled, for `accessories`: population is every row
+ * typed `accessories` whose TITLE carries no accessories word
+ * (`lib/accessoriesContentTypeRules.ts`), plus every pinned `accessories`
+ * row. Each is re-decided by `resolveIngestContentType(title, undefined,
+ * urlCategory)` — confident title, else post URL category, else NULL —
+ * unless pinned. The writer here was the dead legacy `category` backfill, not
+ * the detector (19 of 713 rows replay), so the prose is never consulted.
+ * Reads back every E200 pin. `--facets` is ignored in this mode.
+ *
  * --rollback-out (#250): a DRY RUN never overwrites a non-empty plan file. The
  * plan an `--apply` was signed off against must survive a later dry run at the
  * same path; pass a new path instead.
@@ -120,6 +132,7 @@ import {
 import { detectContentTypeFromUrl } from '../lib/services/mhmScraperUtils';
 import { isHolidaysTitle } from '../lib/holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, isLotTitle } from '../lib/lotContentTypeRules';
+import { ACCESSORIES_CONTENT_TYPE, isAccessoriesTitle } from '../lib/accessoriesContentTypeRules';
 import { assertNullFacetNeedsIds, contentTypeScope } from './lib/content-type-scope';
 import { HAND_AUDITED_CONTENT_TYPES } from './lib/hand-audited-content-types';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
@@ -166,9 +179,11 @@ function parseArgs() {
   const roomTitledCas = argv.includes('--room-titled-cas');
   const holidaysUntitled = argv.includes('--holidays-untitled');
   const lotUntitled = argv.includes('--lot-untitled');
+  const accessoriesUntitled = argv.includes('--accessories-untitled');
   if (roomTitledCas && ids) throw new Error('--room-titled-cas and --ids= are separate modes; pass one.');
   if (holidaysUntitled && (ids || roomTitledCas)) throw new Error('--holidays-untitled is its own mode; pass it alone.');
   if (lotUntitled && (ids || roomTitledCas || holidaysUntitled)) throw new Error('--lot-untitled is its own mode; pass it alone.');
+  if (accessoriesUntitled && (ids || roomTitledCas || holidaysUntitled || lotUntitled)) throw new Error('--accessories-untitled is its own mode; pass it alone.');
   // E193: `--facets=...,null` also loads NULL rows — only with --ids= (all pinned).
   assertNullFacetNeedsIds(facets, ids);
   const rollbackArg = argv.find(a => a.startsWith('--rollback-out='));
@@ -179,12 +194,14 @@ function parseArgs() {
       ? ['holidays']
       : lotUntitled
         ? [LOT_CONTENT_TYPE]
-        : facets;
-  return { apply, verbose, facets: modeFacets, limit, ids, roomTitledCas, holidaysUntitled, lotUntitled, rollbackOut };
+        : accessoriesUntitled
+          ? [ACCESSORIES_CONTENT_TYPE]
+          : facets;
+  return { apply, verbose, facets: modeFacets, limit, ids, roomTitledCas, holidaysUntitled, lotUntitled, accessoriesUntitled, rollbackOut };
 }
 
 /** Decide the new content type for one row. Exported shape kept simple for testing. */
-function decide(row: Row, roomTitledCas = false, holidaysUntitled = false, lotUntitled = false): Change {
+function decide(row: Row, roomTitledCas = false, holidaysUntitled = false, lotUntitled = false, accessoriesUntitled = false): Change {
   const override = OVERRIDES[row.id];
   if (override) {
     return { row, to: override.contentType, reason: `override: ${override.why}` };
@@ -200,6 +217,18 @@ function decide(row: Row, roomTitledCas = false, holidaysUntitled = false, lotUn
       : to
         ? `lot: title names no lot word; ${url && url === to ? `URL category ${url}` : 'title-only type'}`
         : 'lot: title names no lot word, no URL category; NULL beats a guess';
+    return { row, to, reason };
+  }
+
+  if (accessoriesUntitled) {
+    // E200: same order as E168 — title (confident), else URL category, else NULL.
+    const url = detectContentTypeFromUrl(row.sourceUrl || '');
+    const to = resolveIngestContentType(row.title, undefined, url) ?? null;
+    const reason = to === ACCESSORIES_CONTENT_TYPE
+      ? `accessories: title names no accessories word; URL category ${url} keeps it`
+      : to
+        ? `accessories: title names no accessories word; ${url && url === to ? `URL category ${url}` : 'title-only type'}`
+        : 'accessories: title names no accessories word, no URL category; NULL beats a guess';
     return { row, to, reason };
   }
 
@@ -225,11 +254,11 @@ function decide(row: Row, roomTitledCas = false, holidaysUntitled = false, lotUn
 }
 
 async function main() {
-  const { apply, verbose, facets, limit, ids, roomTitledCas, holidaysUntitled, lotUntitled, rollbackOut } = parseArgs();
-  const wholeFacetMode = roomTitledCas || holidaysUntitled || lotUntitled;
+  const { apply, verbose, facets, limit, ids, roomTitledCas, holidaysUntitled, lotUntitled, accessoriesUntitled, rollbackOut } = parseArgs();
+  const wholeFacetMode = roomTitledCas || holidaysUntitled || lotUntitled || accessoriesUntitled;
 
   console.log('='.repeat(72));
-  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}${holidaysUntitled ? ' — untitled holidays (E154)' : ''}${lotUntitled ? ' — untitled lot (E168)' : ''}`);
+  console.log(`Re-tag junk build facets — ${apply ? 'APPLY' : 'DRY RUN'}${roomTitledCas ? ' — room-titled CAS (E132)' : ''}${holidaysUntitled ? ' — untitled holidays (E154)' : ''}${lotUntitled ? ' — untitled lot (E168)' : ''}${accessoriesUntitled ? ' — untitled accessories (E200)' : ''}`);
   console.log(`Facets: ${facets.join(', ')} · row cap: ${limit}`);
   if (ids) console.log(`Restricted to ${ids.length} id(s): ${ids.join(', ')}`);
   console.log('='.repeat(72));
@@ -253,7 +282,9 @@ async function main() {
       ? loaded.filter(r => OVERRIDES[r.id] || !isHolidaysTitle(r.title)).slice(0, limit)
       : lotUntitled
         ? loaded.filter(r => OVERRIDES[r.id] || !isLotTitle(r.title)).slice(0, limit)
-        : loaded;
+        : accessoriesUntitled
+          ? loaded.filter(r => OVERRIDES[r.id] || !isAccessoriesTitle(r.title)).slice(0, limit)
+          : loaded;
 
   const scopeNote = roomTitledCas
     ? `; ${rows.length} room-titled CAS rows in scope`
@@ -261,7 +292,9 @@ async function main() {
       ? `; ${rows.length} untitled-or-pinned holidays rows in scope; ${loaded.length - rows.length} title-supported rows untouched`
       : lotUntitled
         ? `; ${rows.length} untitled-or-pinned lot rows in scope; ${loaded.length - rows.length} title-supported rows untouched (${loaded.length > 0 ? ((100 * (loaded.length - rows.length)) / loaded.length).toFixed(1) : 'n/a'}% title-supported before)`
-        : '';
+        : accessoriesUntitled
+          ? `; ${rows.length} untitled-or-pinned accessories rows in scope; ${loaded.filter(r => isAccessoriesTitle(r.title)).length} carry an accessories word (${loaded.length > 0 ? ((100 * loaded.filter(r => isAccessoriesTitle(r.title)).length) / loaded.length).toFixed(1) : 'n/a'}% title-supported before)`
+          : '';
   console.log(`\nLoaded ${loaded.length} rows${scopeNote}.\n`);
 
   if (lotUntitled) {
@@ -276,6 +309,16 @@ async function main() {
     // that can keep an untitled row `lot`, so show how many have one.
     const withUrlCat = rows.filter(r => detectContentTypeFromUrl(r.sourceUrl || '')).length;
     console.log(`In scope: ${withUrlCat} rows carry a URL category, ${rows.length - withUrlCat} carry none (title or NULL decides).`);
+  }
+
+  if (accessoriesUntitled) {
+    // Read back every E200 pin: after an apply each must hold its pinned value.
+    const pinIds = Object.keys(OVERRIDES).filter(id => OVERRIDES[id].why.startsWith('E200 '));
+    const pinned = await prisma.mod.findMany({ where: { id: { in: pinIds } }, select: { id: true, contentType: true } });
+    const drifted = pinned.filter(p => p.contentType !== OVERRIDES[p.id].contentType);
+    console.log(`E200 pins: ${pinIds.length} · found ${pinned.length} · at pinned value ${pinned.length - drifted.length} · not yet / drifted ${drifted.length}`);
+    for (const d of drifted) console.log(`    DRIFT ${d.id}: now ${d.contentType}, pin ${OVERRIDES[d.id].contentType}`);
+    if (pinned.length !== pinIds.length) console.log(`    MISSING ${pinIds.length - pinned.length} pinned id(s) from the catalog`);
   }
 
   if (holidaysUntitled) {
@@ -333,7 +376,7 @@ async function main() {
   let unchanged = 0;
 
   for (const row of rows) {
-    const change = decide(row, roomTitledCas, holidaysUntitled, lotUntitled);
+    const change = decide(row, roomTitledCas, holidaysUntitled, lotUntitled, accessoriesUntitled);
     if (change.to === row.contentType) {
       unchanged++;
       continue;
