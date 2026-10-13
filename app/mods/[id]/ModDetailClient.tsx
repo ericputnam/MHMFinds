@@ -26,6 +26,15 @@ import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
 import { SaveFindsOffer } from '@/components/SaveFindsOffer';
+import { ConnectEmailOptIn } from '@/components/ConnectEmailOptIn';
+import {
+  MEMBER_OPTIN_EVENTS,
+  MEMBER_OPTIN_SOURCE,
+  readMemberOptInMemory,
+  rememberMemberOptIn,
+  shouldShowMemberOptIn,
+  type MemberOptInMemory,
+} from '@/lib/capture/memberEmailOptIn';
 import type { CollectionLink } from '@/lib/collections';
 import type { MoreFromCreatorData } from '@/lib/creatorMods';
 import { buildModBreadcrumb } from '@/lib/seo/modBreadcrumb';
@@ -97,7 +106,24 @@ export default function ModDetailClient({
   // E159 (Cass, 2026-10-02): the offer's copy is split by session status —
   // a signed-in visitor is never told to "create a free account". Same
   // context read the hook above already does; no extra request.
-  const { status: sessionStatus } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
+  // E198 (Cass, 2026-10-13): one-click weekly-email opt-in for a signed-in
+  // visitor with no remembered answer. `undefined` until the effect reads
+  // localStorage after mount, so the server render and first paint never
+  // show it; `null` = read, no answer; a value = answered, hidden.
+  const [memberOptInMemory, setMemberOptInMemory] = useState<MemberOptInMemory | null | undefined>(undefined);
+  useEffect(() => {
+    setMemberOptInMemory(readMemberOptInMemory(typeof window === 'undefined' ? null : window.localStorage));
+  }, []);
+  const rememberMemberAnswer = useCallback((value: MemberOptInMemory) => {
+    rememberMemberOptIn(typeof window === 'undefined' ? null : window.localStorage, value);
+    if (value === 'dismissed') setMemberOptInMemory(value);
+  }, []);
+  const showMemberOptIn = shouldShowMemberOptIn({
+    sessionStatus,
+    email: session?.user?.email,
+    remembered: memberOptInMemory,
+  });
   const [selectedImage, setSelectedImage] = useState<string | null>(
     initialMod.thumbnail || initialMod.images?.[0] || null
   );
@@ -369,6 +395,31 @@ export default function ModDetailClient({
               onSave={handleSaveFinds}
               favoritesHref={FAVORITES_PATH}
             />
+
+            {/*
+              E198 (Cass, 2026-10-13) — one-click weekly-email opt-in for a
+              signed-in visitor who has not answered before. 84 of 116
+              subscribers came from the sign-up form's opt-in, which Patreon
+              OAuth accounts (about half of new accounts) never see and which
+              pre-dates ~1,880 existing accounts; this is their on-site ask.
+              Same component as E173 on /go, its own source. Sibling of
+              SaveFindsOffer above and of the in-content `.mv-ads` element
+              below — never inside any `.mv-ads` or the aside (SD-3). The
+              component renders its own thank-you line in place; "Not now"
+              hides it and is remembered, so nobody is asked twice.
+            */}
+            {showMemberOptIn && session?.user?.email && (
+              <div className="-mt-2 mb-6">
+                <ConnectEmailOptIn
+                  email={session.user.email}
+                  modId={mod.id}
+                  source={MEMBER_OPTIN_SOURCE}
+                  viewEvent={MEMBER_OPTIN_EVENTS.view}
+                  onResult={rememberMemberAnswer}
+                  onDismiss={() => rememberMemberAnswer('dismissed')}
+                />
+              </div>
+            )}
 
             {/* Description Section */}
             <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg p-6 mb-6">

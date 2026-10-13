@@ -47,7 +47,7 @@ Sessions 28d 352,592 vs line 357,232 = 98.70% (09-13→10-10); revenue $5,819.75
 - [ ] [ops] Run-liveness Team health should read the hang=1 / asleep line and the .stderr file so a MISSED day names its cause. — Ops 10-12
 - [ ] [ops] `context-budget.ts` fails `Cannot find module 'glob'` on 10-07/08/10/11 (WARN only); runner cleanup logs `git worktree remove failed …funnel-2026-09-22-21276(-pip)` every run (prune once + test); runner log timestamps switch MDT/EDT — stamp an explicit zone. — Ops 10-11
 - [ ] [cass] Issue 05 picks: 5 of 6 fresh mods were leg/arm warmers; the builder has no category-diversity rule — if issue 06 clusters again, add a one-per-contentType cap in `buildWeeklyIssueData` (Tier 0). — Cass 10-11
-- [ ] [cass] One synchronous 550 in issue 05; its hash goes on `sendExclusions.ts` after the ≥20 h DSN read (`mailbox-dsn-count.py --hashes --since 2026-10-11`); until then `--weekly` attempts 98, not 97. — Cass 10-11
+- [ ] [cass] Issue-05 550: hash unavailable on 10-13 (0 DSNs in mailbox, jsonl row stores counts only); `--weekly` attempts 98. Fix the class: record the hash of each synchronous reject in `newsletter-sends.jsonl` (Tier 0) so issue 07 can exclude it. — Cass 10-13
 - [ ] [ops] #260 is live: add `patreon_connect_optin_view` to the scoreboard capture-event filter so `patreon-connect-optin` shows in "Subscribers by source" once a row exists. — Cass 10-11
 - [ ] Earlier open lines dated 09-24→10-07 are parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-07" and § "Parked 2026-10-11"; owners pull from there. — Quinn 10-11
 

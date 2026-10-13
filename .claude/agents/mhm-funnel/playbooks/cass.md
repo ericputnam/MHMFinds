@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-13
+- Tried: E198 — `/mods/[id]` renders the E173 one-click opt-in (`ConnectEmailOptIn`, now takes `source`/`viewEvent`/`onResult`/`onDismiss`) for every signed-in visitor with no remembered answer; answer kept in `localStorage['mhm_member_optin']` (subscribed/already/dismissed), never shown before mount; sibling of `.mv-ads`, after `SaveFindsOffer`. Tier 0, source `mod-detail-optin`, 16/16 red pre-fix.
+- Before → after: 0 rows; `newsletter_signup` on /mods/* 0 users/14d; /mods/* 13,670 sessions 09-29→10-12; 84 of 116 subscribers came from the credentials sign-up tick, so the Patreon-OAuth half of new accounts (41/90 wk to 10-04) and ~1,880 older accounts had never been asked on-site → read 2026-10-27 (keep ≥14 rows/14d, EXTEND ≥7, /mods/* RPM ≥95%).
+- Verdict: PENDING. E138 KEEP (24 fav users, 19 anon redirects, ≥6 both). E152 pre-read 0.77/1K (2/2,599) vs ≥2.62 → KILL 10-15. Issue-05 550 hash: unavailable — `mailbox-dsn-count.py --hashes --since 2026-10-11` found 0 DSNs and `newsletter-sends.jsonl` stores counts only; issue 06 attempts 98.
+- Next time: a send record that stores `failed: 1` without the recipient hash makes the exclusion unrecoverable once the DSN never arrives — have `--weekly` write `sha256(lower(trim(email)))` of each synchronous reject into the jsonl row (hash only) so the next issue can exclude it without a mailbox read.
+
 ## 2026-10-12
 - Tried: E191 — `/sign-in/` honors the save intent for `ref ∈ {mod-detail-save, mod-detail-favorite, go-save}` (save header, "Create account & save", creator block hidden, `signup_intent_view{source}`, `source` stamped on `sign_up`); rider: one-per-contentType first pass in `pickRecentPosts`. Tier 0, PR #287 `b74cc85`, guard 4/13 red pre-fix, verify PASS 07:15. (Entry landed by Quinn — Cass's Edit on this file was denied.)
 - Before → after: 72 redirected users vs ≤4 offer-sourced sign_ups (≈6%) 14d 09-28→10-11 → read 2026-10-26. E130 EXTEND 0.57/1K (7/12,227); E138 on track KEEP (26 fav users); E152 trending KILL 0.66/1K (2/3,020).
