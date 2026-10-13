@@ -196,6 +196,20 @@ describe('ModJsonLd dateModified (E143)', () => {
     expect(node.dateModified).toBe('2026-05-05');
   });
 
+  it('is exactly modLastmod() of the same three inputs — one function for page and sitemap (E196)', async () => {
+    const { modLastmod } = await import('@/lib/seo/modLastmod');
+    const over = {
+      createdAt: '2026-01-01T00:00:00.000Z',
+      lastScraped: '2026-02-01T00:00:00.000Z',
+      publishedAt: '2026-05-05T00:00:00.000Z',
+    } as Partial<Mod>;
+    expect(softwareNode(fixture(over)).dateModified).toBe(modLastmod(over as Parameters<typeof modLastmod>[0]));
+    // The component must hand publishedAt to modLastmod, not floor it locally:
+    // a local floor is how the two surfaces drifted apart on 6,894 live URLs.
+    const src = stripComments(fs.readFileSync(path.join(process.cwd(), 'components', 'ModJsonLd.tsx'), 'utf8'));
+    expect(src).toMatch(/modLastmod\(\{[^}]*\bpublishedAt\b[^}]*\}\)/);
+  });
+
   it('is omitted, not thrown, when createdAt is unparseable', () => {
     const node = softwareNode(fixture({ createdAt: 'nope' } as Partial<Mod>));
     expect(node.dateModified).toBeUndefined();

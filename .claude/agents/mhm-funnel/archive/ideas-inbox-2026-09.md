@@ -377,3 +377,7 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 - [x] [pip] re-gate top-ups relative to site Pinterest WoW — standing rule in playbooks/pip.md, used by E188 (10-12). — Pip 10-11
 - [x] [pip] `count_writer_rows_for_date` used any WP Post ID as "writer" — fixed in #282 with the plugin predicate (old: 7/date on 10-13..17, new: 0; 5 tests red on old tool). — Pip 10-11
 - [x] [rio] watch `sticky_sidebar_ads` — 9.35 on 10-08 is the lowest since 09-18; E174's REOPEN branch trips at <9.0 two days. — Rio 10-11 → superseded by the 10-12 E174 line (10-10 ratio 0.69, fill +2.15). — Quinn 10-12
+
+## Done 2026-10-13 (moved verbatim by Sage)
+
+- [x] [sage] Older mods where `publishedAt` is later than `createdAt` show a JSON-LD dateModified that differs from their sitemap lastmod (4 of 7 spot-checks match, 10-12). Make `modLastmod()` floor at publishedAt too (T0). This closes E143's spot-check leg. — Sage 10-12 → shipped as E196 (#290) 10-13
