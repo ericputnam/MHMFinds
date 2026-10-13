@@ -119,6 +119,36 @@ describe('affiliate-pipe-lib · assessPipe (three-state, exact share)', () => {
     expect(r.killReadOn).toBe('2026-10-31');
   });
 
+  // E199 (2026-10-13): the 10-12 run printed kill_read=2026-11-11, the 10-13
+  // run 2026-11-12 — the clock re-anchored to the run date. Red pre-fix: the
+  // first two cases below (no `confirmedOn` field existed; startsOn = today).
+  const CONFIRMED = parseImpactProgramRows({ Records: [{ Campaign: 'GTPLAYER-US', campaign_id: '18111', Clicks: '6', Actions: '0' }] });
+  const confirmedInput = (over: Partial<PipeInput> = {}) =>
+    input({ onSiteByPartner: { gtracing: 10 }, onSiteRepaired: 10, impactRows: CONFIRMED, ...over });
+
+  it('a later run anchors the KILL clock on the first confirmation, not on the run date', () => {
+    const r = assessPipe(confirmedInput({ now: new Date('2026-10-13T11:00:00Z'), confirmedOn: '2026-10-12' }));
+    expect(r.status).toBe('confirmed');
+    expect(r.killClockStartsOn).toBe('2026-10-12');
+    expect(r.killReadOn).toBe('2026-11-11');
+    const again = assessPipe(confirmedInput({ now: new Date('2026-10-20T11:00:00Z'), confirmedOn: '2026-10-12' }));
+    expect(again.killReadOn).toBe(r.killReadOn);
+  });
+
+  it('the entrypoint passes PIPE_RULE.confirmedOn and the frozen constant reproduces the E134 read date', () => {
+    const r = assessPipe(confirmedInput({ now: new Date('2026-10-13T11:00:00Z'), confirmedOn: PIPE_RULE.confirmedOn }));
+    expect(r.killReadOn).toBe(PIPE_RULE.readOn);
+    const entry = stripComments(read('scripts/agents/affiliate-pipe-read.ts'));
+    expect(entry).toMatch(/confirmedOn:\s*PIPE_RULE\.confirmedOn/);
+  });
+
+  it('a confirmedOn after `now` is a typo — the clock falls back to today, never starts in the future', () => {
+    const r = assessPipe(confirmedInput({ now: new Date('2026-10-13T11:00:00Z'), confirmedOn: '2026-10-20' }));
+    expect(r.killClockStartsOn).toBe('2026-10-13');
+    const unset = assessPipe(confirmedInput({ now: new Date('2026-10-13T11:00:00Z'), confirmedOn: null }));
+    expect(unset.killClockStartsOn).toBe('2026-10-13');
+  });
+
   it('4 of 10 is leaky', () => {
     const r = assessPipe(
       input({
@@ -221,7 +251,9 @@ describe('PIPE_RULE constants (frozen, imported — not restated)', () => {
     expect(PIPE_RULE.minOnSiteClicks).toBe(10);
     expect(PIPE_RULE.minRecordedShare).toBe(0.5);
     expect(PIPE_RULE.killAfterDays).toBe(30);
-    expect(PIPE_RULE.readOn).toBe('2026-10-12');
+    expect(PIPE_RULE.confirmedOn).toBe('2026-10-12');
+    expect(PIPE_RULE.readOn).toBe('2026-11-11');
+    expect(PIPE_RULE.readOn).toBe(addDays(PIPE_RULE.confirmedOn!, PIPE_RULE.killAfterDays));
     expect(PIPE_RULE.preFix.recorded / PIPE_RULE.preFix.onSite).toBeLessThan(PIPE_RULE.minRecordedShare);
   });
 });

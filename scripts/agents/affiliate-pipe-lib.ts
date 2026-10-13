@@ -21,7 +21,11 @@
  *   - fewer than MIN_ON_SITE_CLICKS on-site clicks in the window → `not-yet`
  *     (the pace is printed, the rule is not applied);
  *   - enough clicks and Impact-recorded ÷ on-site ≥ MIN_RECORDED_SHARE →
- *     `confirmed`; the E134 30-day KILL clock starts on the read date;
+ *     `confirmed`; the E134 30-day KILL clock starts on the day the pipe was
+ *     *first* confirmed (`PIPE_RULE.confirmedOn`, 2026-10-12), never on the
+ *     run date — on 10-13 the tool printed `kill_read=2026-11-12` against the
+ *     10-12 verdict's 11-11, i.e. a clock re-anchored every morning advances
+ *     one day per run and never reads once step 0e runs it daily (E199);
  *   - enough clicks and the share is below the floor → `leaky`: the repair
  *     did not take, go back to the validator before reading revenue.
  *
@@ -50,8 +54,14 @@ export const PIPE_RULE = {
   minRecordedShare: 0.5,
   /** E134: KILL the reopening if $0 persists this many days after confirmation */
   killAfterDays: 30,
-  /** E134 read date; this tool is re-run on it */
-  readOn: '2026-10-12',
+  /**
+   * Day the pipe was first read `confirmed` (10 on-site / 6 Impact = 60.0 %,
+   * `reports/funnel/rio-verdict-2026-10-12.md` §3). The KILL clock anchors
+   * here; a later run never moves it. `null` until the first confirmation.
+   */
+  confirmedOn: '2026-10-12' as string | null,
+  /** E134 read date = confirmedOn + killAfterDays; this tool is re-run on it */
+  readOn: '2026-11-11',
   preFix: { window: '2026-07-01→2026-09-28', onSite: 110, recorded: 9 },
 } as const;
 
@@ -79,6 +89,11 @@ export interface PipeInput {
   /** on-site clicks per day over the trailing window, for the "days until readable" estimate */
   onSitePerDay: number;
   now: Date;
+  /**
+   * Day of the first `confirmed` read (`PIPE_RULE.confirmedOn`). When set and
+   * not after `now`, the KILL clock starts here instead of on the run date.
+   */
+  confirmedOn?: string | null;
 }
 
 export interface PipeRead {
@@ -202,7 +217,11 @@ export function assessPipe(i: PipeInput): PipeRead {
   }
   // exact comparison; `recordedShare` is rounded for print only
   if ((shareExact ?? 0) >= PIPE_RULE.minRecordedShare) {
-    const startsOn = localDateKey(i.now);
+    // Anchor on the first confirmation, never the run date: a clock that
+    // re-anchors every morning never reads. A future `confirmedOn` is a typo;
+    // fall back to today rather than start a clock in the future.
+    const today = localDateKey(i.now);
+    const startsOn = i.confirmedOn && i.confirmedOn <= today ? i.confirmedOn : today;
     return {
       status: 'confirmed',
       reason: `Impact recorded ${recorded} of ${onSitePartner} on-site ${PIPE_RULE.partner} clicks (${((shareExact ?? 0) * 100).toFixed(1)} % ≥ ${PIPE_RULE.minRecordedShare * 100} %; pre-fix ${((PIPE_RULE.preFix.recorded / PIPE_RULE.preFix.onSite) * 100).toFixed(1)} %) — pipe confirmed fixed; E134's ${PIPE_RULE.killAfterDays}-day $0 clock starts ${startsOn}`,
