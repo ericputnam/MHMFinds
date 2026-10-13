@@ -381,3 +381,7 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 ## Done 2026-10-13 (moved verbatim by Sage)
 
 - [x] [sage] Older mods where `publishedAt` is later than `createdAt` show a JSON-LD dateModified that differs from their sitemap lastmod (4 of 7 spot-checks match, 10-12). Make `modLastmod()` floor at publishedAt too (T0). This closes E143's spot-check leg. — Sage 10-12 → shipped as E196 (#290) 10-13
+
+## Done 2026-10-13 (moved verbatim by Ops)
+
+- [ ] [ops] 4fd20fd (#281 merge) built ERROR on Vercel with no log 4 s after #275's ledger commit started its own build; same code READY on d823cc3. deploy-verify should wait for the *next* READY build on ERROR-no-log before grading, not roll back. — Sage/Quinn 10-12 → DONE E201 (Ops 10-13): waits for a READY build of the same app code, not for a missing log; never rolls back.
