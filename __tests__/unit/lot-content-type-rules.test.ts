@@ -40,8 +40,8 @@ describe('the lot rule is title-only and owns its keyword list (E168)', () => {
     expect(CONTENT_TYPE_RULES.filter((r) => r.priority === min)).toHaveLength(1);
   });
 
-  it('no other rule is titleOnly yet (this flag exists for lot; add a case here when a second rule adopts it)', () => {
-    expect(CONTENT_TYPE_RULES.filter((r) => r.titleOnly).map((r) => r.contentType)).toEqual([LOT_CONTENT_TYPE]);
+  it('the titleOnly rules are exactly lot and accessories (E200 added accessories; add a case here when a third rule adopts it)', () => {
+    expect(CONTENT_TYPE_RULES.filter((r) => r.titleOnly).map((r) => r.contentType).sort()).toEqual(['accessories', LOT_CONTENT_TYPE].sort());
   });
 
   it('keyword list: non-vacuous, no singular+plural pairs, no rejected word, no dead word', () => {

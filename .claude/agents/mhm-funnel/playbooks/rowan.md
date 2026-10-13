@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-13
+- Tried: E200 — accessories rule made title-only (`lib/accessoriesContentTypeRules.ts`) + `--accessories-untitled` retag: 713 untitled rows decided title → URL category → NULL, 51 `E200` pins (37 real accessories with no keyword in the title: wings, masks, stockings, bonnets; 14 retypes). 640 written, dry run identical (T0).
+- Before → after: 891 rows, 178 titled (20.0%), top 24 ~21/24 junk (MCCC, Kiddie Pool, a skinpack) → 251 rows, 178 titled (70.9%), top 24 0–1/24 junk; pins E200 51/51, E193 69/69, E186 80/80, E180 34/34.
+- Verdict: MORE DATA (read 2026-10-20).
+- Next time: replay the detector before blaming it — it reproduced 19 of 713 untitled rows; 395 came from the dead `category = 'CAS - Accessories'` backfill. A dead writer needs a one-off pass, and the rule fix only stops the trickle.
+
 ## 2026-10-12
 - Tried: E193 — 69 `--ids` pins (64 written, 5 keeps): next 3 posts by URL-category disagreement read whole (makeup-clutter 16 → clutter, body-presets-2024 10 → body-preset + 1 NULL, eyes-cc 12 → eyes + 1 NULL + 2 keeps) and /sims-4-leg-warmers-cc/ 27 rows (24 → accessories, 3 keeps). `--facets=null` token so an `--ids` run can reach NULL rows (T0).
 - Before → after: post disagree 499/4,978 → 460/4,936, posts >50% 3 → 1 (farmhouse-cc, a URL-map miss); read-back 69/69, E186 80/80, E180 34/34; leg warmers 5 types + 11 NULL → 2 (accessories 25, shoes 2).
