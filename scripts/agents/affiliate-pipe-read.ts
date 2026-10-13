@@ -140,6 +140,7 @@ async function main(): Promise<number> {
     impactError: impact.error,
     onSitePerDay: onSite.perDay,
     now: new Date(),
+    confirmedOn: PIPE_RULE.confirmedOn,
   });
   const md = renderPipeReadMd(read);
   mkdirSync(dirname(outPath), { recursive: true });

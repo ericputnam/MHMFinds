@@ -15,7 +15,7 @@ board-level decisions and true blockers here (see `autonomy.md`, "Operator
 directive 2026-09-12"). Replies given in chat are recorded and executed the same
 day.
 
-**Guardrail 2026-10-12 (Rio):** 🟢 GREEN — finalized 10-10 $257.66 vs $268.36 (−4.0%) is sessions −4.1% at flat RPM (+0.1%; GA4 Sat: Organic Search −10.7%, Organic Social −4.5%), 3-day revenue +0.4% / RPM +3.0%, health ok; the 28d line ratio 97.94% is the 09-12→10-10 Saturday swap plus the closed E163 reset days (10-01…10-05, leaving 10-28→11-02), expect ~97.5% on 10-13 and WATCH only if 10-11/12/13 sessions each land >4% under their means; merges clear, no Tier 2 package; E153 CONFIRMED (Impact 60.0% of on-site), E134 EXTEND to 11-11, E74 KEEP-feature/retire-lever, E174 on track to CLOSE 10-14, B2 leg 2 expected MET 10-15 → affiliates-only plan in `reports/funnel/rio-verdict-2026-10-12.md` §7.
+**Guardrail 2026-10-13 (Rio):** 🟢 GREEN — finalized 10-11 $262.16 vs $269.26 (−2.6%) at RPM +0.4% and sessions −3.0%, where the −3.0% is one anomalous control Sunday (09-27 carried 2,657 Direct sessions; ex it, 10-11 reads +0.9%), 3-day revenue −0.8% / RPM +3.0%, health ok; 28d line 97.28% revenue / 98.46% sessions (ON LINE run 11) — 09-14 (−9.3% vs line) rolls out on 10-14 and 09-15 (−5.8%) on 10-15, so 10-12 needs only ≥$146.53 (partial already $207.05) and the ratio rises both days; merges clear, no Tier 2 package; E192 10-13 leg MET; E174 on track to CLOSE seasonal 10-14 (10-11 ratio 0.66 / fill +1.01); B2 leg 2 expected MET 10-15 → affiliates-only as pre-committed; E134 kill clock anchored to 10-12 → reads 11-11 (it was drifting +1 day/run). Q19/Q21/Q22 drop 10-14, Q20 10-18. Full read `reports/funnel/rio-verdict-2026-10-13.md`.
 ---
 
 ## Tier 1 — shipping unless you say stop
