@@ -33,6 +33,16 @@ WHAT IT DOES
     be put back with one command. --check is for monitors: it prints a
     one-line summary and exits 1 if any schedulable row would block the poster.
 
+    --stranded N (E195, 2026-10-13) also validates the N newest *stranded*
+    rows ("Post Date" < today - LOOKBACK_DAYS, newest first) — exactly the
+    pool pin-runway-topup.py draws its candidates from (revive-stranded-pins
+    fetch_stranded, limit 63 = HARD_CAP*3). Until this flag existed the
+    top-up printed "repair them first: repair-pin-sections.py" for rows this
+    script could not see: its window is [today-14, today] and a stranded
+    row is by definition before it. On 2026-10-12/13 two rows for the #2
+    sessions destination (/black-sims-4-cc/) were dropped from the top-up
+    pool on every run for a null section nothing could clear.
+
 SAFETY RAILS
     * dry run is the default; nothing is written without --apply
     * `Is Posted = false` is in the PATCH filter, so a row the poster posts
@@ -52,6 +62,7 @@ USAGE
     python3 scripts/agents/repair-pin-sections.py --apply
     python3 scripts/agents/repair-pin-sections.py --check        # monitor
     python3 scripts/agents/repair-pin-sections.py --self-test    # offline
+    python3 scripts/agents/repair-pin-sections.py --stranded 63  # + top-up pool
     python3 scripts/agents/repair-pin-sections.py \
         --rollback reports/funnel/pin-section-repair-YYYY-MM-DD.json --apply
 
@@ -274,6 +285,24 @@ def fetch_window_rows(config, floor_str, ceil_str):
         raise CouldNotRun('Supabase query failed: ' + redact(exc))
 
 
+def stranded_query(floor_str, limit):
+    """The top-up's candidate pool, verbatim from revive-stranded-pins.py
+    fetch_stranded: unposted, dated BEFORE the poster's window, newest first,
+    capped. Pure so --self-test can pin it to the predicate the consumer uses
+    (CLAUDE.md: a monitor must mirror its consumer's selection query)."""
+    return ('{cols}&%22Is%20Posted%22=eq.false'
+            '&%22Post%20Date%22=lt.{floor}'
+            '&order=%22Post%20Date%22.desc&limit={limit}').format(
+                cols=SELECT_COLS, floor=q(floor_str), limit=int(limit))
+
+
+def fetch_stranded_rows(config, floor_str, limit):
+    try:
+        return supabase(config, 'GET', stranded_query(floor_str, limit))
+    except Exception as exc:
+        raise CouldNotRun('Supabase stranded query failed: ' + redact(exc))
+
+
 # --------------------------------------------------------------------------
 # Pinterest
 # --------------------------------------------------------------------------
@@ -324,10 +353,13 @@ def summarize(plan):
     return counts, dead
 
 
-def print_plan(plan, floor, today, apply_changes):
+def print_plan(plan, floor, today, apply_changes, stranded=0):
     counts, dead = summarize(plan)
     say('Poster window is [{} .. {}]: {} schedulable row(s) across {} board(s).'.format(
-        floor, today, len(plan), len({e['board_id'] for e in plan})))
+        floor, today, len(plan) - stranded, len({e['board_id'] for e in plan})))
+    if stranded:
+        say('  plus the {} newest stranded row(s) (dated before {}) — the '
+            'pin-runway-topup.py candidate pool'.format(stranded, floor))
     say('  ok={} none={} renamed={} null={} unknown={}'.format(
         counts['ok'], counts['none'], counts['renamed'], counts['null'],
         counts['unknown']))
@@ -337,8 +369,9 @@ def print_plan(plan, floor, today, apply_changes):
     if not dead:
         say('\nNo dead sections — the poster is not blocked by this.')
         return dead
-    say('\n--- {} row(s) would block the poster ({}) ---'.format(
-        len(dead), 'WRITING' if apply_changes else 'dry run'))
+    say('\n--- {} row(s) would block the poster{} ({}) ---'.format(
+        len(dead), ' or be dropped by the top-up' if stranded else '',
+        'WRITING' if apply_changes else 'dry run'))
     grouped = OrderedDict()
     for entry in dead:
         key = (entry['board_id'], entry['board_name'], entry['section_name'],
@@ -444,6 +477,11 @@ def self_test():
         ('unfetchable board is unknown, never dead',
          decide('999', 'Black Sims 4 CC', None), ('unknown', '999')),
         ('integer ids compare as strings', decide(111, 'x', live), ('ok', '111')),
+        ('stranded query mirrors revive-stranded-pins.fetch_stranded (lt floor, '
+         'newest first, capped)',
+         stranded_query('2026-09-29', 63),
+         SELECT_COLS + '&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.2026-09-29'
+         '&order=%22Post%20Date%22.desc&limit=63'),
     ]
     failed = 0
     for label, got, want in checks:
@@ -488,6 +526,12 @@ def main():
                              'dated 09-14..09-22 carried a section deleted since '
                              'February, and the window-only scan could see only '
                              'the first of them')
+    parser.add_argument('--stranded', type=int, default=0, metavar='N',
+                        help='also validate the N newest unposted rows dated '
+                             'BEFORE the poster\'s window — the pool '
+                             'pin-runway-topup.py selects from (it fetches 63). '
+                             'Default 0. A stranded row never blocks the poster; '
+                             'a dead section there only starves the top-up')
     args = parser.parse_args()
 
     if args.self_test:
@@ -502,6 +546,10 @@ def main():
         floor = today - timedelta(days=LOOKBACK_DAYS)
         ceil = today + timedelta(days=max(0, args.days_ahead))
         rows = fetch_window_rows(config, str(floor), str(ceil))
+        stranded_rows = []
+        if args.stranded > 0:
+            stranded_rows = fetch_stranded_rows(config, str(floor), args.stranded)
+            rows = rows + stranded_rows
         if not rows:
             say('SECTIONS: 0 schedulable rows — nothing to validate')
             return 0
@@ -514,6 +562,16 @@ def main():
 
     if args.check:
         counts, dead = summarize(plan)
+        stranded_ids = {e.get('id') for e in stranded_rows}
+        dead_stranded = [e for e in dead if e['id'] in stranded_ids]
+        dead = [e for e in dead if e['id'] not in stranded_ids]
+        if dead_stranded:
+            # Never a poster blocker (the poster cannot select a stranded row);
+            # it only starves pin-runway-topup.py, which drops these rows.
+            say('SECTIONS: {} of {} stranded row(s) carry a dead board section — '
+                'dropped by the top-up; fix: repair-pin-sections.py --stranded {} '
+                'then --apply'.format(len(dead_stranded), len(stranded_rows),
+                                      args.stranded))
         if dead:
             say('SECTIONS: {} of {} schedulable row(s) point at a dead board section '
                 '— the poster retries the first one forever and posts nothing'.format(
@@ -540,7 +598,7 @@ def main():
 
     say('=== {}: repair dead board sections on schedulable pins ==='.format(
         'APPLY' if args.apply else 'DRY RUN'))
-    dead = print_plan(plan, floor, ceil, args.apply)
+    dead = print_plan(plan, floor, ceil, args.apply, stranded=len(stranded_rows))
     if not dead or not args.apply:
         if dead:
             say('\nDry run — nothing written. Re-run with --apply to repair.')

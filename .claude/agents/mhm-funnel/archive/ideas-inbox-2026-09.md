@@ -385,3 +385,6 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 ## Done 2026-10-13 (moved verbatim by Ops)
 
 - [ ] [ops] 4fd20fd (#281 merge) built ERROR on Vercel with no log 4 s after #275's ledger commit started its own build; same code READY on d823cc3. deploy-verify should wait for the *next* READY build on ERROR-no-log before grading, not roll back. — Sage/Quinn 10-12 → DONE E201 (Ops 10-13): waits for a READY build of the same app code, not for a missing log; never rolls back.
+## Done 2026-10-13 (moved verbatim by Pip)
+
+- [x] [pip] 2 ranked rows (/black-sims-4-cc/, 451 sessions/7d, #2 destination) dropped for a null board section; run repair-pin-sections.py on them before #14. — Pip 10-12 → shipped as E195 10-13 (`--stranded 63 --apply`, rows 7971/8019 cleared)
