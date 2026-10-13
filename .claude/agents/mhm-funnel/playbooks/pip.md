@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-13
+- Tried: E195 (T0): `repair-pin-sections.py --stranded 63` — the top-up printed "repair them first: repair-pin-sections.py" for 2 rows that tool could not see (its window is [today−14, today]; a stranded row is before it by definition). Added the flag (query mirrors revive's `fetch_stranded` verbatim, pinned in --self-test), dry run, `--apply` (ledger `7a82b9b` on main): cleared dead section 5483319435714435392 on rows 7971/8019 (/black-sims-4-cc/, #2 sessions destination, dated 03-04). No top-up (#14) today per Quinn — scoreboard runway 2.8 d.
+- Before → after: top-up dry run section drops 2 → 0; plan 19 → 21 rows with /black-sims-4-cc/ ×2 in it. Same 28 rows: tool 1.22 d (÷ 22.86 pinterest-14d) vs scoreboard 2.8 d (÷ 10.1 observed-7d). Pinterest 7d −4.9% is −2.5% Tue–Sun and −0.5% vs 4 wks ago; apex 54,401 → 52,994 (−2.6%), blog.* 2,471 → 61; worst single pages /sims-4-male-sim-download −229, /sims-4-coquette-cc −171 — broad drift with the posting rate (33.5 → 10.1/day observed), not host or landing class. Bing −7.8% is the same broad drift (engaged share 76 → 78%).
+- Verdict: MORE DATA (read 2026-10-20)
+- Next time: the runway basis is the tool's (pinterest-14d — "divide by the rate you want"); when the scoreboard reads ≥2 d and the tool reads <2 d, say so in line 1 and let Quinn gate. Writer still has 0 real-dated rows 10-18..20.
+
 ## 2026-10-12
 - Tried: E188 top-up #13 (T0, SD-10 floor; apply ledger on main `cda6c05`): 21 sessions-ranked rows 7×10-15/16/17 — the cross-run cap skipped 10-12/13/14 (E181's 7/date); post-apply dry run plans 10-18..20. Fixed inbox [pip]: `count_writer_rows_for_date` used `Wordpress Post ID`; live read showed old 7 vs plugin-predicate 0 "writer rows" on each of 10-13..10-17 — all were Pip's own top-up rows. 5 new tests red pre-fix, 67/67 green.
 - Before → after: runway 0.58 → 1.45 d (14 → 35 @ 24.14/day pinterest-14d); SEO 64 → 96 (0/21 → 21/21). Ranker: 15 dests/83 ids, 47 writer rows dropped upstream.
