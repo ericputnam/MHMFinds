@@ -53,6 +53,7 @@ import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/ca
 import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
 import { summarizeCreatorSubmissions, type CreatorOnboardingSummary } from '../../lib/funnel/creatorOnboarding';
+import { summarizeCreatorLandings, formatCreatorLandings, EARNED_CHANNEL_GROUPS, type ChannelRow, type CreatorLandingSummary } from '../../lib/funnel/creatorLandings';
 import {
   E40_ANCHOR,
   E40_CLICK_BASELINE,
@@ -180,6 +181,8 @@ interface Ga4Data {
   pagesPerSession7d: number | null;
   /** GA4 engagementRate (0-1) over the same 7d window. */
   engagementRate7d: number | null;
+  /** /creator/* landing sessions by channel group + the site-relative guard (E204). */
+  creatorLandings7d: CreatorLandingSummary | null;
 }
 
 async function pullGa4(): Promise<Ga4Data> {
@@ -318,6 +321,36 @@ async function pullGa4(): Promise<Ga4Data> {
     engagementRate7d = null;
   }
 
+  // E204: sessions to creator pages, graded on organic+AI relative to the
+  // site (lib/funnel/creatorLandings.ts). Degrades to null on its own.
+  let creatorLandings7d: CreatorLandingSummary | null = null;
+  try {
+    const [[cl], [site]] = await Promise.all([
+      client.runReport({
+        property,
+        dateRanges: [{ startDate: start, endDate: end }],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        metrics: [{ name: 'sessions' }],
+        dimensionFilter: { filter: { fieldName: 'landingPage', stringFilter: { value: '/creator/', matchType: 'BEGINS_WITH' } } },
+      }),
+      client.runReport({
+        property,
+        dateRanges: [{ startDate: start, endDate: end }],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        metrics: [{ name: 'sessions' }],
+        dimensionFilter: { filter: { fieldName: 'sessionDefaultChannelGroup', inListFilter: { values: [...EARNED_CHANNEL_GROUPS] } } },
+      }),
+    ]);
+    const toRows = (r: typeof cl): ChannelRow[] => (r.rows ?? []).map((row) => ({
+      channelGroup: row.dimensionValues?.[0]?.value ?? '',
+      sessions: Number(row.metricValues?.[0]?.value ?? 0),
+    }));
+    const siteRows = toRows(site);
+    creatorLandings7d = summarizeCreatorLandings(toRows(cl), siteRows.length ? siteRows.reduce((n, r) => n + r.sessions, 0) : null);
+  } catch {
+    creatorLandings7d = null;
+  }
+
   return {
     window: `${start}→${end} vs ${prevStart}→${prevEnd}`,
     sessions7d: curr.total,
@@ -336,6 +369,7 @@ async function pullGa4(): Promise<Ga4Data> {
     returningShare7d,
     pagesPerSession7d,
     engagementRate7d,
+    creatorLandings7d,
   };
 }
 
@@ -1101,7 +1135,8 @@ async function main() {
   md += `| Capture rate /1k sessions 7d | ${captureRatePer1kSessions7d != null ? captureRatePer1kSessions7d.toFixed(2) : '—'} | ${owners.captureRatePer1k ?? '?'} |\n`;
   md += `| Creators onboarded (>=1 submission) | ${db.ok ? `${num(db.data.creatorsOnboarded)} (${num(db.data.creatorsOnboardedApproved)} with >=1 approved${db.data.creatorsHouseExcluded ? `; ${num(db.data.creatorsHouseExcluded)} house account excluded` : ''})` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Submissions pending review | ${db.ok ? `${num(db.data.submissionsPendingReview)}${db.data.oldestPendingSubmissionDays != null ? ` (oldest ${db.data.oldestPendingSubmissionDays}d)` : ''}` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
-  md += `| Creator submissions 7d | ${db.ok ? num(db.data.submissions7d) : '—'} | ${owners.creatorSubmissions7d ?? '?'} |\n\n`;
+  md += `| Creator submissions 7d | ${db.ok ? num(db.data.submissions7d) : '—'} | ${owners.creatorSubmissions7d ?? '?'} |\n`;
+  md += `| Sessions to creator pages 7d (/creator/*) | ${ga4.ok && ga4.data.creatorLandings7d ? formatCreatorLandings(ga4.data.creatorLandings7d) : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n\n`;
 
   md += `## Team health\n\n`;
   if (team.ok) {
@@ -1145,6 +1180,7 @@ async function main() {
       submissions7d: db.ok ? db.data.submissions7d : null,
       pendingReview: db.ok ? db.data.submissionsPendingReview : null,
       oldestPendingDays: db.ok ? db.data.oldestPendingSubmissionDays : null,
+      landings7d: ga4.ok ? ga4.data.creatorLandings7d : null,
     },
     team,
     owners,
