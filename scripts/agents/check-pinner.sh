@@ -133,7 +133,9 @@ PINS_PAGE_SIZE="${PINNER_PINS_PAGE_SIZE:-100}"
 # saturates inside 7 d at the current ~23 pins/day (2026-09-15: 96 "in 7d" from
 # a page of 100 vs 162 across three pages), which understates the rate and
 # overstates the runway — the wrong direction for a monitor.
-PINS_MAX_PAGES="${PINNER_PINS_MAX_PAGES:-3}"
+# E208: the runway rate is pinterest-14d, so the fetch must reach past 14 d
+# (~320 pins at 23/day) — 5 pages, same as pin-runway-topup.py.
+PINS_MAX_PAGES="${PINNER_PINS_MAX_PAGES:-5}"
 REFRESH_WARN_DAYS="${PINNER_REFRESH_WARN_DAYS:-30}"
 # Must match BACKLOG_LOOKBACK_DAYS in MHMUtils/supabase_pin_poster_server.py.
 # If that constant changes there, change it here — otherwise this check reports
@@ -142,7 +144,8 @@ LOOKBACK_DAYS="${PINNER_LOOKBACK_DAYS:-14}"
 # Must match DEFAULT_RUNWAY_HORIZON_DAYS / DEFAULT_LOW_RUNWAY_DAYS in
 # scripts/agents/pinner-liveness-lib.ts (and the scoreboard's mirror). Inventory
 # = unposted rows dated [today - LOOKBACK_DAYS, today + RUNWAY_HORIZON_DAYS];
-# runway = inventory ÷ observed pins/day; WARN below LOW_RUNWAY_DAYS.
+# runway = inventory ÷ pinterest-14d pins/day (E208 — the top-up gate's basis,
+# never the trailing 7 d drain); WARN below LOW_RUNWAY_DAYS.
 RUNWAY_HORIZON_DAYS="${PINNER_RUNWAY_HORIZON_DAYS:-14}"
 LOW_RUNWAY_DAYS="${PINNER_LOW_RUNWAY_DAYS:-3}"
 # Catalog pins inserted by scripts/agents/insert-catalog-pins.py are matched by
@@ -205,10 +208,11 @@ def parse(s):
         return None
     return d if d.tzinfo else d.replace(tzinfo=datetime.timezone.utc)
 # Page newest-first like funnel-scoreboard.ts pullPinner(): up to max_pages,
-# stopping early once a page's oldest pin is older than 7 d. The first page
-# must succeed; a later page failing degrades to the pins already seen.
-seven_days_ago = now - datetime.timedelta(days=7)
-items, bookmark, pages = [], None, 0
+# stopping early once a page's oldest pin is older than 14 d (E208: the runway
+# rate window). The first page must succeed; a later page failing degrades to
+# the pins already seen, and then the 14 d count is a floor → reported as "".
+window_start = now - datetime.timedelta(days=14)
+items, bookmark, pages, complete = [], None, 0, False
 while pages < max_pages:
     url = f"https://api.pinterest.com/v5/pins?page_size={page_size}"
     if bookmark:
@@ -230,7 +234,8 @@ while pages < max_pages:
     pages += 1
     bookmark = body.get('bookmark') or None
     page_stamps = [d for d in (parse(i.get('created_at')) for i in page_items) if d]
-    if not bookmark or not page_items or (page_stamps and min(page_stamps) < seven_days_ago):
+    if not bookmark or not page_items or (page_stamps and min(page_stamps) < window_start):
+        complete = True
         break
 stamps = [d for d in (parse(i.get('created_at')) for i in items) if d]
 if not stamps:
@@ -239,14 +244,16 @@ last = max(stamps)
 hours = max(0.0, (now - last).total_seconds() / 3600)
 c24 = sum(1 for d in stamps if 0 <= (now - d).total_seconds() <= 86400)
 c7 = sum(1 for d in stamps if 0 <= (now - d).total_seconds() <= 7 * 86400)
+# Truncated sample → empty field: a floor on the rate is a ceiling on runway.
+c14 = str(sum(1 for d in stamps if 0 <= (now - d).total_seconds() <= 14 * 86400)) if complete else ''
 sampled = len(items)
 floor_mark = '+' if sampled >= page_size * max_pages else ''
 stamp = last.strftime('%Y-%m-%d %H:%MZ')
-# Fields: STATE<TAB>message<TAB>pins24h<TAB>pins7d — step 2 reads the counts for the runway rate.
+# Fields: STATE<TAB>message<TAB>pins24h<TAB>pins7d<TAB>pins14d — step 2 divides by pins14d.
 if hours > red_after:
-    print(f"RED\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API; threshold {red_after:.0f} h) — the Pinterest pipeline is stalled. Queue proxy: newest posted row dated {proxy or 'n/a'}\t{c24}\t{c7}")
+    print(f"RED\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API; threshold {red_after:.0f} h) — the Pinterest pipeline is stalled. Queue proxy: newest posted row dated {proxy or 'n/a'}\t{c24}\t{c7}\t{c14}")
     sys.exit(1)
-print(f"OK\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API) · {c24} pins in 24h, {c7}{floor_mark} in 7d ({sampled} sampled over {pages} page(s)) · queue proxy max(Post Date)={proxy or 'n/a'} (scheduled date, not staleness)\t{c24}\t{c7}")
+print(f"OK\tlast pin created {stamp} ({hours:.1f} h ago, Pinterest API) · {c24} pins in 24h, {c7}{floor_mark} in 7d ({sampled} sampled over {pages} page(s)) · queue proxy max(Post Date)={proxy or 'n/a'} (scheduled date, not staleness)\t{c24}\t{c7}\t{c14}")
 sys.exit(0)
 PY
 )
@@ -255,6 +262,7 @@ set -e
 LIVENESS_MSG=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f2)
 PINS_24H=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f3 -s)
 PINS_7D=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f4 -s)
+PINS_14D=$(printf '%s' "$LIVENESS_OUT" | head -1 | cut -f5 -s)
 
 case "$LIVENESS_RC" in
   0)
@@ -273,7 +281,7 @@ esac
 
 # ---- 2. Inventory runway --------------------------------------------------
 say ""
-say "--- 2. Queue inventory runway (rows dated [today-${LOOKBACK_DAYS}d, today+${RUNWAY_HORIZON_DAYS}d] ÷ observed pins/day; WARN below ${LOW_RUNWAY_DAYS}d)"
+say "--- 2. Queue inventory runway (rows dated [today-${LOOKBACK_DAYS}d, today+${RUNWAY_HORIZON_DAYS}d] ÷ pinterest-14d pins/day; WARN below ${LOW_RUNWAY_DAYS}d)"
 
 TODAY_STR=$(date -u +%Y-%m-%d)
 FLOOR_STR=$(python3 -c "
@@ -302,24 +310,33 @@ UNPOSTED_TOTAL=$(backlog_count 'select=id&%22Is%20Posted%22=eq.false')
 SCHEDULABLE=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${TODAY_STR}")
 INVENTORY=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${FLOOR_STR}&%22Post%20Date%22=lte.${HORIZON_STR}")
 STRANDED=$(backlog_count "select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=lt.${FLOOR_STR}")
+# E208 queue-side fallback rate — pin-runway-topup.py count_posted_rows_dated_window().
+RATE_FLOOR_STR=$(python3 -c "import datetime; print(datetime.date.today() - datetime.timedelta(days=14))" 2>/dev/null || true)
+POSTED_DATED_14D=$( [[ -n "$RATE_FLOOR_STR" ]] && backlog_count "select=id&%22Is%20Posted%22=eq.true&%22Post%20Date%22=gte.${RATE_FLOOR_STR}&%22Post%20Date%22=lte.${TODAY_STR}" || true)
 RUNWAY_DAYS_NUM=""
 
 if [[ -z "$SCHEDULABLE" || -z "$UNPOSTED_TOTAL" || -z "$INVENTORY" ]]; then
   warn "Could not query backlog counts"
   WARN=1
 else
-  # Mirror of assessRunway() in pinner-liveness-lib.ts: rate = pins7d/7, else
-  # pins24h, else unknown. empty/low → WARN; unknown → informational only
-  # (step 1 already reported the API outage or the stall); ok → OK.
-  RUNWAY_OUT=$(python3 - "$INVENTORY" "$SCHEDULABLE" "${PINS_7D:-}" "${PINS_24H:-}" "$RUNWAY_HORIZON_DAYS" "$LOW_RUNWAY_DAYS" <<'PY'
+  # Mirror of assessRunway() in pinner-liveness-lib.ts (E208): rate =
+  # pins14d/14 ("pinterest-14d", complete sample only), else posted rows dated
+  # in the last 14 d / 14 ("queue-posted-14d"), else unknown — the top-up
+  # gate's basis. The 7 d count is shown as "observed", never the divisor.
+  # empty/low → WARN; unknown → informational only (step 1 already reported
+  # the API outage or the stall); ok → OK.
+  RUNWAY_OUT=$(python3 - "$INVENTORY" "$SCHEDULABLE" "${PINS_14D:-}" "${POSTED_DATED_14D:-}" "$RUNWAY_HORIZON_DAYS" "$LOW_RUNWAY_DAYS" "${PINS_7D:-}" <<'PY'
 import sys
-inv, sched, p7, p24, horizon, low = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4], int(sys.argv[5]), float(sys.argv[6])
+inv, sched, p14, q14, horizon, low, p7 = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4], int(sys.argv[5]), float(sys.argv[6]), sys.argv[7]
 def n(s):
     try: return int(s)
     except (TypeError, ValueError): return None
-p7, p24 = n(p7), n(p24)
-rate = (p7 / 7) if (p7 is not None and p7 > 0) else (float(p24) if (p24 is not None and p24 > 0) else None)
-rate_str = 'rate unknown' if rate is None else f'{rate:.1f}/day observed'
+p14, q14, p7 = n(p14), n(q14), n(p7)
+rate, basis = None, 'unknown'
+if p14 is not None and p14 > 0: rate, basis = p14 / 14, 'pinterest-14d'
+elif q14 is not None and q14 > 0: rate, basis = q14 / 14, 'queue-posted-14d'
+observed = f'; observed 7d {p7 / 7:.1f}/day, not the divisor' if (p7 is not None and p7 > 0) else ''
+rate_str = 'rate unknown' if rate is None else f'{basis} {rate:.1f}/day'
 if inv == 0:
     print(f"EMPTY\t0\tqueue empty — 0 unposted rows dated within the poster's window or the next {horizon} days ({rate_str}); cadence now depends entirely on new rows landing")
 elif rate is None:
@@ -327,7 +344,7 @@ elif rate is None:
 else:
     runway = inv / rate
     rs = f"> {horizon} days" if runway > horizon else f"≈ {runway:.1f} days"
-    base = f"inventory runway {rs} ({inv} rows dated through +{horizon}d ÷ {rate_str}; {sched} still schedulable today)"
+    base = f"inventory runway {rs} ({inv} rows dated through +{horizon}d ÷ {rate_str}{observed}; {sched} still schedulable today)"
     if runway < low:
         print(f"LOW\t{runway:.1f}\t{base} — below the {low:.0f}-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)")
     else:

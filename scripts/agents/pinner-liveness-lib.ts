@@ -32,6 +32,16 @@ export interface PinSummary {
   created7d: number;
   /** How many pins were inspected — the 7 d count is a floor when this equals the page cap. */
   sampled: number;
+  /** Pins whose created_at is within the last RUNWAY_RATE_WINDOW_DAYS (14 d) of `now` (E208). */
+  created14d: number;
+  /**
+   * True when the sample holds a pin older than the 14 d window, i.e. the
+   * newest-first fetch reached past the window's start and `created14d` is
+   * exact. When false (and the fetch was not exhausted) `created14d` is only a
+   * floor — a floor on the rate is a *ceiling* on runway — so the caller must
+   * pass null, never the count, to assessRunway.
+   */
+  reached14d: boolean;
 }
 
 export type LivenessLevel = 'ok' | 'red' | 'unverified';
@@ -64,7 +74,10 @@ export function summarizePins(pins: readonly PinLike[], now: Date = new Date()):
   let last: Date | null = null;
   let created24h = 0;
   let created7d = 0;
+  let created14d = 0;
+  let reached14d = false;
   const t = now.getTime();
+  const windowMs = RUNWAY_RATE_WINDOW_DAYS * 24 * 3600e3;
   for (const pin of pins) {
     const d = parsePinterestTimestamp(pin.created_at);
     if (!d) continue;
@@ -73,8 +86,10 @@ export function summarizePins(pins: readonly PinLike[], now: Date = new Date()):
     if (age < 0) continue; // clock skew: never count a future pin as recent
     if (age <= 24 * 3600e3) created24h += 1;
     if (age <= 7 * 24 * 3600e3) created7d += 1;
+    if (age <= windowMs) created14d += 1;
+    else reached14d = true;
   }
-  return { lastCreatedAt: last ? last.toISOString() : null, created24h, created7d, sampled: pins.length };
+  return { lastCreatedAt: last ? last.toISOString() : null, created24h, created7d, sampled: pins.length, created14d, reached14d };
 }
 
 export const DEFAULT_RED_AFTER_HOURS = 36;
@@ -160,14 +175,30 @@ export function livenessExitCode(level: LivenessLevel): 0 | 1 | 2 {
 export const DEFAULT_RUNWAY_HORIZON_DAYS = 14;
 export const DEFAULT_LOW_RUNWAY_DAYS = 3;
 
+// Drain basis (E208, 2026-10-14). Must match RATE_WINDOW_DAYS in
+// pin-runway-topup.py. Until E208 the divisor was the trailing *7-day* observed
+// rate — the buffer ÷ trailing-drain ratio CLAUDE.md bans, because it reads
+// healthier exactly as the drip starves: on 2026-10-13 the scoreboard read
+// 28 rows ÷ 10.1/day = 2.8 d while the top-up tool, dividing the same 28 rows
+// by its pinterest-14d 22.86/day, read 1.22 d — so the 🟡 flag and the SD-10
+// top-up gate disagreed about the same queue. The runway now divides by the
+// same rate the gate does: Pinterest `created_at` over a complete 14 d sample
+// ("pinterest-14d"), else the queue proxy of posted rows dated in the last
+// 14 d ("queue-posted-14d"), else unknown. The 7 d / 24 h counts are reported
+// in the message as "observed" and never divide anything.
+export const RUNWAY_RATE_WINDOW_DAYS = 14;
+
 export type RunwayLevel = 'ok' | 'low' | 'empty' | 'unknown';
+export type RunwayRateBasis = 'pinterest-14d' | 'queue-posted-14d' | 'unknown';
 
 export interface RunwayAssessment {
   level: RunwayLevel;
   /** Unposted rows dated inside the poster's window or the look-ahead horizon. */
   inventoryRows: number;
-  /** Pins/day the poster is observed to create (7 d mean, else 24 h), or null when Pinterest did not answer. */
+  /** Pins/day the runway divides by — `rateBasis` says which (E208); null when unknown. */
   dailyRate: number | null;
+  /** Which rate `dailyRate` is. Same labels as pin-runway-topup.py's resolve_posted_rate(). */
+  rateBasis: RunwayRateBasis;
   /** inventoryRows ÷ dailyRate, one decimal; null when the rate is unknown. */
   runwayDays: number | null;
   message: string;
@@ -178,20 +209,27 @@ export interface RunwayAssessment {
  *
  * - `inventoryRows === 0` → `empty` (flag). Nothing the poster can reach today
  *   or on any day inside the horizon; cadence now depends on new rows landing.
- * - rate unknown (Pinterest unreachable, or 0 pins in 7 d) → `unknown`, no
- *   flag of its own: liveness already reports the API outage or the stall,
- *   and a runway computed from a rate of 0 is not a number.
+ * - rate unknown (no complete 14 d Pinterest sample and no queue proxy, or
+ *   both read 0) → `unknown`, no flag of its own: liveness already reports the
+ *   API outage or the stall, and a runway computed from a rate of 0 is not a
+ *   number.
  * - `runwayDays < lowRunwayDays` → `low` (flag).
  * - otherwise `ok`.
  *
- * `schedulableToday` is reported in the message for continuity but never
- * decides the level — that is the E20 threshold this replaces.
+ * `pinsCreated14d` must be null when the Pinterest sample did not reach past
+ * the 14 d window (a truncated count is a floor on the rate and so a ceiling on
+ * runway). `schedulableToday`, `pinsCreated7d` and `pinsCreated24h` are
+ * reported for continuity but never decide the level or the divisor.
  */
 export function assessRunway(input: {
   inventoryRows: number;
   schedulableToday: number;
-  pinsCreated7d: number | null;
-  pinsCreated24h: number | null;
+  /** Pinterest created_at count over the last 14 d from a complete sample, else null. */
+  pinsCreated14d: number | null;
+  /** Queue proxy: `Is Posted` rows whose Post Date is in [today - 14 d, today], else null. */
+  postedRowsDated14d?: number | null;
+  pinsCreated7d?: number | null;
+  pinsCreated24h?: number | null;
   horizonDays?: number;
   lowRunwayDays?: number;
 }): RunwayAssessment {
@@ -199,17 +237,29 @@ export function assessRunway(input: {
   const lowAfter = input.lowRunwayDays ?? DEFAULT_LOW_RUNWAY_DAYS;
   const inventory = Math.max(0, Math.floor(input.inventoryRows));
   const sched = Math.max(0, Math.floor(input.schedulableToday));
+  const w = RUNWAY_RATE_WINDOW_DAYS;
 
   let rate: number | null = null;
-  if (input.pinsCreated7d != null && input.pinsCreated7d > 0) rate = input.pinsCreated7d / 7;
-  else if (input.pinsCreated24h != null && input.pinsCreated24h > 0) rate = input.pinsCreated24h;
-  const rateStr = rate == null ? 'rate unknown' : `${Math.round(rate * 10) / 10}/day observed`;
+  let basis: RunwayRateBasis = 'unknown';
+  if (input.pinsCreated14d != null && input.pinsCreated14d > 0) {
+    rate = input.pinsCreated14d / w;
+    basis = 'pinterest-14d';
+  } else if (input.postedRowsDated14d != null && input.postedRowsDated14d > 0) {
+    rate = input.postedRowsDated14d / w;
+    basis = 'queue-posted-14d';
+  }
+  const observed =
+    input.pinsCreated7d != null && input.pinsCreated7d > 0
+      ? `; observed 7d ${Math.round((input.pinsCreated7d / 7) * 10) / 10}/day, not the divisor`
+      : '';
+  const rateStr = rate == null ? 'rate unknown' : `${basis} ${Math.round(rate * 10) / 10}/day`;
 
   if (inventory === 0) {
     return {
       level: 'empty',
       inventoryRows: 0,
       dailyRate: rate,
+      rateBasis: basis,
       runwayDays: rate == null ? null : 0,
       message: `queue empty — 0 unposted rows dated within the poster's window or the next ${horizon} days (${rateStr}); cadence now depends entirely on new rows landing`,
     };
@@ -219,23 +269,25 @@ export function assessRunway(input: {
       level: 'unknown',
       inventoryRows: inventory,
       dailyRate: null,
+      rateBasis: 'unknown',
       runwayDays: null,
-      message: `inventory ${inventory} rows dated through +${horizon}d (${sched} still schedulable today); runway not computable — ${rateStr}`,
+      message: `inventory ${inventory} rows dated through +${horizon}d (${sched} still schedulable today); runway not computable — ${rateStr} (no complete ${w}d Pinterest sample and no queue proxy)${observed}`,
     };
   }
   const runway = Math.round((inventory / rate) * 10) / 10;
   const runwayStr = runway > horizon ? `> ${horizon} days` : `≈ ${runway} days`;
-  const base = `inventory runway ${runwayStr} (${inventory} rows dated through +${horizon}d ÷ ${rateStr}; ${sched} still schedulable today)`;
+  const base = `inventory runway ${runwayStr} (${inventory} rows dated through +${horizon}d ÷ ${rateStr}${observed}; ${sched} still schedulable today)`;
   if (runway < lowAfter) {
     return {
       level: 'low',
       inventoryRows: inventory,
       dailyRate: rate,
+      rateBasis: basis,
       runwayDays: runway,
       message: `${base} — below the ${lowAfter}-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)`,
     };
   }
-  return { level: 'ok', inventoryRows: inventory, dailyRate: rate, runwayDays: runway, message: base };
+  return { level: 'ok', inventoryRows: inventory, dailyRate: rate, rateBasis: basis, runwayDays: runway, message: base };
 }
 
 /** Exit code for check-pinner.sh step 2: low/empty are WARN (2), never FAIL; unknown is 0 because liveness already covers it. */
