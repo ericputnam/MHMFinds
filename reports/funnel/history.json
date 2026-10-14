@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T10:37:52.109Z",
+  "generatedAt": "2026-10-14T10:38:50.243Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3607,9 +3607,9 @@
     },
     {
       "date": "2026-10-12",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 207.05,
+      "sessions": 14240,
+      "rpm": 14.54,
       "expectedRevenue": 181.01,
       "expectedSessions": 11843,
       "nonAdMonthly": 158,
@@ -3673,6 +3673,41 @@
         "Rowan": 3,
         "Rio": 3,
         "Quinn": 4
+      }
+    },
+    {
+      "date": "2026-10-14",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 182.17,
+      "expectedSessions": 11162,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": 183,
+      "pinterestSessions7d": 57474,
+      "returningShare7d": 0.5223922551918774,
+      "nonPinterestShare7d": 0.17087667161961362,
+      "pagesPerSession7d": 1.5384097726780195,
+      "engagementRate7d": 0.7328139792182314,
+      "favorites7d": 808,
+      "downloadClicks7d": 492,
+      "newMods7d": 189,
+      "catalogTotal": 16882,
+      "captureRatePer1k": 2.0733019883305954,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.5714285714285714,
+      "opsMergeShare7d": 0.12121212121212122,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Sage": 3,
+        "Pip": 4,
+        "Cass": 5,
+        "Ops": 4,
+        "Nova": 4,
+        "Rowan": 4,
+        "Rio": 4,
+        "Quinn": 5
       }
     }
   ],
@@ -5632,6 +5667,62 @@
       "kind": "incident",
       "label": "Incident: build ERROR",
       "commit": "817064a"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Nova: PR #289 E197 exclude house accounts from creators-onboarded (Tier 0)",
+      "commit": "55ccdfb",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Sage: PR #290 E196 modLastmod() floors at publishedAt — sitemap lastmod == page dateModified (Tier 0)",
+      "commit": "0ced447",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Rowan: PR #294 E200 accessories title-only rule + --accessories-untitled retag (51 pins)",
+      "commit": "38d9641",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Rio: PR #291 E199 guardrail verdict 2026-10-13 + E134 kill clock anchored (Tier 0)",
+      "commit": "0a0aa96",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Ops: PR #293 E201 deploy-verify grades a platform build ERROR on the same code, never rolls back on it (Tier 0)",
+      "commit": "ef673dc",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Cass: PR #292 E198 /mods/[id] one-click weekly-email opt-in for signed-in visitors (Tier 0)",
+      "commit": "08637de",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Pip: PR #295 E195 repair-pin-sections --stranded reaches the top-up pool + /black-sims-4-cc/ section repair (Tier 0)",
+      "commit": "2e3e0ec",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-13",
+      "kind": "merge",
+      "label": "Quinn: PR #296 funnel: daily run 2026-10-13 (Tier 0 docs)",
+      "commit": "76f343d",
+      "result": "PASS"
     }
   ]
 }
