@@ -41,6 +41,7 @@ import {
   assessRunway,
   assessWriterLiveness,
   DEFAULT_RUNWAY_HORIZON_DAYS,
+  RUNWAY_RATE_WINDOW_DAYS,
   summarizePins,
   type LivenessAssessment,
   type PinLike,
@@ -759,7 +760,10 @@ const PINNER_LOOKBACK_DAYS = 14;
 // (GET /v5/pins, newest first); the proxy is kept, labelled, and can only
 // ever downgrade to "unverified", never to 🔴.
 const PINNER_PINS_PAGE_SIZE = 100;
-const PINNER_PINS_MAX_PAGES = 3;
+// E208: the runway divides by the pinterest-14d rate (RUNWAY_RATE_WINDOW_DAYS),
+// so the fetch must reach past 14 d: ~23 pins/day × 14 = ~320 pins = 4 pages.
+// Same cap as pin-runway-topup.py's fetch (max_pages=5) and check-pinner.sh.
+const PINNER_PINS_MAX_PAGES = 5;
 // Runway (E51, 2026-09-15). Must match DEFAULT_RUNWAY_HORIZON_DAYS /
 // DEFAULT_LOW_RUNWAY_DAYS in pinner-liveness-lib.ts and PINNER_RUNWAY_HORIZON_DAYS
 // / PINNER_LOW_RUNWAY_DAYS in check-pinner.sh.
@@ -793,7 +797,11 @@ interface PinnerData {
    * This — not `drainableBacklog` — is the buffer (E51).
    */
   inventoryRows: number;
-  /** inventoryRows ÷ observed pins/day. The only queue-depth signal that may flag. */
+  /** Pins Pinterest reports created in the last 14 d — null when the sample did not reach past 14 d (truncated → unknown, never a floor). */
+  pinsCreated14d: number | null;
+  /** Queue proxy: posted rows whose Post Date is in the last 14 d (pin-runway-topup.py's count_posted_rows_dated_window). */
+  postedRowsDated14d: number | null;
+  /** inventoryRows ÷ the pinterest-14d rate (E208; same basis as the top-up gate). The only queue-depth signal that may flag. */
   runway: RunwayAssessment;
   /** created_at of the newest row this repo can attribute to the writer plugin (Wordpress Post ID set); null if none found. "Queued at", not "published at" — see pinner-liveness-lib.ts. */
   lastWriterInsertAt: string | null;
@@ -850,6 +858,11 @@ async function pullPinner(): Promise<PinnerData> {
   const inventory = await q(
     `select=id&%22Is%20Posted%22=eq.false&%22Post%20Date%22=gte.${floor}&%22Post%20Date%22=lte.${daysAhead(PINNER_RUNWAY_HORIZON_DAYS)}&limit=1`,
   );
+  // Queue-side fallback for the runway rate (E208) — the exact query
+  // pin-runway-topup.py's count_posted_rows_dated_window() runs.
+  const postedDated14 = await q(
+    `select=id&%22Is%20Posted%22=eq.true&%22Post%20Date%22=gte.${daysAgo(RUNWAY_RATE_WINDOW_DAYS)}&%22Post%20Date%22=lte.${iso(new Date())}&limit=1`,
+  );
   const lastPostedDate = posted.rows[0] ? String(posted.rows[0]['Post Date']).slice(0, 10) : null;
 
   // Writer liveness (Q11, 2026-09-16): rows the writer plugin itself inserted,
@@ -871,17 +884,25 @@ async function pullPinner(): Promise<PinnerData> {
   // must not take the queue numbers down with it, and the flag logic knows
   // how to read "unverified".
   let pins: PinLike[] = [];
+  let pinsExhausted = false;
   let pinterestError: string | null = null;
   try {
-    pins = await fetchRecentPins(cfgPath);
+    ({ pins, exhausted: pinsExhausted } = await fetchRecentPins(cfgPath));
   } catch (err) {
     pinterestError = (err as Error).message;
   }
   const summary = summarizePins(pins);
   const liveness = assessLiveness({ lastCreatedAt: summary.lastCreatedAt, lastPostDateProxy: lastPostedDate });
+  // Complete only when the newest-first sample reached past 14 d or the API
+  // had no older pins; a truncated count is a floor on the rate = a ceiling on
+  // runway, so it becomes null and the queue proxy (or unknown) takes over.
+  const pinsCreated14d = pins.length && (summary.reached14d || pinsExhausted) ? summary.created14d : null;
+  const postedRowsDated14d = postedDated14.total > 0 ? postedDated14.total : null;
   const runway = assessRunway({
     inventoryRows: inventory.total,
     schedulableToday: drainable.total,
+    pinsCreated14d,
+    postedRowsDated14d,
     pinsCreated7d: pins.length ? summary.created7d : null,
     pinsCreated24h: pins.length ? summary.created24h : null,
     horizonDays: PINNER_RUNWAY_HORIZON_DAYS,
@@ -908,6 +929,8 @@ async function pullPinner(): Promise<PinnerData> {
     drainableBacklog: drainable.total,
     strandedBacklog: stranded.total,
     inventoryRows: inventory.total,
+    pinsCreated14d,
+    postedRowsDated14d,
     runway,
     lastWriterInsertAt,
     lastWriterInsertLabel,
@@ -923,7 +946,7 @@ async function pullPinner(): Promise<PinnerData> {
  * (scripts/agents/pinterest-token-status.py refreshes config.json in place
  * when the stored token has aged out); this function never logs it.
  */
-async function fetchRecentPins(cfgPath: string): Promise<PinLike[]> {
+async function fetchRecentPins(cfgPath: string): Promise<{ pins: PinLike[]; exhausted: boolean }> {
   if (!existsSync(cfgPath)) throw new Error('MHMUtils config.json not found');
   const helper = join(PROJECT_DIR, 'scripts', 'agents', 'pinterest-token-status.py');
   if (existsSync(helper)) {
@@ -940,7 +963,8 @@ async function fetchRecentPins(cfgPath: string): Promise<PinLike[]> {
   if (!token) throw new Error('creator_access_token missing from config.json');
   const headers = { Authorization: `Bearer ${token}` };
   const out: PinLike[] = [];
-  const sevenDaysAgo = Date.now() - 7 * 864e5;
+  const windowStart = Date.now() - RUNWAY_RATE_WINDOW_DAYS * 864e5;
+  let exhausted = false;
   let bookmark: string | null = null;
   for (let page = 0; page < PINNER_PINS_MAX_PAGES; page += 1) {
     const url = `https://api.pinterest.com/v5/pins?page_size=${PINNER_PINS_PAGE_SIZE}${bookmark ? `&bookmark=${encodeURIComponent(bookmark)}` : ''}`;
@@ -952,9 +976,13 @@ async function fetchRecentPins(cfgPath: string): Promise<PinLike[]> {
     bookmark = body.bookmark ?? null;
     const oldest = items[items.length - 1];
     const oldestTs = oldest?.created_at ? Date.parse(`${oldest.created_at}Z`) : NaN;
-    if (!bookmark || items.length === 0 || (!Number.isNaN(oldestTs) && oldestTs < sevenDaysAgo)) break;
+    if (!bookmark || items.length === 0) {
+      exhausted = true; // the account has no older pins: the 14 d count is exact
+      break;
+    }
+    if (!Number.isNaN(oldestTs) && oldestTs < windowStart) break;
   }
-  return out;
+  return { pins: out, exhausted };
 }
 
 // ---------------------------------------------------------------- main
@@ -1115,7 +1143,7 @@ async function main() {
     const p = pinner.data;
     const posting =
       p.lastPinCreatedAt
-        ? `${p.liveness.message} · **${p.pinsCreated24h} pins in 24h**, ${p.pinsCreated7d}${p.pinsSampled >= PINNER_PINS_PAGE_SIZE * PINNER_PINS_MAX_PAGES ? '+' : ''} in 7d (Pinterest API)`
+        ? `${p.liveness.message} · **${p.pinsCreated24h} pins in 24h**, ${p.pinsCreated7d}${p.pinsSampled >= PINNER_PINS_PAGE_SIZE * PINNER_PINS_MAX_PAGES ? '+' : ''} in 7d, ${p.pinsCreated14d ?? 'n/a (sample did not reach 14d)'} in 14d (Pinterest API)`
         : `${p.liveness.message} · ${p.postedLast7d} posted rows dated in the last 7d (queue proxy)`;
     md += `- Pinner: ${posting} · **${p.runway.message}** · ${p.strandedBacklog} stranded before the poster's ${PINNER_LOOKBACK_DAYS}d window, ${p.unpostedBacklog} unposted total, ${num(p.postedTotal)} posted rows all-time\n`;
     md += `  - queue \`Post Date\` is the scheduled date, not a posting timestamp — newest posted row is dated ${p.lastPostedDate ?? 'never'}; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.\n`;

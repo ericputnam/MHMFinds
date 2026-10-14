@@ -10,6 +10,7 @@ import {
   DEFAULT_WRITER_RED_HOURS,
   DEFAULT_WRITER_RUNWAY_RED_DAYS,
   DEFAULT_WRITER_WARN_HOURS,
+  RUNWAY_RATE_WINDOW_DAYS,
   livenessExitCode,
   parsePinterestTimestamp,
   runwayExitCode,
@@ -55,6 +56,13 @@ describe('summarizePins', () => {
     expect(s.created24h).toBe(2);
     expect(s.created7d).toBe(3);
     expect(s.sampled).toBe(5);
+    expect(s.created14d).toBe(4); // 'd' (8 d) is inside 14 d
+    expect(s.reached14d).toBe(false); // nothing older than 14 d → the 14 d count is only a floor
+  });
+  it('E208: reached14d only once the sample holds a pin older than the 14 d window', () => {
+    const s = summarizePins([{ created_at: '2026-09-13T10:00:00' }, { created_at: '2026-08-29T10:00:00' }], NOW);
+    expect(s.created14d).toBe(1);
+    expect(s.reached14d).toBe(true);
   });
   it('never counts a future-dated pin as recent (clock skew)', () => {
     const s = summarizePins([{ created_at: '2026-09-14T00:00:00' }], NOW);
@@ -62,7 +70,7 @@ describe('summarizePins', () => {
     expect(s.created7d).toBe(0);
   });
   it('is empty-safe', () => {
-    expect(summarizePins([], NOW)).toEqual({ lastCreatedAt: null, created24h: 0, created7d: 0, sampled: 0 });
+    expect(summarizePins([], NOW)).toEqual({ lastCreatedAt: null, created24h: 0, created7d: 0, sampled: 0, created14d: 0, reached14d: false });
   });
 });
 
@@ -107,7 +115,7 @@ describe('assessRunway (E51)', () => {
   // The exact 2026-09-15 morning: 6 rows still schedulable, 254 unposted rows
   // dated 09-15..09-27 (24/day through 09-23, then 14/day), Pinterest reports
   // 162 pins in 7 d and 39 in 24 h. The E20 rule flagged "< 20 schedulable".
-  const SEP15 = { inventoryRows: 254, schedulableToday: 6, pinsCreated7d: 162, pinsCreated24h: 39 };
+  const SEP15 = { inventoryRows: 254, schedulableToday: 6, pinsCreated14d: 324, pinsCreated7d: 162, pinsCreated24h: 39 };
 
   it('2026-09-15: 6 schedulable with 254 rows ahead at 23/day is ok, not a flag', () => {
     const r = assessRunway(SEP15);
@@ -123,49 +131,120 @@ describe('assessRunway (E51)', () => {
     expect(assessRunway({ ...SEP15, schedulableToday: 500 }).level).toBe('ok');
   });
   it('~2026-09-25 shape: 42 rows left at 23/day is under the 3-day floor → low', () => {
-    const r = assessRunway({ inventoryRows: 42, schedulableToday: 14, pinsCreated7d: 162, pinsCreated24h: 24 });
+    const r = assessRunway({ inventoryRows: 42, schedulableToday: 14, pinsCreated14d: 324, pinsCreated7d: 162, pinsCreated24h: 24 });
     expect(r.level).toBe('low');
     expect(r.runwayDays).toBeCloseTo(1.8, 1);
     expect(r.message).toContain('below the 3-day floor');
     expect(runwayExitCode(r.level)).toBe(2);
   });
   it('respects the 3-day default boundary and an override', () => {
-    // 161 pins / 7 d = 23.0/day. 70 rows → 3.0 d (not below the floor); 66 rows → 2.9 d (below).
-    expect(assessRunway({ inventoryRows: 70, schedulableToday: 0, pinsCreated7d: 161, pinsCreated24h: 23 }).level).toBe('ok');
-    expect(assessRunway({ inventoryRows: 66, schedulableToday: 0, pinsCreated7d: 161, pinsCreated24h: 23 }).level).toBe('low');
-    expect(assessRunway({ inventoryRows: 66, schedulableToday: 0, pinsCreated7d: 161, pinsCreated24h: 23, lowRunwayDays: 2 }).level).toBe('ok');
+    // 322 pins / 14 d = 23.0/day. 70 rows → 3.0 d (not below the floor); 66 rows → 2.9 d (below).
+    expect(assessRunway({ inventoryRows: 70, schedulableToday: 0, pinsCreated14d: 322, pinsCreated7d: 161, pinsCreated24h: 23 }).level).toBe('ok');
+    expect(assessRunway({ inventoryRows: 66, schedulableToday: 0, pinsCreated14d: 322, pinsCreated7d: 161, pinsCreated24h: 23 }).level).toBe('low');
+    expect(assessRunway({ inventoryRows: 66, schedulableToday: 0, pinsCreated14d: 322, pinsCreated7d: 161, pinsCreated24h: 23, lowRunwayDays: 2 }).level).toBe('ok');
     expect(DEFAULT_LOW_RUNWAY_DAYS).toBe(3);
     expect(DEFAULT_RUNWAY_HORIZON_DAYS).toBe(14);
   });
   it('2026-09-08 shape: 0 rows the poster can reach → empty, even with 1,879 stranded elsewhere', () => {
-    const r = assessRunway({ inventoryRows: 0, schedulableToday: 0, pinsCreated7d: 136, pinsCreated24h: 19 });
+    const r = assessRunway({ inventoryRows: 0, schedulableToday: 0, pinsCreated14d: 272, pinsCreated7d: 136, pinsCreated24h: 19 });
     expect(r.level).toBe('empty');
     expect(r.runwayDays).toBe(0);
     expect(r.message).toContain('queue empty');
     expect(runwayExitCode(r.level)).toBe(2);
   });
   it('Pinterest unreachable → unknown, never low/empty on its own (liveness owns that outage)', () => {
-    const r = assessRunway({ inventoryRows: 254, schedulableToday: 6, pinsCreated7d: null, pinsCreated24h: null });
+    const r = assessRunway({ inventoryRows: 254, schedulableToday: 6, pinsCreated14d: null, postedRowsDated14d: null, pinsCreated7d: null, pinsCreated24h: null });
     expect(r.level).toBe('unknown');
     expect(r.runwayDays).toBeNull();
     expect(r.dailyRate).toBeNull();
     expect(r.message).toContain('rate unknown');
     expect(runwayExitCode(r.level)).toBe(0);
   });
-  it('0 pins in 7 d is a stall (liveness 🔴), not a runway of infinity or zero', () => {
-    const r = assessRunway({ inventoryRows: 254, schedulableToday: 24, pinsCreated7d: 0, pinsCreated24h: 0 });
+  it('0 pins in 14 d is a stall (liveness 🔴), not a runway of infinity or zero', () => {
+    const r = assessRunway({ inventoryRows: 254, schedulableToday: 24, pinsCreated14d: 0, postedRowsDated14d: 0, pinsCreated7d: 0, pinsCreated24h: 0 });
     expect(r.level).toBe('unknown');
   });
-  it('falls back to the 24 h count when the 7 d count is missing', () => {
-    const r = assessRunway({ inventoryRows: 48, schedulableToday: 6, pinsCreated7d: null, pinsCreated24h: 24 });
+  it('falls back to the queue-posted-14d proxy when the Pinterest 14 d sample is missing or truncated', () => {
+    const r = assessRunway({ inventoryRows: 48, schedulableToday: 6, pinsCreated14d: null, postedRowsDated14d: 336, pinsCreated7d: null, pinsCreated24h: 24 });
+    expect(r.rateBasis).toBe('queue-posted-14d');
     expect(r.dailyRate).toBe(24);
     expect(r.runwayDays).toBe(2);
     expect(r.level).toBe('low');
+    expect(r.message).toContain('÷ queue-posted-14d 24/day');
   });
   it('reports "> horizon" rather than a runway the horizon cannot see', () => {
-    const r = assessRunway({ inventoryRows: 700, schedulableToday: 24, pinsCreated7d: 168, pinsCreated24h: 24 });
+    const r = assessRunway({ inventoryRows: 700, schedulableToday: 24, pinsCreated14d: 336, pinsCreated7d: 168, pinsCreated24h: 24 });
     expect(r.level).toBe('ok');
     expect(r.message).toContain('> 14 days');
+  });
+});
+
+describe('assessRunway drain basis = pinterest-14d, never the trailing 7 d (E208)', () => {
+  // The real 2026-10-13 reading: the scoreboard divided 28 rows by the
+  // observed-7d 10.1/day (71 pins) and read 2.8 d, while pin-runway-topup.py
+  // divided the same 28 rows by its pinterest-14d 22.86/day (320 pins) and
+  // read 1.22 d. The 7 d drain was *starving*, so the old ratio read healthier
+  // as posting fell — the buffer ÷ trailing-drain ratio CLAUDE.md bans.
+  const OCT13 = { inventoryRows: 28, schedulableToday: 0, pinsCreated14d: 320, pinsCreated7d: 71, pinsCreated24h: 9 };
+
+  it('2026-10-13: a starving 7 d drain reads LOWER runway than the old basis did, not higher', () => {
+    const r = assessRunway(OCT13);
+    const oldBasis = OCT13.inventoryRows / (OCT13.pinsCreated7d / 7); // 2.76 d
+    expect(r.rateBasis).toBe('pinterest-14d');
+    expect(r.dailyRate).toBeCloseTo(22.86, 2);
+    expect(r.runwayDays).toBe(1.2);
+    expect(r.runwayDays!).toBeLessThan(oldBasis);
+    expect(r.level).toBe('low');
+  });
+  it('a reading the old basis called ok (40 rows ÷ 10/day = 4.0 d) is low on the gate\'s basis (1.75 d)', () => {
+    const r = assessRunway({ inventoryRows: 40, schedulableToday: 0, pinsCreated14d: 320, pinsCreated7d: 70, pinsCreated24h: 8 });
+    expect(r.runwayDays).toBe(1.8);
+    expect(r.level).toBe('low');
+  });
+  it('the 7 d and 24 h counts never move the runway — starving them cannot make it read healthier', () => {
+    const a = assessRunway({ ...OCT13, pinsCreated7d: 160, pinsCreated24h: 23 });
+    const b = assessRunway({ ...OCT13, pinsCreated7d: 20, pinsCreated24h: 1 });
+    const c = assessRunway({ ...OCT13, pinsCreated7d: null, pinsCreated24h: null });
+    expect(a.runwayDays).toBe(b.runwayDays);
+    expect(b.runwayDays).toBe(c.runwayDays);
+  });
+  it('the 7 d count is never the divisor: no 14 d sample and no queue proxy → unknown, even with 7 d known', () => {
+    const r = assessRunway({ ...OCT13, pinsCreated14d: null, postedRowsDated14d: null });
+    expect(r.level).toBe('unknown');
+    expect(r.rateBasis).toBe('unknown');
+    expect(r.runwayDays).toBeNull();
+  });
+  it('labels the basis in the scoreboard line and keeps the observed 7 d rate visible as not-the-divisor', () => {
+    const r = assessRunway(OCT13);
+    expect(r.message).toContain('28 rows dated through +14d ÷ pinterest-14d 22.9/day');
+    expect(r.message).toContain('observed 7d 10.1/day, not the divisor');
+    expect(r.message).not.toContain('/day observed;');
+  });
+  it('keeps the history field names stable (dailyRate, runwayDays, inventoryRows, level, message)', () => {
+    expect(Object.keys(assessRunway(OCT13)).sort()).toEqual(
+      ['dailyRate', 'inventoryRows', 'level', 'message', 'rateBasis', 'runwayDays'],
+    );
+  });
+  it('the window and basis labels match pin-runway-topup.py (the SD-10 gate) — guard the constant, not a copy', () => {
+    const py = read('scripts/agents/pin-runway-topup.py');
+    expect(Number(py.match(/^RATE_WINDOW_DAYS = (\d+)/m)?.[1])).toBe(RUNWAY_RATE_WINDOW_DAYS);
+    expect(py).toMatch(/'pinterest-\{\}d'\.format\(window_days\)/);
+    expect(py).toMatch(/'queue-posted-\{\}d'\.format\(window_days\)/);
+  });
+  it('funnel-scoreboard.ts feeds the 14 d count only from a complete sample, plus the queue proxy', () => {
+    const ts = read('scripts/agents/funnel-scoreboard.ts');
+    expect(ts).toMatch(/summary\.reached14d \|\| pinsExhausted\) \? summary\.created14d : null/);
+    expect(ts).toMatch(/pinsCreated14d,\s*\n\s*postedRowsDated14d,/);
+    expect(ts).toMatch(/%22Is%20Posted%22=eq\.true&%22Post%20Date%22=gte\.\$\{daysAgo\(RUNWAY_RATE_WINDOW_DAYS\)\}/);
+    expect(ts).toMatch(/windowStart = Date\.now\(\) - RUNWAY_RATE_WINDOW_DAYS \* 864e5/);
+  });
+  it('check-pinner.sh divides by pins14d (complete sample) or the queue proxy, never pins7d/7', () => {
+    const sh = read('scripts/agents/check-pinner.sh');
+    expect(sh).toMatch(/PINS_14D=/);
+    expect(sh).toMatch(/rate, basis = p14 \/ 14, 'pinterest-14d'/);
+    expect(sh).toMatch(/rate, basis = q14 \/ 14, 'queue-posted-14d'/);
+    expect(sh).toMatch(/if complete else ''/);
+    expect(sh).not.toMatch(/rate = \(p7 \/ 7\)/);
   });
 });
 
@@ -237,7 +316,7 @@ describe('assessWriterLiveness (Q11, 2026-09-21)', () => {
     expect(a.message).toContain('runway 1.4d'); // the number stays visible
     expect(a.message).not.toContain('Q11 (writer cron) is the fix'); // Q11 closed 09-28
     // The runway's own flag still fires on the same reading.
-    const rw = assessRunway({ inventoryRows: 46, schedulableToday: 4, pinsCreated7d: 236, pinsCreated24h: 25 });
+    const rw = assessRunway({ inventoryRows: 46, schedulableToday: 4, pinsCreated14d: 472, pinsCreated7d: 236, pinsCreated24h: 25 });
     expect(rw.level).toBe('low');
     expect(runwayExitCode(rw.level)).toBe(2);
   });
