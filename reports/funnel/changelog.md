@@ -360,3 +360,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-13 07:09 | after-merge | Cass: PR #292 E198 /mods/[id] one-click weekly-email opt-in for signed-in visitors (Tier 0) | 08637de | https://mhm-finds-dw5l-1kvaem58h-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-13 07:14 | after-merge | Pip: PR #295 E195 repair-pin-sections --stranded reaches the top-up pool + /black-sims-4-cc/ section repair (Tier 0) | 2e3e0ec | https://mhm-finds-dw5l-npuyyhg54-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-13 07:22 | after-merge | Quinn: PR #296 funnel: daily run 2026-10-13 (Tier 0 docs) | 76f343d | https://mhm-finds-dw5l-8tnbyzj8f-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-14 06:36 | check | morning-check |  | https://mhm-finds-dw5l-p6od73jym-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
