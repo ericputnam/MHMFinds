@@ -1,0 +1,205 @@
+{
+  "generated": "2026-10-14",
+  "generator": "scripts/agents/rank-pin-destinations.ts",
+  "status": "GENERATED — read-only output; not a queued Tier 2 package until an operator/agent adds an experiment id and a per-day/days plan and gets approval (SD-10)",
+  "window_7d": "2026-10-06..2026-10-12",
+  "window_28d": "2026-09-15..2026-10-12",
+  "source": "GA4 hostName x landingPagePlusQueryString, sessionSource CONTAINS 'pinterest' (case-insensitive) — the wider definition used in reports/funnel/pinterest-read-2026-09-19.md",
+  "selection": "stranded rows (unposted, Post Date < today-14d), destination normalised (blog.musthavemods.com -> musthavemods.com, query stripped), >=50 Pinterest sessions/7d, <=10 ids/destination; writer plugin-scheduled rows excluded (Post Date 2025-01-01 and created_at >= 2026-09-21 or destination managed by the plugin — E135)",
+  "pool_rows": 1000,
+  "dropped_below_threshold_destinations": 82,
+  "dropped_skipped_host_rows": 80,
+  "dropped_unparseable_url_rows": 0,
+  "dropped_plugin_scheduled_rows": 63,
+  "plugin_managed_destinations": 26,
+  "destinations_selected": 13,
+  "ids_selected": 81,
+  "next_step": "python3 scripts/agents/revive-stranded-pins.py --ids-from <this file> --max-per-url 1 --per-day N --days N   (dry run first; --apply needs Tier 2 approval, SD-10)",
+  "destinations": [
+    {
+      "path": "/sims-4-urban-tattoos/",
+      "sessions7d": 593,
+      "sessions28d": 2515,
+      "stranded_rows": 5,
+      "ids": [
+        2037,
+        2043,
+        2044,
+        2045,
+        2047
+      ]
+    },
+    {
+      "path": "/black-sims-4-cc/",
+      "sessions7d": 476,
+      "sessions28d": 2209,
+      "stranded_rows": 2,
+      "ids": [
+        7971,
+        8019
+      ]
+    },
+    {
+      "path": "/sims-4-male-urban-hair/",
+      "sessions7d": 213,
+      "sessions28d": 1070,
+      "stranded_rows": 4,
+      "ids": [
+        2084,
+        2085,
+        2086,
+        2088
+      ]
+    },
+    {
+      "path": "/sims-4-gshade-presets/",
+      "sessions7d": 183,
+      "sessions28d": 377,
+      "stranded_rows": 13,
+      "ids": [
+        5118,
+        5119,
+        5120,
+        5121,
+        5122,
+        5123,
+        5124,
+        5125,
+        5126,
+        5127
+      ]
+    },
+    {
+      "path": "/sims-4-urban-hair-cc/",
+      "sessions7d": 106,
+      "sessions28d": 398,
+      "stranded_rows": 7,
+      "ids": [
+        2293,
+        2294,
+        2295,
+        2296,
+        2297,
+        2298,
+        2299
+      ]
+    },
+    {
+      "path": "/sims-4-maxis-match-hair/",
+      "sessions7d": 72,
+      "sessions28d": 276,
+      "stranded_rows": 3,
+      "ids": [
+        7623,
+        7629,
+        7640
+      ]
+    },
+    {
+      "path": "/afro-hair-sims-4/",
+      "sessions7d": 70,
+      "sessions28d": 219,
+      "stranded_rows": 2,
+      "ids": [
+        8979,
+        8226
+      ]
+    },
+    {
+      "path": "/sims-4-elf-cc/",
+      "sessions7d": 70,
+      "sessions28d": 241,
+      "stranded_rows": 1,
+      "ids": [
+        8968
+      ]
+    },
+    {
+      "path": "/sims-4-room-ideas/",
+      "sessions7d": 66,
+      "sessions28d": 331,
+      "stranded_rows": 10,
+      "ids": [
+        2701,
+        2702,
+        2705,
+        2706,
+        2707,
+        2708,
+        2713,
+        2714,
+        2716,
+        2717
+      ]
+    },
+    {
+      "path": "/sims-4-rugs-cc/",
+      "sessions7d": 63,
+      "sessions28d": 296,
+      "stranded_rows": 29,
+      "ids": [
+        2375,
+        2376,
+        2377,
+        2378,
+        2379,
+        2380,
+        2381,
+        2382,
+        2383,
+        2384
+      ]
+    },
+    {
+      "path": "/best-sims-4-main-menu-overrides/",
+      "sessions7d": 60,
+      "sessions28d": 276,
+      "stranded_rows": 23,
+      "ids": [
+        4521,
+        4522,
+        4523,
+        4524,
+        4525,
+        4526,
+        4527,
+        4528,
+        4529,
+        4530
+      ]
+    },
+    {
+      "path": "/sims-4-cc-male-pieces/",
+      "sessions7d": 58,
+      "sessions28d": 228,
+      "stranded_rows": 7,
+      "ids": [
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4243,
+        4244
+      ]
+    },
+    {
+      "path": "/best-sims-4-bachelor-pad-cc/",
+      "sessions7d": 57,
+      "sessions28d": 185,
+      "stranded_rows": 20,
+      "ids": [
+        4551,
+        4552,
+        4553,
+        4554,
+        4555,
+        4556,
+        4557,
+        4558,
+        4559,
+        4560
+      ]
+    }
+  ]
+}
