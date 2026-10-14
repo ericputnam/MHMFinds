@@ -128,17 +128,31 @@ export default function CollectionPageClient({
               ))}
             </div>
 
-            {collection.blogUrl && (
+            {(collection.blogUrl || (collection.guides?.length ?? 0) > 0) && (
               <p className="mt-4 text-sm text-slate-500">
                 Related reading:{' '}
-                <a
-                  href={collection.blogUrl}
-                  className="text-sims-pink hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Full article on the blog →
-                </a>
+                {collection.blogUrl && (
+                  <a
+                    href={collection.blogUrl}
+                    className="text-sims-pink hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Full article on the blog →
+                  </a>
+                )}
+                {/* E203: adjacent guides with no hub of their own (first
+                    use: the host-split hospital-lots article). Plain <a>
+                    in the first-paint HTML, same paragraph as the
+                    companion link, never inside .mv-ads. */}
+                {collection.guides?.map((g) => (
+                  <span key={g.href}>
+                    {' · '}
+                    <a href={g.href} className="text-sims-pink hover:underline">
+                      {g.label}
+                    </a>
+                  </span>
+                ))}
               </p>
             )}
 

@@ -98,6 +98,23 @@ export type CollectionDefinition = {
    */
   blogUrl?: string;
   /**
+   * Further editorial guides this hub should link (E203, 2026-10-14).
+   *
+   * Why a second field and not a longer `blogUrl`: `blogUrl` is the one
+   * differentiated twin of this hub (same head term, editorial vs browse
+   * intent, reciprocal link). `guides` are adjacent articles that have no
+   * hub of their own and need an inbound link from a page Google already
+   * ranks for the neighbouring query. The first use is the blog.* → apex
+   * host split: `/sims-4-hospital-lots/` earned 111 clicks/28d on
+   * blog.musthavemods.com (pos 7.6), the apex twin it now 301s to had
+   * 2 referring URLs and sat at pos 9–26, and that one URL was 40% of
+   * the −80 click WoW Google drop (GSC 10-05→10-11 vs 09-28→10-04).
+   * Relative apex path with a trailing slash, same as `blogUrl`; never a
+   * path that 301s (see canonical-trailing-slash.test.ts) and never a
+   * `/games/` collection — those go in `related`.
+   */
+  guides?: ReadonlyArray<{ href: string; label: string }>;
+  /**
    * Parent hub over every other collection in the game (E182, `cc`).
    *
    * A hub page renders a "browse by category" link to every non-hub
@@ -149,6 +166,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // per 28d) while this page sat at pos 33 with 2 clicks. Same call as
     // body-presets — DIFFERENTIATED pair, reciprocal link below.
     blogUrl: '/sims-4-pregnancy-mods/',
+    // E203 (2026-10-14): the hospital-lots guide is where pregnancy
+    // visitors go to give birth (Pandasama's hospital lot + childbirth
+    // mod are its top queries). See the `guides` doc on the type.
+    guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
   },
   {
     slug: 'holidays-cc',
@@ -1075,6 +1096,11 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 41.9 in GSC 09-03→09-30. Distinct from furniture-cc's
     // /sims-4-furniture-cc/, so the two hubs do not share one cross-link.
     blogUrl: '/sims-4-cc-furniture/',
+    // E203 (2026-10-14): the intro says "whole houses and lots are not in
+    // this grid" — this is where they are. "sims 4 hospital build cc" is on
+    // the competitor list this hub was built from (pos 6.2 on the blog.*
+    // twin before the host split). See the `guides` doc on the type.
+    guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
