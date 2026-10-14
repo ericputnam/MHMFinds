@@ -970,38 +970,37 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-12 — eight merges (#275, #281–#287), one platform build ERROR
+### 2026-10-13 — seven merges (#289–#295) + daily #296, all PASS, zero incidents
 
-10-11 is in the archive.
-- **A Vercel build ERROR with no build log is not a code failure until a READY build of the same
-  SHA says so.** #281's merge commit ERRORed 4 s after #275's ledger commit started its own build;
-  the next commit (same code) built READY. On ERROR-no-log, wait for a READY build containing the
-  SHA before writing a BUILD ERROR incident ([ops] inbox).
-- **A timeout inside the process it times out shares that process's fate.** The preflight's
-  `perl alarm` did not fire across host sleep (10-08/10-10 hung 2.5 d). #285 puts a wall clock
-  in the runner's poll loop and kills TERM → CONT → KILL (a stopped process ignores TERM).
-- **Page-identity JSON-LD never goes in the root layout.** The layout's `WebPage` (`/#webpage`) +
-  `FAQPage` made every page claim to be the homepage; now only `app/page.tsx` renders them (#281).
-- **A guard that counts "someone else's rows" must use the producer's own predicate.**
-  `count_writer_rows_for_date` keyed on `Wordpress Post ID`, which every row carries, so it counted
-  Pip's own top-ups as writer rows. An unreadable count now closes the day instead of reading 0 (#282).
-- **Healthy click rate + poor completion means the leak is the next step.** 72 users followed save
-  offers to `/sign-in/` and ≤4 signed up: fix the form, not the surface (#287). **GA4 `page_view`
-  fires only on full loads here** — on client-navigated routes, count sessions or events.
-- **Never put a URL template like `?creator=<slug>` in a public PR body.** Scrapers hit it:
-  20 of 22 "empty claim views" (#283).
-- **A rolling-window ratio moves on what exits as much as on what enters.** Revenue line 98.6% →
-  97.9% at flat RPM was a Saturday swap. Name the day that rolled out before calling it a signal.
-- **Measure before inventing a facet:** legwear already lived in `accessories` (#284). A hub
-  collection (`hub: true`, #275) is excluded from `getCollectionsForMod`, so it is never a crumb.
-- **Edit is denied under `.claude/` in the funnel harness**; patch via `python3`, assert count==1.
-- **Still open:** 10-08/10-10 locks. Accessories top 24 junk. `ModDetailPage.test.tsx` red
-  since #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh`
-  unwired. Runway needs Q11. Mornings need AC.
+10-12 is in the archive.
+- **Grade a platform build ERROR on positive evidence, and never roll back on it.** #293:
+  `deploy-verify.sh --after-merge` on its sha's own ERROR/CANCELED writes a `build-watch` row
+  (whose ledger commit is itself a build containing the sha), then waits for a READY build that
+  **contains** the sha (`merge-base --is-ancestor`) **and** changes no app file since. Found →
+  graded through it, no incident; FAIL there → incident, no rollback. Not found → old path.
+  Both 10-12 BUILD ERROR incidents were this case.
+- **Two surfaces that state one fact must call one helper.** 41% of sitemap `<lastmod>` disagreed
+  with the page's `dateModified` because `ModJsonLd` floored at `publishedAt` locally (#290). Also
+  assert the DB `select` includes every field the helper reads — a missing column is a silent no-op.
+- **A deadline anchors on a stored date, never on "today".** E134's kill read was computed from
+  the run date, so each daily run walked it a day forward (#291 → `PIPE_RULE.confirmedOn`).
+- **A repair tool must reach the population its caller sends it.** The top-up said "repair
+  sections first", but `repair-pin-sections.py` only scanned the poster's 14-day window, never the
+  stranded rows the top-up draws from; the #2 destination dropped out twice (#295, `--stranded N`).
+- **`isAdmin` is not "is us."** An operator test account was 1 of 3 "creators onboarded"; house
+  accounts are a named id list with a reason, and excluded only from the metric, not the queue (#289).
+- **Find the writer before fixing the rule.** 694 of 713 junk `accessories` rows came from a
+  legacy `category` backfill deleted in January; the detector made 19. Dead writer → one-off data
+  pass + replay file; live rule → title-only (`lib/accessoriesContentTypeRules.ts`, #294).
+- **A capture surface on an ad page** is a sibling of `.mv-ads`, outside `#secondary`, in normal
+  flow, rendered after mount, with its placement pinned in a test (#292).
+- **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
+  `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Runway
+  basis split (tool 1.2 d vs scoreboard 2.8 d). Q11, Q23 unanswered. Mornings need AC.
 
 ---
 
-*Last compound review: 2026-10-12*
+*Last compound review: 2026-10-13*
 
 ---
 

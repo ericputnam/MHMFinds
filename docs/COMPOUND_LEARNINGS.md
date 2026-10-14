@@ -2260,3 +2260,32 @@ The 10-07 section is in the archive.
   Use `Array.from(s.matchAll(re))`.
 - **Still open:** 10-08/10-10 day-lock dirs in main's `logs/`. `ModDetailPage.test.tsx` red since
   #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Run mornings need AC.
+
+### 2026-10-12 — eight merges (#275, #281–#287), one platform build ERROR (rotated from CLAUDE.md 2026-10-13)
+
+10-11 is in the archive.
+- **A Vercel build ERROR with no build log is not a code failure until a READY build of the same
+  SHA says so.** #281's merge commit ERRORed 4 s after #275's ledger commit started its own build;
+  the next commit (same code) built READY. On ERROR-no-log, wait for a READY build containing the
+  SHA before writing a BUILD ERROR incident ([ops] inbox).
+- **A timeout inside the process it times out shares that process's fate.** The preflight's
+  `perl alarm` did not fire across host sleep (10-08/10-10 hung 2.5 d). #285 puts a wall clock
+  in the runner's poll loop and kills TERM → CONT → KILL (a stopped process ignores TERM).
+- **Page-identity JSON-LD never goes in the root layout.** The layout's `WebPage` (`/#webpage`) +
+  `FAQPage` made every page claim to be the homepage; now only `app/page.tsx` renders them (#281).
+- **A guard that counts "someone else's rows" must use the producer's own predicate.**
+  `count_writer_rows_for_date` keyed on `Wordpress Post ID`, which every row carries, so it counted
+  Pip's own top-ups as writer rows. An unreadable count now closes the day instead of reading 0 (#282).
+- **Healthy click rate + poor completion means the leak is the next step.** 72 users followed save
+  offers to `/sign-in/` and ≤4 signed up: fix the form, not the surface (#287). **GA4 `page_view`
+  fires only on full loads here** — on client-navigated routes, count sessions or events.
+- **Never put a URL template like `?creator=<slug>` in a public PR body.** Scrapers hit it:
+  20 of 22 "empty claim views" (#283).
+- **A rolling-window ratio moves on what exits as much as on what enters.** Revenue line 98.6% →
+  97.9% at flat RPM was a Saturday swap. Name the day that rolled out before calling it a signal.
+- **Measure before inventing a facet:** legwear already lived in `accessories` (#284). A hub
+  collection (`hub: true`, #275) is excluded from `getCollectionsForMod`, so it is never a crumb.
+- **Edit is denied under `.claude/` in the funnel harness**; patch via `python3`, assert count==1.
+- **Still open:** 10-08/10-10 locks. Accessories top 24 junk. `ModDetailPage.test.tsx` red
+  since #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh`
+  unwired. Runway needs Q11. Mornings need AC.
