@@ -19,7 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
-## 2026-10-13
+## 2026-10-14
+- Tried: E205 — weekly send record made recoverable: live `--weekly` rows carry `rejects[{hash,code}]` (sha256 + SMTP code only, ledger + NotificationLog); waitlist read oldest-first with a `resumeCursor` (`<createdAt>~<id>`) when the 100 cap defers, `--resume-after` sends exactly the tail. (a) diversity cap was already live via the #287 rider. Tier 0, 5/31 red pre-fix.
+- Before → after: issue-06 dry 10-14: 132 recipients, cap 100 → 32 deferred in arbitrary order (no orderBy); 0 excluded; 31/31 tagged; picks 6/6 distinct contentTypes. Resume dry = 32/32 → read 2026-10-18 with E184 (keep if issue 06 reaches 100% of waitlist minus exclusions, 0 duplicates, rejects hashed).
+- Verdict: PENDING. E152 pre-read 0.71/1K (2/2,799, 10-01→10-13) vs ≥2.62 → KILL 10-15.
+- Next time: dry-run counts are the go/no-go — read `deferred`, not just `recipients`; the list outgrew the per-run cap silently.
+
 - Tried: E198 — `/mods/[id]` renders the E173 one-click opt-in (`ConnectEmailOptIn`, now takes `source`/`viewEvent`/`onResult`/`onDismiss`) for every signed-in visitor with no remembered answer; answer kept in `localStorage['mhm_member_optin']` (subscribed/already/dismissed), never shown before mount; sibling of `.mv-ads`, after `SaveFindsOffer`. Tier 0, source `mod-detail-optin`, 16/16 red pre-fix.
 - Before → after: 0 rows; `newsletter_signup` on /mods/* 0 users/14d; /mods/* 13,670 sessions 09-29→10-12; 84 of 116 subscribers came from the credentials sign-up tick, so the Patreon-OAuth half of new accounts (41/90 wk to 10-04) and ~1,880 older accounts had never been asked on-site → read 2026-10-27 (keep ≥14 rows/14d, EXTEND ≥7, /mods/* RPM ≥95%).
 - Verdict: PENDING. E138 KEEP (24 fav users, 19 anon redirects, ≥6 both). E152 pre-read 0.77/1K (2/2,599) vs ≥2.62 → KILL 10-15. Issue-05 550 hash: unavailable — `mailbox-dsn-count.py --hashes --since 2026-10-11` found 0 DSNs and `newsletter-sends.jsonl` stores counts only; issue 06 attempts 98.
@@ -60,9 +65,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: automated issues 0/wk, 56 subscribers, 1 issue ever. Read 10-07 (Q18 drop date).
 - Verdict: PENDING. E54 KILL (2 of 387; 12 hard of 200 = 6.0%). E4 KILL (/go 3/1,734 = 1.73/1K extension, 6/4,125 = 1.45/1K 28d, < 2); replace it with an account offer.
 - Next time: a test that exercises a real send path must mock `fs`. My first run appended 3 fake `live` rows to `newsletter-sends.jsonl` (reverted before commit).
-
-## 2026-09-29
-- Tried: E138 — made `/mods/[id]` load the real favorite state for signed-in visitors through a new read-only GET, with no request for anonymous visitors (T0, PR #219, 9101e51, verify PASS 07:33). 9/9 red pre-fix.
-- Before → after: /mods/* `favorite` 6 users / 43 events over 14d, anonymous redirects 11 over 14d → read 2026-10-13. Owned adds 7d went 110 → 120 (target hit), capture 1.21 → 1.30/1K.
-- Verdict: PENDING. Pre-reads 09-30: E4 KILL (1.49/1K < 2; extension window 1.73/1K; still above site 1.30/1K — replace, don't just drop). E54/E68 KILL (1.06 confirms per 100 vs ≥2; 2 of 387 yes; exclusion leg 0/12 re-attempted passes — keep `sendExclusions`).
-- Next time: check the effective response headers with `next start` before trusting a route's `Cache-Control`. `next.config.js` sets `public, s-maxage=60` on every `/api/*` response and replaced my `no-store` locally.

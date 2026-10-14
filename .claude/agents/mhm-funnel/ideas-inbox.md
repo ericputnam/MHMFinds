@@ -46,8 +46,6 @@ Sessions 28d 352,686 vs line 358,212 = 98.46% (09-14→10-11); revenue $5,796.84
 - [ ] [ops] Smoke JSONs are deleted with their worktree (E133 could only read 6 surviving files). Copy each to the operator's logs/ so the slug-rotation read is durable. — Ops 10-12
 - [ ] [ops] Run-liveness Team health should read the hang=1 / asleep line and the .stderr file so a MISSED day names its cause. — Ops 10-12
 - [ ] [ops] `context-budget.ts` fails `Cannot find module 'glob'` on 10-07/08/10/11 (WARN only); runner cleanup logs `git worktree remove failed …funnel-2026-09-22-21276(-pip)` every run (prune once + test); runner log timestamps switch MDT/EDT — stamp an explicit zone. — Ops 10-11
-- [ ] [cass] Issue 05 picks: 5 of 6 fresh mods were leg/arm warmers; the builder has no category-diversity rule — if issue 06 clusters again, add a one-per-contentType cap in `buildWeeklyIssueData` (Tier 0). — Cass 10-11
-- [ ] [cass] Issue-05 550: hash unavailable on 10-13 (0 DSNs in mailbox, jsonl row stores counts only); `--weekly` attempts 98. Fix the class: record the hash of each synchronous reject in `newsletter-sends.jsonl` (Tier 0) so issue 07 can exclude it. — Cass 10-13
 - [ ] [ops] #260 is live: add `patreon_connect_optin_view` to the scoreboard capture-event filter so `patreon-connect-optin` shows in "Subscribers by source" once a row exists. — Cass 10-11
 - [ ] Earlier open lines dated 09-24→10-07 are parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-07" and § "Parked 2026-10-11"; owners pull from there. — Quinn 10-11
 

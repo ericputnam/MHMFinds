@@ -543,4 +543,151 @@ describe('sendWeeklyNewsletter — E184 options (dry run, injected client, campa
       expect(new URL(h).searchParams.get('utm_campaign'), `untagged: ${h}`).toBe('weekly-issue-05');
     }
   });
+
+  /**
+   * E205 (2026-10-14): issue 05's one 550 could not be excluded from issue 06 —
+   * the row stored `failed: 1`, no DSN ever arrived. A live run must now carry
+   * the sha256 of each synchronous reject (plus only its status code) in both
+   * the file ledger and the durable NotificationLog body, and never the address
+   * or the error text (SMTP errors echo the recipient).
+   */
+  it('a live run records the hash + status code of each synchronous reject, never the address or error text', async () => {
+    vi.resetModules();
+    process.env.NEWSLETTER_WEEKLY_ENABLED = 'true';
+    const { appendFileSync, sendBulk } = await mockFsAndMailer();
+    sendBulk.mockImplementationOnce(async (opts: any) => ({
+      attempted: 2, sent: 1, failed: 1, skipped: [], deferred: [], transport: 'mock', batches: 1, hourlyLimit: 100,
+      results: [
+        { email: opts.recipients[0], subject: 's', sent: true, batch: 0, headers: {} },
+        { email: opts.recipients[1], subject: 's', sent: false, batch: 0, headers: {},
+          error: 'Error: Can\'t send mail - all recipients were rejected: 550 5.1.1 <two@example.com>: Recipient address rejected' },
+      ],
+    }));
+    const { client, logCreate } = fakeClient();
+    const { sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    const { hashRecipient } = await import('@/lib/services/sendExclusions');
+    const result = await sendWeeklyNewsletter({ prisma: client as any, source: 'script', now: new Date('2026-10-15T14:00:00Z') });
+
+    const expected = [{ hash: hashRecipient('two@example.com'), code: '5.1.1' }];
+    expect(result.failed).toBe(1);
+    expect(result.rejects).toEqual(expected);
+    const line = String(appendFileSync.mock.calls[0][1]);
+    expect(JSON.parse(line).rejects).toEqual(expected);
+    const body = String(logCreate.mock.calls[0][0].data.body);
+    expect(JSON.parse(body).rejects).toEqual(expected);
+    for (const out of [line, body]) {
+      expect(out).not.toMatch(/@/);
+      expect(out).not.toMatch(/Recipient address rejected/);
+    }
+  });
+
+  it('a dry run and a clean live run carry no rejects field', async () => {
+    vi.resetModules();
+    process.env.NEWSLETTER_WEEKLY_ENABLED = 'true';
+    const { appendFileSync } = await mockFsAndMailer();
+    const { client } = fakeClient();
+    const { sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    const dry = await sendWeeklyNewsletter({ dryRun: true, prisma: client as any, source: 'script' });
+    const live = await sendWeeklyNewsletter({ prisma: client as any, source: 'script' });
+    expect(dry.rejects).toBeUndefined();
+    expect(live.rejects).toBeUndefined();
+    for (const c of appendFileSync.mock.calls) expect(String(c[1])).not.toContain('"rejects"');
+  });
+});
+
+describe('sendWeeklyNewsletter — stable order + resume cursor past the hard cap (E205)', () => {
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    vi.doUnmock('@/lib/services/bulkMailer');
+    vi.doUnmock('fs');
+    vi.resetModules();
+  });
+
+  it('reads waitlist oldest-first, names the deferred tail with a cursor, and a resumed run queries strictly after it', async () => {
+    vi.resetModules();
+    process.env.NEWSLETTER_WEEKLY_ENABLED = 'true';
+    vi.doMock('fs', async (orig) => {
+      const actual = await orig<typeof import('fs')>();
+      const patched = { ...actual, appendFileSync: vi.fn(), mkdirSync: vi.fn() };
+      return { ...patched, default: patched };
+    });
+    const fsm = await import('fs');
+    expect(vi.isMockFunction(fsm.appendFileSync)).toBe(true);
+    // Cap of 2: the third (newest) row is deferred.
+    const sendBulk = vi.fn(async (opts: any) => ({
+      attempted: 2, sent: 2, failed: 0, skipped: [], deferred: opts.recipients.slice(2), transport: 'mock', batches: 1, hourlyLimit: 100,
+      results: opts.recipients.slice(0, 2).map((email: string) => ({ email, subject: 's', sent: true, batch: 0, headers: {} })),
+    }));
+    vi.doMock('@/lib/services/bulkMailer', () => ({ sendBulk, resolvePostalAddress: () => '123 Test St, Testville' }));
+    const t = (d: string) => new Date(`2026-10-0${d}T00:00:00.000Z`);
+    const rows = [
+      { email: 'old@example.com', createdAt: t('1'), id: 'aaa1' },
+      { email: 'mid@example.com', createdAt: t('2'), id: 'bbb2' },
+      { email: 'new@example.com', createdAt: t('3'), id: 'ccc3' },
+    ];
+    const findMany = vi.fn().mockResolvedValue(rows);
+    const client = {
+      mod: { findMany: vi.fn().mockResolvedValue([mod({ id: 'a' }), mod({ id: 'b' })]), count: vi.fn().mockResolvedValue(42) },
+      favorite: { groupBy: vi.fn().mockResolvedValue([]) },
+      waitlist: { findMany },
+      notificationLog: { create: vi.fn().mockResolvedValue({}) },
+    };
+    const { sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    const first = await sendWeeklyNewsletter({ prisma: client as any, source: 'script' });
+
+    expect(findMany.mock.calls[0][0].orderBy).toEqual([{ createdAt: 'asc' }, { id: 'asc' }]);
+    expect(findMany.mock.calls[0][0].where).toBeUndefined();
+    expect(first.deferred).toBe(1);
+    expect(first.resumeCursor).toBe('2026-10-02T00:00:00.000Z~bbb2');
+    expect(String((fsm.appendFileSync as any).mock.calls[0][1])).toContain('"resumeCursor":"2026-10-02T00:00:00.000Z~bbb2"');
+
+    findMany.mockResolvedValueOnce([rows[2]]);
+    const second = await sendWeeklyNewsletter({ prisma: client as any, source: 'script', resumeAfter: first.resumeCursor });
+    expect(findMany.mock.calls[1][0].where).toEqual({
+      OR: [{ createdAt: { gt: t('2') } }, { createdAt: t('2'), id: { gt: 'bbb2' } }],
+    });
+    expect(second.recipients).toBe(1);
+    expect(second.resumedAfter).toBe(first.resumeCursor);
+    expect(second.resumeCursor).toBeUndefined();
+  });
+
+  it('refuses a malformed cursor instead of silently restarting from the oldest subscriber', async () => {
+    const { parseResumeCursor, sendWeeklyNewsletter } = await import('@/lib/services/newsletterWeekly');
+    expect(() => parseResumeCursor('bbb2')).toThrow(/malformed/);
+    expect(() => parseResumeCursor('not-a-date~bbb2')).toThrow(/malformed/);
+    expect(() => parseResumeCursor('2026-10-02T00:00:00.000Z~')).toThrow(/malformed/);
+    expect(parseResumeCursor('2026-10-02T00:00:00.000Z~bbb2').id).toBe('bbb2');
+    const findMany = vi.fn();
+    await expect(
+      sendWeeklyNewsletter({ dryRun: true, prisma: { waitlist: { findMany } } as any, resumeAfter: 'garbage' })
+    ).rejects.toThrow(/malformed/);
+    expect(findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('smtpStatusCode / collectRejects (E205)', () => {
+  it('keeps only a status code from the error string', async () => {
+    const { smtpStatusCode } = await import('@/lib/services/newsletterWeekly');
+    expect(smtpStatusCode('550 5.1.1 <x@y.z>: no such user')).toBe('5.1.1');
+    expect(smtpStatusCode('Error: 552 mailbox full for x@y.z')).toBe('552');
+    expect(smtpStatusCode('ECONNRESET')).toBeNull();
+    expect(smtpStatusCode(undefined)).toBeNull();
+  });
+
+  it('hashes undelivered non-preview results only, sorted, and tolerates a missing results array', async () => {
+    const { collectRejects } = await import('@/lib/services/newsletterWeekly');
+    const { hashRecipient } = await import('@/lib/services/sendExclusions');
+    expect(collectRejects(undefined)).toEqual([]);
+    const out = collectRejects([
+      { email: 'ok@example.com', sent: true },
+      { email: 'dry@example.com', sent: false, preview: { html: '', text: '' } },
+      { email: ' B@Example.com ', sent: false },
+      { email: 'a@example.com', sent: false, error: '421 4.7.0 try later' },
+    ]);
+    const want = [
+      { hash: hashRecipient('b@example.com'), code: null },
+      { hash: hashRecipient('a@example.com'), code: '4.7.0' },
+    ].sort((x, y) => x.hash.localeCompare(y.hash));
+    expect(out).toEqual(want);
+  });
 });
