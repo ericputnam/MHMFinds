@@ -217,13 +217,17 @@ export async function GET() {
       .map((r) => `${r.title} (${collectionUrl(r)})`)
       .join(', ');
     const companion = c.blogUrl ? `\nEditorial companion guide: ${SITE}${c.blogUrl}` : '';
+    // E203: adjacent guides the hub links on-page; cite-able apex URLs.
+    const guides = c.guides?.length
+      ? `\nRelated guides: ${c.guides.map((g) => `${g.label} (${SITE}${g.href})`).join(', ')}`
+      : '';
     const modBlock = mods.length
       ? `\n\nTop ${mods.length} by downloads:\n${mods.map((m, idx) => modLine(m, idx + 1, hubSlugs)).join('\n')}`
       : '\n\n(Top mods temporarily unavailable — the collection page lists them.)';
 
     return `### ${c.heading}
 URL: ${collectionUrl(c)}
-${c.tagline}.${companion}
+${c.tagline}.${companion}${guides}
 Related collections: ${related}
 
 ${c.intro}${modBlock}`;

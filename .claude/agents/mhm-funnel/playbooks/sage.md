@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-14 — E203 hub→guide links for the host-split hospital-lots article (Tier 0)
+- Tried: `guides` field on the registry; pregnancy-mods + build-cc link `/sims-4-hospital-lots/` on-page and in llms-full. Google −13.2% WoW decomposed (GSC 10-05→10-11 vs prior, −80): blog.* −32 = one URL (hospital-lots 34→4 after its 301 to apex; twin picked up 6), /mods/ −20 (CTR 4.06→3.43% on more impr), /games/ −16 (pos 19.6→17.8, new hubs entering low), home −13. E177 KEEP (6/6 lines carry age + ok).
+- Before → after: pair 10 clicks/wk, apex pos 9–26, 2 referring URLs → read 10-28 (apex ≥ 20 or pair ≥ 25 at pos ≤ 12). ai_referral 233 (−38.5%): chatgpt 323→200 is 84% of the drop, 10-09 step, no deploy — referrer-side, decision row.
+- Verdict: MORE DATA (read 2026-10-28).
+- Next time: when a blog.* URL loses clicks after the host split, count the apex twin's referring URLs before anything else — the twin inherits the 301, not the links. Migrated-article class is small: only hospital-lots (111/28d), pregnancy (10), dark-academia (5) still earned on blog.*.
+
 ## 2026-10-12 — E189 homepage JSON-LD scoped to `/` (Tier 0)
 - Tried: root layout emitted the homepage `WebPage` (`/#webpage`, url = root) + `FAQPage` on every page; moved both to `components/HomeJsonLd.tsx`, rendered only by `app/page.tsx`. Scanner `site-jsonld-scope.test.ts` 3/9 red on pre-fix layout.
 - Before → after: live 5/5 templates carried both nodes → local `next start` 1/5 (`/` only); ad anchors identical. Pre-read E136/E143: /mods/* 751 clicks 28d (09-12→10-09) vs 614; lastmod≤28d 424/16,796; ld==lastmod 3/3 new, 1/3 old.
