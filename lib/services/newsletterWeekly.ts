@@ -32,7 +32,7 @@ import {
   type IssuePost,
 } from './newsletterIssue';
 import { resolvePostalAddress, sendBulk } from './bulkMailer';
-import { partitionExcluded } from './sendExclusions';
+import { hashRecipient, partitionExcluded } from './sendExclusions';
 import { SIMS4_COLLECTIONS, buildWhereClause, collectionHref, type CollectionDefinition } from '../collections';
 
 const SITE = 'https://musthavemods.com';
@@ -443,6 +443,76 @@ export interface WeeklySendResult {
   deferred?: number;
   excludedCount?: number;
   hardCap?: number;
+  /**
+   * One entry per recipient the transport rejected synchronously on a LIVE run:
+   * `sha256(lower(trim(email)))` (same as `hashRecipient`, i.e. the exact form
+   * `EXCLUDED_RECIPIENT_HASHES` takes) plus the SMTP status code if the error
+   * carried one. Never the address, never the error text (SMTP errors echo the
+   * recipient). Absent on a dry run and on a live run with no rejects.
+   */
+  rejects?: RejectRecord[];
+  /**
+   * Set when the hard cap deferred anyone: the `waitlist` position
+   * (`<createdAt ISO>~<row id>`, never an address) of the last recipient this
+   * run attempted. Pass it back as `resumeAfter` (script: `--resume-after`) to
+   * send the same issue to exactly the deferred tail, no one twice (E205).
+   */
+  resumeCursor?: string;
+  /** Echo of the `resumeAfter` this run started from, if any. */
+  resumedAfter?: string;
+}
+
+const CURSOR_SEP = '~';
+
+/** `<ISO>~<id>` → parts, or throws: a malformed cursor must never silently mean "from the start". */
+export function parseResumeCursor(cursor: string): { createdAt: Date; id: string } {
+  const i = cursor.indexOf(CURSOR_SEP);
+  const createdAt = new Date(i > 0 ? cursor.slice(0, i) : 'invalid');
+  const id = i > 0 ? cursor.slice(i + 1) : '';
+  if (Number.isNaN(createdAt.getTime()) || !/^[a-z0-9]+$/i.test(id)) {
+    throw new Error('sendWeeklyNewsletter: malformed resumeAfter cursor (expected <ISO createdAt>~<waitlist id>)');
+  }
+  return { createdAt, id };
+}
+
+export function formatResumeCursor(row: { createdAt: Date; id: string }): string {
+  return `${row.createdAt.toISOString()}${CURSOR_SEP}${row.id}`;
+}
+
+export interface RejectRecord {
+  hash: string;
+  /** Enhanced status (`5.1.1`) or basic reply code (`550`) parsed from the error; null if none. */
+  code: string | null;
+}
+
+/**
+ * Extract only a status code from a transport error — the rest of the string
+ * is discarded because SMTP servers routinely quote the rejected address.
+ */
+export function smtpStatusCode(error: string | undefined): string | null {
+  if (!error) return null;
+  const enhanced = error.match(/\b([245]\.\d{1,3}\.\d{1,3})\b/);
+  if (enhanced) return enhanced[1];
+  const basic = error.match(/\b([45]\d\d)\b/);
+  return basic ? basic[1] : null;
+}
+
+/**
+ * Hashes of the recipients a live send did not deliver (E205, 2026-10-14).
+ * Issue 05's single 550 was unrecoverable: the ledger stored `failed: 1` and
+ * no DSN ever reached the mailbox, so issue 06 re-attempts the same address.
+ * Recording the hash at the moment of the reject lets the next issue add it to
+ * `EXCLUDED_RECIPIENT_HASHES` without a mailbox read. Sorted, so the row does
+ * not leak send order.
+ */
+export function collectRejects(
+  results: ReadonlyArray<{ email: string; sent: boolean; preview?: unknown; error?: string }> | undefined
+): RejectRecord[] {
+  if (!results) return [];
+  return results
+    .filter((r) => !r.sent && !r.preview)
+    .map((r) => ({ hash: hashRecipient(r.email), code: smtpStatusCode(r.error) }))
+    .sort((a, b) => a.hash.localeCompare(b.hash));
 }
 
 /**
@@ -453,7 +523,7 @@ export interface WeeklySendResult {
  * Next.js-runtime-only.
  */
 export type WeeklySendPrisma = PrismaLike & {
-  waitlist: { findMany: (args: any) => Promise<Array<{ email: string }>> };
+  waitlist: { findMany: (args: any) => Promise<Array<{ email: string; createdAt?: Date; id?: string }>> };
   notificationLog: { create: (args: any) => Promise<unknown> };
 };
 
@@ -471,6 +541,13 @@ export interface WeeklySendOptions {
   source?: 'cron' | 'script';
   /** Issue date (number, label, 7-day window). Defaults to now. */
   now?: Date;
+  /**
+   * Resume cursor from a previous run's `resumeCursor`: only `waitlist` rows
+   * strictly after it (createdAt, then id) are recipients. Rows are always read
+   * in that stable order, so a cursor is robust to unsubscribes (deleted rows)
+   * and to new signups (they sort after every existing cursor).
+   */
+  resumeAfter?: string;
 }
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -495,13 +572,34 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
     return { success: true, skipped: true, reason: 'NEWSLETTER_WEEKLY_ENABLED is not "true"' };
   }
 
+  const resumeFrom = opts.resumeAfter ? parseResumeCursor(opts.resumeAfter) : null;
   const prisma: WeeklySendPrisma = opts.prisma ?? (await import('../prisma')).prisma;
   const issue = await buildWeeklyIssueData(createPrismaDataSource(prisma), { now: opts.now });
 
-  const rows = await prisma.waitlist.findMany({ select: { email: true } });
-  const allEmails = Array.from(
-    new Set(rows.map((r) => r.email.trim().toLowerCase()).filter((e) => e.includes('@')))
-  );
+  // Stable order (oldest first, id tie-break) so the hard cap defers a well-defined
+  // tail and `resumeCursor` can name where it starts. Before E205 there was no
+  // orderBy: issue 06's dry run had 132 recipients against the 100 cap, and which
+  // 32 were deferred was whatever order Postgres returned.
+  const rows = await prisma.waitlist.findMany({
+    select: { email: true, createdAt: true, id: true },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    ...(resumeFrom
+      ? {
+          where: {
+            OR: [
+              { createdAt: { gt: resumeFrom.createdAt } },
+              { createdAt: resumeFrom.createdAt, id: { gt: resumeFrom.id } },
+            ],
+          },
+        }
+      : {}),
+  });
+  const rowByEmail = new Map<string, { createdAt?: Date; id?: string }>();
+  for (const r of rows) {
+    const e = r.email.trim().toLowerCase();
+    if (e.includes('@') && !rowByEmail.has(e)) rowByEmail.set(e, r);
+  }
+  const allEmails = Array.from(rowByEmail.keys());
   const { kept: recipients, excluded } = partitionExcluded(allEmails);
 
   const campaign = `weekly-issue-${pad2(issue.number)}`;
@@ -555,6 +653,18 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
     excludedCount: excluded.length,
     hardCap: WEEKLY_NEWSLETTER_HARD_CAP,
   };
+  if (!dryRun) {
+    const rejects = collectRejects(result.results);
+    if (rejects.length) summary.rejects = rejects;
+  }
+  if (resumeFrom) summary.resumedAfter = opts.resumeAfter;
+  if (result.deferred.length) {
+    // sendBulk attempts a prefix of its valid list and defers the rest, in order,
+    // so the last recipient before the first deferred one is the cursor.
+    const firstDeferred = recipients.indexOf(result.deferred[0]);
+    const last = firstDeferred > 0 ? rowByEmail.get(recipients[firstDeferred - 1]) : undefined;
+    if (last?.createdAt instanceof Date && last.id) summary.resumeCursor = formatResumeCursor({ createdAt: last.createdAt, id: last.id });
+  }
   appendFileLedger({
     kind,
     subject: issue.subject,
@@ -575,7 +685,8 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
  * Durable ledger row for a cron send. `NotificationLog` already exists (no
  * schema change) and is the one write in this module guaranteed to persist
  * on Vercel's read-only production filesystem. Counts only, in `body` as
- * JSON — never a recipient address or a per-recipient status.
+ * JSON — never a recipient address. The one per-recipient field is `rejects`
+ * (hash + status code, E205), so a cron send's rejects survive there too.
  */
 async function writeNotificationLog(
   prisma: WeeklySendPrisma,

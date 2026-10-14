@@ -7,6 +7,12 @@
  *   npx tsx scripts/agents/newsletter-send-test.ts --accounts-from-db --only repermission [--limit N] [--offset N] [--dry]
  *   npx tsx scripts/agents/newsletter-send-test.ts --weekly --dry [--preview-out <path>]
  *   NEWSLETTER_WEEKLY_ENABLED=true npx tsx scripts/agents/newsletter-send-test.ts --weekly --live
+ *   NEWSLETTER_WEEKLY_ENABLED=true npx tsx scripts/agents/newsletter-send-test.ts --weekly --live --resume-after '<resumeCursor>'
+ *
+ * --resume-after (E205, 2026-10-14): the weekly path attempts at most 100 per run (the hourly
+ * limit). When it defers anyone, the ledger row and the terminal carry `resumeCursor`
+ * (`<createdAt ISO>~<waitlist id>`, never an address). Re-run the SAME issue with
+ * `--resume-after <that cursor>` at least an hour later to reach exactly the deferred tail.
  *
  * --weekly (E184, 2026-10-11) is the manual trigger for the DB-built weekly issue. It calls
  * the SAME `sendWeeklyNewsletter()` the (unscheduled) cron route calls — same recipient rule
@@ -88,6 +94,7 @@ const dry = args.includes('--dry');
 const weekly = args.includes('--weekly');
 const live = args.includes('--live');
 const previewOut = arg('--preview-out');
+const resumeAfter = arg('--resume-after');
 const limitArg = Number(arg('--limit') ?? 0);
 const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
 /**
@@ -96,8 +103,8 @@ const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
  * match — that typo would have been a LIVE send to 100 accounts. On a script whose
  * default is "send", an unrecognised flag must stop the run, never be ignored.
  */
-const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset', '--weekly', '--live', '--preview-out']);
-const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset', '--preview-out']);
+const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset', '--weekly', '--live', '--preview-out', '--resume-after']);
+const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset', '--preview-out', '--resume-after']);
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (!KNOWN_FLAGS.has(a)) {
@@ -114,8 +121,8 @@ if (weekly) {
     console.error('--weekly --live refused: NEWSLETTER_WEEKLY_ENABLED=true must be set in this process\'s environment (the Tier 1 send authorization). Run the --dry preflight first.');
     process.exit(1);
   }
-} else if (live || previewOut) {
-  console.error('--live and --preview-out belong to the --weekly path'); process.exit(1);
+} else if (live || previewOut || resumeAfter) {
+  console.error('--live, --preview-out and --resume-after belong to the --weekly path'); process.exit(1);
 }
 if (!weekly && !fromDb && !accountsFromDb && !arg('--to')) { console.error('need --to a@b.com[,c@d.com], --from-db, --accounts-from-db or --weekly'); process.exit(1); }
 if (fromDb && accountsFromDb) { console.error('pick one of --from-db / --accounts-from-db'); process.exit(1); }
@@ -316,13 +323,21 @@ async function runWeekly(): Promise<void> {
   const now = new Date();
   const prisma = directPrisma();
   try {
-    const r = await sendWeeklyNewsletter({ dryRun: dry, prisma, source: 'script', now });
+    const r = await sendWeeklyNewsletter({ dryRun: dry, prisma, source: 'script', now, resumeAfter });
     if (r.skipped) { console.error(`weekly: skipped — ${r.reason}`); process.exit(1); }
     console.log(
       `weekly ${r.mode} → issue #${r.issueNumber} (${r.campaign}) "${r.subject}": ` +
         `recipients ${r.recipients} (waitlist minus ${r.excludedCount} excluded; cap ${r.hardCap}) ` +
         `attempted ${r.attempted} sent ${r.sent} failed ${r.failed} skipped ${r.skippedRecipients ?? 0} deferred ${r.deferred ?? 0}`
     );
+    if (r.resumedAfter) console.log(`resumed after cursor ${r.resumedAfter}`);
+    if (r.resumeCursor) {
+      console.log(`deferred ${r.deferred} — same issue, ≥1 h later: --weekly --${dry ? 'dry' : 'live'} --resume-after '${r.resumeCursor}'`);
+    }
+    // E205: hashes only, and only their count reaches the terminal — the hashes live in the ledger row.
+    if (r.rejects?.length) {
+      console.log(`rejects: ${r.rejects.length} (codes ${r.rejects.map((x) => x.code ?? '?').join(',')}) — sha256 hashes in ${LEDGER_PATH}; add them to EXCLUDED_RECIPIENT_HASHES before the next issue`);
+    }
     console.log(`ledger → ${LEDGER_PATH}`);
     if (dry) {
       // Same `now` → same deterministic picks as the counted run above.
