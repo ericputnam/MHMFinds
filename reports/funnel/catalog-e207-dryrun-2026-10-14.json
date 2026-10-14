@@ -1,0 +1,430 @@
+{
+ "writtenAt": "2026-10-14T10:48:08.924Z",
+ "mode": "dry-run",
+ "facets": [
+  "eyes",
+  "makeup"
+ ],
+ "rows": [
+  {
+   "id": "cmim9132u01j5oxy8982unpod",
+   "title": "Sabrina Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmil2zrap007xoxpzme0xpnnh",
+   "title": "Skylar Nose Preset",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim9fb9z004yoxqwiz7ofx0a",
+   "title": "Ginevra Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmil15z6c009joxeefx4wb7dk",
+   "title": "Glamour Life Set",
+   "from": "makeup",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8vg9s00ieoxy8o7ogpbpr",
+   "title": "Infant Eyes",
+   "from": "makeup",
+   "to": "eyes"
+  },
+  {
+   "id": "cmim91r2m01ngoxy8q54m0t94",
+   "title": "Blake Face Mask",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmil3knb300froxpztioq7s6a",
+   "title": "Angelika Necklace",
+   "from": "makeup",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmknf9asf002woxolkdrnfoqg",
+   "title": "Growing Pains Child Teeth Set",
+   "from": "makeup",
+   "to": null
+  },
+  {
+   "id": "cmim913yj01jloxy8y0l6hi11",
+   "title": "The Ladies Collection",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmikiqstu004koxnatz0e88ye",
+   "title": "COD Ghost’s Mask",
+   "from": "eyes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijn1k3d00aioxc8opq4jo8k",
+   "title": "Tres Beau: Lidiya Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmmvapj6d0056oxzgtufjzyp6",
+   "title": "Natural To Makeup Skins",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim91r8m01njoxy8q2l3mmi2",
+   "title": "Skin N14, Eye Masks, And Presets",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmikipx740043oxna79r7o8wx",
+   "title": "Magnolia C Ski Mask",
+   "from": "eyes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijje8hp008coxs3yxxg2lq3",
+   "title": "Bloody Vampire Face CC",
+   "from": "eyes",
+   "to": "skin"
+  },
+  {
+   "id": "cmijn1w1y00aroxc8evoeewk3",
+   "title": "Avi Glam: Leon Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim9jz73002woxy7pm7unxyk",
+   "title": "Sims 4 Pouty Lip Slider",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8vfok00i4oxy8i4ufaxf2",
+   "title": "Skin Details for Infants",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim9142c01jnoxy8zw3t4mu0",
+   "title": "Zaya Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmil2p89n0037oxpzzc4ujbso",
+   "title": "2D eyelashes A20",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmijn1ufp00aqoxc84lhokraa",
+   "title": "Amalia Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmik9shej00a0oxk7snter5af",
+   "title": "Gossiping Animation Ver 1",
+   "from": "eyes",
+   "to": "poses"
+  },
+  {
+   "id": "cmim8vgi000iioxy8cuq1epd8",
+   "title": "2D Eyelashes",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmim914eo01jtoxy8tfw5zbcv",
+   "title": "Ashourina Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim9jyqm002ooxy7b64rey0f",
+   "title": "Sims 4 Eye Sliders",
+   "from": "eyes",
+   "to": "preset"
+  },
+  {
+   "id": "cmim91qg601n6oxy8yrfmkhe2",
+   "title": "Skin Presets",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim91rgk01nnoxy8jfopus5x",
+   "title": "Asia Skin Tone",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim91r4o01nhoxy8rh9m5zlg",
+   "title": "Finn Face Mask",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmijn1yqh00atoxc84mod1q4x",
+   "title": "Rebel Gal: Candice Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmkxz8mw1005koxhcigubdquh",
+   "title": "Kids Vitiligo Beauty Skin Overlay",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim91rx601nsoxy8x4u61kn3",
+   "title": "Cogent Overlay",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmil30nzo008goxpzmsbcal2c",
+   "title": "Nose Preset 11",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zq15007woxpz0eaidyrg",
+   "title": "Nose Preset 1",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim913ur01jjoxy89jfhkf4c",
+   "title": "Skylar Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim9od1l00njoxy7n9moqejl",
+   "title": "Sims 4 Female Eyelashes",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmil0t9ic003roxee3v3kzuxx",
+   "title": "Random Rugs V2",
+   "from": "eyes",
+   "to": "rugs"
+  },
+  {
+   "id": "cmika1kl400ffoxk7ixwq1e4l",
+   "title": "Rebel Gal – Brooke Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmijqklkr002tox8o0guzsfmo",
+   "title": "Android Face",
+   "from": "eyes",
+   "to": "tattoos"
+  },
+  {
+   "id": "cmikiq7nq0048oxna8299hn9c",
+   "title": "Venetian Mask Columbina",
+   "from": "eyes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim9oc5900n4oxy7dsjdv0l9",
+   "title": "Dramatic Sims 4 Eyelashes",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmijj22hv002loxs39fib12hv",
+   "title": "Easy on the Eyes GShade Preset",
+   "from": "eyes",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2pb470039oxpzqauty0p5",
+   "title": "Maxis Match 2D Eyelashes N60",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmim8tm7n0089oxy8vwmpzdux",
+   "title": "Miranda Y2K Glasses",
+   "from": "eyes",
+   "to": "glasses"
+  },
+  {
+   "id": "cmim9mil200fwoxy7hx869s9n",
+   "title": "Acne Skin Detail CC",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim91rah01nkoxy8efq07dw6",
+   "title": "Antique Male Collection",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim9ocpj00ndoxy7ym8iktb7",
+   "title": "Sims 4 Short Eyelashes for Male Sims",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmikk6fwz004yox33osr6j6pv",
+   "title": "Boho Spiritual Tiles",
+   "from": "eyes",
+   "to": "wall-art"
+  },
+  {
+   "id": "cmim9ocvn00ngoxy74aaoj6x6",
+   "title": "Sims 4 Maxis Match 3D Eyelashes Set",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmigonlrv000qoxkz3141v9df",
+   "title": "Sims 4 Eyelashes for Mermaids",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmik8zs9d0017oxk75483fu7e",
+   "title": "Lip Preset 1",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8tmv6008koxy8s2bkf5da",
+   "title": "Raymond Glasses",
+   "from": "eyes",
+   "to": "glasses"
+  },
+  {
+   "id": "cmikiqpoq004ioxna3yl3hbfy",
+   "title": "Ashwwa Fox Mask",
+   "from": "eyes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijptrm5018coxc8ff1479qy",
+   "title": "Water Fairy Facepaint",
+   "from": "eyes",
+   "to": "tattoos"
+  },
+  {
+   "id": "cmigonxrn000woxkz4hm0ewnn",
+   "title": "Sims 4 Mermaid Eyelashes",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmikippmy003yoxnanpgjmp50",
+   "title": "Cat Skull Mask",
+   "from": "eyes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmil1j6pc00evoxeeuqc3a3k4",
+   "title": "Conway Necklace",
+   "from": "makeup",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmim913sy01jioxy85l0bkkgz",
+   "title": "Melissa Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim8tln4007zoxy8ie9g16ma",
+   "title": "Paradox Glasses",
+   "from": "eyes",
+   "to": "glasses"
+  },
+  {
+   "id": "cmim8w81h00n8oxy8z6e892fv",
+   "title": "Finnick",
+   "from": "eyes",
+   "to": null
+  },
+  {
+   "id": "cmim8tlvc0083oxy8c694xeda",
+   "title": "Kelly Sunglasses",
+   "from": "eyes",
+   "to": "glasses"
+  },
+  {
+   "id": "cmijn2eqt00b3oxc8yxdaykg3",
+   "title": "Lena Skin and Overlay",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim9oczk00nioxy70zzfpon4",
+   "title": "Sims 4 Mermaid CC Eyelashes",
+   "from": "eyes",
+   "to": "makeup"
+  },
+  {
+   "id": "cmim91qea01n5oxy8ba1m23br",
+   "title": "Cogent Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmim8tmg8008doxy897t2f1tc",
+   "title": "Cross-star Glasses",
+   "from": "eyes",
+   "to": "glasses"
+  },
+  {
+   "id": "cmim8tlxe0084oxy8w35srctl",
+   "title": "Oversized Frameless Sunglasses",
+   "from": "eyes",
+   "to": "glasses"
+  },
+  {
+   "id": "cmim9fb7t004xoxqwrcc7zmqo",
+   "title": "Lush – Lip Presets",
+   "from": "makeup",
+   "to": "preset"
+  },
+  {
+   "id": "cmsmd4cy9013ooxeu5mb2ef6y",
+   "title": "Vitiligo Beauty Skin Overlay N2",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmijn1hs700agoxc8oibqlpre",
+   "title": "Rosseta Skin",
+   "from": "makeup",
+   "to": "skin"
+  },
+  {
+   "id": "cmikkiz5500b8ox330dn7sci4",
+   "title": "CyFi Net Mask",
+   "from": "eyes",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8tmsx008joxy8ujuhvzuq",
+   "title": "Pretty in Pink – Heart Glasses",
+   "from": "eyes",
+   "to": "glasses"
+  }
+ ]
+}
