@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-14
+- Tried: E207 — 73 `--ids` pins on the eyes/makeup grids (T0): 6 masks → accessories, 7 glasses, 10 lash sets eyes → makeup, 28 skins makeup → skin, 8 face presets/sliders → preset, Seira Swoop eyebrows → hair, 2 NULL (a Sim, child teeth), 2 keeps. 71 written; dry run identical.
+- Before → after: off-type in top 24: eyes 7 → 0, makeup 3 → 0, makeup-cc 4 → 0; pins 73/73. E180 KEEP (34/34, furniture top-20 0 CAS/gameplay).
+- Verdict: MORE DATA (read 2026-10-21).
+- Next time: scan every type in a composite page's filter, not just the two named — eyebrows/blush/lipstick hold ~40 skins and hairstyles the makeup-cc grid reaches next.
+
 ## 2026-10-13
 - Tried: E200 — accessories rule made title-only (`lib/accessoriesContentTypeRules.ts`) + `--accessories-untitled` retag: 713 untitled rows decided title → URL category → NULL, 51 `E200` pins (37 real accessories with no keyword in the title: wings, masks, stockings, bonnets; 14 retypes). 640 written, dry run identical (T0).
 - Before → after: 891 rows, 178 titled (20.0%), top 24 ~21/24 junk (MCCC, Kiddie Pool, a skinpack) → 251 rows, 178 titled (70.9%), top 24 0–1/24 junk; pins E200 51/51, E193 69/69, E186 80/80, E180 34/34.
@@ -67,16 +73,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 2026-10-29; keep if 100% titled, pins 29/29, page engaged >=43/28d).
 - Next time: collection pages are static — a data apply shows only after the next deploy; curl after one. The 176 new NULLs want an --ids pass.
 
-## 2026-09-30
-- Tried: hand-fix of the 78 rows typed as a room/lot value (bathroom 22, kitchen 8, room-titled residential 20 / lot 22 / holidays 6) + guard: room values never a contentType, room-titled sets never `lot` unless the title names a building (T0, E147). Writer found by replaying ingest, not guessed: URL category `/bathroom/` etc.
-- Before → after: rows typed bathroom/kitchen 30 → 0; room-themed residential/lot/holidays 48 → 4 (kept: 1 house, 3 Christmas/Thanksgiving). 74 written (furniture 59, NULL 8, clutter 5), pins 78/78. Whole-catalog detector diff: 32 lot→NULL, all room-titled; ingest replay would have written `bedroom` on 118.
-- Verdict: MORE DATA (read 2026-10-07; keep if these stay 0 and pins 78/78).
-- Next time: holidays is 58.2% title-supported (top 24: 13) — the next facet repair, title-only, before any holidays promotion.
-
-## 2026-09-29
-- Tried: /account/favorites/ + Navbar heart → link (T1, E140, PR #223 queued). Chose it over the aiFacetExtractor guard after replaying every writer over E120's 76 rows: the extractor reproduces 2/76, not 74; 55/76 carry a CAS value in the old `category` field (Jan-2026 backfill from that field, code deleted 01-20). Title-only NULL retag: 518 → 516.
-- Before → after: /account/favorites/ 0 pv (no route) → read 2026-10-07; 859 accounts / 22,477 favorites had no view; 10 lists >200 (max 507).
-- Verdict: MORE DATA (read 2026-10-07; keep if ≥50 pv/7d and RPM ≥95%).
-- Next time: replay the writer on the actual bad rows before writing "X wrote them" in a playbook. My 09-28 line was a guess, and it cost a day's top-priority slot.
-
-_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
+_Older entries (up to 2026-09-30) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._

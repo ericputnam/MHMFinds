@@ -740,6 +740,98 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmim91rea01nmoxy8qp7fxb8h: { contentType: 'skin', why: 'E200 "Jose Face Mask" — skin, was accessories; description: "a facial skin"; not a worn mask' },
   cmkyne0ud016coxhc267nt3l7: { contentType: 'shoes', why: 'E200 "Sims 4 70s CC Roller Skates" — shoes, was accessories; roller skates are footwear' },
   cmim9fhgl005moxqw8b9ejehc: { contentType: 'hats', why: 'E200 "Equestrian Riding Helmets" — hats, was accessories; riding helmets are headwear' },
+  // ── Audited 2026-10-14 (Rowan, E207). The `eyes` and `makeup` grids (top 24
+  //    by downloads on /mods and inside makeup-cc) carried masks, glasses, an
+  //    animation, lash sets, nose presets and skins. Every row in `eyes` whose
+  //    title names no eye colour / contact / iris, or names a lash / mask /
+  //    slider / preset / face, and every `makeup` row whose title names a skin,
+  //    overlay, preset, slider, necklace, teeth or vanity, was read by title,
+  //    then its own description and download-URL category. NOT a rule fix:
+  //    the 72 rows are wrong for ~10 different reasons (heterogeneous class).
+  //    Catalog-wide counts behind the choices (title contains, 2026-10-14):
+  //    "face tattoo" 15/15 tattoos; "gshade" 61/67 preset; "glasses" 47/64
+  //    glasses; "overlay" 66/81 skin; "animation" 21/35 poses; "vanity" 7/13
+  //    furniture; "teeth" 23 rows typed 9 ways (no teeth facet -> NULL).
+  //    LASHES -> makeup, not `lashes`: 87 lash titles split makeup 35 /
+  //    lashes 28 / eyes 10, and makeup-cc's contentTypeIn omits `lashes`, so
+  //    `lashes` would drop them from the page whose copy promises lashes.
+  //    FACE PRESETS -> `preset` (E186 lip-preset policy), even though 37 of 47
+  //    "nose preset" titles sit in body-preset: the body-presets page is bodies.
+  //    Two pinned keeps: Glimmer Catchlights (eyes), Dead Vibez (makeup, mixed).
+  cmikiqstu004koxnatz0e88ye: { contentType: 'accessories', why: "E207 \"COD Ghost’s Mask\" — accessories, was eyes; worn mask (masks-cc, CurseForge create-a-sim); E200 mask policy" },
+  cmikipx740043oxna79r7o8wx: { contentType: 'accessories', why: "E207 \"Magnolia C Ski Mask\" — accessories, was eyes; worn ski mask (masks-cc); E200 mask policy" },
+  cmikiq7nq0048oxna8299hn9c: { contentType: 'accessories', why: "E207 \"Venetian Mask Columbina\" — accessories, was eyes; worn mask (masks-cc); siblings Venetian Mask/Bauta pinned accessories in E200" },
+  cmikiqpoq004ioxna3yl3hbfy: { contentType: 'accessories', why: "E207 \"Ashwwa Fox Mask\" — accessories, was eyes; worn mask (masks-cc); E200 mask policy" },
+  cmikippmy003yoxnanpgjmp50: { contentType: 'accessories', why: "E207 \"Cat Skull Mask\" — accessories, was eyes; worn mask (masks-cc); E200 mask policy" },
+  cmikkiz5500b8ox330dn7sci4: { contentType: 'accessories', why: "E207 \"CyFi Net Mask\" — accessories, was eyes; lower-face mesh mask, TSR category sims4-accessories; desc \"face accessory\"" },
+  cmijje8hp008coxs3yxxg2lq3: { contentType: 'skin', why: "E207 \"Bloody Vampire Face CC\" — skin, was eyes; blood face overlay (source slug \"bloody-face ... scar\"), a skin detail, not an eye colour" },
+  cmik9shej00a0oxk7snter5af: { contentType: 'poses', why: "E207 \"Gossiping Animation Ver 1\" — poses, was eyes; paired animation (animations post); 21 of 35 \"animation\" titles are poses" },
+  cmil0t9ic003roxee3v3kzuxx: { contentType: 'rugs', why: "E207 \"Random Rugs V2\" — rugs, was eyes; rugs (rugs-cc post); title says rugs" },
+  cmim8tm7n0089oxy8vwmpzdux: { contentType: 'glasses', why: "E207 \"Miranda Y2K Glasses\" — glasses, was eyes; title says glasses (glasses-cc); 47 of 64 \"glasses\" titles are glasses" },
+  cmim8tlvc0083oxy8c694xeda: { contentType: 'glasses', why: "E207 \"Kelly Sunglasses\" — glasses, was eyes; title says sunglasses (glasses-cc)" },
+  cmim8tlxe0084oxy8w35srctl: { contentType: 'glasses', why: "E207 \"Oversized Frameless Sunglasses\" — glasses, was eyes; title says sunglasses (glasses-cc)" },
+  cmim8tmg8008doxy897t2f1tc: { contentType: 'glasses', why: "E207 \"Cross-star Glasses\" — glasses, was eyes; title says glasses (glasses-cc)" },
+  cmim8tln4007zoxy8ie9g16ma: { contentType: 'glasses', why: "E207 \"Paradox Glasses\" — glasses, was eyes; title says glasses (glasses-cc)" },
+  cmim8tmv6008koxy8s2bkf5da: { contentType: 'glasses', why: "E207 \"Raymond Glasses\" — glasses, was eyes; title says glasses (glasses-cc)" },
+  cmim8tmsx008joxy8ujuhvzuq: { contentType: 'glasses', why: "E207 \"Pretty in Pink – Heart Glasses\" — glasses, was eyes; title says glasses (glasses-cc)" },
+  cmijqklkr002tox8o0guzsfmo: { contentType: 'tattoos', why: "E207 \"Android Face\" — tattoos, was eyes; desc \"android-themed face tattoo\"; 15 of 15 \"face tattoo\" titles are tattoos" },
+  cmijptrm5018coxc8ff1479qy: { contentType: 'tattoos', why: "E207 \"Water Fairy Facepaint\" — tattoos, was eyes; desc \"a face tattoo\" (TSR costume makeup); face-tattoo class is tattoos" },
+  cmim8w81h00n8oxy8z6e892fv: { contentType: null, why: "E207 \"Finnick\" — NULL, was eyes; a downloadable Sim (male-sims-download post); no facet fits; NULL beats a guess" },
+  cmikk6fwz004yox33osr6j6pv: { contentType: 'wall-art', why: "E207 \"Boho Spiritual Tiles\" — wall-art, was eyes; wall art tiles, TSR paintingsposters; \"eyes\" was in the prose" },
+  cmil2p89n0037oxpzzc4ujbso: { contentType: 'makeup', why: "E207 \"2D eyelashes A20\" — makeup, was eyes; lashes, not an eye colour; makeup (35 lash rows) keeps it on makeup-cc, which omits `lashes`" },
+  cmim8vgi000iioxy8cuq1epd8: { contentType: 'makeup', why: "E207 \"2D Eyelashes\" — makeup, was eyes; infant lashes; makeup, as 2D eyelashes A20" },
+  cmim9od1l00njoxy7n9moqejl: { contentType: 'makeup', why: "E207 \"Sims 4 Female Eyelashes\" — makeup, was eyes; lashes (eyelashes-cc); makeup, as 2D eyelashes A20" },
+  cmim9oc5900n4oxy7dsjdv0l9: { contentType: 'makeup', why: "E207 \"Dramatic Sims 4 Eyelashes\" — makeup, was eyes; lashes (eyelashes-cc); makeup, as 2D eyelashes A20" },
+  cmim9ocpj00ndoxy7ym8iktb7: { contentType: 'makeup', why: "E207 \"Sims 4 Short Eyelashes for Male Sims\" — makeup, was eyes; lashes (eyelashes-cc); makeup, as 2D eyelashes A20" },
+  cmil2pb470039oxpzqauty0p5: { contentType: 'makeup', why: "E207 \"Maxis Match 2D Eyelashes N60\" — makeup, was eyes; lashes (eyelashes-cc-2); makeup, as 2D eyelashes A20" },
+  cmim9oczk00nioxy70zzfpon4: { contentType: 'makeup', why: "E207 \"Sims 4 Mermaid CC Eyelashes\" — makeup, was eyes; lashes (eyelashes-cc); makeup, as 2D eyelashes A20" },
+  cmigonxrn000woxkz4hm0ewnn: { contentType: 'makeup', why: "E207 \"Sims 4 Mermaid Eyelashes\" — makeup, was eyes; lashes (mermaid-cc); makeup, as 2D eyelashes A20" },
+  cmigonlrv000qoxkz3141v9df: { contentType: 'makeup', why: "E207 \"Sims 4 Eyelashes for Mermaids\" — makeup, was eyes; lashes (mermaid-cc); makeup, as 2D eyelashes A20" },
+  cmim9ocvn00ngoxy74aaoj6x6: { contentType: 'makeup', why: "E207 \"Sims 4 Maxis Match 3D Eyelashes Set\" — makeup, was eyes; lashes (eyelashes-cc); makeup, as 2D eyelashes A20" },
+  cmim9jyqm002ooxy7b64rey0f: { contentType: 'preset', why: "E207 \"Sims 4 Eye Sliders\" — preset, was eyes; eyelid shape slider (sliders post); E186 slider -> preset" },
+  cmijj22hv002loxs39fib12hv: { contentType: 'preset', why: "E207 \"Easy on the Eyes GShade Preset\" — preset, was eyes; GShade preset; 61 of 67 \"gshade\" titles are preset" },
+  cmijpb77d00z6oxc8eyly9b68: { contentType: 'eyes', why: "E207 \"Glimmer Catchlights Collection\" — KEEP eyes: catchlights are an eye detail (desc \"make eyes look big and shiny\"); no eye word in title" },
+  cmim9132u01j5oxy8982unpod: { contentType: 'skin', why: "E207 \"Sabrina Skin\" — skin, was makeup; title says skin; desc \"skin details and overlay version\" (skin-details post)" },
+  cmim9fb9z004yoxqwiz7ofx0a: { contentType: 'skin', why: "E207 \"Ginevra Skin\" — skin, was makeup; title says skin; TSR category skindetails; 25 skin tones" },
+  cmim913yj01jloxy8y0l6hi11: { contentType: 'skin', why: "E207 \"The Ladies Collection\" — skin, was makeup; desc \"a skin pack containing four skin overlays\" (skin-details post)" },
+  cmijn1k3d00aioxc8opq4jo8k: { contentType: 'skin', why: "E207 \"Tres Beau: Lidiya Skin\" — skin, was makeup; title says skin; desc 12 skin shades (skin-overlay post)" },
+  cmmvapj6d0056oxzgtufjzyp6: { contentType: 'skin', why: "E207 \"Natural To Makeup Skins\" — skin, was makeup; title says skins; desc \"sits in the Skin Details category\"" },
+  cmim91r8m01njoxy8q2l3mmi2: { contentType: 'skin', why: "E207 \"Skin N14, Eye Masks, And Presets\" — skin, was makeup; skin named first; desc lists skins, then bonus presets (male-skin-details)" },
+  cmijn1w1y00aroxc8evoeewk3: { contentType: 'skin', why: "E207 \"Avi Glam: Leon Skin\" — skin, was makeup; title says skin; 12 skin swatches (skin-overlay post)" },
+  cmim8vfok00i4oxy8i4ufaxf2: { contentType: 'skin', why: "E207 \"Skin Details for Infants\" — skin, was makeup; title says skin details; mixed eyes/brows/skin set, skin is the named type" },
+  cmim9142c01jnoxy8zw3t4mu0: { contentType: 'skin', why: "E207 \"Zaya Skin\" — skin, was makeup; title says skin; desc \"a full-body skin\"" },
+  cmijn1ufp00aqoxc84lhokraa: { contentType: 'skin', why: "E207 \"Amalia Skin\" — skin, was makeup; title says skin; 18 natural tones + overlay" },
+  cmim91qg601n6oxy8yrfmkhe2: { contentType: 'skin', why: "E207 \"Skin Presets\" — skin, was makeup; desc \"three different skin details\" plus presets (male-skin-details)" },
+  cmim914eo01jtoxy8tfw5zbcv: { contentType: 'skin', why: "E207 \"Ashourina Skin\" — skin, was makeup; title says skin; desc face overlays and skins" },
+  cmim91rgk01nnoxy8jfopus5x: { contentType: 'skin', why: "E207 \"Asia Skin Tone\" — skin, was makeup; title says skin tone; TSR category sims4-skintones" },
+  cmijn1yqh00atoxc84mod1q4x: { contentType: 'skin', why: "E207 \"Rebel Gal: Candice Skin\" — skin, was makeup; title says skin; desc \"skin detail\", 10 skin shades" },
+  cmim91r4o01nhoxy8rh9m5zlg: { contentType: 'skin', why: "E207 \"Finn Face Mask\" — skin, was makeup; desc \"realistic facial skin\"; Jose Face Mask (E200) precedent" },
+  cmim91r2m01ngoxy8q54m0t94: { contentType: 'skin', why: "E207 \"Blake Face Mask\" — skin, was makeup; desc \"brown facial skin\", 6 colours; Jose Face Mask (E200) precedent" },
+  cmkxz8mw1005koxhcigubdquh: { contentType: 'skin', why: "E207 \"Kids Vitiligo Beauty Skin Overlay\" — skin, was makeup; title says skin overlay; TSR category skindetails" },
+  cmim91rx601nsoxy8x4u61kn3: { contentType: 'skin', why: "E207 \"Cogent Overlay\" — skin, was makeup; desc \"male skin details\", facial skin; 66 of 81 \"overlay\" titles are skin" },
+  cmim913ur01jjoxy89jfhkf4c: { contentType: 'skin', why: "E207 \"Skylar Skin\" — skin, was makeup; title says skin; desc \"this skin detail comes in 22 swatches\"" },
+  cmim9mil200fwoxy7hx869s9n: { contentType: 'skin', why: "E207 \"Acne Skin Detail CC\" — skin, was makeup; title says skin detail; acne overlay" },
+  cmim91rah01nkoxy8efq07dw6: { contentType: 'skin', why: "E207 \"Antique Male Collection\" — skin, was makeup; desc skins in 40 shades + overlay (male-skin-details)" },
+  cmika1kl400ffoxk7ixwq1e4l: { contentType: 'skin', why: "E207 \"Rebel Gal – Brooke Skin\" — skin, was makeup; title says skin; TSR category sims4-skintones" },
+  cmijn1hs700agoxc8oibqlpre: { contentType: 'skin', why: "E207 \"Rosseta Skin\" — skin, was makeup; title says skin; desc \"this captivating overlay\", four tones" },
+  cmsmd4cy9013ooxeu5mb2ef6y: { contentType: 'skin', why: "E207 \"Vitiligo Beauty Skin Overlay N2\" — skin, was makeup; title says skin overlay; desc \"in the skin details category\"" },
+  cmim913sy01jioxy85l0bkkgz: { contentType: 'skin', why: "E207 \"Melissa Skin\" — skin, was makeup; title says skin; desc \"skin detail\"" },
+  cmim91qea01n5oxy8ba1m23br: { contentType: 'skin', why: "E207 \"Cogent Skin\" — skin, was makeup; title says skin; desc \"a full-body skin\"" },
+  cmijn2eqt00b3oxc8yxdaykg3: { contentType: 'skin', why: "E207 \"Lena Skin and Overlay\" — skin, was makeup; title says skin; TSR category sims4-skintones" },
+  cmil2zrap007xoxpzme0xpnnh: { contentType: 'preset', why: "E207 \"Skylar Nose Preset\" — preset, was makeup; title says nose preset; E186 face preset -> preset (body-preset is bodies)" },
+  cmil2zq15007woxpz0eaidyrg: { contentType: 'preset', why: "E207 \"Nose Preset 1\" — preset, was makeup; title says nose preset; E186 face preset -> preset" },
+  cmil30nzo008goxpzmsbcal2c: { contentType: 'preset', why: "E207 \"Nose Preset 11\" — preset, was makeup; title says nose preset; E186 face preset -> preset" },
+  cmim9jz73002woxy7pm7unxyk: { contentType: 'preset', why: "E207 \"Sims 4 Pouty Lip Slider\" — preset, was makeup; lip slider; E186 \"Pout Lip Slider\" -> preset" },
+  cmim9fb7t004xoxqwrcc7zmqo: { contentType: 'preset', why: "E207 \"Lush – Lip Presets\" — preset, was makeup; title says lip presets; E186 lip preset -> preset" },
+  cmik8zs9d0017oxk75483fu7e: { contentType: 'preset', why: "E207 \"Lip Preset 1\" — preset, was makeup; title says lip preset; E186 lip preset -> preset" },
+  cmil3knb300froxpztioq7s6a: { contentType: 'jewelry', why: "E207 \"Angelika Necklace\" — jewelry, was makeup; title says necklace; desc layered necklace" },
+  cmil1j6pc00evoxeeuqc3a3k4: { contentType: 'jewelry', why: "E207 \"Conway Necklace\" — jewelry, was makeup; title says necklace (jewelry-cc post)" },
+  cmil15z6c009joxeefx4wb7dk: { contentType: 'furniture', why: "E207 \"Glamour Life Set\" — furniture, was makeup; desc \"luxe vanity collection\" of furniture and decor objects; 7 of 13 \"vanity\" titles are furniture" },
+  cmknf9asf002woxolkdrnfoqg: { contentType: null, why: "E207 \"Growing Pains Child Teeth Set\" — NULL, was makeup; child teeth + braces overlays; teeth have no facet (23 titles typed 9 ways); NULL beats a guess" },
+  cmim8vg9s00ieoxy8o7ogpbpr: { contentType: 'eyes', why: "E207 \"Infant Eyes\" — eyes, was makeup; title says eyes; 12 eye colours" },
+  cmijjeg5c008hoxs3r9q9l87c: { contentType: 'makeup', why: "E207 \"Dead Vibez Vampire Skin Details CC\" — KEEP makeup: mixed scars/eyeliner/eyeshadow across categories; current type not wrong" },
+  // E207 read-back found one more row in the makeup-cc composite top 24 (#17):
+  cmknf91yr0027oxoljcxq23um: { contentType: 'hair', why: 'E207 "Seira Swoop V1 and V2" — hair, was eyebrows; desc "a sleek, side-swooped hairstyle" (hairstyles-cc post)' },
 };
 
 /**
