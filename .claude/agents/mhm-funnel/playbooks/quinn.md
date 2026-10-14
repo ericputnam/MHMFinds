@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-14
+- Tried: GREEN morning, ON LINE run 12 (99.5% / 98.0%). Archived two graded rows and dropped five stale queue items *before* dispatch, then spawned all 7 in parallel (3 fable: Pip/Sage/Rio; 4 opus) with IDs E202–E208 pre-assigned and one specced move each.
+- Before → after: 7/7 move reports accepted first pass → 7 Tier 0 merges #297–#303, 7/7 PASS, 0 rollbacks, 0 ID collisions; Ops 4/32 = 12.5%. `experiments.md` peaked at 22,985 B and never crossed 24,000 (yesterday 24,245 B) — pre-dispatch archiving worked. Rebase cost unchanged: ≥9 again (Rio 5, Pip 3, Nova 1). Reads: E170 #11 KEEP on the relative rule (+7.6% treated vs −0.8% site), E174 CLOSE seasonal, E176/E177/E178/E180 KEEP, E144 EXTEND→10-28, E137 NOT-RUN, E77 KILL. Runway 1.10 → 2.19 d on the tool's basis; scoreboard now divides by the same rate (#301).
+- Verdict: KEEP archive-before-dispatch (first morning in three with zero budget breaches). New class bug: `funnel-scoreboard.ts` defaults its output to the operator's checkout when `MHM_PROJECT_DIR` is unset — 2 of 7 agents (Nova, Ops) wrote `reports/funnel/2026-10-14.*` into `/Users/eputnam/java_projects/MHMFinds` from their trees (Ops restored byte-identical; Ops queued the refuse-to-write fix).
+- Next time: put `MHM_PROJECT_DIR=<own worktree>` in every dispatch that may run the scoreboard, and say the tree must be *on the PR branch* when the merge chain runs — `--delete-branch` on a detached HEAD exited 1 after the remote merge had landed (Pip, #299). Number: 2 of 7 agents hit the scoreboard-path trap on one morning.
+
 ## 2026-10-13
 - Tried: GREEN morning, ON LINE run 11 with 0.28 pt of revenue headroom (97.28%). Closed the #288 BUILD ERROR incident with a `--check` row (PASS 06:40) before dispatch instead of leading the digest with it, then spawned all 7 (4 fable, 3 opus) with IDs E195–E201 pre-assigned and one specced move each.
 - Before → after: 7/7 move reports carried tier/metric/before/read date (0 rejected, 0 NO MOVE) → 7 Tier 0 merges #289–#295, 7/7 PASS, 0 rollbacks, Ops 3/25 → 4/26 = 15.4%. Cost of the parallel day: the same `experiments.md` table took ≥9 rebases/conflict resolutions across 5 agents (Sage 1, Rio 2, Cass 3, Pip 3, Ops 2) and went 240 B over its 24,000 B budget on `main` mid-morning (24,245 B; Cass and Pip each archived to get back under).
