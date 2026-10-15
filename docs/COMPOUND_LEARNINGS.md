@@ -2289,3 +2289,31 @@ The 10-07 section is in the archive.
 - **Still open:** 10-08/10-10 locks. Accessories top 24 junk. `ModDetailPage.test.tsx` red
   since #219. `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh`
   unwired. Runway needs Q11. Mornings need AC.
+
+### 2026-10-13 — seven merges (#289–#295) + daily #296, all PASS, zero incidents (rotated from CLAUDE.md 2026-10-14)
+
+10-12 is in the archive.
+- **Grade a platform build ERROR on positive evidence, and never roll back on it.** #293:
+  `deploy-verify.sh --after-merge` on its sha's own ERROR/CANCELED writes a `build-watch` row
+  (whose ledger commit is itself a build containing the sha), then waits for a READY build that
+  **contains** the sha (`merge-base --is-ancestor`) **and** changes no app file since. Found →
+  graded through it, no incident; FAIL there → incident, no rollback. Not found → old path.
+  Both 10-12 BUILD ERROR incidents were this case.
+- **Two surfaces that state one fact must call one helper.** 41% of sitemap `<lastmod>` disagreed
+  with the page's `dateModified` because `ModJsonLd` floored at `publishedAt` locally (#290). Also
+  assert the DB `select` includes every field the helper reads — a missing column is a silent no-op.
+- **A deadline anchors on a stored date, never on "today".** E134's kill read was computed from
+  the run date, so each daily run walked it a day forward (#291 → `PIPE_RULE.confirmedOn`).
+- **A repair tool must reach the population its caller sends it.** The top-up said "repair
+  sections first", but `repair-pin-sections.py` only scanned the poster's 14-day window, never the
+  stranded rows the top-up draws from; the #2 destination dropped out twice (#295, `--stranded N`).
+- **`isAdmin` is not "is us."** An operator test account was 1 of 3 "creators onboarded"; house
+  accounts are a named id list with a reason, and excluded only from the metric, not the queue (#289).
+- **Find the writer before fixing the rule.** 694 of 713 junk `accessories` rows came from a
+  legacy `category` backfill deleted in January; the detector made 19. Dead writer → one-off data
+  pass + replay file; live rule → title-only (`lib/accessoriesContentTypeRules.ts`, #294).
+- **A capture surface on an ad page** is a sibling of `.mv-ads`, outside `#secondary`, in normal
+  flow, rendered after mount, with its placement pinned in a test (#292).
+- **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
+  `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Runway
+  basis split (tool 1.2 d vs scoreboard 2.8 d). Q11, Q23 unanswered. Mornings need AC.

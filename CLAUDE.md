@@ -970,37 +970,36 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-13 — seven merges (#289–#295) + daily #296, all PASS, zero incidents
+### 2026-10-14 — seven merges (#297–#303) + daily #304, all PASS, zero incidents
 
-10-12 is in the archive.
-- **Grade a platform build ERROR on positive evidence, and never roll back on it.** #293:
-  `deploy-verify.sh --after-merge` on its sha's own ERROR/CANCELED writes a `build-watch` row
-  (whose ledger commit is itself a build containing the sha), then waits for a READY build that
-  **contains** the sha (`merge-base --is-ancestor`) **and** changes no app file since. Found →
-  graded through it, no incident; FAIL there → incident, no rollback. Not found → old path.
-  Both 10-12 BUILD ERROR incidents were this case.
-- **Two surfaces that state one fact must call one helper.** 41% of sitemap `<lastmod>` disagreed
-  with the page's `dateModified` because `ModJsonLd` floored at `publishedAt` locally (#290). Also
-  assert the DB `select` includes every field the helper reads — a missing column is a silent no-op.
-- **A deadline anchors on a stored date, never on "today".** E134's kill read was computed from
-  the run date, so each daily run walked it a day forward (#291 → `PIPE_RULE.confirmedOn`).
-- **A repair tool must reach the population its caller sends it.** The top-up said "repair
-  sections first", but `repair-pin-sections.py` only scanned the poster's 14-day window, never the
-  stranded rows the top-up draws from; the #2 destination dropped out twice (#295, `--stranded N`).
-- **`isAdmin` is not "is us."** An operator test account was 1 of 3 "creators onboarded"; house
-  accounts are a named id list with a reason, and excluded only from the metric, not the queue (#289).
-- **Find the writer before fixing the rule.** 694 of 713 junk `accessories` rows came from a
-  legacy `category` backfill deleted in January; the detector made 19. Dead writer → one-off data
-  pass + replay file; live rule → title-only (`lib/accessoriesContentTypeRules.ts`, #294).
-- **A capture surface on an ad page** is a sibling of `.mv-ads`, outside `#secondary`, in normal
-  flow, rendered after mount, with its placement pinned in a test (#292).
+10-13 is in the archive.
+- **Grade a treated slice against the site's own movement on the channel it can move.** The
+  `/creator/*` guard (≥95% of 558) was 71.8% Direct, so a Direct dip failed it whatever the pages
+  did; re-based on organic+AI relative to site organic+AI (#297). Same shape: E170 KEEP on treated
+  WoW ≥ site WoW (#299). **Pin the re-based read in the test** — re-basing must not launder a FAIL.
+- **A capped batch send reads in a defined order and emits a resume cursor.** `waitlist.findMany`
+  had no `orderBy`, so the 32 rows past the 100 cap were arbitrary. Now oldest-first + an opaque
+  `createdAt~id` cursor; a malformed cursor throws, never restarts from the top (#298).
+- **SMTP errors quote the recipient** — record a reject as `{sha256(normalized), code}` only. A
+  failure stored as `failed: 1` can never be excluded later; capture identity (hashed) at the time.
+- **Two tools gating one decision share one basis, label and fallback order.** Runway now divides
+  by `pinterest-14d` in the scoreboard, `check-pinner.sh` and the top-up tool (#301; old basis read
+  3.3 d, no flag, at a real 2.19 d). **A truncated rate sample is `null`, never a floor** — a floor
+  on the rate is a ceiling on the runway.
+- **users = sessions = pageviews from one country/browser is a source, not demand.** Direct +30.7%
+  WoW was a Singapore Direct/Chrome one-pageview stream (#302). Decompose revenue into
+  sessions × RPM before reading a channel move as a business move.
+- **Check for a deploy before fixing a referral drop.** AI referral −38.5% was chatgpt.com stepping
+  down on 10-09 with no deploy and every AI UA getting 200 + full HTML — referrer-side, no fix (#303).
+- **Write a hand-fix to a value the consuming grid reads.** Lashes went to `makeup`, not `lashes`,
+  because makeup-cc's `contentTypeIn` omits `lashes` (#300) — the "correct" tag would have
+  vanished from the page it was meant to clean.
 - **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
-  `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Runway
-  basis split (tool 1.2 d vs scoreboard 2.8 d). Q11, Q23 unanswered. Mornings need AC.
-
+  `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Q11,
+  Q28 (writer plugin dates pins ahead). Mornings need AC.
 ---
 
-*Last compound review: 2026-10-13*
+*Last compound review: 2026-10-14*
 
 ---
 
