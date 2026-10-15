@@ -294,15 +294,26 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     game: 'Sims 4',
     gameSlug: 'sims-4',
     title: 'Skin Details',
-    heading: 'Sims 4 Skin Details CC',
+    heading: 'Sims 4 Skin CC & Skin Overlays',
     // Head-term title: the legacy article /sims-4-cc-skin-details/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Skin Details CC — 270+ Overlays & Freckles | MustHaveMods',
+    //
+    // E210 (Sage, 2026-10-15): retitled from "Sims 4 Skin Details CC —
+    // 270+ Overlays & Freckles". GSC 09-15→10-12 put this page at pos 25.1
+    // on 723 impressions / 26 clicks, and most of those impressions are the
+    // generic skin family ("sims 4 skins" 13, "sims 4 skin" 10, skinblend
+    // 13, "sims 4 skin cc" 7, skintones ~10) and the bare "skin overlay"
+    // family (~45, one of the 7 competitor-gap terms) — neither phrase was
+    // in the title or H1. The facet supports the claim by title alone:
+    // 295/348 rows (84.8%) name skin/overlay/freckle/etc., 70 say
+    // "overlay", 26 say skintone/skinblend (prod 2026-10-15). "270+" was
+    // stale (348 live). `title` (nav/crumb label) deliberately unchanged.
+    metaTitle: 'Sims 4 Skin CC — 340+ Skin Overlays, Skintones & Details | MustHaveMods',
     metaDescription:
-      'Browse Sims 4 skin details, overlays, freckles, moles, and body blush CC in one filterable grid — sorted by downloads, link-checked, no dead pages.',
+      'Browse 340+ Sims 4 skin overlays, skintones, freckles, moles and body blush CC in one filterable grid — sorted by downloads, link-checked, no dead pages.',
     tagline: 'Overlays, freckles, moles, and body blush for realism',
     intro:
-      'Skin details are the CAS layer most people skip and then wonder why their sims look slightly uncanny. Vanilla skin is flat. No freckles, no moles, no cheek blush that actually sits on the face, no body hair that looks like anything other than a shadow. Community skin overlays fix all of this with a few CAS clicks.\n\nWe\'ve pulled together about 275 skin detail picks: full skin overlays that replace the base texture, freckle maps, mole placement sets, nose bridge details, cheek blushes, body hair, pregnancy stretch marks, and the specialty stuff like aging details and sunspots. Pralinesims and Obscurus-Sims turn up a lot here because they\'ve been shipping realistic skin overlays for years, but there\'s a long tail of smaller skin creators doing great work on specific features.\n\nMost of these stack — you can layer a skin overlay, freckles, a blush, and a nose detail all on one sim. The trick is stopping before you over-CAS them into looking like a different art style than the hair and clothes you\'re using.',
+      'Skin details are the CAS layer most people skip and then wonder why their sims look slightly uncanny. Vanilla skin is flat. No freckles, no moles, no cheek blush that actually sits on the face, no body hair that looks like anything other than a shadow. Community skin overlays fix all of this with a few CAS clicks.\n\nWe\'ve pulled together nearly 350 skin picks: full skin overlays and skintones that replace the base texture, freckle maps, mole placement sets, nose bridge details, cheek blushes, body hair, pregnancy stretch marks, and the specialty stuff like aging details and sunspots. Pralinesims and Obscurus-Sims turn up a lot here because they\'ve been shipping realistic skin overlays for years, but there\'s a long tail of smaller skin creators doing great work on specific features.\n\nMost of these stack — you can layer a skin overlay, freckles, a blush, and a nose detail all on one sim. The trick is stopping before you over-CAS them into looking like a different art style than the hair and clothes you\'re using.',
     filter: { contentType: 'skin' },
     expectedCount: 276,
     related: ['hair-cc', 'tattoos', 'body-presets'],

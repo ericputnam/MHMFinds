@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-15 — E210 skin-details retitle (Tier 0)
+- Tried: no 7-term hub left to build (all indexed: cc 10-12, build-cc/clothes-cc/hair-cc 10-06), so the fallback on-page fix: skin-details title/H1/meta now lead with "Skin CC" + "Skin Overlays, Skintones" (was "Skin Details CC — 270+"). Its 723 impr/28d sit at pos 25 on the generic skin family and the bare "skin overlay" family, neither in the old title.
+- Before → after: 13 clk / 290 impr (09-29→10-10) → read 10-29. Facet 295/348 title-supported (84.8%), top-30 21/30, 3 description mis-tags → inbox.
+- Verdict: MORE DATA (read 2026-10-29).
+- Next time: the /games/ pages with the most impressions (body-presets 1,009, poses 1,005) already rank ≤13; skin-details was the only high-impression hub at pos >20 with a title that missed its own queries.
+
 ## 2026-10-14 — E203 hub→guide links for the host-split hospital-lots article (Tier 0)
 - Tried: `guides` field on the registry; pregnancy-mods + build-cc link `/sims-4-hospital-lots/` on-page and in llms-full. Google −13.2% WoW decomposed (GSC 10-05→10-11 vs prior, −80): blog.* −32 = one URL (hospital-lots 34→4 after its 301 to apex; twin picked up 6), /mods/ −20 (CTR 4.06→3.43% on more impr), /games/ −16 (pos 19.6→17.8, new hubs entering low), home −13. E177 KEEP (6/6 lines carry age + ok).
 - Before → after: pair 10 clicks/wk, apex pos 9–26, 2 referring URLs → read 10-28 (apex ≥ 20 or pair ≥ 25 at pos ≤ 12). ai_referral 233 (−38.5%): chatgpt 323→200 is 84% of the drop, 10-09 step, no deploy — referrer-side, decision row.
