@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-15
+- Tried: E209 top-up #15 (T0, SD-10 floor; E202's next leg): tool gate read 1.99 d (35 ÷ 17.57/day pinterest-14d) while the scoreboard printed "≈2 d" on the same basis — the floor is strict, 1.99 < 2.0. 18 sessions-ranked rows 7×10-21/22 + 4×10-23 (ranker 9 dests/70 ids, 77 writer rows dropped upstream, 0 in the tool); cross-run cap skipped 10-15..20 (E188 + E202). Forgot `--max-per-url 1` → tool default 2/URL/day (urban-tattoos ×6, gshade ×6 over 3 dates); inside the standing approval, noted on the ledger. E206 Pip leg (Singapore Direct) not started — due 10-21.
+- Before → after: runway 1.99 → 3.02 d (35 → 53 rows; bound seven_per_day_cap, stopped at the ~3-day target, not hard_cap_21); SEO 74 → 99 (0/18 → 18/18); read-back 18/18, created_at ≤ 2025-10-28. Inventory 10-21..23 is again 100% top-ups.
+- Verdict: MORE DATA (read 10-22; treated WoW ≥ site WoW, re-pulled)
+- Next time: always pass `--max-per-url 1`; and when the scoreboard rounds to "≈2 d" the gate still fires at 1.99 — quote the tool's two decimals, never the rounded flag.
+
 ## 2026-10-14
 - Tried: E202 top-up #14 (T0, SD-10 floor; apply ledger on main `db48455`): 21 sessions-ranked rows 7×10-18/19/20 — first run gated on the tool's pinterest-14d basis (1.10 d) while the scoreboard read 1.7 d; cross-run cap skipped 10-15/16/17 (E188). Same PR: E170 #11 KEEP, E77 KILL (Q24 dropped).
 - Before → after: runway 1.10 → 2.19 d (21 → 42 @ 19.14/day); SEO 71 → 96 (0/21 → 21/21); read-back 21/21. Ranker 13 dests/81 ids, 63 writer rows dropped upstream. E170 #11: 7 dests 2,095 → 2,254 (+7.6%, 6/7 up) vs site Pinterest −0.8%. Writer: 147 rows inserted in 7d (21/day) but 136 at the 2025-01-01 placeholder and 0 real-dated on 10-15..21 — all 42 rows in the 14-day horizon are top-ups.
