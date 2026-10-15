@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-15
+- Tried: E214 — 119 `--ids` pins over the rest of makeup-cc (eyebrows 198, blush 61, lipstick 36, eyeliner 33 rows, all read): 40 skins/skin details → skin, 14 hair, 18 NULL (Sims, unlisted sets), 38 other; 9 keeps (contour/highlighter sit in the blush slot). 110 written; apply identical to dry run (T0, PR #311).
+- Before → after: top-24 off-type eyebrows 3, blush 15, lipstick 4, eyeliner 3 → 0/0/0/0; pins E214 119/119, E207 73/73; makeup-cc 938 → 828, skin 348 → 388; makeup-cc favs 38 (10-08→10-14).
+- Verdict: MORE DATA (read 2026-10-22).
+- Next time: "~40" was the visible head. The tail held 3x that (blush top 24 was 15/24 junk), so read the whole facet, not the top N. A data fix that moves rows out of a composite can make its "N+" copy false (makeup-cc "900+" → 828). Count the page before you apply.
+
 ## 2026-10-14
 - Tried: E207 — 73 `--ids` pins on the eyes/makeup grids (T0): 6 masks → accessories, 7 glasses, 10 lash sets eyes → makeup, 28 skins makeup → skin, 8 face presets/sliders → preset, Seira Swoop eyebrows → hair, 2 NULL (a Sim, child teeth), 2 keeps. 71 written; dry run identical.
 - Before → after: off-type in top 24: eyes 7 → 0, makeup 3 → 0, makeup-cc 4 → 0; pins 73/73. E180 KEEP (34/34, furniture top-20 0 CAS/gameplay).
