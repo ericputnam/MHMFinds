@@ -38,7 +38,10 @@ describe('sign-in page never pushes a raw query value (E118)', () => {
     expect(pushes.length).toBeGreaterThanOrEqual(2);
     expect(page).toContain("from './returnTo'");
     expect(page).toMatch(/resolveSignInReturn\(/);
-    expect(page.match(/router\.push\(returnPath\(\)\)/g)?.length).toBe(2);
+    // Sign-in pushes returnPath() directly; the sign-up branch wraps it in
+    // E211's resolvePostSignUpPath, whose only other output is a constant.
+    expect(page.match(/router\.push\(returnPath\(\)\)/g)?.length).toBe(1);
+    expect(page).toMatch(/router\.push\(\s*resolvePostSignUpPath\(\{[\s\S]{0,120}returnTo: returnPath\(\)/);
   });
 
   it('does not feed a searchParams value straight into navigation', () => {

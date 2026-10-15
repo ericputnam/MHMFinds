@@ -10,8 +10,27 @@ import {
   CheckCircle,
   Download,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
+import {
+  CREATOR_SUBMIT_CTA_EVENT,
+  CREATOR_SUBMIT_CTA_SOURCES,
+  CREATOR_SUBMIT_PATH,
+  readCreatorWelcome,
+  shouldShowCreatorWelcome,
+  type CreatorSubmitCtaSource,
+  type CreatorWelcomeState,
+} from '../sign-in/creatorWelcome';
+
+/** GA4 click on any button that leads to the submit form (Nova, E211). */
+function trackSubmitCta(source: CreatorSubmitCtaSource) {
+  (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+    'event',
+    CREATOR_SUBMIT_CTA_EVENT,
+    { source }
+  );
+}
 
 interface DashboardStats {
   totalSubmissions: number;
@@ -41,8 +60,15 @@ export default function CreatorDashboard() {
   });
   const [recentSubmissions, setRecentSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [welcomeState, setWelcomeState] = useState<CreatorWelcomeState>({
+    welcome: false,
+    from: null,
+  });
 
   useEffect(() => {
+    // `?welcome=1` is set only by a creator sign-up (E211). Read on the
+    // client so the page needs no Suspense boundary for useSearchParams.
+    setWelcomeState(readCreatorWelcome(window.location.search, window.location.origin));
     fetchDashboardData();
   }, []);
 
@@ -94,6 +120,39 @@ export default function CreatorDashboard() {
         </p>
       </div>
 
+      {/* Welcome for a brand-new creator with nothing submitted (E211) */}
+      {shouldShowCreatorWelcome(welcomeState, stats.totalSubmissions) && (
+        <div className="bg-gradient-to-br from-sims-pink/20 to-purple-600/20 border border-sims-pink/30 rounded-xl p-6 md:p-8">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-5 w-5 text-sims-pink" />
+            <span className="text-sm font-semibold text-sims-pink">Welcome, creator</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Submit your first mod</h2>
+          <p className="text-slate-300 mb-6 max-w-2xl">
+            Share a link to a mod you made and we&apos;ll review it for the MustHaveMods
+            catalog. Once it&apos;s live you can follow its downloads right here.
+          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              href={CREATOR_SUBMIT_PATH}
+              onClick={() => trackSubmitCta(CREATOR_SUBMIT_CTA_SOURCES.welcome)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-sims-pink hover:bg-pink-600 text-white rounded-lg font-semibold transition-colors"
+            >
+              <Upload className="h-5 w-5" />
+              Submit your first mod
+            </Link>
+            {welcomeState.from && (
+              <Link
+                href={welcomeState.from}
+                className="text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                Not now, keep browsing
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -124,7 +183,10 @@ export default function CreatorDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link href="/creators/submit/">
+        <Link
+          href={CREATOR_SUBMIT_PATH}
+          onClick={() => trackSubmitCta(CREATOR_SUBMIT_CTA_SOURCES.quickAction)}
+        >
           <div className="bg-gradient-to-r from-sims-pink to-pink-600 hover:from-pink-600 hover:to-sims-pink text-white p-6 rounded-xl transition-all hover:scale-[1.02] cursor-pointer group">
             <div className="flex items-center justify-between">
               <div>
@@ -177,7 +239,8 @@ export default function CreatorDashboard() {
               <Package className="h-12 w-12 text-slate-700 mx-auto mb-3" />
               <p className="text-slate-500">No submissions yet</p>
               <Link
-                href="/creators/submit/"
+                href={CREATOR_SUBMIT_PATH}
+                onClick={() => trackSubmitCta(CREATOR_SUBMIT_CTA_SOURCES.emptyState)}
                 className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-sims-pink hover:bg-pink-600 text-white rounded-lg transition-colors text-sm"
               >
                 <Upload className="h-4 w-4" />

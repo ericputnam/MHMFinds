@@ -9,6 +9,7 @@ import { Footer } from '../../components/Footer';
 import { Sparkles, Crown, CheckCircle2, Download, X } from 'lucide-react';
 import { resolveSignInReturn } from './returnTo';
 import { SIGNUP_INTENT_VIEW_EVENT, resolveSignupIntent } from './signupIntent';
+import { resolvePostSignUpPath } from './creatorWelcome';
 
 /** waitlist.source for the sign-up form's email opt-in (Cass, E86). */
 const SIGNUP_OPTIN_SOURCE = 'signup-optin';
@@ -190,7 +191,16 @@ export default function SignInPage() {
       if (result?.error) {
         setError('Account created, but sign-in failed. Please try signing in.');
       } else {
-        router.push(returnPath());
+        // Creator sign-ups go to the dashboard's "submit your first mod"
+        // welcome (Nova, E211); everyone else returns as before (E118).
+        // `isCreator` can only be true when the box was rendered: the
+        // save-intent cohort never sees it and the state defaults to false.
+        router.push(
+          resolvePostSignUpPath({
+            creatorTicked: isCreator,
+            returnTo: returnPath(),
+          })
+        );
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
