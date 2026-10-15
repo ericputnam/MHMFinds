@@ -125,8 +125,11 @@ describe('app/sign-in/page.tsx wires the intent (source-level, comments stripped
     expect(block).toMatch(/source: intent\.source/);
   });
 
-  it('keeps the E118 return-path shape: exactly two router.push(returnPath())', () => {
-    expect(page.match(/router\.push\(returnPath\(\)\)/g)?.length).toBe(2);
+  it('keeps the E118 return-path shape: every success branch goes through returnPath()', () => {
+    // Sign-in pushes returnPath() directly; sign-up wraps it in E211's
+    // resolvePostSignUpPath (creator sign-ups -> dashboard welcome).
+    expect(page.match(/router\.push\(returnPath\(\)\)/g)?.length).toBe(1);
+    expect(page).toMatch(/router\.push\(\s*resolvePostSignUpPath\(\{[\s\S]{0,120}returnTo: returnPath\(\)/);
     expect(page).not.toMatch(/router\.push\(\s*searchParams/);
   });
 

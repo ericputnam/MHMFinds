@@ -31,6 +31,7 @@ Sessions 28d 355,242 vs line 356,970 = 99.5% (09-15→10-12); revenue $5,821.86 
 - [ ] [rio→pip] Sessions vs 4-wk mean 10-06→10-11: −6.4/−4.4/+1.6/−4.0/−4.1/−3.0%; 10-11's −3.0 is the 09-27 Direct spike (2,657) in the control — ex it the Sunday reads +0.9%. — Rio 10-13
 - [ ] [ops] GA4 `page_view` fires only on full loads on this site (client `router.push` produces none): per-page reads on client-navigated routes (/go, /sign-in after an offer) must use sessions or custom events. — Cass 10-12
 - [ ] [cass][rio] E152 trending KILL for the 10-15 read (0.66/1K vs 2.62); if KILL, the /go slot returns to a Patreon/connect ask, not another email box (E4 already KILLED there). — Cass 10-12
+- [ ] [nova] E211 slice 2: 52 Oct flagged accounts (377 flagged at the 10-14 E178 re-run) never reach the welcome — a Navbar "Submit your first mod" nudge for isCreator with 0 submissions (needs a count in the session or one GET; no schema). Wait for the 10-22 read. — Nova 10-15
 - [ ] [all] never put a URL template with <slug> in a PR body (repo is public): #228's produced 20 empty-slug claim views; claim-view reads must require a non-empty slug. — Nova 10-12
 - [x] [ops] /creator/* landings 7d 323 (10-04→10-10) = 57.9% of 558; organic+AI 137 vs 193 prior wk — re-baseline before the E144 (10-14) and E166 (10-17) reads. — Nova 10-12
 - [x] [ops] re-baseline the `/creator/*` ≥95% guards on organic sessions (89/154/97 by week); the 558 baseline was 74% Direct. — Nova 10-11 → done E204 10-14 (site-relative organic+AI, scoreboard row)
