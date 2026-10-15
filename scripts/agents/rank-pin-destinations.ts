@@ -74,8 +74,11 @@ import {
   type Ga4LandingRow,
   type StrandedPinRow,
 } from './rank-pin-destinations-lib';
+import { requireProjectDir } from './project-dir-guard';
 
-const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? '/Users/eputnam/java_projects/MHMFinds';
+// E215: MHM_PROJECT_DIR unset + running from a worktree used to write into the operator's checkout
+// (2 of 7 agents on 2026-10-14). The guard refuses with exit 2 instead of guessing.
+const PROJECT_DIR = requireProjectDir('rank-pin-destinations.ts');
 const OUT_DIR = join(PROJECT_DIR, 'reports', 'funnel');
 const GA4_PROPERTY = process.env.GA4_PROPERTY_ID ?? '437117335';
 const PINNER_ENV = process.env.MHM_UTILS_ENV ?? join(homedir(), 'java_projects', 'MHMUtils', '.env');

@@ -66,8 +66,11 @@ import {
   type PatreonMemberAttrs,
   type PatreonMembersSummary,
 } from './patreon-members-lib';
+import { requireProjectDir } from './project-dir-guard';
 
-const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? '/Users/eputnam/java_projects/MHMFinds';
+// E215: MHM_PROJECT_DIR unset + running from a worktree used to write into the operator's checkout
+// (2 of 7 agents on 2026-10-14). The guard refuses with exit 2 instead of guessing.
+const PROJECT_DIR = requireProjectDir('funnel-scoreboard.ts');
 const OUT_DIR = join(PROJECT_DIR, 'reports', 'funnel');
 // The runner's own logs (preflight JSON, funnel-daily.log) live in the operator tree, never in $WT (MHM_PROJECT_DIR).
 const FUNNEL_LOG_DIR = process.env.FUNNEL_LOG_DIR ?? '/Users/eputnam/java_projects/MHMFinds/logs';
