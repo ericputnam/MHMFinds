@@ -1,37 +1,39 @@
 /**
- * "Save this mod" account offer on /go/[modId] (Cass, E152, 2026-10-01).
+ * The /go/[modId] capture slot below the `.mv-ads` wrapper (Cass).
  *
- * E4 (the "Get new mods weekly" email box on /go, source `go-interstitial`)
- * was killed on 09-30 at 1.45/1K sessions over 28 days (bar ≥2/1K). E152 puts
- * an account offer in the same slot: below the `.mv-ads` wrapper, a sibling of
- * it, never a child, never inside `<aside id="secondary">`.
+ * History of the slot:
+ *   E4   email box, source `go-interstitial`  — KILLED 09-30 at 1.45/1K.
+ *   E152 "Save this mod" account offer       — KILLED 10-15 at 2 / 2,986 = 0.67/1K
+ *        (bar ≥2.62/1K). components/GoSaveOffer.tsx deleted; the helper module
+ *        app/go/[modId]/goSaveOffer.ts stays because /sign-in (E191) still
+ *        recognises `ref=go-save`.
+ *   2026-10-15 free-tier Patreon follow ask (lib/capture/goPatreonFollow.ts,
+ *        components/GoPatreonFollowOffer.tsx).
  *
  * What this protects:
- *   1. Helpers: sign-up URL, resume marker, marker stripping that keeps other
- *      markers (E74's `?patreon=connected`).
- *   2. Event names / source are distinct from every other capture surface.
- *   3. The favorites link is the real FAVORITES_PATH (imported, not restated).
- *   4. GoClient renders the offer exactly once, after the `.mv-ads` wrapper
+ *   1. The retained go-save helpers still behave (signupIntent depends on them).
+ *   2. The E152 kill is encoded: GoClient renders no GoSaveOffer, runs no
+ *      resume effect, and the deleted component stays deleted.
+ *   3. The follow ask uses the FREE tier link — never the $3 checkout (E40 kill)
+ *      — with its own event name and source, distinct from every other Patreon
+ *      and capture event.
+ *   4. GoClient renders the follow ask exactly once, after the `.mv-ads` wrapper
  *      closes and before the aside; the wrapper still has exactly two child
- *      blocks; the E4 email box is gone.
- *   5. Copy is split by session status — no "create a free account" for a
- *      signed-in visitor.
- *   6. No first-paint blocker, no email input, no `.mv-ads` token in the
- *      component.
+ *      blocks; hidden for members and in the post-connect state.
+ *   5. No first-paint blocker, no email input, no `.mv-ads` token in the
+ *      component; the link opens a new tab with rel="noopener noreferrer".
  *
  * Comments are stripped before source assertions — files here quote the
  * patterns they warn about.
  *
- * Red against pre-E152 GoClient (origin/main 2157097): 7 of the 8 GoClient
- * cases fail (no offer, email box still present); "no first-paint blocker"
- * passes on both trees, as it should.
+ * Red against pre-kill GoClient (origin/main 3da6de1): every case in the
+ * "E152 is gone" and "follow ask" blocks fails (GoSaveOffer still imported and
+ * rendered; no follow component, no event constant).
  */
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { describe, expect, it } from 'vitest';
 import {
-  GO_SAVE_EVENTS,
-  GO_SAVE_FAVORITES_PATH,
   GO_SAVE_RESUME_PARAM,
   GO_SAVE_SOURCE,
   goSaveResumeHref,
@@ -39,13 +41,10 @@ import {
   hasGoSaveMarker,
   stripGoSaveMarker,
 } from '../../app/go/[modId]/goSaveOffer';
-import {
-  MOD_DETAIL_FAVORITE_EVENTS,
-  MOD_DETAIL_FAVORITE_SOURCE,
-  MOD_DETAIL_SAVE_EVENTS,
-  MOD_DETAIL_SAVE_SOURCE,
-} from '../../lib/capture/modDetailFavorite';
-import { FAVORITES_PATH } from '../../lib/favoritesPath';
+import { GO_FOLLOW_SLOT_EVENT, GO_FOLLOW_SLOT_SOURCE } from '../../lib/capture/goPatreonFollow';
+import { PATREON_CONNECT_OPTIN_EVENTS, PATREON_CONNECT_OPTIN_SOURCE } from '../../lib/capture/patreonConnectOptIn';
+import { MOD_DETAIL_FAVORITE_SOURCE, MOD_DETAIL_SAVE_SOURCE } from '../../lib/capture/modDetailFavorite';
+import { SAVE_INTENT_REFS } from '../../app/sign-in/signupIntent';
 
 const ROOT = join(__dirname, '..', '..');
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
@@ -56,9 +55,9 @@ const stripComments = (src: string) =>
     .replace(/^\s*\/\/.*$/gm, '');
 
 const CLIENT = 'app/go/[modId]/GoClient.tsx';
-const OFFER = 'components/GoSaveOffer.tsx';
+const OFFER = 'components/GoPatreonFollowOffer.tsx';
 
-describe('go-save helpers', () => {
+describe('go-save helpers (retained after the E152 kill)', () => {
   it('resume href is the trailing-slash /go path with the marker', () => {
     expect(goSaveResumeHref('abc123')).toBe(`/go/abc123/?${GO_SAVE_RESUME_PARAM}=1`);
   });
@@ -72,70 +71,75 @@ describe('go-save helpers', () => {
     expect(qs.get('redirect')).toBe(goSaveResumeHref('abc123'));
   });
 
-  it('marker detection is exact', () => {
+  it('marker detection and stripping are exact', () => {
     expect(hasGoSaveMarker('?save=1')).toBe(true);
     expect(hasGoSaveMarker('?patreon=connected&save=1')).toBe(true);
     expect(hasGoSaveMarker('?save=0')).toBe(false);
-    expect(hasGoSaveMarker('?fav=1')).toBe(false);
-    expect(hasGoSaveMarker('')).toBe(false);
-  });
-
-  it('stripping removes only the save marker', () => {
-    expect(stripGoSaveMarker('?save=1')).toBe('');
     expect(stripGoSaveMarker('?patreon=connected&save=1')).toBe('?patreon=connected');
     expect(stripGoSaveMarker('')).toBe('');
   });
 
-  it('source and event names are distinct from E107/E130 and generic capture events', () => {
-    expect(new Set([GO_SAVE_SOURCE, MOD_DETAIL_SAVE_SOURCE, MOD_DETAIL_FAVORITE_SOURCE]).size).toBe(3);
-    expect(GO_SAVE_SOURCE).not.toBe('go-interstitial');
-    const mine = Object.values(GO_SAVE_EVENTS);
-    const theirs = [...Object.values(MOD_DETAIL_SAVE_EVENTS), ...Object.values(MOD_DETAIL_FAVORITE_EVENTS)];
-    expect(new Set([...mine, ...theirs]).size).toBe(mine.length + theirs.length);
-    for (const n of mine) {
-      expect(['favorite', 'sign_up', 'newsletter_signup']).not.toContain(n);
-      expect(n).toMatch(/^[a-z_]+$/);
-    }
-  });
-
-  it('the favorites link is the real favorites page path', () => {
-    expect(GO_SAVE_FAVORITES_PATH).toBe(FAVORITES_PATH);
-    expect(GO_SAVE_FAVORITES_PATH.endsWith('/')).toBe(true);
-    // The helper module must stay client-safe: never the Prisma-backed lib.
+  it('/sign-in still recognises the go-save ref (why the module is kept)', () => {
+    expect(SAVE_INTENT_REFS).toContain(GO_SAVE_SOURCE);
     const helperSrc = stripComments(read('app/go/[modId]/goSaveOffer.ts'));
-    expect(helperSrc).not.toMatch(/from ['"][^'"]*lib\/favorites['"]/);
     expect(helperSrc).not.toMatch(/prisma/i);
   });
 });
 
-describe('GoSaveOffer component', () => {
+describe('E152 is gone from /go', () => {
+  const src = stripComments(read(CLIENT));
+
+  it('the account-offer component is deleted and not imported', () => {
+    expect(existsSync(join(ROOT, 'components/GoSaveOffer.tsx'))).toBe(false);
+    expect(src).not.toMatch(/GoSaveOffer/);
+    expect(src).not.toContain('GO_SAVE_EVENTS');
+    expect(src).not.toContain('goSaveSignInHref');
+  });
+
+  it('no resume effect, no favorite POST, and the E4 email box stays gone', () => {
+    expect(src).not.toContain('hasGoSaveMarker');
+    expect(src).not.toMatch(/\/favorite\/`/);
+    expect(src).not.toContain('NewsletterSignup');
+    expect(src).not.toContain('go-interstitial');
+  });
+});
+
+describe('follow-slot constants', () => {
+  it('event and source are distinct from every other Patreon and capture name', () => {
+    const otherEvents = [
+      'patreon_click',
+      'patreon_click_after_wait',
+      'patreon_follow_click',
+      'patreon_reconnect_click',
+      'patreon_post_connect_view',
+      'favorite',
+      'sign_up',
+      'newsletter_signup',
+      ...Object.values(PATREON_CONNECT_OPTIN_EVENTS),
+    ];
+    expect(otherEvents).not.toContain(GO_FOLLOW_SLOT_EVENT);
+    expect(GO_FOLLOW_SLOT_EVENT).toMatch(/^[a-z_]+$/);
+    const sources = [GO_FOLLOW_SLOT_SOURCE, GO_SAVE_SOURCE, MOD_DETAIL_SAVE_SOURCE, MOD_DETAIL_FAVORITE_SOURCE, PATREON_CONNECT_OPTIN_SOURCE, 'go-interstitial'];
+    expect(new Set(sources).size).toBe(sources.length);
+  });
+});
+
+describe('GoPatreonFollowOffer component', () => {
   const src = stripComments(read(OFFER));
 
-  it('is a client component with a single button that calls onSave', () => {
+  it('is a client component with one external link that calls onClick', () => {
     expect(src.startsWith("'use client'")).toBe(true);
-    expect(src).toContain('onClick={onSave}');
-    expect((src.match(/<button\b/g) ?? []).length).toBe(1);
+    expect((src.match(/<a\b/g) ?? []).length).toBe(1);
+    expect(src).toMatch(/<a[\s\S]*?href=\{href\}[\s\S]*?target="_blank"[\s\S]*?rel="noopener noreferrer"[\s\S]*?onClick=\{onClick\}/);
+    expect(src).not.toMatch(/<button\b/);
   });
 
-  it('captures an account, not an email', () => {
+  it('asks for a free follow, not an email or a paid tier', () => {
+    expect(src).toMatch(/Follow free on Patreon/);
     expect(src).not.toMatch(/type=["']email["']/);
     expect(src).not.toContain('/api/waitlist');
-    expect(src).not.toContain('NewsletterSignup');
-  });
-
-  it('splits copy by session status: "create a free account" only when signed out', () => {
-    const ternary = src.match(/\{signedIn\s*\?\s*'([^']*)'\s*:\s*'([^']*)'\s*\}/);
-    expect(ternary).not.toBeNull();
-    const [, signedInCopy, signedOutCopy] = ternary!;
-    expect(signedInCopy).not.toMatch(/create|account|sign/i);
-    expect(signedOutCopy).toMatch(/create a free account/i);
-    // Exactly one occurrence, inside the signed-out branch.
-    expect((src.match(/create a free account/gi) ?? []).length).toBe(1);
-  });
-
-  it('saved state links to the favorites page', () => {
-    expect(src).toMatch(/<Link[\s\S]*?href=\{favoritesHref\}/);
-    expect(src).toMatch(/View your favorites/);
+    expect(src).not.toMatch(/\$\d/);
+    expect(src).not.toMatch(/checkout/i);
   });
 
   it('is inline in normal flow: no dialog, fixed or sticky, and no ad-anchor token', () => {
@@ -146,26 +150,38 @@ describe('GoSaveOffer component', () => {
   });
 });
 
-describe('GoClient — offer placement and wiring', () => {
+describe('GoClient — follow ask placement and wiring', () => {
   const src = stripComments(read(CLIENT));
 
-  it('imports the offer and the shared helpers (vacuity guard)', () => {
-    expect(src).toMatch(/from ['"]@\/components\/GoSaveOffer['"]/);
-    expect(src).toContain('GO_SAVE_EVENTS');
-    expect(src).toContain('goSaveSignInHref');
-    expect(src).toContain('hasGoSaveMarker(window.location.search)');
+  it('imports the component and the shared constants (vacuity guard)', () => {
+    expect(src).toMatch(/from ['"]@\/components\/GoPatreonFollowOffer['"]/);
+    expect(src).toContain('GO_FOLLOW_SLOT_EVENT');
+    expect(src).toContain('GO_FOLLOW_SLOT_SOURCE');
   });
 
-  it('renders the offer exactly once, after the mv-ads wrapper and before the aside', () => {
-    expect((src.match(/<GoSaveOffer\b/g) ?? []).length).toBe(1);
+  it('links the FREE tier, never the member checkout', () => {
+    expect(src).toMatch(/<GoPatreonFollowOffer[\s\S]*?href=\{PATREON_FREE_TIER_CHECKOUT_URL\}/);
+    expect(src).not.toContain('PATREON_MEMBER_TIER_CHECKOUT_URL');
+  });
+
+  it('fires its own event with its own source on click', () => {
+    expect(src).toMatch(/gtag\('event', GO_FOLLOW_SLOT_EVENT, \{ source: GO_FOLLOW_SLOT_SOURCE/);
+  });
+
+  it('is hidden for members and in the post-connect state', () => {
+    expect(src).toMatch(/\{!isMember && !showPostConnect && \(\s*<GoPatreonFollowOffer/);
+  });
+
+  it('renders the ask exactly once, after the mv-ads wrapper closes and before the aside', () => {
+    expect((src.match(/<GoPatreonFollowOffer\b/g) ?? []).length).toBe(1);
     const wrapperOpen = src.indexOf('className="mv-ads');
-    const offer = src.indexOf('<GoSaveOffer');
+    const offer = src.indexOf('<GoPatreonFollowOffer');
     const aside = src.indexOf('<aside');
     expect(wrapperOpen).toBeGreaterThan(0);
     expect(offer).toBeGreaterThan(wrapperOpen);
     expect(offer).toBeLessThan(aside);
 
-    // Walk the wrapper's <div> nesting to find where it closes; the offer
+    // Walk the wrapper's <div> nesting to find where it closes; the ask
     // must come after that point (sibling, not child).
     const openTagStart = src.lastIndexOf('<div', wrapperOpen);
     const re = /<div\b|<\/div>/g;
@@ -181,7 +197,6 @@ describe('GoClient — offer placement and wiring', () => {
           break;
         }
       } else {
-        // A self-closing <div ... /> does not change depth.
         const tagEnd = src.indexOf('>', m.index);
         const selfClosing = src[tagEnd - 1] === '/';
         if (depth === 1) directChildren += 1;
@@ -193,29 +208,6 @@ describe('GoClient — offer placement and wiring', () => {
     // The wrapper keeps exactly its two content blocks (install guide +
     // Pinterest CTA) — one Mediavine injection gap, unchanged.
     expect(directChildren).toBe(2);
-  });
-
-  it('the E4 email box is gone from /go', () => {
-    expect(src).not.toContain('NewsletterSignup');
-    expect(src).not.toContain('go-interstitial');
-  });
-
-  it('copy split is driven by the real session status', () => {
-    expect(src).toMatch(/<GoSaveOffer[\s\S]*?signedIn=\{sessionStatus === 'authenticated'\}/);
-  });
-
-  it('a 401 fires the redirect event and routes to the offer sign-up href exactly once', () => {
-    expect(src).toContain('GO_SAVE_EVENTS.signinRedirect');
-    expect((src.match(/router\.push\(goSaveSignInHref\(/g) ?? []).length).toBe(1);
-  });
-
-  it('the resume path fires afterSignin and strips only its own marker', () => {
-    expect(src).toContain('GO_SAVE_EVENTS.afterSignin');
-    expect(src).toContain('stripGoSaveMarker(window.location.search)');
-  });
-
-  it('the favorite POST uses a trailing-slash API URL', () => {
-    expect(src).toMatch(/\/api\/mods\/\$\{[^}]+\}\/favorite\/`/);
   });
 
   it('introduces no first-paint blocker', () => {
