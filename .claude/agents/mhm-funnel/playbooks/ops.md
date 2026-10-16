@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-16 — E222
+- Tried: liveness RAN-UNLANDED + runner digest-land + Quinn stdout to operator logs/ (T0, #318 38885f4).
+- Before → after: 10-16 window 3 MISSED → 2 MISSED + 1 RAN-UNLANDED; tests 6/8 + 4/4 red pre-fix; Ops share 6/41 = 14.6%.
+- Verdict: MORE DATA (read 2026-10-23).
+- Next time: the stdout that explains why a session ended must outlive its worktree. (Entry written by Quinn from Ops's report: Edit was denied in Ops's run.)
+
 _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._

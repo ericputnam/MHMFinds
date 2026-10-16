@@ -1,6 +1,6 @@
 {
   "_comment": "Funnel team targets. Baselines are REAL numbers pulled 2026-09-01 (sources noted). The scoreboard script (scripts/agents/funnel-scoreboard.ts) reports actuals against these daily. Quinn rewrites `bets` monthly. All currency USD.",
-  "lastUpdated": "2026-10-01",
+  "lastUpdated": "2026-10-16",
   "autonomy": "tiered",
   "_autonomyNote": "\"tiered\" = Tier 0 ships, Tier 1 ships after a 24h veto window, Tier 2 queues for the operator (see autonomy.md). Set to \"ask\" to make everything queue.",
   "successCriterion": "Total revenue growth AND sessions growth, judged together: Mediavine + non-ad revenue 28d rolling vs prior 28d, and Mediavine sessions 28d rolling vs prior 28d. Operator decision 2026-09-19: RPM gains with falling sessions do not count as growth; a day is graded green only when both revenue and sessions are >= 97% of the expectation line in targets.monthly.sessions / reports/funnel/history.json (see /admin/funnel/). Owned-audience adds and non-ad revenue below are the levers, not the verdict.",
@@ -202,12 +202,12 @@
       },
       {
         "id": "B2",
-        "name": "Non-ad revenue inside the Tier 2 fence: the $300/mo hub-slot sponsorship (Q17), the /go Connect leg (E74/E99, after-wait 4.2 users/day), affiliates repair A-D (E134), and the creator program as the supply lever (Nova, Q23). No tier or pricing changes (Q4 closed won't-do)",
+        "name": "Non-ad revenue, affiliates-only from 10-15 (B2 killIf MET 10-15: paid joins 7d 4 on 10-08 and 3 on 10-15, Q17 dropped 10-07): affiliates repair A-D (E134, pipe read 11-11), the one-post Amazon tag fix (Q29, Tier 2), and the creator program as the supply lever (Nova, E211). No tier, pricing, sponsorship or /go Connect work in October (Q4 closed won't-do; Q23 dropped)",
         "owner": "Rio (Nova for creators)",
         "metric": "nonAdRevenue monthly (Patreon public gross + sponsorship + AffiliateEarning)",
-        "target": "$450/mo by 2026-10-31 per targets.monthly; Rio's realistic read is in _rioOctoberRead",
-        "_rioOctoberRead": "$200-225/mo by 10-31 (Patreon $156.50 now, +$15/wk net; affiliates $0 until the pipe is readable); $450 only if Q17 ships and one $300/mo sponsor signs in October",
-        "killIf": "paid joins 7d < 5 on both 10-08 and 10-15 AND Q17 unanswered past its 10-07 drop -> October is the creator-program month, not the Patreon month; Rio moves to affiliates only"
+        "target": "$450/mo by 2026-10-31 per targets.monthly stands as the line, not the forecast; the October grade is the _rioOctoberRead band and the affiliates-only mandate",
+        "_rioOctoberRead": "$160-170/mo by 10-31 (Patreon $162 on 10-16, 60 paid; affiliates $0 until the 11-11 pipe read); rewritten by Quinn 2026-10-16 after the killIf fired — the $450 target is MISSED for October and is re-set with the November bets on 11-01",
+        "killIf": "MET 2026-10-15 (joins 7d 4 / 3 < 5; Q17 dropped) -> Rio is affiliates-only 10-15 -> 10-31. Second trip: affiliate_click 7d < 5 on 10-29 with Q29 unanswered -> affiliates are also paper-only and November's B2 is a creator-rev-share bet"
       },
       {
         "id": "B3",

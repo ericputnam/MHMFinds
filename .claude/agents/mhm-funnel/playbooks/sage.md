@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-16 — E217 skin-details top-30 hand-fix (Tier 0)
+- Tried: 388 skin rows; top 30 had 3 off-type cards (#15 lighting mod, #19 swimsuit set, #22 lips of unknowable subtype) → pinned gameplay-mod / full-body / NULL via `--ids=`; #7 Girls Night Set pinned KEEP (PR #315 56c4a01, verify PASS).
+- Before → after: top-30 off-type 3 → 0 (read-back + live page); pop 388 → 385.
+- Verdict: MORE DATA (read 2026-10-29 with E210).
+- Next time: a hub's top 30 is the audit unit — 3 wrong cards out of 388 rows were all above the fold by downloadCount; audit the grid order, not the facet count. (Entry written by Quinn from Sage's report: Write/Edit was denied in Sage's run.)
+
 ## 2026-10-15 — E210 skin-details retitle (Tier 0)
 - Tried: no 7-term hub left to build (all indexed: cc 10-12, build-cc/clothes-cc/hair-cc 10-06), so the fallback on-page fix: skin-details title/H1/meta now lead with "Skin CC" + "Skin Overlays, Skintones" (was "Skin Details CC — 270+"). Its 723 impr/28d sit at pos 25 on the generic skin family and the bare "skin overlay" family, neither in the old title.
 - Before → after: 13 clk / 290 impr (09-29→10-10) → read 10-29. Facet 295/348 title-supported (84.8%), top-30 21/30, 3 description mis-tags → inbox.
@@ -42,30 +48,6 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 0/14 lines carried an age → dry run mods=78 newest_mod_age_h=0.2 mods_check=ok; read 10-14. Grades: E27 KEEP (378, ChatGPT 28d share 89.5% vs 88.5%), E42 KEEP on the OR leg, E83 KILL (3.464%), E84 KILL (1,606), E18 KEEP traffic leg (pos 32.98), E21 revert-per-rule held (55 vs 95, canonical met), E128 KEEP, E71 MORE DATA → 10-19.
 - Verdict: MORE DATA (read on 2026-10-14).
 - Next time: recount a baseline with the same script before grading (E84 1,607 and E18 512 reproduced exactly), and never set a 28-day read only 14 days after shipping (E83's window was 57% pre-ship).
-
-## 2026-10-04 — E171 build-cc hub (Tier 0, PR HELD-RED)
-- Tried: first category hub from the 7-term competitor gap: `/games/sims-4/build-cc/`, a registry-only union over 8 build/buy facets (2,207 mods, 1,912 free), appended last; furniture/bedroom/bathroom now link to it. New guard `collection-primary-crumb-order.test.ts`: 2/4 red pre-fix, 3/4 with build-cc misordered.
-- Before → after: page 404, "sims 4 build cc" 0 impr (GSC 09-03→09-30) → read 10-18 / 11-01. Grades: E114 KEEP (ai_referral 7d 374, chatgpt 324); E115 KEEP (62 bing /creator/ landings, 43 pages); E62 MORE DATA (51 clicks vs 55); E121 MORE DATA, leaning KILL (full-window guide got 2); E128 7/7 OK.
-- Verdict: MORE DATA (red day, unmerged).
-- Next time: spot-check a union's top 20 before writing the copy (#7, #20 were furniture mis-tags), and confirm the WP article URL is live: three /sims-4-build-*/ slugs 404.
-
-## 2026-10-02 — E157 clothes-cc hub (Tier 0, shipped)
-- Tried: ungendered union collection for the bare "sims 4 clothes cc" head term the two gendered hubs could not answer (neither surfaced once in 28d). PR #248 `0207a8c`, verify PASS 07:03; only `lib/collections.ts` changed.
-- Before → after: page 404 / 0 impr → live 200 with 3,665 mods, 108 mod links, feed 50 items, in sitemap-nextjs + llms-full; read 10-16 / 10-30. E8 graded KEEP: 2,642 vs 2,106 clicks 28d (+25.5%), weekly 614 → 770, position ~42 → 12.5–15.
-- Verdict: pending.
-- Next time: (1) a `-c` grep counts lines, not matches — 1 looked like a broken grid, it was 108 links on one line; (2) `sitemap.xml` is an index — grep `sitemap-nextjs.xml` for collection URLs; (3) feeds live at `/feeds/<game>/<slug>/`; (4) merge-gate's 600 s ceiling is ~2.5 sibling merges — on a 4-agent day expect one retry, and read `gh pr view --json state` after the `--delete-branch` error; (5) `filterSpecificity` scores every contentType filter 0, so a union collection must sit *after* its gendered siblings in the registry or it steals every primary crumb.
-
-## 2026-10-01
-- Tried: E150 (T0, PR #235 `b20ca3b`). The site-wide WebPage JSON-LD (`/#webpage`, emitted by the root layout on every page) now uses `HOME_SHELL_LASTMOD` = APP_LASTMOD `2026-09-08` (`lib/seo/siteLastmod.ts`, kept Prisma-free; a test fails if the two drift). Before, `dateModified` was `new Date()`. The E143 scanner now also fails on a bare `new Date()`/`Date.now()` in a content date. Pre-fix tree: 2 of 11 tests red, with exactly 1 offender.
-- Before → after: live `dateModified` on `/` and hair-cc `2026-10-01` (render day) → `2026-09-08` at 06:49 (verify SUPERSEDED-PASS, 5xx 0). Graded E95 KEEP: bing/organic landings on /creator/* were 61 (09-24→30, prior 0); bing_organic 16,844 = 107.8% of 15,623. Credit is shared with E97 hub and E115.
-- Verdict: MORE DATA (read 2026-10-03: both pages still `2026-09-08`).
-- Next time: no eligible mod has been created since 09-26 10:42:55Z (16,524 = live sitemap count). Ingest stalled, which is why IndexNow says mods=0, and it made candidate (b), a force-dynamic mod sitemap, a vacuous read today. Check the newest createdAt before choosing a freshness move.
-
-## 2026-09-29
-- Tried: E136 (T0, PR #221 `72c8841`): /sitemap-mods.xml <lastmod> from max(createdAt, lastScraped) via lib/seo/modLastmod.ts. Mod.updatedAt is @updatedAt and counter writes bump it: 685 rows "updated" in 24h with 0 created, 3,377/7d vs 50, 6,070/28d vs 673 (16,524 eligible). E37 fixed this class on the collection sitemap on 09-12 and left the 16.5K-URL mod sitemap on updatedAt. 3 of 11 tests red pre-fix.
-- Before → after: live lastmod-in-28d 6,070 → 673 of 16,524 (7d 50, 1d 0, newest 09-26); /mods/* clicks 28d 614 (08-30→09-26) → read 10-13, keep ≥584. Pre-read 09-30: ai_referral 7d 356 (+21.1%; chatgpt 323 / 90.7%): E2 not met (<385), E27 KEEP (≥300, share −0.5 pt), E42 EXTEND.
-- Verdict: MORE DATA (read 2026-10-13; the "change took" half of the keep rule is already met).
-- Next time: "exactly 27 every day" was one ingest batch (09-26 10:42:21–10:42:55Z) sitting inside a 48h window for three 24h-spaced runs — read the batch timestamps before calling a counter a bug. And read the build legend: /sitemap-mods.xml is ○ static, so lastmod is only as fresh as the last deploy.
 
 ## 2026-10-13 — E196 modLastmod() publishedAt floor (Tier 0, PR #290)
 - Tried: `lib/seo/modLastmod.ts` = max(createdAt, lastScraped, publishedAt); sitemap selects publishedAt; ModJsonLd hands publishedAt to the helper instead of flooring locally. New agreement test renders both surfaces per fixture; 5/25 red on pre-fix sources.
