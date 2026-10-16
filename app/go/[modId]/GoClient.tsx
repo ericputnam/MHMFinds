@@ -9,18 +9,10 @@ import { useSession, signIn } from 'next-auth/react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
 import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
-import { GoSaveOffer } from '@/components/GoSaveOffer';
+import { GoPatreonFollowOffer } from '@/components/GoPatreonFollowOffer';
 import { ConnectEmailOptIn } from '@/components/ConnectEmailOptIn';
 import { shouldShowConnectOptIn } from '@/lib/capture/patreonConnectOptIn';
-import {
-  GO_SAVE_EVENTS,
-  GO_SAVE_FAVORITES_PATH,
-  GO_SAVE_SOURCE,
-  goPath,
-  goSaveSignInHref,
-  hasGoSaveMarker,
-  stripGoSaveMarker,
-} from './goSaveOffer';
+import { GO_FOLLOW_SLOT_EVENT, GO_FOLLOW_SLOT_SOURCE } from '@/lib/capture/goPatreonFollow';
 import {
   isMembershipEnabled,
   PATREON_PAGE_URL,
@@ -129,84 +121,16 @@ export default function GoClient() {
     gtag('event', 'patreon_post_connect_view', { mod_id: String(params.modId) });
   }, [showPostConnect, params.modId]);
 
-  // E152 (Cass, 2026-10-01) — "Save this mod" account offer in the slot the
-  // E4 email box used (killed 09-30, 1.45/1K < 2/1K). A signed-in click saves
-  // and fires `favorite` (source go-save); a signed-out click (401) fires
-  // go_save_signin_redirect and goes to sign-up with a redirect back here
-  // carrying `?save=1`, and the effect below finishes the save once. Never
-  // toggles a favorite off. No DOM inside `.mv-ads` changes.
-  const [goSaved, setGoSaved] = useState(false);
-  const [goSavePending, setGoSavePending] = useState(false);
-
-  const postGoSave = useCallback(
-    async (source: string): Promise<'saved' | 'unauthorized' | 'error'> => {
-      const modId = String(params.modId);
-      const response = await fetch(`/api/mods/${encodeURIComponent(modId)}/favorite/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (response.status === 401) return 'unauthorized';
-      if (response.ok) {
-        setGoSaved(true);
-        gtag('event', 'favorite', { source, mod_id: modId });
-        return 'saved';
-      }
-      if (response.status === 400) {
-        // "Already favorited" — idempotent, counts as saved.
-        setGoSaved(true);
-        return 'saved';
-      }
-      return 'error';
-    },
-    [params.modId],
-  );
-
-  const handleGoSave = useCallback(async () => {
-    if (goSavePending || goSaved) return;
-    setGoSavePending(true);
-    try {
-      const outcome = await postGoSave(GO_SAVE_SOURCE);
-      if (outcome === 'unauthorized') {
-        gtag('event', GO_SAVE_EVENTS.signinRedirect, {
-          source: GO_SAVE_SOURCE,
-          mod_id: String(params.modId),
-        });
-        router.push(goSaveSignInHref(String(params.modId)));
-      }
-    } catch (error) {
-      console.error('Error saving mod:', error);
-    } finally {
-      setGoSavePending(false);
-    }
-  }, [goSavePending, goSaved, postGoSave, params.modId, router]);
-
-  // Resume after sign-up: complete the save once, then remove only the
-  // `save` marker so a reload or a shared link does not repeat it.
-  const goSaveResumeAttempted = useRef(false);
-  useEffect(() => {
-    if (goSaveResumeAttempted.current) return;
-    if (!hasGoSaveMarker(window.location.search)) return;
-    goSaveResumeAttempted.current = true;
-    (async () => {
-      try {
-        const outcome = await postGoSave(`${GO_SAVE_SOURCE}-after-signin`);
-        if (outcome === 'saved') {
-          gtag('event', GO_SAVE_EVENTS.afterSignin, {
-            source: GO_SAVE_SOURCE,
-            mod_id: String(params.modId),
-          });
-        }
-      } catch (error) {
-        console.error('Error resuming save:', error);
-      } finally {
-        window.history.replaceState(
-          null,
-          '',
-          `${goPath(String(params.modId))}${stripGoSaveMarker(window.location.search)}`,
-        );
-      }
-    })();
-  }, [postGoSave, params.modId]);
+  // E152 KILLED (Cass, 2026-10-15): the "Save this mod" account offer that
+  // sat below the mv-ads wrapper read 2 go_save_after_signin / 2,986 /go
+  // sessions = 0.67/1K over 10-01→10-14 against its ≥2.62/1K bar (E4's email
+  // box before it: 1.45/1K). Its state, the 401→sign-up→`?save=1` resume and
+  // the `favorite` POST are gone; `app/go/[modId]/goSaveOffer.ts` keeps the
+  // constants because /sign-in still recognises `ref=go-save`. The slot now
+  // carries a free-tier Patreon follow ask (lib/capture/goPatreonFollow.ts).
+  const handleFollowSlotClick = useCallback(() => {
+    gtag('event', GO_FOLLOW_SLOT_EVENT, { source: GO_FOLLOW_SLOT_SOURCE, mod_id: String(params.modId) });
+  }, [params.modId]);
 
   // Fetch mod details + related mods
   useEffect(() => {
@@ -642,18 +566,17 @@ export default function GoClient() {
             )}
 
             {/*
-              E152 account capture — the slot the E4 email box used
-              (source go-interstitial, KILLED 09-30). Sibling of the mv-ads
-              wrapper above, never inside it or the aside (SD-3); the
+              Free-follow Patreon ask (Cass, 2026-10-15) — the slot the E4
+              email box (KILLED 09-30) and the E152 account offer (KILLED
+              10-15) used. Free tier only: leading /go with the $3 checkout
+              is the E40 kill. Hidden for members and in the E74 post-connect
+              state, which already asks for the free follow. Sibling of the
+              mv-ads wrapper above, never inside it or the aside (SD-3); the
               wrapper keeps exactly its two children.
             */}
-            <GoSaveOffer
-              signedIn={sessionStatus === 'authenticated'}
-              saved={goSaved}
-              pending={goSavePending}
-              onSave={handleGoSave}
-              favoritesHref={GO_SAVE_FAVORITES_PATH}
-            />
+            {!isMember && !showPostConnect && (
+              <GoPatreonFollowOffer href={PATREON_FREE_TIER_CHECKOUT_URL} onClick={handleFollowSlotClick} />
+            )}
 
             {/* While You Wait — related mods during countdown */}
             {relatedMods.length > 0 && (

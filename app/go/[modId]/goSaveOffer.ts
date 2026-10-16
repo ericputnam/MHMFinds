@@ -1,6 +1,17 @@
 /**
  * "Save this mod" account offer on /go/[modId] (Cass, E152, 2026-10-01).
  *
+ * E152 KILLED 2026-10-15 by its own rule: go_save_after_signin 2 / 2,986 /go
+ * sessions (10-01→10-14) = 0.67/1K vs ≥2.62/1K; 9 users took the sign-up
+ * redirect and 2 completed. GoClient no longer renders the offer or runs the
+ * resume effect (components/GoSaveOffer.tsx is deleted). This module stays
+ * because `app/sign-in/signupIntent.ts` still recognises `ref=go-save` (E191)
+ * and the constants are the record of what was tried — do not re-propose an
+ * account offer in the /go slot without a different mechanism; E4 (email,
+ * 1.45/1K) and E152 (account, 0.67/1K) both failed there.
+ *
+ * Original design, kept for the record:
+ *
  * Replaces the E4 email box ("Get new mods weekly", source `go-interstitial`)
  * in the same slot — a sibling of the `.mv-ads` wrapper, below it, never a
  * child of it and never inside `<aside id="secondary">`. E4 was killed on

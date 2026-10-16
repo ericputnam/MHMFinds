@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-16
+- Tried: issue-06 run 2 (`--weekly --live --resume-after <10-15 cursor>`, Tier 1 approved 10-15). The dry run showed 53, not 42: 42 deferred plus 11 opt-ins after run 1 (10 signup-optin, 1 footer). 100 rows sat at or before the cursor, so there were 0 dupes by construction. Sent 53/53, 0 failed, 31/31 tagged. Also landed #309 (E152 KILL → free Patreon follow ask on /go). E159 graded.
+- Before → after: issue 06 total: 153 attempted, 152 sent, 1 reject hashed (code null). E159: favorite src=mod-detail-save went from 4 users / 7 ev to 6 / 16 (10-02→10-15). Including after-signin it was 11 users / 22 ev. /account/favorites/ views with a /mods/* referrer: 0 → 1. Bar was ≥8 users OR ≥5 views.
+- Verdict: E159 KILL by rule (6 < 8, 1 < 5). No revert: the copy is now the offer's baseline. E205 on track (100% reached, 0 dupes, reject hashed).
+- Next time: a resume run reaches everyone after the cursor, including opt-ins since the last run. Count the tail by consent time before you quote "deferred" as the recipient number.
+
 ## 2026-10-14
 - Tried: E205 — weekly send record made recoverable: live `--weekly` rows carry `rejects[{hash,code}]` (sha256 + SMTP code only, ledger + NotificationLog); waitlist read oldest-first with a `resumeCursor` (`<createdAt>~<id>`) when the 100 cap defers, `--resume-after` sends exactly the tail. (a) diversity cap was already live via the #287 rider. Tier 0, 5/31 red pre-fix.
 - Before → after: issue-06 dry 10-14: 132 recipients, cap 100 → 32 deferred in arbitrary order (no orderBy); 0 excluded; 31/31 tagged; picks 6/6 distinct contentTypes. Resume dry = 32/32 → read 2026-10-18 with E184 (keep if issue 06 reaches 100% of waitlist minus exclusions, 0 duplicates, rejects hashed).
@@ -54,14 +60,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: PENDING. Keep if ≥8 signed-in offer-save users/14d OR ≥5 referred favorites views, with /mods/* RPM ≥95%.
 - Next time: `customEvent:source` IS a registered GA4 dimension — read it instead of assuming params are invisible; it split signed-in offer saves from the heart's in one query. And `grep -l … | xargs`-style lists silently collapse to one file under vitest 4 — pass paths explicitly.
 
-## 2026-10-01
-- Tried: E152 — "Save this mod for later" account offer in the E4 /go email-box slot (sibling below `.mv-ads`, wrapper still 2 children), copy split by session status, saved → /account/favorites/; own ref go-save, events go_save_signin_redirect / go_save_after_signin, marker ?save=1 (T0, PR #238, 1902a23, verify PASS 06:53). 7/8 GoClient cases red pre-fix.
-- Before → after: /go 2,931 sessions 14d (99% desktop; page_view only 15% of them); E4 0.68/1K GA4 14d, 1.45/1K DB 28d; go_save_* 0 → read 2026-10-15. Owned adds 7d 119 (28 email + 91 accounts) vs 200; capture 1.28/1K.
-- Verdict: PENDING. Keep if ≥2.62/1K /go sessions AND /go RPM ≥95% same weekdays (watch 10-08).
-- Next time: import a shared constant from its client-safe module (lib/favoritesPath.ts), never the Prisma-backed barrel. And `gh pr merge --delete-branch` exit 1 again meant MERGED — read state first.
-
-## 2026-09-30
-- Tried: E145 = E78 Part A. Shipped #144's cron route, `newsletterWeekly` and tests without `vercel.json` (T0, PR #226, 77c3a9e, verify PASS 06:55). Production returns 401 with no bearer. Auth now fails closed on an unset `CRON_SECRET` (#144 skipped auth in that case; 1/20 tests red against it). #144 is closed. Q18 now asks only for the cron line.
-- Before → after: automated issues 0/wk, 56 subscribers, 1 issue ever. Read 10-07 (Q18 drop date).
-- Verdict: PENDING. E54 KILL (2 of 387; 12 hard of 200 = 6.0%). E4 KILL (/go 3/1,734 = 1.73/1K extension, 6/4,125 = 1.45/1K 28d, < 2); replace it with an account offer.
-- Next time: a test that exercises a real send path must mock `fs`. My first run appended 3 fake `live` rows to `newsletter-sends.jsonl` (reverted before commit).
