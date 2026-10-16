@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-16
+- Tried: E216 (T0, PR #317 21cc7c9): classified the Singapore Direct stream (E206 Pip leg, due 10-21) with a reusable read — `scripts/agents/direct-bot-read.ts` + pure `direct-bot-lib.ts` (rule printed before the reading; `automated` only if users/session ≥0.98 AND pv/session ≤1.05 AND ≥90% on the two fingerprints; else `inconclusive`, never "human") + 11 tests; artifact `reports/funnel/pip-singapore-direct-2026-10-16.md`; Q30 (Vercel Firewall SG challenge) filed. No top-up: tool runway 2.89 d (46 ÷ 15.93 pinterest-14d) ≥ 2.0.
+- Before → after: 28d 09-17→10-14 segment 14,740 = **4.10%** of 359,162 (Rio's excess-over-250 method read 1.93% — the quiet-day trickle is the same two fingerprints); users/session 1.001, pv/session 1.002, 99.0% on 1280x1200 (9,686) + 1366x1366 (4,668); engaged 27.8% but 85.7% on the Mac variant — dwell-driven, so engagement is not a bot discriminator. 7d all +5.7% → ex segment +0.5%; Direct +79.9% → ex segment **−7.4%**. 1280x1200 variant ramping (10-14 1,806, 10-15 1,943). Pinner 9–10 pins/24h = 100% of rows dated today (0 schedulable, drainable 0): inventory-bound, not degraded.
+- Verdict: KEEP (verdict `automated`; read 10-21 by re-running the tool — keep if verdict unchanged and the headline is quoted with the ex-segment line beside it)
+- Next time: segment Direct by country + source before reading its WoW, and classify the whole segment, not the excess over a baseline. (Entry written by Quinn from Pip's report: Edit was denied in Pip's run.)
+
 ## 2026-10-15
 - Tried: E209 top-up #15 (T0, SD-10 floor; E202's next leg): tool gate read 1.99 d (35 ÷ 17.57/day pinterest-14d) while the scoreboard printed "≈2 d" on the same basis — the floor is strict, 1.99 < 2.0. 18 sessions-ranked rows 7×10-21/22 + 4×10-23 (ranker 9 dests/70 ids, 77 writer rows dropped upstream, 0 in the tool); cross-run cap skipped 10-15..20 (E188 + E202). Forgot `--max-per-url 1` → tool default 2/URL/day (urban-tattoos ×6, gshade ×6 over 3 dates); inside the standing approval, noted on the ledger. E206 Pip leg (Singapore Direct) not started — due 10-21.
 - Before → after: runway 1.99 → 3.02 d (35 → 53 rows; bound seven_per_day_cap, stopped at the ~3-day target, not hard_cap_21); SEO 74 → 99 (0/18 → 18/18); read-back 18/18, created_at ≤ 2025-10-28. Inventory 10-21..23 is again 100% top-ups.
