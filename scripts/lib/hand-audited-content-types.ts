@@ -991,6 +991,41 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmim8wygv00syoxy87lzrqrja: { contentType: "full-body", why: "E217 \"Brandy x Plastic “The Island Gyal Collection”\" — full-body, was skin; desc: \"sexy and revealing swimsuits\" (swimsuit-cc post); swim titles 37/67 full-body; \"skin\" in the desc is the Sims' skin, not CC; card #19 on skin-details" },
   cmkxfu1bw0015oxj30ub93y26: { contentType: null, why: "E217 \"1 Plumb Lippiez\" — NULL, was skin; Patreon source 403, desc is NoNvme Studios boilerplate; lips, but preset vs lipstick vs gloss is unknowable from the title; NULL beats a guess; card #22 on skin-details" },
   cmik9xy3k00d1oxk7ijz6orjd: { contentType: "skin", why: "E217 \"Girls Night Set\" — KEEP: desc \"a cozy collection of sleepwear and skin presets\" — mixed set that does include skin presets; current type not wrong; card #7 on skin-details" },
+  // ── Audited 2026-10-16 (Rowan, E221). Every row in `lashes` (41, Sims 4,
+  //    SFW) read by title, then description + download URL, BEFORE `lashes`
+  //    joins makeup-cc's `contentTypeIn` (it would otherwise put Kosmo Grillz
+  //    at #18 of that grid). 19 wrong for ~10 reasons (jewelry, Sim downloads,
+  //    scars, a fence, a loading screen, clothes) — heterogeneous, so `--ids`
+  //    pins. NOT made `titleOnly` (measured, rejected): a whole-catalog replay
+  //    of the ingest resolver with the flag on changes 4 of 16,903 answers,
+  //    and 2 of those are Sim downloads that move lashes -> lipstick / hair,
+  //    i.e. still wrong. The live class is "a Sim download's description
+  //    lists its CAS parts", not the lashes rule.
+  //    Same policies as E214: Sim downloads -> NULL, scars -> skin, mixed
+  //    clothing sets -> NULL. Catalog title counts (2026-10-16): "costume"
+  //    24/36 full-body, "apron" 13/32 full-body (plurality), "fence" 8/19 decor
+  //    (8 NULL), "beard" 49/51 beard, "loading screen" 181/212.
+  cmmvapzxk006joxzg7isekbcf: { contentType: "jewelry", why: "E221 \"Kosmo Grillz Collection\" — jewelry, was lashes; desc metallic gold/diamond grillz accessory; the one other grillz title is jewelry" },
+  cmmvaq11e006yoxzgr2cgywby: { contentType: "jewelry", why: "E221 \"Swap Meet Collection: Rolex Jewelry\" — jewelry, was lashes; title says jewelry" },
+  cmmvaq07z006moxzgv1t56xk7: { contentType: "jewelry", why: "E221 \"Clever Boy Chain\" — jewelry, was lashes; desc diamond clover necklace + pendant" },
+  cmmvapo2d005qoxzg8yjye8uz: { contentType: "hair", why: "E221 \"Cieanna Hair / Messy Bun Half Up\" — hair, was lashes; title says hair" },
+  cmttzgzel002ooxfe6b4qs9gq: { contentType: null, why: "E221 \"Nicki Minaj Sim\" — NULL, was lashes; a celebrity Sim download; E207 Sim -> NULL" },
+  cmttzgs2y001eoxfei8qnc5pp: { contentType: null, why: "E221 \"Cardi B – The Sims 4\" — NULL, was lashes; a ready-made Sim + CC list; E207 Sim -> NULL" },
+  cmsmcvme800z0oxeum6j8d2ku: { contentType: "skin", why: "E221 \"Random Arm (and Hand) Scars\" — skin, was lashes; body scars (scars post), as E214 scars" },
+  cmsmcvcll00ysoxeu77ud56g1: { contentType: "skin", why: "E221 \"Tattoo Facial Scars\" — skin, was lashes; facial scars (scars post), as E214 Geralt Scars" },
+  cmkylsbk1014eoxhcjwojzfae: { contentType: null, why: "E221 \"Flashback ’80 Collection\" — NULL, was lashes; set: t-shirt, skirt, sweater, jean, dress; mixed, NULL beats a guess" },
+  cmsmbklsk009woxeucd1r249e: { contentType: null, why: "E221 \"Coquette Collection\" — NULL, was lashes; CAS pack of unlisted clothing pieces; NULL beats a guess" },
+  cmsmcyuw3010poxeuf8awuybc: { contentType: "full-body", why: "E221 \"The Flash Costume\" — full-body, was lashes; desc full-body suit; costume titles 24/36 full-body" },
+  cmsmb2tnt000poxeu87vqq5v6: { contentType: "full-body", why: "E221 \"Artist’s Apron\" — full-body, was lashes; apron titles 13/32 full-body (plurality)" },
+  cmkyno6xa0178oxhc7yad35ke: { contentType: "tops", why: "E221 \"Midnight Lashes Top\" — tops, was lashes; a top named Midnight Lashes; source category CAS - Clothing" },
+  cmkxy0cuj001qoxhc54xmurzg: { contentType: "beard", why: "E221 \"The Scarred Beard\" — beard, was lashes; desc facial hair category; beard titles 49/51" },
+  cmsmcdbdp00paoxeu6nrolidp: { contentType: "loading-screen", why: "E221 \"TS4 Classy Towers Night Loading Screen\" — loading-screen, was lashes; title says loading screen" },
+  cmsmcusx100yqoxeu0no5qyed: { contentType: "furniture", why: "E221 \"Glow Makeup Studio Pack\" — furniture, was lashes; desc 16-item salon set: retail counter, makeup table, shelves" },
+  cmsmbvbct00floxeu0z03i84f: { contentType: "decor", why: "E221 \"Calm Splash\" — decor, was lashes; TSR buildmode-fencesgates; fence titles 8/19 decor (plurality)" },
+  cmmvaptnd0068oxzg8pb69tog: { contentType: null, why: "E221 \"Default Flashcards Replacement\" — NULL, was lashes; a toddler-object texture override; no facet fits, NULL beats a guess" },
+  cmkxz0sxj004woxhcgg0o6l8t: { contentType: "lashes", why: "E221 \"Toddler Slim 3D Eyelashes\" — KEEP: title says eyelashes; TSR files it under glasses, which is wrong" },
+  cmim8ti00007noxy876bn76js: { contentType: "lashes", why: "E221 \"2D Eyelash Ultimate Collection\" — KEEP: 58 drawn-on lashes for the Lovestruck lash slot; desc calls them eyeliner-like, title wins" },
+  cmim8zl800190oxy8eob8efci: { contentType: "lashes", why: "E221 \"Mix and Match Flower Lashes\" — KEEP: lashes with flower tips; source category CAS - Accessories is wrong" },
 };
 
 /**
