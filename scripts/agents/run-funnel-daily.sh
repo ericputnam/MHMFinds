@@ -564,6 +564,8 @@ $AGENT_WT_LINE" \
 else
   log "Quinn exited non-zero (see logs)."
 fi
+# E222: Quinn's stdout is the only record of why a session ended; it lived in $WT and was reaped with it (10-15).
+cp "$WT/reports/funnel/quinn-$TODAY.out" "$PROJECT_DIR/logs/funnel-quinn-$TODAY.out" 2>/dev/null || true
 # The digest is the deliverable. Quinn writes it (skeleton before the first merge, full at the end); the fallback
 # script accepts it only if it has the five-section shape, fills the <!-- LEDGER --> placeholder from today's
 # ledger rows, and otherwise SYNTHESIZES a digest from scoreboard + guardrail + ledger + queue. 2026-09-14: Quinn hit
@@ -653,7 +655,13 @@ daily_pr_ledger() {  # $1 day (YYYY-MM-DD) · $2 tree to verify from. rc 0 row p
 }
 # <<< daily-pr-ledger
 if [ "${FUNNEL_DAILY_PR_LEDGER:-1}" = "1" ]; then
-  daily_pr_ledger "$TODAY" "$WT"; log "daily-pr-ledger: exit $?"
+  daily_pr_ledger "$TODAY" "$WT"; DPL_RC=$?; log "daily-pr-ledger: exit $DPL_RC"
+  # E222 (10-16): on 10-15 the digest was accepted, the daily PR never merged, and the digest sat in the operator
+  # checkout only — the next scoreboard read the day as MISSED. An accepted digest lands on main here (idempotent;
+  # HELD if a funnel/quinn/daily-DATE branch exists; DEGRADED digests refused). Never fatal.
+  if [ "$DPL_RC" = 2 ] && [ -s "$PROJECT_DIR/reports/funnel/digest-$TODAY.md" ] && [ -x "$WT/scripts/agents/digest-land.sh" ]; then
+    "$WT/scripts/agents/digest-land.sh" --date "$TODAY" --file "$PROJECT_DIR/reports/funnel/digest-$TODAY.md" 2>&1 | while IFS= read -r l; do log "$l"; done
+  fi
 else
   log "daily-pr-ledger: disabled (FUNNEL_DAILY_PR_LEDGER=0) — the daily PR's row is Quinn's to write by hand"
 fi

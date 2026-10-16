@@ -24,10 +24,22 @@
  * negative signal (each one is printed as a reason). A day whose only problem is an
  * unreadable log dir, with a digest on main, is UNKNOWN — never a verdict we cannot
  * back with a file.
+ *
+ * RAN-UNLANDED (E222, 2026-10-16): on 10-15 the runner started, the preflight was ok,
+ * seven PRs merged with after-merge rows on main, the runner logged "Quinn finished."
+ * and "digest: Quinn's file digest accepted" — and the daily PR never reached main, so
+ * the digest stayed in the operator checkout. The grader printed "MISSED 2026-10-15: no
+ * digest on main", the same verdict as a morning the host slept through. When "no digest
+ * on main" is the ONLY negative signal and there is positive evidence the team ran —
+ * ≥1 same-day after-merge ledger row on main (durable), or a Quinn-finished / digest-
+ * accepted line in funnel-daily.log (fallback) — the day is RAN-UNLANDED (🟡, recovery:
+ * the digest lands with the next daily PR, or the runner's digest-land step), not MISSED.
+ * A 0-byte/failed/absent preflight, a missing runner start or a DEGRADED digest still
+ * make the day MISSED whatever the ledger says.
  */
 
 export type PreflightState = 'ok' | 'failed' | 'empty' | 'absent' | 'unknown';
-export type DayVerdict = 'RAN' | 'MISSED' | 'UNKNOWN';
+export type DayVerdict = 'RAN' | 'RAN-UNLANDED' | 'MISSED' | 'UNKNOWN';
 
 export interface DayEvidence {
   preflight: PreflightState;
@@ -35,6 +47,10 @@ export interface DayEvidence {
   runnerStarted: boolean | null;
   digestOnMain: boolean;
   digestDegraded: boolean;
+  /** E222: after-merge ledger rows on main stamped this day (optional: absent = 0, pre-E222 callers). */
+  afterMergeRows?: number;
+  /** E222: funnel-daily.log has a `[DATE …] Quinn finished.` or `digest: Quinn's file digest accepted` line; null = log unreadable. */
+  quinnFinished?: boolean | null;
 }
 
 export interface DayLiveness {
@@ -48,6 +64,8 @@ export interface RunLiveness {
   window: { from: string; to: string; days: number };
   days: DayLiveness[];
   ran: number;
+  /** E222: ran (ledger rows / Quinn finished) but the digest is not on main — not counted in `missed`. */
+  unlanded: number;
   missed: number;
   unknown: number;
 }
@@ -83,6 +101,28 @@ export function runnerStartDates(logText: string): Set<string> {
   return out;
 }
 
+/** Dates with a `[DATE hh:mm:ss] Quinn finished.` or `[DATE hh:mm:ss] digest: Quinn's file digest accepted` line (line start only). */
+export function quinnFinishedDates(logText: string): Set<string> {
+  const out = new Set<string>();
+  const re = /^\[(\d{4}-\d{2}-\d{2}) \d{2}:\d{2}:\d{2}\] (?:Quinn finished\.|digest: Quinn's file digest accepted)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(logText)) !== null) out.add(m[1]);
+  return out;
+}
+
+/**
+ * date -> count of `after-merge` ledger rows (column 2 starts with "after-merge") whose `when` cell starts with
+ * that date. `check`, `apply`, rollback and build-watch rows are not team merges and do not count.
+ */
+export function afterMergeRowsByDate(changelogText: string): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const line of changelogText.split('\n')) {
+    const m = line.match(/^\|\s*(\d{4}-\d{2}-\d{2})[ T]\d{2}:\d{2}\s*\|\s*after-merge\b/);
+    if (m) out.set(m[1], (out.get(m[1]) ?? 0) + 1);
+  }
+  return out;
+}
+
 export function isDegradedDigest(text: string): boolean {
   return /DEGRADED: Quinn did not run/.test(text);
 }
@@ -95,6 +135,13 @@ export function gradeDay(date: string, ev: DayEvidence): DayLiveness {
   if (ev.preflight === 'failed') reasons.push('preflight failed');
   if (!ev.digestOnMain) reasons.push('no digest on main');
   else if (ev.digestDegraded) reasons.push('digest on main is DEGRADED (Quinn did not run)');
+  // E222: "no digest on main" alone, with positive evidence the team ran, is RAN-UNLANDED — not MISSED.
+  const rows = ev.afterMergeRows ?? 0;
+  if (reasons.length === 1 && !ev.digestOnMain && (rows > 0 || ev.quinnFinished === true)) {
+    const ran = [ev.quinnFinished === true ? 'Quinn finished' : null, rows > 0 ? `${rows} after-merge row${rows === 1 ? '' : 's'} on main` : null]
+      .filter(Boolean).join(', ');
+    return { date, verdict: 'RAN-UNLANDED', reasons: [`ran (${ran}) · no digest on main — the digest lands with the next daily PR`], evidence: ev };
+  }
   if (reasons.length) return { date, verdict: 'MISSED', reasons, evidence: ev };
   if (ev.preflight === 'unknown' || ev.runnerStarted === null) {
     return { date, verdict: 'UNKNOWN', reasons: ['digest on main, but logs/ unreadable — preflight/runner not checked'], evidence: ev };
@@ -113,12 +160,16 @@ export interface RunLivenessInputs {
   logText: string | null;
   /** date -> digest text, for digest-DATE.md files present in the main tree. */
   digestsOnMain: Map<string, string>;
+  /** E222: reports/funnel/changelog.md text from the main tree, or null/absent when unreadable (rows = 0). */
+  changelogText?: string | null;
 }
 
 export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
   const n = inp.days ?? 7;
   const dates = priorDays(inp.todayIso, n);
   const started = inp.logText == null ? null : runnerStartDates(inp.logText);
+  const finished = inp.logText == null || !inp.logDirReadable ? null : quinnFinishedDates(inp.logText);
+  const rowsByDate = afterMergeRowsByDate(inp.changelogText ?? '');
   const days = dates.map((d) => {
     const digest = inp.digestsOnMain.get(d);
     return gradeDay(d, {
@@ -126,12 +177,15 @@ export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
       runnerStarted: started == null || !inp.logDirReadable ? null : started.has(d),
       digestOnMain: digest != null,
       digestDegraded: digest != null && isDegradedDigest(digest),
+      afterMergeRows: rowsByDate.get(d) ?? 0,
+      quinnFinished: finished == null ? null : finished.has(d),
     });
   });
   return {
     window: { from: dates[dates.length - 1], to: dates[0], days: n },
     days,
     ran: days.filter((d) => d.verdict === 'RAN').length,
+    unlanded: days.filter((d) => d.verdict === 'RAN-UNLANDED').length,
     missed: days.filter((d) => d.verdict === 'MISSED').length,
     unknown: days.filter((d) => d.verdict === 'UNKNOWN').length,
   };
@@ -140,10 +194,10 @@ export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
 /** Markdown lines for the scoreboard's "Team health" section: one summary line, then one MISSED/UNKNOWN line per day. */
 export function formatRunLiveness(r: RunLiveness): string[] {
   const lines = [
-    `- Run liveness ${r.window.days}d (${r.window.from} → ${r.window.to}): **${r.ran}/${r.window.days} ran** · ${r.missed} MISSED · ${r.unknown} unknown`,
+    `- Run liveness ${r.window.days}d (${r.window.from} → ${r.window.to}): **${r.ran}/${r.window.days} ran**${r.unlanded ? ` · ${r.unlanded} 🟡 RAN-UNLANDED` : ''} · ${r.missed} MISSED · ${r.unknown} unknown`,
   ];
   for (const d of r.days) {
-    if (d.verdict !== 'RAN') lines.push(`  - ${d.verdict} ${d.date}: ${d.reasons.join(' · ')}`);
+    if (d.verdict !== 'RAN') lines.push(`  - ${d.verdict === 'RAN-UNLANDED' ? '🟡 ' : ''}${d.verdict} ${d.date}: ${d.reasons.join(' · ')}`);
   }
   return lines;
 }

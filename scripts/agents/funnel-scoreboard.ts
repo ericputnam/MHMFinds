@@ -571,7 +571,10 @@ function readRunLiveness(todayIso: string): RunLiveness {
       if (m) digestsOnMain.set(m[1], readFileSync(join(OUT_DIR, f), 'utf8'));
     }
   }
-  return assessRunLiveness({ todayIso, logDirReadable, preflightByDate, logText, digestsOnMain });
+  // E222: after-merge rows on main are the durable "the team ran" signal for a day whose digest did not land.
+  let changelogText: string | null = null;
+  try { changelogText = readFileSync(join(OUT_DIR, 'changelog.md'), 'utf8'); } catch { /* rows = 0, never a verdict */ }
+  return assessRunLiveness({ todayIso, logDirReadable, preflightByDate, logText, digestsOnMain, changelogText });
 }
 
 /**
@@ -1062,6 +1065,10 @@ async function main() {
   if (team.ok && team.data.runLiveness.missed > 0) {
     const rl = team.data.runLiveness;
     flags.push(`🔴 Loop MISSED ${rl.missed} of the last ${rl.window.days} mornings: ${rl.days.filter((d) => d.verdict === 'MISSED').map((d) => d.date).join(', ')} — see Team health (E187)`);
+  }
+  if (team.ok && team.data.runLiveness.unlanded > 0) {
+    const ul = team.data.runLiveness.days.filter((d) => d.verdict === 'RAN-UNLANDED').map((d) => d.date);
+    flags.push(`🟡 Loop RAN but its daily PR did not land: ${ul.join(', ')} — digest lands with the next daily PR (E222)`);
   }
   if (ga4.ok && ga4.data.sessionsPrev7d && ga4.data.sessions7d / ga4.data.sessionsPrev7d < 0.9) flags.push(`🔴 GA4 sessions 7d ${pct(ga4.data.sessions7d, ga4.data.sessionsPrev7d)} WoW`);
   if (ga4.ok && Object.keys(ga4.data.captureEvents7d).length === 0) flags.push(`🟡 GA4: no capture events fired in 7d (newsletter_signup/account_signup/patreon_click not instrumented)`);
