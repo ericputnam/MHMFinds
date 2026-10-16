@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-16
+- Tried: E158 graded. E218 (T0) — IndexNow `--creators-changed` in the daily runner, plus one catch-up push of the 72 creator pages with a new mod since the last full push (09-26).
+- Before → after: E158 legs: 0/8 seed pages hide the claim card (curl 8/8 "Claim this page", 0 badges); 0/20 seed verified; 0 mods on verified no-OAuth profiles. /creator/* organic+AI 165 → 137 (10-09→15; site 89.9%, ratio 92.3%, FAIL). The 8 treated pages were 6 → 1, so they are not the cause. By source: Google 52 → 57, Bing 77 → 52 (−32% vs site −10%), chatgpt 29 → 5. No creator push since 09-26; 549 pages, 66 with a new mod since.
+- Verdict: E158 KEEP on its own legs; the guard fail is Bing+ChatGPT, untreated. E218 read 2026-10-23.
+- Next time: split a guard fail by source before blaming a page change. A one-off IndexNow push decays, so it should have been a daily changed-only push from E95.
+
 ## 2026-10-13
 - Tried: E197 (T0) — `HOUSE_ACCOUNT_USER_IDS` in `lib/funnel/creatorOnboarding.ts`. It excludes the operator's non-admin test account (username = operator's name, the 01-06 "SimwithShan" approval) from onboarded, and its pending rows still queue. The scoreboard prints "N house account excluded". 4 tests, 3 red pre-fix. E137 graded NOT-RUN (0 sent, Q23 14 d unanswered, drops 10-14, no 3rd pitch).
 - Before → after: onboarded 3 (2 approved) → 2 (1 approved), from a live read through the lib (DB 10-13). The only approved external creator is doree (01-10). Pending 7, oldest 9 d, all Atino00.
@@ -49,16 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-17; keep if 0 seed-handle 409s AND ≥1 promotion when a claim arrives).
 - Next time: the claim path has no blockers left that code can fix. Every remaining 0 sits upstream at Q23 (0 sent, drop date 10-06).
 
-## 2026-10-02
-- Tried: E158 (T0, PR #247 `6c737f2` + fix-forward #250 `7dbae73`, data apply `e130a7d`): checking the competitor "8 missing creators" claim led to the profile table, and all 20 CreatorProfile rows were seed accounts (placeholder email domain, 0 OAuth), 20/20 isVerified. `pageProfileFrom()` now ignores the verified flag on placeholder accounts. `creator-placeholder-unverify.ts` flipped all 20 (dry run first, frozen plan = rollback file on main). Batch-1b paper for the favorites-ranked 8, not covered by Q23.
-- Before → after: claim card hidden on seed-backed live pages 8/8 → 0/8; seed profiles verified 20 → 0; mods with a false badge 71 → 0. The 8 pages drew 11 landing sessions/7d. Of the 8 favorites-ranked creators missing from E137, 5 have no page (1–3 SFW mods). E7 graded KILL: 147 engaged sessions 09-04→10-01 vs ≥200 (blog's makeup post: 2,031).
-- Verdict: MORE DATA (read 2026-10-16; keep if 0/8 hidden, 0 seed verified, /creator/* 7d ≥95%).
-- Next time: rank creators by slug, not raw author. Raw author missed SIMcredible (3 spellings, 138 mods) and double-counted Simenapule. Also, a dry run that writes the rollback file must refuse to overwrite it: my post-apply dry run emptied the 20-row plan in the worktree before #250.
-
-## 2026-10-01
-- Tried: E151 (T0, PR #237 `e50dba6`): claim promotion now sets `isVerified` with the handle. `/creator/[slug]/` gates both the badge and the E144 claim card on `profile.isVerified`; the claim form creates the row at the schema default (false) and E129's promote wrote only `handle`, so the first promoted claimant would have landed on their own page still reading "Claim this page". Pure `promotionData()` in `lib/creatorClaimReview.ts`; the test derives the flag name from its output and asserts it is the field the page reads (3 of 14 cases red on bea25bb).
-- Before → after: DB 2026-10-01: 20 profiles, 20 verified, 0 pending, 0 promotions ever — the 09-30 inbox premise ("20 unverified") was wrong; the bug was latent, not live. Fields the promote write sets of the fields the page reads: 0/1 → 1/1.
-- Verdict: MORE DATA (read 2026-10-11 with E122/E129; keep if every `creator-claim`/`promote` audit row's profile has isVerified=true, with /creator/* landing 7d ≥95% of 558).
-- Next time: check the before-snapshot before trusting an inbox line's count — one 5-line DB read turned "20 unverified profiles" into "0, latent write gap". And `gh pr merge` exit 1 after a win is "already merged", not "not merged": read `gh pr view --json state` before retrying. Onboarded is still 0 and Q23 (T2, 2 days unanswered) is the only feed into this path.
-
-_Older entries (up to 2026-09-30) live verbatim in `archive/playbooks/nova-2026-09.md`; nothing deleted._
+_Older entries (2026-10-01→10-02) are in `archive/playbooks/nova-2026-10.md`; up to 2026-09-30 in `archive/playbooks/nova-2026-09.md`; nothing deleted._

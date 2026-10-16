@@ -15,6 +15,7 @@ import {
   SITE_HOST,
   buildPayload,
   capCeiling,
+  changedCreatorSlugs,
   checkKeyFile,
   collectionUrls,
   creatorUrl,
@@ -273,12 +274,53 @@ describe('creator pages (E95)', () => {
     expect(lib).toMatch(/isJunkAuthorSlug\(r\.slug\)/);
     expect(sitemap).not.toMatch(/isJunkAuthorSlug/);
     expect(script).not.toMatch(/isJunkAuthorSlug/);
-    expect(script).toMatch(/if \(args\.creators\)/);
+    expect(script).toMatch(/if \(args\.creators( \|\| args\.creatorsChanged)?\)/);
   });
 
   it('the daily runner does NOT pass --creators (the daily cap stays HARD_CAP)', () => {
     const runner = read('scripts/agents/run-funnel-daily.sh');
-    expect(runner).not.toMatch(/indexnow-submit\.ts[^\n]*--creators/);
+    // `--creators-changed` (E218) is allowed; the bare full-population flag is not.
+    expect(runner).not.toMatch(/indexnow-submit\.ts[^\n]*--creators(?![-\w])/);
+  });
+
+  it('E218: the daily runner pushes changed creator pages (--creators-changed) on the --apply line', () => {
+    const runner = read('scripts/agents/run-funnel-daily.sh')
+      .split('\n')
+      .filter((l) => !l.trim().startsWith('#'))
+      .join('\n');
+    expect(runner).toMatch(/indexnow-submit\.ts --apply[^\n]*--creators-changed/);
+  });
+
+  it('E218: --creators-changed does not lift the cap; --creators-days parses both forms', () => {
+    const a = parseArgs(['--creators-changed']);
+    expect(a).toMatchObject({ creators: false, creatorsChanged: true, creatorsDays: null, cap: HARD_CAP });
+    expect(capCeiling(a)).toBe(HARD_CAP);
+    expect(parseArgs(['--creators-changed', '--cap', '800']).cap).toBe(HARD_CAP);
+    expect(parseArgs(['--creators-days', '21']).creatorsDays).toBe(21);
+    expect(parseArgs(['--creators-days=21']).creatorsDays).toBe(21);
+    expect(parseArgs(['--creators-days', 'x']).creatorsDays).toBe(null);
+    expect(parseArgs(['--creators-days', '0']).creatorsDays).toBe(null);
+  });
+
+  it('E218: changedCreatorSlugs keeps only pages whose newest mod is at/after since, order preserved', () => {
+    const since = new Date('2026-10-14T00:00:00Z');
+    const rows = [
+      { slug: 'big', latest: new Date('2026-10-15T10:00:00Z') },
+      { slug: 'stale', latest: new Date('2026-09-01T00:00:00Z') },
+      { slug: 'edge', latest: new Date('2026-10-14T00:00:00Z') },
+      { slug: 'just-before', latest: new Date('2026-10-13T23:59:59Z') },
+      { slug: 'none', latest: null },
+    ];
+    expect(changedCreatorSlugs(rows, since)).toEqual(['big', 'edge']);
+    expect(changedCreatorSlugs([], since)).toEqual([]);
+  });
+
+  it('E218: the script filters the listCreators population (never a second query) for --creators-changed', () => {
+    const script = stripComments(read('scripts/agents/indexnow-submit.ts'));
+    expect(script).toMatch(/if \(args\.creators \|\| args\.creatorsChanged\)/);
+    expect(script).toMatch(/changedSince \? changedCreatorSlugs\(rows, changedSince\) : rows\.map/);
+    // A full --creators run wins over --creators-changed.
+    expect(script).toMatch(/const changedSince = args\.creators\s*\?\s*null/);
   });
 });
 
@@ -381,7 +423,17 @@ describe('newest_mod_age_h / mods_check (E177)', () => {
 
 describe('parseArgs', () => {
   it('defaults to a dry run with collections, 7 days and the hard cap', () => {
-    expect(parseArgs([])).toEqual({ apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, guides: false, help: false });
+    expect(parseArgs([])).toEqual({
+      apply: false,
+      days: DEFAULT_DAYS,
+      cap: HARD_CAP,
+      collections: true,
+      creators: false,
+      creatorsChanged: false,
+      creatorsDays: null,
+      guides: false,
+      help: false,
+    });
   });
 
   it('only --apply turns on live mode; --dry-run after it turns it back off', () => {
