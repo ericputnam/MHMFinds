@@ -7,6 +7,8 @@
  *   npx tsx scripts/agents/indexnow-submit.ts --days 3 --cap 200 --no-collections
  *   npx tsx scripts/agents/indexnow-submit.ts --apply --creators --days 2   # E95: + every /creator/[slug]/ page
  *   npx tsx scripts/agents/indexnow-submit.ts --apply --guides --days 2     # E121: + blog guides edited in the window
+ *   npx tsx scripts/agents/indexnow-submit.ts --apply --creators-changed --days 2   # E218: + creator pages with a new mod in the window
+ *   npx tsx scripts/agents/indexnow-submit.ts --apply --no-collections --days 1 --creators-changed --creators-days 21   # E218 catch-up
  *
  * Selection mirrors /sitemap-mods.xml exactly (isNSFW=false, isVerified=true)
  * so we never push a URL the sitemap would not list; mods are those created in
@@ -51,6 +53,7 @@ import {
   HARD_CAP,
   INDEXNOW_KEY,
   capCeiling,
+  changedCreatorSlugs,
   checkKeyFile,
   exitCodeFor,
   keyLocation,
@@ -117,6 +120,8 @@ function usage(): void {
       `  --cap N             max URLs per run, clamped to ${HARD_CAP} (${CREATORS_HARD_CAP} with --creators)`,
       '  --no-collections    skip homepage / game hubs / collection pages',
       '  --creators          also submit every /creator/[slug]/ page (the /sitemap-creators.xml population)',
+      '  --creators-changed  also submit /creator/[slug]/ pages whose newest mod is inside the creators window (E218)',
+      '  --creators-days N   window for --creators-changed (default: --days)',
       '  --guides            also submit blog guides published/edited in the last --days (WordPress REST)',
       '',
       `Key: ${INDEXNOW_KEY} (public; served at ${keyLocation()})`,
@@ -157,12 +162,13 @@ async function fetchNewModIds(days: number, cap: number): Promise<{ ids: string[
  * (lib/creators.ts listCreators — junk slugs already filtered). Imported
  * lazily for the same DATABASE_URL reason as fetchNewModIds.
  */
-async function fetchCreatorSlugs(): Promise<string[]> {
+async function fetchCreatorSlugs(changedSince: Date | null): Promise<string[]> {
   const { listCreators } = await import('../../lib/creators');
   const { prisma } = await import('../../lib/prisma');
   try {
     const rows = await listCreators();
-    return rows.map((r) => r.slug);
+    // E218: --creators-changed keeps only the pages with a new mod in the window.
+    return changedSince ? changedCreatorSlugs(rows, changedSince) : rows.map((r) => r.slug);
   } finally {
     await prisma.$disconnect().catch(() => undefined);
   }
@@ -218,9 +224,12 @@ async function main(): Promise<void> {
   }
 
   let creatorSlugs: string[] = [];
-  if (args.creators) {
+  if (args.creators || args.creatorsChanged) {
+    const changedSince = args.creators
+      ? null
+      : new Date(base.when.getTime() - (args.creatorsDays ?? args.days) * 24 * 3600e3);
     try {
-      creatorSlugs = await fetchCreatorSlugs();
+      creatorSlugs = await fetchCreatorSlugs(changedSince);
     } catch (err) {
       console.error(`[indexnow] creator query failed: ${String((err as Error).message ?? err).slice(0, 200)}`);
       finish({ ...base, reason: 'db-error-creators' });

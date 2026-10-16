@@ -391,6 +391,16 @@ export interface CliArgs {
   collections: boolean;
   /** `--creators`: also submit every /creator/[slug]/ page (E95); lifts the cap ceiling to CREATORS_HARD_CAP. */
   creators: boolean;
+  /**
+   * `--creators-changed` (Nova, E218, 2026-10-16): also submit the /creator/[slug]/
+   * pages whose newest SFW mod was created inside the creators window — the pages
+   * that actually changed. Does NOT lift the cap: a daily run adds ~8 URLs
+   * (8 of 549 pages had a new mod in the last 2 days on 10-16). Ignored when
+   * `--creators` (every page) is also set.
+   */
+  creatorsChanged: boolean;
+  /** Window for `--creators-changed`, in days; null = same as --days. */
+  creatorsDays: number | null;
   /** `--guides`: also submit blog guides published/edited in the last --days (E121). Does not lift the cap. */
   guides: boolean;
   help: boolean;
@@ -401,9 +411,40 @@ export function capCeiling(args: Pick<CliArgs, 'creators'>): number {
   return args.creators ? CREATORS_HARD_CAP : HARD_CAP;
 }
 
+/**
+ * Creator slugs whose page changed since `since` (E218): the newest SFW mod on
+ * the page (CreatorListRow.latest — the same value /sitemap-creators.xml prints
+ * as <lastmod>) was created at or after `since`. Order preserved (listCreators
+ * sorts most mods first). A row with no `latest` never qualifies.
+ *
+ * Why: the only full `--creators` pushes were 09-24 and 09-26 (E95/E115), and
+ * Bing landings on /creator/* went 0 → 61 within the week. By 10-09→10-15 they
+ * were 52 (bing 39 + cn.bing 13) vs 77 in 09-23→09-29 (−32%, site Bing −10%),
+ * while Google landings rose 52 → 57. Nothing has told Bing about a creator
+ * page since. IndexNow is for changed URLs, so the daily runner pushes only
+ * these, never the whole population.
+ */
+export function changedCreatorSlugs(
+  rows: ReadonlyArray<{ slug: string; latest: Date | null }>,
+  since: Date,
+): string[] {
+  const t = since.getTime();
+  return rows.filter((r) => r.latest instanceof Date && r.latest.getTime() >= t).map((r) => r.slug);
+}
+
 /** `--apply` is the only way to send anything; everything else defaults safe. */
 export function parseArgs(argv: readonly string[]): CliArgs {
-  const args: CliArgs = { apply: false, days: DEFAULT_DAYS, cap: HARD_CAP, collections: true, creators: false, guides: false, help: false };
+  const args: CliArgs = {
+    apply: false,
+    days: DEFAULT_DAYS,
+    cap: HARD_CAP,
+    collections: true,
+    creators: false,
+    creatorsChanged: false,
+    creatorsDays: null,
+    guides: false,
+    help: false,
+  };
   let requestedCap: number | undefined;
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -411,6 +452,12 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     else if (a === '--dry-run') args.apply = false;
     else if (a === '--no-collections') args.collections = false;
     else if (a === '--creators') args.creators = true;
+    else if (a === '--creators-changed') args.creatorsChanged = true;
+    else if (a === '--creators-days' || a.startsWith('--creators-days=')) {
+      const v = a.includes('=') ? a.split('=')[1] : argv[++i];
+      const n = Number(v);
+      args.creatorsDays = Number.isFinite(n) && n > 0 ? Math.floor(n) : null;
+    }
     else if (a === '--guides') args.guides = true;
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a === '--days' || a.startsWith('--days=')) {
