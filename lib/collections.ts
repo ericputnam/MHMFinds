@@ -315,7 +315,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     intro:
       'Skin details are the CAS layer most people skip and then wonder why their sims look slightly uncanny. Vanilla skin is flat. No freckles, no moles, no cheek blush that actually sits on the face, no body hair that looks like anything other than a shadow. Community skin overlays fix all of this with a few CAS clicks.\n\nWe\'ve pulled together nearly 350 skin picks: full skin overlays and skintones that replace the base texture, freckle maps, mole placement sets, nose bridge details, cheek blushes, body hair, pregnancy stretch marks, and the specialty stuff like aging details and sunspots. Pralinesims and Obscurus-Sims turn up a lot here because they\'ve been shipping realistic skin overlays for years, but there\'s a long tail of smaller skin creators doing great work on specific features.\n\nMost of these stack — you can layer a skin overlay, freckles, a blush, and a nose detail all on one sim. The trick is stopping before you over-CAS them into looking like a different art style than the hair and clothes you\'re using.',
     filter: { contentType: 'skin' },
-    expectedCount: 276,
+    // 387 on prod 2026-10-16 (Sims 4, SFW), after E214 (+40 skins) and E221
+    // (+2 scars). It read 276 while E210's copy already said "340+"; the
+    // copy-vs-count test in collection-copy-counts.test.ts now catches that.
+    expectedCount: 387,
     related: ['hair-cc', 'tattoos', 'body-presets'],
     // NOT /sims-4-cc-skin-details/ — that article 301s here. The
     // skin-overlay article is the still-live editorial companion.
@@ -624,16 +627,25 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Makeup CC',
     heading: 'Sims 4 Makeup CC',
-    metaTitle: 'Sims 4 Makeup CC Finder — Browse 900+ Looks | MustHaveMods',
+    metaTitle: 'Sims 4 Makeup CC Finder — Browse 800+ Looks | MustHaveMods',
     metaDescription:
-      'Browse 900+ Sims 4 makeup CC picks in one filterable grid — lashes, eyeshadow, lipstick, blush, and full makeup sets sorted by downloads.',
+      'Browse 800+ Sims 4 makeup CC picks in one filterable grid — lashes, eyeshadow, lipstick, blush, and full makeup sets sorted by downloads.',
     tagline: 'Lashes, eyeshadow, lipstick, and full sets for every look',
     intro:
-      'Base-game Sims 4 makeup has not kept up with the rest of CAS. The lipstick options reuse the same two shine levels. The eyeshadow palette runs out of interesting choices in about three swatches. The lashes are a single flat mesh that looks like a crescent moon pasted to the eyelid. Community makeup CC fixes all of this — and the Sims makeup creator scene is one of the deepest in the whole CC ecosystem.\n\nThis collection pulls together over 900 makeup picks across every category: 3D lash sets (the most-downloaded single item on this site is a lash CC), eyeshadow and full eye looks, lipstick and lipgloss, blush, and full skin-detail-adjacent eye CC including default eye replacements and colored contacts. Creators like Pralinesims and Nords-Sims show up in the blush and skin-overlay end of the spectrum; the lash and makeup-specific end has its own ecosystem of creators — Moonflower-cc, Kiara24, and Okruee among them — building CAS-ready looks that stack cleanly on top of skin overlays.\n\nThe filter here is composite: makeup, eyebrows, eyeliner, blush, lipstick, and eyes content types together. Use the main finder\'s visual-style filter if you want to narrow to alpha-style or maxis-match makeup specifically. Everything here is Sims 4 only, link-checked, and SFW.',
+      'Base-game Sims 4 makeup has not kept up with the rest of CAS. The lipstick options reuse the same two shine levels. The eyeshadow palette runs out of interesting choices in about three swatches. The lashes are a single flat mesh that looks like a crescent moon pasted to the eyelid. Community makeup CC fixes all of this — and the Sims makeup creator scene is one of the deepest in the whole CC ecosystem.\n\nThis collection pulls together over 800 makeup picks across every category: 3D lash sets (the most-downloaded single item on this site is a lash CC), eyeshadow and full eye looks, lipstick and lipgloss, blush, and full skin-detail-adjacent eye CC including default eye replacements and colored contacts. Creators like Pralinesims and Nords-Sims show up in the blush and skin-overlay end of the spectrum; the lash and makeup-specific end has its own ecosystem of creators — Moonflower-cc, Kiara24, and Okruee among them — building CAS-ready looks that stack cleanly on top of skin overlays.\n\nThe filter here is composite: makeup, lashes, eyebrows, eyeliner, blush, lipstick, and eyes content types together. Use the main finder\'s visual-style filter if you want to narrow to alpha-style or maxis-match makeup specifically. Everything here is Sims 4 only, link-checked, and SFW.',
     filter: {
-      contentTypeIn: ['makeup', 'eyebrows', 'eyeliner', 'blush', 'lipstick', 'eyes'],
+      // `lashes` added 2026-10-16 (E221). The copy has always promised lash
+      // sets, but the 41 `lashes` rows never reached this grid; E207 had to
+      // pin 10 lash sets to `makeup` just to keep them here. Before adding it
+      // every `lashes` row was read: 18 of 41 were not lashes (Kosmo Grillz
+      // would have been card #18), pinned off in E221; 23 remain, all lashes.
+      // Count, prod 2026-10-16, Sims 4 + SFW: 828 without lashes, 851 with
+      // (makeup 494, eyebrows 130, eyes 116, lipstick 32, eyeliner 30,
+      // blush 26, lashes 23). Top 48 by downloads: 0 off-type. It was 938
+      // and the copy said "900+" until E214 moved 110 rows out on 10-15.
+      contentTypeIn: ['makeup', 'lashes', 'eyebrows', 'eyeliner', 'blush', 'lipstick', 'eyes'],
     },
-    expectedCount: 922,
+    expectedCount: 851,
     // 'nails-cc' takes 'skin-details''s slot here 2026-09-20 — makeup is the
     // nearest neighbour to nails in CAS, and 'skin-details' is the other
     // 7-inbound hub, so the edge is worth more pointed at the new page. With

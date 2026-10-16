@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-16
+- Tried: E221. Read all 41 `lashes` rows before adding `lashes` to makeup-cc `contentTypeIn`. 18 were not lashes (grillz, a Rolex, 2 Sims, scars, a fence) and got `--ids` pins, plus 3 keeps. Copy 900+ → 800+, expectedCount 922 → 851, skin-details 276 → 387. New copy-vs-count test (T0).
+- Before → after: lashes 41 → 23 (23/23 lashes). makeup-cc 828 → 851. Top 48 off-type 0, but Kosmo Grillz would have been #18. Pins E221 21/21, E214 119/119. Making lashes `titleOnly` was rejected: the replay changed 4/16,903 rows and 2 stayed wrong.
+- Verdict: MORE DATA (read 2026-10-23).
+- Next time: before adding a type to a page filter, read every row of that type. Junk enters the grid in one deploy.
+
 ## 2026-10-15
 - Tried: E214 — 119 `--ids` pins over the rest of makeup-cc (eyebrows 198, blush 61, lipstick 36, eyeliner 33 rows, all read): 40 skins/skin details → skin, 14 hair, 18 NULL (Sims, unlisted sets), 38 other; 9 keeps (contour/highlighter sit in the blush slot). 110 written; apply identical to dry run (T0, PR #311).
 - Before → after: top-24 off-type eyebrows 3, blush 15, lipstick 4, eyeliner 3 → 0/0/0/0; pins E214 119/119, E207 73/73; makeup-cc 938 → 828, skin 348 → 388; makeup-cc favs 38 (10-08→10-14).
@@ -67,16 +73,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 10-10: ≤5% wrong on next 100 ingested rows; lot 0 prose-typed; pins 70/70).
 - Next time: an inherited keyword is re-measured the moment precedence changes — `home` (76 titles) would have flipped 12 furniture/gym sets to `lot` once the title beat the URL; measure against the URL-category rows, not just the catalog. Reading all 137 NULL strips row by row found 67 real lots on slugs the URL map does not know (`-lots/`, `/castles/`, monthly finds) — the STRIP list is where the cost hides.
 
-## 2026-10-02
-- Tried: E161 ingest stall — traced the runner log → selector → DB instead of trusting "catalog-ingest OK created=0" (Tier 0, PR #249). The stall was a selector invariant (`--new-only` = skip any post with a Mod row, forever), not a crash: `Selected 0 of 678 (663 older than --since, 15 already in DB)` on 6 of 7 mornings while the writer only re-edited old seasonal posts. `--refreshed` re-selects a known post whose sitemap `lastmod` is newer than `max(Mod.createdAt)` for its sourceUrl; the update path no longer re-types an existing row's contentType.
-- Before → after: selected 0 of 678 → 9 of 678 (9 refreshed); created 0 → 117 in one run; catalog 16,561 → 16,678; new mods 7d 27 → 144 (read 10-09). Spot-check of the 117 found 17 (14.5%) wrong, all from two rules (URL category beats title; `lot` reads description) — 18 pinned in `hand-audited-content-types.ts`, 17 applied via `--ids=`, read-back 18/18.
-- Verdict: MORE DATA (read 10-09: new mods 7d ≥ 100, 0 refresh churn, 0 rows created unverified).
-- Next time: a summary line that prints `created=0` must also print *why* 0 (skipped-known vs skipped-since) — `refreshed=N` is now on the line; and any "already in DB" count larger than the created count is the first thing to read.
-
-## 2026-10-01
-- Tried: title-only repair of `holidays` contentType + ingest guard, 29 pins (T0, E154, PR #240; rollback file PR #242). No live writer: legacy import.
-- Before -> after: 923 rows / 491 title-supported -> 503/503; 420 moved (176 NULL); top 24 12 -> 24/24. Season != holiday.
-- Verdict: MORE DATA (read 2026-10-29; keep if 100% titled, pins 29/29, page engaged >=43/28d).
-- Next time: collection pages are static — a data apply shows only after the next deploy; curl after one. The 176 new NULLs want an --ids pass.
-
-_Older entries (up to 2026-09-30) live verbatim in `archive/playbooks/rowan-2026-09.md`; nothing deleted._
+_Older entries live verbatim in `archive/playbooks/rowan-2026-09.md` (to 09-30) and `rowan-2026-10.md` (10-01, 10-02); nothing deleted._
