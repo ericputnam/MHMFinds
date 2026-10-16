@@ -967,6 +967,30 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmttzgyh5002aoxfek2g89925: { contentType: null, why: "E214 \"Nicki Minaj – The Sims 4\" — NULL, was eyeliner; a celebrity Sim download; E207 Sim -> NULL" },
   cmsmcw3z500zdoxeuxjpp8yl5: { contentType: "skin", why: "E214 \"Geralt Scars V1\" — skin, was eyeliner; facial scars (scars post)" },
   cmsmcvwaa00z7oxeutfluv7w2: { contentType: "skin", why: "E214 \"Scars 2\" — skin, was eyeliner; facial scars (scars post)" },
+
+  // ── Audited 2026-10-16 (Sage, E217) — the three off-type cards in the top
+  //    30 of /games/sims-4/skin-details/ (388 `skin` rows, grid order
+  //    downloadCount desc), found during the E210 retitle (top-30 21/30 by
+  //    title). Each was read against its own title, description and source
+  //    post; all three were typed `skin` by the shared blog-post description,
+  //    not by anything in the title. `--ids` pins, not a rule: three rows,
+  //    three different causes. Catalog counts behind the targets (2026-10-16):
+  //    /sims-4-lighting-mods/ rows are 6 gameplay-mod / 4 lighting / 3 NULL /
+  //    2 skin / 1 cas-background / 1 hair — `lighting` is the light-FIXTURE
+  //    facet (#61 cleared GShade presets and overlays out of it), so a
+  //    lighting MOD goes to gameplay-mod with the plurality; swimsuit/bikini/
+  //    swimwear titles are 37/67 full-body (the detector's own full-body
+  //    keyword list names all three words). The Patreon source behind
+  //    "1 Plumb Lippiez" returns 403 and its description is scraper
+  //    boilerplate; "lippiez" is slang for lips and the catalog splits lip
+  //    titles 63 makeup / 30 lipstick / 17 preset — a lip preset and a lip
+  //    gloss are different facets, so NULL beats a guess. Same-shape row
+  //    OUTSIDE the top 30 and deliberately not touched here (Rowan's scope):
+  //    "Gentle CAS Lighting" is also `skin` from the lighting-mods post.
+  cmijj9pxb006coxs3hrov7y67: { contentType: "gameplay-mod", why: "E217 \"Luumia’s No Gloom / No Blu\" — gameplay-mod, was skin; desc: \"I like using this lighting mod\" — removes the indoor blue/grey tint (lighting-mods post, 6/17 rows gameplay-mod); card #15 on skin-details" },
+  cmim8wygv00syoxy87lzrqrja: { contentType: "full-body", why: "E217 \"Brandy x Plastic “The Island Gyal Collection”\" — full-body, was skin; desc: \"sexy and revealing swimsuits\" (swimsuit-cc post); swim titles 37/67 full-body; \"skin\" in the desc is the Sims' skin, not CC; card #19 on skin-details" },
+  cmkxfu1bw0015oxj30ub93y26: { contentType: null, why: "E217 \"1 Plumb Lippiez\" — NULL, was skin; Patreon source 403, desc is NoNvme Studios boilerplate; lips, but preset vs lipstick vs gloss is unknowable from the title; NULL beats a guess; card #22 on skin-details" },
+  cmik9xy3k00d1oxk7ijz6orjd: { contentType: "skin", why: "E217 \"Girls Night Set\" — KEEP: desc \"a cozy collection of sleepwear and skin presets\" — mixed set that does include skin presets; current type not wrong; card #7 on skin-details" },
 };
 
 /**

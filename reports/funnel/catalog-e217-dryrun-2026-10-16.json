@@ -1,0 +1,27 @@
+{
+ "writtenAt": "2026-10-16T11:45:33.206Z",
+ "mode": "dry-run",
+ "facets": [
+  "skin"
+ ],
+ "rows": [
+  {
+   "id": "cmijj9pxb006coxs3hrov7y67",
+   "title": "Luumia’s No Gloom / No Blu",
+   "from": "skin",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wygv00syoxy87lzrqrja",
+   "title": "Brandy x Plastic “The Island Gyal Collection”",
+   "from": "skin",
+   "to": "full-body"
+  },
+  {
+   "id": "cmkxfu1bw0015oxj30ub93y26",
+   "title": "1 Plumb Lippiez",
+   "from": "skin",
+   "to": null
+  }
+ ]
+}
