@@ -2345,3 +2345,98 @@ The 10-07 section is in the archive.
 - **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
   `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Q11,
   Q28 (writer plugin dates pins ahead). Mornings need AC.
+
+### 2026-10-15/16 — fifteen merges (#305–#318) + daily #319, all PASS, zero rollbacks
+
+*(rotated from CLAUDE.md 2026-10-17, E229)*
+
+10-14 is in the archive. 10-15's digest never reached `main` (landed late with #319).
+- **"Ran but did not land" is its own state, not MISSED.** On 10-15 the runner merged 7 PRs and
+  Quinn exited rc 0 before the daily PR; liveness graded it like a slept-through host. Now
+  `RAN-UNLANDED` (yellow) on positive evidence (ledger rows on `main` + Quinn-finished log line),
+  and `digest-land.sh` lands an accepted digest (idempotent, HELD if a daily branch exists,
+  refuses DEGRADED) (#318). Keep an agent's stdout outside the worktree it runs in — the 10-15
+  log was reaped with the worktree. Agents write their report *before* a long verify.
+- **A script that writes reports must not default to another checkout.** `MHM_PROJECT_DIR ??
+  '/abs/main'` let 2 of 7 agents write 10-14's scoreboard into the operator's tree. Now
+  `project-dir-guard.ts`: explicit env honored, unset outside the default checkout → exit 2 with
+  nothing written; a scanner bans the `?? '/abs'` pattern under `scripts/` (#308).
+- **Classify the whole fingerprinted segment, not the excess over a baseline.** Rio's
+  excess-over-250/day read the Singapore stream at 1.93% of sessions; Pip's classifier
+  (country+`(direct)`, users/session ≥0.98, pv/session ≤1.05, ≥90% on two fixed resolutions —
+  printed before the read, verdict `automated` or `inconclusive`, never `human`) read 4.10%,
+  because the quiet-day trickle has the same 1:1:1 fingerprint (#317). Split an RPM drop into mix
+  vs rate with Mediavine's monetizable split: 10-14 RPM −6.8% was share 50.95% vs 58.72% at
+  monetizable RPM +7.5% (#314).
+- **User-visible counts drift with every hand-fix — guard copy against the registry.** After 18
+  lashes fixes makeup-cc's `expectedCount` went 922 → 851 while copy said "900+";
+  `collection-copy-counts.test.ts` now fails when copy overstates it (#316). Audit the top N cards
+  in grid order, not the facet total (#315).
+- **Hand-audit every row of a type before adding it to a grid's `contentTypeIn`** (41 lashes →
+  18 fixes); the dry-run JSON is the rollback file (#316).
+- **A KILL is encoded as tests and the slot is re-used, not left empty.** E152 (0.67/1K vs its own
+  ≥2.62/1K bar) became a free-tier Patreon follow ask with its *own* event name so it cannot
+  dilute existing `patreon_click*` counts; still a sibling of `.mv-ads` (#309).
+- **Still open:** `ModDetailPage.test.tsx` red since #219. `commission-sync`/`monetization-agent`
+  fail open (Tier 2). `check-host-split.sh` unwired. Specialists denied `Edit` under `.claude/`.
+  Patreon Members API: no timeout retry (`patreonGet` retries 401 only). Q28, Q30. Mornings need AC.
+
+## Recent UI/UX Enhancements
+
+*(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
+
+### Modern Search Experience (Latest Update)
+The main search page (`app/page.tsx`) has been completely redesigned with enterprise-grade UX:
+
+**Enhanced Search Bar:**
+- Autocomplete dropdown with recent searches (localStorage persistence)
+- Trending search suggestions with categorization
+- Keyboard shortcuts (⌘K to focus search)
+- Escape key to close suggestions
+- Smart suggestions based on user input
+
+**Smart Filter Sidebar:**
+- Visual filter counts showing number of mods per category
+- Custom-styled checkboxes with smooth transitions
+- Individual "Clear" buttons for each filter section
+- Gradient backgrounds for active filters
+- Sticky positioning for persistent access during scroll
+- Collapsible on mobile devices
+
+**Quick Filter Tags:**
+- One-click filters: Trending (most downloads), Newest, Top Rated, Free Mods
+- Visual active states with gradients and animations
+- "Clear All" button when filters are active
+- Pulse animations on active tags
+
+**Flexible View Options:**
+- Grid view with 3, 4, or 5 column density options
+- List view mode (UI ready, display logic pending)
+- View mode toggle buttons with visual feedback
+- Responsive grid that adapts to screen size
+
+**Active Filter Pills:**
+- Visual chips showing currently applied filters
+- Individual remove buttons on each pill
+- Color-coded by filter type (category, version, price)
+- Displayed in results header for quick reference
+
+**UI Polish:**
+- Sticky header that stays visible during scroll
+- Smooth fade-in animations for cards
+- Gradient text effects on headings
+- Hover states with scale transforms
+- Loading skeletons for better perceived performance
+- Enhanced typography and spacing
+
+**Custom Animations (globals.css):**
+- `animate-fade-in` - Cards fade in on load
+- `animate-gradient` - Animated gradient text
+- `animate-pulse` - Subtle pulse on indicators
+- Hover scale effects on interactive elements
+
+### Implementation Files Modified
+- `app/page.tsx` - Complete redesign of search page
+- `app/globals.css` - Added custom animations and utility classes
+- `components/ModCard.tsx` - Already well-designed, no changes needed
+- `components/ModGrid.tsx` - Already supports dynamic grid columns
