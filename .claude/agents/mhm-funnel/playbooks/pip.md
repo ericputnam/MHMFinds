@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-17
+- Tried: E223 (T0, PR #324 d258059): top-up allocator per-URL cap re-keyed on destination_key (host-folded) and --max-per-url default 2→1 with build_parser() + 2 guard tests (both red pre-fix). No top-up: tool gate 2.62 d (39 ÷ 14.86 pinterest-14d) ≥ 2.0. Sections --check --stranded 63: 63/63 live.
+- Before → after: 10-15 ledger 18 rows → 5 dests at 2/dest/date (tattoos ×6, gshade ×6 over 3 dates) vs 10-14 21 → 9 at 1/dest/date; pool 37 blog.* / 26 apex of 63 rows, 0 host-split destinations today.
+- Verdict: MORE DATA (read 10-22 on the next apply's ledger)
+- Next time: a lesson that lives only as "always pass --flag" in the playbook is not a guard — make it the default and pin it with a test that was red first.
+
 ## 2026-10-16
 - Tried: E216 (T0, PR #317 21cc7c9): classified the Singapore Direct stream (E206 Pip leg, due 10-21) with a reusable read — `scripts/agents/direct-bot-read.ts` + pure `direct-bot-lib.ts` (rule printed before the reading; `automated` only if users/session ≥0.98 AND pv/session ≤1.05 AND ≥90% on the two fingerprints; else `inconclusive`, never "human") + 11 tests; artifact `reports/funnel/pip-singapore-direct-2026-10-16.md`; Q30 (Vercel Firewall SG challenge) filed. No top-up: tool runway 2.89 d (46 ÷ 15.93 pinterest-14d) ≥ 2.0.
 - Before → after: 28d 09-17→10-14 segment 14,740 = **4.10%** of 359,162 (Rio's excess-over-250 method read 1.93% — the quiet-day trickle is the same two fingerprints); users/session 1.001, pv/session 1.002, 99.0% on 1280x1200 (9,686) + 1366x1366 (4,668); engaged 27.8% but 85.7% on the Mac variant — dwell-driven, so engagement is not a bot discriminator. 7d all +5.7% → ex segment +0.5%; Direct +79.9% → ex segment **−7.4%**. 1280x1200 variant ramping (10-14 1,806, 10-15 1,943). Pinner 9–10 pins/24h = 100% of rows dated today (0 schedulable, drainable 0): inventory-bound, not degraded.

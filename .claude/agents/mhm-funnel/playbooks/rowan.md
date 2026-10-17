@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-17
+- Tried: E228 (T0, PR #325 aed39ae): URL map `/jewelry/`→jewelry and `/farmhouse-cc/`→furniture, a registry guard test (30 collections walked, 2 of 19 cases red pre-fix), 21 `--ids` pins on food-clutter and male-accessories; `catalog-post-disagreement.ts` prints pins-not-yet-at-value and takes `--label`.
+- Before → after: food-clutter 7/15 → 0/8, male-accessories 13/30 → 0/17; catalog mismatches 318/4,911 → 296/4,891; posts >50% wrong 1 → 0; farmhouse-cc 10/17 → 8/17 (map entry only). Map change touches 60 post categories on ingest, 0 DB rows rewritten.
+- Verdict: MORE DATA (read 2026-10-19).
+- Next time: the URL map is the ingest fallback, so measure it against the registry, not only against the disagreement tool. FAMILY agreement hid the jewelry gap (the accessories family contains jewelry).
+
 ## 2026-10-16
 - Tried: E221. Read all 41 `lashes` rows before adding `lashes` to makeup-cc `contentTypeIn`. 18 were not lashes (grillz, a Rolex, 2 Sims, scars, a fence) and got `--ids` pins, plus 3 keeps. Copy 900+ → 800+, expectedCount 922 → 851, skin-details 276 → 387. New copy-vs-count test (T0).
 - Before → after: lashes 41 → 23 (23/23 lashes). makeup-cc 828 → 851. Top 48 off-type 0, but Kosmo Grillz would have been #18. Pins E221 21/21, E214 119/119. Making lashes `titleOnly` was rejected: the replay changed 4/16,903 rows and 2 stayed wrong.

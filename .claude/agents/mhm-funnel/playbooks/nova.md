@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-17
+- Tried: E166 graded. E225 (T0, #322 5605877): the /creator/* row now prints a source-matched control next to the site-relative guard. Diagnostic only.
+- Before → after: guard 91.3% FAIL → source-matched 99.0% (10-09→15). By source, creator vs expected: google 57/51.5, bing 52/69.7, chatgpt 5/10.8 (sitewide chatgpt 337→154), other 23/6.4. Nothing broken on our side (sitemap 549, 200 + canonical, mod→creator links present). E166: 1 claim promoted (dor-e 10-16), 0 409s, seed-rename untested in production.
+- Verdict: E166 KEEP/close. E225 MORE DATA (read 2026-10-24).
+- Next time: a site control has to match the slice's source mix. A slice that is 18% ChatGPT, graded against a site that is 1.4% ChatGPT, fails whenever ChatGPT moves.
+
 ## 2026-10-16
 - Tried: E158 graded. E218 (T0) — IndexNow `--creators-changed` in the daily runner, plus one catch-up push of the 72 creator pages with a new mod since the last full push (09-26).
 - Before → after: E158 legs: 0/8 seed pages hide the claim card (curl 8/8 "Claim this page", 0 badges); 0/20 seed verified; 0 mods on verified no-OAuth profiles. /creator/* organic+AI 165 → 137 (10-09→15; site 89.9%, ratio 92.3%, FAIL). The 8 treated pages were 6 → 1, so they are not the cause. By source: Google 52 → 57, Bing 77 → 52 (−32% vs site −10%), chatgpt 29 → 5. No creator push since 09-26; 549 pages, 66 with a new mod since.
