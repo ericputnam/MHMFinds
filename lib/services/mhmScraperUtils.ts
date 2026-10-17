@@ -139,6 +139,11 @@ const SIMS_4_CONTENT_MAPPINGS: ContentTypeMapping[] = [
   { patterns: [/clothes-cc/, /cc-clothes/, /clothing-cc/], contentType: 'tops' },
   { patterns: [/dress-cc/, /cc-dress/], contentType: 'dresses' },
   { patterns: [/furniture/, /build-buy/], contentType: 'furniture' },
+  // E228 (Rowan, 2026-10-17): `/sims-4-farmhouse-cc/` is a furniture/decor
+  // round-up (12 furniture, 3 decor/clutter of 25 rows), but `/house/` read it
+  // as `lot`. Must sit BEFORE the `/house/` rule. `/sims-4-farmhouses/` (no
+  // `-cc`) is a real lots post and keeps falling through to `lot`.
+  { patterns: [/farmhouse-cc/], contentType: 'furniture' },
   { patterns: [/house/, /houses/, /lot-/], contentType: 'lot' },
   { patterns: [/pose/, /poses/], contentType: 'poses' },
   { patterns: [/body-preset/, /presets/, /ear-preset/], contentType: 'preset' },
@@ -148,7 +153,12 @@ const SIMS_4_CONTENT_MAPPINGS: ContentTypeMapping[] = [
   { patterns: [/nail/], contentType: 'nails' },
   { patterns: [/shoes-cc/, /cc-shoes/, /shoe-cc/], contentType: 'shoes' },
   { patterns: [/hat-cc/, /cc-hat/, /hats/], contentType: 'hats' },
-  { patterns: [/accessories-cc/, /cc-accessories/, /jewelry/], contentType: 'accessories' },
+  // E228: `/jewelry/` used to map to `accessories`, but the jewelry-cc
+  // collection filters on `jewelry`/`watches` — a jewelry post's URL fallback
+  // at ingest landed outside its own collection. Guarded against the registry
+  // in __tests__/unit/collection-url-category.test.ts.
+  { patterns: [/jewelry/, /jewellery/], contentType: 'jewelry' },
+  { patterns: [/accessories-cc/, /cc-accessories/], contentType: 'accessories' },
   { patterns: [/kitchen/], contentType: 'kitchen' },
   { patterns: [/bathroom/], contentType: 'bathroom' },
   { patterns: [/bedroom/], contentType: 'bedroom' },

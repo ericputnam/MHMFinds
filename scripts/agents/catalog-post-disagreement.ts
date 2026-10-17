@@ -31,6 +31,7 @@
  *   npx tsx scripts/agents/catalog-post-disagreement.ts --min=10 --top=25 \
  *     --out=reports/funnel/catalog-e186-post-disagreement-2026-10-11
  *   npx tsx scripts/agents/catalog-post-disagreement.ts --post=<sourceUrl> # list rows
+ *   ... --label=E228   # report heading (was hardcoded "E186")
  */
 import '../lib/setup-env';
 
@@ -60,7 +61,11 @@ export const FAMILY: Record<string, string[]> = {
   dresses: ['dresses', 'full-body'],
   shoes: ['shoes'],
   hats: ['hats', 'accessories'],
-  accessories: ['accessories', 'jewelry', 'glasses', 'hats'],
+  accessories: ['accessories', 'jewelry', 'watches', 'glasses', 'hats'],
+  // E228: `/jewelry/` now maps to `jewelry` (was `accessories`); the
+  // jewelry-cc collection is `jewelry` + `watches`, and a generic accessory on
+  // a jewelry post is a sibling, as `jewelry` is on an accessories post.
+  jewelry: ['jewelry', 'watches', 'accessories'],
   glasses: ['glasses', 'accessories'],
   makeup: [...FACE, 'skin'],
   eyeliner: FACE,
@@ -114,6 +119,10 @@ async function main() {
   type Agg = { sourceUrl: string; urlType: string; rows: number; nulls: number; pinned: number; neutral: number; agree: number; disagree: number; disagreeTypes: Record<string, number>; downloads: number };
   const byPost = new Map<string, Agg>();
   let unmappedRows = 0;
+  // A pin lowers a post's denominator the moment it is in the pin file, before
+  // any `--apply` writes it — so an unapplied pin hides a row the visitor still
+  // sees wrong. Print them so the number cannot read better than the catalog.
+  const pinsNotAtValue: Array<{ id: string; title: string; db: string | null; pin: string | null }> = [];
   const unmappedPosts = new Set<string>();
   for (const r of rows) {
     const url = r.sourceUrl as string;
@@ -123,7 +132,8 @@ async function main() {
     if (!a) { a = { sourceUrl: url, urlType, rows: 0, nulls: 0, pinned: 0, neutral: 0, agree: 0, disagree: 0, disagreeTypes: {}, downloads: 0 }; byPost.set(url, a); }
     a.rows++;
     a.downloads += r.downloadCount;
-    if (HAND_AUDITED_CONTENT_TYPES[r.id]) a.pinned++;
+    const pin = HAND_AUDITED_CONTENT_TYPES[r.id];
+    if (pin) { a.pinned++; if (pin.contentType !== r.contentType) pinsNotAtValue.push({ id: r.id, title: r.title, db: r.contentType, pin: pin.contentType }); }
     else if (r.contentType == null) a.nulls++;
     else if (NEUTRAL.includes(r.contentType)) a.neutral++;
     else if (agrees(urlType, r.contentType)) a.agree++;
@@ -146,12 +156,16 @@ async function main() {
     disagreeRowsAllMapped: all.reduce((s, a) => s + a.disagree, 0),
     typedUnpinnedRowsAllMapped: all.reduce((s, a) => s + a.agree + a.disagree, 0),
     postsOver50pct: ranked.filter((a) => a.share > 0.5).length,
+    pinsNotAtValue: pinsNotAtValue.length,
   };
 
   console.log(`Loaded ${totals.rowsWithSourceUrl} rows with a sourceUrl`);
   console.log(`  URL category known: ${totals.mappedPosts} posts / ${totals.mappedRows} rows; unknown: ${totals.unmappedPosts} posts / ${totals.unmappedRows} rows (never ranked)`);
   console.log(`  disagree (typed, unpinned): ${totals.disagreeRowsAllMapped} / ${totals.typedUnpinnedRowsAllMapped}`);
-  console.log(`  ranked (≥${min} typed unpinned rows): ${totals.rankedPosts}; >50% disagree: ${totals.postsOver50pct}\n`);
+  console.log(`  ranked (≥${min} typed unpinned rows): ${totals.rankedPosts}; >50% disagree: ${totals.postsOver50pct}`);
+  console.log(`  pins not yet at value (counted as pinned, DB still differs): ${pinsNotAtValue.length}`);
+  for (const p of pinsNotAtValue.slice(0, 20)) console.log(`    ${p.id}  db=${p.db}  pin=${p.pin}  ${p.title}`);
+  console.log('');
   console.log('rank  share  dis/typed  null pin  urlType       post  [disagreeing types]');
   ranked.slice(0, top).forEach((a, i) => {
     const types = Object.entries<number>(a.disagreeTypes).sort((x, y) => y[1] - x[1]).map(([t, n]) => `${t}:${n}`).join(' ');
@@ -160,9 +174,9 @@ async function main() {
 
   if (out) {
     const top_ = ranked.slice(0, top);
-    writeFileSync(`${out}.json`, JSON.stringify({ writtenAt: new Date().toISOString(), mode: 'read-only', min, totals, ranked: top_ }, null, 1) + '\n');
+    writeFileSync(`${out}.json`, JSON.stringify({ writtenAt: new Date().toISOString(), mode: 'read-only', min, totals, pinsNotAtValue, ranked: top_ }, null, 1) + '\n');
     const md = [
-      `# E186 — posts ranked by contentType vs URL-category disagreement (${new Date().toISOString().slice(0, 10)})`,
+      `# ${arg('label') ?? 'Catalog'} — posts ranked by contentType vs URL-category disagreement (${new Date().toISOString().slice(0, 10)})`,
       '',
       'Read-only. `scripts/agents/catalog-post-disagreement.ts`. Disagreement = typed, unpinned row whose contentType is outside the URL category family; NULL and pinned rows never count.',
       '',
@@ -170,6 +184,7 @@ async function main() {
       `- URL category known: ${totals.mappedPosts} posts / ${totals.mappedRows} rows; unknown: ${totals.unmappedPosts} posts / ${totals.unmappedRows} rows (not ranked)`,
       `- Disagree: ${totals.disagreeRowsAllMapped} of ${totals.typedUnpinnedRowsAllMapped} typed unpinned rows on mapped posts`,
       `- Ranked (≥${min} typed unpinned rows): ${totals.rankedPosts}; >50% disagree: ${totals.postsOver50pct}`,
+      `- Pins not yet at value (counted as pinned, DB still differs): ${totals.pinsNotAtValue}`,
       '',
       '| # | Share | Dis/typed | NULL | Pinned | URL type | Post | Disagreeing types |',
       '|---|---|---|---|---|---|---|---|',

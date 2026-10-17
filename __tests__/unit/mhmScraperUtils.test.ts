@@ -332,8 +332,14 @@ describe('detectContentTypeFromUrl', () => {
       expect(detectContentTypeFromUrl('https://musthavemods.com/best-shoes-cc/')).toBe('shoes');
     });
 
-    it('detects accessories from "jewelry"', () => {
-      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-jewelry-cc/')).toBe('accessories');
+    it('detects jewelry from "jewelry" (E228 — was accessories)', () => {
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-jewelry-cc/')).toBe('jewelry');
+    });
+
+    it('reads the farmhouse CC round-up as furniture, the farmhouse lots post as lot (E228)', () => {
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-farmhouse-cc/')).toBe('furniture');
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-farmhouses/')).toBe('lot');
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-cottage-houses/')).toBe('lot');
     });
   });
 
