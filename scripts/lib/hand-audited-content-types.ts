@@ -1026,6 +1026,37 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmkxz0sxj004woxhcgg0o6l8t: { contentType: "lashes", why: "E221 \"Toddler Slim 3D Eyelashes\" — KEEP: title says eyelashes; TSR files it under glasses, which is wrong" },
   cmim8ti00007noxy876bn76js: { contentType: "lashes", why: "E221 \"2D Eyelash Ultimate Collection\" — KEEP: 58 drawn-on lashes for the Lovestruck lash slot; desc calls them eyeliner-like, title wins" },
   cmim8zl800190oxy8eob8efci: { contentType: "lashes", why: "E221 \"Mix and Match Flower Lashes\" — KEEP: lashes with flower tips; source category CAS - Accessories is wrong" },
+  // ── Audited 2026-10-17 (Rowan, E228). Next two posts in the E186
+  //    URL-category disagreement queue, every row read by title, then
+  //    description + download-URL category. /sims-4-food-clutter-cc/: 7 of 7
+  //    disagreeing rows are food clutter typed from prose (residential,
+  //    workout, makeup, glasses, shoes, full-body) -> clutter.
+  //    /sims-4-male-accessories-cc/: 13 of 13 disagreeing rows are worn
+  //    accessories typed as clothes/build -> hats 7, accessories 4, glasses 1,
+  //    jewelry 1; plus 1 ADD from NULL (Basecap Set -> hats). Kept as-is: every
+  //    'ok' row; Nickname Urban Techwear Set stays NULL (an outfit set).
+  //    Six different source types, so `--ids` pins, never a facet-wide pass.
+  cmim8xram00ydoxy8msy12mhz: { contentType: "accessories", why: "E228 \"Accessories Collections 03 For TS4\" — accessories, was furniture (/sims-4-male-accessories-cc/); title says accessories; desc 'gothic accessory … wardrobe'" },
+  cmim8xqxi00y6oxy8qlaghtij: { contentType: "hats", why: "E228 \"Ade-caleb Bandana\" — hats, was full-body (/sims-4-male-accessories-cc/); TSR category sims4-accessories-male-hats" },
+  cmim8xqbq00xvoxy8abt4we2z: { contentType: "hats", why: "E228 \"Archivefaction Cap With Barbed Wire\" — hats, was dresses (/sims-4-male-accessories-cc/); title says cap" },
+  cmim8xqju00xzoxy8ah13w5mk: { contentType: "hats", why: "E228 \"Backward Strapped Baseball Hat\" — hats, was full-body (/sims-4-male-accessories-cc/); title says hat" },
+  cmim8xpr900xloxy81d5xheu7: { contentType: "jewelry", why: "E228 \"Constant Necklace Male\" — jewelry, was tops (/sims-4-male-accessories-cc/); title says necklace" },
+  cmim8xqhh00xyoxy8ihal6xmr: { contentType: "hats", why: "E228 \"FM & M Street Bucket Hats\" — hats, was full-body (/sims-4-male-accessories-cc/); title says hats" },
+  cmim8xr4s00yaoxy8b3eqi08k: { contentType: "accessories", why: "E228 \"Insolence Headphones\" — accessories, was tops (/sims-4-male-accessories-cc/); headphones; the 2 other headphones on this post are accessories" },
+  cmim8xr3000y9oxy8uajbqzos: { contentType: "glasses", why: "E228 \"Lexel Gravity\" — glasses, was tops (/sims-4-male-accessories-cc/); TSR category sims4-accessories-female-glasses; desc 'sunglasses accessory pack'" },
+  cmim8xqlo00y0oxy8bf2tvhe9: { contentType: "hats", why: "E228 \"Merc Hat\" — hats, was full-body (/sims-4-male-accessories-cc/); title says hat" },
+  cmim8xqpr00y2oxy8mrsgks9u: { contentType: "hats", why: "E228 \"Nike Hats\" — hats, was full-body (/sims-4-male-accessories-cc/); title says hats" },
+  cmim8xqnw00y1oxy8inx50h5g: { contentType: "hats", why: "E228 \"Snapbacks\" — hats, was full-body (/sims-4-male-accessories-cc/); snapbacks are caps" },
+  cmim8xq7w00xtoxy85m2qn24r: { contentType: "accessories", why: "E228 \"Sport Smartwatch For Men\" — accessories, was decor (/sims-4-male-accessories-cc/); TSR category sims4-accessories; the 3 other watches on this post are accessories (watches value question still open)" },
+  cmim8xr8m00ycoxy8p5hf5r2n: { contentType: "accessories", why: "E228 \"Wireless Earphones\" — accessories, was full-body (/sims-4-male-accessories-cc/); earphones; same as the post's headphones" },
+  cmim8xqdr00xwoxy8n1uy35pc: { contentType: "hats", why: "E228 \"Daydreamin’ Diy Basecap Set\" — hats, was null (/sims-4-male-accessories-cc/); ADD from NULL: basecap = baseball cap; desc 'male Sim's wardrobe … 100 colors'" },
+  cmijj5dtc0044oxs31yl0ltu1: { contentType: "clutter", why: "E228 \"Chobani Set\" — clutter, was workout (/sims-4-food-clutter-cc/); yogurt cups; desc 'Greek yogurt clutter'" },
+  cmijj5f9a0045oxs3yxj26u2x: { contentType: "clutter", why: "E228 \"Form And Function Preserves\" — clutter, was residential (/sims-4-food-clutter-cc/); pantry jars; TSR category decor-clutter" },
+  cmijj5idi0047oxs32ee74nu5: { contentType: "clutter", why: "E228 \"Gelatteria Desserts\" — clutter, was full-body (/sims-4-food-clutter-cc/); display cakes/pies; desc 'pastry-shop clutter'" },
+  cmijj5tfe004doxs3pj6js7h8: { contentType: "clutter", why: "E228 \"Home Cafeteria Goodies\" — clutter, was residential (/sims-4-food-clutter-cc/); desc '18 decorative … food clutter cc pieces'" },
+  cmijj5r65004coxs3zrjxrprt: { contentType: "clutter", why: "E228 \"Laila Drinks\" — clutter, was glasses (/sims-4-food-clutter-cc/); 10 decorative beverages; desc 'clutter cc'" },
+  cmijj5nn7004aoxs3h1feiheu: { contentType: "clutter", why: "E228 \"Random Foods Part 2\" — clutter, was makeup (/sims-4-food-clutter-cc/); desc 'This clutter set includes packaged snacks'" },
+  cmijj59vt0041oxs33yww3p6x: { contentType: "clutter", why: "E228 \"Vogue Tray Boot Sushi Decor\" — clutter, was shoes (/sims-4-food-clutter-cc/); sushi boat ('Boot' is the title's typo for Boat); TSR category decor-clutter" },
 };
 
 /**

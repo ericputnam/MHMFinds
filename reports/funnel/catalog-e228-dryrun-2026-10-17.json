@@ -1,0 +1,145 @@
+{
+ "writtenAt": "2026-10-17T10:50:21.330Z",
+ "mode": "dry-run",
+ "facets": [
+  "furniture",
+  "full-body",
+  "dresses",
+  "tops",
+  "decor",
+  "workout",
+  "residential",
+  "glasses",
+  "makeup",
+  "shoes",
+  "null"
+ ],
+ "rows": [
+  {
+   "id": "cmim8xqju00xzoxy8ah13w5mk",
+   "title": "Backward Strapped Baseball Hat",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmijj5nn7004aoxs3h1feiheu",
+   "title": "Random Foods Part 2",
+   "from": "makeup",
+   "to": "clutter"
+  },
+  {
+   "id": "cmijj5tfe004doxs3pj6js7h8",
+   "title": "Home Cafeteria Goodies",
+   "from": "residential",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8xpr900xloxy81d5xheu7",
+   "title": "Constant Necklace Male",
+   "from": "tops",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmim8xram00ydoxy8msy12mhz",
+   "title": "Accessories Collections 03 For TS4",
+   "from": "furniture",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijj5dtc0044oxs31yl0ltu1",
+   "title": "Chobani Set",
+   "from": "workout",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8xqbq00xvoxy8abt4we2z",
+   "title": "Archivefaction Cap With Barbed Wire",
+   "from": "dresses",
+   "to": "hats"
+  },
+  {
+   "id": "cmijj5r65004coxs3zrjxrprt",
+   "title": "Laila Drinks",
+   "from": "glasses",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8xqpr00y2oxy8mrsgks9u",
+   "title": "Nike Hats",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8xqxi00y6oxy8qlaghtij",
+   "title": "Ade-caleb Bandana",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8xr3000y9oxy8uajbqzos",
+   "title": "Lexel Gravity",
+   "from": "tops",
+   "to": "glasses"
+  },
+  {
+   "id": "cmim8xr4s00yaoxy8b3eqi08k",
+   "title": "Insolence Headphones",
+   "from": "tops",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8xr8m00ycoxy8p5hf5r2n",
+   "title": "Wireless Earphones",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8xqdr00xwoxy8n1uy35pc",
+   "title": "Daydreamin’ Diy Basecap Set",
+   "from": null,
+   "to": "hats"
+  },
+  {
+   "id": "cmijj5f9a0045oxs3yxj26u2x",
+   "title": "Form And Function Preserves",
+   "from": "residential",
+   "to": "clutter"
+  },
+  {
+   "id": "cmijj5idi0047oxs32ee74nu5",
+   "title": "Gelatteria Desserts",
+   "from": "full-body",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8xq7w00xtoxy85m2qn24r",
+   "title": "Sport Smartwatch For Men",
+   "from": "decor",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijj59vt0041oxs33yww3p6x",
+   "title": "Vogue Tray Boot Sushi Decor",
+   "from": "shoes",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8xqhh00xyoxy8ihal6xmr",
+   "title": "FM & M Street Bucket Hats",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8xqlo00y0oxy8bf2tvhe9",
+   "title": "Merc Hat",
+   "from": "full-body",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8xqnw00y1oxy8inx50h5g",
+   "title": "Snapbacks",
+   "from": "full-body",
+   "to": "hats"
+  }
+ ]
+}

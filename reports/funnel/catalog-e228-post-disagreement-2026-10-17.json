@@ -1,0 +1,115 @@
+{
+ "writtenAt": "2026-10-17T10:50:46.424Z",
+ "mode": "read-only",
+ "min": 10,
+ "totals": {
+  "rowsWithSourceUrl": 16902,
+  "mappedPosts": 390,
+  "mappedRows": 5434,
+  "unmappedPosts": 2513,
+  "unmappedRows": 11468,
+  "rankedPosts": 163,
+  "disagreeRowsAllMapped": 296,
+  "typedUnpinnedRowsAllMapped": 4891,
+  "postsOver50pct": 0,
+  "pinsNotAtValue": 0
+ },
+ "pinsNotAtValue": [],
+ "ranked": [
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-farmhouse-cc/",
+   "urlType": "furniture",
+   "rows": 25,
+   "nulls": 0,
+   "pinned": 6,
+   "neutral": 2,
+   "agree": 9,
+   "disagree": 8,
+   "disagreeTypes": {
+    "tops": 1,
+    "residential": 6,
+    "commercial": 1
+   },
+   "downloads": 189,
+   "share": 0.47058823529411764
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-accessories-cc/",
+   "urlType": "accessories",
+   "rows": 29,
+   "nulls": 1,
+   "pinned": 2,
+   "neutral": 0,
+   "agree": 16,
+   "disagree": 10,
+   "disagreeTypes": {
+    "tops": 2,
+    "full-body": 2,
+    "skin": 1,
+    "furniture": 1,
+    "gameplay-mod": 2,
+    "dresses": 1,
+    "nails": 1
+   },
+   "downloads": 1202,
+   "share": 0.38461538461538464
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-male-shoes-cc/",
+   "urlType": "shoes",
+   "rows": 34,
+   "nulls": 0,
+   "pinned": 0,
+   "neutral": 0,
+   "agree": 22,
+   "disagree": 12,
+   "disagreeTypes": {
+    "workout": 2,
+    "dresses": 3,
+    "bottoms": 4,
+    "tops": 1,
+    "furniture": 1,
+    "clutter": 1
+   },
+   "downloads": 479,
+   "share": 0.35294117647058826
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-cc-furniture/",
+   "urlType": "furniture",
+   "rows": 24,
+   "nulls": 0,
+   "pinned": 0,
+   "neutral": 0,
+   "agree": 17,
+   "disagree": 7,
+   "disagreeTypes": {
+    "shoes": 1,
+    "makeup": 1,
+    "residential": 3,
+    "tops": 1,
+    "poses": 1
+   },
+   "downloads": 1255,
+   "share": 0.2916666666666667
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-nose-presets/",
+   "urlType": "preset",
+   "rows": 28,
+   "nulls": 0,
+   "pinned": 3,
+   "neutral": 0,
+   "agree": 18,
+   "disagree": 7,
+   "disagreeTypes": {
+    "full-body": 2,
+    "tops": 1,
+    "skin": 3,
+    "decor": 1
+   },
+   "downloads": 499,
+   "share": 0.28
+  }
+ ]
+}
