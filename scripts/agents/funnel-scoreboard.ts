@@ -54,7 +54,7 @@ import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/ca
 import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
 import { summarizeCreatorSubmissions, type CreatorOnboardingSummary } from '../../lib/funnel/creatorOnboarding';
-import { summarizeCreatorLandings, formatCreatorLandings, EARNED_CHANNEL_GROUPS, type ChannelRow, type CreatorLandingSummary } from '../../lib/funnel/creatorLandings';
+import { summarizeCreatorLandings, formatCreatorLandings, sourceMatchedRead, EARNED_CHANNEL_GROUPS, type ChannelRow, type CreatorLandingSummary } from '../../lib/funnel/creatorLandings';
 import {
   E40_ANCHOR,
   E40_CLICK_BASELINE,
@@ -333,24 +333,29 @@ async function pullGa4(): Promise<Ga4Data> {
       client.runReport({
         property,
         dateRanges: [{ startDate: start, endDate: end }],
-        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }, { name: 'sessionSource' }],
         metrics: [{ name: 'sessions' }],
         dimensionFilter: { filter: { fieldName: 'landingPage', stringFilter: { value: '/creator/', matchType: 'BEGINS_WITH' } } },
       }),
       client.runReport({
         property,
         dateRanges: [{ startDate: start, endDate: end }],
-        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }, { name: 'sessionSource' }],
         metrics: [{ name: 'sessions' }],
         dimensionFilter: { filter: { fieldName: 'sessionDefaultChannelGroup', inListFilter: { values: [...EARNED_CHANNEL_GROUPS] } } },
+        limit: 10000,
       }),
     ]);
     const toRows = (r: typeof cl): ChannelRow[] => (r.rows ?? []).map((row) => ({
       channelGroup: row.dimensionValues?.[0]?.value ?? '',
+      source: row.dimensionValues?.[1]?.value ?? undefined,
       sessions: Number(row.metricValues?.[0]?.value ?? 0),
     }));
     const siteRows = toRows(site);
-    creatorLandings7d = summarizeCreatorLandings(toRows(cl), siteRows.length ? siteRows.reduce((n, r) => n + r.sessions, 0) : null);
+    const creatorRows = toRows(cl);
+    creatorLandings7d = summarizeCreatorLandings(creatorRows, siteRows.length ? siteRows.reduce((n, r) => n + r.sessions, 0) : null);
+    // E225: diagnostic source-matched control; never changes the verdict.
+    creatorLandings7d.sourceMatched = sourceMatchedRead(creatorRows, siteRows);
   } catch {
     creatorLandings7d = null;
   }

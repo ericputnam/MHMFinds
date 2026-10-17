@@ -60,6 +60,100 @@ export const CREATOR_LANDING_FLOOR = { num: 95, den: 100 } as const;
 export interface ChannelRow {
   channelGroup: string;
   sessions: number;
+  /** GA4 sessionSource. Optional: rows without it skip the source-matched read. */
+  source?: string;
+}
+
+/**
+ * Source-matched control (Nova, E225, 2026-10-17). DIAGNOSTIC ONLY — it never
+ * changes `guard`.
+ *
+ * Why: the site control above is 70% Bing and 1.4% ChatGPT, but /creator/* in
+ * the baseline week was 47% Bing and 18% ChatGPT. When sitewide ChatGPT
+ * referrals halved (337 → 154, 09-23→29 vs 10-10→16) the guard charged that
+ * external drop to creator pages: 139 vs 165 read 94.2% site-relative FAIL,
+ * while the source-matched expectation was 139.3 (99.8%). Per bucket on that
+ * read: google 61 vs 52.0, bing 48 vs 67.5 (the one real residual — E218),
+ * chatgpt 7 vs 13.3, other 23 vs 6.5.
+ *
+ *   expected = Σ_bucket creatorBase[b] × siteNow[b] / siteBase[b]
+ *
+ * The verdict basis was NOT moved to this number (it would flip a FAIL to a
+ * PASS mid-read of E204/E218/E144). Whether to adopt it is Quinn's call.
+ */
+export type SourceBucket = 'google' | 'bing' | 'chatgpt' | 'other';
+export const SOURCE_BUCKETS: readonly SourceBucket[] = ['google', 'bing', 'chatgpt', 'other'];
+
+export function bucketSource(source: string | undefined): SourceBucket {
+  const s = (source ?? '').trim().toLowerCase();
+  if (s === 'google') return 'google';
+  if (s === 'bing' || s === 'bing.com' || s.endsWith('.bing.com')) return 'bing';
+  if (s === 'chatgpt' || s === 'chatgpt.com' || s.endsWith('.chatgpt.com')) return 'chatgpt';
+  return 'other';
+}
+
+/**
+ * Frozen per-bucket baseline, GA4 re-read 2026-10-17 of 2026-09-23→09-29,
+ * organic+AI sessions bucketed by sessionSource. Sums equal
+ * CREATOR_LANDING_BASELINE (165 / 24,116) by construction (pinned in tests).
+ */
+export const SOURCE_BASELINE: {
+  readonly creator: Readonly<Record<SourceBucket, number>>;
+  readonly site: Readonly<Record<SourceBucket, number>>;
+} = {
+  // google 52; bing 54 + cn.bing 23; chatgpt.com 28 (AI) + 1 (organic); rest 7
+  creator: { google: 52, bing: 77, chatgpt: 29, other: 7 },
+  // google 2,806; bing 16,844 + cn.bing 128; chatgpt.com 337; rest 4,001
+  site: { google: 2806, bing: 16972, chatgpt: 337, other: 4001 },
+};
+
+export interface SourceMatchedRead {
+  actual: number;
+  expected: number;
+  /** actual / expected, print only. */
+  ratio: number;
+  byBucket: Record<SourceBucket, { actual: number; expected: number }>;
+}
+
+function sumByBucket(rows: readonly ChannelRow[]): Record<SourceBucket, number> {
+  const out: Record<SourceBucket, number> = { google: 0, bing: 0, chatgpt: 0, other: 0 };
+  for (const r of rows) {
+    if (!EARNED_CHANNEL_GROUPS.includes(r.channelGroup)) continue;
+    out[bucketSource(r.source)] += Number(r.sessions) || 0;
+  }
+  return out;
+}
+
+/** null when either side lacks `source` on any earned row (could-not-run). */
+export function sourceMatchedRead(
+  creatorRows: readonly ChannelRow[],
+  siteRows: readonly ChannelRow[],
+  baseline = SOURCE_BASELINE,
+): SourceMatchedRead | null {
+  const earned = (rows: readonly ChannelRow[]) => rows.filter((r) => EARNED_CHANNEL_GROUPS.includes(r.channelGroup));
+  const c = earned(creatorRows);
+  const s = earned(siteRows);
+  if (c.length === 0 || s.length === 0) return null;
+  if (c.some((r) => r.source == null) || s.some((r) => r.source == null)) return null;
+  const cNow = sumByBucket(c);
+  const sNow = sumByBucket(s);
+  const byBucket = {} as Record<SourceBucket, { actual: number; expected: number }>;
+  let expected = 0;
+  let actual = 0;
+  for (const b of SOURCE_BUCKETS) {
+    const e = baseline.site[b] > 0 ? (baseline.creator[b] * sNow[b]) / baseline.site[b] : 0;
+    byBucket[b] = { actual: cNow[b], expected: e };
+    expected += e;
+    actual += cNow[b];
+  }
+  if (expected <= 0) return null;
+  return { actual, expected, ratio: actual / expected, byBucket };
+}
+
+export function formatSourceMatched(r: SourceMatchedRead | null | undefined): string {
+  if (!r) return '';
+  const parts = SOURCE_BUCKETS.map((b) => `${b} ${r.byBucket[b].actual}/${r.byBucket[b].expected.toFixed(1)}`);
+  return ` · source-matched ${(r.ratio * 100).toFixed(1)}% (diagnostic; ${parts.join(', ')})`;
 }
 
 export interface CreatorLandingSummary {
@@ -76,6 +170,8 @@ export interface CreatorLandingSummary {
   /** 'pass' | 'fail' on the exact-fraction comparison; 'unknown' when the
    *  site control or the creator rows were not read (could-not-run ≠ fail). */
   guard: 'pass' | 'fail' | 'unknown';
+  /** E225 diagnostic; absent/null when source rows were not read. */
+  sourceMatched?: SourceMatchedRead | null;
 }
 
 export function sumChannels(rows: readonly ChannelRow[], groups: readonly string[]): number {
@@ -115,5 +211,5 @@ export function formatCreatorLandings(s: CreatorLandingSummary): string {
   const g = s.guard === 'unknown'
     ? 'guard unknown (site control not read)'
     : `guard ${(Number(s.ratio) * 100).toFixed(1)}% site-relative vs ${CREATOR_LANDING_BASELINE.window} ${s.guard === 'pass' ? 'PASS' : 'FAIL'} (≥95%)`;
-  return `${s.organicAi} organic+AI of ${s.all} (Direct ${s.direct}) · ${g}`;
+  return `${s.organicAi} organic+AI of ${s.all} (Direct ${s.direct}) · ${g}${formatSourceMatched(s.sourceMatched)}`;
 }
