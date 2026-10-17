@@ -918,10 +918,20 @@ def filter_plugin_scheduled_rows(rows, attribution, managed_keys,
     return kept, dropped
 
 
-def allocate_topup(rows_in_priority_order, day_plan, max_per_url=2, max_per_board=3):
+def allocate_topup(rows_in_priority_order, day_plan, max_per_url=1, max_per_board=3):
     """Fill day_plan's per-day quotas from rows_in_priority_order (already
-    sessions-ranked), respecting per-url/per-board-per-day caps so one
-    destination or board never dominates a day."""
+    sessions-ranked), respecting per-destination/per-board-per-day caps so one
+    destination or board never dominates a day.
+
+    E223 (2026-10-17): `max_per_url` is counted per *destination*
+    (`destination_key`: host folded blog.* → apex, trailing slash, lowercase),
+    not per raw "Post URL" string — the pool is routinely split across the two
+    hosts (37 blog.* / 26 apex of 63 on 10-17) and the same article must not
+    take two slots because its rows spell the host differently. Default 1:
+    10-15's apply ran on the old default of 2 and put 18 rows on 5
+    destinations (tattoos and gshade ×2/day on each of three dates); 10-14's
+    21 rows at 1/URL/day reached 9. `test_max_per_url_defaults_to_one_everywhere`
+    pins the default; `--max-per-url` can still raise it per run."""
     remaining = list(rows_in_priority_order)
     plan = []
     for entry in day_plan:
@@ -932,7 +942,8 @@ def allocate_topup(rows_in_priority_order, day_plan, max_per_url=2, max_per_boar
         i = 0
         while i < len(remaining) and placed < cap:
             row = remaining[i]
-            url, board = row.get('Post URL'), row.get('Board ID')
+            raw_url, board = row.get('Post URL'), row.get('Board ID')
+            url = destination_key(raw_url) or raw_url
             if per_url[url] >= max_per_url or per_board[board] >= max_per_board:
                 i += 1
                 continue
@@ -1257,7 +1268,8 @@ def load_config():
     return config
 
 
-def main():
+def build_parser():
+    """The CLI, as a function so its defaults are testable (E223)."""
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--apply', action='store_true',
                         help='actually write (default is a dry run)')
@@ -1282,8 +1294,13 @@ def main():
     parser.add_argument('--max-rows', type=int, default=HARD_CAP,
                         help='lower the per-invocation hard cap (1..{}); can '
                              'never raise it'.format(HARD_CAP))
-    parser.add_argument('--max-per-url', type=int, default=2)
-    parser.add_argument('--max-per-board', type=int, default=3)
+    parser.add_argument('--max-per-url', type=int, default=1,
+                        help='rows per destination per posting date (default 1; '
+                             'E223 — host-folded, so blog.* and apex copies of '
+                             'one article share the cap). 10-15 ran on the old '
+                             'default of 2 and spent 18 rows on 5 destinations.')
+    parser.add_argument('--max-per-board', type=int, default=3,
+                        help='rows per board per posting date (default 3)')
     parser.add_argument('--seo-source', choices=SEO_SOURCES, default='page',
                         help="E127: rewrite weak pin copy on the plan's rows from "
                              "the destination page BEFORE re-dating ('page', "
@@ -1295,7 +1312,11 @@ def main():
     parser.add_argument('--ledger-dir', default=DEFAULT_LEDGER_DIR)
     parser.add_argument('--json', action='store_true', help='machine-readable output')
     parser.add_argument('--self-test', action='store_true')
-    args = parser.parse_args()
+    return parser
+
+
+def main():
+    args = build_parser().parse_args()
 
     if args.self_test:
         return self_test()
@@ -1473,7 +1494,9 @@ def main():
 
     per_url = defaultdict(int)
     for row, _ in plan:
-        per_url[row['Post URL']] += 1
+        # Keyed like the allocator (E223): one article on two hosts is one
+        # destination, so "N distinct" cannot overcount a host-split pool.
+        per_url[destination_key(row['Post URL']) or row['Post URL']] += 1
     result['destinations'] = sorted(per_url.items(), key=lambda kv: -kv[1])
     result['rows_planned'] = len(plan)
     if by_day:

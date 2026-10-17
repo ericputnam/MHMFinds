@@ -217,6 +217,43 @@ def test_allocate_topup_empty_day_plan(topup):
     assert topup.allocate_topup(rows, [], max_per_url=1, max_per_board=1) == []
 
 
+# E223 (2026-10-17): the per-URL cap is a per-*destination* cap. The same
+# article on blog.musthavemods.com and on the apex is one destination
+# (`destination_key` already folds the host) — a cap keyed on the raw
+# "Post URL" string would let a host-split destination take 2 slots on a day
+# that was capped at 1. The live pool on 10-17 was 37 blog.* / 26 apex rows.
+def test_allocate_topup_caps_per_destination_not_per_raw_url(topup):
+    rows = [
+        {'id': 1, 'Post URL': 'https://blog.musthavemods.com/sims-4-urban-tattoos/', 'Board ID': 'B1'},
+        {'id': 2, 'Post URL': 'https://musthavemods.com/sims-4-urban-tattoos/', 'Board ID': 'B2'},
+        {'id': 3, 'Post URL': 'https://musthavemods.com/sims-4-urban-tattoos', 'Board ID': 'B3'},
+        {'id': 4, 'Post URL': 'https://musthavemods.com/sims-4-gshade-presets/', 'Board ID': 'B4'},
+    ]
+    day_plan = [{'date': '2026-10-20', 'rows': 7}, {'date': '2026-10-21', 'rows': 7}]
+    plan = topup.allocate_topup(rows, day_plan, max_per_url=1, max_per_board=3)
+    by_day = {}
+    for row, day in plan:
+        by_day.setdefault(day, []).append(row['id'])
+    # day 1: one tattoos row (the highest-priority copy) + gshade; the two
+    # other tattoos copies spill to day 2 (one of them), never 3 on one day.
+    assert by_day['2026-10-20'] == [1, 4]
+    assert by_day['2026-10-21'] == [2]
+    assert sum(len(v) for v in by_day.values()) == 3
+
+
+# E223: 10-15's apply forgot `--max-per-url 1` and the tool's default of 2
+# put 18 rows on 5 destinations (tattoos ×2/day and gshade ×2/day on each of
+# three dates) where 10-14's 21 rows at 1/URL/day reached 9. The lesson was
+# prose in the playbook ("always pass --max-per-url 1"); this pins it.
+def test_max_per_url_defaults_to_one_everywhere(topup):
+    import inspect
+    sig = inspect.signature(topup.allocate_topup)
+    assert sig.parameters['max_per_url'].default == 1
+    args = topup.build_parser().parse_args([])
+    assert args.max_per_url == 1
+    assert args.max_per_board == 3
+
+
 # --------------------------------------------------------------------------
 # main() wiring: no-op and unknown paths, exercised end-to-end with the I/O
 # functions monkeypatched (no network).
