@@ -7,6 +7,10 @@ import {
   CREATOR_LANDING_BASELINE,
   EARNED_CHANNEL_GROUPS,
   type ChannelRow,
+  sourceMatchedRead,
+  bucketSource,
+  SOURCE_BASELINE,
+  SOURCE_BUCKETS,
 } from '@/lib/funnel/creatorLandings';
 
 // GA4 reads taken 2026-10-14 (landingPage BEGINS_WITH /creator/, by
@@ -89,5 +93,89 @@ describe('creator landings guard basis (E204)', () => {
     expect(src).toContain('summarizeCreatorLandings(');
     expect(src).toContain('formatCreatorLandings(');
     expect(src).toContain('Sessions to creator pages 7d');
+  });
+});
+
+// E225 (2026-10-17): GA4 read of 2026-10-10→2026-10-16, landingPage BEGINS_WITH
+// /creator/ by channel group × sessionSource (earned rows only + Direct).
+const E225_CREATOR: ChannelRow[] = [
+  { channelGroup: 'Direct', source: '(direct)', sessions: 73 },
+  { channelGroup: 'Organic Search', source: 'google', sessions: 61 },
+  { channelGroup: 'Organic Search', source: 'bing', sessions: 36 },
+  { channelGroup: 'Organic Search', source: 'cn.bing.com', sessions: 12 },
+  { channelGroup: 'AI Assistant', source: 'chatgpt.com', sessions: 7 },
+  { channelGroup: 'Organic Search', source: 'yahoo', sessions: 6 },
+  { channelGroup: 'Organic Search', source: 'uk.search.yahoo.com', sessions: 5 },
+  { channelGroup: 'Organic Search', source: 'yandex.ru', sessions: 5 },
+  { channelGroup: 'AI Assistant', source: 'gemini.google.com', sessions: 4 },
+  { channelGroup: 'AI Assistant', source: 'copilot.com', sessions: 1 },
+  { channelGroup: 'Organic Search', source: 'fi.search.yahoo.com', sessions: 1 },
+  { channelGroup: 'Organic Search', source: 'it.search.yahoo.com', sessions: 1 },
+];
+// Sitewide organic+AI, same window: google 2,807; bing 14,794 + cn.bing 76;
+// chatgpt.com 154; everything else 3,728 (total 21,559).
+const E225_SITE: ChannelRow[] = [
+  { channelGroup: 'Organic Search', source: 'google', sessions: 2807 },
+  { channelGroup: 'Organic Search', source: 'bing', sessions: 14794 },
+  { channelGroup: 'Organic Search', source: 'cn.bing.com', sessions: 76 },
+  { channelGroup: 'AI Assistant', source: 'chatgpt.com', sessions: 154 },
+  { channelGroup: 'Organic Search', source: 'yahoo', sessions: 3728 },
+];
+
+describe('source-matched control (E225, diagnostic only)', () => {
+  it('per-bucket baseline sums to the frozen E204 baseline', () => {
+    const sum = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
+    expect(sum(SOURCE_BASELINE.creator)).toBe(CREATOR_LANDING_BASELINE.creatorOrganicAi);
+    expect(sum(SOURCE_BASELINE.site)).toBe(CREATOR_LANDING_BASELINE.siteOrganicAi);
+    expect([...SOURCE_BUCKETS]).toEqual(['google', 'bing', 'chatgpt', 'other']);
+  });
+
+  it('buckets sources by exact host, not substring', () => {
+    expect(bucketSource('google')).toBe('google');
+    expect(bucketSource('gemini.google.com')).toBe('other');
+    expect(bucketSource('cn.bing.com')).toBe('bing');
+    expect(bucketSource('bing')).toBe('bing');
+    expect(bucketSource('notbing.example')).toBe('other');
+    expect(bucketSource('chatgpt.com')).toBe('chatgpt');
+    expect(bucketSource(undefined)).toBe('other');
+  });
+
+  it('10-10→16: site-relative FAILs while source-matched is ~flat — the gap is sitewide ChatGPT', () => {
+    const siteTotal = E225_SITE.reduce((n, r) => n + r.sessions, 0);
+    expect(siteTotal).toBe(21559);
+    const s = summarizeCreatorLandings(E225_CREATOR, siteTotal);
+    expect(s.organicAi).toBe(139);
+    expect(s.guard).toBe('fail');
+    const m = sourceMatchedRead(E225_CREATOR, E225_SITE)!;
+    expect(m.actual).toBe(139);
+    expect(m.expected).toBeGreaterThan(139);
+    expect(m.expected).toBeLessThan(139.5);
+    expect(m.byBucket.chatgpt).toEqual({ actual: 7, expected: (29 * 154) / 337 });
+    // Bing is the one real residual (E218's target): 48 vs 67.5.
+    expect(m.byBucket.bing.actual).toBe(48);
+    expect(m.byBucket.bing.expected).toBeCloseTo((77 * 14870) / 16972, 6);
+    // Direct never enters the read.
+    expect(Object.values(m.byBucket).reduce((n, b) => n + b.actual, 0)).toBe(139);
+  });
+
+  it('never changes the verdict, and prints only when it was read', () => {
+    const siteTotal = 21559;
+    const s = summarizeCreatorLandings(E225_CREATOR, siteTotal);
+    const withRead = { ...s, sourceMatched: sourceMatchedRead(E225_CREATOR, E225_SITE) };
+    expect(withRead.guard).toBe('fail');
+    expect(formatCreatorLandings(withRead)).toContain('FAIL (≥95%) · source-matched 99.8% (diagnostic; google 61/52.0, bing 48/67.5, chatgpt 7/13.3, other 23/6.5)');
+    expect(formatCreatorLandings(s)).not.toContain('source-matched');
+  });
+
+  it('is could-not-run (null) when source is missing or rows are empty', () => {
+    expect(sourceMatchedRead(READ_WEEK, E225_SITE)).toBeNull();
+    expect(sourceMatchedRead(E225_CREATOR, [])).toBeNull();
+    expect(sourceMatchedRead([], E225_SITE)).toBeNull();
+  });
+
+  it('the scoreboard requests sessionSource and wires the read', () => {
+    const src = readFileSync(join(process.cwd(), 'scripts/agents/funnel-scoreboard.ts'), 'utf8');
+    expect(src).toContain('sourceMatchedRead(creatorRows, siteRows)');
+    expect((src.match(/\{ name: 'sessionDefaultChannelGroup' \}, \{ name: 'sessionSource' \}/g) ?? []).length).toBeGreaterThanOrEqual(2);
   });
 });
