@@ -392,3 +392,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-17 06:35 | check | morning-check |  | https://mhm-finds-dw5l-kk83hx4l1-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-10-17 06:47 | after-merge | Cass: PR #320 funnel(cass): E226 exclude the weekly issue-06 reject before issue 07 (Tier 0) | d8c9aa2 | https://mhm-finds-dw5l-5hnqk5s0r-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-17 06:51 | after-merge | Nova: PR #322 funnel(nova): E225 /creator/* guard prints a source-matched control (Tier 0) | 5605877 | https://mhm-finds-dw5l-40r6yp78y-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-17 06:55 | after-merge | Sage: PR #323 E224 scoreboard flags a WoW read that overlaps a known external window (Tier 0) | 094efff | https://mhm-finds-dw5l-jdrjxk0jo-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
