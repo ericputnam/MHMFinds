@@ -23,8 +23,9 @@ const HEX64 = /^[0-9a-f]{64}$/;
 
 describe('exclusion list shape', () => {
   it('is non-empty (day-1 produced hard bounces) and holds only sha256 hex, never an address', () => {
-    // 7 day-1 (read 09-20) + 5 day-2 (read 09-24). A list only ever grows; a truncation fails here.
-    expect(EXCLUDED_RECIPIENT_HASHES.length).toBeGreaterThanOrEqual(12);
+    // 7 day-1 (read 09-20) + 5 day-2 (read 09-24) + 1 weekly issue-06 reject (E226, 10-17).
+    // A list only ever grows; a truncation fails here.
+    expect(EXCLUDED_RECIPIENT_HASHES.length).toBeGreaterThanOrEqual(13);
     for (const h of EXCLUDED_RECIPIENT_HASHES) {
       expect(h).toMatch(HEX64);
       expect(h).not.toContain('@');
@@ -32,9 +33,31 @@ describe('exclusion list shape', () => {
     expect(new Set(EXCLUDED_RECIPIENT_HASHES).size).toBe(EXCLUDED_RECIPIENT_HASHES.length);
   });
 
+  it('every reject hash recorded by a live weekly send is on the list (E205 -> E226)', () => {
+    // The weekly ledger stores only sha256 + code per reject. Any reject it has recorded
+    // must be excluded before the next issue, or the next issue re-attempts a dead address.
+    const ledger = readFileSync(join(process.cwd(), 'reports/funnel/newsletter-sends.jsonl'), 'utf8');
+    const rejectHashes = new Set<string>();
+    for (const line of ledger.split('\n')) {
+      if (!line.trim()) continue;
+      let row: { mode?: string; kind?: string; rejects?: Array<{ hash?: string }> };
+      try { row = JSON.parse(line); } catch { continue; }
+      if (row.mode !== 'live' || !String(row.kind ?? '').startsWith('weekly-issue-')) continue;
+      for (const r of row.rejects ?? []) if (r.hash) rejectHashes.add(r.hash);
+    }
+    // Vacuity guard: issue 06 recorded one reject; a parser that finds none proves nothing.
+    expect(rejectHashes.size).toBeGreaterThanOrEqual(1);
+    for (const h of Array.from(rejectHashes)) {
+      expect(h).toMatch(HEX64);
+      expect(EXCLUDED_RECIPIENT_HASHES).toContain(h);
+    }
+  });
+
   it('the source file carries no address-shaped string', () => {
     const src = readFileSync(join(process.cwd(), 'lib/services/sendExclusions.ts'), 'utf8');
     expect(src).not.toMatch(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    // A bare '@' anywhere (e.g. a pasted local part or a domain-only note) is also refused.
+    expect(src.replace(/@\/|@see|@param|@returns/g, '')).not.toContain('@');
   });
 });
 

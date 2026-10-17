@@ -49,6 +49,12 @@ export const EXCLUDED_RECIPIENT_HASHES: readonly string[] = [
   '428b8c3f5bd010ab44b4f87f0f6da8571cd1c6139971b502dd559e88764bb58a', // day-2, 5.x.x
   '734622e399efe5fdf59fc0f375cf48616a7ad90831e8eba4b095d844dc5b1bf4', // day-2, 5.x.x
   'c7bf3d6ec4f2681a1efe3a749837ebb52cb3c0dae60eb76a81b19bb51541f641', // day-2, 5.x.x
+  // 2026-10-15 weekly issue 06 run 1 (100 attempted, 99 sent): 1 synchronous reject,
+  // hash taken from `rejects[]` in reports/funnel/newsletter-sends.jsonl (E205), SMTP
+  // code not parsed (null). Matches exactly 1 waitlist row, subscribed before issue 05
+  // (10-11), whose single `failed: 1` was a 550 — i.e. rejected on two consecutive
+  // issues, not a one-off transient. Added before issue 07 (Cass, E226, 2026-10-17).
+  '00e8bfa8afd6244ae1bcc3d3c206cfd7b50a93087b916fd9f5d5d419875af046', // weekly-06, reject
 ];
 
 const EXCLUDED = new Set(EXCLUDED_RECIPIENT_HASHES);
