@@ -20,9 +20,10 @@
  * Exit: 0 green/yellow, 2 red, 3 could not evaluate.
  */
 import { execSync } from 'node:child_process';
-import { writeFileSync, mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
-import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts } from './revenue-guardrail-lib';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, sessionsExSegment, sessionsExSegmentLine, segmentDimensionFilter, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts, type SessionsByDate, type SessionsExSegment } from './revenue-guardrail-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -49,6 +50,51 @@ interface Verdict {
   /** The newest READY production deploy before the window, whatever the action — what a manual rollback would target. */
   rollbackCandidate: string | null;
   changes: Change[]; health: Record<string, unknown>; reasons: string[];
+  /** E227: the judged day's sessions ex the Singapore Direct segment (GA4 basis). null = GA4 could not run; never a verdict input. */
+  sessionsExSegment: SessionsExSegment | null;
+  sessionsExSegmentLine: string;
+}
+
+// E227 — GA4 sessions by day, site and segment, for the judged day and its same-weekday controls.
+// Read-only, bounded (30 s per report), and any failure is returned as a reason string: the sessions
+// line then prints "unavailable" and the status rules (Mediavine numbers) are untouched.
+// `googleCredentialsPath` is the same 8 lines as in direct-bot-read.ts / funnel-scoreboard.ts — a shared
+// helper is an Ops item (SD-11), not a Rio change.
+const GA4_PROPERTY = process.env.GA4_PROPERTY_ID ?? '437117335';
+const GA4_REPORT_TIMEOUT_MS = 30_000;
+function googleCredentialsPath(): string | undefined {
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) return process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  try {
+    const cfg = JSON.parse(readFileSync(join(homedir(), '.claude.json'), 'utf8'));
+    return cfg?.mcpServers?.['google-analytics']?.env?.GOOGLE_APPLICATION_CREDENTIALS ?? cfg?.mcpServers?.gsc?.env?.GOOGLE_APPLICATION_CREDENTIALS;
+  } catch { return undefined; }
+}
+async function pullGa4Sessions(start: string, end: string): Promise<{ site: SessionsByDate; segment: SessionsByDate } | { unavailable: string }> {
+  try {
+    const keyFilename = googleCredentialsPath();
+    if (!keyFilename) return { unavailable: 'GA4 could-not-run: no service-account credentials' };
+    const { BetaAnalyticsDataClient } = await import('@google-analytics/data');
+    const client = new BetaAnalyticsDataClient({ keyFilename });
+    const property = `properties/${GA4_PROPERTY}`;
+    const daily = async (dimensionFilter?: Record<string, unknown>): Promise<SessionsByDate> => {
+      const [res] = await client.runReport(
+        { property, dateRanges: [{ startDate: start, endDate: end }], dimensions: [{ name: 'date' }], metrics: [{ name: 'sessions' }], ...(dimensionFilter ? { dimensionFilter: dimensionFilter as never } : {}), limit: 400 },
+        { timeout: GA4_REPORT_TIMEOUT_MS },
+      );
+      const out: SessionsByDate = {};
+      for (const row of res.rows ?? []) {
+        const raw = row.dimensionValues?.[0]?.value ?? '';
+        const key = /^\d{8}$/.test(raw) ? `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}` : raw;
+        if (key) out[key] = Number(row.metricValues?.[0]?.value ?? 0);
+      }
+      return out;
+    };
+    const site = await daily();
+    const segment = await daily(segmentDimensionFilter());
+    return { site, segment };
+  } catch (e) {
+    return { unavailable: `GA4 could-not-run: ${String((e as Error)?.message ?? e).replace(/[A-Za-z0-9_-]{40,}/g, '[redacted]').slice(0, 120)}` };
+  }
 }
 
 async function pull(): Promise<{ rows: Row[]; health: Record<string, unknown> }> {
@@ -121,6 +167,14 @@ async function main() {
   const rRev = actualDay.revenue / expectedDay.revenue, rRpm = actualDay.rpm / expectedDay.rpm, rSess = actualDay.sessions / expectedDay.sessions;
   const r3Rev = window3.actualRevenue / window3.expectedRevenue, r3Rpm = window3.actualRpm / window3.expectedRpm;
 
+  // E227: the same day and the same four same-weekday controls, on the GA4 basis, raw and ex the segment.
+  // Informational — the status rules above are already decided and do not read this.
+  const priorDayKeys = [1, 2, 3, 4].map((k) => shift(day, -7 * k));
+  const ga4 = await pullGa4Sessions(shift(day, -28), day);
+  const exSeg: SessionsExSegment | null = 'unavailable' in ga4 ? null : sessionsExSegment(day, priorDayKeys, ga4.site, ga4.segment);
+  const exSegWhy = 'unavailable' in ga4 ? ga4.unavailable : exSeg ? null : `GA4 returned no row for ${day} or fewer than 2 same-weekday controls`;
+  const exSegLine = sessionsExSegmentLine(exSeg, exSegWhy);
+
   const reasons: string[] = [];
   let status: Status = 'green';
   const healthBad = Object.entries(health).filter(([k, v]) => k !== 'date' && v !== 'ok' && v !== true && v !== null);
@@ -153,6 +207,7 @@ async function main() {
     status, action, actionDetail, vercelCoverage: { ...coverage, line: covLine, inWindow },
     rollbackBound: { ...facts, maxInWindowDeploys: ROLLBACK_BOUNDS.maxInWindowDeploys, maxTargetAgeHours: ROLLBACK_BOUNDS.maxTargetAgeMs / 3_600_000, line: bLine },
     day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, rollbackCandidate: rollbackTo, changes, health, reasons,
+    sessionsExSegment: exSeg, sessionsExSegmentLine: exSegLine,
   };
   const icon = status === 'green' ? '🟢' : status === 'yellow' ? '🟡' : '🔴';
   const actionText = `${action}${actionDetail ? ` (${actionDetail})` : ''}`;
@@ -162,8 +217,13 @@ async function main() {
   md += `| revenue | ${money(actualDay.revenue)} | ${money(expectedDay.revenue)} | ${pct(actualDay.revenue, expectedDay.revenue)} |\n`;
   md += `| session RPM | ${actualDay.rpm.toFixed(2)} | ${expectedDay.rpm.toFixed(2)} | ${pct(actualDay.rpm, expectedDay.rpm)} |\n`;
   md += `| sessions | ${actualDay.sessions.toLocaleString()} | ${Math.round(expectedDay.sessions).toLocaleString()} | ${pct(actualDay.sessions, expectedDay.sessions)} |\n`;
+  if (exSeg) {
+    md += `| sessions, GA4 raw | ${Math.round(exSeg.raw.actual).toLocaleString()} | ${Math.round(exSeg.raw.expected).toLocaleString()} | ${pct(exSeg.raw.actual, exSeg.raw.expected)} |\n`;
+    md += `| **sessions ex ${exSeg.rule.country} ${exSeg.rule.source}** (${exSeg.rule.experiment}, GA4) | ${Math.round(exSeg.exSegment.actual).toLocaleString()} | ${Math.round(exSeg.exSegment.expected).toLocaleString()} | ${pct(exSeg.exSegment.actual, exSeg.exSegment.expected)} |\n`;
+  }
   md += `| 3-day revenue | ${money(window3.actualRevenue)} | ${money(window3.expectedRevenue)} | ${pct(window3.actualRevenue, window3.expectedRevenue)} |\n`;
   md += `| 3-day RPM | ${window3.actualRpm.toFixed(2)} | ${window3.expectedRpm.toFixed(2)} | ${pct(window3.actualRpm, window3.expectedRpm)} |\n`;
+  md += `\n${exSegLine}\n`;
   md += `\nMediavine health: ${healthBad.length ? healthBad.map(([k, v]) => `${k}=${String(v)}`).join(', ') : 'all ok'}\n`;
   md += `\n## Production changes since ${shift(day, -3)} (72h before the judged day)\n\n`;
   md += changes.length ? changes.map((c) => `- ${c.kind} ${c.at.slice(0, 16)} \`${c.ref}\` ${c.text}${c.url ? ` — ${c.url}` : ''}`).join('\n') + '\n' : '- none\n';
@@ -173,7 +233,7 @@ async function main() {
   if (jsonOut) { mkdirSync(dirname(jsonOut), { recursive: true }); writeFileSync(jsonOut, JSON.stringify(v, null, 2)); }
   if (mdOut) { mkdirSync(dirname(mdOut), { recursive: true }); writeFileSync(mdOut, md); }
   if (!QUIET) console.log(md);
-  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine} · ${bLine}`);
+  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine} · ${bLine} · ${exSegLine}`);
   process.exit(status.startsWith('red') ? 2 : 0);
 }
 

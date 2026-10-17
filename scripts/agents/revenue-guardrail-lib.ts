@@ -17,7 +17,13 @@
  * multi-day revert.
  *
  * Everything in this file is pure (no CLI, no clock) so it is testable with fixtures.
+ *
+ * E227 (2026-10-17): the sessions line is also read EX the Singapore Direct segment (E216's
+ * `SG_DIRECT_RULE`, imported — never restated). The revenue / RPM legs stay on Mediavine's own
+ * numbers; the ex-segment read is GA4-on-GA4 (site − segment), so no number is subtracted across
+ * bases. See `sessionsExSegment` / `sessionsExSegmentLine`.
  */
+import { SG_DIRECT_RULE } from './direct-bot-lib';
 
 export interface VercelDeployment {
   uid?: string;
@@ -212,6 +218,98 @@ export function decideAction(
   if (status === 'red-traffic' || status === 'red-health') return { action: 'investigate', detail: null };
   if (status === 'yellow') return { action: 'watch', detail: null };
   return { action: 'none', detail: null };
+}
+
+// ---------------------------------------------------------------------------------------------
+// E227 — sessions ex the Singapore Direct segment (Rio, 2026-10-17).
+//
+// Why: on 10-12 / 10-13 / 10-14 / 10-15 the guardrail's sessions line read +20.2% / +5.3% / +14.9% /
+// +14.0% while the whole of the excess was the E216 stream (country=Singapore, sessionSource=(direct);
+// 1 user = 1 session = 1 pageview, 99% on two screen resolutions, ~$0). Rio had been subtracting
+// "excess over 250/day" by hand (1.93% of 28d sessions); Pip's classifier reads the WHOLE segment
+// (4.10%), because the quiet-day trickle has the same fingerprint. The guardrail now prints both the
+// raw line and the ex-segment line, with the segment's share, every morning.
+//
+// What it does NOT do: change `status`. Red/yellow are still graded on Mediavine's revenue / RPM /
+// sessions (Mediavine counts what it counts), and the GA4 pull may be unavailable — an unavailable
+// read prints "unavailable" and never becomes a verdict. Wiring the ex-segment ratio into the
+// red-traffic leg is a later, separate change once this line has printed beside the raw one for a week.
+// ---------------------------------------------------------------------------------------------
+
+/** The segment rule the sessions line subtracts — E216's constant, re-exported so callers and tests reach the same object. */
+export const SESSIONS_SEGMENT_RULE = SG_DIRECT_RULE;
+
+/**
+ * GA4 Data API `dimensionFilter` for the segment, built from the imported rule. Identical in shape to
+ * `direct-bot-read.ts`'s `segmentFilter` so the two scripts cannot drift apart on what "the segment" is.
+ */
+export function segmentDimensionFilter(): Record<string, unknown> {
+  return {
+    andGroup: {
+      expressions: [
+        { filter: { fieldName: 'country', stringFilter: { matchType: 'EXACT', value: SESSIONS_SEGMENT_RULE.country } } },
+        { filter: { fieldName: 'sessionSource', stringFilter: { matchType: 'EXACT', value: SESSIONS_SEGMENT_RULE.source } } },
+      ],
+    },
+  };
+}
+
+/** Sessions by YYYY-MM-DD. A date absent from `site` is "not pulled", not zero; absent from `segment` IS zero (no rows = no segment that day). */
+export type SessionsByDate = Record<string, number>;
+
+export interface SessionsExSegment {
+  rule: { experiment: string; country: string; source: string };
+  day: string;
+  /** Same-weekday controls that were present in the GA4 site pull (the mean is over these). */
+  priorDays: string[];
+  raw: { actual: number; expected: number };
+  segment: { actual: number; expected: number; shareActual: number | null; shareExpected: number | null };
+  exSegment: { actual: number; expected: number };
+}
+
+const meanOf = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN);
+
+/**
+ * Pure: the judged day and its same-weekday controls, raw and ex the segment, all on the GA4 basis.
+ * Returns null (could-not-run) when the judged day is missing from `site` or fewer than 2 controls are
+ * present — the caller prints "unavailable", never a number. With an empty `segment` the ex-segment
+ * numbers equal the raw ones exactly (zero rows → unchanged), which the unit test pins.
+ */
+export function sessionsExSegment(day: string, priorDays: string[], site: SessionsByDate, segment: SessionsByDate): SessionsExSegment | null {
+  if (!(day in site)) return null;
+  const controls = priorDays.filter((d) => d in site);
+  if (controls.length < 2) return null;
+  const seg = (d: string) => segment[d] ?? 0;
+  const rawActual = site[day];
+  const rawExpected = meanOf(controls.map((d) => site[d]));
+  const segActual = seg(day);
+  const segExpected = meanOf(controls.map(seg));
+  return {
+    rule: { experiment: SESSIONS_SEGMENT_RULE.experiment, country: SESSIONS_SEGMENT_RULE.country, source: SESSIONS_SEGMENT_RULE.source },
+    day,
+    priorDays: controls,
+    raw: { actual: rawActual, expected: rawExpected },
+    segment: {
+      actual: segActual, expected: segExpected,
+      shareActual: rawActual > 0 ? segActual / rawActual : null,
+      shareExpected: rawExpected > 0 ? segExpected / rawExpected : null,
+    },
+    exSegment: { actual: rawActual - segActual, expected: rawExpected - segExpected },
+  };
+}
+
+const pctDelta = (a: number, b: number) => (b ? `${a / b - 1 >= 0 ? '+' : ''}${((a / b - 1) * 100).toFixed(1)}%` : 'n/a');
+const pctShare = (x: number | null) => (x == null ? '—' : `${(x * 100).toFixed(2)}%`);
+
+/**
+ * One line, printed every run under the sessions row. `unavailableWhy` is set when the GA4 pull could
+ * not run; the line then says so and carries no number (unknown is never a reading).
+ */
+export function sessionsExSegmentLine(x: SessionsExSegment | null, unavailableWhy: string | null = null): string {
+  const tag = `sessions ex ${SESSIONS_SEGMENT_RULE.country} ${SESSIONS_SEGMENT_RULE.source} (${SESSIONS_SEGMENT_RULE.experiment}, GA4)`;
+  if (!x) return `${tag}: unavailable${unavailableWhy ? ` — ${unavailableWhy}` : ''}`;
+  const n = (v: number) => Math.round(v).toLocaleString('en-US');
+  return `${tag}: raw ${n(x.raw.actual)} vs ${n(x.raw.expected)} (${pctDelta(x.raw.actual, x.raw.expected)}) → ex-segment ${n(x.exSegment.actual)} vs ${n(x.exSegment.expected)} (${pctDelta(x.exSegment.actual, x.exSegment.expected)}) · segment ${n(x.segment.actual)} = ${pctShare(x.segment.shareActual)} of the day (controls ${pctShare(x.segment.shareExpected)}, ${x.priorDays.length} same weekdays)`;
 }
 
 /** One line, printed every run next to the coverage line, so the numbers behind a withheld rollback are visible. */
