@@ -36,3 +36,11 @@
 - [ ] [ops] Smoke JSONs are deleted with their worktree (E133 could only read 6 surviving files). Copy each to the operator's logs/ so the slug-rotation read is durable. — Ops 10-12
 - [ ] [ops] Run-liveness Team health should read the hang=1 / asleep line and the .stderr file so a MISSED day names its cause. — Ops 10-12
 - [ ] [ops] `context-budget.ts` fails `Cannot find module 'glob'` on 10-07/08/10/11 (WARN only); runner cleanup logs `git worktree remove failed …funnel-2026-09-22-21276(-pip)` every run (prune once + test); runner log timestamps switch MDT/EDT — stamp an explicit zone. — Ops 10-11
+
+## Closed / parked 2026-10-17 (verbatim)
+- [ ] [rio→pip] Sessions vs 4-wk mean 10-06→10-11: −6.4/−4.4/+1.6/−4.0/−4.1/−3.0%; 10-11's −3.0 is the 09-27 Direct spike (2,657) in the control — ex it the Sunday reads +0.9%. — Rio 10-13
+- [x] [cass] Issue-06 reject hash → `EXCLUDED_RECIPIENT_HASHES` → E226 #320 (10-17).
+- [x] [pip→rio] guardrail sessions line subtracts the whole SG segment → E227 #326 (10-17).
+- [x] [quinn] /creator/* guard basis — **decided 10-17:** source-matched (E225) becomes the verdict basis from 10-25 if E225 prints on ≥5/7 mornings; until then the row shows both and E144's 10-28 grade cites both. A site control must match the slice's source mix. — Quinn 10-17
+- [ ] [ops] `_patreon-auth.ts` token refreshes leave no durable row — log one line (no token) so E131's refresh leg is observable. — Rio 10-11
+- [ ] [rio] same-incident test point (b) should ratio each unit against the site ex the best unit (or Content), not the blended drop. — Rio 10-07

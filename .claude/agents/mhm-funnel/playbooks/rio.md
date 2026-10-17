@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-17 — E227: whole-segment read replaces excess-over-250; the guardrail prints it; E220 KEEP
+- Tried: guardrail verdict 10-17 (Tier 0) + code (PR #326 56f328f): revenue-guardrail.ts pulls GA4 site + segment sessions after status is decided, prints raw → ex-segment → share; rule imported from direct-bot-lib. MV MCP down again → client.ts direct; GA4 via the Data API MCP.
+- Before → after: 10-15 sessions +14.0% → ex-segment +0.7%; RPM −2.8% → ex-segment $17.82 (+10.0%); MV mon-session share 50.70% vs 56.71%, mon-RPM +8.8%. Segment 2,074 = 15.93% of the day (whole) vs 1,824 (excess method) — 250 apart on a spike day, 4.10% vs 1.93% over 28d. 28d 98.76% (run 15). E220 both legs MET.
+- Verdict: GREEN, mix not rate; E220 KEEP; E227 MORE DATA (read 10-18).
+- Next time: subtract the classifier's whole segment, never a hand threshold — and when a line's basis differs from the headline's (GA4 vs Mediavine), print both raw lines so the reader can see they agree before trusting the subtraction (10-15: +14.0% on both).
+
 ## 2026-10-16 — E220: 10-14 RPM −6.8% was Singapore mix; Members API could-not-run
 - Tried: guardrail verdict 10-16 (Tier 0, PR #314 405f32c) — decomposed 10-14 ex the Singapore Direct/Chrome stream (1,845 sessions = 1,846 users = 1,846 pageviews, 41 engaged; excess 1,606) and cross-checked on Mediavine's own monetizable split; E134 interim read (`--start 2026-09-29 --end 2026-10-15`: GTRacing 12 on-site, Impact 8 clicks, 0 actions, $0, kill_read 11-11 fourth run).
 - Before → after: headline RPM $15.22 (−6.8%) → ex-excess $17.40 (+6.6%); MV monetizable sessions 50.95% of sessions vs 58.72% control, monetizable-session RPM $29.87 vs $27.80 (+7.5%). 28d 98.49% (run 14); Singapore excess 1.77% → 1.93% → 2.37% of 28d sessions in three days.

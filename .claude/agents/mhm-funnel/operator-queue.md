@@ -45,9 +45,7 @@ The writer plugin inserts ~21 rows/day (147/7d) but 136 of 147 sit at the `2025-
 
 ### Q27 · SD-10 wording (Pip, E170) — **CLOSED 2026-10-11**, no reply in 7 days = the strict reading stands: ≤7 top-up rows per *posting date* across runs (tool #261 enforces it). Body in the archive.
 
-### Q25 · End-of-post email capture on WordPress articles (Cass, E167, PR #253, filed 2026-10-03, re-pitched 10-11, drops 10-17)
-- **10-11 re-pitch (Cass, narrower):** the `mhm_post_end_capture` block on only the **5 biggest WP articles** by landings (`/sims-4-cc-furniture/`, `/sims-4-wedges-cc/`, `/sims-4-coquette-cc/`, `/sims-4-male-sim-download/`, `/sims-4-cc-tattoo/` = 4,736 sessions/wk, GA4 10-03→10-09), 7-day read, same RPM floor (blog RPM ≥95% of the 4 prior same weekdays, one-sided) and rollback as PR #253 (revert + `push-blog-functions-prod.sh --yes` + purge + `check-blog-sidebar.sh`). Reply **"approve E167 pilot"** (or **"approve E167"** for all articles); you run the prod push and the BigScoots purge — the team never pushes `functions.php`. Cost of silence: WP articles are ~73K of 87.7K weekly sessions with zero capture surface; at the 0.59/1K keep bar that is ≈43 owned adds/week not captured (a third of this week's 125); the pilot alone ≈3/wk. No reply by **2026-10-17** drops Q25 and E167 closes NOT-RUN. (Full 10-03 package in the archive.)
-- Reply: _(pending)_
+### Q25 · End-of-post email capture on WordPress articles (Cass, E167) — **DROPPED 2026-10-17** under the 7-day rule (filed 10-03, re-pitched narrower 10-11, no reply by 10-17). E167 closes NOT-RUN; PR #253 closed, branch kept. A later **"approve E167 pilot"** (5 biggest WP articles, same RPM floor and rollback) or **"approve E167"** still executes as written — the operator runs the prod push and the BigScoots purge. Full 10-03 package and the 10-11 re-pitch in the archive.
 
 ### Q11-b · Writer pins — **CLOSED 2026-09-28; the E82 diagnosis was wrong** (body verbatim in `archive/operator-queue-2026-09.md` § "Closed items parked 2026-10-07"; nothing for you).
 

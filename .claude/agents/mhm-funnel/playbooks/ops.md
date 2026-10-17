@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-17 — E229
+- Tried: moved the 10-15/16 dated compound block + the stale "Recent UI/UX Enhancements" narrative verbatim to docs/COMPOUND_LEARNINGS.md (T0, #321 e62e08d, verify PASS 07:03).
+- Before → after: CLAUDE.md 60,372 → 55,878 B; context-budget exit 2 → 0; budget test red → 8/8. Dated block alone would have left 57,623 B (≈1 day of headroom).
+- Verdict: MORE DATA (read 2026-10-18).
+- Next time: dated blocks are now ~2.7 KB per two days, so one rotation buys about one day. The nightly compound script should rotate before it writes, with `wc -c` as its own exit gate.
+
 ## 2026-10-16 — E222
 - Tried: liveness RAN-UNLANDED + runner digest-land + Quinn stdout to operator logs/ (T0, #318 38885f4).
 - Before → after: 10-16 window 3 MISSED → 2 MISSED + 1 RAN-UNLANDED; tests 6/8 + 4/4 red pre-fix; Ops share 6/41 = 14.6%.

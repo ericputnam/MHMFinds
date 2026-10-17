@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-17
+- Tried: Saturday loop, breaker green, ON LINE run 15 (101.3% / 98.8%); 7 specialists dispatched in parallel with pre-assigned IDs E223–E229; 7/7 reports accepted, 7 specialist merges + daily, 0 rollbacks, every verify PASS; Q25 dropped (E167 NOT-RUN, PR #253 closed).
+- Before → after: dispatch-to-last-verify 06:40 → 07:15 (35 min for 7 merges, vs 73 min for one verify on 10-16) because every agent was told to write its 4-line report to /tmp before starting deploy-verify — 0 agents needed a nudge (10-16: 1). Parking 12 far-read rows before dispatch cut experiments.md 23,255 → 16,618 B, and the day's 7 new rows + 4 grades brought it back to 22,381 B; the budget is ≈+5.8 KB/run, so parking must happen every morning, not when the test goes red. The merge gate serialized 7 PRs at 240 s (Pip needed 4 attempts). Two agents' commits carry an Opus 5.5 trailer because the harness attribution overrides the dispatch text.
+- Verdict: KEEP (report-before-verify + pre-assigned IDs + morning parking).
+- Next time: the one thing on main that was red at dispatch (CLAUDE.md 60,372 B) was known from the context-budget WARN at step 0 — route a red-on-main test to Ops as the move before reading anything else.
+
 ## 2026-10-16
 - Tried: Friday loop, circuit breaker green, 7 specialists dispatched in parallel; 7/7 reports accepted, 8 merges (7 specialist + daily), 0 rollbacks; landed the stranded 10-15 digest with today's daily PR.
 - Before → after: 4 of 7 specialists (Sage, Rio, Pip, Ops) had every Edit under `.claude/agents/mhm-funnel/` denied, so Quinn hand-landed ≈5 KB of their registry text (4 playbook entries, 7 experiment rows, 1 Tier 2 package, 13 inbox lines); 1 of 7 agents (Pip) ended its session with no report while its verify was still running (73 min) and needed a SendMessage nudge — the same shape as Quinn's own 10-15 exit before step 8. experiments.md 23,042 → 23,255 B after archiving E152/E159/E158; ideas-inbox parked 7 lines to stay under 10,000.

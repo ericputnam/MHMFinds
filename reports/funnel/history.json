@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-16T10:53:35.241Z",
+  "generatedAt": "2026-10-17T10:37:34.479Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3712,9 +3712,9 @@
     },
     {
       "date": "2026-10-15",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 195.06,
+      "sessions": 12912,
+      "rpm": 15.1,
       "expectedRevenue": 176.14,
       "expectedSessions": 11325,
       "nonAdMonthly": 159,
@@ -3769,6 +3769,41 @@
         "Rowan": 5,
         "Quinn": 6,
         "Sage": 4
+      }
+    },
+    {
+      "date": "2026-10-17",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 262.51,
+      "expectedSessions": 14616,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": 239,
+      "pinterestSessions7d": 56883,
+      "returningShare7d": 0.5008598831440856,
+      "nonPinterestShare7d": 0.21221228152785088,
+      "pagesPerSession7d": 1.5334021093758574,
+      "engagementRate7d": 0.7009120142234709,
+      "favorites7d": 916,
+      "downloadClicks7d": 431,
+      "newMods7d": 132,
+      "catalogTotal": 16903,
+      "captureRatePer1k": 2.618145170124663,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.5,
+      "opsMergeShare7d": 0.125,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Pip": 6,
+        "Nova": 6,
+        "Cass": 6,
+        "Rio": 6,
+        "Ops": 6,
+        "Rowan": 6,
+        "Quinn": 7,
+        "Sage": 5
       }
     }
   ],
@@ -5895,6 +5930,62 @@
       "kind": "check",
       "label": "morning-check",
       "result": "INCONCLUSIVE"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Cass: PR #309 E152 KILL → /go free-tier Patreon follow ask",
+      "commit": "da82339",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Nova: PR #313 E218 IndexNow pushes changed /creator/ pages daily (--creators-changed) (Tier 0)",
+      "commit": "9cf1f3f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Sage: PR #315 E217 skin-details top-30 hand-fix, 3 rows + 1 KEEP pin (Tier 0)",
+      "commit": "56c4a01",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Rio: PR #314 E220 guardrail verdict 2026-10-16 — 10-14 RPM −6.8% is Singapore mix; Members API could-not-run (Tier 0, paper)",
+      "commit": "5e4ffd3",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Rowan: PR #316 E221 makeup-cc shows lashes (23 clean rows), 900+ → 800+, copy-count guard (Tier 0)",
+      "commit": "5e4ffd3",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Pip: PR #317 E216 Singapore Direct classified as automated — reusable read + 28d artifact (Tier 0)",
+      "commit": "21cc7c9",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Ops: PR #318 funnel(ops): E222 liveness RAN-UNLANDED + runner lands an accepted digest (Tier 0)",
+      "commit": "38885f4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-16",
+      "kind": "merge",
+      "label": "Quinn: PR #319 funnel: daily run 2026-10-16 (Tier 0 docs)",
+      "commit": "79278df",
+      "result": "PASS"
     }
   ]
 }
