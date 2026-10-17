@@ -970,36 +970,41 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-14 — seven merges (#297–#303) + daily #304, all PASS, zero incidents
+### 2026-10-15/16 — fifteen merges (#305–#318) + daily #319, all PASS, zero rollbacks
 
-10-13 is in the archive.
-- **Grade a treated slice against the site's own movement on the channel it can move.** The
-  `/creator/*` guard (≥95% of 558) was 71.8% Direct, so a Direct dip failed it whatever the pages
-  did; re-based on organic+AI relative to site organic+AI (#297). Same shape: E170 KEEP on treated
-  WoW ≥ site WoW (#299). **Pin the re-based read in the test** — re-basing must not launder a FAIL.
-- **A capped batch send reads in a defined order and emits a resume cursor.** `waitlist.findMany`
-  had no `orderBy`, so the 32 rows past the 100 cap were arbitrary. Now oldest-first + an opaque
-  `createdAt~id` cursor; a malformed cursor throws, never restarts from the top (#298).
-- **SMTP errors quote the recipient** — record a reject as `{sha256(normalized), code}` only. A
-  failure stored as `failed: 1` can never be excluded later; capture identity (hashed) at the time.
-- **Two tools gating one decision share one basis, label and fallback order.** Runway now divides
-  by `pinterest-14d` in the scoreboard, `check-pinner.sh` and the top-up tool (#301; old basis read
-  3.3 d, no flag, at a real 2.19 d). **A truncated rate sample is `null`, never a floor** — a floor
-  on the rate is a ceiling on the runway.
-- **users = sessions = pageviews from one country/browser is a source, not demand.** Direct +30.7%
-  WoW was a Singapore Direct/Chrome one-pageview stream (#302). Decompose revenue into
-  sessions × RPM before reading a channel move as a business move.
-- **Check for a deploy before fixing a referral drop.** AI referral −38.5% was chatgpt.com stepping
-  down on 10-09 with no deploy and every AI UA getting 200 + full HTML — referrer-side, no fix (#303).
-- **Write a hand-fix to a value the consuming grid reads.** Lashes went to `makeup`, not `lashes`,
-  because makeup-cc's `contentTypeIn` omits `lashes` (#300) — the "correct" tag would have
-  vanished from the page it was meant to clean.
-- **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
-  `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Q11,
-  Q28 (writer plugin dates pins ahead). Mornings need AC.
+10-14 is in the archive. 10-15's digest never reached `main` (landed late with #319).
+- **"Ran but did not land" is its own state, not MISSED.** On 10-15 the runner merged 7 PRs and
+  Quinn exited rc 0 before the daily PR; liveness graded it like a slept-through host. Now
+  `RAN-UNLANDED` (yellow) on positive evidence (ledger rows on `main` + Quinn-finished log line),
+  and `digest-land.sh` lands an accepted digest (idempotent, HELD if a daily branch exists,
+  refuses DEGRADED) (#318). Keep an agent's stdout outside the worktree it runs in — the 10-15
+  log was reaped with the worktree. Agents write their report *before* a long verify.
+- **A script that writes reports must not default to another checkout.** `MHM_PROJECT_DIR ??
+  '/abs/main'` let 2 of 7 agents write 10-14's scoreboard into the operator's tree. Now
+  `project-dir-guard.ts`: explicit env honored, unset outside the default checkout → exit 2 with
+  nothing written; a scanner bans the `?? '/abs'` pattern under `scripts/` (#308).
+- **Classify the whole fingerprinted segment, not the excess over a baseline.** Rio's
+  excess-over-250/day read the Singapore stream at 1.93% of sessions; Pip's classifier
+  (country+`(direct)`, users/session ≥0.98, pv/session ≤1.05, ≥90% on two fixed resolutions —
+  printed before the read, verdict `automated` or `inconclusive`, never `human`) read 4.10%,
+  because the quiet-day trickle has the same 1:1:1 fingerprint (#317). Split an RPM drop into mix
+  vs rate with Mediavine's monetizable split: 10-14 RPM −6.8% was share 50.95% vs 58.72% at
+  monetizable RPM +7.5% (#314).
+- **User-visible counts drift with every hand-fix — guard copy against the registry.** After 18
+  lashes fixes makeup-cc's `expectedCount` went 922 → 851 while copy said "900+";
+  `collection-copy-counts.test.ts` now fails when copy overstates it (#316). Audit the top N cards
+  in grid order, not the facet total (#315).
+- **Hand-audit every row of a type before adding it to a grid's `contentTypeIn`** (41 lashes →
+  18 fixes); the dry-run JSON is the rollback file (#316).
+- **A KILL is encoded as tests and the slot is re-used, not left empty.** E152 (0.67/1K vs its own
+  ≥2.62/1K bar) became a free-tier Patreon follow ask with its *own* event name so it cannot
+  dilute existing `patreon_click*` counts; still a sibling of `.mv-ads` (#309).
+- **Still open:** `ModDetailPage.test.tsx` red since #219. `commission-sync`/`monetization-agent`
+  fail open (Tier 2). `check-host-split.sh` unwired. Specialists denied `Edit` under `.claude/`.
+  Patreon Members API: no timeout retry (`patreonGet` retries 401 only). Q28, Q30. Mornings need AC.
 ---
 
-*Last compound review: 2026-10-14*
+*Last compound review: 2026-10-16*
 
 ---
 

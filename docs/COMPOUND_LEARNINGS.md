@@ -2317,3 +2317,31 @@ The 10-07 section is in the archive.
 - **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
   `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Runway
   basis split (tool 1.2 d vs scoreboard 2.8 d). Q11, Q23 unanswered. Mornings need AC.
+
+### 2026-10-14 — seven merges (#297–#303) + daily #304, all PASS, zero incidents (rotated from CLAUDE.md 2026-10-16)
+
+10-13 is in the archive.
+- **Grade a treated slice against the site's own movement on the channel it can move.** The
+  `/creator/*` guard (≥95% of 558) was 71.8% Direct, so a Direct dip failed it whatever the pages
+  did; re-based on organic+AI relative to site organic+AI (#297). Same shape: E170 KEEP on treated
+  WoW ≥ site WoW (#299). **Pin the re-based read in the test** — re-basing must not launder a FAIL.
+- **A capped batch send reads in a defined order and emits a resume cursor.** `waitlist.findMany`
+  had no `orderBy`, so the 32 rows past the 100 cap were arbitrary. Now oldest-first + an opaque
+  `createdAt~id` cursor; a malformed cursor throws, never restarts from the top (#298).
+- **SMTP errors quote the recipient** — record a reject as `{sha256(normalized), code}` only. A
+  failure stored as `failed: 1` can never be excluded later; capture identity (hashed) at the time.
+- **Two tools gating one decision share one basis, label and fallback order.** Runway now divides
+  by `pinterest-14d` in the scoreboard, `check-pinner.sh` and the top-up tool (#301; old basis read
+  3.3 d, no flag, at a real 2.19 d). **A truncated rate sample is `null`, never a floor** — a floor
+  on the rate is a ceiling on the runway.
+- **users = sessions = pageviews from one country/browser is a source, not demand.** Direct +30.7%
+  WoW was a Singapore Direct/Chrome one-pageview stream (#302). Decompose revenue into
+  sessions × RPM before reading a channel move as a business move.
+- **Check for a deploy before fixing a referral drop.** AI referral −38.5% was chatgpt.com stepping
+  down on 10-09 with no deploy and every AI UA getting 200 + full HTML — referrer-side, no fix (#303).
+- **Write a hand-fix to a value the consuming grid reads.** Lashes went to `makeup`, not `lashes`,
+  because makeup-cc's `contentTypeIn` omits `lashes` (#300) — the "correct" tag would have
+  vanished from the page it was meant to clean.
+- **Still open:** 10-08/10-10 locks. `ModDetailPage.test.tsx` red since #219.
+  `commission-sync`/`monetization-agent` fail open (Tier 2). `check-host-split.sh` unwired. Q11,
+  Q28 (writer plugin dates pins ahead). Mornings need AC.
