@@ -390,3 +390,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-16 08:54 | after-merge | Ops: PR #318 funnel(ops): E222 liveness RAN-UNLANDED + runner lands an accepted digest (Tier 0) | 38885f4 | https://mhm-finds-dw5l-h3kavrxig-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-16 09:03 | after-merge | Quinn: PR #319 funnel: daily run 2026-10-16 (Tier 0 docs) | 79278df | https://mhm-finds-dw5l-dwe80gk4y-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-17 06:35 | check | morning-check |  | https://mhm-finds-dw5l-kk83hx4l1-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-10-17 06:47 | after-merge | Cass: PR #320 funnel(cass): E226 exclude the weekly issue-06 reject before issue 07 (Tier 0) | d8c9aa2 | https://mhm-finds-dw5l-5hnqk5s0r-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
