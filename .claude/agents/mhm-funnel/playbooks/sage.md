@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-17 — E224 ai_referral −57.1% is OpenAI's UTM outage, not ours (Tier 0 measurement fix)
+- Tried: segmented GA4 ai_referral by source × host × landing × day for 28d before touching anything. chatgpt.com = 202 of the 212-session drop (95%; gemini −9, copilot −6, perplexity 0, claude +5), 98% apex both weeks, loss spread over 313 landing rows (max single-path loss 9), medium `ai-assistant` unchanged. Daily chatgpt: 42 (10-08) → 20/17/24/13/13/10 → 29 (10-15) → 48 (10-16). No deploy 10-07 07:47 → 10-11 11:09; /llms.txt, /robots.txt, /llms-full.txt, /mods/* all 200 to GPTBot + ChatGPT-User. External: OpenAI's Intelligent UI rollout dropped `utm_source=chatgpt.com` + referrer 10-08 18:30Z → 10-16 06:30Z (industry-wide −31–46%), visits landed in (direct). Shipped `scripts/agents/channel-external-windows.ts`: the scoreboard now prints the cause under the Audience table when either 7d leg overlaps the window.
+- Before → after: 159/7d (10-09→10-15) vs 371; 10-16 alone = 55 AI sessions (48 chatgpt). Read 10-24: 7d 10-16→10-22 ≥ 300 (pre-outage run-rate was 325–378) with chatgpt ≥ 85% share; E71's 10-19 final reads a contaminated window (10-12→10-18 has 3 outage days) — grade it on 10-16→10-22 instead.
+- Verdict: MORE DATA (read 2026-10-24).
+- Next time: a channel that steps on one calendar day across hundreds of landing paths with no deploy is a referrer-side change — check the vendor's status before the site. The (direct) bucket cannot give those sessions back (Singapore bot stream sits on top of it), so the fix is an annotation, never a re-attribution.
+
 ## 2026-10-16 — E217 skin-details top-30 hand-fix (Tier 0)
 - Tried: 388 skin rows; top 30 had 3 off-type cards (#15 lighting mod, #19 swimsuit set, #22 lips of unknowable subtype) → pinned gameplay-mod / full-body / NULL via `--ids=`; #7 Girls Night Set pinned KEEP (PR #315 56c4a01, verify PASS).
 - Before → after: top-30 off-type 3 → 0 (read-back + live page); pop 388 → 385.

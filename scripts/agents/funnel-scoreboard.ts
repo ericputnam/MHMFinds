@@ -67,6 +67,7 @@ import {
   type PatreonMembersSummary,
 } from './patreon-members-lib';
 import { requireProjectDir } from './project-dir-guard';
+import { externalWindowNotes } from './channel-external-windows';
 
 // E215: MHM_PROJECT_DIR unset + running from a worktree used to write into the operator's checkout
 // (2 of 7 agents on 2026-10-14). The guard refuses with exit 2 instead of guessing.
@@ -1097,6 +1098,8 @@ async function main() {
     md += `| **All sessions** | ${num(g.sessions7d)} | ${num(g.sessionsPrev7d)} | ${pct(g.sessions7d, g.sessionsPrev7d)} |\n`;
     const chans = Object.keys({ ...g.byChannel7d, ...g.byChannelPrev7d }).sort((a, b) => (g.byChannel7d[b] ?? 0) - (g.byChannel7d[a] ?? 0));
     for (const c of chans) md += `| ${c} | ${num(g.byChannel7d[c] ?? 0)} | ${num(g.byChannelPrev7d[c] ?? 0)} | ${pct(g.byChannel7d[c] ?? 0, g.byChannelPrev7d[c] ?? 0)} |\n`;
+    const extNotes = externalWindowNotes(g.window);
+    if (extNotes.length) md += `\n${extNotes.map((n) => `- ${n}`).join('\n')}\n`;
     md += `\n- (not set) landing sessions 7d: ${num(g.notSetLanding7d)} (suspected bot/tag noise)\n`;
     md += `- Capture events 7d: ${Object.keys(g.captureEvents7d).length ? Object.entries(g.captureEvents7d).map(([k, v]) => `${k}=${v}`).join(', ') : 'none instrumented'}\n\n`;
   } else md += `_unavailable: ${errOf(ga4)}_\n\n`;
