@@ -12,10 +12,6 @@ Format: `- [ ] <idea> — <why / what you've seen>`
 Sessions 28d 359,944 vs line 355,284 = 101.3% (09-18→10-15); revenue $5,865.92 vs $5,939.58 = 98.8% (WATCH bar 97%). Run 14 (10-16) read 100.6% / 98.5%. Re-arms if a run reads <97%.
 
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — for a real P&L
-<<<<<<< HEAD
-- [ ] [quinn] Older `/api/cron/*` routes fail open when `CRON_SECRET` is unset (`if (cronSecret && …)`). One PR + scanner test over `app/api/cron/**`; pattern in #226. — Cass 09-30
-=======
->>>>>>> 48a5159 (funnel(nova): E232 new-mods -38% diagnosed as writer cadence; scoreboard row prints posts + per-post (Tier 0))
 - [ ] [cass] Homepage account offer (replaces the E73 strip, KILLED 10-07): wait for the E191 read 10-26; if offer-cohort completion clears 15%, copy SaveFindsOffer to `HomeCapture` with `ref=home-save`. — Cass 10-12
 - [ ] [pip→ops] Writer flag: key on publishes, not hours. 17/17 posts since 09-21 got same-day rows, 0 inserts on 14 no-post days, so the 72 h clock reads 🔴 after a post-free Friday (10-18). `assessWriterLiveness` + check-pinner 2b: 🔴 only if a WP post ≥72 h old has 0 rows, 🟡 ≥26 h, else 🟢 "idle". Replay: 🟢 16/16 reads 09-25→10-18, 🔴 from 09-15. E230 — Pip 10-18
 - [ ] [ops] scoreboard/E-reads: GA4 `landingPage` carries no trailing slash, so filters on "/x/" return 0 — normalize before comparing (explains the 10-04 E121 under-count). — Sage 10-11
