@@ -43,6 +43,8 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
     title,
     description,
     alternates: { canonical },
+    // A claimed creator below MIN_MODS_FOR_PAGE gets a page but stays out of the index.
+    ...(data.indexable ? {} : { robots: { index: false, follow: true } }),
     openGraph: { title, description, url: canonical, type: 'profile' },
     twitter: { card: 'summary_large_image', title, description },
   };
