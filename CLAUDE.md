@@ -919,9 +919,29 @@ run died with `Prompt is too long`.
 ### 2026-10-15/16 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md) on 2026-10-17 (E229, CLAUDE.md was 60,372 B over its 60,000 B budget).
+
+### 2026-10-17
+
+- **Rule out an upstream measurement change before diagnosing a channel drop, and record it as
+  data, not prose.** `ai_referral` read −57% WoW with no site cause: OpenAI stripped
+  `utm_source`/referrer from ChatGPT links 10-08→10-16 and the visits landed in `(direct)` (E224).
+  Tell-tales: one source is ~all of the loss, spread thin over hundreds of landings, crawlers still
+  get 200, no deploy in the window. Add a dated row to `scripts/agents/channel-external-windows.ts`
+  (the scoreboard prints it under any overlapping read — including next week's mirror-image +100%);
+  never edit the numbers.
+- **A site-relative control must match the treated slice's source mix.** The same ChatGPT drop made
+  the `/creator/*` guard read 91.3% FAIL because those pages are 18% ChatGPT vs 1.4% sitewide;
+  source-matched it read 99.0% (E225). Likewise a known non-human segment (Singapore `(direct)`,
+  `SG_DIRECT_RULE`) turned a +0.7% sessions day into +14.0% — the guardrail now prints raw *and*
+  ex-segment, importing the rule rather than restating it (E227).
+- **A per-key cap must key on the same canonical identity the report groups by, and a playbook's
+  "always pass --flag" belongs in the default.** `pin-runway-topup.py` capped on the raw URL while
+  `destination_key` folds `blog.*` into the apex, so one article took two slots; and the CLI default
+  stayed 2/URL/day while the playbook said "always pass 1" — the 10-15 run forgot and spent 18 rows on
+  5 destinations (E223). Extract the arg parser so defaults are testable.
 ---
 
-*Last compound review: 2026-10-16*
+*Last compound review: 2026-10-17*
 
 ---
 
