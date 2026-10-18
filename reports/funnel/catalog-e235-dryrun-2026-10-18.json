@@ -1,0 +1,200 @@
+{
+ "writtenAt": "2026-10-18T10:49:42.334Z",
+ "mode": "dry-run",
+ "facets": [
+  "nails",
+  "gameplay-mod",
+  "tops",
+  "full-body",
+  "dresses",
+  "furniture",
+  "skin",
+  "null",
+  "glasses",
+  "workout",
+  "bottoms",
+  "clutter"
+ ],
+ "rows": [
+  {
+   "id": "cmim8zfyu017zoxy8q60rp7yd",
+   "title": "Concrete Set",
+   "from": "tops",
+   "to": "shoes"
+  },
+  {
+   "id": "cmikj0kwq0097oxnaijjvgahu",
+   "title": "Inviciview Wall TV",
+   "from": "clutter",
+   "to": "furniture"
+  },
+  {
+   "id": "cmikk9i7b006oox33q8inutrj",
+   "title": "Functional Washers and Dryers",
+   "from": "clutter",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0qing002aoxee4xx4w7q2",
+   "title": "Sabine Bathroom Set Part 1",
+   "from": "clutter",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim92tn901teoxy8j0n98qot",
+   "title": "Dream Kitchen Set",
+   "from": "clutter",
+   "to": "furniture"
+  },
+  {
+   "id": "cmky6trx500h5oxhck3jvq2ml",
+   "title": "Merida Living Room Set",
+   "from": "clutter",
+   "to": "furniture"
+  },
+  {
+   "id": "cmktspatb0031oxol9nalmizg",
+   "title": "Sims 4 Modern Bedroom Set",
+   "from": "clutter",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil1maqc00ghoxee08pi3xg3",
+   "title": "Exile Piercings",
+   "from": "gameplay-mod",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmil1m8o000ggoxeeo0e1hbek",
+   "title": "Nihil Nose Chains",
+   "from": null,
+   "to": "jewelry"
+  },
+  {
+   "id": "cmil1m74700gfoxeeabljuumz",
+   "title": "Pink Romantic Earrings",
+   "from": "tops",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmim8zglz0189oxy8pfe2j9dg",
+   "title": "Slippers",
+   "from": "bottoms",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1lx2j00gboxeeg3nsfqvo",
+   "title": "Tonya Watch",
+   "from": "skin",
+   "to": "accessories"
+  },
+  {
+   "id": "cmil1lfvp00g3oxee8y904s5t",
+   "title": "Waist Chain 02",
+   "from": "full-body",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8zhrs018qoxy8giz5abbs",
+   "title": "Free Collection",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1lhbm00g4oxeee6gftfx4",
+   "title": "Sade Bandana Early Access",
+   "from": "furniture",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8zh2c018goxy8yt9rgsub",
+   "title": "Cyberpunk Boots",
+   "from": "bottoms",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zhpl018poxy8eym8ew58",
+   "title": "Cowboy Boots",
+   "from": "bottoms",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1lvc600gaoxee07pzfwo8",
+   "title": "Airpod Ribbon Headset",
+   "from": "glasses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmil1ltu300g9oxeeclj6p0lx",
+   "title": "Hand Catenay N01",
+   "from": "tops",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmim8zggk0187oxy8klo155d0",
+   "title": "Nao Shoes",
+   "from": "workout",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zhl9018noxy8iz9g07tb",
+   "title": "Male Loafers",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1lqll00g8oxeehcqvq1ow",
+   "title": "Claire Headphones",
+   "from": "glasses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8zgdt0186oxy8rf1qnqcx",
+   "title": "Hockey Skates",
+   "from": "clutter",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zgnz018aoxy8iccqopym",
+   "title": "Leather Shoes For Male Sims",
+   "from": "bottoms",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zhb9018joxy8gcu6aoi9",
+   "title": "Corey Trainers",
+   "from": "workout",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zh7x018ioxy8xrbq4ti8",
+   "title": "New Balance",
+   "from": "furniture",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zg5b0182oxy8hjljluwe",
+   "title": "Clog Sandals",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1l71j00fzoxeev8r9n7fo",
+   "title": "Clove Necklace",
+   "from": "gameplay-mod",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmil1l5nj00fyoxee96084wk5",
+   "title": "LL Necklace",
+   "from": "dresses",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmil1lmdi00g6oxeers3rosxr",
+   "title": "Lin Dian Earmuffs",
+   "from": "full-body",
+   "to": "accessories"
+  }
+ ]
+}

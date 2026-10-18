@@ -84,7 +84,7 @@ const FIXTURES: Fixture[] = [
   { title: 'Modern Modular Starter Home', url: PATREON, preFix: 'lot', expect: 'lot', why: "'starter' ('home' is rejected)" },
   // ── a lot word must not relabel a furniture/decor roundup's item (why 'home' was rejected)
   { title: 'Sims 4 Home Office CC Pack', url: 'https://musthavemods.com/sims-4-furniture-cc/', preFix: 'furniture', expect: 'furniture', why: "'home' rejected as a lot word: 0 of 12 URL-categorised 'home' titles were lots" },
-  { title: 'Home Fitness Set', url: 'https://musthavemods.com/sims-4-fitness-clutter-cc/', preFix: 'decor', expect: 'decor', why: "'home' rejected; URL category stands" },
+  { title: 'Home Fitness Set', url: 'https://musthavemods.com/sims-4-fitness-clutter-cc/', preFix: 'decor', expect: 'clutter', why: "'home' rejected; URL category stands (E235: /clutter/ now reads clutter, was decor)" },
   { title: 'Modern Mountain Home', url: 'https://musthavemods.com/sims-4-houses/', preFix: 'lot', expect: 'lot', why: "'home' says nothing now; the /houses/ URL category keeps it" },
   { title: 'Pumpkin Patch Lot Trait', url: PATREON, preFix: 'gameplay-mod', expect: 'gameplay-mod', why: "gameplay-mod (15) outranks lot (12) in the title pass — no 'lot trait' negative needed" },
   { title: 'Toddler Castle Bedroom Stuff', url: PATREON, preFix: 'furniture', expect: 'furniture', why: 'room-titled: E147 lot suppression still applies to the new castle word' },

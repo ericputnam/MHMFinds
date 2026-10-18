@@ -146,9 +146,18 @@ const SIMS_4_CONTENT_MAPPINGS: ContentTypeMapping[] = [
   { patterns: [/farmhouse-cc/], contentType: 'furniture' },
   { patterns: [/house/, /houses/, /lot-/], contentType: 'lot' },
   { patterns: [/pose/, /poses/], contentType: 'poses' },
-  { patterns: [/body-preset/, /presets/, /ear-preset/], contentType: 'preset' },
+  // E235 (Rowan, 2026-10-18): `/body-preset/` used to share the `preset` rule,
+  // but the body-presets collection filters on `body-preset` only — a body
+  // preset post's untitled row landed outside its own page. Must sit BEFORE
+  // the generic `/presets/` rule. Guarded in collection-url-category.test.ts.
+  { patterns: [/body-preset/], contentType: 'body-preset' },
+  { patterns: [/presets/, /ear-preset/], contentType: 'preset' },
   { patterns: [/woohoo|gameplay-mod|trait-mod/], contentType: 'gameplay-mod' },
-  { patterns: [/decor/, /clutter/], contentType: 'decor' },
+  // E235: `/clutter/` used to share the `decor` rule; the clutter collection
+  // filters on `clutter` only. `/decor/` stays first, so a slug naming both
+  // (e.g. `-decor-and-clutter-`) keeps reading as decor.
+  { patterns: [/decor/], contentType: 'decor' },
+  { patterns: [/clutter/], contentType: 'clutter' },
   { patterns: [/tattoo/], contentType: 'tattoos' },
   { patterns: [/nail/], contentType: 'nails' },
   { patterns: [/shoes-cc/, /cc-shoes/, /shoe-cc/], contentType: 'shoes' },

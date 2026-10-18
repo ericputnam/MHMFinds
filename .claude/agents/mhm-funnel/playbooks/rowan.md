@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-18
+- Tried: E235 (T0): URL map `/clutter/`→clutter, `/body-preset/`→body-preset (E228's two KNOWN_GAPS, now assertions; 3 of 21 red pre-fix) + 32 `--ids` pins: /sims-4-accessories-cc/ 13, /sims-4-male-shoes-cc/ 12, clutter top-30 7 (6 room sets/big appliances → furniture, 1 keep). Graded E186 KEEP.
+- Before → after: disagree 296/4,891 → 274/4,865; accessories-cc 10/26 → 0, male-shoes 12/34 → 0; clutter 226 → 219, top 30 room sets 6 → 0. Replay: 14 posts / 361 rows change URL category, ingest answer differs on 129, 0 stored rows move (E161: ingest never re-types). Pins E186 80/80, E193 69/69, E228 21/21, E235 32/32.
+- Verdict: MORE DATA (read 2026-10-25).
+- Next time: keep the disagreement FAMILY equal to the old one when a map entry splits, or the headline number moves for no real change (296 held exactly across the map edit).
+
 ## 2026-10-17
 - Tried: E228 (T0, PR #325 aed39ae): URL map `/jewelry/`→jewelry and `/farmhouse-cc/`→furniture, a registry guard test (30 collections walked, 2 of 19 cases red pre-fix), 21 `--ids` pins on food-clutter and male-accessories; `catalog-post-disagreement.ts` prints pins-not-yet-at-value and takes `--label`.
 - Before → after: food-clutter 7/15 → 0/8, male-accessories 13/30 → 0/17; catalog mismatches 318/4,911 → 296/4,891; posts >50% wrong 1 → 0; farmhouse-cc 10/17 → 8/17 (map entry only). Map change touches 60 post categories on ingest, 0 DB rows rewritten.
@@ -73,10 +79,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 10-10: ≤5% wrong of the next 100 ingested, lot 0 prose-typed, pins 72/72). E120 KEEP (room-theme CAS 0, pins 76/76).
 - Next time: an apply's `--rollback-out` overwrites without a guard (#250 covers dry runs only). Always pass a fresh path and `test -e` it first. The signed-off plan on `main` is the real rollback.
 
-## 2026-10-03
-- Tried: E168 — ingest precedence (confident title > URL category > description) + `lot` rule title-only (`lib/lotContentTypeRules.ts`), 70 E168 pins (T0, PR HELD-RED: breaker RED, nothing applied). Dry run `--lot-untitled`: 362 rows → 80 change (71 NULL, 4 decor, 3 full-body, 1 gameplay-mod, 1 hair), 124 no-ops (57 URL-category, 67 pinned real lots). Plan: `reports/funnel/catalog-e168-lot-retag-2026-10-03.json`.
-- Before → after: lot 362 / 152 title-supported (42.0%) → after apply 282 / 158 (56.0%) + 57 URL + 67 pins = 0 prose-typed. Part (a) replay: 5,412 URL-category rows differ on 861 (15.9%), never to NULL.
-- Verdict: MORE DATA (read 10-10: ≤5% wrong on next 100 ingested rows; lot 0 prose-typed; pins 70/70).
-- Next time: an inherited keyword is re-measured the moment precedence changes — `home` (76 titles) would have flipped 12 furniture/gym sets to `lot` once the title beat the URL; measure against the URL-category rows, not just the catalog. Reading all 137 NULL strips row by row found 67 real lots on slugs the URL map does not know (`-lots/`, `/castles/`, monthly finds) — the STRIP list is where the cost hides.
-
-_Older entries live verbatim in `archive/playbooks/rowan-2026-09.md` (to 09-30) and `rowan-2026-10.md` (10-01, 10-02); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/rowan-2026-09.md` (to 09-30) and `rowan-2026-10.md` (10-01 → 10-03); nothing deleted._

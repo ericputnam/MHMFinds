@@ -1057,6 +1057,46 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmijj5r65004coxs3zrjxrprt: { contentType: "clutter", why: "E228 \"Laila Drinks\" — clutter, was glasses (/sims-4-food-clutter-cc/); 10 decorative beverages; desc 'clutter cc'" },
   cmijj5nn7004aoxs3h1feiheu: { contentType: "clutter", why: "E228 \"Random Foods Part 2\" — clutter, was makeup (/sims-4-food-clutter-cc/); desc 'This clutter set includes packaged snacks'" },
   cmijj59vt0041oxs33yww3p6x: { contentType: "clutter", why: "E228 \"Vogue Tray Boot Sushi Decor\" — clutter, was shoes (/sims-4-food-clutter-cc/); sushi boat ('Boot' is the title's typo for Boat); TSR category decor-clutter" },
+  // ── Audited 2026-10-18 (Rowan, E235). Next two posts in the E186 URL-category
+  //    disagreement queue, every row read by title (download-URL category or the
+  //    row's OWN description only where the title names nothing):
+  //    /sims-4-accessories-cc/ 10 DIS + 1 NULL ADD + 2 glasses-typed headsets;
+  //    /sims-4-male-shoes-cc/ 12 DIS, all footwear. Plus the clutter top-30
+  //    off-facet audit: 6 room sets / big appliances -> furniture, 1 keep.
+  //    Kept unpinned: every other 'ok' row; "CC Pack" (shoes, title names nothing).
+  //    Seven different source types, so `--ids` pins, never a facet-wide pass.
+  cmil1kwwn00ftoxeeoellv9oh: { contentType: "nails", why: "E235 \"Basic Nails Updated To Fingernails Category\" — KEEP: title says nails; nails CC on an accessories post (DIS only by URL family) (/sims-4-accessories-cc/)" },
+  cmil1l71j00fzoxeev8r9n7fo: { contentType: "jewelry", why: "E235 \"Clove Necklace\" — jewelry, was gameplay-mod; title says necklace (/sims-4-accessories-cc/)" },
+  cmil1maqc00ghoxee08pi3xg3: { contentType: "jewelry", why: "E235 \"Exile Piercings\" — jewelry, was gameplay-mod; title says piercings (jewelry-cc holds piercings) (/sims-4-accessories-cc/)" },
+  cmil1ltu300g9oxeeclj6p0lx: { contentType: "jewelry", why: "E235 \"Hand Catenay N01\" — jewelry, was tops; title is TSR's 'hand catenary' (chain); TSR category sims4-accessories-female-bracelets (/sims-4-accessories-cc/)" },
+  cmil1lmdi00g6oxeers3rosxr: { contentType: "accessories", why: "E235 \"Lin Dian Earmuffs\" — accessories, was full-body; title says earmuffs (same as the two E154 earmuff pins) (/sims-4-accessories-cc/)" },
+  cmil1l5nj00fyoxee96084wk5: { contentType: "jewelry", why: "E235 \"LL Necklace\" — jewelry, was dresses; title says necklace (/sims-4-accessories-cc/)" },
+  cmil1m74700gfoxeeabljuumz: { contentType: "jewelry", why: "E235 \"Pink Romantic Earrings\" — jewelry, was tops; title says earrings (/sims-4-accessories-cc/)" },
+  cmil1lhbm00g4oxeee6gftfx4: { contentType: "hats", why: "E235 \"Sade Bandana Early Access\" — hats, was furniture; title says bandana; desc 'headpiece'; same as E228 Ade-caleb Bandana (/sims-4-accessories-cc/)" },
+  cmil1lx2j00gboxeeg3nsfqvo: { contentType: "accessories", why: "E235 \"Tonya Watch\" — accessories, was skin; title says watch; watches -> accessories as in E228 (watches value question still open) (/sims-4-accessories-cc/)" },
+  cmil1lfvp00g3oxee8y904s5t: { contentType: "accessories", why: "E235 \"Waist Chain 02\" — accessories, was full-body; body chain; `chain` is a rejected jewelry keyword (31/7), so generic accessories, not jewelry (/sims-4-accessories-cc/)" },
+  cmil1m8o000ggoxeeo0e1hbek: { contentType: "jewelry", why: "E235 \"Nihil Nose Chains\" — jewelry, was null; ADD from NULL: title names a nose piece; desc 'piercing set' (/sims-4-accessories-cc/)" },
+  cmil1lvc600gaoxee07pzfwo8: { contentType: "accessories", why: "E235 \"Airpod Ribbon Headset\" — accessories, was glasses; a headset, not eyewear (E228 headphones -> accessories) (/sims-4-accessories-cc/)" },
+  cmil1lqll00g8oxeehcqvq1ow: { contentType: "accessories", why: "E235 \"Claire Headphones\" — accessories, was glasses; title says headphones (E228 headphones -> accessories) (/sims-4-accessories-cc/)" },
+  cmim8zg5b0182oxy8hjljluwe: { contentType: "shoes", why: "E235 \"Clog Sandals\" — shoes, was dresses; title says clog sandals (/sims-4-male-shoes-cc/)" },
+  cmim8zfyu017zoxy8q60rp7yd: { contentType: "shoes", why: "E235 \"Concrete Set\" — shoes, was tops; title names no type, but its own (not shared) desc names Timberland-style boots; 391 dl (/sims-4-male-shoes-cc/)" },
+  cmim8zhb9018joxy8gcu6aoi9: { contentType: "shoes", why: "E235 \"Corey Trainers\" — shoes, was workout; trainers are sneakers (/sims-4-male-shoes-cc/)" },
+  cmim8zhpl018poxy8eym8ew58: { contentType: "shoes", why: "E235 \"Cowboy Boots\" — shoes, was bottoms; title says boots (/sims-4-male-shoes-cc/)" },
+  cmim8zh2c018goxy8yt9rgsub: { contentType: "shoes", why: "E235 \"Cyberpunk Boots\" — shoes, was bottoms; title says boots (/sims-4-male-shoes-cc/)" },
+  cmim8zhrs018qoxy8giz5abbs: { contentType: "shoes", why: "E235 \"Free Collection\" — shoes, was dresses; title names no type, its own desc: BeckySims Uggs shoe set (/sims-4-male-shoes-cc/)" },
+  cmim8zgdt0186oxy8rf1qnqcx: { contentType: "shoes", why: "E235 \"Hockey Skates\" — shoes, was clutter; worn skates; TSR category sims4-shoes-male-elder (/sims-4-male-shoes-cc/)" },
+  cmim8zgnz018aoxy8iccqopym: { contentType: "shoes", why: "E235 \"Leather Shoes For Male Sims\" — shoes, was bottoms; title says shoes (/sims-4-male-shoes-cc/)" },
+  cmim8zhl9018noxy8iz9g07tb: { contentType: "shoes", why: "E235 \"Male Loafers\" — shoes, was dresses; title says loafers (/sims-4-male-shoes-cc/)" },
+  cmim8zggk0187oxy8klo155d0: { contentType: "shoes", why: "E235 \"Nao Shoes\" — shoes, was workout; title says shoes (/sims-4-male-shoes-cc/)" },
+  cmim8zh7x018ioxy8xrbq4ti8: { contentType: "shoes", why: "E235 \"New Balance\" — shoes, was furniture; a sneaker brand; Patreon post new-balance-530 (/sims-4-male-shoes-cc/)" },
+  cmim8zglz0189oxy8pfe2j9dg: { contentType: "shoes", why: "E235 \"Slippers\" — shoes, was bottoms; title says slippers (/sims-4-male-shoes-cc/)" },
+  cmikj0kwq0097oxnaijjvgahu: { contentType: "furniture", why: "E235 \"Inviciview Wall TV\" — furniture, was clutter (clutter #4); a wall-mounted TV object" },
+  cmikk9i7b006oox33q8inutrj: { contentType: "furniture", why: "E235 \"Functional Washers and Dryers\" — furniture, was clutter (clutter #6); large appliances, like the E120 fridges" },
+  cmky6trx500h5oxhck3jvq2ml: { contentType: "furniture", why: "E235 \"Merida Living Room Set\" — furniture, was clutter (clutter #23); room set: coffee tables, hampers; TSR sims4-sets-objects-livingroom" },
+  cmktspatb0031oxol9nalmizg: { contentType: "furniture", why: "E235 \"Sims 4 Modern Bedroom Set\" — furniture, was clutter (clutter #26); room set led by a double bed" },
+  cmil0qing002aoxee4xx4w7q2: { contentType: "furniture", why: "E235 \"Sabine Bathroom Set Part 1\" — furniture, was clutter (clutter #15); shower, sinks, mirrors" },
+  cmim92tn901teoxy8j0n98qot: { contentType: "furniture", why: "E235 \"Dream Kitchen Set\" — furniture, was clutter (clutter #19); fridge and oven lead the set" },
+  cmijo0d6v00n3oxc8jqyetef7: { contentType: "clutter", why: "E235 \"The Appliance Collection\" — KEEP: clutter (clutter #5); 11 countertop appliances (microwave, popcorn maker), same as E120 Altara Kitchen Appliances" },
 };
 
 /**

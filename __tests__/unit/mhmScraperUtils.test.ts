@@ -300,8 +300,11 @@ describe('detectContentTypeFromUrl', () => {
       expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-pose-pack-list/')).toBe('poses');
     });
 
-    it('detects preset from "body-preset"', () => {
-      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-body-presets/')).toBe('preset');
+    it('detects body-preset from "body-preset" (E235 — was preset)', () => {
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-body-presets/')).toBe('body-preset');
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-male-body-presets-cc/')).toBe('body-preset');
+      // other preset posts keep the generic rule
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-nose-presets/')).toBe('preset');
     });
 
     it('detects gameplay-mod from "woohoo"', () => {
@@ -318,6 +321,12 @@ describe('detectContentTypeFromUrl', () => {
 
     it('detects decor', () => {
       expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-decor-cc/')).toBe('decor');
+    });
+
+    it('detects clutter from "clutter" (E235 — was decor)', () => {
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-clutter/')).toBe('clutter');
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-food-clutter-cc/')).toBe('clutter');
+      expect(detectContentTypeFromUrl('https://musthavemods.com/sims-4-makeup-clutter/')).toBe('clutter');
     });
 
     it('detects tattoos', () => {
