@@ -398,3 +398,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-17 07:08 | after-merge | Pip: PR #324 E223 top-up allocator caps per destination (host-folded), default 1/dest/day (Tier 0) | d258059 | https://mhm-finds-dw5l-43cy9t1az-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-17 07:12 | after-merge | Rowan: PR #325 funnel(rowan): E228 URL map jewelry/farmhouse-cc + 21 --ids pins (Tier 0) | aed39ae | https://mhm-finds-dw5l-25f1kwkft-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-17 07:18 | after-merge | Quinn: PR #327 funnel: daily run 2026-10-17 (Tier 0 docs) | d8deeb8 | https://mhm-finds-dw5l-mkwkd058p-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-18 06:35 | check | morning-check |  | https://mhm-finds-dw5l-9lil9hoxr-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
