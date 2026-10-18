@@ -13,7 +13,6 @@ Sessions 28d 359,944 vs line 355,284 = 101.3% (09-18→10-15); revenue $5,865.92
 
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — for a real P&L
 - [ ] [quinn] Older `/api/cron/*` routes fail open when `CRON_SECRET` is unset (`if (cronSecret && …)`). One PR + scanner test over `app/api/cron/**`; pattern in #226. — Cass 09-30
-- [ ] [cass] mode=invite has no sender: build the subscriber→account invite (lever 5, Tier 1 send) on createPasswordToken(…,'invite') + sendPasswordEmail — E123/E179 can now read it apart. — Cass 10-07
 - [ ] [cass] Homepage account offer (replaces the E73 strip, KILLED 10-07): wait for the E191 read 10-26; if offer-cohort completion clears 15%, copy SaveFindsOffer to `HomeCapture` with `ref=home-save`. — Cass 10-12
 - [ ] [ops] E176-b (was the 10-04 E176 line): the runner refuses to exit while any PR merged today lacks an after-merge row — generalize daily_pr_ledger to all of today's merges (T1). — Ops 10-07
 - [ ] [pip→ops] Writer flag: key on publishes, not hours. 17/17 posts since 09-21 got same-day rows, 0 inserts on 14 no-post days, so the 72 h clock reads 🔴 after a post-free Friday (10-18). `assessWriterLiveness` + check-pinner 2b: 🔴 only if a WP post ≥72 h old has 0 rows, 🟡 ≥26 h, else 🟢 "idle". Replay: 🟢 16/16 reads 09-25→10-18, 🔴 from 09-15. E230 — Pip 10-18
@@ -31,7 +30,7 @@ Sessions 28d 359,944 vs line 355,284 = 101.3% (09-18→10-15); revenue $5,865.92
 - [ ] Earlier open lines dated 09-24→10-07 are parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-07" and § "Parked 2026-10-11"; owners pull from there. — Quinn 10-11
 
 - [ ] [ops] Earlier plumbing requests (09-23→10-01) are parked verbatim in `archive/ideas-inbox-2026-09.md` (§ Parked 2026-09-29 / 09-30 / 10-01 / 10-01 b); Ops pulls from there. — Quinn
-- [ ] [cass] Weekly `--dry` on 10-17 still labels `weekly-issue-06`; confirm the issue number advances before the issue-07 send so 06 does not re-send. — Cass 10-17
+- [ ] [cass] Issue 05 (97 sent) and issue-06 run 1 (99 sent, subscribers ≤10-12) produced 0 `weekly-issue-*` sessions; run 2 (53 newest) produced 30. Check inbox placement for the older cohort (seed test to Gmail/Outlook) before the issue-07 read 10-29. — Cass 10-18
 - [ ] [ops] A `--resume-after` run sends to everyone after the cursor, including people who opted in since the last run: dry-run recipients can exceed the previous run's deferred count (53 vs 42 on 10-16). Count the tail by consent time before quoting it. — Cass 10-16
 - [ ] [ops] Concurrent deploy-verify runs slowed smoke renders to 5–16 min/page (/play 968 s) and one verify took 60 min; Nova's took 35 min while curl answered in <1 s. Serialize smoke-render across agents or make the first run's result reusable by the others. — Cass/Nova 10-16
 - [ ] [ops] `logs/indexnow.log` is per-worktree, so whether creator pages were pushed after 09-26 could only be read from reports/funnel/indexnow-2026-09-26.md. Land a summary row somewhere durable. — Nova 10-16

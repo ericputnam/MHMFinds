@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-18
+- Tried: E233 invite-01 sender (T1, PR #328, queued). It links to the sign-up, not `createPasswordToken('invite')`: reset-password POST needs a `users` row, and these readers have none. Graded E184 / E118 / E205.
+- Before → after: the dispatch said "181 subscribers without accounts". The DB has 22 (159 of 181 have accounts). E184: issue 05 had 0 tagged sessions (<8), 1 unsubscribe. E118: 5/14 off-home = 35.7%. E205: 153/153 reached, 0 dupes.
+- Verdict: E205 KEEP; E118 KILL; E184 EXTEND → issue 07 (≥8 engaged sessions, read 10-29); E233 PENDING (read 10-26).
+- Next time: count the population a send reaches before quoting it. Also check that the redemption path accepts that population: an invite token is only as good as the route that consumes it.
+
 ## 2026-10-16
 - Tried: issue-06 run 2 (`--weekly --live --resume-after <10-15 cursor>`, Tier 1 approved 10-15). The dry run showed 53, not 42: 42 deferred plus 11 opt-ins after run 1 (10 signup-optin, 1 footer). 100 rows sat at or before the cursor, so there were 0 dupes by construction. Sent 53/53, 0 failed, 31/31 tagged. Also landed #309 (E152 KILL → free Patreon follow ask on /go). E159 graded.
 - Before → after: issue 06 total: 153 attempted, 152 sent, 1 reject hashed (code null). E159: favorite src=mod-detail-save went from 4 users / 7 ev to 6 / 16 (10-02→10-15). Including after-signin it was 11 users / 22 ev. /account/favorites/ views with a /mods/* referrer: 0 → 1. Bar was ≥8 users OR ≥5 views.

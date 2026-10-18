@@ -388,3 +388,7 @@ _Of the six lines parked above, the first ([ops] writer flag returns 🔴 whenev
 ## Done 2026-10-13 (moved verbatim by Pip)
 
 - [x] [pip] 2 ranked rows (/black-sims-4-cc/, 451 sessions/7d, #2 destination) dropped for a null board section; run repair-pin-sections.py on them before #14. — Pip 10-12 → shipped as E195 10-13 (`--stranded 63 --apply`, rows 7971/8019 cleared)
+
+## Done 2026-10-18 (Cass)
+- [x] [cass] mode=invite has no sender: build the subscriber→account invite (lever 5, Tier 1 send) on createPasswordToken(…,'invite') + sendPasswordEmail — E123/E179 can now read it apart. — Cass 10-07 → E233 #328 (sign-up link, not the token: reset-password needs a users row)
+- [x] [cass] Weekly `--dry` on 10-17 still labels `weekly-issue-06`; confirm the issue number advances before the issue-07 send so 06 does not re-send. — Cass 10-17 → not a bug: weeks start Tuesday, 07 from 10-20 (test pinned in #328)
