@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-18
+- Tried: E232 (T0) — "New mods 7d 80 (130), −38%" diagnosed before touching the scraper: ingest OK 7/7 mornings 10-12→10-18, errors 0, 392/392 rows in 28d from the one path (writer posts). The row now prints its denominator (`lib/funnel/catalogInflow.ts`, 8 tests). E172 CLOSED with Q26 (leg 1 MET at 2/1/1 house, leg 2 0/7 reviewed).
+- Before → after: 80 from 4 posts, 20.0/post vs 130 from 5, 26.0/post. First-time posts created 63/67 (94%, prior week 130/135); the gap is one re-dated 2025 post (48 found, 17 created, 31 already in) and a 10-item post. Writer last posted 10-15 → the row reads 70 on 10-20, 21 on 10-22 without a new post.
+- Verdict: MORE DATA (read 2026-10-25: denominator printed ≥6/7 mornings).
+- Next time: a count with no denominator cannot tell "supply broke" from "the human posted less". Read the ingest log's OK lines and the per-post created/found before proposing to run or fix the scraper.
+
 ## 2026-10-17
 - Tried: E166 graded. E225 (T0, #322 5605877): the /creator/* row now prints a source-matched control next to the site-relative guard. Diagnostic only.
 - Before → after: guard 91.3% FAIL → source-matched 99.0% (10-09→15). By source, creator vs expected: google 57/51.5, bing 52/69.7, chatgpt 5/10.8 (sitewide chatgpt 337→154), other 23/6.4. Nothing broken on our side (sitemap 549, 200 + canonical, mod→creator links present). E166: 1 claim promoted (dor-e 10-16), 0 409s, seed-rename untested in production.

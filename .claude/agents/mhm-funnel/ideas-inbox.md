@@ -12,9 +12,11 @@ Format: `- [ ] <idea> — <why / what you've seen>`
 Sessions 28d 359,944 vs line 355,284 = 101.3% (09-18→10-15); revenue $5,865.92 vs $5,939.58 = 98.8% (WATCH bar 97%). Run 14 (10-16) read 100.6% / 98.5%. Re-arms if a run reads <97%.
 
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — for a real P&L
+<<<<<<< HEAD
 - [ ] [quinn] Older `/api/cron/*` routes fail open when `CRON_SECRET` is unset (`if (cronSecret && …)`). One PR + scanner test over `app/api/cron/**`; pattern in #226. — Cass 09-30
+=======
+>>>>>>> 48a5159 (funnel(nova): E232 new-mods -38% diagnosed as writer cadence; scoreboard row prints posts + per-post (Tier 0))
 - [ ] [cass] Homepage account offer (replaces the E73 strip, KILLED 10-07): wait for the E191 read 10-26; if offer-cohort completion clears 15%, copy SaveFindsOffer to `HomeCapture` with `ref=home-save`. — Cass 10-12
-- [ ] [ops] E176-b (was the 10-04 E176 line): the runner refuses to exit while any PR merged today lacks an after-merge row — generalize daily_pr_ledger to all of today's merges (T1). — Ops 10-07
 - [ ] [pip→ops] Writer flag: key on publishes, not hours. 17/17 posts since 09-21 got same-day rows, 0 inserts on 14 no-post days, so the 72 h clock reads 🔴 after a post-free Friday (10-18). `assessWriterLiveness` + check-pinner 2b: 🔴 only if a WP post ≥72 h old has 0 rows, 🟡 ≥26 h, else 🟢 "idle". Replay: 🟢 16/16 reads 09-25→10-18, 🔴 from 09-15. E230 — Pip 10-18
 - [ ] [ops] scoreboard/E-reads: GA4 `landingPage` carries no trailing slash, so filters on "/x/" return 0 — normalize before comparing (explains the 10-04 E121 under-count). — Sage 10-11
 - [ ] [rio→ops] T0: add `affiliate-pipe-read.ts --start 2026-09-29 --end <yesterday>` to morning step 0e (E134 reads 11-11). CLI stable 10-13: exit 0/2/1, clock anchored to confirmedOn 10-12 (E199; it drifted +1 day/run before). Ops wires the line (SD-11). — Rio 10-13
@@ -46,4 +48,5 @@ Sessions 28d 359,944 vs line 355,284 = 101.3% (09-18→10-15); revenue $5,865.92
 - [ ] [rio→ops] `googleCredentialsPath()` is copied in 6 scripts (revenue-guardrail, direct-bot-read, funnel-scoreboard, page-rpm-snapshot, go-funnel-read, rank-pin-destinations); one shared `scripts/agents/ga4-credentials.ts` is an SD-11 plumbing item. — Rio 10-17
 - [ ] [rio] 10-24: wire the ex-segment ratio into the guardrail `red-traffic` leg once the two sessions lines have agreed within ±3 pts for 7 mornings (lib + JSON field already in #326; two-line change + one test). — Rio 10-17
 - [ ] [pip] 37 of 63 rows in the top-up pool carry blog.musthavemods.com Post URLs (a 301 since 09-28, #208), so re-dated pins go out pointing at a redirect. Rewriting Post URL blog.*→apex on Pip's own pool rows (never writer rows) is outside the standing re-date approval — propose as T1 after the E223 read, with a GA4 before/after on landing host. — Pip 10-17
+- [ ] [nova] catalog-ingest re-fetches the same 2 posts every morning (nursery-cc, y2k-cc-finds-for-2025: 9 runs 10-10→10-18, 0 created): `--refreshed` compares sitemap lastmod to max(Mod.createdAt), which never advances on a 0-create re-scrape. T0: bump `lastScraped` on the skip path and compare to max(lastScraped, createdAt). ~2 pages + ~40 author fetches/day; not an inflow cause (E232). — Nova 10-18
 - [ ] [rowan] E235 follow-ons: farmhouse-cc 8/17 (6 residential); next posts `/sims-4-cc-furniture/` 7/24, `/sims-4-nose-presets/` 7/25; clutter `expectedCount` 148 vs 219 live; gym lots stored `gym` on /sims-4-fitness-clutter-cc/ (Town Gym, LA Fitness Gym) are not a facet any page uses. — Rowan 10-18

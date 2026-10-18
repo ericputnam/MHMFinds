@@ -55,6 +55,7 @@ import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '..
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
 import { summarizeCreatorSubmissions, type CreatorOnboardingSummary } from '../../lib/funnel/creatorOnboarding';
 import { summarizeCreatorLandings, formatCreatorLandings, sourceMatchedRead, EARNED_CHANNEL_GROUPS, type ChannelRow, type CreatorLandingSummary } from '../../lib/funnel/creatorLandings';
+import { summarizeCatalogInflow, formatCatalogInflow, type CatalogInflowSummary } from '../../lib/funnel/catalogInflow';
 import {
   E40_ANCHOR,
   E40_CLICK_BASELINE,
@@ -497,6 +498,8 @@ interface DbData {
   affiliateClicks7d: number; affiliateClicks30d: number; affiliateEarnings30d: number;
   creatorProfiles: number; modSubmissions: number; mods: number; collections: number;
   newMods7d: number; newModsPrior7d: number;
+  /** E232: the same two counts with their denominator — distinct Mod.sourceUrl (blog posts) that yielded rows in each window. */
+  catalogInflow: CatalogInflowSummary;
   /** ModSubmission.createdAt >= 7d ago (any submitter, linked account or not). */
   submissions7d: number;
   /** Distinct non-admin creator accounts (isCreator or CreatorProfile) with >=1 ModSubmission (E172, lib/funnel/creatorOnboarding.ts). */
@@ -533,7 +536,7 @@ async function pullDb(): Promise<DbData> {
       downloadClicks7d, downloadClicks30d,
       affiliateClicks7d, affiliateClicks30d, affEarn,
       creatorProfiles, modSubmissions, mods, collections,
-      newMods7d, newModsPrior7d, submissions7d,
+      inflowRows, submissions7d,
     ] = await Promise.all([
       prisma.user.count(), prisma.user.count({ where: { createdAt: { gte: d7 } } }), prisma.user.count({ where: { createdAt: { gte: d30 } } }),
       subs.count(), subs.count({ where: { createdAt: { gte: d7 } } }), subs.count({ where: { createdAt: { gte: d30 } } }),
@@ -543,10 +546,14 @@ async function pullDb(): Promise<DbData> {
       prisma.affiliateClick.count({ where: { clickedAt: { gte: d7 } } }), prisma.affiliateClick.count({ where: { clickedAt: { gte: d30 } } }),
       prisma.affiliateEarning.aggregate({ _sum: { commissionAmount: true } }).catch(() => ({ _sum: { commissionAmount: null } })),
       prisma.creatorProfile.count(), prisma.modSubmission.count(), prisma.mod.count(), prisma.collection.count(),
-      prisma.mod.count({ where: { createdAt: { gte: d7 } } }),
-      prisma.mod.count({ where: { createdAt: { gte: d14, lt: d7 } } }),
+      // E232: one read of the 14-day rows (a few hundred) replaces the two bare counts, so the
+      // row can print its denominator (posts that yielded rows) from the same predicate.
+      prisma.mod.findMany({ where: { createdAt: { gte: d14 } }, select: { sourceUrl: true, createdAt: true } }),
       prisma.modSubmission.count({ where: { createdAt: { gte: d7 } } }),
     ]);
+    const catalogInflow = summarizeCatalogInflow(inflowRows, new Date());
+    const newMods7d = catalogInflow.newMods7d;
+    const newModsPrior7d = catalogInflow.newModsPrior7d;
     const subscribersBySource: Record<string, number> = {};
     for (const r of subsBySource as Array<{ source: string; _count: { _all: number } }>) subscribersBySource[r.source] = r._count._all;
 
@@ -579,7 +586,7 @@ async function pullDb(): Promise<DbData> {
       downloadClicks7d, downloadClicks30d,
       affiliateClicks7d, affiliateClicks30d, affiliateEarnings30d: Number(affEarn._sum.commissionAmount ?? 0),
       creatorProfiles, modSubmissions, mods, collections,
-      newMods7d, newModsPrior7d, submissions7d, creatorsOnboarded,
+      newMods7d, newModsPrior7d, catalogInflow, submissions7d, creatorsOnboarded,
       creatorsOnboardedApproved: onboarding.onboardedApproved,
       creatorsHouseExcluded: onboarding.houseExcluded,
       submissionsPendingReview: onboarding.pendingReview,
@@ -1244,7 +1251,7 @@ async function main() {
   md += `| Engagement rate 7d | ${ga4.ok && ga4.data.engagementRate7d != null ? frac(ga4.data.engagementRate7d) : '—'} | ${owners.engagementRate7d ?? '?'} |\n`;
   md += `| Favorites 7d | ${db.ok ? `+${db.data.favorites7d}` : '—'} | ${owners.favorites7d ?? '?'} |\n`;
   md += `| Download clicks 7d | ${db.ok ? num(db.data.downloadClicks7d) : '—'} | ${owners.downloadClicks7d ?? '?'} |\n`;
-  md += `| New mods 7d (prior 7d) | ${db.ok ? `${num(db.data.newMods7d)} (${num(db.data.newModsPrior7d)})` : '—'} | ${owners.newMods7d ?? '?'} |\n`;
+  md += `| New mods 7d (prior 7d) | ${db.ok ? formatCatalogInflow(db.data.catalogInflow) : '—'} | ${owners.newMods7d ?? '?'} |\n`;
   md += `| Catalog total | ${db.ok ? num(db.data.mods) : '—'} | ${owners.catalogTotal ?? '?'} |\n`;
   md += `| Capture rate /1k sessions 7d | ${captureRatePer1kSessions7d != null ? captureRatePer1kSessions7d.toFixed(2) : '—'} | ${owners.captureRatePer1k ?? '?'} |\n`;
   md += `| Creators onboarded (>=1 submission) | ${db.ok ? `${num(db.data.creatorsOnboarded)} (${num(db.data.creatorsOnboardedApproved)} with >=1 approved${db.data.creatorsHouseExcluded ? `; ${num(db.data.creatorsHouseExcluded)} house account excluded` : ''})` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
@@ -1283,6 +1290,9 @@ async function main() {
     catalog: {
       newMods7d: db.ok ? db.data.newMods7d : null,
       newModsPrior7d: db.ok ? db.data.newModsPrior7d : null,
+      // E232: denominator for the two counts above (distinct sourceUrl with rows in the window).
+      posts7d: db.ok ? db.data.catalogInflow.posts7d : null,
+      postsPrior7d: db.ok ? db.data.catalogInflow.postsPrior7d : null,
       total: db.ok ? db.data.mods : null,
     },
     capture: {

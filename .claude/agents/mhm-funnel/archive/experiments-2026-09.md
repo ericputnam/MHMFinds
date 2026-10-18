@@ -739,9 +739,22 @@ _E134 pointer 2026-10-18 (Rio, E234): Q20 dropped 10-18 → the Amazon leg of th
 | E166 | 2026-10-03 | Nova | 0 | PRODUCT | seed-held handle claim rename… | promote 409s on seed-held handles; c… | 8/20 handles 409 (10-02) | 2026-10-17 | 0 409s AND ≥1 claim promoted when one… | 0 seed-handle 409s (no claim on a seed-held handle arrived since 10-03); 1 claim promoted (admin audit 10-16 14:44Z pending-dor-e-… → dor-e, verified, 1 mod, displacedSeedHandle null); 0 pending claims; 0 seed-* renames; 21 CreatorProfile rows — the seed-rename branch is still untested in production | KEEP (close) — both legs met, but the 409 leg passes only because no seed-handle claim arrived; seed-rename path untested in production |
 | E167 | 2026-10-03 | Cass | 2 | CAPTURE | WP end-of-post email module (… | waitlist rows source=blog-post-end /1… | 0; WP articles 83.5% of landings, no… | push+14d | ≥0.59/1K AND blog RPM ≥95% (one-sided) | PR #253 closed 10-17; Q25 dropped under the 7-day rule, no reply | NOT-RUN · Q25 dropped 10-17 |
 
+<<<<<<< HEAD
 ## Graded 2026-10-17 — rows moved verbatim 2026-10-18 (Cass, experiments.md over 24,000 B) — E166 also moved by Sage above; one copy kept
+=======
+## Graded 2026-10-18 (Nova) — E172 row moved verbatim from experiments.md (E166 is in Sage's section above)
+
+| ID | Shipped | Owner | Tier | Stage | Move | Metric | Before | Read on | Keep if | Result | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| E172 | 2026-10-04 | Nova | 0 | SUPPLY | creators-onboarded counts cre… | onboarded (true n) + pending-review r… | scoreboard 0; true 3 onboarded (2 app… | 2026-10-11 | scoreboard prints 3/7 AND the 7 review… | 10-11: scoreboard prints 3/7 (leg 1 met); 0/7 reviewed — Q26 re-pitched smaller, drops 10-18; 10-18: prints 2 (1 approved; 1 house, E197) MET; 0/7 reviewed, oldest 14d NOT MET | CLOSED 10-18 with Q26 (dropped, no re-pitch): leg 1 MET, leg 2 NOT MET |
+
+## Graded 2026-10-17 — E62 row moved verbatim from experiments.md by Nova 2026-10-18 for byte room (KEEP, closed)
+>>>>>>> 48a5159 (funnel(nova): E232 new-mods -38% diagnosed as writer cadence; scoreboard row prints posts + per-post (Tier 0))
 
 | ID | Shipped | Owner | Tier | Stage | Move | Metric | Before | Read on | Keep if | Result | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | E62 | 2026-09-20 | Sage | 0 | AUDIENCE | Repair the collection-page in… | GSC 28d clicks + impressions for th… | 8 pages 41 clicks / 1,502 imp… | 2026-10-03 / 2026-10-17 | 8 pages ≥2,000 impressions or ≥55 cli… | 8 pages 83 clicks / 1,721 impr (body-presets 60/1,050 pos 10.5, y2k 5/114, loading-screens 5/91, pregnancy 4/168, vampire 4/135, jewelry 3/49, makeup 1/38, witch 1/76) vs ≥55 clicks OR ≥2,000 impr; donors 89 clicks (poses 39, female-clothes 33, male-clothes 15, tattoos 2, clutter 0) vs ≥55 | KEEP 2026-10-17 (clicks leg 83 ≥ 55 AND donors 89 ≥ 55; impressions leg 1,721 < 2,000 missed; 60 of 83 clicks are body-presets, ex-body-presets 23 vs 13 before) |
+<<<<<<< HEAD
 | E118 | 2026-09-26 | Cass | 0 | CAPTURE | `/sign-in/` returns visitors … | share of /sign-in-referred page_vie… | 1/12 off-home (09-12→09-25); sign_up… | 2026-10-10 | ≥50% off-home (n≥10) AND sign_up/7d ≥… | 10-11: 3 of 8 /sign-in-referred page_views off-home (37.5%), n=8 <10, all 3 are /sign-in/ self-views (0 reached content); sign_up 31/7d ≥28 passes · 10-18 (14d 10-04→10-17): 5 of 14 off-home = 35.7% (n=14; 2 forgot-pw, 2 self, 1 /sims-4/ → 1 content); sign_up 42/7d (10-11→17) ≥28 | KILL 10-18 (35.7% <50%; sign_up leg met; no revert, page_view blind to client nav) |
+=======
+>>>>>>> 48a5159 (funnel(nova): E232 new-mods -38% diagnosed as writer cadence; scoreboard row prints posts + per-post (Tier 0))
