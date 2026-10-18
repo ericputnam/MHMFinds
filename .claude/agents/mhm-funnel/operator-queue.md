@@ -15,7 +15,7 @@ board-level decisions and true blockers here (see `autonomy.md`, "Operator
 directive 2026-09-12"). Replies given in chat are recorded and executed the same
 day.
 
-**Guardrail 2026-10-15 (Rio):** 🟢 GREEN — finalized 10-13 $187.29 vs $187.30 (−0.0%) at sessions +5.3% / RPM −5.2%; the RPM dip is mix, not rate: 585 excess Singapore Direct one-pageview sessions — ex them sessions +0.15% and RPM $16.50 (−0.3%); 3-day +3.0%, health ok; 28d line 98.20% revenue / 99.93% sessions (ON LINE run 13) — E199 and E206 10-15 legs MET; merges clear. **B2 killIf MET** (paid joins 7d 4 on 10-08, 3 on 10-15; Q17 dropped) → Rio is affiliates-only through 10-31, no Patreon tier/price/copy work. One Tier 2 package below (Q29). Q20 drops 10-18, Q29 10-22. Full read `reports/funnel/rio-verdict-2026-10-15.md`.
+**Guardrail 2026-10-18 (Rio):** 🟢 GREEN — finalized 10-16 $207.61 vs $196.55 (+5.6%) at RPM 16.89 (+2.8%) / sessions +2.8%; a clean day: Singapore Direct segment 520 = 4.22% (controls 2.44%), GA4 ex-segment sessions +0.1%, Mediavine monetizable-session share 57.7% vs 58.0% control, monetizable-session RPM +3.4%; 3-day revenue +7.8%, health ok; 28d line 98.87% revenue / 101.57% sessions (ON LINE run 16) — E220 leg 2 and E227 leg 1 MET; merges clear. 10-17 partial already $286.92 (+9.3%), so the line holds on 10-19; it holds on 10-20 unless 10-18 earns under $141.21. **Affiliates-only through 10-31:** pipe read 09-29→10-17 gtracing 12 on-site / Impact 8 clicks / 0 actions / $0 (kill read 11-11); the Amazon leg grades "unmeasurable" (Q20 dropped 10-18); all 5 live offers resolve 200 — no dead link to fix; affiliate_click 7d 5 sits on the 10-29 bar (≥5). Q29 drops 10-22. Full read `reports/funnel/rio-verdict-2026-10-18.md`.
 ---
 
 ## Tier 1 — shipping unless you say stop
