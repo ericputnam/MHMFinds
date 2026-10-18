@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T10:37:34.479Z",
+  "generatedAt": "2026-10-18T10:37:33.397Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3738,9 +3738,9 @@
     },
     {
       "date": "2026-10-16",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 207.61,
+      "sessions": 12287,
+      "rpm": 16.89,
       "expectedRevenue": 196.55,
       "expectedSessions": 11955,
       "nonAdMonthly": 162,
@@ -3804,6 +3804,41 @@
         "Rowan": 6,
         "Quinn": 7,
         "Sage": 5
+      }
+    },
+    {
+      "date": "2026-10-18",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 263.54,
+      "expectedSessions": 15939,
+      "nonAdMonthly": 158,
+      "ownedAdds7d": 246,
+      "pinterestSessions7d": 57487,
+      "returningShare7d": 0.49896387749760057,
+      "nonPinterestShare7d": 0.21655287079057473,
+      "pagesPerSession7d": 1.5350178223002213,
+      "engagementRate7d": 0.6989829843359967,
+      "favorites7d": 797,
+      "downloadClicks7d": 355,
+      "newMods7d": 80,
+      "catalogTotal": 16903,
+      "captureRatePer1k": 2.673477150464598,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.5714285714285714,
+      "opsMergeShare7d": 0.125,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Pip": 7,
+        "Nova": 7,
+        "Cass": 7,
+        "Rio": 7,
+        "Ops": 7,
+        "Rowan": 7,
+        "Quinn": 8,
+        "Sage": 6
       }
     }
   ],
@@ -5985,6 +6020,62 @@
       "kind": "merge",
       "label": "Quinn: PR #319 funnel: daily run 2026-10-16 (Tier 0 docs)",
       "commit": "79278df",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Cass: PR #320 funnel(cass): E226 exclude the weekly issue-06 reject before issue 07 (Tier 0)",
+      "commit": "d8c9aa2",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Nova: PR #322 funnel(nova): E225 /creator/* guard prints a source-matched control (Tier 0)",
+      "commit": "5605877",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Sage: PR #323 E224 scoreboard flags a WoW read that overlaps a known external window (Tier 0)",
+      "commit": "094efff",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Ops: PR #321 funnel(ops): E229 rotate CLAUDE.md under its 60 KB budget (Tier 0)",
+      "commit": "e62e08d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Rio: PR #326 E227 guardrail prints sessions ex the Singapore Direct segment (E216 rule) + verdict 10-17 (Tier 0)",
+      "commit": "56f328f",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Pip: PR #324 E223 top-up allocator caps per destination (host-folded), default 1/dest/day (Tier 0)",
+      "commit": "d258059",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Rowan: PR #325 funnel(rowan): E228 URL map jewelry/farmhouse-cc + 21 --ids pins (Tier 0)",
+      "commit": "aed39ae",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-17",
+      "kind": "merge",
+      "label": "Quinn: PR #327 funnel: daily run 2026-10-17 (Tier 0 docs)",
+      "commit": "d8deeb8",
       "result": "PASS"
     }
   ]
