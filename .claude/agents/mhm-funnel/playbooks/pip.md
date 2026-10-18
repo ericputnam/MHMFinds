@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-18
+- Tried: E230 (T0, #TBD): diagnosed the scoreboard 🔴 "Pinner writer 72.1 h" before any pin work — rule printed first (`reports/funnel/pip-writer-pinner-2026-10-18.md`). Graded E181. No top-up: tool gate 2.99 d (32 ÷ 10.71 pinterest-14d) ≥ 2.0.
+- Before → after: writer inserts are publish-keyed — 17/17 WP posts since 09-21 got a same-UTC-day batch (lag 10 min–6.8 h), 0/14 non-post days had one; 0 posts since 10-15 03:42Z → 72.2 h of silence is the weekend, not a death. Last 4 weekends: 1 false 🔴 (today), 1 near-miss (10-12, 1.1 h). Dating step: 518/745 writer rows since 09-21 still placeholder (219 from the 8 batches since 10-05); poster shipped 29 writer vs 181 top-up rows in 14 d → Q28 addendum. E181: treated 3,087 vs 3,172 (−2.7%) vs site −1.1% → KILL as lift.
+- Verdict: FALSE ALARM (a) → [pip→ops] publish-keyed flag; read 10-25.
+- Next time: a liveness clock must tick from the upstream event (a publish), not from the last output — an idle-by-design producer reads dead on every gap longer than the floor.
+
 ## 2026-10-17
 - Tried: E223 (T0, PR #324 d258059): top-up allocator per-URL cap re-keyed on destination_key (host-folded) and --max-per-url default 2→1 with build_parser() + 2 guard tests (both red pre-fix). No top-up: tool gate 2.62 d (39 ÷ 14.86 pinterest-14d) ≥ 2.0. Sections --check --stranded 63: 63/63 live.
 - Before → after: 10-15 ledger 18 rows → 5 dests at 2/dest/date (tattoos ×6, gshade ×6 over 3 dates) vs 10-14 21 → 9 at 1/dest/date; pool 37 blog.* / 26 apex of 63 rows, 0 host-split destinations today.

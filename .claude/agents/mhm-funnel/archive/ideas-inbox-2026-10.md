@@ -44,3 +44,7 @@
 - [x] [quinn] /creator/* guard basis — **decided 10-17:** source-matched (E225) becomes the verdict basis from 10-25 if E225 prints on ≥5/7 mornings; until then the row shows both and E144's 10-28 grade cites both. A site control must match the slice's source mix. — Quinn 10-17
 - [ ] [ops] `_patreon-auth.ts` token refreshes leave no durable row — log one line (no token) so E131's refresh leg is observable. — Rio 10-11
 - [ ] [rio] same-incident test point (b) should ratio each unit against the site ex the best unit (or Content), not the blended drop. — Rio 10-07
+
+## Done 2026-10-18 (moved verbatim by Pip — superseded by the Q28 10-18 addendum and E230)
+
+- [ ] [pip] Q11 inflow gap, quantified 10-14: writer plugin inserts ~21 rows/day (147/7d) but 136/147 sit at the 2025-01-01 placeholder until posting day, so 0 real-dated rows exist on 10-15..10-21 and all 42 rows in the 14-day horizon are Pip top-ups. Runway can only cross 2 d if the plugin dates rows ahead (writer/MHMUtils change, T2) — a cap raise would not fix it. — Pip 10-14
