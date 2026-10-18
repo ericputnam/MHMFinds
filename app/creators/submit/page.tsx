@@ -5,10 +5,12 @@ import { useSession } from 'next-auth/react';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { ModSubmissionForm, ModFormData } from '@/components/admin/ModSubmissionForm';
+import { useCreatorPortalView } from '../creatorView';
 
 export default function CreatorSubmitPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
+  const { actAsAdmin: isAdmin } = useCreatorPortalView();
 
   // Check authentication status
   if (status === 'loading') {
@@ -23,8 +25,6 @@ export default function CreatorSubmitPage() {
     router.push('/admin/login');
     return null;
   }
-
-  const isAdmin = session?.user?.isAdmin || false;
 
   const handleSubmit = async (formData: ModFormData) => {
     try {

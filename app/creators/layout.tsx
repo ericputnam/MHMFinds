@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
+import { useCreatorPortalView } from './creatorView';
 import {
   LayoutDashboard,
   Package,
@@ -29,6 +30,7 @@ export default function CreatorsLayout({
 }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { isAdmin, view, setView } = useCreatorPortalView();
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
@@ -54,7 +56,7 @@ export default function CreatorsLayout({
                 <UserCircle className="h-5 w-5 text-slate-400" />
                 <div className="text-sm">
                   <p className="font-semibold text-white">{session.user.username || session.user.email}</p>
-                  <p className="text-xs text-purple-400">Creator</p>
+                  <p className="text-xs text-purple-400">{isAdmin ? (view === 'creator' ? 'Admin · creator view' : 'Admin') : 'Creator'}</p>
                 </div>
               </div>
             )}
@@ -75,6 +77,21 @@ export default function CreatorsLayout({
           </div>
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="bg-amber-950/60 border-b border-amber-800/50 px-6 py-2 text-sm text-amber-200 flex flex-wrap items-center gap-3">
+          {view === 'creator'
+            ? 'Admin preview: you are seeing the creator experience. Submissions go to the review queue under your account.'
+            : 'Admin mode: Submit creates mods directly and Submissions shows every creator’s queue.'}
+          <button
+            type="button"
+            onClick={() => setView(view === 'creator' ? 'admin' : 'creator')}
+            className="px-3 py-1 rounded-md bg-amber-800/60 hover:bg-amber-700/60 text-white font-medium"
+          >
+            {view === 'creator' ? 'Switch to admin mode' : 'Preview as creator'}
+          </button>
+        </div>
+      )}
 
       <div className="flex">
         {/* Sidebar */}

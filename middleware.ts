@@ -296,7 +296,8 @@ export async function middleware(request: NextRequest) {
     if (!token) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
-    if (!token.isCreator) {
+    // Admins may enter too, to test the creator experience (app/creators/creatorView.ts).
+    if (!token.isCreator && !token.isAdmin) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     return NextResponse.next();

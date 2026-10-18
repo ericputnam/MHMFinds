@@ -60,6 +60,20 @@ describe('Middleware - Route Protection', () => {
       expect(response?.headers.get('location')).toContain('/')
     })
 
+    it('should allow admins who are not creators to access /creators (to test the creator portal)', async () => {
+      vi.mocked(getToken).mockResolvedValue({
+        id: 'admin-1',
+        email: 'admin@example.com',
+        isCreator: false,
+        isAdmin: true,
+      } as any)
+
+      const request = new NextRequest('http://localhost:3000/creators/submit')
+      const response = await middleware(request)
+
+      expect(response?.status).not.toBe(307)
+    })
+
     it('should allow creators to access /creators/submit', async () => {
       vi.mocked(getToken).mockResolvedValue({
         id: 'user-123',
@@ -243,7 +257,8 @@ describe('Middleware - Route Protection', () => {
       const adminResponse = await middleware(adminRequest)
       expect(adminResponse?.headers.get('location')).toContain('/creators')
 
-      // Admin trying to access creators (should be allowed if they're also a creator)
+      // Admin opening the creator portal: allowed (2026-10-18) so admins can
+      // test the creator experience; creators still cannot reach /admin.
       vi.mocked(getToken).mockResolvedValue({
         id: 'admin-123',
         email: 'admin@example.com',
@@ -253,8 +268,7 @@ describe('Middleware - Route Protection', () => {
 
       const creatorRequest = new NextRequest('http://localhost:3000/creators')
       const creatorResponse = await middleware(creatorRequest)
-      // Non-creator admin should be redirected from /creators
-      expect(creatorResponse?.status).toBe(307)
+      expect(creatorResponse?.status).not.toBe(307)
     })
 
     it('should handle users with both creator and admin roles', async () => {
