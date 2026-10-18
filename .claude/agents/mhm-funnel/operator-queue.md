@@ -23,6 +23,7 @@ day.
 | Tier 1 | Owner | What | Reply to block |
 |---|---|---|---|
 | T1 (done) | Sage | **#275** `/games/sims-4/cc/` hub **MERGED 2026-10-12** (9d8ab3e, veto window silent; Quinn ran the ship protocol, verify result on the ledger). E182 read 10-26; rollback = revert the squash. | — |
+| T1 (queued) | Sage | **#335** `/games/sims-4/eyes-cc/` — eyes, eyebrows & lashes hub (E231): 269 SFW verified mods, all free, inserted before makeup-cc in the registry (takes the primary crumb for those 269 from makeup-cc), inbound from skin-details + makeup-cc. type-check, build and 10 test files (154/154) green. Merges **2026-10-19** by the ship protocol unless stopped; rollback = revert the squash. | "stop eyes-cc hub" |
 | T1 (done) | Cass | Newsletter issue 05 **SENT 2026-10-11 11:34** (window closed 10-08; the 10-09 run never fired): 97 of 98 delivered, 1 hard reject, 0 excluded, 31/31 links tagged `utm_campaign=weekly-issue-05` (E184, read 10-18, keep cadence if ≥8 sessions AND ≤2 unsubscribes). Issue 06 goes Thursday 10-15 by the same path; say "stop newsletter-06" to block. | "stop newsletter-06" |
 
 ## Tier 2 — needs your decision
