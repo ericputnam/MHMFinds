@@ -8,23 +8,19 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] <idea> — <why / what you've seen>`
 
-## Operator watch 2026-10-17 — ON LINE run 15, normal weighting
-Sessions 28d 359,944 vs line 355,284 = 101.3% (09-18→10-15); revenue $5,865.92 vs $5,939.58 = 98.8% (WATCH bar 97%). Run 14 (10-16) read 100.6% / 98.5%. Re-arms if a run reads <97%.
+## Operator watch 2026-10-18 — ON LINE run 16, normal weighting
+Sessions 28d 360,503 vs line 354,930 = 101.6% (09-19→10-16); revenue $5,865.53 vs $5,932.82 = 98.9% (WATCH bar 97%). Run 15 (10-17) read 101.3% / 98.8%. Ex the Singapore Direct segment the 28d headline reads ≈96.6% (E236, 09-18→10-15) — Q30 decides whether the human line is on line. Re-arms if a run reads <97%.
 
 - [ ] Monthly infra costs (Vercel / Prisma / OpenAI / SendGrid / BigScoots) — for a real P&L
 - [ ] [cass] Homepage account offer (replaces the E73 strip, KILLED 10-07): wait for the E191 read 10-26; if offer-cohort completion clears 15%, copy SaveFindsOffer to `HomeCapture` with `ref=home-save`. — Cass 10-12
 - [ ] [pip→ops] Writer flag: key on publishes, not hours. 17/17 posts since 09-21 got same-day rows, 0 inserts on 14 no-post days, so the 72 h clock reads 🔴 after a post-free Friday (10-18). `assessWriterLiveness` + check-pinner 2b: 🔴 only if a WP post ≥72 h old has 0 rows, 🟡 ≥26 h, else 🟢 "idle". Replay: 🟢 16/16 reads 09-25→10-18, 🔴 from 09-15. E230 — Pip 10-18
-- [ ] [ops] scoreboard/E-reads: GA4 `landingPage` carries no trailing slash, so filters on "/x/" return 0 — normalize before comparing (explains the 10-04 E121 under-count). — Sage 10-11
 - [ ] [rio→ops] T0: add `affiliate-pipe-read.ts --start 2026-09-29 --end <yesterday>` to morning step 0e (E134 reads 11-11). CLI stable 10-13: exit 0/2/1, clock anchored to confirmedOn 10-12 (E199; it drifted +1 day/run before). Ops wires the line (SD-11). — Rio 10-13
-- [ ] [ops] GA4 `page_view` fires only on full loads on this site (client `router.push` produces none): per-page reads on client-navigated routes (/go, /sign-in after an offer) must use sessions or custom events. — Cass 10-12
 - [ ] [nova] E211 slice 2: 52 Oct flagged accounts (377 flagged at the 10-14 E178 re-run) never reach the welcome — a Navbar "Submit your first mod" nudge for isCreator with 0 submissions (needs a count in the session or one GET; no schema). Wait for the 10-22 read. — Nova 10-15
-- [ ] [all] never put a URL template with <slug> in a PR body (repo is public): #228's produced 20 empty-slug claim views; claim-view reads must require a non-empty slug. — Nova 10-12
 - [ ] [rowan] after E228: 23 rows sit in a `watches` value no rule emits (fold into accessories?); braces/fangs/bandages/eye patches left NULL, no facet; "Autumn X Socks & Sweatsuit Set" is an outfit titled with a sock word. — Rowan 10-13/10-17
 - [ ] [rowan] detector candidate "leg warmer(s)"/"legwarmers" → accessories: 31 catalog titles match, 6 outside the post still typed five ways — measure against the whole catalog before adding. — Rowan 10-12
-- [ ] [ops] degraded digests land only in the operator checkout (10-08/10-10 copies written 10-11 10:55) — land them on main via ledger-commit-style plumbing; "Quinn did not run" must be a row the moment it is known. — Ops 10-11
-- [ ] [ops] E194-b: retry the preflight once when it is diagnosed HANG with asleep/suspended > 0 and it is still the same day (T1). — Ops 10-12
-- [ ] [ops] Past-day day-locks are never broken (only TODAY's is): runner should clear past-day locks whose holder pid is dead (T1). 10-08/10-10 locks removed by hand with evidence 10-15 (E215, `reports/funnel/ops-housekeeping.md`); their worktrees were already reaped 10-11. — Ops 10-15
-- [ ] [ops] #260 is live: add `patreon_connect_optin_view` to the scoreboard capture-event filter so `patreon-connect-optin` shows in "Subscribers by source" once a row exists. — Cass 10-11
+- [ ] 7 lines dated 10-11→10-15 (landingPage slash, page_view on client nav, slug-in-PR-body, degraded digests on main, E194-b, past-day locks, patreon_connect_optin_view) parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-18 b (Quinn)"; owners pull from there. — Quinn 10-18
+- [ ] [rowan] isNSFW pass on the 8 adult-themed SFW-flagged titles in the gameplay-mod/script-mod top 25 (ids in `playbooks/sage.md` 2026-10-18) — unblocks a /games/sims-4/gameplay-mods/ hub worth ≈570 impr/28d; a Mediavine first-paint exposure today. — Sage 10-18 via Quinn
+- [ ] [ops] T0: `funnel-context-budget.test.ts` should also fail on any `<<<<<<<`/`=======`/`>>>>>>>` line under `.claude/agents/mhm-funnel/**` — #330 landed 12 marker lines on main 10-18 (fixed forward by #337); a marker must fail the paper PR's own gate. — Quinn 10-18
 - [ ] Earlier open lines dated 09-24→10-07 are parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-07" and § "Parked 2026-10-11"; owners pull from there. — Quinn 10-11
 
 - [ ] [ops] Earlier plumbing requests (09-23→10-01) are parked verbatim in `archive/ideas-inbox-2026-09.md` (§ Parked 2026-09-29 / 09-30 / 10-01 / 10-01 b); Ops pulls from there. — Quinn
