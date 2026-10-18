@@ -68,6 +68,8 @@ import {
 } from './patreon-members-lib';
 import { requireProjectDir } from './project-dir-guard';
 import { externalWindowNotes } from './channel-external-windows';
+import { directExSegment, directExSegmentRow, headlineExSegment, headlineExSegmentLine, segmentDimensionFilter, DIRECT_EX_SEGMENT_CHANNEL, HEADLINE_EX_SEGMENT_DAYS, type DirectExSegment, type HeadlineExSegmentResult, type HistoryDayLike } from './scoreboard-segment-lib';
+import type { SessionsByDate } from './revenue-guardrail-lib';
 
 // E215: MHM_PROJECT_DIR unset + running from a worktree used to write into the operator's checkout
 // (2 of 7 agents on 2026-10-14). The guard refuses with exit 2 instead of guessing.
@@ -188,6 +190,12 @@ interface Ga4Data {
   engagementRate7d: number | null;
   /** /creator/* landing sessions by channel group + the site-relative guard (E204). */
   creatorLandings7d: CreatorLandingSummary | null;
+  /** E236: Direct 7d / prev 7d ex the E216 Singapore Direct segment; null when the segment pull failed. */
+  directExSegment7d: DirectExSegment | null;
+  /** E236: daily GA4 site and segment sessions for the 28d headline-ex-segment read; null when the pull failed. */
+  segmentDaily: { site: SessionsByDate; segment: SessionsByDate } | null;
+  /** E236: why the segment pulls could not run (redacted), else null. */
+  segmentError: string | null;
 }
 
 async function pullGa4(): Promise<Ga4Data> {
@@ -361,6 +369,41 @@ async function pullGa4(): Promise<Ga4Data> {
     creatorLandings7d = null;
   }
 
+  // E236: the E216 Singapore Direct segment (imported filter), for the direct_ex_sg_bot row and the
+  // 28d headline-ex-segment bullet. Degrades to null on its own: a failed pull prints "unavailable".
+  let directExSegment7d: DirectExSegment | null = null;
+  let segmentDaily: { site: SessionsByDate; segment: SessionsByDate } | null = null;
+  let segmentError: string | null = null;
+  try {
+    const segFilter = segmentDimensionFilter();
+    const total = async (s: string, e: string): Promise<number> => {
+      const [r] = await client.runReport({ property, dateRanges: [{ startDate: s, endDate: e }], metrics: [{ name: 'sessions' }], dimensionFilter: segFilter as never });
+      return Number(r.rows?.[0]?.metricValues?.[0]?.value ?? 0);
+    };
+    const dailyOf = async (filter?: Record<string, unknown>): Promise<SessionsByDate> => {
+      const [r] = await client.runReport({
+        property,
+        dateRanges: [{ startDate: daysAgo(2 + HEADLINE_EX_SEGMENT_DAYS + 14), endDate: end }],
+        dimensions: [{ name: 'date' }],
+        metrics: [{ name: 'sessions' }],
+        ...(filter ? { dimensionFilter: filter as never } : {}),
+        limit: 400,
+      });
+      const out: SessionsByDate = {};
+      for (const row of r.rows ?? []) {
+        const k = ga4DateKey(row.dimensionValues?.[0]?.value ?? '');
+        if (k) out[k] = Number(row.metricValues?.[0]?.value ?? 0);
+      }
+      return out;
+    };
+    const [segCurr, segPrev, siteDaily, segDaily] = await Promise.all([total(start, end), total(prevStart, prevEnd), dailyOf(), dailyOf(segFilter)]);
+    directExSegment7d = directExSegment({ curr: curr.channels.direct ?? 0, prev: prev.channels.direct ?? 0 }, { curr: segCurr, prev: segPrev });
+    if (!directExSegment7d) segmentError = `segment exceeds Direct (curr ${segCurr} vs ${curr.channels.direct ?? 0}, prev ${segPrev} vs ${prev.channels.direct ?? 0}) — basis mismatch`;
+    segmentDaily = { site: siteDaily, segment: segDaily };
+  } catch (err) {
+    segmentError = redactError((err as Error)?.message ?? String(err)).slice(0, 160);
+  }
+
   return {
     window: `${start}→${end} vs ${prevStart}→${prevEnd}`,
     sessions7d: curr.total,
@@ -380,6 +423,9 @@ async function pullGa4(): Promise<Ga4Data> {
     pagesPerSession7d,
     engagementRate7d,
     creatorLandings7d,
+    directExSegment7d,
+    segmentDaily,
+    segmentError,
   };
 }
 
@@ -1086,6 +1132,21 @@ async function main() {
     flags.push(`🟡 Patreon Members API returned no user ids (include=user not honoured) — paid-and-connected fell back to the email-only join`);
   }
 
+  // E236: 28d headline (history.json sessions vs expectedSessions — the dashboard's own line) ex the
+  // E216 segment. Read-only on history.json; any gap prints "unavailable", never a number.
+  const headlineExSeg: HeadlineExSegmentResult = (() => {
+    if (!ga4.ok) return { ok: false, why: `GA4 unavailable: ${errOf(ga4)}` };
+    if (!ga4.data.segmentDaily) return { ok: false, why: `segment pull failed: ${ga4.data.segmentError ?? 'unknown'}` };
+    const historyPath = join(PROJECT_DIR, 'reports', 'funnel', 'history.json');
+    if (!existsSync(historyPath)) return { ok: false, why: 'history.json not found' };
+    try {
+      const h = JSON.parse(readFileSync(historyPath, 'utf8')) as { days?: HistoryDayLike[] };
+      return headlineExSegment(h.days ?? [], ga4.data.segmentDaily.site, ga4.data.segmentDaily.segment);
+    } catch (err) {
+      return { ok: false, why: `history.json unreadable: ${redactError((err as Error).message).slice(0, 80)}` };
+    }
+  })();
+
   // --- markdown
   let md = `# Funnel scoreboard — ${today}\n\n`;
   md += `**Headline:** owned-audience adds 7d **${ownedAdds7d ?? '?'}**${ownedTarget ? ` (target ${ownedTarget}/wk)` : ''} · non-ad revenue **${money(nonAdRevenue)}/mo gross**${nonAdTarget ? ` (target ${money(nonAdTarget)})` : ''} · Mediavine 28d **${mv.ok ? money(mv.data.revenue28d) : '?'}** ${mv.ok ? `(${pct(mv.data.revenue28d, mv.data.revenuePrev28d)} vs prior)` : ''}\n\n`;
@@ -1097,7 +1158,14 @@ async function main() {
     md += `| Channel | 7d | prev 7d | Δ |\n|---|--:|--:|--:|\n`;
     md += `| **All sessions** | ${num(g.sessions7d)} | ${num(g.sessionsPrev7d)} | ${pct(g.sessions7d, g.sessionsPrev7d)} |\n`;
     const chans = Object.keys({ ...g.byChannel7d, ...g.byChannelPrev7d }).sort((a, b) => (g.byChannel7d[b] ?? 0) - (g.byChannel7d[a] ?? 0));
-    for (const c of chans) md += `| ${c} | ${num(g.byChannel7d[c] ?? 0)} | ${num(g.byChannelPrev7d[c] ?? 0)} | ${pct(g.byChannel7d[c] ?? 0, g.byChannelPrev7d[c] ?? 0)} |\n`;
+    for (const c of chans) {
+      md += `| ${c} | ${num(g.byChannel7d[c] ?? 0)} | ${num(g.byChannelPrev7d[c] ?? 0)} | ${pct(g.byChannel7d[c] ?? 0, g.byChannelPrev7d[c] ?? 0)} |\n`;
+      // E236: Direct ex the E216 Singapore Direct segment, directly under the row it subtracts from.
+      if (c === 'direct') md += `${directExSegmentRow(g.directExSegment7d)}\n`;
+    }
+    if (!chans.includes('direct')) md += `${directExSegmentRow(g.directExSegment7d)}\n`;
+    if (!g.directExSegment7d) md += `\n- ${DIRECT_EX_SEGMENT_CHANNEL} unavailable — ${g.segmentError ?? 'segment pull failed'}\n`;
+    md += `\n- ${headlineExSegmentLine(headlineExSeg)}\n`;
     const extNotes = externalWindowNotes(g.window);
     if (extNotes.length) md += `\n${extNotes.map((n) => `- ${n}`).join('\n')}\n`;
     md += `\n- (not set) landing sessions 7d: ${num(g.notSetLanding7d)} (suspected bot/tag noise)\n`;
@@ -1199,7 +1267,8 @@ async function main() {
   const json = {
     date: today,
     headline: { ownedAdds7d, ownedTargetWeekly: ownedTarget, nonAdRevenueMonthlyGross: nonAdRevenue, nonAdTarget, mediavine28d: mv.ok ? mv.data.revenue28d : null, mediavine28dPrev: mv.ok ? mv.data.revenuePrev28d : null },
-    flags, ga4, gsc, mediavine: mv, db, patreon, patreonApi, wordpress: wp, pinner,
+    flags, ga4, gsc, mediavine: mv,
+    headlineExSegment28d: headlineExSeg.ok ? headlineExSeg.value : { unavailable: headlineExSeg.why }, db, patreon, patreonApi, wordpress: wp, pinner,
     longRange: {
       returningShare7d: ga4.ok ? ga4.data.returningShare7d : null,
       nonPinterestShare7d: nonPinterest.adjusted,
