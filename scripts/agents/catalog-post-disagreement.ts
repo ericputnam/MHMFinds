@@ -81,6 +81,11 @@ export const FAMILY: Record<string, string[]> = {
   'gameplay-mod': ['gameplay-mod', 'script-mod', 'trait', 'career'],
   skin: ['skin', 'tattoos', 'makeup'],
   preset: ['preset', 'body-preset'],
+  // E235: `/clutter/` → clutter and `/body-preset/` → body-preset (were decor /
+  // preset). Families kept equal to the old ones so the disagreement count stays
+  // comparable across the map change.
+  clutter: BUILD,
+  'body-preset': ['preset', 'body-preset'],
 };
 
 export function agrees(urlType: string, contentType: string): boolean {

@@ -1,0 +1,163 @@
+{
+ "writtenAt": "2026-10-18T10:50:01.732Z",
+ "mode": "read-only",
+ "min": 10,
+ "totals": {
+  "rowsWithSourceUrl": 16902,
+  "mappedPosts": 390,
+  "mappedRows": 5434,
+  "unmappedPosts": 2513,
+  "unmappedRows": 11468,
+  "rankedPosts": 163,
+  "disagreeRowsAllMapped": 274,
+  "typedUnpinnedRowsAllMapped": 4865,
+  "postsOver50pct": 0,
+  "pinsNotAtValue": 0
+ },
+ "pinsNotAtValue": [],
+ "ranked": [
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-farmhouse-cc/",
+   "urlType": "furniture",
+   "rows": 25,
+   "nulls": 0,
+   "pinned": 6,
+   "neutral": 2,
+   "agree": 9,
+   "disagree": 8,
+   "disagreeTypes": {
+    "tops": 1,
+    "residential": 6,
+    "commercial": 1
+   },
+   "downloads": 189,
+   "share": 0.47058823529411764
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-cc-furniture/",
+   "urlType": "furniture",
+   "rows": 24,
+   "nulls": 0,
+   "pinned": 0,
+   "neutral": 0,
+   "agree": 17,
+   "disagree": 7,
+   "disagreeTypes": {
+    "shoes": 1,
+    "makeup": 1,
+    "residential": 3,
+    "tops": 1,
+    "poses": 1
+   },
+   "downloads": 1261,
+   "share": 0.2916666666666667
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-nose-presets/",
+   "urlType": "preset",
+   "rows": 28,
+   "nulls": 0,
+   "pinned": 3,
+   "neutral": 0,
+   "agree": 18,
+   "disagree": 7,
+   "disagreeTypes": {
+    "full-body": 2,
+    "tops": 1,
+    "skin": 3,
+    "decor": 1
+   },
+   "downloads": 501,
+   "share": 0.28
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-male-hair-cc-2024/",
+   "urlType": "hair",
+   "rows": 31,
+   "nulls": 0,
+   "pinned": 1,
+   "neutral": 0,
+   "agree": 22,
+   "disagree": 8,
+   "disagreeTypes": {
+    "full-body": 3,
+    "tops": 2,
+    "hats": 2,
+    "dresses": 1
+   },
+   "downloads": 497,
+   "share": 0.26666666666666666
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-halloween-makeup-cc/",
+   "urlType": "makeup",
+   "rows": 29,
+   "nulls": 7,
+   "pinned": 0,
+   "neutral": 6,
+   "agree": 12,
+   "disagree": 4,
+   "disagreeTypes": {
+    "eyes": 2,
+    "full-body": 1,
+    "tattoos": 1
+   },
+   "downloads": 16,
+   "share": 0.25
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-urban-furniture-cc/",
+   "urlType": "furniture",
+   "rows": 21,
+   "nulls": 0,
+   "pinned": 0,
+   "neutral": 0,
+   "agree": 16,
+   "disagree": 5,
+   "disagreeTypes": {
+    "glasses": 2,
+    "full-body": 2,
+    "bottoms": 1
+   },
+   "downloads": 370,
+   "share": 0.23809523809523808
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-male-body-presets-cc/",
+   "urlType": "body-preset",
+   "rows": 30,
+   "nulls": 0,
+   "pinned": 0,
+   "neutral": 0,
+   "agree": 23,
+   "disagree": 7,
+   "disagreeTypes": {
+    "shoes": 1,
+    "bottoms": 1,
+    "tops": 1,
+    "skin": 2,
+    "hair": 1,
+    "gameplay-mod": 1
+   },
+   "downloads": 1714,
+   "share": 0.23333333333333334
+  },
+  {
+   "sourceUrl": "https://musthavemods.com/sims-4-victorian-furniture-cc/",
+   "urlType": "furniture",
+   "rows": 23,
+   "nulls": 1,
+   "pinned": 0,
+   "neutral": 0,
+   "agree": 17,
+   "disagree": 5,
+   "disagreeTypes": {
+    "glasses": 1,
+    "tops": 3,
+    "residential": 1
+   },
+   "downloads": 135,
+   "share": 0.22727272727272727
+  }
+ ]
+}

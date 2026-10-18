@@ -16,6 +16,14 @@
  * not a hand list, so a new collection is covered the day it is added.
  *
  * Against origin/main 2ea53aa this fails on jewelry-cc (`accessories`).
+ *
+ * E235 (Rowan, 2026-10-18): the two known gaps E228 left open (clutter →
+ * `decor`, body-presets → `preset`) are fixed in the map, so KNOWN_GAPS is now
+ * empty and both are positive assertions below. Whole-catalog replay: 14 posts
+ * / 361 rows change URL category, the ingest answer differs on 129 (105
+ * decor→clutter, 24 preset→body-preset); existing rows are never re-typed at
+ * ingest (E161), so 0 stored rows move. Against origin/main 1e59251 this file
+ * fails on clutter and body-presets.
  */
 import { describe, it, expect } from 'vitest';
 import { SIMS4_COLLECTIONS } from '../../lib/collections';
@@ -28,8 +36,7 @@ import { detectContentTypeFromUrl } from '../../lib/services/mhmScraperUtils';
  * own whole-catalog replay first.
  */
 const KNOWN_GAPS: Record<string, { urlType: string; why: string }> = {
-  clutter: { urlType: 'decor', why: '`/clutter/` shares the `decor` rule; decor-family agrees in the disagreement tool, but the clutter page filters on `clutter` only' },
-  'body-presets': { urlType: 'preset', why: '`/body-preset/` shares the `preset` rule; the body-presets page filters on `body-preset` only' },
+  // E235: emptied — clutter (was `decor`) and body-presets (was `preset`) fixed.
 };
 
 function typesOf(filter: { contentType?: string; contentTypeIn?: string[] }): string[] {
@@ -55,7 +62,9 @@ describe('blog-post URL map agrees with the collection registry (E228)', () => {
     if (urlType !== undefined) expect(types).toContain(urlType);
   });
 
-  it.each(Object.entries(KNOWN_GAPS))('known gap %s is still a gap (remove it when fixed)', (slug, gap) => {
+  // vitest's it.each on an empty table errors, so guard it.
+  const gaps = Object.entries(KNOWN_GAPS);
+  (gaps.length ? it.each(gaps) : it.skip.each([['(none)', { urlType: '', why: '' }]]))('known gap %s is still a gap (remove it when fixed)', (slug, gap) => {
     const c = checked.find((x) => x.slug === slug);
     expect(c, `${slug} is no longer a checked collection`).toBeDefined();
     expect(c!.urlType).toBe(gap.urlType);
@@ -64,5 +73,10 @@ describe('blog-post URL map agrees with the collection registry (E228)', () => {
 
   it('jewelry-cc is the case that motivated it', () => {
     expect(checked.find((c) => c.slug === 'jewelry-cc')?.urlType).toBe('jewelry');
+  });
+
+  it('E235: clutter and body-presets now map to their own page type (were KNOWN_GAPS)', () => {
+    expect(checked.find((c) => c.slug === 'clutter')?.urlType).toBe('clutter');
+    expect(checked.find((c) => c.slug === 'body-presets')?.urlType).toBe('body-preset');
   });
 });
