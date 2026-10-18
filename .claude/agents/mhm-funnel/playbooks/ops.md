@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-18 — E236
+- Tried: scoreboard `direct_ex_sg_bot` Audience row + 28d "headline ex segment" bullet; segment = E216's rule via `segmentDimensionFilter` (imported), pure `scoreboard-segment-lib.ts`, GA4 fail → "unavailable" (T0). Graded E148/E187/E229 KEEP.
+- Before → after: Direct 10,839 vs 5,904 (+83.6%) → ex segment 3,109 vs 3,202 (−2.9%); 28d 101.3% of line → 96.6% ex segment (09-18→10-15, segment 4.6% of GA4). Wiring test 3/3 red pre-fix.
+- Verdict: MORE DATA (read 2026-10-25).
+- Next time: in the runner the scoreboard reads yesterday's history.json (funnel-history runs after it), so its 28d window ends a day before the digest's — label the window, never silently mix.
+
 ## 2026-10-17 — E229
 - Tried: moved the 10-15/16 dated compound block + the stale "Recent UI/UX Enhancements" narrative verbatim to docs/COMPOUND_LEARNINGS.md (T0, #321 e62e08d, verify PASS 07:03).
 - Before → after: CLAUDE.md 60,372 → 55,878 B; context-budget exit 2 → 0; budget test red → 8/8. Dated block alone would have left 57,623 B (≈1 day of headroom).
@@ -66,22 +72,4 @@ moved here because plumbing is now Ops's, not Quinn's. Full originals in
 - Verdict: pending, read 10-10 (7/7 coverage lines, 0 TRUNCATED-without-UNKNOWN).
 - Next time: any "is X in the window" read off a paged API needs a coverage grade before its answer can drive an action — `action` stays one word because the runner `read -r`s it.
 
-## 2026-10-02 — E162
-- Tried: replacing a whole-object-literal source match (`{ path: '/play/', kind: 'game' }`) in `play-page.test.ts` with a field-level parse, plus an import of the real constant (`AD_KINDS`); the gated merge chain into `funnel-daily-prompt.md` L24 (10,777 → 10,985 B of 12,000). PR #244 `c3cce17`, verify SUPERSEDED-PASS 06:46. CLAUDE.md 100 B trim (60,077 → 59,977) handed to Quinn's daily PR under the one-merge cap.
-- Before → after: main red 6 days (since #186 on 09-26) with ~30 merges past it; failing files 3 → 2 (→ 1 with the CLAUDE.md trim; `ModDetailPage.test.tsx` left, a behaviour failure → Cass). 4 of 4 one-line mutations still turn the test red. E110 graded KEEP: 93 ledger rows 09-25→10-02, 5 SUPERSEDED (correct), 0 backward promotions.
-- Verdict: KEEP (read 10-05).
-- Next time: when a source-guard test asserts a literal, ask which field it actually protects, and run the full `npx vitest run` before every Ops merge, not just the targeted suites.
-
-## 2026-10-01 — E155
-- Tried: merge-gate mkdir lock in the git common dir, held through the caller's `&&` merge (frees on merge landing / shell exit / TTL ≤600 s); deploy-verify refuses a `PR #N` label not MERGED (T0, #239).
-- Before → after: PRs graded on one head 3 (09-30) → 0 expected; 15/20 tests red pre-fix. E101 KEEP.
-- Verdict: pending, read 10-08.
-- Next time: key a lock to the caller's shell pid, not a TTL alone.
-
-## 2026-09-30 — E148
-- Tried: runner step `daily-pr-ledger` after Quinn exits — finds today's `funnel: daily run DATE (#N)` on origin/main, skips if main's ledger has an after-merge row (7-char commit, or `PR #N … daily run` label), else `deploy-verify --after-merge` from `$WT` with a `Quinn:` label; polls ≤600 s, fetch failure = UNKNOWN, in-flight verify = wait, never silent (T0).
-- Before → after: daily PRs with a retroactive row 3 in 4 days (#190, #206, #224) → 0 expected; 9/9 tests red pre-fix. Real-data probe recognised #224/#206/#190 rows.
-- Verdict: pending, read 2026-10-07 (`grep 'daily-pr-ledger:' logs/funnel-daily.log` every run; 0 retroactive daily rows).
-- Next time: a row a later step "remembers" is a row that goes missing when that step is killed — put it in the step that outlives the session.
-
-_Older entries (up to 2026-09-29) live verbatim in `archive/playbooks/ops-2026-09.md`; nothing deleted._
+_Older entries live verbatim in `archive/playbooks/ops-2026-09.md` (up to 09-29) and `archive/playbooks/ops-2026-10.md` (09-30→10-02, moved 10-18); nothing deleted._
