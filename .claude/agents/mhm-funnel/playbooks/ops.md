@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-19 — E243
+- Tried: `scripts/agents/conflict-markers.ts` walks every file under `.claude/agents/mhm-funnel/` (no list) for line-anchored `<<<<<<< `, `||||||| `, `=======`, `>>>>>>> ` (CRLF-safe); the budget test asserts 0 hits, >20 files scanned, archive/ and playbooks/ reached. Prose quoting a marker mid-line does not match.
+- Before → after: #330's tree (4fc47b7) → 12 lines / 3 files, exit 1 (archive/experiments 6, archive/ideas-inbox 3, ideas-inbox 3); a temp archive/ file → test red with 3 lines; main → 0 of 37 files. E194 graded KEEP: 7/7 preflights rc=0, wall ≤8 s, 0 fails.
+- Verdict: pending, read 10-26 (0 marker lines on main, 0 false positives).
+- Next time: a gate that never reads a file type cannot protect it — list which suffixes each gate opens before trusting it.
+
 ## 2026-10-18 — E236
 - Tried: scoreboard `direct_ex_sg_bot` Audience row + 28d "headline ex segment" bullet; segment = E216's rule via `segmentDimensionFilter` (imported), pure `scoreboard-segment-lib.ts`, GA4 fail → "unavailable" (T0). Graded E148/E187/E229 KEEP.
 - Before → after: Direct 10,839 vs 5,904 (+83.6%) → ex segment 3,109 vs 3,202 (−2.9%); 28d 101.3% of line → 96.6% ex segment (09-18→10-15, segment 4.6% of GA4). Wiring test 3/3 red pre-fix.

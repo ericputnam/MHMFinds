@@ -9,6 +9,7 @@ import {
   SPECIALIST_READ_SETS,
   checkContextBudget,
 } from '../../scripts/agents/context-budget'
+import { REGISTRY_DIR, scanConflictMarkers, findConflictMarkers } from '../../scripts/agents/conflict-markers'
 
 /**
  * SD-12 context budget tests.
@@ -113,6 +114,68 @@ describe('SD-12 context budget', () => {
     const result = checkContextBudget()
     for (const v of result.readSetViolations) {
       expect(v.bytes).toBeGreaterThan(0)
+    }
+  })
+})
+
+/**
+ * E243 (Ops, 10-19): a git conflict marker in a registry file must fail this gate.
+ * #330 landed 12 marker lines in 3 files under .claude/agents/mhm-funnel/ on 10-18 (two in
+ * archive/); build, type-check and tests never read `.md`. The scan walks the filesystem
+ * (no hand list) and matches only line-anchored markers, so prose quoting one does not trip.
+ */
+describe('E243 registry conflict-marker scan', () => {
+  it('no line-anchored conflict marker anywhere under .claude/agents/mhm-funnel/** (archive/ + playbooks/ included)', () => {
+    const { filesScanned, hits } = scanConflictMarkers(REGISTRY_DIR)
+    // Vacuity guard: the walk must actually reach the registry, archive/ and playbooks/.
+    expect(filesScanned.length).toBeGreaterThan(20)
+    expect(filesScanned).toContain('ideas-inbox.md')
+    expect(filesScanned).toContain('experiments.md')
+    expect(filesScanned.some((f) => f.startsWith(`archive${path.sep}`))).toBe(true)
+    expect(filesScanned.some((f) => f.startsWith(`playbooks${path.sep}`))).toBe(true)
+    expect(hits.map((h) => `${h.file}:${h.line}: ${h.text}`)).toEqual([])
+  })
+
+  it('flags each git marker shape, CRLF included, and ignores prose that mentions markers', () => {
+    const conflicted = [
+      'row before',
+      '<<<<<<< HEAD',
+      'ours',
+      '||||||| 1234abc',
+      'base',
+      '=======\r',
+      'theirs',
+      '>>>>>>> 48a5159 (funnel(nova): E232 ...)',
+      '',
+    ].join('\n')
+    expect(findConflictMarkers(conflicted).map((h) => h.line)).toEqual([2, 4, 6, 8])
+    const prose = [
+      '- [ ] [ops] fail on any `<<<<<<<`/`=======`/`>>>>>>>` line — Quinn 10-18',
+      'match `^<<<<<<< `, `^=======$`, `^>>>>>>> `',
+      '==========',
+      'Heading',
+      '=======  ',
+      ' <<<<<<< HEAD',
+      '<<<<<<<HEAD',
+    ].join('\n')
+    expect(findConflictMarkers(prose)).toEqual([])
+  })
+
+  it('goes RED on a real tree containing the #330 shape (archive/ nesting included)', () => {
+    const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'conflict-markers-fixture-'))
+    try {
+      fs.mkdirSync(path.join(dir, 'archive'))
+      fs.writeFileSync(path.join(dir, 'clean.md'), '# ok\n\nmentions `=======` inline\n')
+      fs.writeFileSync(
+        path.join(dir, 'archive', 'ideas-inbox-2026-09.md'),
+        '- a\n<<<<<<< HEAD\n- b\n=======\n- c\n>>>>>>> 48a5159 (funnel(nova): E232)\n',
+      )
+      const { filesScanned, hits } = scanConflictMarkers(dir)
+      expect(filesScanned.length).toBe(2)
+      expect(hits.map((h) => h.line)).toEqual([2, 4, 6])
+      expect(new Set(hits.map((h) => h.file))).toEqual(new Set([path.join('archive', 'ideas-inbox-2026-09.md')]))
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
     }
   })
 })
