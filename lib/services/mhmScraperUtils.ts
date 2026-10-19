@@ -381,8 +381,49 @@ export interface SelectPostsOptions {
    * Needs `knownSourceLastIngest`; a known post with no entry stays skipped.
    */
   refreshed?: boolean;
-  /** Mod.sourceUrl → max(Mod.createdAt) for that post (any trailing-slash form). */
+  /**
+   * Mod.sourceUrl → the post's last ingest (any trailing-slash form). Build it with
+   * `buildKnownSourceLastIngest` — max(createdAt, lastScraped), not createdAt alone (E239).
+   */
   knownSourceLastIngest?: Readonly<Record<string, Date>>;
+}
+
+/** One row of `prisma.mod.groupBy({ by: ['sourceUrl'], _max: { createdAt, lastScraped } })`. */
+export interface SourceIngestGroup {
+  sourceUrl: string | null;
+  _max: { createdAt: Date | null; lastScraped?: Date | null };
+}
+
+/**
+ * When did we last ingest this post? max(newest Mod.createdAt, newest Mod.lastScraped).
+ *
+ * E239 (Nova, 2026-10-19): E161 used max(createdAt) alone, and createdAt only moves when a
+ * re-scrape *creates* a row. A refreshed post whose edit added nothing new therefore stayed
+ * "newer than its last ingest" forever: `sims-4-nursery-cc` and `sims-4-y2k-cc-finds-for-2025`
+ * were re-fetched on every morning run 10-10 → 10-19 (10 runs, 0 created, 66 rows skipped
+ * "already complete", ~2 pages + ~40 author-page fetches each time). The re-scrape now stamps
+ * `lastScraped` on every existing row it matched (mhmScraper.saveModsToDatabase), and this
+ * max() is what lets that stamp end the loop. `updatedAt` stays excluded (counter writes, E136).
+ */
+export function postLastIngest(
+  maxCreatedAt: Date | null | undefined,
+  maxLastScraped: Date | null | undefined
+): Date | undefined {
+  let best: Date | undefined;
+  [maxCreatedAt, maxLastScraped].forEach(d => {
+    if (d && !Number.isNaN(d.getTime()) && (!best || d.getTime() > best.getTime())) best = d;
+  });
+  return best;
+}
+
+/** sourceUrl → postLastIngest(...) for every group that has one. Pure. */
+export function buildKnownSourceLastIngest(groups: readonly SourceIngestGroup[]): Record<string, Date> {
+  const out: Record<string, Date> = {};
+  groups.forEach(g => {
+    const d = postLastIngest(g._max.createdAt, g._max.lastScraped);
+    if (g.sourceUrl && d) out[g.sourceUrl] = d;
+  });
+  return out;
 }
 
 export interface SelectPostsResult {

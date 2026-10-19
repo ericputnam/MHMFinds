@@ -827,3 +827,105 @@ describe('selectPostsToScrape', () => {
     });
   });
 });
+
+// ============================================
+// E239 (Nova, 2026-10-19): a refreshed post's "last ingest" is max(createdAt, lastScraped).
+// Pre-fix the map was max(createdAt) only, so a re-scrape that created nothing never advanced it
+// and `sims-4-nursery-cc` / `sims-4-y2k-cc-finds-for-2025` were re-fetched on 10 straight
+// mornings (10-10 → 10-19, 0 created, 66 rows "already complete").
+// ============================================
+
+import { postLastIngest, buildKnownSourceLastIngest } from '@/lib/services/mhmScraperUtils';
+import * as fsE239 from 'fs';
+import * as pathE239 from 'path';
+
+describe('postLastIngest / buildKnownSourceLastIngest (E239)', () => {
+  const NURSERY = 'https://musthavemods.com/sims-4-nursery-cc/';
+  const Y2K = 'https://musthavemods.com/sims-4-y2k-cc-finds-for-2025/';
+  // Real production maxima read 2026-10-19 (before the fix): nursery 36 rows, y2k 30 rows.
+  const nurseryCreated = new Date('2026-04-28T17:00:05.311Z');
+  const y2kCreated = new Date('2026-01-21T05:44:54.284Z');
+  // Illustrative sitemap lastmods: both posts were edited after 09-28 (inside --since 21 d).
+  const entries = [
+    { url: NURSERY, lastmod: new Date('2026-10-05T00:00:00Z') },
+    { url: Y2K, lastmod: new Date('2026-10-06T00:00:00Z') },
+  ];
+  const sel = (groups: Parameters<typeof buildKnownSourceLastIngest>[0], es = entries) =>
+    selectPostsToScrape(es, {
+      newOnly: true,
+      refreshed: true,
+      knownSourceUrls: [NURSERY, Y2K],
+      knownSourceLastIngest: buildKnownSourceLastIngest(groups),
+    });
+
+  it('takes the later of createdAt and lastScraped, ignoring null / invalid', () => {
+    const a = new Date('2026-04-28T00:00:00Z');
+    const b = new Date('2026-10-19T10:35:00Z');
+    expect(postLastIngest(a, b)).toEqual(b);
+    expect(postLastIngest(b, a)).toEqual(b);
+    expect(postLastIngest(a, null)).toEqual(a);
+    expect(postLastIngest(null, b)).toEqual(b);
+    expect(postLastIngest(a, new Date('nope'))).toEqual(a);
+    expect(postLastIngest(null, undefined)).toBeUndefined();
+  });
+
+  it('before any stamp (the 10-10 → 10-19 state) both edited posts are selected — the loop', () => {
+    const r = sel([
+      { sourceUrl: NURSERY, _max: { createdAt: nurseryCreated, lastScraped: new Date('2026-01-28T19:59:05.014Z') } },
+      { sourceUrl: Y2K, _max: { createdAt: y2kCreated, lastScraped: null } },
+    ]);
+    expect(r.selected).toEqual([NURSERY, Y2K]);
+    expect(r.selectedRefreshed).toBe(2);
+  });
+
+  it('after a 0-create re-scrape stamps lastScraped, neither post is re-fetched (RED pre-fix)', () => {
+    // Pre-fix (map built from createdAt only) this returns both URLs: the createdAt maxima
+    // (04-28, 01-21) are older than the 10-05 / 10-06 lastmods, and nothing ever moved them.
+    const stamp = new Date('2026-10-19T10:35:18Z');
+    const r = sel([
+      { sourceUrl: NURSERY, _max: { createdAt: nurseryCreated, lastScraped: stamp } },
+      { sourceUrl: Y2K, _max: { createdAt: y2kCreated, lastScraped: stamp } },
+    ]);
+    expect(r.selected).toEqual([]);
+    expect(r.skippedKnown).toBe(2);
+    expect(r.selectedRefreshed).toBe(0);
+  });
+
+  it('a post edited AFTER its stamp is still fetched — no new content is skipped', () => {
+    const stamp = new Date('2026-10-19T10:35:18Z');
+    const r = sel(
+      [
+        { sourceUrl: NURSERY, _max: { createdAt: nurseryCreated, lastScraped: stamp } },
+        { sourceUrl: Y2K, _max: { createdAt: y2kCreated, lastScraped: stamp } },
+      ],
+      [
+        { url: NURSERY, lastmod: new Date('2026-10-20T08:00:00Z') }, // writer edits again 10-20
+        { url: Y2K, lastmod: new Date('2026-10-06T00:00:00Z') },
+      ]
+    );
+    expect(r.selected).toEqual([NURSERY]);
+    expect(r.selectedRefreshed).toBe(1);
+  });
+
+  it('skips groups with no sourceUrl or no date', () => {
+    expect(
+      buildKnownSourceLastIngest([
+        { sourceUrl: null, _max: { createdAt: nurseryCreated, lastScraped: null } },
+        { sourceUrl: Y2K, _max: { createdAt: null, lastScraped: null } },
+      ])
+    ).toEqual({});
+  });
+
+  it('the real ingest builds its map through buildKnownSourceLastIngest and selects lastScraped', () => {
+    const src = fsE239
+      .readFileSync(pathE239.join(process.cwd(), 'lib/services/mhmScraper.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(src).toMatch(/_max:\s*\{\s*createdAt:\s*true,\s*lastScraped:\s*true\s*\}/);
+    expect(src).toMatch(/knownSourceLastIngest\s*=\s*buildKnownSourceLastIngest\(grouped\)/);
+    // Only rows of the same post are stamped (a downloadUrl match can be another post's row).
+    expect(src).toMatch(/normalizePostUrl\(existing\.sourceUrl\)\s*===\s*normalizePostUrl\(mod\.sourceUrl\)/);
+    // The skip path stamps lastScraped on the rows it matched.
+    expect(src).toMatch(/updateMany\(\{\s*where:\s*\{\s*id:\s*\{\s*in:\s*matchedExistingIds\s*\}\s*\},\s*data:\s*\{\s*lastScraped:/);
+  });
+});
