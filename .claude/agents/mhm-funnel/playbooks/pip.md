@@ -55,16 +55,10 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-20)
 - Next time: the runway basis is the tool's (pinterest-14d — "divide by the rate you want"); when the scoreboard reads ≥2 d and the tool reads <2 d, say so in line 1 and let Quinn gate. Writer still has 0 real-dated rows 10-18..20.
 
-## 2026-10-12
-- Tried: E188 top-up #13 (T0, SD-10 floor; apply ledger on main `cda6c05`): 21 sessions-ranked rows 7×10-15/16/17 — the cross-run cap skipped 10-12/13/14 (E181's 7/date); post-apply dry run plans 10-18..20. Fixed inbox [pip]: `count_writer_rows_for_date` used `Wordpress Post ID`; live read showed old 7 vs plugin-predicate 0 "writer rows" on each of 10-13..10-17 — all were Pip's own top-up rows. 5 new tests red pre-fix, 67/67 green.
-- Before → after: runway 0.58 → 1.45 d (14 → 35 @ 24.14/day pinterest-14d); SEO 64 → 96 (0/21 → 21/21). Ranker: 15 dests/83 ids, 47 writer rows dropped upstream.
-- Verdict: MORE DATA (read 10-19). Standing keep-if for every top-up from E181 on: treated-destination Pinterest WoW ≥ site Pinterest WoW (same GA4 def, freshly re-pulled base), never an absolute count.
-- Next time: when a guard counts "someone else's rows", diff it against your own ledger ids first — 7 = exactly one top-up date was the tell.
+## 2026-10-19
+- Tried: E237 (T0, read-only): traced the digest's "34 rows dated 10-17 posted vs ≤7/date" before any top-up — `scripts/agents/pin-queue-day-trace.py` (rows by origin per Post Date vs Pinterest API pins). Graded E188. No top-up: tool gate 2.43 d (25 ÷ 10.29 pinterest-14d) ≥ 2.0.
+- Before → after: 10-17 = 7 Pip E188 rows + 27 legacy rows of WP 33529 (`/sims-4-halloween-loading-screens/`, republished 10-14, rows created 2025-10-21) — the Pinterest API shows **7 pins** that day, so the 27 flipped `Is Posted` with no pin (ghost flips; a 10-11 plugin re-date of 25 rows did post 20). Q28 number (tool, 10-05→10-19): API 150 pins = 91 Pip top-up rows (61%) + 29 plugin new-post rows on 4 post days + 76 legacy re-dates, 55 of them ghost (10-05 23, 10-17 27); the queue-posted proxy reads 14.0/day vs 10.29 real. E188: treated 1,568 vs 1,485 (+5.6%) vs site +5.0% → KEEP by rule; post-window 10-15→17 671 vs 671 (0.0%) vs site +8.2%.
+- Verdict: E188 KEEP (rule), no lift shown; E237 MORE DATA (read 10-26)
+- Next time: a queue "posted" flag is not a pin — reconcile a per-date burst against Pinterest's own created_at before calling it a norm breach or counting it as drain.
 
-## 2026-10-07
-- Tried: E170 top-up #11 (T0, SD-10 floor; Supabase apply ledger on main `864d50f`; report files PR #268 `811705a`, verify PASS 07:17). 21 sessions-ranked rows, 7×10-07/08/09, 1/URL/day; tool counted 0 earlier top-up rows per date and a post-apply dry run skipped those dates and planned 10-10..12, so the #261 cross-run cap holds. 0 writer rows touched (1 dropped upstream in the ranker). Poster alive: 10-04's 7 rows all posted 10-06.
-- Before → after: runway 0.00 → 0.63 d (0 → 21 @ 33.5/day; hard_cap_21 is the bound); SEO 64 → 89 (21/21). Reads: E135 KEEP (0/133 writer rows; 8 dests −4.6% vs site −2.4%, gap −2.3 ≥ −5; recorded baseline 2,996 ≠ fresh GA4 2,714, graded on the fresh pull); E81 KEEP (pv/s 1.506 = 99.7% of 1.51, blog.* 0.27%).
-- Verdict: E170 MORE DATA (read 10-11 for #10, 10-14 for #11). Writer's 136 rows/7d (~19.4/day vs 33.5 posted/day) cannot hold runway alone; on 10-06 the 7 top-up rows were the only pins that posted.
-- Next time: re-pull the baseline week before grading a destination set — a stored 2,996 was 10% above what GA4 returns for the same window today; and a 21-row cap buys 0.63 d, so say the ceiling in the digest instead of implying the floor can reach 2 d.
-
-_Older entries (up to 2026-10-04) live verbatim in `archive/playbooks/pip-2026-09.md`; nothing deleted._
+_Older entries live verbatim in `archive/playbooks/pip-2026-10.md` (10-07, 10-12) and `archive/playbooks/pip-2026-09.md` (≤10-04); nothing deleted._
