@@ -1105,3 +1105,40 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
 export function handAuditedContentType(id: string): HandAuditedContentType | undefined {
   return HAND_AUDITED_CONTENT_TYPES[id];
 }
+
+// ── isNSFW pins (Rowan, E242, 2026-10-19) ─────────────────────────────────
+// Hand-audited `isNSFW` values, keyed by mod id. Same contract as the
+// content-type pins above: a human decided from the TITLE and the known
+// franchise (never the blog-post description, which is shared by every mod
+// scraped from one post), and no automated pass may overwrite the answer.
+// Every scraper `prisma.mod.update` that writes isNSFW routes it through
+// `pinnedIsNSFW` (__tests__/unit/hand-audited-nsfw.test.ts scans for that).
+//
+// Source: the 8 adult-themed titles Sage found in the gameplay-mod/script-mod
+// top 25 by downloads (playbooks/sage.md 2026-10-18), all isNSFW=false and all
+// in the sitemap on 10-19. 6 flip to true; 2 are pinned SFW on purpose, so a
+// later "flag everything that sounds like WooHoo" pass has to argue with a why.
+
+export interface HandAuditedNsfw {
+  isNSFW: boolean;
+  why: string;
+}
+
+export const HAND_AUDITED_NSFW: Record<string, HandAuditedNsfw> = {
+  cmijppd0j0162oxc81yf6k5dz: { isNSFW: true, why: 'E242 "MC WooHoo" — the MC Command Center WooHoo module (Deaderpool), sexual-content gameplay; top-25 #4, 3,055 downloads' },
+  cmim8rrvz002boxy8vcqt0yrg: { isNSFW: true, why: 'E242 "Wicked Whims" — TURBODRIVER\'s explicit adult animation mod; top-25 #6' },
+  cmijppj1r0166oxc850u0lir1: { isNSFW: true, why: 'E242 "Prostitution Mod" — sex work as gameplay; the title is the content' },
+  cmim9dnuf000yoxqwqbhi32f4: { isNSFW: true, why: 'E242 "The Ho* It Up Mod" — sex-work gameplay mod (adult)' },
+  cmim9jz39002uoxy7z2tbyidh: { isNSFW: true, why: 'E242 "Sims 4 Breast Slider Mod" — sexualised body slider; conservative call for an ad page' },
+  cmikk9oj9006tox331c1a2g0g: { isNSFW: true, why: 'E242 "Basemental Drugs & Gangs Mods" — Basemental drugs/gangs mod; illegal-drug content, not sexual, flagged for ad-policy reasons' },
+  cmim91d7u01l8oxy8mrvijtik: { isNSFW: false, why: 'E242 "Wonderful Whims" — KEEP SFW: TURBODRIVER publishes it as the non-explicit counterpart of Wicked Whims (attraction, relationships, cycle); the shared franchise is not the content' },
+  cmim8rs4i002eoxy8enc7gbsp: { isNSFW: false, why: 'E242 "Cuddle and Bath Together" — KEEP SFW: shared cuddling/bathing at base-game level (base game censors); nothing in the title is adult' },
+};
+
+/**
+ * The hand-audited isNSFW value for a mod id, or undefined if a human never
+ * looked at it. Scrapers write `pinnedIsNSFW(id) ?? detected`.
+ */
+export function pinnedIsNSFW(id: string): boolean | undefined {
+  return HAND_AUDITED_NSFW[id]?.isNSFW;
+}

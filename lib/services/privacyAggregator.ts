@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { pinnedIsNSFW } from '../../scripts/lib/hand-audited-content-types';
 import axios, { AxiosInstance } from 'axios';
 import * as cheerio from 'cheerio';
 
@@ -872,7 +873,8 @@ export class PrivacyAggregator {
                         author: modData.author,
                         creatorId: creatorId,
                         isFree: modData.isFree,
-                        isNSFW: modData.isNSFW,
+                        // Hand-audited isNSFW wins over the detector (E242).
+                        isNSFW: pinnedIsNSFW(existingMod.id) ?? modData.isNSFW,
                         lastScraped: new Date(),
                         // Auto-verify trusted sources
                         isVerified: modData.source === 'CurseForge' || modData.source === 'Reddit' || existingMod.isVerified,
@@ -1441,7 +1443,8 @@ export class PrivacyAggregator {
               downloadUrl: mod.downloadUrl,
               isFree: mod.isFree,
               price: mod.price,
-              isNSFW: mod.isNSFW,
+              // Hand-audited isNSFW wins over the detector (E242).
+              isNSFW: pinnedIsNSFW(existingMod.id) ?? mod.isNSFW,
               lastScraped: new Date(),
               // Auto-verify trusted sources
               isVerified: mod.source === 'CurseForge' || mod.source === 'Reddit' || existingMod.isVerified,
