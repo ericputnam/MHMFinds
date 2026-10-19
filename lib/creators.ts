@@ -28,7 +28,7 @@ import { pageProfileFrom } from './creatorClaim';
 
 export { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug };
 
-/** A creator page needs at least this many SFW mods, else 404. */
+/** An unclaimed creator page needs at least this many SFW mods, else 404 (see creatorPageGate). */
 export const MIN_MODS_FOR_PAGE = 5;
 
 /** First page of mods rendered server-side (same size as collection pages). */
@@ -157,22 +157,63 @@ export interface CreatorPageData {
   mods: Mod[];
   /** From CreatorProfile when a handle matches the slug; else null. */
   profile: { website: string | null; isVerified: boolean; bio: string | null } | null;
+  /** False for a claimed creator below MIN_MODS_FOR_PAGE: the page renders with noindex. */
+  indexable: boolean;
+}
+
+/**
+ * Whether a slug gets a page, and whether search engines should index it
+ * (E-creator-onboarding, 2026-10-18). Pure so it is unit-tested offline.
+ *
+ * - Catalog creators: MIN_MODS_FOR_PAGE SFW mods, indexable (unchanged).
+ * - Claimed creators (an admin-promoted, verified, real-account
+ *   CreatorProfile whose handle is the slug): a page from their first mod,
+ *   so a creator who joins with 1 mod is not sent to a 404 — but noindex
+ *   until they reach MIN_MODS_FOR_PAGE, so thin pages stay out of the index
+ *   and the sitemap (listCreators) is unchanged.
+ */
+export function creatorPageGate(totalMods: number, claimed: boolean): { render: boolean; indexable: boolean } {
+  const indexable = totalMods >= MIN_MODS_FOR_PAGE;
+  return { render: indexable || (claimed && totalMods >= 1), indexable };
 }
 
 /**
  * Load everything the creator page renders. Returns null when the slug is
- * junk or the creator has fewer than MIN_MODS_FOR_PAGE SFW mods.
+ * junk or creatorPageGate() says no page.
  */
 export async function getCreatorPageData(slug: string): Promise<CreatorPageData | null> {
-  const variants = await findAuthorVariants(slug);
-  if (variants.length === 0) return null;
-  const totalMods = variants.reduce((n, v) => n + v.mods, 0);
-  if (totalMods < MIN_MODS_FOR_PAGE) return null;
+  if (isJunkAuthorSlug(slug)) return null;
+  const [variants, profile] = await Promise.all([
+    findAuthorVariants(slug),
+    prisma.creatorProfile.findUnique({
+      where: { handle: slug },
+      // user.email is read only to tell a placeholder (seed/aggregator)
+      // profile from a claimed one; pageProfileFrom() drops it (E158).
+      select: {
+        id: true,
+        website: true,
+        isVerified: true,
+        bio: true,
+        user: { select: { email: true } },
+      },
+    }),
+  ]);
+  const pageProfile = pageProfileFrom(profile);
+  const claimed = Boolean(profile && pageProfile?.isVerified);
+  if (variants.length === 0 && !claimed) return null;
 
   const authors = variants.map((v) => v.author);
-  const where = { author: { in: authors }, isNSFW: false };
+  // A claimed creator's page also carries mods linked to their profile
+  // (Mod.creatorId) — approved submissions — whatever author string they hold.
+  const where = claimed
+    ? { isNSFW: false, OR: [{ author: { in: authors } }, { creatorId: profile!.id }] }
+    : { author: { in: authors }, isNSFW: false };
 
-  const [rawMods, downloadAgg, profile] = await Promise.all([
+  const totalMods = claimed ? await prisma.mod.count({ where }) : variants.reduce((n, v) => n + v.mods, 0);
+  const gate = creatorPageGate(totalMods, claimed);
+  if (!gate.render) return null;
+
+  const [rawMods, downloadAgg] = await Promise.all([
     prisma.mod.findMany({
       where,
       orderBy: [{ downloadCount: 'desc' }, { createdAt: 'desc' }],
@@ -183,22 +224,18 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
       },
     }),
     prisma.mod.aggregate({ where, _sum: { downloadCount: true } }),
-    prisma.creatorProfile.findUnique({
-      where: { handle: slug },
-      // user.email is read only to tell a placeholder (seed/aggregator)
-      // profile from a claimed one; pageProfileFrom() drops it (E158).
-      select: { website: true, isVerified: true, bio: true, user: { select: { email: true } } },
-    }),
   ]);
 
+  const displayName = (variants[0]?.author ?? slug).trim();
   return {
     slug,
-    displayName: variants[0].author.trim(),
+    displayName,
     variants,
     totalMods,
     totalDownloads: downloadAgg._sum.downloadCount ?? 0,
     mods: rawMods.map(serializeMod),
     profile: pageProfileFrom(profile),
+    indexable: gate.indexable,
   };
 }
 

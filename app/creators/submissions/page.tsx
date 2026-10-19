@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useCreatorPortalView } from '../creatorView';
 import {
   CheckCircle,
   XCircle,
@@ -34,13 +34,11 @@ interface ModSubmission {
 }
 
 export default function SubmissionsPage() {
-  const { data: session } = useSession();
+  const { actAsAdmin: isAdmin } = useCreatorPortalView();
   const [submissions, setSubmissions] = useState<ModSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [processing, setProcessing] = useState<string | null>(null);
-
-  const isAdmin = session?.user?.isAdmin || false;
 
   const fetchSubmissions = useCallback(async () => {
     try {

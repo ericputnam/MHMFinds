@@ -44,7 +44,7 @@ export default function CreatorClaimsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/admin/creator-claims/');
+      const res = await fetch('/api/admin/creator-claims/', { cache: 'no-store' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load claims');
       setClaims(data.claims || []);
@@ -80,6 +80,9 @@ export default function CreatorClaimsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Review failed');
       setNotice(action === 'promote' ? `Promoted to ${data.page}` : 'Claim rejected');
+      // The reviewed profile is no longer pending: drop it now so a slow or
+      // failed reload never leaves a live Promote button on it.
+      setClaims((prev) => prev.filter((c) => c.id !== claim.id));
       await load();
     } catch (e) {
       setNotice(e instanceof Error ? e.message : 'Review failed');
