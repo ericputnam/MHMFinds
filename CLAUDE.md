@@ -939,9 +939,30 @@ Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md) o
   `destination_key` folds `blog.*` into the apex, so one article took two slots; and the CLI default
   stayed 2/URL/day while the playbook said "always pass 1" — the 10-15 run forgot and spent 18 rows on
   5 destinations (E223). Extract the arg parser so defaults are testable.
+
+### 2026-10-18
+
+- **A conflict marker in a markdown file passes every gate.** #330's fourth rebase landed 12
+  `<<<<<<<`/`=======`/`>>>>>>>` lines in three registry files: the resolve regex missed an
+  empty-"theirs" block and the chain continued on `;`. Build, type-check and tests never read
+  `.md`. Grep for markers before every rebase commit, chain with `&&`, and make the paper PR's
+  own gate fail on them (fixed forward by #337).
+- **A count is not a diagnosis until it has a denominator, and a staleness clock must be keyed to
+  its trigger.** "New mods 80 (130)" read as a broken scraper; split as posts × rows/post it was
+  4 posts vs 5, with ingest 7/7 OK (E232; the scoreboard now prints both). "Pinner writer 72 h"
+  read 🔴, but the writer inserts only on WP publish days (17/17 posts got a batch, 0 inserts on
+  14 no-post days), so a wall-clock threshold on an event-keyed producer is a false alarm (E230).
+- **Lower a page threshold for one population with render + `noindex`, not by moving the sitemap
+  gate.** Claimed creators now get `/creator/<slug>/` from 1 mod (was a 404 after promotion) but
+  stay noindex below `MIN_MODS_FOR_PAGE`, and `listCreators` is unchanged (#339). Keep the gate a
+  pure function (`creatorPageGate`) so it is tested offline.
+- **An admin testing a role-gated surface sees the admin branch, not the user's.** `/creators`
+  pages branched on `session.isAdmin`; #339 added a per-tab creator-view switch
+  (`?view=creator`). An admin list that drives a one-shot action (Promote) must fetch `no-store`
+  and drop the acted-on row locally, or a stale reload leaves the button live.
 ---
 
-*Last compound review: 2026-10-17*
+*Last compound review: 2026-10-18*
 
 ---
 
