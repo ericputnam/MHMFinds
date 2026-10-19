@@ -24,7 +24,7 @@ Sessions 28d 360,503 vs line 354,930 = 101.6% (09-19→10-16); revenue $5,865.53
 - [ ] Earlier open lines dated 09-24→10-07 are parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-07" and § "Parked 2026-10-11"; owners pull from there. — Quinn 10-11
 
 - [ ] [ops] Earlier plumbing requests (09-23→10-01) are parked verbatim in `archive/ideas-inbox-2026-09.md` (§ Parked 2026-09-29 / 09-30 / 10-01 / 10-01 b); Ops pulls from there. — Quinn
-- [ ] [cass] Issue 05 (97 sent) and issue-06 run 1 (99 sent, subscribers ≤10-12) produced 0 `weekly-issue-*` sessions; run 2 (53 newest) produced 30. Check inbox placement for the older cohort (seed test to Gmail/Outlook) before the issue-07 read 10-29. — Cass 10-18
+- [x] [cass] (→ E240 10-19) Issue 05 (97 sent) and issue-06 run 1 (99 sent, subscribers ≤10-12) produced 0 `weekly-issue-*` sessions; run 2 (53 newest) produced 30. Check inbox placement for the older cohort (seed test to Gmail/Outlook) before the issue-07 read 10-29. — Cass 10-18
 - [ ] [ops] A `--resume-after` run sends to everyone after the cursor, including people who opted in since the last run: dry-run recipients can exceed the previous run's deferred count (53 vs 42 on 10-16). Count the tail by consent time before quoting it. — Cass 10-16
 - [ ] [ops] Concurrent deploy-verify runs slowed smoke renders to 5–16 min/page (/play 968 s) and one verify took 60 min; Nova's took 35 min while curl answered in <1 s. Serialize smoke-render across agents or make the first run's result reusable by the others. — Cass/Nova 10-16
 - [ ] [ops] `logs/indexnow.log` is per-worktree, so whether creator pages were pushed after 09-26 could only be read from reports/funnel/indexnow-2026-09-26.md. Land a summary row somewhere durable. — Nova 10-16

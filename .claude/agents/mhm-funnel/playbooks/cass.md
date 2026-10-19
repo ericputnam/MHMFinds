@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-19
+- Tried: E240, the inbox-placement check on the cohorts that showed 0 sessions (T0). DSN counter now decodes encoded subjects (the weekly subject has an em dash, so all 13 weekly DSNs had read as "other"). Added `newsletter-cohort-diff.ts`, `--weekly --seed` (ships inert, Q31), and 10 bounce hashes added to the exclusion list.
+- Before → after: run 2's "30 sessions" had 6 engaged. 20 came in the send hour and 7 came from IE at one hit per link: a link-scanner pattern. Cohorts: Gmail 82/96 in the old cohort vs 25/53 in run 2, 'other' domains 5 vs 17, hard DSNs 3.1% vs 13.2%. The only receiver verdict read spf=pass, dkim=none.
+- Verdict: PENDING (read 2026-10-29 after issue 07).
+- Next time: before comparing cohorts on sessions, split engaged from non-engaged and by hour. A cohort with more corporate domains "clicks" through link scanners.
+
 ## 2026-10-18
 - Tried: E233 invite-01 sender (T1, PR #328, queued). It links to the sign-up, not `createPasswordToken('invite')`: reset-password POST needs a `users` row, and these readers have none. Graded E184 / E118 / E205.
 - Before → after: the dispatch said "181 subscribers without accounts". The DB has 22 (159 of 181 have accounts). E184: issue 05 had 0 tagged sessions (<8), 1 unsubscribe. E118: 5/14 off-home = 35.7%. E205: 153/153 reached, 0 dupes.
@@ -53,16 +59,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: bare `/set-password?token=` 308s in prod; GA4 14d 3 views / 2 `password_reset_complete`, all mode-less → read 10-21 with E123. Grades: E86 KEEP (46/98 = 46.9% opt-in, now 46 of 78 subscribers), E145 KEEP-inert (prod 401 w/o bearer, 0 weekly rows; Part B dropped as Q18), E73 below bar (3 home-hero rows lifetime, ≤1.9/1K) → Quinn KILL, replace with the account offer.
 - Verdict: MORE DATA (read on 2026-10-21).
 - Next time: an opt-in that reaches 47% on credentials sign-ups is worth nothing to the OAuth half (41 of 90 new accounts/7d) until #260 lands — count the population a surface can reach before quoting its rate.
-
-## 2026-10-04
-- Tried: E173 — DB split of new accounts by provider: since 09-23 credentials 80 (37 ticked signup-optin, 46%), Patreon OAuth 66 (2 subscribed, via other surfaces; 43 of 93 accounts in the last 7d). Patreon connect never shows the opt-in. Shipped a one-click "Email me weekly" on /go for signed-in ?patreon=connected returners (session address, source patreon-connect-optin, view event patreon_connect_optin_view), inside the mod card above .mv-ads (T0, PR #260, HELD-RED — touches app/go + components/, merges on the first non-red morning). GoClient cases 3/14 red pre-fix.
-- Before → after: patreon-connect-optin rows 0; patreon_post_connect_view 93 ev / ≤62 users (09-21→10-03) → read 14d after merge.
-- Verdict: PENDING. Pre-reads: E86 on track KEEP (37 rows, 46%); E73 below bar (≤1.9/1K vs ≥2); E145 prod cron 401 without bearer.
-- Next time: split owned adds by account provider before choosing a surface. The biggest unasked group was Patreon OAuth accounts, not a missing placement. customEvent:ref is not registered, so read sign_up by source.
-
-## 2026-10-02
-- Tried: E159 — coverage read first: every Next.js group >1% of sessions already carries an offer (/mods/* 8.6%, / 3.6%, /games/* 2.8%, /go/* 1.7%); the 23 uncovered rows are all WordPress (27.9% of sessions). So shipped the offer-quality move: SaveFindsOffer copy split by useSession() status + saved state → FAVORITES_PATH, mirroring GoSaveOffer (T0, PR #246, 4ce2156, verify PASS 06:53). 4/19 red pre-fix.
-- Before → after: favorite src=mod-detail-save 4 users / 7 events (14d, 09-18→10-01); /account/favorites/ 0 of 9 views referred from /mods/* → read 2026-10-16. Owned adds 7d 119, capture 1.30/1K.
-- Verdict: PENDING. Keep if ≥8 signed-in offer-save users/14d OR ≥5 referred favorites views, with /mods/* RPM ≥95%.
-- Next time: `customEvent:source` IS a registered GA4 dimension — read it instead of assuming params are invisible; it split signed-in offer saves from the heart's in one query. And `grep -l … | xargs`-style lists silently collapse to one file under vitest 4 — pass paths explicitly.
-
