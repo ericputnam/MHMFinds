@@ -412,3 +412,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-18 20:04 | after-merge | operator session: PR #339 | 9a307ef | https://mhm-finds-dw5l-3fhbsct8g-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-19 06:35 | check | morning-check |  | https://mhm-finds-dw5l-hj4pifdmc-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-10-19 06:50 | after-merge | Quinn: PR #328 Cass invite-01 sender (E233, T1) | 4374ceb | https://mhm-finds-dw5l-b4hb5hqy1-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-19 06:55 | after-merge | Nova: PR #343 E239 catalog-ingest stops re-fetching refreshed posts | be42536 | https://mhm-finds-dw5l-gysg1aqz2-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
