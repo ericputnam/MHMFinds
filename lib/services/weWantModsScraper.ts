@@ -1,3 +1,4 @@
+import { pinnedIsNSFW } from '../../scripts/lib/hand-audited-content-types';
 import { prisma } from '@/lib/prisma';
 import axios, { AxiosInstance } from 'axios';
 import * as cheerio from 'cheerio';
@@ -1784,7 +1785,8 @@ export class WeWantModsScraper {
             tags: mod.tags,
             isFree: mod.isFree,
             price: mod.price,
-            isNSFW: mod.isNSFW,
+            // Hand-audited isNSFW wins over the detector (E242).
+            isNSFW: pinnedIsNSFW(existingId) ?? mod.isNSFW,
             contentType: mod.contentType,
             visualStyle: mod.visualStyle,
             themes: mod.themes || [],

@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-19
+- Tried: E242 (T0): isNSFW pins for Sage's 8 adult titles in the gameplay/script top 25, decided from title + franchise: 6 → true (MC WooHoo, Wicked Whims, Prostitution, Ho* It Up, Breast Slider, Basemental), 2 pinned SFW (Wonderful Whims, Cuddle and Bath). `HAND_AUDITED_NSFW` + `pinnedIsNSFW`; 3 scraper update paths now honour it (the test found the third). Graded E193 KEEP, E228 KEEP.
+- Before → after: 8/8 isNSFW=false and 8/8 in sitemap-mods → 6 true; 0 of 8 in any live collection grid (31 pages curled), but /pregnancy-mods/ copy names MC WooHoo + Wonderful Whims. Cost: the 6 leave sitemap/feeds/`/mods`, ~42 GSC clicks/28d on their pages. Test 10/13 red pre-fix.
+- Verdict: MORE DATA (read 2026-10-20).
+- Next time: the gameplay top 25 opens with Teen Romance and Teen Pregnancy (#1, #2). Sage should rule on those before the hub ships. Do not widen E242 to cover them.
+
 ## 2026-10-18
 - Tried: E235 (T0): URL map `/clutter/`→clutter, `/body-preset/`→body-preset (E228's two KNOWN_GAPS, now assertions; 3 of 21 red pre-fix) + 32 `--ids` pins: /sims-4-accessories-cc/ 13, /sims-4-male-shoes-cc/ 12, clutter top-30 7 (6 room sets/big appliances → furniture, 1 keep). Graded E186 KEEP.
 - Before → after: disagree 296/4,891 → 274/4,865; accessories-cc 10/26 → 0, male-shoes 12/34 → 0; clutter 226 → 219, top 30 room sets 6 → 0. Replay: 14 posts / 361 rows change URL category, ingest answer differs on 129, 0 stored rows move (E161: ingest never re-types). Pins E186 80/80, E193 69/69, E228 21/21, E235 32/32.
@@ -73,10 +79,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Verdict: MORE DATA (read 2026-10-14).
 - Next time: when a hub flag names two rows, read the whole source post — 34 of its 41 rows were wrong, not 2; and a NULL beats a guess on a mixed set ("CC #47.2").
 
-## 2026-10-04
-- Tried: E168 apply, `--lot-untitled --apply` with a new write-once rollback file (T0; ledger `3e4ff73`; PR for pin + playbook). The dry run reproduced the 10-03 plan exactly first: 80/80 same (id, from, to), E161 18/18.
-- Before → after: lot 362 → 282 = 158 title + 52 URL + 72 pinned, 0 prose-typed (separate read-back query). 80/80 at target. E168 pins 72/72; the 10-03 report said 70, but 67+2+3=72. Top 24 by downloads: 23/24 lots. Villa Amour Collection is an outfit set titled with the lot word `villa`, now NULL-pinned (dry run only, not applied). Live read: 1 row ingested since 3d9eb80 (Automne Set → furniture, right), so it is partial.
-- Verdict: MORE DATA (read 10-10: ≤5% wrong of the next 100 ingested, lot 0 prose-typed, pins 72/72). E120 KEEP (room-theme CAS 0, pins 76/76).
-- Next time: an apply's `--rollback-out` overwrites without a guard (#250 covers dry runs only). Always pass a fresh path and `test -e` it first. The signed-off plan on `main` is the real rollback.
-
-_Older entries live verbatim in `archive/playbooks/rowan-2026-09.md` (to 09-30) and `rowan-2026-10.md` (10-01 → 10-03); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/rowan-2026-09.md` (to 09-30) and `rowan-2026-10.md` (10-01 → 10-04); nothing deleted._
