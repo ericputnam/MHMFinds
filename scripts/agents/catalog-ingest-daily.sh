@@ -16,6 +16,8 @@
 # on 6 of the 7 mornings 09-26 → 10-02 while `sims-4-fall-decor-cc` (edited
 # 09-28) sat on 18 uningested mods. Existing rows are deduped by downloadUrl or
 # title+sourceUrl; hand-audited pins are never re-typed by the update path.
+# E239 (2026-10-19): "last ingest" is max(createdAt, lastScraped) and a re-scrape stamps
+# lastScraped on the post's matched rows, so an edit that added nothing is fetched once, not daily.
 #
 # Usage:
 #   ./scripts/agents/catalog-ingest-daily.sh            # live, last 21 days, <=25 posts

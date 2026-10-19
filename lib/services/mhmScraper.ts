@@ -13,6 +13,8 @@ import {
   detectContentTypeFromUrl,
   parseSitemapLastmod,
   selectPostsToScrape,
+  buildKnownSourceLastIngest,
+  normalizePostUrl,
   type SitemapPostEntry,
 } from './mhmScraperUtils';
 
@@ -1356,6 +1358,9 @@ export class MustHaveModsScraper {
     let savedCount = 0;
     const dryRun = opts.dryRun === true;
     const verb = dryRun ? 'Would ' : '';
+    // E239: ids of existing rows this scrape matched; stamped with lastScraped below.
+    const matchedExistingIds: string[] = [];
+    const errorsBefore = this.stats.errors;
 
     for (const mod of mods) {
       try {
@@ -1391,6 +1396,13 @@ export class MustHaveModsScraper {
         });
 
         if (existing) {
+          // Only rows that belong to THIS post: a downloadUrl match can hit a row ingested from
+          // another post, and stamping it would advance that post's last-ingest and hide its edit.
+          const samePost =
+            !!existing.sourceUrl &&
+            !!mod.sourceUrl &&
+            normalizePostUrl(existing.sourceUrl) === normalizePostUrl(mod.sourceUrl);
+          if (samePost && matchedExistingIds.indexOf(existing.id) < 0) matchedExistingIds.push(existing.id);
           // Update existing record if we have new data
           // Fix gameVersion for mods incorrectly saved as 'Sims 4'
           const detectedGame = mod.game || 'Sims 4';
@@ -1476,6 +1488,32 @@ export class MustHaveModsScraper {
       }
     }
 
+    // E239 (2026-10-19): record that this post's existing rows were re-verified against the
+    // post today, so `--refreshed` (max(createdAt, lastScraped), see postLastIngest) stops
+    // re-selecting a refreshed post whose edit added nothing. Only when every row of this
+    // post saved cleanly — a post with a save error stays eligible for tomorrow's run.
+    // Side effect (intended, disclosed): modLastmod() reads lastScraped, so these rows'
+    // sitemap <lastmod> moves to today once per real post edit, never on a no-edit day.
+    if (matchedExistingIds.length > 0) {
+      if (this.stats.errors !== errorsBefore) {
+        console.log(`   ⚠️  Not stamping lastScraped: ${this.stats.errors - errorsBefore} save error(s) in this post`);
+      } else if (dryRun) {
+        console.log(`   🕒 Would stamp lastScraped on ${matchedExistingIds.length} existing row(s) of this post (E239)`);
+      } else {
+        try {
+          const stamped = await prisma.mod.updateMany({
+            where: { id: { in: matchedExistingIds } },
+            data: { lastScraped: new Date() },
+          });
+          console.log(`   🕒 Stamped lastScraped on ${stamped.count} existing row(s) of this post (E239)`);
+        } catch (error) {
+          // The post simply stays eligible for the next run (the pre-E239 behaviour).
+          console.error(`   ❌ Error stamping lastScraped:`, error);
+          this.stats.errors++;
+        }
+      }
+    }
+
     return savedCount;
   }
 
@@ -1518,19 +1556,18 @@ export class MustHaveModsScraper {
 
     // Step 1b: Incremental selection (--new-only / --since / --refreshed)
     let knownSourceUrls: string[] = [];
-    const knownSourceLastIngest: Record<string, Date> = {};
+    let knownSourceLastIngest: Record<string, Date> = {};
     if (options?.newOnly) {
       const grouped = await prisma.mod.groupBy({
         by: ['sourceUrl'],
         where: { sourceUrl: { startsWith: this.baseUrl } },
-        _max: { createdAt: true },
+        _max: { createdAt: true, lastScraped: true },
       });
       knownSourceUrls = grouped.map(g => g.sourceUrl).filter((u): u is string => !!u);
-      // E161: "last ingest" of a post is the newest Mod row it produced. createdAt, not
-      // updatedAt — @updatedAt is bumped by every counter write and retag pass.
-      grouped.forEach(g => {
-        if (g.sourceUrl && g._max.createdAt) knownSourceLastIngest[g.sourceUrl] = g._max.createdAt;
-      });
+      // E161 + E239: "last ingest" of a post is max(newest createdAt, newest lastScraped) —
+      // lastScraped is stamped by a re-scrape that created nothing, so the post is not
+      // re-fetched every morning. Never updatedAt — @updatedAt is bumped by every counter write.
+      knownSourceLastIngest = buildKnownSourceLastIngest(grouped);
       console.log(`🗄️  --new-only: ${knownSourceUrls.length} blog posts already have mods in the database`);
       if (options?.refreshed) {
         console.log(`♻️  --refreshed: known posts whose sitemap lastmod is newer than their last ingest are re-scraped`);
