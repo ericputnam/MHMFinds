@@ -97,6 +97,18 @@ describe('computeIssueNumber / formatDateLabel', () => {
     expect(week2).toBe(week0 + 2);
   });
 
+  it('weeks roll over on Tuesday: issue 06 through Mon 10-19, issue 07 from Tue 10-20 (Cass, 10-18 inbox check)', () => {
+    // The 10-17 dry run printed weekly-issue-06 after issue 06 went out 10-15/16. That is the
+    // calendar, not a stuck counter: the content week starts Tuesday (FIRST_AUTOMATED_ISSUE_WEEK_START
+    // 2026-09-15). Issue 07 goes Thursday 10-22 and must be labelled 07.
+    expect(computeIssueNumber(new Date('2026-10-11T11:34:00Z'))).toBe(5); // issue 05 sent
+    for (const day of ['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19']) {
+      expect(computeIssueNumber(new Date(`${day}T12:00:00Z`)), day).toBe(6);
+    }
+    expect(computeIssueNumber(new Date('2026-10-20T00:00:00Z'))).toBe(7);
+    expect(computeIssueNumber(new Date('2026-10-22T11:00:00Z'))).toBe(7);
+  });
+
   it('never collides with the hand-built issue #1 (2026-09-14)', () => {
     expect(computeIssueNumber(new Date('2026-09-15T00:00:00Z'))).toBeGreaterThanOrEqual(2);
   });
