@@ -55,6 +55,22 @@ export const EXCLUDED_RECIPIENT_HASHES: readonly string[] = [
   // (10-11), whose single `failed: 1` was a 550 — i.e. rejected on two consecutive
   // issues, not a one-off transient. Added before issue 07 (Cass, E226, 2026-10-17).
   '00e8bfa8afd6244ae1bcc3d3c206cfd7b50a93087b916fd9f5d5d419875af046', // weekly-06, reject
+  // 2026-10-19 weekly issues 05 + 06 (runs 1 and 2), read with `mailbox-dsn-count.py --since
+  // 2026-10-11 --campaign all --hashes` (Cass, E240): 13 hard DSNs (3x 5.7.1, 3x 5.1.1,
+  // 3x 5.5.0, 2x 5.1.3, 2x 5.1.0), 10 distinct recipients, 0 soft, 0 complaints. Every hash
+  // matches a live waitlist row; 3 of them bounced on both issue 05 and issue-06 run 1, and
+  // 7 are issue-06 run 2 subscribers (7/53 = 13.2% of that cohort vs 3/96 = 3.1% of issue 05's).
+  // Until 10-19 the counter attributed these to "other" (encoded-word subject), so none was listed.
+  '1a4c3aa328048eed368dd38b825da182cc44bc54ab18a160645d0c4ea8635541', // weekly-05/06, 5.x.x DSN
+  'ce172e84804f7c9547db4348d6632028b3f65779f6489c552ba6cba5553aa1ae', // weekly-05/06, 5.x.x DSN
+  'b0d1f576b8dfafb4ee4e3919afd1cf0d1d4cff67ca89729845bb306b019c4217', // weekly-05/06, 5.x.x DSN
+  'd8dcfc02becc3abafcf5bc3823fe08cf6bb812b9695bd987306162d1d1dc353c', // weekly-05/06, 5.x.x DSN
+  '62f84f30ed1d63c9bf4afef6064df90ad35a48f2b5bbc119c50a7b360eeba156', // weekly-05/06, 5.x.x DSN
+  '8de0468ede621befbc8ab2d75913dcec68ece579c3809e7a7b92d2b893e56942', // weekly-05/06, 5.x.x DSN
+  'bfa0edb38089de509290da6d9c8b2230a31c651c369ec8781d3a9a06badf7f61', // weekly-05/06, 5.x.x DSN
+  '53400f9602335d90f14b52df81926a224edc57913c310e7b57339680051fd112', // weekly-05/06, 5.x.x DSN
+  'a09bf8178846bbb1d46278ff188f214424a8061f1fd85577cc89d36dbb83aac0', // weekly-05/06, 5.x.x DSN
+  '5c4992b0a05759717b456266ead65f14d79065ace2ee9cfa052556c36e5c8f3a', // weekly-05/06, 5.x.x DSN
 ];
 
 const EXCLUDED = new Set(EXCLUDED_RECIPIENT_HASHES);

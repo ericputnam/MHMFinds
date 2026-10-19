@@ -8,6 +8,15 @@
  *   npx tsx scripts/agents/newsletter-send-test.ts --weekly --dry [--preview-out <path>]
  *   NEWSLETTER_WEEKLY_ENABLED=true npx tsx scripts/agents/newsletter-send-test.ts --weekly --live
  *   NEWSLETTER_WEEKLY_ENABLED=true npx tsx scripts/agents/newsletter-send-test.ts --weekly --live --resume-after '<resumeCursor>'
+ *   npx tsx scripts/agents/newsletter-send-test.ts --weekly --seed --dry|--live [--as-of 2026-10-15T10:48:00Z]
+ *
+ * --seed (E240, 2026-10-19): ONE copy of the weekly issue (as built at --as-of, default now)
+ * to the team's own seed mailboxes, for an inbox-placement check. Recipients come only from
+ * `NEWSLETTER_SEED_TO` and must pass `resolveSeedRecipients()` in lib/services/seedSend.ts
+ * (<=3, every hash in SEED_ALLOWLIST_HASHES, which ships empty). A seed address that is also
+ * a `waitlist` row or an account is refused: a seed is never a subscriber. It does not need
+ * NEWSLETTER_WEEKLY_ENABLED (no subscriber can be reached) and its ledger row is kind
+ * `weekly-issue-NN-seed`, counts only.
  *
  * --resume-after (E205, 2026-10-14): the weekly path attempts at most 100 per run (the hourly
  * limit). When it defers anyone, the ledger row and the terminal carry `resumeCursor`
@@ -49,6 +58,7 @@ import { sendBulk, previewBulkSend, resolvePostalAddress } from '../../lib/servi
 import { buildConfirmUrl } from '../../lib/services/subscribeConfirm';
 import { ISSUE_01, renderIssue } from '../../lib/services/newsletterIssue';
 import { partitionExcluded, EXCLUDED_RECIPIENT_HASHES } from '../../lib/services/sendExclusions';
+import { resolveSeedRecipients, SEED_ALLOWLIST_HASHES } from '../../lib/services/seedSend';
 import {
   buildWeeklyIssueData,
   createPrismaDataSource,
@@ -95,6 +105,8 @@ const weekly = args.includes('--weekly');
 const live = args.includes('--live');
 const previewOut = arg('--preview-out');
 const resumeAfter = arg('--resume-after');
+const seed = args.includes('--seed');
+const asOf = arg('--as-of');
 const limitArg = Number(arg('--limit') ?? 0);
 const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
 /**
@@ -103,8 +115,8 @@ const offsetArg = Math.max(0, Number(arg('--offset') ?? 0) || 0);
  * match — that typo would have been a LIVE send to 100 accounts. On a script whose
  * default is "send", an unrecognised flag must stop the run, never be ignored.
  */
-const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset', '--weekly', '--live', '--preview-out', '--resume-after']);
-const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset', '--preview-out', '--resume-after']);
+const KNOWN_FLAGS = new Set(['--to', '--only', '--dry', '--from-db', '--accounts-from-db', '--limit', '--offset', '--weekly', '--live', '--preview-out', '--resume-after', '--seed', '--as-of']);
+const FLAGS_WITH_VALUE = new Set(['--to', '--only', '--limit', '--offset', '--preview-out', '--resume-after', '--as-of']);
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (!KNOWN_FLAGS.has(a)) {
@@ -117,12 +129,14 @@ for (let i = 0; i < args.length; i++) {
 if (weekly) {
   if (fromDb || accountsFromDb || arg('--to') || only) { console.error('--weekly takes no --to/--from-db/--accounts-from-db/--only: recipients are every waitlist row'); process.exit(1); }
   if (dry === live) { console.error('--weekly needs exactly one of --dry (render + count) or --live (send)'); process.exit(1); }
-  if (live && process.env.NEWSLETTER_WEEKLY_ENABLED !== 'true') {
+  if (seed && resumeAfter) { console.error('--seed takes no --resume-after'); process.exit(1); }
+  if (asOf && (!seed || Number.isNaN(Date.parse(asOf)))) { console.error('--as-of belongs to --seed and needs an ISO instant'); process.exit(1); }
+  if (live && !seed && process.env.NEWSLETTER_WEEKLY_ENABLED !== 'true') {
     console.error('--weekly --live refused: NEWSLETTER_WEEKLY_ENABLED=true must be set in this process\'s environment (the Tier 1 send authorization). Run the --dry preflight first.');
     process.exit(1);
   }
-} else if (live || previewOut || resumeAfter) {
-  console.error('--live, --preview-out and --resume-after belong to the --weekly path'); process.exit(1);
+} else if (live || previewOut || resumeAfter || seed || asOf) {
+  console.error('--live, --preview-out, --resume-after, --seed and --as-of belong to the --weekly path'); process.exit(1);
 }
 if (!weekly && !fromDb && !accountsFromDb && !arg('--to')) { console.error('need --to a@b.com[,c@d.com], --from-db, --accounts-from-db or --weekly'); process.exit(1); }
 if (fromDb && accountsFromDb) { console.error('pick one of --from-db / --accounts-from-db'); process.exit(1); }
@@ -365,6 +379,54 @@ async function runWeekly(): Promise<void> {
   }
 }
 
+/**
+ * E240 seed send: one rendered weekly issue to <=3 allowlisted team mailboxes. The address
+ * list never reaches the terminal or the ledger — counts and hashes of refusals only.
+ */
+async function runSeed(): Promise<void> {
+  const resolved = resolveSeedRecipients(process.env.NEWSLETTER_SEED_TO);
+  if (!resolved.ok) {
+    console.error(`--seed refused: ${resolved.reason} (allowlist holds ${SEED_ALLOWLIST_HASHES.length} hashes)`);
+    for (const h of resolved.unrecognisedHashes) console.error(`  not allowlisted: ${h}`);
+    process.exit(1);
+  }
+  const now = asOf ? new Date(asOf) : new Date();
+  const prisma = directPrisma();
+  try {
+    const seeds = resolved.recipients;
+    const [subs, accts] = await Promise.all([
+      prisma.waitlist.count({ where: { email: { in: seeds, mode: 'insensitive' } } }),
+      prisma.user.count({ where: { email: { in: seeds, mode: 'insensitive' } } }),
+    ]);
+    if (subs || accts) {
+      console.error(`--seed refused: ${subs} seed address(es) are waitlist rows and ${accts} are accounts — a seed is never a subscriber`);
+      process.exit(1);
+    }
+    const issue = await buildWeeklyIssueData(createPrismaDataSource(prisma), { now });
+    const campaign = `weekly-issue-${String(issue.number).padStart(2, '0')}`;
+    const homeUrl = withUtm(`${SITE}/`, campaign);
+    const r = await sendBulk({
+      recipients: seeds,
+      dryRun: dry,
+      site: SITE,
+      replyTo: REPLY_TO,
+      fromName: 'MustHaveMods',
+      postalAddress: POSTAL_ADDRESS,
+      maxMessages: seeds.length,
+      build: ({ unsubscribeUrl }) => renderIssue(issue, { unsubscribeUrl, postalAddress: POSTAL_ADDRESS, site: SITE, homeUrl }),
+    });
+    console.log(`seed ${dry ? 'dry' : 'live'} → ${campaign} as of ${now.toISOString()}: attempted ${r.attempted} sent ${r.sent} failed ${r.failed}`);
+    writeLedger({
+      kind: `${campaign}-seed`, subject: issue.subject, mode: dry ? 'dry' : 'live', source: 'seed', site: SITE,
+      transport: r.transport, asOf: now.toISOString(), recipients: seeds.length, attempted: r.attempted,
+      sent: r.sent, failed: r.failed, cwd: process.cwd(),
+    });
+    if (!dry && r.failed) process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 async function main() {
   if (!POSTAL_ADDRESS) {
     console.warn(
@@ -372,6 +434,7 @@ async function main() {
         'Dry runs still render; a real send will be refused by bulkMailer.'
     );
   }
+  if (weekly && seed) return runSeed();
   if (weekly) return runWeekly();
   const recipients = await loadRecipients();
   if (!recipients.length) { console.error('no recipients'); process.exit(1); }

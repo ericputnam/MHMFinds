@@ -28,6 +28,8 @@ from __future__ import annotations
 
 import argparse
 import email
+import email.header
+import email.utils
 import hashlib
 import imaplib
 import os
@@ -46,6 +48,8 @@ IMAP_PORT = 993
 CAMPAIGN_SUBJECTS = {
     "re-permission": "Do you want the weekly Sims 4 finds email?",
     "issue-01": "Your first MustHaveMods roundup",
+    # Every DB-built weekly issue (05, 06, ...) uses this subject prefix (newsletterWeekly.ts).
+    "weekly": "This week on MustHaveMods",
 }
 DSN_SUBJECT_RE = re.compile(
     r"(undeliver|delivery (status|failure|report)|mail delivery failed|returned mail|failure notice|"
@@ -89,10 +93,16 @@ def walk_parts(msg: Message):
 
 
 def header_text(msg: Message, name: str) -> str:
+    """Header value with RFC 2047 encoded-words decoded. The weekly subject carries an em dash,
+    so it is sent as `=?utf-8?...?=` and a raw substring match never saw it (E240)."""
     try:
-        return str(msg.get(name, "") or "")
+        raw = str(msg.get(name, "") or "")
     except Exception:
         return ""
+    try:
+        return str(email.header.make_header(email.header.decode_header(raw)))
+    except Exception:
+        return raw
 
 
 def classify_dsn(msg: Message) -> dict:
@@ -109,6 +119,9 @@ def classify_dsn(msg: Message) -> dict:
     diag = ""
     recipient = ""
     campaign = "other"
+    # E240: does the returned original carry a DKIM-Signature, and for which d=? None = no
+    # original headers in the DSN, so nothing can be said either way.
+    dkim: str | None = None
 
     for part in walk_parts(msg):
         pct = part.get_content_type()
@@ -136,6 +149,12 @@ def classify_dsn(msg: Message) -> dict:
                 if inner_msg is None and isinstance(inner, str):
                     inner_msg = email.message_from_string(inner)
                 if inner_msg is not None:
+                    sig = header_text(inner_msg, "DKIM-Signature")
+                    if sig:
+                        m = re.search(r"\bd=([A-Za-z0-9.-]+)", sig)
+                        dkim = (m.group(1).lower() if m else "unparsed")
+                    elif dkim is None and header_text(inner_msg, "From"):
+                        dkim = "none"
                     isub = header_text(inner_msg, "Subject")
                     for key, needle in CAMPAIGN_SUBJECTS.items():
                         if needle.lower() in isub.lower():
@@ -186,6 +205,7 @@ def classify_dsn(msg: Message) -> dict:
         "recipient": recipient.strip().lower(),
         "campaign": campaign,
         "code": (status or diag[:3] or "?").split()[0][:5] if (status or diag) else "?",
+        "dkim": dkim,
     }
 
 
@@ -195,6 +215,7 @@ def main() -> int:
     ap.add_argument("--campaign", default="re-permission", choices=list(CAMPAIGN_SUBJECTS) + ["all"])
     ap.add_argument("--gate", type=int, default=0, help="batch size; evaluates hard<3%% and complaints==0")
     ap.add_argument("--hashes", action="store_true", help="print sha256 of hard-bounced recipients")
+    ap.add_argument("--by-day", action="store_true", help="E240: DSN counts per UTC day the DSN arrived, per campaign, with codes")
     ap.add_argument("--env", default=ENV_FILE)
     args = ap.parse_args()
 
@@ -238,9 +259,12 @@ def main() -> int:
         "complaint_like": 0,
         "spam_folder_messages": 0,
         "inbox_non_dsn": 0,
+        "dkim_on_original": {},
     }
     hashes: list[str] = []
     seen_recipients: set[str] = set()
+    # E240: {day: {campaign: {"hard": n, "soft": n, "codes": {code: n}}}}. Counts only.
+    by_day: dict[str, dict[str, dict]] = {}
 
     for folder in folders:
         try:
@@ -277,6 +301,17 @@ def main() -> int:
             if args.campaign != "all" and d["campaign"] != args.campaign:
                 continue
             counts["dsn_total"] += 1
+            # Only our own signing domain is named; any third-party d= is bucketed as "other-domain".
+            k = d["dkim"] if d["dkim"] in (None, "none", "unparsed", "musthavemods.com") else "other-domain"
+            counts["dkim_on_original"][str(k)] = counts["dkim_on_original"].get(str(k), 0) + 1
+            if args.by_day:
+                try:
+                    day = email.utils.parsedate_to_datetime(header_text(msg, "Date")).astimezone(timezone.utc).date().isoformat()
+                except Exception:
+                    day = "unknown"
+                cell = by_day.setdefault(day, {}).setdefault(d["campaign"], {"hard": 0, "soft": 0, "codes": {}})
+                cell["hard" if d["hard"] else "soft"] += 1
+                cell["codes"][d["code"]] = cell["codes"].get(d["code"], 0) + 1
             counts["codes"][d["code"]] = counts["codes"].get(d["code"], 0) + 1
             bucket = "hard" if d["hard"] else "soft"
             counts[bucket] += 1
@@ -298,9 +333,15 @@ def main() -> int:
         print(f"  folder {folder}: {n}")
     print(f"  DSNs attributed: {counts['dsn_total']} (hard {counts['hard']}, soft {counts['soft']}; distinct hard recipients {counts['hard_distinct_recipients']})")
     print(f"  hard by campaign: {counts['hard_by_campaign']}  soft by campaign: {counts['soft_by_campaign']}  codes: {counts['codes']}")
+    print(f"  DKIM-Signature on the returned original (d=, None = no original headers): {counts['dkim_on_original']}")
     print(f"  complaint-like (feedback-report / abuse subject): {counts['complaint_like']}")
     print(f"  spam/junk folder messages: {counts['spam_folder_messages']}")
     print(f"  auto-replies: {counts['auto_replies']}   other INBOX messages (non-DSN): {counts['inbox_non_dsn']}")
+    if args.by_day:
+        print("  DSNs by UTC arrival day (campaign: hard/soft codes):")
+        for day in sorted(by_day):
+            cells = "; ".join(f"{c}: {v['hard']}/{v['soft']} {v['codes']}" for c, v in sorted(by_day[day].items()))
+            print(f"    {day}  {cells}")
     if args.hashes:
         print("  sha256(hard-bounced recipient), one per line:")
         for h in hashes:
