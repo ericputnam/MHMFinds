@@ -20,7 +20,7 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 ---
 
 ## 2026-10-19
-- Tried: E239 (T0, #PR) — `--refreshed` compared lastmod to max(createdAt) only; a 0-create re-scrape never moved it. Now max(createdAt, lastScraped), and the re-scrape stamps lastScraped on its own post's rows.
+- Tried: E239 (T0, #343) — `--refreshed` compared lastmod to max(createdAt) only; a 0-create re-scrape never moved it. Now max(createdAt, lastScraped), and the re-scrape stamps lastScraped on its own post's rows.
 - Before → after: 2 posts re-fetched/run, 10 runs 10-10→10-19, 0 created (67 found). Dry run 10-19: 4 selected (Oct-2026 new, 23 to create; Sept-2026 edited; nursery; y2k), stamps 30/36/30. Same-post filter caught 1 cross-post downloadUrl match (37→36) — it would have hidden another post's edit.
 - Verdict: MORE DATA (read 2026-10-21).
 - Next time: a freshness watermark must move on every successful visit, not only on creates.
