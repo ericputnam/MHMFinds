@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-19 — E238 hub-eligibility read is a script; gameplay BEFORE taken (Tier 0)
+- Tried: no title fix was worth shipping — `/games/*` 28d (GSC 09-19→10-16): the only hub at pos ≤15 with ≥50 impr and 0 clicks is nails-cc (90 impr, pos 15.3) and its title already names its 14 visible-query impressions; poses (1,036 impr, pos 12.1, CTR 3.9%) already carries "Gallery Poses" and moved 968/18/pos 25.4 → 1,036/40/12.1 on its own. So: `scripts/agents/collection-hub-eligibility.ts` (+ `-lib`, 11 tests) mirrors the hub page's own where/order and prints the rule before the read.
+- Before → after: gameplay-mod+script-mod+career = 550 SFW rows, 8/8 watchlist titles in the top 30 (ranks 4, 6, 8, 16, 20, 22, 23, 25), isNSFW=true 0/8, off-type 0 → NOT ELIGIBLE (prod 10-19 10:49Z). Re-read 10-20 after Rowan's E242 pass with the same command.
+- Verdict: MORE DATA (read 2026-10-20).
+- Next time: if 10-20 reads ELIGIBLE, the gameplay hub is a registry entry + copy the same day — but "Teen Pregnancy and Drama" (#2) and "Realistic Life and Pregnancy" (#3) are not on the watchlist; read Mediavine's content policy on them before writing the copy, not after.
+
 ## 2026-10-18 — E171 graded EXTEND; E231 eyes-cc hub queued (Tier 1, PR #335)
 - Tried: graded build-cc at 14 days — indexed (crawl 10-15), 27 impr / 0 clk at pos 32.2, bare "sims 4 build cc" is 1 impr on `/`, not the hub → EXTEND → 11-01. Then ranked no-hub bare-term families 09-18→10-15 with the rule printed first (facet ≥20 clean SFW rows, top 30 on-type): gameplay ≈570 impr (294 on `/` at 41.5) but 8 adult-themed SFW-flagged titles in the facet's top 25; lots ≈170 but `residential`+`lot` top 30 is 9/30 CAS/objects; male hair/cc ≈635 but `genderOptions` is empty on hair; eyes/brows/lashes ≈100 impr on three listicles at pos 16–57, facet 269/269 clean → built that one.
 - Before → after: hub 404 → PR #335 (QUEUED-T1, merges 10-19); family 0 clicks either way.
@@ -55,16 +61,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-26).
 - Next time: every hub on the competitor list exists after #275 — the next search lever is ranking existing hubs, not adding pages.
 
-## 2026-10-07 — E177 IndexNow newest_mod_age_h (Tier 0, PR #265 f0edb05, SUPERSEDED-PASS)
-- Tried: IndexNow summary line now prints `newest_mod_age_h` and a `mods_check` verdict (new tests 6/60 red against pre-fix main). Merged after Rio's 07:12 CLEAR; scripts/ only.
-- Before → after: 0/14 lines carried an age → dry run mods=78 newest_mod_age_h=0.2 mods_check=ok; read 10-14. Grades: E27 KEEP (378, ChatGPT 28d share 89.5% vs 88.5%), E42 KEEP on the OR leg, E83 KILL (3.464%), E84 KILL (1,606), E18 KEEP traffic leg (pos 32.98), E21 revert-per-rule held (55 vs 95, canonical met), E128 KEEP, E71 MORE DATA → 10-19.
-- Verdict: MORE DATA (read on 2026-10-14).
-- Next time: recount a baseline with the same script before grading (E84 1,607 and E18 512 reproduced exactly), and never set a 28-day read only 14 days after shipping (E83's window was 57% pre-ship).
-
-## 2026-10-13 — E196 modLastmod() publishedAt floor (Tier 0, PR #290)
-- Tried: `lib/seo/modLastmod.ts` = max(createdAt, lastScraped, publishedAt); sitemap selects publishedAt; ModJsonLd hands publishedAt to the helper instead of flooring locally. New agreement test renders both surfaces per fixture; 5/25 red on pre-fix sources.
-- Before → after: 7,076/16,796 eligible rows have publishedAt > createdAt (late-Jan 2026 backfill) and 6,894 (41 %) disagreed with their page by day; lastmod≤28d 405 → 405 (floor only moves old entries forward). Grades: E136 KEEP (754 /mods/* clicks 09-13→10-10 vs ≥584; ≤28d 405 vs ≤1,000), E143 EXTEND → 10-27 (clicks met, spot-check 4/7 explained by this). E71 pre-read: ai_referral 268/7d; chatgpt 326→231 is a 10-09 step (40–68/d → 13–24/d) across 329 landing rows, max 10 — referrer-side, no site fix.
-- Verdict: MORE DATA (read 2026-10-27: 7/7 spot-check, clicks ≥716).
-- Next time: when two surfaces compute "the same" date, make one of them call the other's function — a local floor in a component is how 41 % of a 16.8K-URL sitemap drifted without any test going red. Competitor hub list: all 7 terms have a hub after #275; bare-term impressions 28d are 229 (cc), 85 (custom content), 31 (cc finds), 26 (skin overlay), 25 (poses), 13, 7, 1 — rank existing hubs, do not add pages.
-
-_Older entries (up to 2026-09-28) live verbatim in `archive/playbooks/sage-2026-09.md`; nothing deleted._
+_Older entries (2026-09-29 → 2026-10-13) live verbatim in `archive/playbooks/sage-2026-10.md` and `sage-2026-09.md`; nothing deleted._
