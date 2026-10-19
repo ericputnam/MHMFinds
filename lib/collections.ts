@@ -319,7 +319,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // (+2 scars). It read 276 while E210's copy already said "340+"; the
     // copy-vs-count test in collection-copy-counts.test.ts now catches that.
     expectedCount: 387,
-    related: ['hair-cc', 'tattoos', 'body-presets'],
+    // 2026-10-18 (E231): 'hair-cc' → 'eyes-cc' so the new eyes/brows/lashes
+    // hub has an anchored inbound source (hair-cc keeps 4 inbound).
+    related: ['eyes-cc', 'tattoos', 'body-presets'],
     // NOT /sims-4-cc-skin-details/ — that article 301s here. The
     // skin-overlay article is the still-live editorial companion.
     blogUrl: '/sims-4-skin-overlay/',
@@ -622,6 +624,76 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     blogUrl: '/sims-4-poses/',
   },
   {
+    // Sage, 2026-10-18 (E231, Tier 1 — new structural page). The next
+    // category hub after build-cc (E171) and cc (E182). Decision rule,
+    // printed before the read: rank bare-term families with no
+    // /games/sims-4/ hub by GSC impressions 09-18→10-15, eligible only if
+    // the facet has ≥20 SFW verified Sims 4 mods whose top 30 by downloads
+    // read on-type. The three larger families all failed the eligibility
+    // leg and are recorded so nobody re-derives them: "sims 4 mods" /
+    // gameplay (≈570 impr, 294 on `/` at pos 41.5) — the `gameplay-mod` +
+    // `script-mod` facet (550 rows) has 8 adult-themed SFW-flagged titles
+    // in its top 25 (Wicked Whims #6, MC WooHoo #4, Prostitution Mod #8,
+    // Basemental #22 …), a Mediavine exposure on first paint that needs a
+    // catalog data change (isNSFW) before a hub, not a registry entry;
+    // lots/houses (≈170 impr) — `residential` (568) + `lot` (353) is
+    // description-polluted, 9 of the top 30 are CAS or objects ("Wash'n
+    // Wear Essentials", "Functional Pacifier"), same class as the build-cc
+    // comment above; male hair / male cc (≈220 + 415 impr) — `genderOptions`
+    // is empty on hair, unbuildable from facets. Toddler is kids-cc; hats
+    // already ranks 11–13 on /sims-4-hats-cc/, a hub would compete with it.
+    //
+    // This family: "eyelashes sims 4 (cc)", "lashes for sims 4", "sims 4
+    // eyebrows cc", "sims 4 cc eyes", "default eyes sims 4" ≈100 impressions
+    // / 0 clicks in 09-18→10-15, every one landing on a listicle at position
+    // 16–57 (/sims-4-eyelashes-cc/ 24–48, /sims-4-eyebrows/ 20–34,
+    // /sims-4-eyes/ 36–57). Nothing on the site answers the browse intent.
+    //
+    // Sits BEFORE makeup-cc because makeup-cc's union already contains
+    // `eyebrows`, `eyes` and `lashes` — the narrower page must precede the
+    // union or makeup-cc keeps the primary crumb for these 269 mods
+    // (collection-primary-crumb-order.test.ts).
+    slug: 'eyes-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Eyes, Brows & Lashes CC',
+    heading: 'Sims 4 Eyes, Eyebrows & Lashes CC',
+    metaTitle: 'Sims 4 Eyes CC Finder — Browse 260+ Eyes, Eyebrows & Lashes | MustHaveMods',
+    metaDescription:
+      'Browse 260+ Sims 4 eyes, eyebrows and eyelashes CC in one filterable grid — default replacements, maxis match brows, 3D lashes, contacts — sorted by downloads, links checked.',
+    tagline: 'Default eyes, maxis match brows, and 3D lashes in one grid',
+    intro:
+      "The face is where base-game CAS gives up first. The default eyes are flat, the eyebrow catalog is a dozen variations on the same two shapes, and the lashes are painted onto the eyelid texture — which is why the first three downloads in most people's Mods folder are an eye replacement, a brow set and a 3D lash pack. They are also the three categories that never get a roundup of their own because each one is too small to fill a listicle.\n\nThis page is all three in one grid — 269 finds as of today, every one of them free. Eyebrows are the deepest shelf at 130: the natural and brushed sets that go on every sim, a handful of masculine and bushy sets for male sims, and the thin arched brows that pair with the harder makeup looks. Eyes are 116 — default replacements that swap the base-game irises for every sim in the save, non-default sets that show up as extra swatches, contacts, and the heterochromia and fantasy sets for occult households. Lashes are the smallest at 23, and almost all of them are 3D meshes rather than texture overlays, because that is the one thing the base game cannot do at all.\n\nThe names that come up most are MagicHand and Seleng, who between them account for one in six finds here, then TwistedCat, Pralinesims, Msqsims and Cosimetic. The 3D lash packs near the top are the ones half the community already runs; the eye sets further down are where the realistic and maxis-match camps split.\n\nTwo practical notes. Default replacements override the base-game eyes, so install one at a time or the last one loaded wins. And 3D lashes sit in the glasses or skin-detail slot depending on the creator, so if a pack is not where you expect it in CAS, check the creator's note before assuming it failed to load.\n\nEverything here is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the sets half the community already has installed, or scroll for the single releases the big roundups never got to. If you are building a whole face, the makeup and skin details pages are the next two stops.",
+    filter: {
+      // eyebrows 130 + eyes 116 + lashes 23 = 269 SFW Sims 4 mods, verified
+      // against prod 2026-10-18 (269 isVerified, 269 free). Spot-checked:
+      // top 30 by downloads read 30/30 as eyes / brows / lashes; a 15-row
+      // stride sample across the whole facet is 15/15; 0 adult-pattern
+      // titles. Excluded on purpose: `eyeliner` (30), `blush`, `lipstick`,
+      // `makeup` — makeup-cc owns those and still lists these three types
+      // too, as the wider union; `glasses` (108) is accessories.
+      contentTypeIn: ['eyebrows', 'eyes', 'lashes'],
+    },
+    expectedCount: 269,
+    // Inbound edges come from makeup-cc and skin-details (both swapped a
+    // hair-cc edge for this page — hair-cc keeps 4). Outbound returns one
+    // to hair-cc so the swap is net-neutral on the hair hub.
+    related: ['makeup-cc', 'skin-details', 'hair-cc'],
+    // Differentiated pair: "34+ Best Sims 4 Eyes CC" keeps the editorial
+    // picks intent, this page owns browse/filter intent. Live 200,
+    // self-canonical, not redirected (checked 2026-10-18); position 16–39
+    // on "sims 4 cc eyes" / "realistic eyes sims 4" in GSC 09-18→10-15.
+    // URL map reads it as `eyes`, one of this page's own types (E228 test).
+    blogUrl: '/sims-4-eyes-cc/',
+    // E203 pattern: the two listicles Google already shows for the other two
+    // thirds of this family, at positions where one more inbound link
+    // matters (/sims-4-eyebrows/ 20–34, /sims-4-eyelashes-cc/ 24–48).
+    guides: [
+      { href: '/sims-4-eyebrows/', label: 'Best Sims 4 eyebrows for your CC folder' },
+      { href: '/sims-4-eyelashes-cc/', label: 'Best Sims 4 eyelashes CC' },
+    ],
+  },
+  {
     slug: 'makeup-cc',
     game: 'Sims 4',
     gameSlug: 'sims-4',
@@ -651,7 +723,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 7-inbound hub, so the edge is worth more pointed at the new page. With
     // goth-cc that gives nails-cc the two inbound links #120's graph test
     // requires, from sources that are themselves linked.
-    related: ['nails-cc', 'hair-cc', 'jewelry-cc'],
+    // 2026-10-18 (E231): 'hair-cc' → 'eyes-cc' — second anchored inbound
+    // edge for the eyes/brows/lashes hub, from a page that is itself linked.
+    related: ['nails-cc', 'eyes-cc', 'jewelry-cc'],
     // Missing since this collection shipped (PR #32, 2026-09-04) — the
     // legacy article is live and does not 301 here, so the differentiated
     // pair was simply never wired up. Added 2026-09-07.

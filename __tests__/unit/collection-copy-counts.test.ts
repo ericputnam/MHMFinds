@@ -56,14 +56,21 @@ describe('makeup-cc shows lashes (E221)', () => {
     expect(makeup!.filter.contentTypeIn).toContain('lashes');
   });
 
-  it('every E221 lashes keep lands on makeup-cc, and makeup-cc is its primary crumb', () => {
+  // E231 (Sage, 2026-10-18): eyes-cc is the narrower cut of makeup-cc's union
+  // (`eyebrows` + `eyes` + `lashes`) and sits before it in the registry, so
+  // the primary crumb for a lashes mod is now eyes-cc. The E221 invariant —
+  // a lashes mod is listed on makeup-cc and its crumb points at a page that
+  // lists it — is unchanged; what moved is which page is narrowest.
+  it('every E221 lashes keep lands on makeup-cc, and its primary crumb is the narrower eyes-cc', () => {
     const keeps = Object.values(HAND_AUDITED_CONTENT_TYPES).filter(
       (v) => v.why.startsWith('E221') && v.contentType === 'lashes',
     );
     expect(keeps.length).toBeGreaterThanOrEqual(3);
     const mod = { gameVersion: 'Sims 4', isNSFW: false, contentType: 'lashes', title: '3D Mink Lashes' };
     expect(modMatchesFilter(mod, makeup!.filter)).toBe(true);
-    expect(getCollectionsForMod(mod)[0]?.slug).toBe('makeup-cc');
+    const memberships = getCollectionsForMod(mod).map((c) => c.slug);
+    expect(memberships[0]).toBe('eyes-cc');
+    expect(memberships).toContain('makeup-cc');
   });
 
   it('no E221 pin writes a row back into the composite it was pulled out of', () => {
