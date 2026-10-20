@@ -1,0 +1,163 @@
+{
+  "generated": "2026-10-20",
+  "generator": "scripts/agents/rank-pin-destinations.ts",
+  "status": "GENERATED — read-only output; not a queued Tier 2 package until an operator/agent adds an experiment id and a per-day/days plan and gets approval (SD-10)",
+  "window_7d": "2026-10-12..2026-10-18",
+  "window_28d": "2026-09-21..2026-10-18",
+  "source": "GA4 hostName x landingPagePlusQueryString, sessionSource CONTAINS 'pinterest' (case-insensitive) — the wider definition used in reports/funnel/pinterest-read-2026-09-19.md",
+  "selection": "stranded rows (unposted, Post Date < today-14d), destination normalised (blog.musthavemods.com -> musthavemods.com, query stripped), >=50 Pinterest sessions/7d, <=10 ids/destination; writer plugin-scheduled rows excluded (Post Date 2025-01-01 and created_at >= 2026-09-21 or destination managed by the plugin — E135)",
+  "pool_rows": 1000,
+  "dropped_below_threshold_destinations": 79,
+  "dropped_skipped_host_rows": 80,
+  "dropped_unparseable_url_rows": 0,
+  "dropped_plugin_scheduled_rows": 94,
+  "plugin_managed_destinations": 29,
+  "destinations_selected": 10,
+  "ids_selected": 63,
+  "next_step": "python3 scripts/agents/revive-stranded-pins.py --ids-from <this file> --max-per-url 1 --per-day N --days N   (dry run first; --apply needs Tier 2 approval, SD-10)",
+  "destinations": [
+    {
+      "path": "/sims-4-urban-tattoos/",
+      "sessions7d": 566,
+      "sessions28d": 2387,
+      "stranded_rows": 4,
+      "ids": [
+        2034,
+        2042,
+        2045,
+        2047
+      ]
+    },
+    {
+      "path": "/sims-4-gshade-presets/",
+      "sessions7d": 135,
+      "sessions28d": 449,
+      "stranded_rows": 4,
+      "ids": [
+        5127,
+        5128,
+        5129,
+        5130
+      ]
+    },
+    {
+      "path": "/sims-4-cc-male-pieces/",
+      "sessions7d": 98,
+      "sessions28d": 260,
+      "stranded_rows": 7,
+      "ids": [
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4243,
+        4244
+      ]
+    },
+    {
+      "path": "/sims-4-rugs-cc/",
+      "sessions7d": 78,
+      "sessions28d": 288,
+      "stranded_rows": 29,
+      "ids": [
+        2375,
+        2376,
+        2377,
+        2378,
+        2379,
+        2380,
+        2381,
+        2382,
+        2383,
+        2384
+      ]
+    },
+    {
+      "path": "/sims-4-room-ideas/",
+      "sessions7d": 75,
+      "sessions28d": 314,
+      "stranded_rows": 8,
+      "ids": [
+        2705,
+        2706,
+        2707,
+        2708,
+        2713,
+        2714,
+        2716,
+        2717
+      ]
+    },
+    {
+      "path": "/best-sims-4-main-menu-overrides/",
+      "sessions7d": 74,
+      "sessions28d": 256,
+      "stranded_rows": 23,
+      "ids": [
+        4521,
+        4522,
+        4523,
+        4524,
+        4525,
+        4526,
+        4527,
+        4528,
+        4529,
+        4530
+      ]
+    },
+    {
+      "path": "/best-sims-4-male-hair-cc/",
+      "sessions7d": 62,
+      "sessions28d": 178,
+      "stranded_rows": 4,
+      "ids": [
+        7338,
+        7349,
+        7367,
+        7385
+      ]
+    },
+    {
+      "path": "/how-to-use-sims-4-sliders/",
+      "sessions7d": 56,
+      "sessions28d": 197,
+      "stranded_rows": 1,
+      "ids": [
+        1629
+      ]
+    },
+    {
+      "path": "/sims-4-cc-finds-for-december/",
+      "sessions7d": 53,
+      "sessions28d": 199,
+      "stranded_rows": 33,
+      "ids": [
+        6565,
+        6566,
+        6567,
+        6568,
+        6569,
+        6985,
+        6986,
+        6987,
+        6988,
+        6989
+      ]
+    },
+    {
+      "path": "/sims-4-christmas-clothes-cc/",
+      "sessions7d": 51,
+      "sessions28d": 168,
+      "stranded_rows": 5,
+      "ids": [
+        6336,
+        6359,
+        6385,
+        6386,
+        6387
+      ]
+    }
+  ]
+}
