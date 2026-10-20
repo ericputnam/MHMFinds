@@ -1097,6 +1097,20 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmil0qing002aoxee4xx4w7q2: { contentType: "furniture", why: "E235 \"Sabine Bathroom Set Part 1\" — furniture, was clutter (clutter #15); shower, sinks, mirrors" },
   cmim92tn901teoxy8j0n98qot: { contentType: "furniture", why: "E235 \"Dream Kitchen Set\" — furniture, was clutter (clutter #19); fridge and oven lead the set" },
   cmijo0d6v00n3oxc8jqyetef7: { contentType: "clutter", why: "E235 \"The Appliance Collection\" — KEEP: clutter (clutter #5); 11 countertop appliances (microwave, popcorn maker), same as E120 Altara Kitchen Appliances" },
+  // ── Audited 2026-10-20 (Rowan, E249). /sims-4-cc-furniture/ — #2 in the E186
+  //    URL-category queue (7/24 disagree; #1 farmhouse-cc 8/17 is the residential
+  //    family call already parked). All 24 rows read by title; the 7 DIS rows are
+  //    monthly room sets from one Patreon series plus an AK bedroom set, a hammock
+  //    and a TSR decor set. Six different wrong types (residential ×3 from the word
+  //    "Home"/"Entrance", poses, shoes, tops, makeup) — `--ids` pins, never a facet
+  //    pass. 17 'ok' rows (furniture 14, decor 3) left unpinned.
+  cmim8y4fk010hoxy8bjf663n0: { contentType: "furniture", why: "E249 \"Aggressivekitty Seaside Home Collection\" — furniture, was residential; an Aggressivekitty bedroom furniture set ('Home Collection' is the set name, not a lot) (/sims-4-cc-furniture/)" },
+  cmim8y4ww010ooxy8rf4iyi0s: { contentType: "furniture", why: "E249 \"August Home Office\" — furniture, was residential; a home-office room set (desks, chair, shelves), not a lot (/sims-4-cc-furniture/)" },
+  cmim8y4z2010poxy8jeai4w8j: { contentType: "furniture", why: "E249 \"November Entrance\" — furniture, was residential; entryway room set (hall table, ottoman), same monthly series as the furniture-typed siblings (/sims-4-cc-furniture/)" },
+  cmim8y4mk010koxy80ea7b2op: { contentType: "furniture", why: "E249 \"Lazy Hammock\" — furniture, was poses; a functional hammock object (two animation versions), not a pose pack (/sims-4-cc-furniture/)" },
+  cmim8y4rc010moxy8xem89ezt: { contentType: "furniture", why: "E249 \"October Coziness\" — furniture, was shoes; title names no facet, monthly room-set series (siblings September/October Comfort typed furniture/decor), post URL category furniture (/sims-4-cc-furniture/)" },
+  cmim8y4te010noxy841um0y90: { contentType: "furniture", why: "E249 \"September Dining Room\" — furniture, was tops; a dining-room set (table, chairs) (/sims-4-cc-furniture/)" },
+  cmim8y5kq010yoxy8tqor2wpt: { contentType: "decor", why: "E249 \"Veranda Extras\" — decor, was makeup; SIMcredible! TSR category sims4-sets-objects-decorative (plants, rugs, outdoor items) (/sims-4-cc-furniture/)" },
 };
 
 /**

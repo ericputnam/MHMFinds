@@ -1,0 +1,55 @@
+{
+ "writtenAt": "2026-10-20T10:48:10.707Z",
+ "mode": "dry-run",
+ "facets": [
+  "residential",
+  "poses",
+  "shoes",
+  "tops",
+  "makeup"
+ ],
+ "rows": [
+  {
+   "id": "cmim8y4mk010koxy80ea7b2op",
+   "title": "Lazy Hammock",
+   "from": "poses",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8y4fk010hoxy8bjf663n0",
+   "title": "Aggressivekitty Seaside Home Collection",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8y5kq010yoxy8tqor2wpt",
+   "title": "Veranda Extras",
+   "from": "makeup",
+   "to": "decor"
+  },
+  {
+   "id": "cmim8y4rc010moxy8xem89ezt",
+   "title": "October Coziness",
+   "from": "shoes",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8y4te010noxy841um0y90",
+   "title": "September Dining Room",
+   "from": "tops",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8y4ww010ooxy8rf4iyi0s",
+   "title": "August Home Office",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8y4z2010poxy8jeai4w8j",
+   "title": "November Entrance",
+   "from": "residential",
+   "to": "furniture"
+  }
+ ]
+}
