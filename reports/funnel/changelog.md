@@ -430,3 +430,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-20 06:50 | after-merge | Rowan: PR #349 funnel(rowan): E249 7 --ids pins on /sims-4-cc-furniture/ (Tier 0) | 258034c | https://mhm-finds-dw5l-6rz7yjvlw-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-20 06:54 | after-merge | Ops: PR #351 E250 deploy-verify grades a paper-only merge on production as served | 0ca1b52 | https://mhm-finds-dw5l-neq3qeoj9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-20 06:59 | after-merge | Pip: PR #350 E244 runway top-up #16 artifacts (Tier 0, SD-10 floor) | fc7d2cb | https://mhm-finds-dw5l-mo9toppd4-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-20 07:05 | after-merge | Quinn: PR #352 funnel: daily run 2026-10-20 | a3a6efe | https://mhm-finds-dw5l-iie8lbwm9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
