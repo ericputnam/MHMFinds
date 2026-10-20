@@ -20,11 +20,12 @@
 #         wait for the production deploy of <sha> (default: the newest), promote it if the alias still serves an
 #         older build (a rollback pauses Vercel auto-promotion), verify, roll back on failure. If the alias already
 #         serves a NEWER build that contains <sha>, never promote over it: verify production as served, ledger SUPERSEDED
-#   --check [--label "<who>"]        verify what is live now (morning check, runner step 0e); roll back / restore on failure
+#         [--no-paper]  E250: a paper-only <sha> is graded on production as served at once (PAPER …); this forces the wait
+#   --check [--label "<who>"]      verify what is live now (morning check, runner step 0e); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
 # Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back.
-# Exit: 0 pass · 1 smoke-only failure · 2 failed and rolled back / build failed / build not promoted · 3 still failing after rollback
+# Exit: 0 pass · 1 smoke-only failure / PAPER FAIL (nothing rolled back) · 2 failed and rolled back / build failed / build not promoted · 3 still failing after rollback
 # A check that CANNOT RUN (no node_modules/playwright in a fresh worktree, Chromium missing) is INCONCLUSIVE:
 # it is logged, the ledger row says INCONCLUSIVE, exit stays 0 and nothing is rolled back. Only a smoke run that
 # actually rendered pages and saw them fail (or a 5xx flood / missing blog markers) can trigger a rollback.
@@ -47,15 +48,23 @@
 # that build; the row says "BUILD ERROR (platform) → READY via <sha7> · <verdict>", no build incident. This path NEVER
 # rolls back (a failing smoke on it writes an incident and leaves production alone). Not found → BUILD ERROR + incident
 # exactly as before. Unreadable git / vercel ls / a code change in between all count as "not found", never as platform.
+# E250 (2026-10-20): a PAPER-ONLY merge — <sha>'s diff against its first parent lists files and every one is
+# is_paper_path (reports/, docs/, logs/, .claude/, root *.md; never code-shaped, never a file the build traces or app
+# code names) — cannot change what visitors are served, so it is not waited on: production AS SERVED is graded at once
+# and the row says PAPER PASS / PAPER INCONCLUSIVE / PAPER FAIL "paper-only merge (no build-relevant paths); production
+# <url> checked". That path NEVER promotes, rolls back, re-pushes functions.php or writes an incident (a failure there is
+# not this merge's; exit 1, run --check to act). 10-19: #340 (.claude/** only) waited 25 m and was graded TIMEOUT.
+# Unknown path / empty or unreadable diff / no --sha = build-relevant (fail closed). --no-paper forces the build wait.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OPERATOR_DIR="/Users/eputnam/java_projects/MHMFinds"
 PROD_ALIAS="musthavemods.com"
-MODE=""; SHA=""; LABEL="manual"; TO=""; WAIT_MIN=25; PLATFORM_WAIT_MIN=20
+MODE=""; SHA=""; LABEL="manual"; TO=""; WAIT_MIN=25; PLATFORM_WAIT_MIN=20; NO_PAPER=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --after-merge|--check|--rollback|--smoke-only) MODE="${1#--}" ;;
+    --no-paper) NO_PAPER=1 ;;
     --sha) SHA="$2"; shift ;;
     --label) LABEL="$2"; shift ;;
     --to) TO="$2"; shift ;;
@@ -110,6 +119,29 @@ same_code() {  # E201: $1 older sha, $2 newer sha → 0 ONLY if git can diff the
   local files
   files="$(cd "$ROOT" && git diff --name-only "$1" "$2" 2>/dev/null)" || return 1
   ! printf '%s\n' "$files" | grep -vE '^$|^(reports|docs|logs|\.claude)/|\.md$' | grep -q .
+}
+is_paper_path() {  # E250: $1 repo-relative path → 0 ONLY if no Vercel build reads it; 1 = build-relevant. Allowlist —
+  # anything not named as paper is build. Code-shaped files are build anywhere (tsconfig includes **/*.ts, so Vercel
+  # type-checks a .ts under .claude/ too). The two reports/ files are named because the build or app code reads them:
+  # history.json (next.config.js outputFileTracingIncludes) and newsletter-sends.jsonl (lib/services/newsletterWeekly.ts);
+  # __tests__/unit/deploy-verify-paper-merge.test.ts scans both sources so a new one cannot be missed.
+  case "$1" in
+    ''|reports/funnel/history.json|reports/funnel/newsletter-sends.jsonl) return 1 ;;
+    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs) return 1 ;;
+    reports/*|docs/*|logs/*|.claude/*) return 0 ;;
+    */*) return 1 ;;   # app/ components/ lib/ public/ prisma/ scripts/ styles/ … and every unknown directory
+    *.md) return 0 ;;  # root-level markdown (CLAUDE.md, README.md, …)
+  esac
+  return 1             # every other root file: package*.json, next.config.js, vercel.json, tsconfig.json, .gitignore, …
+}
+paper_merge() {  # E250: $1 sha → 0 ONLY when git lists the files it changed vs its first parent and every one is paper
+  local files f
+  [ -n "${1:-}" ] || return 1
+  (cd "$ROOT" && git cat-file -e "$1^{commit}" 2>/dev/null) || (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1)
+  files="$(cd "$ROOT" && git diff --name-only "$1^1" "$1" 2>/dev/null)" || return 1
+  [ -n "$files" ] || return 1
+  while IFS= read -r f; do is_paper_path "$f" || return 1; done <<<"$files"
+  return 0
 }
 find_containing_ready() {  # E201: $1 = sha whose own build failed → "sha https://url" of the newest READY production
   # build whose commit contains $1 (ancestry, not timing) with the same application code. Non-zero = none found (yet).
@@ -385,6 +417,18 @@ case "$MODE" in
         PR_NOTE="PR #$PR_NUM state unverified (gh pr view failed) · "
         log "WARN: could not read PR #$PR_NUM state from gh — verifying anyway (could-not-check is not a refusal), row will say so"
       fi
+    fi
+    if [ -z "$NO_PAPER" ] && paper_merge "$SHA"; then
+      # E250: nothing a visitor is served can have changed — grade production as served now; never write production.
+      DEPLOY_URL="$(current_prod)"
+      log "paper-only merge ${SHA:0:7} (no build-relevant paths) — not waiting for its build; checking production as served (${DEPLOY_URL:-unknown})"
+      PAPER_NOTE="paper-only merge (no build-relevant paths); production ${DEPLOY_URL:-unknown (vercel inspect failed)} checked"
+      smoke; PAPER_RC=$?   # (not `if smoke` — the promotion guard test pins the merge path's first `if smoke` after ensure_promoted)
+      if [ "$PAPER_RC" -eq 0 ]; then
+        ledger "PAPER $(verdict)" "$(vnotes "$PAPER_NOTE · 5xx/15m=$FIVEXX")"; log "PAPER $(verdict)"; exit 0
+      fi
+      ledger "PAPER FAIL" "$PAPER_NOTE · not rolled back, no incident — this merge cannot have caused it; run deploy-verify.sh --check to act · $FAILS"
+      log "PAPER FAIL — production failing for a reason this merge cannot have caused; nothing rolled back. Run --check."; exit 1
     fi
     PREV="$(current_prod)"; log "production before: ${PREV:-unknown} · waiting for deploy of ${SHA:-newest} (≤${WAIT_MIN}m)"
     START=$(date +%s); DEPLOY_URL=""

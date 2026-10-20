@@ -195,8 +195,8 @@ def synthesize(a, quinn_last):
     out.append("Full text and reply strings: .claude/agents/mhm-funnel/operator-queue.md")
     out.append("")
     out.append("## 3. Changed today")
-    passes = sum(1 for r in rows if "| PASS |" in r)
-    fails = sum(1 for r in rows if re.search(r"\| (FAIL|ROLLED BACK|BUILD ERROR|INCONCLUSIVE|MISSED)", r))
+    passes = sum(1 for r in rows if re.search(r"\| (PAPER )?PASS \|", r))  # E250: PAPER PASS = paper-only merge, prod checked
+    fails = sum(1 for r in rows if re.search(r"\| (PAPER )?(FAIL|ROLLED BACK|BUILD ERROR|INCONCLUSIVE|MISSED)", r))
     out.append(f"{len(rows)} ledger row(s) today: {passes} PASS, {fails} not PASS." if rows else "Nothing changed in production today.")
     out.append(ledger_table(rows))
     out.append("")

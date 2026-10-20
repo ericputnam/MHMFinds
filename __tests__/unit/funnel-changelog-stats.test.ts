@@ -137,6 +137,19 @@ describe('computeTeamStats', () => {
     expect(stats.paperOnlyMerges).toBe(1);
   });
 
+  it('E250: a PAPER-graded after-merge row counts as paper-only AND as its owner\'s merge (fails pre-fix)', () => {
+    const raw =
+      HEADER +
+      '| 2026-09-20T08:00:00Z | after-merge | Quinn: PR #1 | c1 | d1 | PASS | |\n' +
+      '| 2026-09-20T09:00:00Z | after-merge | Quinn: PR #340 park rows (paper) | 7a40ab5 | https://prod | PAPER PASS | paper-only merge (no build-relevant paths); production https://prod checked |\n' +
+      '| 2026-09-20T10:00:00Z | after-merge | Ops: PR #2 | c2 | d2 | PAPER FAIL | paper-only merge (no build-relevant paths) |\n' +
+      '| 2026-09-20T11:00:00Z | after-merge | Pip: PR #3 | c3 | d3 | TIMEOUT | no READY production deploy |\n';
+    const stats = computeTeamStats(parseChangelogRows(raw), now, 7);
+    expect(stats.paperOnlyMerges).toBe(2);
+    expect(stats.mergesByOwner).toEqual({ Quinn: 2, Ops: 1, Pip: 1 });
+    expect(stats.opsMergeShare).toBeCloseTo(1 / 4, 10);
+  });
+
   it('returns a null Ops share when there are no merges in the window (never divide by zero)', () => {
     const stats = computeTeamStats([], now, 7);
     expect(stats.opsMergeShare).toBeNull();
