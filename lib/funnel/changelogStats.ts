@@ -52,12 +52,25 @@ export function extractOwner(who: string): string {
  * Documented heuristic, not a guarantee — false negatives (missed paper-only
  * rows) are preferred over false positives (real merges undercounted).
  */
-export function isPaperOnlyRow(row: Pick<ChangelogRow, 'mode' | 'commit' | 'deployment' | 'notes' | 'who'>): boolean {
+export function isPaperOnlyRow(
+  row: Pick<ChangelogRow, 'mode' | 'commit' | 'deployment' | 'notes' | 'who'> & Partial<Pick<ChangelogRow, 'result'>>,
+): boolean {
+  if (isPaperVerifiedMerge(row)) return true;
   const blankish = (v: string) => !v || v === '-' || v === '—' || v.toLowerCase() === 'n/a';
   const hasNoArtifact = blankish(row.commit) && blankish(row.deployment);
   const text = `${row.mode} ${row.notes} ${row.who}`.toLowerCase();
   const mentionsPaper = /\b(ledger|digest|report)\b/.test(text);
   return hasNoArtifact && mentionsPaper;
+}
+
+/**
+ * E250: deploy-verify.sh grades a merge that touched no build-relevant path against production as served and writes
+ * `PAPER PASS` / `PAPER INCONCLUSIVE…` / `PAPER FAIL` in the result column. That row IS a real merge on main (it has a
+ * commit; SD-11 and the 1:1 ledger rule count it), so computeTeamStats still credits its owner — it is only ALSO
+ * counted as paper-only, unlike the legacy blank-commit ledger/digest rows above.
+ */
+export function isPaperVerifiedMerge(row: Partial<Pick<ChangelogRow, 'result'>>): boolean {
+  return /^PAPER\b/.test((row.result ?? '').trim());
 }
 
 /** Parse `when` into epoch ms for sorting; unparseable timestamps sort last (null). */
@@ -132,7 +145,9 @@ export function computeTeamStats(rows: ChangelogRow[], nowMs: number, windowDays
   for (const r of windowRows) {
     if (isPaperOnlyRow(r)) {
       paperOnlyMerges++;
-      continue; // a paper-only row is not a real merge; don't credit an owner with it
+      // a blank-commit ledger/digest row is not a real merge; don't credit an owner with it. A PAPER-graded
+      // after-merge row (E250) is a real merge to main that only skipped the build wait — credit it.
+      if (!isPaperVerifiedMerge(r)) continue;
     }
     mergesByOwner[r.owner] = (mergesByOwner[r.owner] ?? 0) + 1;
   }

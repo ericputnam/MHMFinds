@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-20 — E250
+- Tried: deploy-verify `--after-merge` classifies the merge commit's diff (`is_paper_path`, allowlist, unknown = build); all-paper → grade production as served at once, `PAPER PASS/INCONCLUSIVE/FAIL`, no wait/promote/rollback/incident; `--no-paper` escape. Scoreboard counts PAPER rows as paper-only and still credits the owner. E201 → EXTEND 10-27 (0 ERRORs in 77 window rows). (T0)
+- Before → after: 10-19 #340 (.claude/** only) 25 min → TIMEOUT; test 38/39 red pre-fix (green = build-relevant control), stats 1/1 red.
+- Verdict: MORE DATA (read 2026-10-27).
+- Next time: a wait keyed to an artifact the change cannot produce measures the platform, not the change — classify what the change touches before choosing what to wait for.
+
 ## 2026-10-19 — E243
 - Tried: `scripts/agents/conflict-markers.ts` walks every file under `.claude/agents/mhm-funnel/` (no list) for line-anchored `<<<<<<< `, `||||||| `, `=======`, `>>>>>>> ` (CRLF-safe); the budget test asserts 0 hits, >20 files scanned, archive/ and playbooks/ reached. Prose quoting a marker mid-line does not match.
 - Before → after: #330's tree (4fc47b7) → 12 lines / 3 files, exit 1 (archive/experiments 6, archive/ideas-inbox 3, ideas-inbox 3); a temp archive/ file → test red with 3 lines; main → 0 of 37 files. E194 graded KEEP: 7/7 preflights rc=0, wall ≤8 s, 0 fails.
@@ -53,12 +59,6 @@ moved here because plumbing is now Ops's, not Quinn's. Full originals in
 - Before → after: 10-12 false BUILD ERROR incidents 2 of 2 ERRORs (4fd20fd, 817064a), each "No Tier 1 merges" until Quinn closed it by hand. New test 13 cases, 9 red on pre-fix main (4 green = old-behaviour controls). The first draft read `$PLATFORM_RES` bare and broke the E111 "positive evidence still rolls back" test under `set -u`. Caught by the existing suite, fixed with `${…:-}`.
 - Verdict: MORE DATA (read 2026-10-20).
 - Next time: grade on a READY build of the same code, never on the absence of a log. Every new global a helper reads needs `${X:-}`, because the tests extract helpers standalone.
-
-## 2026-10-12 — E194
-- Tried: preflight watch (T0): stderr to its own `logs/funnel-preflight-DATE.stderr` (redacted tail = excerpt); a wall-clock watcher in the runner's poll loop kills the CLI tree at 300 s (TERM, CONT, KILL — a stopped process ignores TERM) → `HANG`; poll gaps > 30 s summed as `asleep/suspended=Ns`; `preflight: start` and `preflight: rc=…` lines every run.
-- Before → after: 2 of 5 MISSED mornings (10-08, 10-10) were 0-byte preflights diagnosed OTHER, no excerpt, hung ~2.5 d. New test 7/7 red on the pre-fix block (the SIGSTOPped CLI hung until the test's 25 s kill), 7/7 green after.
-- Verdict: MORE DATA (read 2026-10-19: every preflight-failure morning names HANG/AUTH/CLI_TOO_OLD or quotes stderr; 0 hangs > 300 s wall without a `hang=1` line).
-- Next time: a timeout that lives inside the process it times out shares that process's fate — put the clock in the caller and measure its gaps.
 
 ## 2026-10-07
 - Tried: E176 — per-day runner lock (atomic mkdir, holder pid, dead-holder break, released by the exit trap after the reap); PR #271 `983a046`, PASS 07:25. New test 7/7 red on the pre-fix runner. Landed MISSED rows for 10-05 and 10-06 via `ledger-commit.sh` plus incident `2026-10-05-063000.md`.
