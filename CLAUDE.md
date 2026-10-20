@@ -916,37 +916,20 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-15/16 — rotated to the archive
+### 2026-10-15 → 10-17 — rotated to the archive
 
-Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md) on 2026-10-17 (E229, CLAUDE.md was 60,372 B over its 60,000 B budget).
-
-### 2026-10-17
-
-- **Rule out an upstream measurement change before diagnosing a channel drop, and record it as
-  data, not prose.** `ai_referral` read −57% WoW with no site cause: OpenAI stripped
-  `utm_source`/referrer from ChatGPT links 10-08→10-16 and the visits landed in `(direct)` (E224).
-  Tell-tales: one source is ~all of the loss, spread thin over hundreds of landings, crawlers still
-  get 200, no deploy in the window. Add a dated row to `scripts/agents/channel-external-windows.ts`
-  (the scoreboard prints it under any overlapping read — including next week's mirror-image +100%);
-  never edit the numbers.
-- **A site-relative control must match the treated slice's source mix.** The same ChatGPT drop made
-  the `/creator/*` guard read 91.3% FAIL because those pages are 18% ChatGPT vs 1.4% sitewide;
-  source-matched it read 99.0% (E225). Likewise a known non-human segment (Singapore `(direct)`,
-  `SG_DIRECT_RULE`) turned a +0.7% sessions day into +14.0% — the guardrail now prints raw *and*
-  ex-segment, importing the rule rather than restating it (E227).
-- **A per-key cap must key on the same canonical identity the report groups by, and a playbook's
-  "always pass --flag" belongs in the default.** `pin-runway-topup.py` capped on the raw URL while
-  `destination_key` folds `blog.*` into the apex, so one article took two slots; and the CLI default
-  stayed 2/URL/day while the playbook said "always pass 1" — the 10-15 run forgot and spent 18 rows on
-  5 destinations (E223). Extract the arg parser so defaults are testable.
+Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19.
 
 ### 2026-10-18
 
 - **A conflict marker in a markdown file passes every gate.** #330's fourth rebase landed 12
   `<<<<<<<`/`=======`/`>>>>>>>` lines in three registry files: the resolve regex missed an
   empty-"theirs" block and the chain continued on `;`. Build, type-check and tests never read
-  `.md`. Grep for markers before every rebase commit, chain with `&&`, and make the paper PR's
-  own gate fail on them (fixed forward by #337).
+  `.md`. Grep for markers before every rebase commit and chain with `&&`. Now a gate (E243, #342):
+  `scripts/agents/conflict-markers.ts` walks all of `.claude/agents/mhm-funnel/**`, matches only
+  line-anchored markers (prose quoting one does not trip it), and `funnel-context-budget.test.ts`
+  fails on any hit — replayed on #330's tree it flagged 12/12 lines.
 - **A count is not a diagnosis until it has a denominator, and a staleness clock must be keyed to
   its trigger.** "New mods 80 (130)" read as a broken scraper; split as posts × rows/post it was
   4 posts vs 5, with ingest 7/7 OK (E232; the scoreboard now prints both). "Pinner writer 72 h"
@@ -960,9 +943,36 @@ Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md) o
   pages branched on `session.isAdmin`; #339 added a per-tab creator-view switch
   (`?view=creator`). An admin list that drives a one-shot action (Promote) must fetch `no-store`
   and drop the acted-on row locally, or a stale reload leaves the button live.
+
+### 2026-10-19
+
+- **A "last processed" clock must advance on the no-op outcome too.** catalog-ingest picked posts
+  by `max(createdAt)`, so a refreshed post that created 0 rows was re-fetched every morning forever
+  (2/run for 10 runs). #343 stamps `lastScraped` on matched rows and selects on
+  `max(createdAt, lastScraped)` — but stamps **only rows whose `sourceUrl` is this post**: a
+  `downloadUrl` match can belong to another post, and stamping it would hide that post's real edit.
+- **Trace a reused path end-to-end for the target population before building on it.** The invite
+  spec said reuse the password-token email; `reset-password` resolves the token via `users`, and
+  the 22 invitees have no `users` row by definition. Pre-creating accounts would have booked +22
+  fake sign-ups on the metric being moved — **never make a metric move by manufacturing the thing
+  it counts** (#328 links normal sign-up).
+- **Email-link sessions are not readers until the scanner pattern is ruled out.** 20 of 30
+  "sessions" from one send landed in the send hour, one session per link, ~all desktop Chrome —
+  6 were engaged. Count engaged sessions per 100 sent and split cohorts by mailbox provider. A
+  bounce counter must decode encoded (RFC 2047) subjects or it silently excludes nobody — 10
+  hard-bounced recipients were missed until #346.
+- **A queue's "done" flag is not the external effect — reconcile against the destination API.**
+  34 Pinterest queue rows dated 10-17 read `Is Posted`; the Pinterest API shows 7 pins. The other
+  27 were writer-plugin re-dates that flipped the flag with no pin ("ghost flips", 55 in 14 d).
+  A monitor counting the flag overstates output (`pin-queue-day-trace.py`, #347).
+- **A hand-pin on a field must be consulted by every writer of that field — find writers with a
+  scanner.** E242's `isNSFW` pins (title + franchise, never the description) patched two scraper
+  paths; the scanner test then found a third in `privacyAggregator.ts` (#344). Gate a new hub on
+  the **hub page's own selection** (`buildWhereClause` + `isNSFW:false` + its sort), not a facet
+  count: the gameplay family had 550 SFW rows and 8 adult titles in its top 30 (#341).
 ---
 
-*Last compound review: 2026-10-18*
+*Last compound review: 2026-10-19*
 
 ---
 
