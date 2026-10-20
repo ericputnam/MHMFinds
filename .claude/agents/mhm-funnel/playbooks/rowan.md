@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-20
+- Tried: E249 — 7 `--ids` pins on /sims-4-cc-furniture/ (T0, #349 258034c; apply ledger 8e74b63); graded E200 KEEP and E242 KEEP (flip leg).
+- Before → after: post disagreement 7/24 → 0/17; catalog 274/4,885 → 267/4,878; 6 earlier pin sets all still at value (E235 32/32 … E186 80/80). E200 share 70.9% → 67.7% because 15 hand-verified untitled pins (E207/E235/E228) entered the denominator — a miss on the rule, not on junk (untitled unpinned 3/266, all real).
+- Verdict: KEEP (read E249 2026-10-27).
+- Next time: a "title-supported share" rule must exclude hand-pinned rows from its denominator, or every verified pin lowers the score it was meant to raise; and join `gh pr view` to the merge with `&&`, not `;` (`--delete-branch` exits 1 while `main` is held elsewhere — `state` was MERGED).
+
 ## 2026-10-19
 - Tried: E242 (T0): isNSFW pins for Sage's 8 adult titles in the gameplay/script top 25, decided from title + franchise: 6 → true (MC WooHoo, Wicked Whims, Prostitution, Ho* It Up, Breast Slider, Basemental), 2 pinned SFW (Wonderful Whims, Cuddle and Bath). `HAND_AUDITED_NSFW` + `pinnedIsNSFW`; 3 scraper update paths now honour it (the test found the third). Graded E193 KEEP, E228 KEEP.
 - Before → after: 8/8 isNSFW=false and 8/8 in sitemap-mods → 6 true; 0 of 8 in any live collection grid (31 pages curled), but /pregnancy-mods/ copy names MC WooHoo + Wonderful Whims. Cost: the 6 leave sitemap/feeds/`/mods`, ~42 GSC clicks/28d on their pages. Test 10/13 red pre-fix.

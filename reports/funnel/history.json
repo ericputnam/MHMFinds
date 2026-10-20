@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T10:37:49.430Z",
+  "generatedAt": "2026-10-20T10:37:52.178Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3808,9 +3808,9 @@
     },
     {
       "date": "2026-10-18",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 258.68,
+      "sessions": 16199,
+      "rpm": 15.96,
       "expectedRevenue": 263.54,
       "expectedSessions": 15939,
       "nonAdMonthly": 158,
@@ -3874,6 +3874,42 @@
         "Pip": 7,
         "Rio": 7,
         "Cass": 6,
+        "operator": 1
+      }
+    },
+    {
+      "date": "2026-10-20",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 190.82,
+      "expectedSessions": 11489,
+      "nonAdMonthly": 152,
+      "ownedAdds7d": 244,
+      "pinterestSessions7d": 58509,
+      "returningShare7d": 0.4879519954995781,
+      "nonPinterestShare7d": 0.24431385211494994,
+      "pagesPerSession7d": 1.5070426953602911,
+      "engagementRate7d": 0.6788279951061894,
+      "favorites7d": 785,
+      "downloadClicks7d": 358,
+      "newMods7d": 113,
+      "catalogTotal": 16946,
+      "captureRatePer1k": 2.5271094631963793,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.6428571428571429,
+      "opsMergeShare7d": 0.11666666666666667,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Nova": 8,
+        "Sage": 7,
+        "Rowan": 7,
+        "Rio": 7,
+        "Ops": 7,
+        "Cass": 6,
+        "Pip": 7,
+        "Quinn": 10,
         "operator": 1
       }
     }
@@ -6182,6 +6218,83 @@
       "kind": "merge",
       "label": "operator session: PR #339",
       "commit": "9a307ef",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Quinn: PR #328 Cass invite-01 sender (E233, T1)",
+      "commit": "4374ceb",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Nova: PR #343 E239 catalog-ingest stops re-fetching refreshed posts",
+      "commit": "be42536",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Cass: PR #346 E240 weekly-issue cohort diagnosis",
+      "commit": "4d8e6c6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Pip: PR #347 E237 pin-queue day trace + E188 grade",
+      "commit": "37283f0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Rio: PR #345 E241 guardrail agreement tracker + E227 KEEP final + E234 10-19 leg",
+      "commit": "36e3985",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Quinn: PR #340 park 10 experiment rows + close Q-E21 (paper)",
+      "commit": "7a40ab5",
+      "result": "TIMEOUT"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Sage: PR #341 E238 hub-eligibility read as a script + gameplay BEFORE (Tier 0)",
+      "commit": "03ab232",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Quinn: PR #335 Sage eyes-cc hub (E231, T1)",
+      "commit": "d5f8527",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Rowan: PR #344 funnel(rowan): E242 isNSFW pins on 8 adult titles (Tier 0)",
+      "commit": "89b9d45",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Ops: PR #342 E243 budget test fails on registry conflict markers",
+      "commit": "737d725",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-19",
+      "kind": "merge",
+      "label": "Quinn: PR #348 funnel: daily run 2026-10-19 (Tier 0 docs)",
+      "commit": "415d6f6",
       "result": "PASS"
     }
   ]

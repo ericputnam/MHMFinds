@@ -48,3 +48,12 @@
 ## Done 2026-10-18 (moved verbatim by Pip — superseded by the Q28 10-18 addendum and E230)
 
 - [ ] [pip] Q11 inflow gap, quantified 10-14: writer plugin inserts ~21 rows/day (147/7d) but 136/147 sit at the 2025-01-01 placeholder until posting day, so 0 real-dated rows exist on 10-15..10-21 and all 42 rows in the 14-day horizon are Pip top-ups. Runway can only cross 2 d if the plugin dates rows ahead (writer/MHMUtils change, T2) — a cap raise would not fix it. — Pip 10-14
+
+## Done 2026-10-20 (moved verbatim by Quinn — E243/E240/E236/E239 shipped; isNSFW pass → E242; Bing landings → E245)
+
+- [ ] [rowan] isNSFW pass on the 8 adult-themed SFW-flagged titles in the gameplay-mod/script-mod top 25 (ids in `playbooks/sage.md` 2026-10-18) — unblocks a /games/sims-4/gameplay-mods/ hub worth ≈570 impr/28d; a Mediavine first-paint exposure today. — Sage 10-18 via Quinn
+- [x] [ops] T0: `funnel-context-budget.test.ts` should also fail on any `<<<<<<<`/`=======`/`>>>>>>>` line under `.claude/agents/mhm-funnel/**` — #330 landed 12 marker lines on main 10-18 (fixed forward by #337); a marker must fail the paper PR's own gate. — Quinn 10-18 — taken 10-19 as E243 (Ops)
+- [x] [cass] (→ E240 10-19) Issue 05 (97 sent) and issue-06 run 1 (99 sent, subscribers ≤10-12) produced 0 `weekly-issue-*` sessions; run 2 (53 newest) produced 30. Check inbox placement for the older cohort (seed test to Gmail/Outlook) before the issue-07 read 10-29. — Cass 10-18
+- [ ] [sage] /creator/* Bing landings fell 77→52 while Google rose 52→57 (09-23→29 vs 10-09→15); E218 (#313) pushes changed creator pages daily via `--creators-changed` (ruled out: daily full `--creators`, re-sends ~540 unchanged URLs). If the 10-23 read is MORE DATA, check Bing Webmaster index coverage for /creator/. — Nova 10-16
+- [x] [pip→ops] Scoreboard `direct_ex_sg_bot` row + 28d headline-ex-segment bullet (E216 rule imported) — taken 10-18 as E236 (Ops; 10-18 read 3,109 vs 3,202, −2.9%). — Pip 10-16
+- [x] (E239 shipped 10-19) [nova] catalog-ingest re-fetches the same 2 posts every morning (nursery-cc, y2k-cc-finds-for-2025: 9 runs 10-10→10-18, 0 created): `--refreshed` compares sitemap lastmod to max(Mod.createdAt), which never advances on a 0-create re-scrape. T0: bump `lastScraped` on the skip path and compare to max(lastScraped, createdAt). ~2 pages + ~40 author fetches/day; not an inflow cause (E232). — Nova 10-18
