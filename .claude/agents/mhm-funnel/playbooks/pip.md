@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-20
+- Tried: E244 top-up #16 (T0, SD-10 floor; E209's next leg; apply ledger on main 7fd30bc, artifacts #350): tool gate 1.51 d (18 ÷ 11.93/day pinterest-14d), scoreboard ≈1.5 d on the same basis. 18 sessions-ranked rows 3×10-23 + 7×10-24/25 + 1×10-26 (ranker 10 dests/63 ids, 94 writer rows dropped upstream, 0 in the tool); cross-run cap left 3 slots on 10-23 (E209 holds 4) and skipped 10-21/22. E195 graded KEEP: `--check --stranded 63` 63/63 live.
+- Before → after: runway 1.51 → 3.02 d (18 → 36 rows; bound seven_per_day_cap, stopped at the ~3-day target); SEO 58 → 94 (0/18 → 18/18); read-back 18/18, created_at 2025-06-11..2026-01-27, 1/dest/date (E223 default held). Day-trace: plugin 0 real-dated rows on 10-21..27 — the 14-day horizon is again 100% top-ups (Q28).
+- Verdict: MORE DATA (read 10-27; treated WoW ≥ site WoW, re-pulled)
+- Next time: at ≈12 pins/day the floor fires every ~5 days and the trailing rate is now set by the top-ups themselves, so each refill buys the same 3 days for fewer sessions — only Q28 (plugin dates ahead) changes the slope.
+
 ## 2026-10-18
 - Tried: E230 (T0, #334): diagnosed the scoreboard 🔴 "Pinner writer 72.1 h" before any pin work — rule printed first (`reports/funnel/pip-writer-pinner-2026-10-18.md`). Graded E181. No top-up: tool gate 2.99 d (32 ÷ 10.71 pinterest-14d) ≥ 2.0.
 - Before → after: writer inserts are publish-keyed — 17/17 WP posts since 09-21 got a same-UTC-day batch (lag 10 min–6.8 h), 0/14 non-post days had one; 0 posts since 10-15 03:42Z → 72.2 h of silence is the weekend, not a death. Last 4 weekends: 1 false 🔴 (today), 1 near-miss (10-12, 1.1 h). Dating step: 518/745 writer rows since 09-21 still placeholder (219 from the 8 batches since 10-05); poster shipped 29 writer vs 181 top-up rows in 14 d → Q28 addendum. E181: treated 3,087 vs 3,172 (−2.7%) vs site −1.1% → KILL as lift.
@@ -49,16 +55,10 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 10-21)
 - Next time: the plugin dates a row only on its posting day, so a horizon-based runway can never see writer inflow; measure Q11 by rows dated ahead per day, not rows inserted.
 
-## 2026-10-13
-- Tried: E195 (T0): `repair-pin-sections.py --stranded 63` — the top-up printed "repair them first: repair-pin-sections.py" for 2 rows that tool could not see (its window is [today−14, today]; a stranded row is before it by definition). Added the flag (query mirrors revive's `fetch_stranded` verbatim, pinned in --self-test), dry run, `--apply` (ledger `7a82b9b` on main): cleared dead section 5483319435714435392 on rows 7971/8019 (/black-sims-4-cc/, #2 sessions destination, dated 03-04). No top-up (#14) today per Quinn — scoreboard runway 2.8 d.
-- Before → after: top-up dry run section drops 2 → 0; plan 19 → 21 rows with /black-sims-4-cc/ ×2 in it. Same 28 rows: tool 1.22 d (÷ 22.86 pinterest-14d) vs scoreboard 2.8 d (÷ 10.1 observed-7d). Pinterest 7d −4.9% is −2.5% Tue–Sun and −0.5% vs 4 wks ago; apex 54,401 → 52,994 (−2.6%), blog.* 2,471 → 61; worst single pages /sims-4-male-sim-download −229, /sims-4-coquette-cc −171 — broad drift with the posting rate (33.5 → 10.1/day observed), not host or landing class. Bing −7.8% is the same broad drift (engaged share 76 → 78%).
-- Verdict: MORE DATA (read 2026-10-20)
-- Next time: the runway basis is the tool's (pinterest-14d — "divide by the rate you want"); when the scoreboard reads ≥2 d and the tool reads <2 d, say so in line 1 and let Quinn gate. Writer still has 0 real-dated rows 10-18..20.
-
 ## 2026-10-19
 - Tried: E237 (T0, read-only): traced the digest's "34 rows dated 10-17 posted vs ≤7/date" before any top-up — `scripts/agents/pin-queue-day-trace.py` (rows by origin per Post Date vs Pinterest API pins). Graded E188. No top-up: tool gate 2.43 d (25 ÷ 10.29 pinterest-14d) ≥ 2.0.
 - Before → after: 10-17 = 7 Pip E188 rows + 27 legacy rows of WP 33529 (`/sims-4-halloween-loading-screens/`, republished 10-14, rows created 2025-10-21) — the Pinterest API shows **7 pins** that day, so the 27 flipped `Is Posted` with no pin (ghost flips; a 10-11 plugin re-date of 25 rows did post 20). Q28 number (tool, 10-05→10-19): API 150 pins = 91 Pip top-up rows (61%) + 29 plugin new-post rows on 4 post days + 76 legacy re-dates, 55 of them ghost (10-05 23, 10-17 27); the queue-posted proxy reads 14.0/day vs 10.29 real. E188: treated 1,568 vs 1,485 (+5.6%) vs site +5.0% → KEEP by rule; post-window 10-15→17 671 vs 671 (0.0%) vs site +8.2%.
 - Verdict: E188 KEEP (rule), no lift shown; E237 MORE DATA (read 10-26)
 - Next time: a queue "posted" flag is not a pin — reconcile a per-date burst against Pinterest's own created_at before calling it a norm breach or counting it as drain.
 
-_Older entries live verbatim in `archive/playbooks/pip-2026-10.md` (10-07, 10-12) and `archive/playbooks/pip-2026-09.md` (≤10-04); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/pip-2026-10.md` (10-07, 10-12, 10-13) and `archive/playbooks/pip-2026-09.md` (≤10-04); nothing deleted._

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-20 — E248: verdict 10-20; E234 line legs closed; tracker 3/7 INSUFFICIENT
+- Tried: guardrail verdict 10-20 (T0 paper, E248, `reports/funnel/rio-verdict-2026-10-20.md`); graded E234's line legs (10-18 $258.68 ≥ $141.22 MET; 28d 98.98% / 102.10%) and read the E241 tracker (3 of 7 agree, INSUFFICIENT). MV MCP unavailable → client.ts direct + guardrail JSON.
+- Before → after: Singapore Direct share of the day 5.31% (controls) → 10.62% on 10-18, yet ex-segment RPM $17.29 → $17.57 (+1.6%) and MV monetizable-session RPM +5.0% — the RPM dip (−3.3%) is mix, not rate; Mediavine's own split confirms it without GA4.
+- Verdict: KEEP (read E248 10-21; tracker gate 10-24).
+- Next time: WIRE on 10-24 is reachable only if all four remaining mornings fire and print both lines — a single missed run moves the gate; say that in the verdict before the day, not after.
+
 ## 2026-10-19 — E241: E227 KEEP final (leg 2: 2.0 pt / 0.0 pt); the 10-24 wiring gate is a script
 - Tried: guardrail verdict 10-19 (Tier 0) + `guardrail-agreement-tracker.ts` (+lib, 15 tests): one reading per guardrail JSON, MV-Δ vs GA4-raw-Δ gap, agree/disagree/absent, WIRE/HOLD/INSUFFICIENT with the rule printed first. MV MCP down → guardrail JSON + scoreboard only; `direct-bot-read.ts --start 2026-09-19 --end 2026-10-17 --out /tmp/…` as the hand read.
 - Before → after: 10-17 $286.91 vs $262.51 (+9.3%), RPM −3.8% on sessions +13.6%; segment 1,888 = 11.20% vs 2.28% controls → mix alone predicts (1−.1120)/(1−.0228) = −9.1% RPM, so ex-segment RPM ≈ $19.46 vs $18.38 (+5.9%). Ex-segment sessions +5.0% (guardrail) = hand read +5.0% (controls 14,584.5 / 332 identical, 0.0 pt); GA4 raw +15.6% vs MV +13.6% (2.0 pt). 28d 99.03% / 102.1% (run 17). Tracker: 2 of 7 mornings (0.9 pt, 2.0 pt) → INSUFFICIENT, 5 more; 10-24 is the 7th only if every run 10-20→10-24 prints both lines. 10-18 not finalized; needs ≥ $141.22 for 97% on 10-20.

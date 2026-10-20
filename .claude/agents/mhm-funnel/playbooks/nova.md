@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-20
+- Tried: E246 (T0, paper): writer brief W43 `reports/funnel/writer-brief-W43-2026-10-20.md` — GSC demand (impr≥50, no top-10 post) × catalog coverage (facet ≥40 SFW mods, stale >60d); 5 topics (body presets, witch, streetwear, boho, winter outerwear). E197 graded KEEP (scoreboard prints "2 (1 with >=1 approved; 1 house account excluded)", pending 7 oldest 16d). E239 interim: refreshed=1 created=20 → 0 zero-create re-fetches.
+- Before → after: topics adopted W36–W38 0/15 → W43 read 2026-10-27 (keep if ≥2/5 of the next 5 posts match).
+- Verdict: PENDING (E246); 7 pending submissions all one creator, 17 d old — operator-only.
+- Next time: spot-check a facet's top rows before briefing it — `script-mod`, `workout`/`fitness` and `romantic` all surfaced adult/gameplay bleed flagged SFW (handed to Rowan, not briefed). The shared registry is Quinn's to edit: put the row text in the report.
+
 ## 2026-10-19
 - Tried: E239 (T0, #343) — `--refreshed` compared lastmod to max(createdAt) only; a 0-create re-scrape never moved it. Now max(createdAt, lastScraped), and the re-scrape stamps lastScraped on its own post's rows.
 - Before → after: 2 posts re-fetched/run, 10 runs 10-10→10-19, 0 created (67 found). Dry run 10-19: 4 selected (Oct-2026 new, 23 to create; Sept-2026 edited; nursery; y2k), stamps 30/36/30. Same-post filter caught 1 cross-post downloadUrl match (37→36) — it would have hidden another post's edit.
@@ -60,17 +66,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 343 isCreator accounts = 20 seed + 1 admin + 322 form ticks; 3 submitted, 0 profiles, 1 weak catalog match, 221 player-active, 79 dormant; download-click 57.1% vs 55.9% unflagged control, favorites 41.9% vs 53.3% → read 10-14. Reads: E137-b KEEP/close, E139 KEEP (4/7 rows, durability → Ops), E141 KEEP (5/5), E17 KILL (61 engaged vs 200), E22 KEEP (lighting 18/25 fixtures; CAS-lighting cleanup → Rowan).
 - Verdict: MORE DATA (read 2026-10-14). "Flagged but never submitted" is not a supply pool — a checkbox 13–24% of sign-ups tick each month with player behaviour. The one real gap is routing: creator sign-ups return to the referring page, no welcome email, portal only in the navbar (held: touches app/sign-in).
 - Next time: run the control before calling a population a leak — one unflagged-cohort comparison (57.1% vs 55.9%) retired a 10-04 inbox line that had been pitched as the "next supply leak"; and re-read the ledger before writing HELD-RED in a playbook (E166 had shipped four days earlier).
-
-## 2026-10-04
-- Tried: E172 submissions triage (T0, PR pending, NOT merged — RED-RPM breaker). Read-only DB: 11 submissions = 4 approved (Nov 29–Jan 10: 2 anonymous, 2 creator accounts) + 7 pending, all from ONE creator account created 10-03 via `/api/creator/submissions`, posted 10:51–11:09, unreviewed. All 20 CreatorProfile rows are seeds; 0 submitters hold one. The scoreboard counted `CreatorProfile ∩ submitter`, and the dashboard path and the approve route never create a profile, so only E122 claimants could ever count. Fix: `lib/funnel/creatorOnboarding.ts` (non-admin isCreator-or-profile account with ≥1 submission) + "Submissions pending review" row. Guard red pre-fix on 4/7.
-- Before → after: onboarded 0 → 3 (2 with ≥1 approved); pending 7, oldest 1d (DB 2026-10-04). E17 pre-read: decor-cc 54 engaged / 70 sessions 28d (09-06→10-03, GA4 apex) vs ≥200 bar.
-- Verdict: MORE DATA (read 2026-10-11: keep if the scoreboard prints 3/7 and pending is reviewed in ≤7d).
-- Next time: before trusting a zero, follow one row through every path that writes it. Approving a dashboard submission still links no `creatorId` (no profile), so hosting is by `author` string only. That is the next supply gap.
-
-## 2026-10-03
-- Tried: E166 (T0; shipped as PR #252 `7312738` 10-03 — this line said HELD-RED until 10-07, stale): a real creator claiming any of the 8 seed-held pages got a 409 at promote ("handle already belongs to another profile", for a profile nobody owns). `planPromotion` now returns `displaceSeed` when the holder is a placeholder account with 0 OAuth logins, and the route renames the seed to `seed-<handle>` in the same `prisma.$transaction` as the promote. The rename re-asserts the seed predicate (`seedHolderWhere()`, built from PLACEHOLDER_ACCOUNT_DOMAINS), so if it no longer holds, the promote hits P2002 and both writes roll back. The predicate fails closed on an unchecked `seed-<handle>`. isCreator was not touched.
-- Before → after: seed-held handles that 409 at promote 8/20 → 0 (code; no DB write today). Tests 13 new, 8 red on de969ec; 4 mutations each red. /creator/* landings 7d (09-26→10-02) were 587 vs a baseline of 558 (105%).
-- Verdict: MORE DATA (read 2026-10-17; keep if 0 seed-handle 409s AND ≥1 promotion when a claim arrives).
-- Next time: the claim path has no blockers left that code can fix. Every remaining 0 sits upstream at Q23 (0 sent, drop date 10-06).
-
-_Older entries (2026-10-01→10-02) are in `archive/playbooks/nova-2026-10.md`; up to 2026-09-30 in `archive/playbooks/nova-2026-09.md`; nothing deleted._
