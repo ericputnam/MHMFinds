@@ -50,6 +50,9 @@ CAMPAIGN_SUBJECTS = {
     "issue-01": "Your first MustHaveMods roundup",
     # Every DB-built weekly issue (05, 06, ...) uses this subject prefix (newsletterWeekly.ts).
     "weekly": "This week on MustHaveMods",
+    # E233 subscriber->account invite (INVITE_SUBJECT in lib/services/subscriberInvite.ts). Until
+    # E254 (2026-10-21) its DSNs read as "other": the one hard DSN of 10-19 (5.7.1) was this send.
+    "invite": "Save the mods you find on MustHaveMods",
 }
 DSN_SUBJECT_RE = re.compile(
     r"(undeliver|delivery (status|failure|report)|mail delivery failed|returned mail|failure notice|"

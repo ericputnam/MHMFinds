@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-21
+- Tried: E254, the issue-07 pre-send check (T0, paper + DSN counter). Dry run + resume dry run on today's list, a DSN read since 10-19, and the invite subject added to `CAMPAIGN_SUBJECTS` (guard test was 1/3 red on main).
+- Before → after: 10-20 plan was "100 + resume 90". 10-21: 202 recipients (+12 in a day), tail 102, so run 2 itself defers 2 and Thursday needs 3 runs. The 1 hard DSN since 10-19 (5.7.1) was invite-01, filed 'other'; its hash was already excluded. 0 new hashes.
+- Verdict: PENDING (read 2026-10-23: 100% reached, 0 dupes, last run deferred 0).
+- Next time: at ~12 opt-ins/day the list passes 200 weekly. Re-dry the tail the day before every send; the run count is a function of the list, not of last week's plan.
+
 ## 2026-10-19
 - Tried: E240, the inbox-placement check on the cohorts that showed 0 sessions (T0). DSN counter now decodes encoded subjects (the weekly subject has an em dash, so all 13 weekly DSNs had read as "other"). Added `newsletter-cohort-diff.ts`, `--weekly --seed` (ships inert, Q31), and 10 bounce hashes added to the exclusion list.
 - Before → after: run 2's "30 sessions" had 6 engaged. 20 came in the send hour and 7 came from IE at one hit per link: a link-scanner pattern. Cohorts: Gmail 82/96 in the old cohort vs 25/53 in run 2, 'other' domains 5 vs 17, hard DSNs 3.1% vs 13.2%. The only receiver verdict read spf=pass, dkim=none.
