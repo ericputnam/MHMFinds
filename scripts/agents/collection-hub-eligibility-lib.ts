@@ -60,16 +60,57 @@ export const ADULT_TITLE_RE =
   /\b(wicked ?whims|wonderful ?whims|woohoo|basemental|prostitut\w*|nsfw|breast slider|ho[e*]? ?it up|strip ?club|sex(?:ual)?|nude|nudity|porn)\b/i;
 
 /**
- * Per-family OFF-type words: a gameplay mod is anything that is not a CAS
- * item, an object or a lot, so on-type is defined by the absence of those.
- * Negative definition on purpose — gameplay titles are heterogeneous ("MC
- * Command Center", "UI Cheats", "Slice of Life") and a positive list would
- * reject real mods.
+ * Per-family OFF-type words. Each family's on-type is defined by the ABSENCE
+ * of these words — negative definition on purpose: gameplay titles are
+ * heterogeneous ("MC Command Center", "UI Cheats", "Slice of Life") and lot
+ * titles are proper nouns ("Quant House", "Rivelin Lake"), so a positive list
+ * would reject real rows. Every word here was measured against the WHOLE
+ * family on prod before it was added; rejections are recorded with counts so
+ * nobody re-proposes them.
+ *
+ * A grade with no family is NOT eligible — leg (c) was not checked, and a
+ * probe that did not look returns INCONCLUSIVE, never a verdict (E252: the
+ * 10-21 read of lot+residential printed ELIGIBLE on a grid whose first 48
+ * rows were 18/48 objects, careers, a save file, an EA pack and a Sim).
  */
 export const OFF_TYPE_RE: Readonly<Record<string, RegExp>> = {
+  // `nails?` → `nails|nail (polish|art|…)` (E252, 10-21): the singular alone
+  // matched "Nail Technician" (career mod, #29 of the gameplay top 30). Measured
+  // on prod 2026-10-21: singular `nail` outside the nails facet is 10 titles and
+  // 0 of them are CAS nails (2 poses, 2 holiday sets, 1 full-body, 3 furniture
+  // salons, 1 decor, 1 career); inside the nails facet 120/161 titles use the
+  // plural and 23 are singular-only, 9 of those compound (polish/art/set/…).
+  // `nails?` across the whole gameplay family (544 rows) hit exactly 1 title —
+  // the career — so the singular bought nothing there. On the nails facet the
+  // new pattern keeps 136 of the 143 titles `nails?` caught; the 7 it drops
+  // are 2 nail SALONS (objects, correctly not CAS) and 5 bare-singular titles
+  // ("Colorful Almond Nail") that never appear in a gameplay grid.
   gameplay:
-    /\b(hair(?:style)?s?|dress(?:es)?|skirts?|tops?|jeans|shoes?|boots?|heels|skin(?:tone| overlay| detail)?s?|eyes?|eyebrows?|lashes|lipstick|blush|eyeshadow|nails?|tattoos?|earrings?|necklace|rings?|sofa|couch|bed(?:room)?|kitchen|bathroom|house|villa|apartment|lot|mansion|cottage|clutter|rug|curtains?|wallpaper|flooring|pose(?: pack)?s?)\b/i,
+    /\b(hair(?:style)?s?|dress(?:es)?|skirts?|tops?|jeans|shoes?|boots?|heels|skin(?:tone| overlay| detail)?s?|eyes?|eyebrows?|lashes|lipstick|blush|eyeshadow|nails|nail (?:polish|art|set|pack|cc|design|colou?r|tips?|shape|retexture|recolou?r|collection)s?|tattoos?|earrings?|necklace|rings?|sofa|couch|bed(?:room)?|kitchen|bathroom|house|villa|apartment|lot|mansion|cottage|clutter|rug|curtains?|wallpaper|flooring|pose(?: pack)?s?)\b/i,
+  // lots = contentType lot | residential | commercial | community. On-type is
+  // a downloadable lot (house, venue, apartment). Measured against all 959
+  // SFW rows on prod 2026-10-21 — hits / hits that are NOT a lot:
+  //   walls 49/49 · sets 34/34 · packs 22/22 · part N 18/18 · doors 17/17 ·
+  //   windows 16/16 · collection 7/7 · wallpaper 5/5 · tiles 4/4 · traits 4/4 ·
+  //   jobs 3/3 · plants 3/3 · save file 3/3 · career 2/2 · challenge 2/2 ·
+  //   build/buy 2/2 · essentials 2/2 · set up 2/2 · mods 2/2 · lamps 2/2 ·
+  //   posters 2/2 · paintings 2/2 · swing, pacifier, decals, tvs, bookshelf,
+  //   playpen, heels, rugs, furniture, broom, kit, cats & dogs 1/1 each.
+  // REJECTED (a real lot would be flagged): `cc` 32 hits, 3 are "(No CC)"
+  //   lots and 2 more are venues ("Bridgecreek Police Station CC"); `home` 49,
+  //   ~40 lots; `starter` 22, 21 lots; `\w*room` 7, 3 lots ("Ranch 5-Bedroom…",
+  //   "Mushroom Fairy House"); `functional` 4, 1 lot ("Tokyo Bar + Restaurant
+  //   Multi-functional Lot"); `kiss` 2, 1 lot ("Kiss of Autumn"); `shed` 1,
+  //   ambiguous. Known misses in the 10-21 top 48 that no title word can
+  //   catch: "Kiss and Grind" (gameplay), "Eva" (a Sim) — hand-grade those.
+  lots:
+    /\b(careers?|jobs?|challenge|save ?files?|build\/buy|wallpapers?|walls?|doors?|windows?|tiles?|plants?|decals?|tvs?|bookshel(?:f|ves)|playpen|heels|lamps?|rugs?|posters?|paintings?|traits?|swing|pacifier|set ?up|essentials|furniture|collections?|packs?|sets?|part\.? ?\d|mods?|cats & dogs|broom|kits?)\b/i,
 };
+
+/** The families leg (c) can grade; the CLI rejects anything else. */
+export const OFF_TYPE_FAMILIES: ReadonlyArray<string> = Object.keys(OFF_TYPE_RE);
+
+export type HubVerdict = 'ELIGIBLE' | 'NOT ELIGIBLE' | 'INCONCLUSIVE';
 
 export interface HubGrade {
   rule: HubRule;
@@ -77,7 +118,12 @@ export interface HubGrade {
   topAudited: number;
   adultInTop: Array<{ id: string; title: string; via: 'watchlist' | 'title' }>;
   offTypeInTop: Array<{ id: string; title: string; word: string }>;
+  /** False when no `family` was given — leg (c) was not checked. */
+  offTypeGraded: boolean;
+  /** True only when all three legs were checked AND passed. */
   eligible: boolean;
+  /** ELIGIBLE / NOT ELIGIBLE / INCONCLUSIVE (legs a+b pass, leg c ungraded). */
+  verdict: HubVerdict;
   reasons: string[];
 }
 
@@ -113,13 +159,22 @@ export function gradeHub(
   if (adultInTop.length > 0) reasons.push(`adult-themed SFW-flagged in top ${rule.topN}: ${adultInTop.length}`);
   if (offTypeInTop.length > 0) reasons.push(`off-type in top ${rule.topN}: ${offTypeInTop.length}`);
 
+  const offTypeGraded = offRe !== undefined;
+  const failed = reasons.length > 0;
+  if (!offTypeGraded) {
+    reasons.push(`leg (c) NOT graded: no --family= given (one of: ${OFF_TYPE_FAMILIES.join(', ')})`);
+  }
+  const verdict: HubVerdict = failed ? 'NOT ELIGIBLE' : offTypeGraded ? 'ELIGIBLE' : 'INCONCLUSIVE';
+
   return {
     rule,
     totalSfw,
     topAudited: audited.length,
     adultInTop,
     offTypeInTop,
-    eligible: reasons.length === 0,
+    offTypeGraded,
+    eligible: verdict === 'ELIGIBLE',
+    verdict,
     reasons,
   };
 }
@@ -130,7 +185,11 @@ export function formatRule(rule: HubRule, family: string | undefined): string {
     `RULE (printed before the read): ELIGIBLE iff`,
     `  (a) SFW rows under the page's own where >= ${rule.minRows}`,
     `  (b) 0 adult-themed SFW-flagged titles in the top ${rule.topN} by downloads (watchlist ids OR ADULT_TITLE_RE)`,
-    `  (c) 0 off-type titles in the top ${rule.topN}${family ? ` (OFF_TYPE_RE.${family})` : ' (no family given: leg (c) is vacuous)'}`,
+    `  (c) 0 off-type titles in the top ${rule.topN}${
+      family
+        ? ` (OFF_TYPE_RE.${family})`
+        : ` (NO family given: leg (c) will not be graded — the verdict can be at most INCONCLUSIVE; pass --family=${OFF_TYPE_FAMILIES.join('|')})`
+    }`,
   ].join('\n');
 }
 
@@ -139,8 +198,12 @@ export function formatGrade(g: HubGrade): string {
   lines.push(`SFW rows: ${g.totalSfw} (need >= ${g.rule.minRows}) · audited top ${g.topAudited} of ${g.rule.topN}`);
   lines.push(`adult-themed SFW-flagged in top ${g.rule.topN}: ${g.adultInTop.length}`);
   for (const a of g.adultInTop) lines.push(`  - [${a.via}] ${a.id} ${a.title}`);
-  lines.push(`off-type in top ${g.rule.topN}: ${g.offTypeInTop.length}`);
-  for (const o of g.offTypeInTop) lines.push(`  - "${o.word}" ${o.id} ${o.title}`);
-  lines.push(`VERDICT: ${g.eligible ? 'ELIGIBLE' : 'NOT ELIGIBLE'}${g.reasons.length ? ' — ' + g.reasons.join('; ') : ''}`);
+  if (g.offTypeGraded) {
+    lines.push(`off-type in top ${g.rule.topN}: ${g.offTypeInTop.length}`);
+    for (const o of g.offTypeInTop) lines.push(`  - "${o.word}" ${o.id} ${o.title}`);
+  } else {
+    lines.push(`off-type in top ${g.rule.topN}: NOT GRADED (no family) — read the table above by hand before quoting this grade`);
+  }
+  lines.push(`VERDICT: ${g.verdict}${g.reasons.length ? ' — ' + g.reasons.join('; ') : ''}`);
   return lines.join('\n');
 }
