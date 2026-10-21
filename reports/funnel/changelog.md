@@ -432,3 +432,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-20 06:59 | after-merge | Pip: PR #350 E244 runway top-up #16 artifacts (Tier 0, SD-10 floor) | fc7d2cb | https://mhm-finds-dw5l-mo9toppd4-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-20 07:05 | after-merge | Quinn: PR #352 funnel: daily run 2026-10-20 | a3a6efe | https://mhm-finds-dw5l-iie8lbwm9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-21 06:35 | check | morning-check |  | https://mhm-finds-dw5l-8ztf4y576-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-10-21 06:46 | after-merge | Cass: PR #353 E254 issue-07 pre-send check | f2f6053 | https://mhm-finds-dw5l-7n1uwerop-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
