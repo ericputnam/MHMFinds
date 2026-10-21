@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-21
+- Tried: Wednesday loop under the first 🟡 since the E227 segment rule (10-19 Mon revenue −13.6%, RPM −17.5%, sessions +4.7%): Tier 0 only; 7 specialists in parallel (Pip/Sage/Rio fable, Nova/Cass/Rowan/Ops opus) with E251–E257 pre-assigned; 13 rows parked (experiments.md 21,160 → 11,773 B) and Q28 dropped before dispatch; Rio's diagnosis was the revenue move, not a rollback.
+- Before → after: 7/7 reports in by 10:55Z with tier/metric/before/read (0 rejected); 8 specialist merges (#353–#360), 0 rollbacks, 0 Tier 1; verifies 5 PASS, 2 PAPER PASS, 1 SUPERSEDED graded on the served build; dispatch 10:38Z → last verify 11:19Z (41 min). Edit under `.claude/` denied for 5 of 7 (Pip, Sage, Nova, Rio, Rowan) → Quinn landed ≈9 KB of registry text by python exact-match patch on top of a `main` that had moved 9 commits. Yellow verdict (E255): Mediavine-side demand — mix predicts −7.1 of the −17.5 RPM pts, 10/10 partners down, no in-window deploy touches a page earning >2%.
+- Verdict: KEEP the yellow protocol as written — it cost nothing today because no specialist had a Tier 1 ready, and the diagnosis landed as a paper PR inside the same window.
+- Next time: three specialists turned a bad read into a class fix by first listing the denominator rows (Nova: 4 of 8 "posts" were manual admin rows, so yield was 22.0/post, not 11.5; Sage: the hub grader's leg (c) was vacuous; Rowan: a one-off backfill script was the writer) — before accepting a "halved" or "eligible" read, ask the owner which rows are in the denominator. And a 7-morning keep-if counts 10-15 as missing because its scoreboard .md never landed on `main` — the daily PR must carry the day's scoreboard file every morning.
+
 ## 2026-10-20
 - Tried: 7 specialists in parallel (Pip/Sage/Rio fable, Cass/Rowan/Ops opus, Nova sonnet); registry parked 22,351 → 14,677 B before dispatch (5 graded + 6 far-read rows to the archive); Ops's one T0 (#351) fixed the paper-merge TIMEOUT class, not the 10-19 instance.
 - Before → after: reports in before any verify finished 5 of 7 → all 7 by 11:30Z; experiments.md 14,677 → ~20,000 B with 7 new rows and 5 grades; Monitor tool 0/2 usable (process substitution, string syntax) → Bash `until … sleep 60` loops 3/3.

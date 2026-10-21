@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-21 — E255: first yellow since the segment rule — demand, not mix, not a deploy; tracker HOLD
+- Tried: yellow diagnosis 10-21 (T0 paper, `reports/funnel/rio-verdict-2026-10-21.md`, PR #358 PAPER PASS); E248 10-21 leg graded; E241 tracker run on Quinn's tree. MV MCP unavailable → `client.ts` direct incl. `advertisers` / `adUnits` / `devices` / `pages` (first verdict to use the breadth endpoints).
+- Before → after: 10-19 Mon $161.82 vs $187.26 (86.4%); segment 11.38% vs 4.61% predicts −7.1% RPM, printed −17.5%; ex-seg RPM $13.55 vs $15.94 (−15.0%); MV mon-RPM −8.1%, CPM −3.8% with imp/mon-pv −2.9%; 10/10 partners down vs 10-12, both desktop units down; touched surfaces (/go, /creator, /games) earn 0% of the top-100 (posts 96.9% + home 3.1%); 10-20 partial $179.30, CPM $0.975. 28d 98.75% / 102.56% (run 19). Tracker: 10-21 gap 4.7 pt → HOLD; 10-24 WIRE unreachable (earliest 10-28).
+- Verdict: Mediavine-side demand, no rollback; E248 KEEP (28d leg); E255 reads 10-22 (10-20 ≥90% of $190.82).
+- Next time: `revenue = mon_pv × imp/mon_pv × CPM` reproduces the printed delta to the tenth — print that identity first; the mix share tells you how much of mon_pv is the segment and the other two legs are rate by construction. Mediavine's `pages`/`devices` rows lag the earnings line by >2 days (17% of mon_pv populated) — never read per-page concentration off them for a day-old verdict.
+
 ## 2026-10-20 — E248: verdict 10-20; E234 line legs closed; tracker 3/7 INSUFFICIENT
 - Tried: guardrail verdict 10-20 (T0 paper, E248, `reports/funnel/rio-verdict-2026-10-20.md`); graded E234's line legs (10-18 $258.68 ≥ $141.22 MET; 28d 98.98% / 102.10%) and read the E241 tracker (3 of 7 agree, INSUFFICIENT). MV MCP unavailable → client.ts direct + guardrail JSON.
 - Before → after: Singapore Direct share of the day 5.31% (controls) → 10.62% on 10-18, yet ex-segment RPM $17.29 → $17.57 (+1.6%) and MV monetizable-session RPM +5.0% — the RPM dip (−3.3%) is mix, not rate; Mediavine's own split confirms it without GA4.

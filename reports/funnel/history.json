@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T10:37:52.178Z",
+  "generatedAt": "2026-10-21T10:37:49.572Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3843,9 +3843,9 @@
     },
     {
       "date": "2026-10-19",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 161.82,
+      "sessions": 13067,
+      "rpm": 12.38,
       "expectedRevenue": 187.26,
       "expectedSessions": 12482,
       "nonAdMonthly": 156,
@@ -3909,6 +3909,42 @@
         "Ops": 7,
         "Cass": 6,
         "Pip": 7,
+        "Quinn": 10,
+        "operator": 1
+      }
+    },
+    {
+      "date": "2026-10-21",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 186.84,
+      "expectedSessions": 11649,
+      "nonAdMonthly": 153,
+      "ownedAdds7d": 233,
+      "pinterestSessions7d": 58506,
+      "returningShare7d": 0.48416322615622004,
+      "nonPinterestShare7d": 0.2494900904367905,
+      "pagesPerSession7d": 1.4697864041412076,
+      "engagementRate7d": 0.6798136871479403,
+      "favorites7d": 555,
+      "downloadClicks7d": 354,
+      "newMods7d": 92,
+      "catalogTotal": 16974,
+      "captureRatePer1k": 2.4080447296892276,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.125,
+      "paperOnlyMerges7d": 0,
+      "mergesByOwner7d": {
+        "Nova": 7,
+        "Rowan": 7,
+        "Sage": 6,
+        "Ops": 7,
+        "Cass": 5,
+        "Pip": 7,
+        "Rio": 6,
         "Quinn": 10,
         "operator": 1
       }
@@ -6295,6 +6331,34 @@
       "kind": "merge",
       "label": "Quinn: PR #348 funnel: daily run 2026-10-19 (Tier 0 docs)",
       "commit": "415d6f6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-20",
+      "kind": "merge",
+      "label": "Rowan: PR #349 funnel(rowan): E249 7 --ids pins on /sims-4-cc-furniture/ (Tier 0)",
+      "commit": "258034c",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-20",
+      "kind": "merge",
+      "label": "Ops: PR #351 E250 deploy-verify grades a paper-only merge on production as served",
+      "commit": "0ca1b52",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-20",
+      "kind": "merge",
+      "label": "Pip: PR #350 E244 runway top-up #16 artifacts (Tier 0, SD-10 floor)",
+      "commit": "fc7d2cb",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-20",
+      "kind": "merge",
+      "label": "Quinn: PR #352 funnel: daily run 2026-10-20",
+      "commit": "a3a6efe",
       "result": "PASS"
     }
   ]

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-21
+- Tried: E253 (T0, #354) — read "11.5/post, halved" before touching ingest. 4 of the 8 "posts" were single Manual admin rows (03:45–03:52Z, TSR/Patreon/CurseForge mod pages as sourceUrl). The denominator now counts writer-host posts only (exact host allowlist) and prints "+ N other". E239 KEEP (17/17 posts since 09-30 lastmod ≤ stamp; 10-20/10-21 refreshed=1, created 20/24, errors 0). E204 KEEP (6/7 mornings print PASS/FAIL, 0 "—"; 10-15 has no scoreboard file).
+- Before → after: 92 from 8, 11.5/post → 92 from 4 posts + 4 other, 22.0/post (prior 23.6), live lib read 10-21 10:45Z. Ingest dropped nothing.
+- Verdict: MORE DATA (read 2026-10-28).
+- Next time: before you read a ratio, list its denominator rows. Here 4 of 8 were not posts.
+
 ## 2026-10-20
 - Tried: E246 (T0, paper): writer brief W43 `reports/funnel/writer-brief-W43-2026-10-20.md` — GSC demand (impr≥50, no top-10 post) × catalog coverage (facet ≥40 SFW mods, stale >60d); 5 topics (body presets, witch, streetwear, boho, winter outerwear). E197 graded KEEP (scoreboard prints "2 (1 with >=1 approved; 1 house account excluded)", pending 7 oldest 16d). E239 interim: refreshed=1 created=20 → 0 zero-create re-fetches.
 - Before → after: topics adopted W36–W38 0/15 → W43 read 2026-10-27 (keep if ≥2/5 of the next 5 posts match).

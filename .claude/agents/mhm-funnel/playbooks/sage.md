@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-21 — E252 the tool said ELIGIBLE for a grid that was 18/48 not lots (Tier 0, PR #359)
+- Tried: the only unbuilt family with ≥20 rows is lots (lot+residential+commercial+community, 959 SFW). The eligibility tool printed ELIGIBLE with no `--family` — leg (c) was vacuous — while 18 of the first 48 rows were objects, careers, a save file, an EA pack and a Sim. Fixed the class, not the read: no family → INCONCLUSIVE; `OFF_TYPE_RE.lots` measured on all 959 (rejected with counts: `cc` 32 hits/3 "(No CC)" lots, `home` 49, `starter` 22/21 lots, `functional` 4/1, `kiss` 2/1); `nails?` → `nails|nail (polish|art|…)` (1/544 gameplay hits, the career).
+- Before → after: lots verdict ELIGIBLE → NOT ELIGIBLE, 16/48 named, 0 false positives on the 30 real lots; gameplay off-type 1 → 0. 7 new tests fail on the pre-fix lib.
+- Demand (GSC 09-21→10-18): bare lot/house browse terms ≈60 queries, none >5 impr, 1 click; hospital-lot terms (65 impr) already land on /sims-4-hospital-lots/ @6–10. The 10-18 "≈170 impr" was the generous read. No hub.
+- Verdict: KEEP (deterministic). Next time: a hub grader with no family is not a grader — add and measure the family BEFORE quoting a verdict. 18 ids for Rowan in PR #359.
+
 ## 2026-10-19 — E238 hub-eligibility read is a script; gameplay BEFORE taken (Tier 0)
 - Tried: no title fix was worth shipping — `/games/*` 28d (GSC 09-19→10-16): the only hub at pos ≤15 with ≥50 impr and 0 clicks is nails-cc (90 impr, pos 15.3) and its title already names its 14 visible-query impressions; poses (1,036 impr, pos 12.1, CTR 3.9%) already carries "Gallery Poses" and moved 968/18/pos 25.4 → 1,036/40/12.1 on its own. So: `scripts/agents/collection-hub-eligibility.ts` (+ `-lib`, 11 tests) mirrors the hub page's own where/order and prints the rule before the read.
 - Before → after: gameplay-mod+script-mod+career = 550 SFW rows, 8/8 watchlist titles in the top 30 (ranks 4, 6, 8, 16, 20, 22, 23, 25), isNSFW=true 0/8, off-type 0 → NOT ELIGIBLE (prod 10-19 10:49Z). Re-read 10-20 after Rowan's E242 pass with the same command.
