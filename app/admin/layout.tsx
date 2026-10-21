@@ -29,7 +29,7 @@ const adminNavItems = [
   { href: '/admin/monetization', label: 'Monetization', icon: DollarSign },
   { href: '/admin/mods', label: 'Mods', icon: Package },
   { href: '/admin/submissions', label: 'Submissions', icon: Upload },
-  { href: '/admin/waitlist', label: 'Waitlist', icon: Mail },
+  { href: '/admin/subscribers', label: 'Subscribers', icon: Mail },
   { href: '/admin/creators', label: 'Creators', icon: Users },
   { href: '/admin/creator-claims', label: 'Creator Claims', icon: UserCheck },
   { href: '/admin/categories', label: 'Taxonomy', icon: Tags },
