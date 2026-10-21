@@ -732,27 +732,27 @@ async function pullPatreonApi(): Promise<PatreonApiData> {
     if (!process.env[k] && fileEnv[k]) process.env[k] = fileEnv[k];
   }
   const campaign = process.env.PATREON_CAMPAIGN_ID ?? '13460416';
-  const { patreonGet } = await import('../_patreon-auth');
+  const { patreonGet, withPageTimeoutRetry, PATREON_WALK_BUDGET_MS } = await import('../_patreon-auth');
   const members: PatreonMemberAttrs[] = [];
   let url: string | null =
     `https://www.patreon.com/api/oauth2/v2/campaigns/${campaign}/members?fields%5Bmember%5D=patron_status,pledge_relationship_start,last_charge_date,currently_entitled_amount_cents,email&include=user&page%5Bcount%5D=500`;
   // E131: the walk is ~12 pages of ~500 rows. Each page is cancelled (not just
   // abandoned) at PATREON_PAGE_TIMEOUT_MS, and the whole walk at
-  // PATREON_WALK_BUDGET_MS, so a hung Patreon cannot hold the morning scoreboard.
+  // PATREON_WALK_BUDGET_MS (both imported from _patreon-auth), so a hung Patreon
+  // cannot hold the morning scoreboard. E257: a page that hits its own timeout
+  // is re-attempted once inside that budget (10-16 one slow page made the
+  // Members section COULD-NOT-RUN with ~150 s left).
   // A walk that hits the page cap with `links.next` still set is a truncated
   // sample: unknown, never a member count (same rule as patreon-q4-gate-preread).
-  const PATREON_PAGE_TIMEOUT_MS = 30_000;
-  const PATREON_WALK_BUDGET_MS = 180_000;
   const PATREON_PAGE_CAP = 50;
   const walkDeadline = Date.now() + PATREON_WALK_BUDGET_MS;
   let pages = 0;
   while (url && pages < PATREON_PAGE_CAP) {
-    const left = walkDeadline - Date.now();
-    if (left <= 0) throw new Error(`Members API walk exceeded the ${PATREON_WALK_BUDGET_MS} ms budget after ${pages} pages`);
+    const pageUrl: string = url;
     const j: {
       data?: Array<{ attributes: PatreonMemberAttrs; relationships?: { user?: { data?: { id?: string } | null } } }>;
       links?: { next?: string };
-    } = await patreonGet(url, { signal: AbortSignal.timeout(Math.min(PATREON_PAGE_TIMEOUT_MS, left)) });
+    } = await withPageTimeoutRetry(walkDeadline, pages, (ms) => patreonGet(pageUrl, { signal: AbortSignal.timeout(ms) }));
     // `include=user` puts the Patreon user id on the relationship; we never read
     // the `included` user objects (no user fields are requested).
     members.push(...(j.data ?? []).map((d) => ({ ...d.attributes, patreonUserId: d.relationships?.user?.data?.id ?? null })));

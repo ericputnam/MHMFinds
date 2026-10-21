@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-21 — E257
+- Tried: `withPageTimeoutRetry` in `_patreon-auth.ts` — a Members page that hits its own `AbortSignal.timeout` gets one re-attempt, each attempt re-bounded by `nextPageTimeoutMs`, so a retry cannot outlive the 180 s budget; wired into all 4 walks (scoreboard + q4-gate + churn + relaunch), scoreboard's copied constants dropped. E208 graded NOT MET → EXTEND 10-28 (rate leg 5/7, side-of-2.0 6/6). (T0)
+- Before → after: Members COULD-NOT-RUN 1 of 13 Oct scoreboards (10-16, one 30 s page, ~150 s budget left) → read 10-28; test 9/9 red pre-fix; live walk 59/59 paid rows.
+- Verdict: MORE DATA (read 2026-10-28).
+- Next time: a retry belongs in the shared helper with the budget re-read per attempt — a retry at one call site leaves its three sibling walks with the bug.
+
 ## 2026-10-20 — E250
 - Tried: deploy-verify `--after-merge` classifies the merge commit's diff (`is_paper_path`, allowlist, unknown = build); all-paper → grade production as served at once, `PAPER PASS/INCONCLUSIVE/FAIL`, no wait/promote/rollback/incident; `--no-paper` escape. Scoreboard counts PAPER rows as paper-only and still credits the owner. E201 → EXTEND 10-27 (0 ERRORs in 77 window rows). (T0)
 - Before → after: 10-19 #340 (.claude/** only) 25 min → TIMEOUT; test 38/39 red pre-fix (green = build-relevant control), stats 1/1 red.
@@ -66,16 +72,4 @@ moved here because plumbing is now Ops's, not Quinn's. Full originals in
 - Verdict: E176 MORE DATA (read 2026-10-14); E148 MORE DATA (fix the subject match first).
 - Next time: a "did not fire" row needs the host's power log before it blames the job — `pmset -g log` showed the sleep in one line; and a scheduler limit that counts live *sessions* will double-start a *runner* the moment a stale session ends.
 
-## 2026-10-04 — E169-b
-- Tried: bound on the guardrail's automatic rollback (amends #255, HELD-RED, T0): `rollback` only if in-window production deploys ≤ 24 AND the READY target is ≤ 48 h before the window start; else `investigate` + detail + a "rollback withheld" reason, `rollbackCandidate` in the JSON. Bound from the ledger: after-merge rows/day 09-21→10-03 median 8, p90 12, max 17, ×2 deploys per merge; real Vercel 09-28→10-02 = 42/21/29/22/22 deploys/day. 10 new tests, 9/28 red pre-change, 4 mutations each red.
-- Before → after: live 10-04 read: #255 as written → `rollback` to 5qn2heb7w (94 deploys, 5 days, for a Mediavine-side drop); bounded → `investigate (in-window deploys 94 exceed rollback bound 24)`, 12 s. 10-03 early exit: #257's verify was the day's only `run_in_background` deploy-verify (07:26:38); Quinn `end_turn` 07:27:40 "as soon as it reports", CLI gone 07:27:46 → no row, no daily PR. The merge-gate lock that exit left (pid 39402) auto-broke 06:56:30 by TTL (84,604 s) — by design, no hand delete.
-- Verdict: pending, read 10-10 with E169 (0 auto-rollbacks with > 24 in-window deploys; bound line printed 7/7 mornings).
-- Next time: a verify launched in the background at the end of a turn is a row that never lands — the runner, not Quinn, must own "every PR merged today has its after-merge row" (E176).
-
-## 2026-10-03 — E169
-- Tried: revenue-guardrail pages `vercel ls --next` until a READY prod deploy older than the window start (or API exhausted; cap 30 pages / 240 s), prints `vercel coverage: COMPLETE|TRUNCATED (…)`; TRUNCATED → in-window UNKNOWN → `investigate` + `actionDetail: vercel coverage unknown`. Pure lib `revenue-guardrail-lib.ts`, 18 tests on a real 10-page replay. HELD-RED (T0).
-- Before → after: 10-03 RED-RPM saw 1 page (20 rows, oldest 10-02 06:55 > window 09-28 00:00) → 0 of 114 in-window deploys, `investigate`; fixed: 200 rows / 10 pages / 12.5 s, COMPLETE, `rollback` → lr7rk0e3o (91866e4). Pre-fix: all 18 red (no lib), 3 wiring red with lib; 4 mutations each red.
-- Verdict: pending, read 10-10 (7/7 coverage lines, 0 TRUNCATED-without-UNKNOWN).
-- Next time: any "is X in the window" read off a paged API needs a coverage grade before its answer can drive an action — `action` stays one word because the runner `read -r`s it.
-
-_Older entries live verbatim in `archive/playbooks/ops-2026-09.md` (up to 09-29) and `archive/playbooks/ops-2026-10.md` (09-30→10-02, moved 10-18); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/ops-2026-09.md` (up to 09-29) and `archive/playbooks/ops-2026-10.md` (09-30→10-02 moved 10-18; 10-03/10-04 moved 10-21); nothing deleted._

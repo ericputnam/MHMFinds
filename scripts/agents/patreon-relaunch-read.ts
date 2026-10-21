@@ -9,7 +9,7 @@
  * Usage: npx tsx -r dotenv/config scripts/agents/patreon-relaunch-read.ts dotenv_config_path=.env.local [--since 2026-09-08]
  * Needs PATREON_* creator tokens in .env.local (see scripts/_patreon-auth.ts) and DATABASE_URL.
  */
-import { patreonGet, nextPageTimeoutMs, PATREON_WALK_BUDGET_MS } from '../_patreon-auth';
+import { patreonGet, withPageTimeoutRetry, PATREON_WALK_BUDGET_MS } from '../_patreon-auth';
 import { prisma } from '../../lib/prisma';
 import { summarizePatreonMembers } from './patreon-members-lib';
 
@@ -32,10 +32,11 @@ async function members(): Promise<MemberAttrs[]> {
   const walkDeadline = Date.now() + PATREON_WALK_BUDGET_MS;
   let pages = 0;
   while (url) {
+    const pageUrl: string = url;
     const j: {
       data?: Array<{ attributes: Omit<MemberAttrs, 'patreonUserId'>; relationships?: { user?: { data?: { id?: string } | null } } }>;
       links?: { next?: string };
-    } = await patreonGet(url, { signal: AbortSignal.timeout(nextPageTimeoutMs(walkDeadline, pages)) });
+    } = await withPageTimeoutRetry(walkDeadline, pages, (ms) => patreonGet(pageUrl, { signal: AbortSignal.timeout(ms) }));
     out.push(...(j.data ?? []).map((d) => ({ ...d.attributes, patreonUserId: d.relationships?.user?.data?.id ?? null })));
     url = j.links?.next ?? null;
     pages += 1;

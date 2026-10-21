@@ -91,7 +91,7 @@ function withDeadline<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
 }
 
 async function fetchMembersOnce(): Promise<PatreonMemberAttrs[]> {
-  const { patreonGet, nextPageTimeoutMs, PATREON_WALK_BUDGET_MS } = await import('../_patreon-auth');
+  const { patreonGet, withPageTimeoutRetry, PATREON_WALK_BUDGET_MS } = await import('../_patreon-auth');
   // Bounded walk (E139): each page ≤ PATREON_PAGE_TIMEOUT_MS, whole walk ≤ PATREON_WALK_BUDGET_MS.
   const walkDeadline = Date.now() + PATREON_WALK_BUDGET_MS;
   const members: PatreonMemberAttrs[] = [];
@@ -99,10 +99,11 @@ async function fetchMembersOnce(): Promise<PatreonMemberAttrs[]> {
     `https://www.patreon.com/api/oauth2/v2/campaigns/${CAMPAIGN}/members?fields%5Bmember%5D=patron_status,pledge_relationship_start,last_charge_date,currently_entitled_amount_cents,email&include=user&page%5Bcount%5D=500`;
   let pages = 0;
   while (url && pages < MEMBERS_PAGE_CAP) {
+    const pageUrl: string = url;
     const j: {
       data?: Array<{ attributes: PatreonMemberAttrs; relationships?: { user?: { data?: { id?: string } | null } } }>;
       links?: { next?: string };
-    } = await patreonGet(url, { signal: AbortSignal.timeout(nextPageTimeoutMs(walkDeadline, pages)) });
+    } = await withPageTimeoutRetry(walkDeadline, pages, (ms) => patreonGet(pageUrl, { signal: AbortSignal.timeout(ms) }));
     // `include=user` puts the Patreon user id on the relationship; the
     // `included` user objects are never read (no user fields requested).
     members.push(...(j.data ?? []).map((d) => ({ ...d.attributes, patreonUserId: d.relationships?.user?.data?.id ?? null })));

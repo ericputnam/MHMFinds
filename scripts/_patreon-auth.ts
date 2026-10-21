@@ -72,6 +72,54 @@ export function nextPageTimeoutMs(
   return Math.min(pageTimeoutMs, left);
 }
 
+/** Re-attempts a timed-out page gets inside the walk budget (E257). One, never a loop. */
+export const PATREON_PAGE_TIMEOUT_RETRIES = 1;
+
+/**
+ * True only for the rejection `AbortSignal.timeout(ms)` produces (a
+ * `TimeoutError` DOMException, possibly wrapped as `cause`). A caller's own
+ * `AbortError`, an HTTP error or a network error is not a timeout and is never
+ * re-attempted here.
+ */
+export function isTimeoutAbort(err: unknown): boolean {
+  for (let e: unknown = err, depth = 0; e && depth < 3; depth++) {
+    if ((e as { name?: unknown }).name === 'TimeoutError') return true;
+    e = (e as { cause?: unknown }).cause;
+  }
+  return false;
+}
+
+/**
+ * One page of a paginated Patreon walk, bounded by `nextPageTimeoutMs` and
+ * re-attempted at most `retries` times when — and only when — the page hit
+ * its own `AbortSignal.timeout`. Every attempt re-reads the budget, so a retry
+ * can never stretch the walk past `PATREON_WALK_BUDGET_MS`: once it is spent,
+ * `nextPageTimeoutMs` throws and the section stays COULD-NOT-RUN (unknown).
+ * 10-16 the scoreboard's Members section died on a single 30 s page timeout
+ * with ~150 s of budget left (E257). Use as
+ * `withPageTimeoutRetry(deadline, pages, (ms) => patreonGet(url, { signal: AbortSignal.timeout(ms) }))`.
+ */
+export async function withPageTimeoutRetry<T>(
+  walkDeadline: number,
+  pagesDone: number,
+  get: (timeoutMs: number) => Promise<T>,
+  retries: number = PATREON_PAGE_TIMEOUT_RETRIES,
+  log: (msg: string) => void = (m) => console.error(m)
+): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    const ms = nextPageTimeoutMs(walkDeadline, pagesDone);
+    try {
+      return await get(ms);
+    } catch (err) {
+      if (!isTimeoutAbort(err)) throw err;
+      if (attempt >= retries) {
+        throw new Error(`Patreon page ${pagesDone + 1} timed out on ${attempt + 1} attempt(s) (last bound ${ms} ms)`);
+      }
+      log(`[patreon-auth] page ${pagesDone + 1} timed out after ${ms} ms — re-attempting once (${Math.max(0, walkDeadline - Date.now())} ms of walk budget left)`);
+    }
+  }
+}
+
 function need(name: string): string {
   const v = process.env[name];
   if (!v || /^your[-_]/i.test(v)) {
