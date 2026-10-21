@@ -1,0 +1,453 @@
+{
+ "writtenAt": "2026-10-21T10:48:23.816Z",
+ "mode": "dry-run",
+ "facets": [
+  "body-preset",
+  "tops",
+  "skin",
+  "decor",
+  "full-body",
+  "furniture",
+  "gameplay-mod"
+ ],
+ "rows": [
+  {
+   "id": "cmim8uhmm00d4oxy8txx74wqw",
+   "title": "Bed Cuddle",
+   "from": "furniture",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8wwzj00saoxy87rv0xev9",
+   "title": "Designer Swimsuits",
+   "from": "furniture",
+   "to": "full-body"
+  },
+  {
+   "id": "cmoipxt4u000yoxkj6nutxrgw",
+   "title": "Got2bVanity Hair Mod",
+   "from": "furniture",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmik9kmqs005soxk7qa5tz5yu",
+   "title": "Oasis Springs Villa",
+   "from": "furniture",
+   "to": "residential"
+  },
+  {
+   "id": "cmkyopd9v01acoxhcyhjqyjm1",
+   "title": "Female Eye Presets for Sims 4",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyol30z019zoxhc60c7lq8a",
+   "title": "Babydoll Nose Preset Mod",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyopx3y01aeoxhc7l2fmgxq",
+   "title": "Visions Sims 4 Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30kol008eoxpzjp6skg4u",
+   "title": "Nose Preset N6",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30dnz008aoxpzchkmwua0",
+   "title": "Nose Preset 22",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyos5jt01amoxhccq7uw9j1",
+   "title": "Sims 4 Female Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyohbyu019noxhcavkphana",
+   "title": "Sims 4 Male Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyomsgw01a4oxhc7jeqzahn",
+   "title": "Button Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyop3fj01aboxhce4dx8w5k",
+   "title": "Sims 4 Female Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoq5q101afoxhcggl2ku3q",
+   "title": "N5 Sims 4 CAS Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30mhh008foxpzc4xpcher",
+   "title": "Nose Preset 04",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyosm9c01aooxhczh4gh3ba",
+   "title": "Sims 4 Almond Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyn3m5l015doxhctgrpe9hu",
+   "title": "Sims 4 Cyclops Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zk0r007roxpzkanlrwgu",
+   "title": "Male Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zykr0082oxpzz9cd8pk2",
+   "title": "3 Male Noses Presets",
+   "from": "skin",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30f51008boxpz4nkrw4ub",
+   "title": "Delfina Nose Preset N34",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil308sf0087oxpzpxrn1ibp",
+   "title": "Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyool3c01a9oxhc0x5vpegl",
+   "title": "Sims 4 Eye Preset Collection",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyor89701ajoxhcvagzj0u0",
+   "title": "Female Sims 4 Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyorup701aloxhcio97g3bv",
+   "title": "Sims 4 Eye Presets CC",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil303710085oxpznyczevbl",
+   "title": "Siana Nose Preset N24",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoo64501a7oxhcig55f42q",
+   "title": "Sims 4 Maxis Match Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoqvcf01aioxhc7ihd619f",
+   "title": "Sims 4 N2 Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zivn007qoxpzxueowfxm",
+   "title": "Noses, Noses, Noses",
+   "from": "full-body",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoor0d01aaoxhc6sksk22a",
+   "title": "Sims 4 Asian Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zl4h007soxpzt9w20pjo",
+   "title": "Olive Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zm9l007toxpzfm91ksbq",
+   "title": "Lorem Ipsum",
+   "from": "full-body",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyomei701a3oxhcvm10shtj",
+   "title": "Nose Preset 1",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zvzb0080oxpzilvjfmld",
+   "title": "Maura Nose Preset N15",
+   "from": "skin",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyok2v2019voxhcj8jjru07",
+   "title": "Valentino Nose Preset Mod",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zusu007zoxpziab8y3bl",
+   "title": "Nose Presets",
+   "from": "tops",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30hxf008doxpzdmidpoxe",
+   "title": "Bad Memory Nose Presets",
+   "from": "decor",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8wxb300sfoxy8o1n1b96s",
+   "title": "Ash Bikini",
+   "from": "skin",
+   "to": "full-body"
+  },
+  {
+   "id": "cmkyohiuz019ooxhcsruve4yk",
+   "title": "Maxis Match Nose Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyose5n01anoxhcsh0gphmf",
+   "title": "Sims 4 Male Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyogart019koxhca9com96h",
+   "title": "Male Nose Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoepff019foxhcz7ffp48y",
+   "title": "Sims 4 Nose Presets for Females",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyooepv01a8oxhco7unlxiw",
+   "title": "Male Sims 4 Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30p5l008hoxpz1ii9fgmk",
+   "title": "P-Nose Preset N1",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoe8q5019doxhchdli2242",
+   "title": "Nose Preset Pack #28-38",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyofe8n019hoxhctk897ikg",
+   "title": "Broken Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyn6zav015poxhcezawdw4n",
+   "title": "Sims 4 Alien Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyojrm1019uoxhcnxag5ffv",
+   "title": "Tilted Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zosf007voxpziz86kes8",
+   "title": "Cavill Nose Preset + Nose Mask",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil301nl0084oxpz46vw5yq1",
+   "title": "Female Nose Presets N08 To N11",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30ahx0088oxpzgcpc8cq6",
+   "title": "Dara Nose Preset N35",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyof42p019goxhclal9idge",
+   "title": "N5 Pointed Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8wylj00t0oxy8j4venrzq",
+   "title": "Thea Bikini Swimwear",
+   "from": "furniture",
+   "to": "full-body"
+  },
+  {
+   "id": "cmkyod35y019aoxhc3emonw3i",
+   "title": "Female Nose Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8wwnu00s5oxy8rzc20kzp",
+   "title": "Kristen Swimsuit",
+   "from": "gameplay-mod",
+   "to": "full-body"
+  },
+  {
+   "id": "cmkyodhru019boxhcqzy29tem",
+   "title": "Sims 4 Unisex Nose Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyognq1019loxhc398y6nmy",
+   "title": "Female Nose Preset for Sims 4",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoie6d019qoxhco1t1hg33",
+   "title": "Edith Sims 4 Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyojf4x019toxhcg1u7ibwa",
+   "title": "Nose Preset Mods",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyolf6701a0oxhci0j1gaaa",
+   "title": "Nose Presets for Male Sims",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyonk0o01a5oxhc222p0a3r",
+   "title": "Sims 4 Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyonu0l01a6oxhcq748z230",
+   "title": "Fox Soul Sims 4 Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoqgzt01agoxhc1eurj9q7",
+   "title": "Sims 4 Non Default Eye Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyosud501apoxhc0386d4rx",
+   "title": "Set of Sims 4 Eye Presets",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8wx9600seoxy8rsvk5rot",
+   "title": "Summer Edge Set",
+   "from": "furniture",
+   "to": null
+  },
+  {
+   "id": "cmil30gp5008coxpza1g784du",
+   "title": "Nose Preset 10",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil30c0t0089oxpzkzsd6n48",
+   "title": "Nara Nose Preset N14",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmil2zx8c0081oxpzxlam4eeq",
+   "title": "Carissa Nose Preset N43",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8wwhb00s2oxy8blm0xupd",
+   "title": "Swimsuit Set",
+   "from": "furniture",
+   "to": "full-body"
+  },
+  {
+   "id": "cmkyodui2019coxhcfzp526zq",
+   "title": "Sims 4 N1 Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmim8wxf700shoxy87za8b1n3",
+   "title": "Dissia’s Bowl Swimsuit",
+   "from": "furniture",
+   "to": "full-body"
+  },
+  {
+   "id": "cmil2zniv007uoxpz4opuuhbx",
+   "title": "Lookbook + Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoio8r019roxhcafh7fp8t",
+   "title": "TS4 Female Nose Preset",
+   "from": "body-preset",
+   "to": "preset"
+  },
+  {
+   "id": "cmkyoh0ig019moxhc7knn9atr",
+   "title": "Female TS4 Nose Presets",
+   "from": "body-preset",
+   "to": "preset"
+  }
+ ]
+}

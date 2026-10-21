@@ -30,14 +30,17 @@
 import './lib/setup-env';
 
 import { prisma } from '../lib/prisma';
+import { BODY_PRESET_TITLE_RE, FACE_PRESET_TITLE_RE, VISUAL_PRESET_RE, isBodyPresetTitle } from '../lib/bodyPresetRules';
+import { handAuditedContentType } from './lib/hand-audited-content-types';
 
 const APPLY = process.argv.includes('--apply');
 const VERBOSE = process.argv.includes('--verbose');
 const INCLUDE_MEDIUM = process.argv.includes('--include-medium');
 
-const VISUAL_PRESET_RE = /\b(gshade|g-shade|reshade|re-shade|shader|lighting mod)\b/i;
-const BODY_PRESET_TITLE_RE = /\bbody\s*presets?\b/i;
-const CAS_PRESET_HINT_RE = /\b(face|nose|eye|lip|chin|jaw|cheek|sim|cas)\s*presets?\b/i;
+// E256 (2026-10-21): the rules live in lib/bodyPresetRules.ts. The old local
+// CAS hint also matched face|nose|eye|lip|chin|jaw|cheek presets and put 57
+// nose/eye presets into `body-preset`; face presets are `preset`. Hand-audited
+// rows are never candidates, so a re-run cannot undo a pin.
 
 interface Candidate {
   id: string;
@@ -66,6 +69,7 @@ async function main() {
   const candidates = new Map<string, Candidate>();
 
   for (const mod of titleMatches) {
+    if (handAuditedContentType(mod.id)) continue; // a human decided this row
     if (mod.contentType === 'body-preset') continue; // already migrated
     if (VISUAL_PRESET_RE.test(mod.title)) continue; // gshade "full body preview" edge cases
     if (BODY_PRESET_TITLE_RE.test(mod.title)) {
@@ -80,10 +84,11 @@ async function main() {
   }
 
   for (const mod of presetBucket) {
+    if (handAuditedContentType(mod.id)) continue; // a human decided this row
     if (candidates.has(mod.id)) continue;
     const text = `${mod.title} ${mod.description ?? ''}`;
     if (VISUAL_PRESET_RE.test(text)) continue; // stays a visual preset
-    if (BODY_PRESET_TITLE_RE.test(mod.title) || CAS_PRESET_HINT_RE.test(mod.title)) {
+    if (isBodyPresetTitle(mod.title)) {
       candidates.set(mod.id, {
         id: mod.id,
         title: mod.title,
@@ -91,7 +96,7 @@ async function main() {
         confidence: 'high',
         reason: 'preset-typed with CAS/body signals in title',
       });
-    } else if (/\bbody\s*presets?\b/i.test(mod.description ?? '')) {
+    } else if (!FACE_PRESET_TITLE_RE.test(mod.title) && /\bbody\s*presets?\b/i.test(mod.description ?? '')) {
       candidates.set(mod.id, {
         id: mod.id,
         title: mod.title,
