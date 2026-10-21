@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-21
+- Tried: E256 (T0, #355 a600e55; apply ledger 2b7b414): read all 150 body-preset rows; 57 were nose/eye presets from the backfill's CAS hint regex. Rule moved to lib/bodyPresetRules.ts + 74 --ids pins (incl. nose post, furniture top-30, swimsuit post). Graded E207 KEEP.
+- Before → after: body-preset 150 → 93, face titles 57 → 0 (top 24 2 → 0); nose post 7 → 0; furniture top-30 off-facet 4 → 0; copy 130+ → 90+. E207 eyes/makeup/makeup-cc/eyes-cc top 24 0/0/0/0, 73/73.
+- Verdict: MORE DATA (read 2026-10-28).
+- Next time: a one-off backfill is a writer too. When a facet has no detector path (body-preset), find the script that filled it before blaming the rows. And collection grids are static at build, so curl after the next build, not right after apply.
+
 ## 2026-10-20
 - Tried: E249 — 7 `--ids` pins on /sims-4-cc-furniture/ (T0, #349 258034c; apply ledger 8e74b63); graded E200 KEEP and E242 KEEP (flip leg).
 - Before → after: post disagreement 7/24 → 0/17; catalog 274/4,885 → 267/4,878; 6 earlier pin sets all still at value (E235 32/32 … E186 80/80). E200 share 70.9% → 67.7% because 15 hand-verified untitled pins (E207/E235/E228) entered the denominator — a miss on the rule, not on junk (untitled unpinned 3/266, all real).
@@ -72,17 +78,3 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Before → after: 891 rows, 178 titled (20.0%), top 24 ~21/24 junk (MCCC, Kiddie Pool, a skinpack) → 251 rows, 178 titled (70.9%), top 24 0–1/24 junk; pins E200 51/51, E193 69/69, E186 80/80, E180 34/34.
 - Verdict: MORE DATA (read 2026-10-20).
 - Next time: replay the detector before blaming it — it reproduced 19 of 713 untitled rows; 395 came from the dead `category = 'CAS - Accessories'` backfill. A dead writer needs a one-off pass, and the rule fix only stops the trickle.
-
-## 2026-10-12
-- Tried: E193 — 69 `--ids` pins (64 written, 5 keeps): next 3 posts by URL-category disagreement read whole (makeup-clutter 16 → clutter, body-presets-2024 10 → body-preset + 1 NULL, eyes-cc 12 → eyes + 1 NULL + 2 keeps) and /sims-4-leg-warmers-cc/ 27 rows (24 → accessories, 3 keeps). `--facets=null` token so an `--ids` run can reach NULL rows (T0).
-- Before → after: post disagree 499/4,978 → 460/4,936, posts >50% 3 → 1 (farmhouse-cc, a URL-map miss); read-back 69/69, E186 80/80, E180 34/34; leg warmers 5 types + 11 NULL → 2 (accessories 25, shoes 2).
-- Verdict: MORE DATA (read 2026-10-19).
-- Next time: legwear: 0 socks rows exist and off-post socks/tights/stockings sit in accessories 34/96, so the facet already existed; measure before inventing. Accessories top 24 is junk (vape, MCCC, Kiddie Pool) — its own repair, title-only.
-
-## 2026-10-07
-- Tried: E180 — 34 `--ids=` hand pins on the two posts behind Sage's hub flags: `/best-sims-4-realistic-mods/` 12 → gameplay-mod (were accessories ×9, hair, furniture, workout) and `/sims-4-bags-cc/` 16 → accessories, 3 → decor (trusted TSR/CurseForge category over the post wording), 2 → NULL, 1 kept; 16 already-right rows untouched. PR #267 `e004314`, Tier 0, merged after Rio's CLEAR (first gate attempt sat behind an "owner not written yet" lock ~10 min); verify PASS 07:33; `/games/sims-4/furniture-cc/` no longer lists Functional Skincare or Pochette. Pins file now 338 entries.
-- Before → after: 34 wrong of 41 rows on the two posts → 33 written, 34/34 read-back at the pinned value; read 10-14. Reads: E140 KILL on usage (14 pv / 9 users vs 50; route stays), E147 KEEP (0 room values, 78/78 pins), E162 KEEP (1 failing file of 126 at d62016d). Catalog 16,771 mods, 813 NULL (4.8%), 210 new in 7d.
-- Verdict: MORE DATA (read 2026-10-14).
-- Next time: when a hub flag names two rows, read the whole source post — 34 of its 41 rows were wrong, not 2; and a NULL beats a guess on a mixed set ("CC #47.2").
-
-_Older entries live verbatim in `archive/playbooks/rowan-2026-09.md` (to 09-30) and `rowan-2026-10.md` (10-01 → 10-04); nothing deleted._
