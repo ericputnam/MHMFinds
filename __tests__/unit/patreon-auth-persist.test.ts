@@ -117,18 +117,20 @@ describe('funnel-scoreboard.ts pullPatreonApi is bounded (E131)', () => {
 
   it('9. every page has an AbortSignal.timeout, the walk has a wall-clock budget, and a capped walk is unknown', () => {
     expect(fn, 'pullPatreonApi body').not.toBe('');
-    expect(fn).toMatch(/patreonGet\(url, \{ signal: AbortSignal\.timeout\(/);
-    const page = fn.match(/PATREON_PAGE_TIMEOUT_MS\s*=\s*([\d_]+)/);
-    const walk = fn.match(/PATREON_WALK_BUDGET_MS\s*=\s*([\d_]+)/);
-    expect(page, 'PATREON_PAGE_TIMEOUT_MS').toBeTruthy();
-    expect(walk, 'PATREON_WALK_BUDGET_MS').toBeTruthy();
-    const pageMs = Number(page![1].replace(/_/g, ''));
-    const walkMs = Number(walk![1].replace(/_/g, ''));
+    // E257: each page goes through withPageTimeoutRetry, which bounds every
+    // attempt with nextPageTimeoutMs (min(page timeout, budget left)) and throws
+    // once the walk budget is spent. The constants are the shared ones from
+    // _patreon-auth — guarded here by import, not by a copied literal.
+    expect(fn).toMatch(/withPageTimeoutRetry\(walkDeadline, pages, \(ms\) => patreonGet\(pageUrl, \{ signal: AbortSignal\.timeout\(ms\) \}\)\)/);
+    expect(fn).toMatch(/const walkDeadline = Date\.now\(\) \+ PATREON_WALK_BUDGET_MS;/);
+    expect(fn).toMatch(/\{[^}]*\bPATREON_WALK_BUDGET_MS\b[^}]*\} = await import\('\.\.\/_patreon-auth'\)/);
+    const pageMs = auth.PATREON_PAGE_TIMEOUT_MS;
+    const walkMs = auth.PATREON_WALK_BUDGET_MS;
     expect(pageMs).toBeGreaterThanOrEqual(5_000);
     expect(pageMs).toBeLessThanOrEqual(walkMs);
     // the whole walk finishes inside the runner's patience for one scoreboard section
     expect(walkMs).toBeLessThanOrEqual(300_000);
-    expect(fn).toMatch(/exceeded the \$\{PATREON_WALK_BUDGET_MS\} ms budget/);
+    expect(authSrc).toMatch(/exceeded the \$\{walkBudgetMs\} ms budget/);
     expect(fn).toMatch(/if \(url\) throw new Error\([^)]*truncated/);
     expect(fn).not.toMatch(/pages < 50\)/);
   });

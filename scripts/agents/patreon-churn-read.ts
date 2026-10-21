@@ -20,7 +20,7 @@
  * Needs PATREON_* creator tokens in .env.local (see scripts/_patreon-auth.ts) and, without --no-db, DATABASE_URL.
  */
 import { writeFileSync } from 'node:fs';
-import { patreonGet, nextPageTimeoutMs, PATREON_PAGE_TIMEOUT_MS, PATREON_WALK_BUDGET_MS } from '../_patreon-auth';
+import { patreonGet, withPageTimeoutRetry, PATREON_PAGE_TIMEOUT_MS, PATREON_WALK_BUDGET_MS } from '../_patreon-auth';
 
 const CAMPAIGN = process.env.PATREON_CAMPAIGN_ID ?? '13460416';
 const args = process.argv.slice(2);
@@ -66,9 +66,10 @@ async function fetchMembers(): Promise<MemberAttrs[]> {
   const walkDeadline = Date.now() + PATREON_WALK_BUDGET_MS;
   let pages = 0;
   while (url) {
-    const j: { data?: Array<{ attributes: MemberAttrs }>; links?: { next?: string } } = await patreonGet(url, {
-      signal: AbortSignal.timeout(nextPageTimeoutMs(walkDeadline, pages)),
-    });
+    const pageUrl: string = url;
+    const j: { data?: Array<{ attributes: MemberAttrs }>; links?: { next?: string } } = await withPageTimeoutRetry(walkDeadline, pages, (ms) =>
+      patreonGet(pageUrl, { signal: AbortSignal.timeout(ms) }),
+    );
     out.push(...(j.data ?? []).map((d) => d.attributes));
     url = j.links?.next ?? null;
     pages += 1;
