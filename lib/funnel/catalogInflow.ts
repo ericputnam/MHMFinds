@@ -28,7 +28,32 @@
  *     2026-10-14, first ingested 2025-11-29).
  *   - ingest-log "pages scraped": includes the two posts the `--refreshed`
  *     predicate re-fetches every morning with 0 rows created.
+ *
+ * E253 (Nova, 2026-10-21): a "post" is a distinct sourceUrl whose parsed host
+ * is the writer's blog (`WRITER_POST_HOSTS`, exact allowlist — never a
+ * substring). On 10-21 the row read "92 from 8 posts, 11.5/post (189 from 8,
+ * 23.6/post)" — per-post yield "halved". Four of the 8 "posts" were single
+ * Manual rows the admin added 03:45–03:52Z (TSR / Patreon / CurseForge mod
+ * pages, each its own sourceUrl). Writer posts only: 88 from 4, 22.0/post vs
+ * 23.6 — flat. Rows from any other source (or null) still count in the raw
+ * total and are printed as "+ N other", never in the per-post denominator.
  */
+
+export const WRITER_POST_HOSTS: ReadonlySet<string> = new Set([
+  'musthavemods.com',
+  'www.musthavemods.com',
+  'blog.musthavemods.com',
+]);
+
+/** True when `url` parses and its host is exactly one of WRITER_POST_HOSTS. */
+export function isWriterPostUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    return WRITER_POST_HOSTS.has(new URL(url).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
 
 export interface InflowRow {
   sourceUrl: string | null;
@@ -40,13 +65,17 @@ export interface CatalogInflowSummary {
   newMods7d: number;
   /** Rows with createdAt in [now−14d, now−7d). */
   newModsPrior7d: number;
-  /** Distinct non-null sourceUrl among newMods7d rows. */
+  /** Distinct writer-post sourceUrl (isWriterPostUrl) among newMods7d rows. */
   posts7d: number;
-  /** Distinct non-null sourceUrl among newModsPrior7d rows. */
+  /** Distinct writer-post sourceUrl among newModsPrior7d rows. */
   postsPrior7d: number;
-  /** newMods7d / posts7d, null when posts7d is 0. */
+  /** newMods7d rows not from a writer post (manual adds, other hosts, null). */
+  other7d: number;
+  /** newModsPrior7d rows not from a writer post. */
+  otherPrior7d: number;
+  /** Writer-post rows 7d / posts7d, null when posts7d is 0. */
   perPost7d: number | null;
-  /** newModsPrior7d / postsPrior7d, null when postsPrior7d is 0. */
+  /** Writer-post rows prior 7d / postsPrior7d, null when postsPrior7d is 0. */
   perPostPrior7d: number | null;
 }
 
@@ -62,6 +91,8 @@ export function summarizeCatalogInflow(rows: readonly InflowRow[], now: Date = n
   const d14 = t - 14 * DAY_MS;
   let newMods7d = 0;
   let newModsPrior7d = 0;
+  let other7d = 0;
+  let otherPrior7d = 0;
   const posts7d = new Set<string>();
   const postsPrior7d = new Set<string>();
   for (const r of rows) {
@@ -69,10 +100,12 @@ export function summarizeCatalogInflow(rows: readonly InflowRow[], now: Date = n
     if (Number.isNaN(c) || c >= t || c < d14) continue;
     if (c >= d7) {
       newMods7d++;
-      if (r.sourceUrl) posts7d.add(r.sourceUrl);
+      if (isWriterPostUrl(r.sourceUrl)) posts7d.add(r.sourceUrl as string);
+      else other7d++;
     } else {
       newModsPrior7d++;
-      if (r.sourceUrl) postsPrior7d.add(r.sourceUrl);
+      if (isWriterPostUrl(r.sourceUrl)) postsPrior7d.add(r.sourceUrl as string);
+      else otherPrior7d++;
     }
   }
   return {
@@ -80,8 +113,10 @@ export function summarizeCatalogInflow(rows: readonly InflowRow[], now: Date = n
     newModsPrior7d,
     posts7d: posts7d.size,
     postsPrior7d: postsPrior7d.size,
-    perPost7d: posts7d.size ? newMods7d / posts7d.size : null,
-    perPostPrior7d: postsPrior7d.size ? newModsPrior7d / postsPrior7d.size : null,
+    other7d,
+    otherPrior7d,
+    perPost7d: posts7d.size ? (newMods7d - other7d) / posts7d.size : null,
+    perPostPrior7d: postsPrior7d.size ? (newModsPrior7d - otherPrior7d) / postsPrior7d.size : null,
   };
 }
 
@@ -92,8 +127,11 @@ function perPost(n: number | null): string {
 /**
  * One scoreboard cell: `80 from 4 posts, 20.0/post (130 from 5, 26.0/post)`.
  * Leads with the raw count so the old "80 (130)" reading is still there.
+ * With non-post rows (E253): `92 from 4 posts + 4 other, 22.0/post (189 from 8, 23.6/post)`
+ * — the per-post figure divides writer-post rows only.
  */
 export function formatCatalogInflow(s: CatalogInflowSummary): string {
   const posts = (n: number) => `${n} post${n === 1 ? '' : 's'}`;
-  return `${s.newMods7d} from ${posts(s.posts7d)}, ${perPost(s.perPost7d)} (${s.newModsPrior7d} from ${s.postsPrior7d}, ${perPost(s.perPostPrior7d)})`;
+  const other = (n: number) => (n > 0 ? ` + ${n} other` : '');
+  return `${s.newMods7d} from ${posts(s.posts7d)}${other(s.other7d)}, ${perPost(s.perPost7d)} (${s.newModsPrior7d} from ${s.postsPrior7d}${other(s.otherPrior7d)}, ${perPost(s.perPostPrior7d)})`;
 }
