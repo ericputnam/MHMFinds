@@ -916,33 +916,10 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-15 → 10-17 — rotated to the archive
+### 2026-10-15 → 10-18 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19.
-
-### 2026-10-18
-
-- **A conflict marker in a markdown file passes every gate.** #330's fourth rebase landed 12
-  `<<<<<<<`/`=======`/`>>>>>>>` lines in three registry files: the resolve regex missed an
-  empty-"theirs" block and the chain continued on `;`. Build, type-check and tests never read
-  `.md`. Grep for markers before every rebase commit and chain with `&&`. Now a gate (E243, #342):
-  `scripts/agents/conflict-markers.ts` walks all of `.claude/agents/mhm-funnel/**`, matches only
-  line-anchored markers (prose quoting one does not trip it), and `funnel-context-budget.test.ts`
-  fails on any hit — replayed on #330's tree it flagged 12/12 lines.
-- **A count is not a diagnosis until it has a denominator, and a staleness clock must be keyed to
-  its trigger.** "New mods 80 (130)" read as a broken scraper; split as posts × rows/post it was
-  4 posts vs 5, with ingest 7/7 OK (E232; the scoreboard now prints both). "Pinner writer 72 h"
-  read 🔴, but the writer inserts only on WP publish days (17/17 posts got a batch, 0 inserts on
-  14 no-post days), so a wall-clock threshold on an event-keyed producer is a false alarm (E230).
-- **Lower a page threshold for one population with render + `noindex`, not by moving the sitemap
-  gate.** Claimed creators now get `/creator/<slug>/` from 1 mod (was a 404 after promotion) but
-  stay noindex below `MIN_MODS_FOR_PAGE`, and `listCreators` is unchanged (#339). Keep the gate a
-  pure function (`creatorPageGate`) so it is tested offline.
-- **An admin testing a role-gated surface sees the admin branch, not the user's.** `/creators`
-  pages branched on `session.isAdmin`; #339 added a per-tab creator-view switch
-  (`?view=creator`). An admin list that drives a one-shot action (Promote) must fetch `no-store`
-  and drop the acted-on row locally, or a stale reload leaves the button live.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20.
 
 ### 2026-10-19
 
@@ -970,9 +947,30 @@ Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 
   paths; the scanner test then found a third in `privacyAggregator.ts` (#344). Gate a new hub on
   the **hub page's own selection** (`buildWhereClause` + `isNSFW:false` + its sort), not a facet
   count: the gameplay family had 550 SFW rows and 8 adult titles in its top 30 (#341).
+### 2026-10-20
+
+- **A verifier must first ask whether the change *can* alter what it is waiting to observe.**
+  #340 touched only `.claude/**`; `deploy-verify.sh` waited 25 min for a production build that a
+  paper-only diff never triggers and graded it TIMEOUT — a verdict about an event that could not
+  occur. E250 (#351) classifies the merge's diff vs its first parent and grades an all-paper merge
+  on production *as served* at once (`PAPER …`, never a rollback). Classify by **allowlist,
+  failing closed** (unknown/empty diff = build); "paper" dirs still hold build inputs — any `.ts`
+  is type-checked, and `history.json`/`newsletter-sends.jsonl` are read by the build/app.
+- **Before calling a drop a decline, find the first day the series was non-zero.** "/creator/* Bing
+  77 → 52" was measured from the week Bing *first ever* landed those pages: 0 → 53 → 78 → 57 → 57
+  is an arrival burst settling (E245). A launch-week baseline is not a level.
+- **A quality share must exclude the fixes from its denominator.** E200's "title-supported share"
+  fell 70.9% → 67.7% because 15 hand-verified untitled pins entered the denominator — every verified
+  fix lowered the score meant to reward it (E249). Likewise, before quoting a segment as the cause
+  of an RPM dip, compute what mix *alone* predicts: Singapore `(direct)` at 10.62% vs 5.31% predicts
+  −5.6%, the print was −3.3%, so ex-segment RPM was *up* (E248).
+- **Write a keep-if against the experiment's own final output, never a sibling's interim one.**
+  E238's "8/8 `isNSFW`" leg quoted E242's dry run; E242 intentionally kept 2 false on apply, so
+  E238 can never grade MET. Re-read a sibling's final state before pinning a literal count.
+
 ---
 
-*Last compound review: 2026-10-19*
+*Last compound review: 2026-10-20*
 
 ---
 
