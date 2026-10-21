@@ -11,7 +11,10 @@
  *
  *   npx tsx scripts/agents/collection-hub-eligibility.ts --content-type=gameplay-mod,script-mod,career --family=gameplay --watchlist=gameplay
  *   npx tsx scripts/agents/collection-hub-eligibility.ts --slug=eyes-cc            # grade an existing registry entry
- *   npx tsx scripts/agents/collection-hub-eligibility.ts --content-type=lot --top=30 --min-rows=20
+ *   npx tsx scripts/agents/collection-hub-eligibility.ts --content-type=lot,residential,commercial,community --family=lots --top=48
+ *
+ * Without `--family=` leg (c) is not graded and the verdict is at most
+ * INCONCLUSIVE (E252, 2026-10-21) — never read an ungraded run as ELIGIBLE.
  */
 import '../lib/setup-env';
 
@@ -20,6 +23,7 @@ import { buildWhereClause, getCollection, type CollectionFacetQuery } from '../.
 import {
   DEFAULT_RULE,
   GAMEPLAY_ADULT_WATCHLIST,
+  OFF_TYPE_FAMILIES,
   formatGrade,
   formatRule,
   gradeHub,
@@ -36,7 +40,10 @@ async function main() {
   const slug = arg('slug');
   const game = arg('game') ?? 'Sims 4';
   const gameSlug = arg('game-slug') ?? 'sims-4';
-  const family = arg('family') as 'gameplay' | undefined;
+  const family = arg('family');
+  if (family !== undefined && !OFF_TYPE_FAMILIES.includes(family)) {
+    throw new Error(`unknown --family=${family}; leg (c) can grade: ${OFF_TYPE_FAMILIES.join(', ')}`);
+  }
   const watchlistName = arg('watchlist');
   const rule: HubRule = {
     minRows: Number(arg('min-rows') ?? DEFAULT_RULE.minRows),
