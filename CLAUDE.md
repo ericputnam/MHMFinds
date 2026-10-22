@@ -916,37 +916,11 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-15 → 10-18 — rotated to the archive
+### 2026-10-15 → 10-19 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21.
 
-### 2026-10-19
-
-- **A "last processed" clock must advance on the no-op outcome too.** catalog-ingest picked posts
-  by `max(createdAt)`, so a refreshed post that created 0 rows was re-fetched every morning forever
-  (2/run for 10 runs). #343 stamps `lastScraped` on matched rows and selects on
-  `max(createdAt, lastScraped)` — but stamps **only rows whose `sourceUrl` is this post**: a
-  `downloadUrl` match can belong to another post, and stamping it would hide that post's real edit.
-- **Trace a reused path end-to-end for the target population before building on it.** The invite
-  spec said reuse the password-token email; `reset-password` resolves the token via `users`, and
-  the 22 invitees have no `users` row by definition. Pre-creating accounts would have booked +22
-  fake sign-ups on the metric being moved — **never make a metric move by manufacturing the thing
-  it counts** (#328 links normal sign-up).
-- **Email-link sessions are not readers until the scanner pattern is ruled out.** 20 of 30
-  "sessions" from one send landed in the send hour, one session per link, ~all desktop Chrome —
-  6 were engaged. Count engaged sessions per 100 sent and split cohorts by mailbox provider. A
-  bounce counter must decode encoded (RFC 2047) subjects or it silently excludes nobody — 10
-  hard-bounced recipients were missed until #346.
-- **A queue's "done" flag is not the external effect — reconcile against the destination API.**
-  34 Pinterest queue rows dated 10-17 read `Is Posted`; the Pinterest API shows 7 pins. The other
-  27 were writer-plugin re-dates that flipped the flag with no pin ("ghost flips", 55 in 14 d).
-  A monitor counting the flag overstates output (`pin-queue-day-trace.py`, #347).
-- **A hand-pin on a field must be consulted by every writer of that field — find writers with a
-  scanner.** E242's `isNSFW` pins (title + franchise, never the description) patched two scraper
-  paths; the scanner test then found a third in `privacyAggregator.ts` (#344). Gate a new hub on
-  the **hub page's own selection** (`buildWhereClause` + `isNSFW:false` + its sort), not a facet
-  count: the gameplay family had 550 SFW rows and 8 adult titles in its top 30 (#341).
 ### 2026-10-20
 
 - **A verifier must first ask whether the change *can* alter what it is waiting to observe.**
@@ -968,9 +942,35 @@ Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 
   E238's "8/8 `isNSFW`" leg quoted E242's dry run; E242 intentionally kept 2 false on apply, so
   E238 can never grade MET. Re-read a sibling's final state before pinning a literal count.
 
+### 2026-10-21
+
+- **Before reading a ratio, list its denominator rows.** "11.5 mods/post, halved" had 4 single
+  manual admin rows (a mod page as `sourceUrl`) among its 8 "posts"; counting writer-host posts
+  only (exact host allowlist) gave 22.0 vs 23.6 (E253, #354). 57 of 150 `body-preset` rows were
+  nose/eye presets written by a **one-off backfill script — a backfill is a writer too**; when a
+  facet has no detector path, find the script that filled it (E256, #355, `lib/bodyPresetRules.ts`).
+- **A grader with an ungraded leg prints INCONCLUSIVE, never the passing verdict.** Hub
+  eligibility with no `--family` skipped the off-type leg and printed ELIGIBLE for a lots grid
+  whose first 48 rows held 18 objects, careers, a save file and an EA pack (E252, #359).
+- **A retry belongs in the shared helper, with the budget re-read per attempt.**
+  `withPageTimeoutRetry` (`scripts/_patreon-auth.ts`) retries only a page's own timeout, bounds
+  each attempt by `nextPageTimeoutMs`, and serves all four Members walks; one call-site retry
+  would have left three siblings broken (E257, #356). Replace copied literals with the constant.
+- **Every live send subject must be attributable by the bounce counter.** The only hard DSN since
+  10-19 was the invite, filed `other` because `CAMPAIGN_SUBJECTS` lacked it; the test now imports
+  `INVITE_SUBJECT` (E254, #353). Re-dry a batched send's tail the day before — the run count is a
+  function of the list (~12 opt-ins/day), not of last week's plan.
+- **For a revenue dip, print `revenue = mon_pv × imp/mon_pv × CPM` before any story.** 10-19's
+  yellow: mix predicted −7.1 of −17.5 RPM pts, 10/10 partners fell, in-window deploys touched only
+  surfaces earning 0% → Mediavine demand, no rollback (E255, #358). Mediavine `pages`/`devices`
+  lag >2 days; never read per-page concentration off them for a day-old verdict.
+- **Grade a repeated intervention against the channel curve, with one tool.** `topup-grade.ts`
+  (E251, #357): re-dated Pinterest rows beat site Pinterest in 1 of 3 grades — they ride the curve;
+  upside needs new destinations. When joining GA4 `landingPage`, fold `blog.*` and trailing slashes.
+
 ---
 
-*Last compound review: 2026-10-20*
+*Last compound review: 2026-10-21*
 
 ---
 

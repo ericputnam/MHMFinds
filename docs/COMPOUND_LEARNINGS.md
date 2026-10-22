@@ -2429,6 +2429,36 @@ The 10-07 section is in the archive.
   (`?view=creator`). An admin list that drives a one-shot action (Promote) must fetch `no-store`
   and drop the acted-on row locally, or a stale reload leaves the button live.
 
+### 2026-10-19 — rotated from CLAUDE.md
+
+*(rotated verbatim from CLAUDE.md 2026-10-21 to keep it under its 60 KB budget)*
+
+
+- **A "last processed" clock must advance on the no-op outcome too.** catalog-ingest picked posts
+  by `max(createdAt)`, so a refreshed post that created 0 rows was re-fetched every morning forever
+  (2/run for 10 runs). #343 stamps `lastScraped` on matched rows and selects on
+  `max(createdAt, lastScraped)` — but stamps **only rows whose `sourceUrl` is this post**: a
+  `downloadUrl` match can belong to another post, and stamping it would hide that post's real edit.
+- **Trace a reused path end-to-end for the target population before building on it.** The invite
+  spec said reuse the password-token email; `reset-password` resolves the token via `users`, and
+  the 22 invitees have no `users` row by definition. Pre-creating accounts would have booked +22
+  fake sign-ups on the metric being moved — **never make a metric move by manufacturing the thing
+  it counts** (#328 links normal sign-up).
+- **Email-link sessions are not readers until the scanner pattern is ruled out.** 20 of 30
+  "sessions" from one send landed in the send hour, one session per link, ~all desktop Chrome —
+  6 were engaged. Count engaged sessions per 100 sent and split cohorts by mailbox provider. A
+  bounce counter must decode encoded (RFC 2047) subjects or it silently excludes nobody — 10
+  hard-bounced recipients were missed until #346.
+- **A queue's "done" flag is not the external effect — reconcile against the destination API.**
+  34 Pinterest queue rows dated 10-17 read `Is Posted`; the Pinterest API shows 7 pins. The other
+  27 were writer-plugin re-dates that flipped the flag with no pin ("ghost flips", 55 in 14 d).
+  A monitor counting the flag overstates output (`pin-queue-day-trace.py`, #347).
+- **A hand-pin on a field must be consulted by every writer of that field — find writers with a
+  scanner.** E242's `isNSFW` pins (title + franchise, never the description) patched two scraper
+  paths; the scanner test then found a third in `privacyAggregator.ts` (#344). Gate a new hub on
+  the **hub page's own selection** (`buildWhereClause` + `isNSFW:false` + its sort), not a facet
+  count: the gameplay family had 550 SFW rows and 8 adult titles in its top 30 (#341).
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
