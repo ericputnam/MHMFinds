@@ -502,6 +502,69 @@ preflight_diagnosis() {
   else echo "OTHER|$excerpt"; fi
 }
 # <<< preflight-watch
+# >>> preflight-missed
+# E264 (2026-10-23): on 10-22 the preflight failed in 2 s ("Failed to authenticate: OAuth session expired and could
+# not be refreshed"), this runner wrote a DEGRADED digest + scoreboard + guardrail into the operator checkout and
+# exited 4 — nothing reached main, no ledger row existed, `token-expiry=unknown` (the keychain read gave nothing
+# usable after the failed refresh), and the next scoreboard read "MISSED 2026-10-22: preflight failed · no digest on
+# main" — found by Quinn a day later. The keychain item (created 09-02 by `claude auth login`) carried a
+# refreshTokenExpiresAt the whole time; nobody read it. This block: (a) lands a MISSED ledger row on main via
+# ledger-commit.sh from the run that KNOWS it failed (the next morning's scoreboard stays the independent "did not
+# fire" detector for a run that never starts at all); (b) lands the degraded digest and the day's deterministic
+# artifacts via digest-land.sh --allow-degraded, so the evidence is durable and the liveness grader reads the day
+# as MISSED with "digest on main is DEGRADED" instead of "no digest on main"; (c) reads expiresAt /
+# refreshTokenExpiresAt from the keychain (dates and a day count, never the token) on EVERY run, and when the
+# refresh token is within FUNNEL_AUTH_WARN_DAYS (5) or unreadable, puts one ⚠️ line in the digest the operator
+# reads, so "re-login needed" arrives before the morning dies. Never fatal: every failure is a log line.
+# Self-contained: __tests__/unit/runner-preflight-missed.test.ts extracts this block and runs it.
+AUTH_WARN_DAYS="${FUNNEL_AUTH_WARN_DAYS:-5}"
+auth_expiry() {  # prints ONE line: access=<YYYY-MM-DD HH:MM|unknown> refresh=<YYYY-MM-DD HH:MM|unknown> refresh_days=<n|unknown>
+  # Under pipefail a `security` exit (item missing, keychain locked) makes the pipeline non-zero even after python has
+  # printed its own "unknown" line — so judge the OUTPUT, not the exit status, or the fallback prints a second line.
+  local out
+  out="$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | python3 -c 'import json,sys,datetime,time
+try:
+    o=(json.load(sys.stdin).get("claudeAiOauth") or {})
+    def f(k):
+        v=o.get(k); return datetime.datetime.fromtimestamp(v/1000).strftime("%Y-%m-%d %H:%M") if isinstance(v,(int,float)) else "unknown"
+    r=o.get("refreshTokenExpiresAt")
+    days="unknown" if not isinstance(r,(int,float)) else str(int((r/1000-time.time())//86400))
+    print("access=%s refresh=%s refresh_days=%s" % (f("expiresAt"), f("refreshTokenExpiresAt"), days))
+except Exception:
+    print("access=unknown refresh=unknown refresh_days=unknown")' 2>/dev/null | head -n 1)"
+  [ -n "$out" ] && printf '%s\n' "$out" || echo "access=unknown refresh=unknown refresh_days=unknown"
+}
+auth_warn_line() {  # $1 = auth_expiry output → one ⚠️ line when the refresh token is within AUTH_WARN_DAYS or unknown; else nothing
+  local days refresh
+  days="$(printf '%s' "$1" | head -n 1 | sed -nE 's/.*refresh_days=([^ ]+).*/\1/p')"
+  refresh="$(printf '%s' "$1" | head -n 1 | sed -nE 's/.*refresh=([0-9: -]+) refresh_days.*/\1/p')"
+  case "$days" in
+    ''|unknown) echo "⚠️ Claude CLI auth: refresh-token expiry unknown (keychain unreadable or no refreshTokenExpiresAt) — run \`claude auth status\`; if not loggedIn, run \`claude auth login\` (E264)";;
+    *) if [ "$days" -le "$AUTH_WARN_DAYS" ] 2>/dev/null; then
+         echo "⚠️ Claude CLI auth: refresh token expires $refresh (${days} d left) — run \`claude auth login\` in a terminal before then, or the morning run dies at the preflight as on 10-22 (E264)"
+       fi;;
+  esac
+}
+preflight_missed_land() {  # $1 day $2 HH:MM $3 kind $4 cli-version $5 auth-line $6 excerpt → rc 0 row + artifacts landed · 2 something did not (logged; never fatal)
+  local day="$1" hhmm="$2" kind="$3" cli="$4" auth="$5" excerpt="$6" rc=0 lc dl row
+  lc="$WT/scripts/agents/ledger-commit.sh"; [ -x "$lc" ] || lc="$PROJECT_DIR/scripts/agents/ledger-commit.sh"
+  dl="$WT/scripts/agents/digest-land.sh"; [ -x "$dl" ] || dl="$PROJECT_DIR/scripts/agents/digest-land.sh"
+  row="| $day $hhmm | check | mhm-funnel-daily: MISSED $day — Quinn did not run (preflight=$kind, cli=$cli) |  |  | MISSED | ${excerpt:-no excerpt} · $auth · degraded digest + scoreboard + guardrail landed on main by the runner (E264) |"
+  row="$(printf '%s' "$row" | tr -d '\n\r')"
+  if [ -x "$lc" ]; then
+    "$lc" --row "$row" --label "MISSED $day preflight=$kind" 2>&1 | while IFS= read -r l; do log "preflight-missed: $l"; done
+    [ "${PIPESTATUS[0]}" = 0 ] || rc=2
+  else log "preflight-missed: ledger-commit.sh not found — MISSED row NOT landed: $row"; rc=2; fi
+  if [ -x "$dl" ] && [ -s "$PROJECT_DIR/reports/funnel/digest-$day.md" ]; then
+    "$dl" --date "$day" --file "$PROJECT_DIR/reports/funnel/digest-$day.md" --allow-degraded \
+      --extra "$PROJECT_DIR/reports/funnel/$day.md" --extra "$PROJECT_DIR/reports/funnel/$day.json" \
+      --extra "$PROJECT_DIR/reports/funnel/guardrail-$day.md" --extra "$PROJECT_DIR/reports/funnel/guardrail-$day.json" \
+      2>&1 | while IFS= read -r l; do log "preflight-missed: $l"; done
+    [ "${PIPESTATUS[0]}" = 0 ] || rc=2
+  else log "preflight-missed: digest-land.sh or reports/funnel/digest-$day.md missing — degraded digest + artifacts NOT landed"; rc=2; fi
+  return $rc
+}
+# <<< preflight-missed
 token_expiry() {
   security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | python3 -c 'import json,sys,datetime
 try:
@@ -511,31 +574,39 @@ except Exception:
     print("unknown")' 2>/dev/null || echo unknown
 }
 DIGEST="$WT/reports/funnel/digest-$TODAY.md"
+# E264: read the keychain's expiry dates (never the token) before the preflight, every run — the early warning.
+AUTH_LINE="$(auth_expiry)"; log "auth: $AUTH_LINE (warn at refresh_days ≤ $AUTH_WARN_DAYS)"
+AUTH_WARN="$(auth_warn_line "$AUTH_LINE")"; [ -n "$AUTH_WARN" ] && log "$AUTH_WARN"
 if ! claude_preflight; then
   EXP="$(token_expiry)"
   DIAG="$(preflight_diagnosis)"; DIAG_KIND="${DIAG%%|*}"; DIAG_EXCERPT="${DIAG#*|}"
   CLI_VER="$(claude --version 2>/dev/null | head -1 || echo unknown)"
   case "$DIAG_KIND" in
     CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
-    AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth token expiry: $EXP; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
+    AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth: access-token expiry $EXP; before the preflight: $AUTH_LINE; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
     HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
     *)           CAUSE="The Claude CLI preflight failed for a reason that is neither auth nor version — see logs/funnel-preflight-$TODAY.json (excerpt: ${DIAG_EXCERPT:-none}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
   esac
-  log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"
+  log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP auth=$AUTH_LINE ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"
   GUARD_SUMMARY="status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" )"
+  MISSED_HHMM="$(date '+%H:%M')"
+  AUTH_WARN_BLOCK=""; [ -n "$AUTH_WARN" ] && AUTH_WARN_BLOCK="$AUTH_WARN"$'\n'
   cat >"$PROJECT_DIR/reports/funnel/digest-$TODAY.md" <<EOF
 # Funnel digest — $TODAY (DEGRADED: Quinn did not run)
 
 🔴 **Quinn could not start.** $CAUSE, then run \`npm run funnel:daily\` or wait for tomorrow's pulse. No agent can fix this. Reminder: the 06:30 routine only fires while the Claude desktop app is open on this Mac.
-
+$AUTH_WARN_BLOCK
 What still ran today (deterministic scripts, no LLM):
 - Scoreboard: reports/funnel/$TODAY.md
 - Circuit breaker: $GUARD_MD — $GUARD_SUMMARY
-- Ledger: reports/funnel/changelog.md (the morning production check ran before Quinn — see its ledger row)
+- Ledger: reports/funnel/changelog.md (the morning production check ran before Quinn — see its ledger row; this morning's MISSED row is landed by the runner, E264)
 
 Changed today: nothing merged by the team (Quinn did not run).
 EOF
   log "Wrote degraded digest: reports/funnel/digest-$TODAY.md"
+  # E264: the run that knows it failed writes the record — MISSED row on main + degraded digest/scoreboard/guardrail.
+  preflight_missed_land "$TODAY" "$MISSED_HHMM" "$DIAG_KIND" "$CLI_VER" "$AUTH_LINE" "$DIAG_EXCERPT"
+  log "preflight-missed: exit $? (0 row + artifacts on main · 2 see lines above; a queued row flushes next run)"
   exit 4
 fi
 if [ -z "$PROMPT_FILE" ]; then
@@ -584,6 +655,10 @@ elif [ -f "$DIGEST" ]; then
 else
   cp "$WT/reports/funnel/quinn-$TODAY.out" "$PROJECT_DIR/reports/funnel/digest-$TODAY.md"
   log "Quinn did not write the digest file — saved stdout as the digest (no fallback script found)."
+fi
+# E264: the auth early warning rides the digest the operator reads (a date and a day count, never the token).
+if [ -n "${AUTH_WARN:-}" ] && [ -f "$PROJECT_DIR/reports/funnel/digest-$TODAY.md" ] && ! grep -qF 'Claude CLI auth:' "$PROJECT_DIR/reports/funnel/digest-$TODAY.md"; then
+  printf '\n%s\n' "$AUTH_WARN" >>"$PROJECT_DIR/reports/funnel/digest-$TODAY.md" && log "digest: appended the auth early warning (E264)"
 fi
 # Operator-facing files Quinn edited on its branch are on origin/main after its merge; also sync the queue so the operator's tree is current.
 for f in .claude/agents/mhm-funnel/operator-queue.md .claude/agents/mhm-funnel/experiments.md .claude/agents/mhm-funnel/ideas-inbox.md; do
