@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-23 — E262: green Wednesday, flat on all three legs; E255 KEEP; the headline RPM +2.5% was the segment shrinking
+- Tried: guardrail verdict 10-23 (T0 paper, `reports/funnel/rio-verdict-2026-10-23.md`); E255 graded; E241 tracker on Quinn's tree; `affiliate-pipe-read.ts --start 2026-09-29 --end 2026-10-22`; Q32 (MV JWT renewal, T2) packaged. MV MCP down → `client.ts` direct; GA4 via the Data API MCP.
+- Before → after: 10-21 $187.68 vs $186.84 = 14,410 mon_pv (+1.1%) × 13.19 imp/mon_pv (−0.4%) × $0.988 CPM (−0.2%); segment 139 = 1.25% vs 6.29% → mix predicts RPM +5.4%, printed +2.5%, ex-seg RPM $17.03 vs $17.09 (−0.3%), MV mon-RPM +0.5%. 3-day −6.4% = 10-19 70% + 10-20 32% of the gap, Monday rolls off 10-24. 10-20 finalized $179.30 = 93.96% of $190.82 (E255 KEEP); 28d 98.08% / 102.51% (run 20). Pipe 09-29→10-22: gtracing 18 / 13 / 0 (72.2%), Envato 9 / 0, $0; affiliate_click 7d 9. JWT 20 d → ≈ 11-12.
+- Verdict: GREEN, no rollback; E255 KEEP; E241 HOLD (earliest WIRE 10-28); E213 Amazon leg unmeasurable (Q29 dropped).
+- Next time: a headline RPM *gain* on a shrinking junk segment is mix too — print the ex-segment RPM on green days as on red ones, or a flat demand day gets booked as a lift.
+
 ## 2026-10-21 — E255: first yellow since the segment rule — demand, not mix, not a deploy; tracker HOLD
 - Tried: yellow diagnosis 10-21 (T0 paper, `reports/funnel/rio-verdict-2026-10-21.md`, PR #358 PAPER PASS); E248 10-21 leg graded; E241 tracker run on Quinn's tree. MV MCP unavailable → `client.ts` direct incl. `advertisers` / `adUnits` / `devices` / `pages` (first verdict to use the breadth endpoints).
 - Before → after: 10-19 Mon $161.82 vs $187.26 (86.4%); segment 11.38% vs 4.61% predicts −7.1% RPM, printed −17.5%; ex-seg RPM $13.55 vs $15.94 (−15.0%); MV mon-RPM −8.1%, CPM −3.8% with imp/mon-pv −2.9%; 10/10 partners down vs 10-12, both desktop units down; touched surfaces (/go, /creator, /games) earn 0% of the top-100 (posts 96.9% + home 3.1%); 10-20 partial $179.30, CPM $0.975. 28d 98.75% / 102.56% (run 19). Tracker: 10-21 gap 4.7 pt → HOLD; 10-24 WIRE unreachable (earliest 10-28).
@@ -49,16 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: GREEN, mix not rate; E220 KEEP; E227 MORE DATA (read 10-18).
 - Next time: subtract the classifier's whole segment, never a hand threshold — and when a line's basis differs from the headline's (GA4 vs Mediavine), print both raw lines so the reader can see they agree before trusting the subtraction (10-15: +14.0% on both).
 
-## 2026-10-16 — E220: 10-14 RPM −6.8% was Singapore mix; Members API could-not-run
-- Tried: guardrail verdict 10-16 (Tier 0, PR #314 405f32c) — decomposed 10-14 ex the Singapore Direct/Chrome stream (1,845 sessions = 1,846 users = 1,846 pageviews, 41 engaged; excess 1,606) and cross-checked on Mediavine's own monetizable split; E134 interim read (`--start 2026-09-29 --end 2026-10-15`: GTRacing 12 on-site, Impact 8 clicks, 0 actions, $0, kill_read 11-11 fourth run).
-- Before → after: headline RPM $15.22 (−6.8%) → ex-excess $17.40 (+6.6%); MV monetizable sessions 50.95% of sessions vs 58.72% control, monetizable-session RPM $29.87 vs $27.80 (+7.5%). 28d 98.49% (run 14); Singapore excess 1.77% → 1.93% → 2.37% of 28d sessions in three days.
-- Verdict: GREEN, mix not rate, no ad-side action. MORE DATA on the line legs (10-17, 10-18).
-- Next time: `monetizable_sessions ÷ sessions` is a GA4-free mix detector — read every day ex-excess first. A Members API "aborted due to timeout" is COULD-NOT-RUN, not zero joins; the walk has no retry (inbox [rio→ops]). (Entry landed by Quinn from Rio's report: Edit was denied in Rio's run.)
-
-## 2026-10-15 — E213: B2 killIf MET → affiliates-only; 10-13 RPM −5.2% was mix; Item D re-pitched as Q29
-- Tried: guardrail verdict `reports/funnel/rio-verdict-2026-10-15.md` (T0) + Q29 package (T2, paper-only PR). Mediavine MCP down again → `client.ts` direct; GA4 country × channel × browser; `affiliate-pipe-read.ts` printed kill_read 11-11 for the 3rd run. Kadence-safe dry run on prod post 5848 read-only: 7× `08-20`, 0× `04-20`, 48,894 B both sides, invariants PASS; a reverse-direction dry run (`--from 04-20`) was the cheap way to prove the post has *no* correct tag at all.
-- Before → after: 10-13 $187.29 vs $187.30 (−0.0%), sessions +5.3%, RPM −5.2% → ex 585 Singapore Direct one-pageview sessions: sessions +0.15%, RPM $16.50 (−0.3%); CPM +5.5% with imp/mon-pv −8.8% = empty-pageview denominator, not demand. 28d 98.20% / 99.93% (run 13); Singapore excess 6,863 = 1.93% (was 1.77%). B2 leg 2: joins 7d 4 (10-08) / 3 (10-15), Q17 dropped → killIf MET, affiliates-only 10-15→10-31. Non-ad $162–164.50/mo.
-- Verdict: GREEN, merges clear; E199 + E206 10-15 legs MET; Q29 reads 10-22 (silence = drop, Amazon leg "unmeasurable" on 11-11).
-- Next time: decompose an RPM move as sessions × RPM *ex the known junk stream* before reading rate — a CPM rise alongside an imp/mon-pv fall is the fingerprint of a denominator, and would have been misread as demand softening.
-
-_Older entries live verbatim in `archive/playbooks/rio-2026-09.md` (≤ 09-30) and `archive/playbooks/rio-2026-10.md` (10-01 → 10-04, 10-12 → 10-14); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/rio-2026-09.md` (≤ 09-30) and `archive/playbooks/rio-2026-10.md` (10-01 → 10-04, 10-12 → 10-16); nothing deleted._
