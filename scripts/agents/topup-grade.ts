@@ -10,7 +10,9 @@
  * `topup-grade-lib.ts` derives from `--end`), grades with the rule printed in the report, and writes
  * `reports/funnel/pip-topup-grade-<ledger date>-read-<end>.md`.
  *
- * Defaults: end = yesterday (a GA4 day can still be provisional — say so when quoting it).
+ * Defaults: end = T−2, the last finalized day the scoreboard anchors on (`defaultGradeEnd`, E258:
+ * on 2026-10-23 the E209 ledger read −4.1% at end T−1 and −1.5% at T−2 — a provisional GA4 day
+ * moves the number). Pass `--end` to read another day; the summary line names which it used.
  *
  * Exit codes (house 0/2/1): 0 = report written; 2 = could not run (no project dir, bad args,
  * unreadable ledger, no credentials, GA4 error); 1 = crashed. Error strings go through
@@ -23,6 +25,7 @@ import { dirname, isAbsolute, join } from 'node:path';
 import { redactError } from './operator-did-probe-lib';
 import { requireProjectDir } from './project-dir-guard';
 import {
+  defaultGradeEnd,
   fmtPct,
   gradeTopup,
   gradeWindows,
@@ -38,11 +41,6 @@ const GA4_PROPERTY = process.env.GA4_PROPERTY_ID ?? '437117335';
 
 function iso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return iso(d);
 }
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -124,7 +122,8 @@ async function main(): Promise<number> {
     say(`COULD-NOT-RUN reason=ledger ${(e as Error).message}`);
     return 2;
   }
-  const end = arg('end') ?? daysAgo(1);
+  const endArg = arg('end');
+  const end = endArg ?? defaultGradeEnd(iso(new Date()));
   if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) {
     say(`COULD-NOT-RUN reason=bad-end end=${end}`);
     return 2;
@@ -154,7 +153,7 @@ async function main(): Promise<number> {
     `topup-grade: ${grade.verdict} · ledger ${grade.ledgerGenerated} (${grade.rowCount} rows / ${grade.treatedPaths.length} dests, cap ${grade.perDateCapMet ? 'MET' : 'NOT MET'})` +
       ` · treated ${grade.treated.curr} vs ${grade.treated.prev} (${fmtPct(grade.treated.pct)}) vs site ${fmtPct(grade.site.pct)}` +
       (pw ? ` · post window ${fmtPct(pw.treated.pct)} vs site ${fmtPct(pw.site.pct)}${pw.partial ? ' (partial)' : ''}` : '') +
-      ` · ${grade.destinationsUp}/${grade.perDestination.length} dests up · wrote ${outPath}`,
+      ` · ${grade.destinationsUp}/${grade.perDestination.length} dests up · end ${end}${endArg ? ' (--end)' : ' (default T−2, last finalized day)'} · wrote ${outPath}`,
   );
   return 0;
 }
