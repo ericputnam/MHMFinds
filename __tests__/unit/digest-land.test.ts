@@ -65,6 +65,37 @@ describe('digest-land.sh (E222)', () => {
     expect(bad.status).toBe(64);
   });
 
+  // E264 (2026-10-23): the runner's preflight-failure branch lands the DEGRADED digest deliberately, with the day's artifacts.
+  it('E264: --allow-degraded lands a DEGRADED digest with a MISSED-record subject and copies existing --extra files by basename; missing extras are skipped', () => {
+    const t = setup();
+    writeFileSync(t.digest, '# Funnel digest — 2026-10-15 (DEGRADED: Quinn did not run)\n');
+    const sb = join(t.dir, '2026-10-15.md'); writeFileSync(sb, '# scoreboard\n');
+    const gj = join(t.dir, 'guardrail-2026-10-15.json'); writeFileSync(gj, '{"status":"green"}\n');
+    const missing = join(t.dir, '2026-10-15.json');
+    const r = t.run('--allow-degraded', '--extra', sb, '--extra', missing, '--extra', gj);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toMatch(/landing it as such \(--allow-degraded, E264\)/);
+    expect(r.stdout).toMatch(new RegExp(`--extra ${missing.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} missing or empty — skipped`));
+    expect(t.onMain().stdout).toBe(readFileSync(t.digest, 'utf8'));
+    const show = (p: string) => spawnSync('git', ['--git-dir', t.remote, 'show', `main:reports/funnel/${p}`], { encoding: 'utf8' });
+    expect(show('2026-10-15.md').stdout).toBe('# scoreboard\n');
+    expect(show('guardrail-2026-10-15.json').stdout).toBe('{"status":"green"}\n');
+    expect(show('2026-10-15.json').status).not.toBe(0);
+    const subj = execFileSync('git', ['--git-dir', t.remote, 'log', '-1', '--format=%s', 'main'], { encoding: 'utf8' }).trim();
+    expect(subj).toBe('funnel(ledger): degraded digest 2026-10-15 landed by runner (Quinn did not run — MISSED record, E264)');
+    expect(subj).not.toMatch(/daily run 2026-10-15 \(#\d+\)$/);
+    // only reports/funnel/ paths in the commit — never a stray file
+    const files = execFileSync('git', ['--git-dir', t.remote, 'show', '--format=', '--name-only', 'main'], { encoding: 'utf8' }).trim().split('\n').sort();
+    expect(files).toEqual(['reports/funnel/2026-10-15.md', 'reports/funnel/digest-2026-10-15.md', 'reports/funnel/guardrail-2026-10-15.json']);
+    // without the flag the same digest is still refused, and the refusal names the flag
+    const t2 = setup();
+    writeFileSync(t2.digest, '# Funnel digest — 2026-10-15 (DEGRADED: Quinn did not run)\n');
+    const r2 = t2.run('--extra', sb);
+    expect(r2.status).toBe(2);
+    expect(r2.stdout).toMatch(/pass --allow-degraded/);
+    expect(t2.onMain().status).not.toBe(0);
+  });
+
   it('runner wiring: on daily-pr-ledger exit 2 it calls digest-land with the operator digest; Quinn stdout is copied to logs/', () => {
     const src = readFileSync(join(process.cwd(), 'scripts/agents/run-funnel-daily.sh'), 'utf8').replace(/^\s*#.*$/gm, '');
     expect(src).toMatch(/daily_pr_ledger "\$TODAY" "\$WT"; DPL_RC=\$\?/);

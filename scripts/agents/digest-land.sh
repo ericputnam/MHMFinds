@@ -13,16 +13,27 @@
 # into a throwaway worktree on FETCH_HEAD, commit ONLY that path as `funnel(ledger): digest DATE …` (the
 # merge gate ignores ledger commits; the subject never matches `daily run DATE (#N)`), push, 3 tries.
 #
-# Usage: digest-land.sh --date YYYY-MM-DD --file <digest.md> [--remote-url <url>] [--branch main] [--dry-run]
+# E264 (2026-10-23): on 10-22 the Quinn preflight failed (OAuth refresh dead) and the runner wrote a DEGRADED digest,
+# the scoreboard and the guardrail into the operator checkout only — nothing reached main, and the next scoreboard
+# read "MISSED 2026-10-22: preflight failed · no digest on main". The refusal above protected the E222 path (a
+# degraded digest must never be mistaken for an accepted one). The runner's preflight-failure branch now lands the
+# degraded digest deliberately with `--allow-degraded`, plus the day's deterministic artifacts via `--extra <file>`
+# (repeatable; copied by basename into reports/funnel/; a missing file is noted and skipped). The liveness grader
+# then reads the day as MISSED with "digest on main is DEGRADED (Quinn did not run)" — the right verdict, with
+# the evidence durable. Without the flag a DEGRADED digest is still refused (exit 2).
+#
+# Usage: digest-land.sh --date YYYY-MM-DD --file <digest.md> [--allow-degraded] [--extra <file>]... [--remote-url <url>] [--branch main] [--dry-run]
 # Exit:  0 landed / already on the branch / dry-run · 2 could not land or held (WARN, never fatal) · 64 bad usage
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-DATE=""; FILE=""; REMOTE_URL=""; BRANCH="main"; DRY_RUN=0
+DATE=""; FILE=""; REMOTE_URL=""; BRANCH="main"; DRY_RUN=0; ALLOW_DEGRADED=0; EXTRAS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --date) DATE="$2"; shift ;;
     --file) FILE="$2"; shift ;;
+    --allow-degraded) ALLOW_DEGRADED=1 ;;
+    --extra) EXTRAS+=("$2"); shift ;;
     --remote-url) REMOTE_URL="$2"; shift ;;
     --branch) BRANCH="$2"; shift ;;
     --dry-run) DRY_RUN=1 ;;
@@ -34,10 +45,25 @@ printf '%s' "$DATE" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || { echo "digest-
 [ -s "$FILE" ] || { echo "digest-land: digest file missing or empty: $FILE"; exit 64; }
 [ -n "$REMOTE_URL" ] || REMOTE_URL="$(cd "$ROOT" && git remote get-url origin 2>/dev/null)"
 [ -n "$REMOTE_URL" ] || { echo "digest-land: no remote"; exit 2; }
+DEGRADED=0
 if grep -q 'DEGRADED: Quinn did not run' "$FILE"; then
-  echo "digest-land: $FILE is a DEGRADED digest — not landing it (Quinn did not run)"; exit 2
+  if [ "$ALLOW_DEGRADED" = 1 ]; then
+    DEGRADED=1; echo "digest-land: $FILE is a DEGRADED digest — landing it as such (--allow-degraded, E264)"
+  else
+    echo "digest-land: $FILE is a DEGRADED digest — not landing it (Quinn did not run; pass --allow-degraded to land it as a MISSED record)"; exit 2
+  fi
 fi
 REL="reports/funnel/digest-$DATE.md"
+# Extras: only files that exist and are non-empty; basename must be a plain reports/funnel file name.
+EXTRA_OK=()
+for x in ${EXTRAS[@]+"${EXTRAS[@]}"}; do
+  b="$(basename "$x")"
+  if [ ! -s "$x" ]; then echo "digest-land: --extra $x missing or empty — skipped"; continue; fi
+  case "$b" in
+    *[!A-Za-z0-9._-]*|.*) echo "digest-land: --extra $x has an unsafe basename — skipped"; continue ;;
+  esac
+  EXTRA_OK+=("$x")
+done
 
 if (cd "$ROOT" && git ls-remote --exit-code --heads "$REMOTE_URL" "funnel/quinn/daily-$DATE") >/dev/null 2>&1; then
   echo "digest-land: HELD — funnel/quinn/daily-$DATE exists on the remote (an open daily PR carries the digest; merge it)"
@@ -62,12 +88,18 @@ while [ "$attempt" -lt 3 ]; do
     echo "digest-land: worktree add failed (attempt $attempt/3)"; sleep 2; continue
   fi
   mkdir -p "$wt/reports/funnel" && cp "$FILE" "$wt/$REL"
+  ADDED=("$REL")
+  for x in ${EXTRA_OK[@]+"${EXTRA_OK[@]}"}; do
+    cp "$x" "$wt/reports/funnel/$(basename "$x")" && ADDED+=("reports/funnel/$(basename "$x")")
+  done
   if [ "$DRY_RUN" = 1 ]; then
-    echo "digest-land: --dry-run — would commit $REL ($(wc -c <"$FILE" | tr -d ' ') B) and push to $BRANCH"; exit 0
+    echo "digest-land: --dry-run — would commit ${ADDED[*]} ($(wc -c <"$FILE" | tr -d ' ') B digest) and push to $BRANCH"; exit 0
   fi
-  (cd "$wt" && git add "$REL")
+  (cd "$wt" && git add -- "${ADDED[@]}")
+  if [ "$DEGRADED" = 1 ]; then SUBJ="funnel(ledger): degraded digest $DATE landed by runner (Quinn did not run — MISSED record, E264)"
+  else SUBJ="funnel(ledger): digest $DATE landed by runner (daily PR did not merge)"; fi
   if ! (cd "$wt" && git -c user.email="funnel-bot@musthavemods.com" -c user.name="MHM Funnel Bot" \
-      commit -q -m "funnel(ledger): digest $DATE landed by runner (daily PR did not merge)
+      commit -q -m "$SUBJ
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"); then
     echo "digest-land: commit failed (attempt $attempt/3)"; sleep 2; continue
