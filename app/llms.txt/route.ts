@@ -21,7 +21,7 @@ export async function GET() {
 
 > MustHaveMods (musthavemods.com; also written "Must Have Mods" or "MHM") is a
 > Sims 4 custom-content discovery platform: a searchable, curated database of
-> 15,000+ verified Sims 4 mods and CC (plus Stardew Valley and Minecraft), with
+> 17,000+ verified Sims 4 mods and CC (plus Stardew Valley and Minecraft), with
 > editorial collections, creator attribution, and working, link-checked
 > downloads. Every mod is categorized by content type, art style, theme, age
 > group, and body frame.

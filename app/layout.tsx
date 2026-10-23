@@ -7,16 +7,22 @@ import { ConditionalScripts } from './components/ConditionalScripts';
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
-  description: "15,000+ Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, and more, every link checked by hand.",
+  // E259 (2026-10-23): "Must-Have Sims 4 Mods" leads so the title carries the
+  // query text of the homepage's largest non-navigational cluster — "sims 4
+  // must have mods" / "must have sims 4 mods" / "must have mods for sims 4",
+  // 321 impr at pos ≈7 with 10.6% CTR over 10-07→10-20 — and the count moves
+  // 15,000+ → 17,000+ (catalog 17,004 on 10-23). "Finder" stays on the
+  // /games/* hub titles, which keeps the homepage distinct from /games/sims-4/cc/.
+  title: 'Must-Have Sims 4 Mods & CC — 17,000+ Verified Finds | MustHaveMods',
+  description: "17,000+ must-have Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, gameplay mods and more, every link checked by hand.",
   authors: [{ name: 'MustHaveMods Team' }],
   keywords: 'sims 4 mods, sims 4 cc, custom content, sims mods, sims 4 custom content, mod finder, musthavemods',
   creator: 'MustHaveMods',
   publisher: 'MustHaveMods',
   robots: 'index, follow',
   openGraph: {
-    title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
-    description: "15,000+ Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, and more, every link checked by hand.",
+    title: 'Must-Have Sims 4 Mods & CC — 17,000+ Verified Finds | MustHaveMods',
+    description: "17,000+ must-have Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, gameplay mods and more, every link checked by hand.",
     url: 'https://musthavemods.com',
     siteName: 'MustHaveMods',
     locale: 'en_US',
@@ -32,8 +38,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sims 4 Mods & CC Finder — 15,000+ Verified Finds | MustHaveMods',
-    description: "15,000+ Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, and more, every link checked by hand.",
+    title: 'Must-Have Sims 4 Mods & CC — 17,000+ Verified Finds | MustHaveMods',
+    description: "17,000+ must-have Sims 4 mods and CC in one searchable list — hair, clothes, poses, furniture, gameplay mods and more, every link checked by hand.",
     images: ['/og-image.jpg'],
   },
   metadataBase: new URL('https://musthavemods.com'),
@@ -137,7 +143,7 @@ export default function RootLayout({
                   '@id': 'https://musthavemods.com/#website',
                   url: 'https://musthavemods.com',
                   name: 'MustHaveMods',
-                  description: 'Find Sims 4 CC, mods, and custom content. Search 15,000+ verified mods for Sims 4, Stardew Valley, and Minecraft.',
+                  description: 'Find Sims 4 CC, mods, and custom content. Search 17,000+ verified mods for Sims 4, Stardew Valley, and Minecraft.',
                   publisher: {
                     '@id': 'https://musthavemods.com/#organization',
                   },

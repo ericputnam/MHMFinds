@@ -43,7 +43,7 @@ export function homePageJsonLd() {
         // E150: the homepage shell's real change date, not the render day.
         dateModified: HOME_SHELL_LASTMOD,
         description:
-          'Search 15,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
+          'Search 17,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
         inLanguage: 'en-US',
         potentialAction: [
           {
@@ -61,7 +61,7 @@ export function homePageJsonLd() {
             name: 'What is MustHaveMods?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'MustHaveMods is a search engine for game mods and custom content. It indexes over 15,000 verified mods for Sims 4, Stardew Valley, Minecraft, and other games.',
+              text: 'MustHaveMods is a search engine for game mods and custom content. It indexes over 17,000 verified mods for Sims 4, Stardew Valley, Minecraft, and other games.',
             },
           },
           {
