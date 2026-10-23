@@ -1195,6 +1195,34 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmim8wwnu00s5oxy8rzc20kzp: { contentType: "full-body", why: "E256 \"Kristen Swimsuit\" — full-body, was gameplay-mod; a swimsuit in 65 swatches (/sims-4-swimsuit-cc/)" },
   cmim8wxb300sfoxy8o1n1b96s: { contentType: "full-body", why: "E256 \"Ash Bikini\" — full-body, was skin; a bikini in 55 swatches (/sims-4-swimsuit-cc/)" },
   cmim8wx9600seoxy8rsvk5rot: { contentType: null, why: "E256 \"Summer Edge Set\" — NULL, was furniture; title names no item and the desc lists none (\"contains the following:\"); on the swimsuit post but a guess either way (/sims-4-swimsuit-cc/)" },
+
+  // ── Audited 2026-10-23 (Rowan, E263). The 18 non-lots Sage found in the lots-hub
+  //    top 48 (PR #359, `collection-hub-eligibility.ts --family=lots`). All 18 were
+  //    typed `residential` — a facet with no live writer (lotContentTypeRules.ts).
+  //    Decided by title first; where the title names no item, by the mod's OWN
+  //    description sentence (it names the mod) and its source post. NULL where no
+  //    facet is right: a save file, an EA pack, a pre-made Sim, a challenge (rules,
+  //    not a file), walls (no build-mode wall facet exists), and an outfit set whose
+  //    desc lists no item (E256 "Summer Edge Set" precedent). Heterogeneous reasons,
+  //    so hand-fixed by id, not a class retag. Kiss and Grind's isNSFW is NOT decided here.
+  cmika1ms500fhoxk73zvlkrux: { contentType: null, why: "E263 \"Love Island Challenge\" — NULL, was residential; a rules-based gameplay challenge (scarlet-v.blogspot), not a mod file or a lot; no challenge facet" },
+  cmim8whx800p6oxy8efvsa856: { contentType: "clutter", why: "E263 \"Wash’n Wear Essentials\" — clutter, was residential; desc: \"contains 21 laundry clutter items\" (/sims-4-clutter/)" },
+  cmim8vfre00i5oxy8a9f1nf7s: { contentType: "furniture", why: "E263 \"Swifty Sways Infant Swing\" — furniture, was residential; a functional infant swing object (/sims-4-infant-cc/)" },
+  cmikk9rz5006wox33s47c746x: { contentType: "script-mod", why: "E263 \"Better Build/Buy\" — script-mod, was residential; a Build/Buy UI overhaul (TwistedMexi), same class as UI Cheats Extension in script-mod; not a lot (/best-sims-4-mods/)" },
+  cmil18mat00afoxeedytdc506: { contentType: "decor", why: "E263 \"Hello Kitty Set\" — decor, was residential; desc: \"various decorative objects for your work/study area\" (/sims-4-hello-kitty-cc/)" },
+  cmijl2xn7005goxc8oyeggz79: { contentType: "gameplay-mod", why: "E263 \"Adult Jobs for Teens\" — gameplay-mod, was residential; unlocks adult jobs for teens (MTS), changes job age rules rather than adding a career, so not `career` (/sims-4-teen-mods/)" },
+  cmijn9ht400cdoxc80e7cakdj: { contentType: "furniture", why: "E263 \"Aesthetic Gaming Set Up\" — furniture, was residential; a gaming-nook object set, same call as \"Gaming PC Setup Collection\" (/sims-4-aesthetic-mods/)" },
+  cmim9jo4l0023oxy79buu7zcc: { contentType: null, why: "E263 \"The Sims 4 Cats & Dogs\" — NULL, was residential; an EA expansion pack (Amazon link), not CC or a mod (/best-sims-4-expansion-packs/)" },
+  cmikdcy38003joxbh0grsxqbz: { contentType: "furniture", why: "E263 \"Gaming PC Setup Collection\" — furniture, was residential; desc: \"adds sleek, high-quality items to your Sim’s gaming room\" (/sims-4-gaming-room-cc/)" },
+  cmim8vuv600kyoxy89xvbqk49: { contentType: "gameplay-mod", why: "E263 \"Functional Pacifier\" — gameplay-mod, was residential; desc: \"The Functional Pacifier mod adds a functional pacifier\" with infant/toddler interactions (/sims-4-infant-mods/)" },
+  cmim9esak001ooxqw9tr8zmh0: { contentType: null, why: "E263 \"All-World Save File with Mods\" — NULL, was residential; a save file, not a lot; save-file titles are split across 4 facets today, none of them right" },
+  cmijkmtxb002uoxc88zv6cp5o: { contentType: null, why: "E263 \"Grunge Brick Walls\" — NULL, was residential; wall CC (build mode), not a lot; no wall facet exists and decor/furniture are buy-mode, so NULL beats a guess (/30-best-sims-4-brick-wall-cc…/)" },
+  cmijpgnor011ooxc852utju39: { contentType: null, why: "E263 \"Basic Set 07\" — NULL, was residential; male outfit set but title names no item and desc lists none (\"you get the following:\"), E256 Summer Edge precedent (/sims-4-male-clothes-cc/)" },
+  cmim9ka6x003xoxy7qfwa3fnn: { contentType: "career", why: "E263 \"Sims 4 Active Doggy Daycare Career\" — career, was residential; title names a career (ItsKatato) (/sims-4-custom-active-careers/)" },
+  cmil0qctr0026oxeef6l4lo2h: { contentType: "furniture", why: "E263 \"Lotta Kidsroom Part. 2\" — furniture, was residential; desc: \"this set of furniture and decor… eight items\"; \"Lotta\" is not \"lot\" (/sims-4-modern-furniture-cc/)" },
+  cmijpvf0z0198oxc8ku3nlctc: { contentType: "gameplay-mod", why: "E263 \"Lot Traits Pack\" — gameplay-mod, was residential; adds traits to lots (kiarasims4mods), a gameplay mod about lots, not a lot (/sims-4-traits/)" },
+  cmim8rrsx002aoxy81rtglrco: { contentType: "gameplay-mod", why: "E263 \"Kiss and Grind\" — gameplay-mod, was residential; a romance-interaction mod (/sims-4-mods-for-realistic-relationships/). isNSFW left as-is: a separate E242-style call" },
+  cmikd78hs000soxbhxrl6ojnt: { contentType: null, why: "E263 \"Eva\" — NULL, was residential; a pre-made Sim (desc: \"get this ready-made Sim\"), not CC of any facet (/sims-4-acne-cc/)" },
 };
 
 /**

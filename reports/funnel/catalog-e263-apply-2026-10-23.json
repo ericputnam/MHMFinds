@@ -1,0 +1,117 @@
+{
+ "writtenAt": "2026-10-23T12:03:22.720Z",
+ "mode": "apply",
+ "facets": [
+  "residential"
+ ],
+ "rows": [
+  {
+   "id": "cmika1ms500fhoxk73zvlkrux",
+   "title": "Love Island Challenge",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmim8whx800p6oxy8efvsa856",
+   "title": "Wash’n Wear Essentials",
+   "from": "residential",
+   "to": "clutter"
+  },
+  {
+   "id": "cmim8vfre00i5oxy8a9f1nf7s",
+   "title": "Swifty Sways Infant Swing",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmikk9rz5006wox33s47c746x",
+   "title": "Better Build/Buy",
+   "from": "residential",
+   "to": "script-mod"
+  },
+  {
+   "id": "cmil18mat00afoxeedytdc506",
+   "title": "Hello Kitty Set",
+   "from": "residential",
+   "to": "decor"
+  },
+  {
+   "id": "cmijl2xn7005goxc8oyeggz79",
+   "title": "Adult Jobs for Teens",
+   "from": "residential",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmijn9ht400cdoxc80e7cakdj",
+   "title": "Aesthetic Gaming Set Up",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim9jo4l0023oxy79buu7zcc",
+   "title": "The Sims 4 Cats & Dogs",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmikdcy38003joxbh0grsxqbz",
+   "title": "Gaming PC Setup Collection",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8vuv600kyoxy89xvbqk49",
+   "title": "Functional Pacifier",
+   "from": "residential",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim9esak001ooxqw9tr8zmh0",
+   "title": "All-World Save File with Mods",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmikd78hs000soxbhxrl6ojnt",
+   "title": "Eva",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmijkmtxb002uoxc88zv6cp5o",
+   "title": "Grunge Brick Walls",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmijpgnor011ooxc852utju39",
+   "title": "Basic Set 07",
+   "from": "residential",
+   "to": null
+  },
+  {
+   "id": "cmim9ka6x003xoxy7qfwa3fnn",
+   "title": "Sims 4 Active Doggy Daycare Career",
+   "from": "residential",
+   "to": "career"
+  },
+  {
+   "id": "cmil0qctr0026oxeef6l4lo2h",
+   "title": "Lotta Kidsroom Part. 2",
+   "from": "residential",
+   "to": "furniture"
+  },
+  {
+   "id": "cmijpvf0z0198oxc8ku3nlctc",
+   "title": "Lot Traits Pack",
+   "from": "residential",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8rrsx002aoxy81rtglrco",
+   "title": "Kiss and Grind",
+   "from": "residential",
+   "to": "gameplay-mod"
+  }
+ ]
+}
