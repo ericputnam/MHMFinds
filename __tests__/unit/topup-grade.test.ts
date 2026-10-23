@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  DEFAULT_END_LAG_DAYS,
+  defaultGradeEnd,
   gradeTopup,
   gradeWindows,
   parseTopupLedger,
@@ -211,5 +213,20 @@ describe('topup-grade — source guards', () => {
     expect(entry).toContain("requireProjectDir('topup-grade.ts')");
     expect(entry).toContain('redactError(');
     expect(entry).not.toMatch(/--apply|n8n_pinterest_posts|SUPABASE/);
+  });
+});
+
+describe('topup-grade — default end anchors at the last finalized day (E258)', () => {
+  it('defaults --end to T−2, never yesterday (10-23: E209 read −4.1% at T−1, −1.5% at T−2)', () => {
+    expect(DEFAULT_END_LAG_DAYS).toBe(2);
+    expect(defaultGradeEnd('2026-10-23')).toBe('2026-10-21');
+    expect(defaultGradeEnd('2026-11-01')).toBe('2026-10-30');
+    expect(() => defaultGradeEnd('10/23/2026')).toThrow();
+  });
+  it('the entrypoint takes the default from the lib and no longer hardcodes yesterday', () => {
+    const src = stripComments(read('scripts/agents/topup-grade.ts'));
+    expect(src).toContain('defaultGradeEnd(');
+    expect(src).not.toMatch(/daysAgo\(\s*1\s*\)/);
+    expect(src).toContain("arg('end')");
   });
 });

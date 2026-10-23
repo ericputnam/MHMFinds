@@ -109,6 +109,18 @@ export function shiftDays(key: string, n: number): string {
   return new Date(Date.UTC(y, m - 1, d) + n * 86_400_000).toISOString().slice(0, 10);
 }
 
+/**
+ * Default `--end` for a grade: T−2, the last finalized day the scoreboard anchors its windows on
+ * (E258, 2026-10-23). Evidence: the E209 ledger graded −4.1% with end = T−1 (10-22, a provisional
+ * GA4 day) and −1.5% with end = T−2 (10-21) on the same morning — 2.6 pts of swing from one
+ * unfinalized day, enough to flip a near-zero verdict. `--end` still overrides.
+ */
+export const DEFAULT_END_LAG_DAYS = 2;
+export function defaultGradeEnd(today: string): string {
+  if (!DATE_RE.test(today)) throw new Error('today is not YYYY-MM-DD');
+  return shiftDays(today, -DEFAULT_END_LAG_DAYS);
+}
+
 function num(v: unknown): number {
   const n = typeof v === 'string' ? Number(v) : (v as number);
   return Number.isFinite(n) ? n : NaN;
