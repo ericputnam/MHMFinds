@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-23 — E259 homepage title leads with "Must-Have Sims 4 Mods", 15,000+ → 17,000+ (Tier 0, PR #367)
+- Tried: no hub was eligible. Unbuilt facets ≥20 SFW rows: lots (E252 NOT ELIGIBLE), gameplay (watchlist isNSFW 6/8 — Wonderful Whims, Cuddle and Bath still false; 2 adult + 1 off-type in top 30), workout+gym (158 rows, ≈18/48 off-type by hand: "Anorexia Trait" #1, Pilates Mod, gym lots, poses; family demand ≈60 impr, no query >5, already on /sims-4-gym-clothes-cc/ @5), royals+princess (55 rows ≤8 downloads from one scrape; "royal cc" 14 impr on the listicle @8.5). `workout`/`gym`/`royals`/`princess`/`easter` are themes written into contentType — Rowan. GSC sitemap `contents[].indexed` is "Deprecated; do not use" in the Sitemaps API docs: the 7-week "0 of 18,247 indexed" item is closed — indexing reads come from URL Inspection only. Homepage: must-have cluster on `/` 321 impr / 34 clk, 10.6% CTR, pos ≈7 (14d 10-07→10-20) under a title saying "Finder — 15,000+" (catalog 17,004).
+- Before → after: "Sims 4 Mods & CC Finder — 15,000+…" → "Must-Have Sims 4 Mods & CC — 17,000+ Verified Finds | MustHaveMods"; count fixed in WebSite/FAQ JSON-LD, llms.txt, llms-full.txt. Brand-exact guard 103 clk / 196 impr on `/` (14d). Verify PASS 5912df1.
+- Verdict: MORE DATA (read 2026-11-08 on 10-24→11-06: keep if cluster CTR ≥12.5% and clicks ≥38 with brand-exact clicks ≥93; revert if brand <88 or cluster CTR <8%).
+- Next time: hubs earn AI landings without Google demand (cc 26, build-cc 25 AI sessions/28d vs 1–2 Google each) — a clean facet is worth a hub for the AI leg alone; the blocker is grid cleanliness, not impressions.
+
 ## 2026-10-21 — E252 the tool said ELIGIBLE for a grid that was 18/48 not lots (Tier 0, PR #359)
 - Tried: the only unbuilt family with ≥20 rows is lots (lot+residential+commercial+community, 959 SFW). The eligibility tool printed ELIGIBLE with no `--family` — leg (c) was vacuous — while 18 of the first 48 rows were objects, careers, a save file, an EA pack and a Sim. Fixed the class, not the read: no family → INCONCLUSIVE; `OFF_TYPE_RE.lots` measured on all 959 (rejected with counts: `cc` 32 hits/3 "(No CC)" lots, `home` 49, `starter` 22/21 lots, `functional` 4/1, `kiss` 2/1); `nails?` → `nails|nail (polish|art|…)` (1/544 gameplay hits, the career).
 - Before → after: lots verdict ELIGIBLE → NOT ELIGIBLE, 16/48 named, 0 false positives on the 30 real lots; gameplay off-type 1 → 0. 7 new tests fail on the pre-fix lib.
@@ -49,22 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: MORE DATA (read 2026-10-29 with E210).
 - Next time: a hub's top 30 is the audit unit — 3 wrong cards out of 388 rows were all above the fold by downloadCount; audit the grid order, not the facet count. (Entry written by Quinn from Sage's report: Write/Edit was denied in Sage's run.)
 
-## 2026-10-15 — E210 skin-details retitle (Tier 0)
-- Tried: no 7-term hub left to build (all indexed: cc 10-12, build-cc/clothes-cc/hair-cc 10-06), so the fallback on-page fix: skin-details title/H1/meta now lead with "Skin CC" + "Skin Overlays, Skintones" (was "Skin Details CC — 270+"). Its 723 impr/28d sit at pos 25 on the generic skin family and the bare "skin overlay" family, neither in the old title.
-- Before → after: 13 clk / 290 impr (09-29→10-10) → read 10-29. Facet 295/348 title-supported (84.8%), top-30 21/30, 3 description mis-tags → inbox.
-- Verdict: MORE DATA (read 2026-10-29).
-- Next time: the /games/ pages with the most impressions (body-presets 1,009, poses 1,005) already rank ≤13; skin-details was the only high-impression hub at pos >20 with a title that missed its own queries.
-
-## 2026-10-14 — E203 hub→guide links for the host-split hospital-lots article (Tier 0)
-- Tried: `guides` field on the registry; pregnancy-mods + build-cc link `/sims-4-hospital-lots/` on-page and in llms-full. Google −13.2% WoW decomposed (GSC 10-05→10-11 vs prior, −80): blog.* −32 = one URL (hospital-lots 34→4 after its 301 to apex; twin picked up 6), /mods/ −20 (CTR 4.06→3.43% on more impr), /games/ −16 (pos 19.6→17.8, new hubs entering low), home −13. E177 KEEP (6/6 lines carry age + ok).
-- Before → after: pair 10 clicks/wk, apex pos 9–26, 2 referring URLs → read 10-28 (apex ≥ 20 or pair ≥ 25 at pos ≤ 12). ai_referral 233 (−38.5%): chatgpt 323→200 is 84% of the drop, 10-09 step, no deploy — referrer-side, decision row.
-- Verdict: MORE DATA (read 2026-10-28).
-- Next time: when a blog.* URL loses clicks after the host split, count the apex twin's referring URLs before anything else — the twin inherits the 301, not the links. Migrated-article class is small: only hospital-lots (111/28d), pregnancy (10), dark-academia (5) still earned on blog.*.
-
-## 2026-10-12 — E189 homepage JSON-LD scoped to `/` (Tier 0)
-- Tried: root layout emitted the homepage `WebPage` (`/#webpage`, url = root) + `FAQPage` on every page; moved both to `components/HomeJsonLd.tsx`, rendered only by `app/page.tsx`. Scanner `site-jsonld-scope.test.ts` 3/9 red on pre-fix layout.
-- Before → after: live 5/5 templates carried both nodes → local `next start` 1/5 (`/` only); ad anchors identical. Pre-read E136/E143: /mods/* 751 clicks 28d (09-12→10-09) vs 614; lastmod≤28d 424/16,796; ld==lastmod 3/3 new, 1/3 old.
-- Verdict: MORE DATA (read 2026-10-26).
-- Next time: every hub on the competitor list exists after #275 — the next search lever is ranking existing hubs, not adding pages.
-
-_Older entries (2026-09-29 → 2026-10-13) live verbatim in `archive/playbooks/sage-2026-10.md` and `sage-2026-09.md`; nothing deleted._
+_Older entries (2026-09-29 → 2026-10-15) live verbatim in `archive/playbooks/sage-2026-10.md` and `sage-2026-09.md`; nothing deleted._

@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-23 — E264
+- Tried: runner `preflight-missed` block — on preflight failure the run that knows it failed lands a MISSED ledger row (`ledger-commit.sh`) and the degraded digest + scoreboard + guardrail (`digest-land.sh --allow-degraded --extra …`); every run logs `auth: access=… refresh=… refresh_days=N` from the keychain (dates only) and puts one ⚠️ line in the digest at refresh_days ≤ 5 (`FUNNEL_AUTH_WARN_DAYS`). Retro MISSED row for 10-22 landed by hand (a632c57). (T0, PR #366 b73e06a PASS)
+- Before → after: 10-22 preflight rc=1 in 2 s ("OAuth session expired and could not be refreshed"), 0 rows, 0 artifacts on main, `token-expiry=unknown` → read 10-30: 0 MISSED mornings without a same-day row; warn fires ≥5 d before 2026-11-20 06:02 (today's refresh-token expiry; the 09-02 login lasted ~50 d). New test 6/6 red pre-fix; digest-land +1 red pre-fix (`--allow-degraded` was exit 64).
+- Verdict: MORE DATA (read 2026-10-30).
+- Next time: a credential has an expiry field — read it on every run before the thing that needs it dies; and under `pipefail`, judge a probe by its output, never by the pipeline's exit status (the first draft of `auth_expiry` emitted two lines for exactly that reason).
+
 ## 2026-10-21 — E257
 - Tried: `withPageTimeoutRetry` in `_patreon-auth.ts` — a Members page that hits its own `AbortSignal.timeout` gets one re-attempt, each attempt re-bounded by `nextPageTimeoutMs`, so a retry cannot outlive the 180 s budget; wired into all 4 walks (scoreboard + q4-gate + churn + relaunch), scoreboard's copied constants dropped. E208 graded NOT MET → EXTEND 10-28 (rate leg 5/7, side-of-2.0 6/6). (T0)
 - Before → after: Members COULD-NOT-RUN 1 of 13 Oct scoreboards (10-16, one 30 s page, ~150 s budget left) → read 10-28; test 9/9 red pre-fix; live walk 59/59 paid rows.
@@ -60,16 +66,4 @@ _Seeded 2026-09-22 from Quinn's playbook: ledger/runner/monitor learnings
 moved here because plumbing is now Ops's, not Quinn's. Full originals in
 `archive/playbooks/quinn-2026-09.md` and the live `playbooks/quinn.md`._
 
-## 2026-10-13 — E201
-- Tried: deploy-verify grades an own-build ERROR/CANCELED only after waiting ≤20 m for a READY build that contains the sha (ancestry) with no app file changed (`same_code`: reports/, docs/, logs/, .claude/, *.md exempt); a `build-watch` row lands first so its ledger commit is the proving build on the day's last merge. Found → `BUILD ERROR (platform) → READY via <sha7> · <verdict>`, no incident; the path never rolls back or re-pushes functions.php. (T0)
-- Before → after: 10-12 false BUILD ERROR incidents 2 of 2 ERRORs (4fd20fd, 817064a), each "No Tier 1 merges" until Quinn closed it by hand. New test 13 cases, 9 red on pre-fix main (4 green = old-behaviour controls). The first draft read `$PLATFORM_RES` bare and broke the E111 "positive evidence still rolls back" test under `set -u`. Caught by the existing suite, fixed with `${…:-}`.
-- Verdict: MORE DATA (read 2026-10-20).
-- Next time: grade on a READY build of the same code, never on the absence of a log. Every new global a helper reads needs `${X:-}`, because the tests extract helpers standalone.
-
-## 2026-10-07
-- Tried: E176 — per-day runner lock (atomic mkdir, holder pid, dead-holder break, released by the exit trap after the reap); PR #271 `983a046`, PASS 07:25. New test 7/7 red on the pre-fix runner. Landed MISSED rows for 10-05 and 10-06 via `ledger-commit.sh` plus incident `2026-10-05-063000.md`.
-- Before → after: 2 runner starts + 1 duplicate Quinn on 10-07 → read 10-14 (1 `owns` line per morning, 0 second Quinns). Root cause of the two missed days was the host, not the runner: lid closed on battery 10-05 03:31 MDT, no full wake until 10-07 06:50; the app also still reads the `30 6 * * *` schedule in Eastern (= 04:30 MDT). E148 read: 4/4 daily PRs got same-morning rows from Quinn's verify, but 10-04 was a false DID NOT FIRE — the step matches the subject exactly (`funnel: daily run DATE`) and #264 was scoped `funnel(quinn): …`.
-- Verdict: E176 MORE DATA (read 2026-10-14); E148 MORE DATA (fix the subject match first).
-- Next time: a "did not fire" row needs the host's power log before it blames the job — `pmset -g log` showed the sleep in one line; and a scheduler limit that counts live *sessions* will double-start a *runner* the moment a stale session ends.
-
-_Older entries live verbatim in `archive/playbooks/ops-2026-09.md` (up to 09-29) and `archive/playbooks/ops-2026-10.md` (09-30→10-02 moved 10-18; 10-03/10-04 moved 10-21); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/ops-2026-09.md` (up to 09-29) and `archive/playbooks/ops-2026-10.md` (09-30→10-02 moved 10-18; 10-03/10-04 moved 10-21; 10-07/10-13 moved 10-23); nothing deleted._
