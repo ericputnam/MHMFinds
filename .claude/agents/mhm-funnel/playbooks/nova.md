@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-23
+- Tried: E260 (T0, PR #368 `67e3ebd`) — `lib/funnel/signupQuality.ts` + scoreboard row "Creator-flagged sign-ups 7d: N (M scripted-shaped, K human-shaped)" and an Owned-audience warning bullet. Grades: E211 KILL-lift (0 of ≥3; 2 CTA clicks ever), E218 KEEP (Bing /creator/* 68 ≥ 62, site Bing 95.46%), E106 KILL-lift (778 vs 1,172; 523 pages w/ GSC impr; /mods/* clicks 145%), E97 hub NOT MET (23/28d vs 50; leaves 778) — Navbar revert declined, Quinn's call.
+- Before → after: form sign-ups since 10-15: 86 flagged (6% ever active, 86/86 also opted in, 0 submissions, random-case letters-only usernames, 104 IPs/115 rows, one UA family) vs 46 unflagged (76% active, 14/46 opted in). GA4 `sign_up` 43 = the unflagged count. Onset W42 (10-12): 58 scripted vs 0–6/wk before. 68 of 87 `signup-optin` rows 7d are these accounts. Threshold ≥6 case flips chosen on the pre-onset population first (2 of 789 active humans match).
+- Verdict: E211 KILL (surface stays; the pool was script). E260 MORE DATA (read 2026-10-30).
+- Next time: when a cohort's conversion is 0, check the cohort is human before redesigning the surface — GA4 event count vs DB row count was the one-line tell. A sign-up gate is auth → Tier 2; package, don't build.
+
 ## 2026-10-21
 - Tried: E253 (T0, #354) — read "11.5/post, halved" before touching ingest. 4 of the 8 "posts" were single Manual admin rows (03:45–03:52Z, TSR/Patreon/CurseForge mod pages as sourceUrl). The denominator now counts writer-host posts only (exact host allowlist) and prints "+ N other". E239 KEEP (17/17 posts since 09-30 lastmod ≤ stamp; 10-20/10-21 refreshed=1, created 20/24, errors 0). E204 KEEP (6/7 mornings print PASS/FAIL, 0 "—"; 10-15 has no scoreboard file).
 - Before → after: 92 from 8, 11.5/post → 92 from 4 posts + 4 other, 22.0/post (prior 23.6), live lib read 10-21 10:45Z. Ingest dropped nothing.
@@ -55,20 +61,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: E158 KEEP on its own legs; the guard fail is Bing+ChatGPT, untreated. E218 read 2026-10-23.
 - Next time: split a guard fail by source before blaming a page change. A one-off IndexNow push decays, so it should have been a daily changed-only push from E95.
 
-## 2026-10-13
-- Tried: E197 (T0) — `HOUSE_ACCOUNT_USER_IDS` in `lib/funnel/creatorOnboarding.ts`. It excludes the operator's non-admin test account (username = operator's name, the 01-06 "SimwithShan" approval) from onboarded, and its pending rows still queue. The scoreboard prints "N house account excluded". 4 tests, 3 red pre-fix. E137 graded NOT-RUN (0 sent, Q23 14 d unanswered, drops 10-14, no 3rd pitch).
-- Before → after: onboarded 3 (2 approved) → 2 (1 approved), from a live read through the lib (DB 10-13). The only approved external creator is doree (01-10). Pending 7, oldest 9 d, all Atino00.
-- Verdict: MORE DATA (read 2026-10-20: the scoreboard prints 2/1/1 house).
-- Next time: `isAdmin` is not "is the team". Before counting a population, check every account in it by username and author string. With n=3, one test account was 33% of the charter number for 9 days.
-
-## 2026-10-12
-- Tried: E190 (T0, PR pending at write) — backfill of the E183 pending profile + `Mod.creatorId` for pre-#274 approvals. Planner reuses `planApprovalProfile` and adds a backfill-only rule (author must name the account). 12 tests, 2 mutations red. Plan: 4 read, 1 write (doree), 3 skip (no-mod, anonymous, author-not-account).
-- Before → after: approvals linked 0/4 → 1/4 (3 can never qualify); pending profiles 0 → 1. 20 of 22 empty `?creator=` claim views = one 09-30 06–09 ET burst (direct, all new users, 4 browsers, 3 countries) right after public PR #228 printed `…?creator=<slug>`: extractors stop at `<`. Real claim views 2. The 01-06 approval came from a non-admin account named after the operator.
-- Verdict: MORE DATA (read 2026-10-25 with E183).
-- Next time: never put a URL template with `<slug>` in a public PR body. Scrapers fetch it and pollute the read.
-
-## 2026-10-07
-- Tried: E178 — read-only creator-flag audit (`creator-flag-audit.ts` + lib, 9 tests, 2 mutations red). PR #270 `efdf3d0`, Tier 0, merged after Rio's CLEAR (first gate attempt timed out at 600 s, retry passed); verify PASS 07:29.
-- Before → after: 343 isCreator accounts = 20 seed + 1 admin + 322 form ticks; 3 submitted, 0 profiles, 1 weak catalog match, 221 player-active, 79 dormant; download-click 57.1% vs 55.9% unflagged control, favorites 41.9% vs 53.3% → read 10-14. Reads: E137-b KEEP/close, E139 KEEP (4/7 rows, durability → Ops), E141 KEEP (5/5), E17 KILL (61 engaged vs 200), E22 KEEP (lighting 18/25 fixtures; CAS-lighting cleanup → Rowan).
-- Verdict: MORE DATA (read 2026-10-14). "Flagged but never submitted" is not a supply pool — a checkbox 13–24% of sign-ups tick each month with player behaviour. The one real gap is routing: creator sign-ups return to the referring page, no welcome email, portal only in the navbar (held: touches app/sign-in).
-- Next time: run the control before calling a population a leak — one unflagged-cohort comparison (57.1% vs 55.9%) retired a 10-04 inbox line that had been pitched as the "next supply leak"; and re-read the ledger before writing HELD-RED in a playbook (E166 had shipped four days earlier).

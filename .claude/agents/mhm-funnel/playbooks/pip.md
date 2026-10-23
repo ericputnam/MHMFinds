@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-23
+- Tried: E258 top-up #17 (T0, SD-10 floor; E244 leg; apply ledger on main 801e7b5, artifacts #365 5c48da0 PASS): tool gate 1.31 d (15 ÷ 11.43 pinterest-14d) = scoreboard ≈1.3 d. 20 ranked rows 6×10-26 + 7×10-27/28 (ranker 10 dests/55 ids, 94 writer rows dropped upstream, 0 in tool); cross-run cap skipped 10-23..25 (E244). Same PR: `topup-grade.ts` default `--end` T−1 → T−2 (`defaultGradeEnd`, 2 tests red pre-fix). Graded E209 KILL (lift), E223 KEEP.
+- Before → after: runway 1.31 → 3.06 d (15 → 35 rows; bound seven_per_day_cap); SEO 51 → 86 (0/20 → 20/20); day-trace 10-24..28 = 7/7/7/7/7 all top-up. E209: 1,116 vs 1,133 (−1.5%) vs site +4.8% at end 10-21, but −4.1% vs +4.6% at end 10-22 — 2.6 pts from one provisional GA4 day; MCP spot check = tool exactly.
+- Verdict: E258 MORE DATA (read 10-30 by the tool); E209 KILL (lift); E223 KEEP. Lift record now 1 of 4 ≥ site.
+- Next time: a grader's default window is part of the rule — anchor it at the finalized day in code, or two reads of one ledger disagree by more than the effect being graded.
+
 ## 2026-10-21
 - Tried: E251 (T0, #357): `scripts/agents/topup-grade.ts` + `-lib` + 12 tests — one grader for every SD-10 top-up (treated set from the tool's undo ledger, hosts + trailing slash folded, 7 d vs prior 7 d, post window same weekdays −7 d clipped at `--end`, rule printed first). Graded E202, re-ran E216. No top-up: tool gate 2.36 d (29 ÷ 12.29 pinterest-14d) ≥ 2.0.
 - Before → after: E202 treated 1,736 vs 1,849 (−6.1%) vs site Pinterest +2.3% (10-13→19 vs 10-06→12) → KILL as lift; tool = hand pull on all 9 dests; cap 7/7/7; read-back 21/21, 0 blog.*. E216: `automated` (1.001 users/sess, 99.4% fingerprint), segment 21,308 = 5.82% of 366,160 (28d; was 4.10%), 7d all +9.8% → ex seg +3.0% → KEEP. Floor lift record: E181 −2.7% vs −1.1%, E188 +5.6% vs +5.0%, E202 −6.1% vs +2.3% — 1 of 3 ≥ site.
@@ -42,24 +48,6 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 10-15 ledger 18 rows → 5 dests at 2/dest/date (tattoos ×6, gshade ×6 over 3 dates) vs 10-14 21 → 9 at 1/dest/date; pool 37 blog.* / 26 apex of 63 rows, 0 host-split destinations today.
 - Verdict: MORE DATA (read 10-22 on the next apply's ledger)
 - Next time: a lesson that lives only as "always pass --flag" in the playbook is not a guard — make it the default and pin it with a test that was red first.
-
-## 2026-10-16
-- Tried: E216 (T0, PR #317 21cc7c9): classified the Singapore Direct stream (E206 Pip leg, due 10-21) with a reusable read — `scripts/agents/direct-bot-read.ts` + pure `direct-bot-lib.ts` (rule printed before the reading; `automated` only if users/session ≥0.98 AND pv/session ≤1.05 AND ≥90% on the two fingerprints; else `inconclusive`, never "human") + 11 tests; artifact `reports/funnel/pip-singapore-direct-2026-10-16.md`; Q30 (Vercel Firewall SG challenge) filed. No top-up: tool runway 2.89 d (46 ÷ 15.93 pinterest-14d) ≥ 2.0.
-- Before → after: 28d 09-17→10-14 segment 14,740 = **4.10%** of 359,162 (Rio's excess-over-250 method read 1.93% — the quiet-day trickle is the same two fingerprints); users/session 1.001, pv/session 1.002, 99.0% on 1280x1200 (9,686) + 1366x1366 (4,668); engaged 27.8% but 85.7% on the Mac variant — dwell-driven, so engagement is not a bot discriminator. 7d all +5.7% → ex segment +0.5%; Direct +79.9% → ex segment **−7.4%**. 1280x1200 variant ramping (10-14 1,806, 10-15 1,943). Pinner 9–10 pins/24h = 100% of rows dated today (0 schedulable, drainable 0): inventory-bound, not degraded.
-- Verdict: KEEP (verdict `automated`; read 10-21 by re-running the tool — keep if verdict unchanged and the headline is quoted with the ex-segment line beside it)
-- Next time: segment Direct by country + source before reading its WoW, and classify the whole segment, not the excess over a baseline. (Entry written by Quinn from Pip's report: Edit was denied in Pip's run.)
-
-## 2026-10-15
-- Tried: E209 top-up #15 (T0, SD-10 floor; E202's next leg): tool gate read 1.99 d (35 ÷ 17.57/day pinterest-14d) while the scoreboard printed "≈2 d" on the same basis — the floor is strict, 1.99 < 2.0. 18 sessions-ranked rows 7×10-21/22 + 4×10-23 (ranker 9 dests/70 ids, 77 writer rows dropped upstream, 0 in the tool); cross-run cap skipped 10-15..20 (E188 + E202). Forgot `--max-per-url 1` → tool default 2/URL/day (urban-tattoos ×6, gshade ×6 over 3 dates); inside the standing approval, noted on the ledger. E206 Pip leg (Singapore Direct) not started — due 10-21.
-- Before → after: runway 1.99 → 3.02 d (35 → 53 rows; bound seven_per_day_cap, stopped at the ~3-day target, not hard_cap_21); SEO 74 → 99 (0/18 → 18/18); read-back 18/18, created_at ≤ 2025-10-28. Inventory 10-21..23 is again 100% top-ups.
-- Verdict: MORE DATA (read 10-22; treated WoW ≥ site WoW, re-pulled)
-- Next time: always pass `--max-per-url 1`; and when the scoreboard rounds to "≈2 d" the gate still fires at 1.99 — quote the tool's two decimals, never the rounded flag.
-
-## 2026-10-14
-- Tried: E202 top-up #14 (T0, SD-10 floor; apply ledger on main `db48455`): 21 sessions-ranked rows 7×10-18/19/20 — first run gated on the tool's pinterest-14d basis (1.10 d) while the scoreboard read 1.7 d; cross-run cap skipped 10-15/16/17 (E188). Same PR: E170 #11 KEEP, E77 KILL (Q24 dropped).
-- Before → after: runway 1.10 → 2.19 d (21 → 42 @ 19.14/day); SEO 71 → 96 (0/21 → 21/21); read-back 21/21. Ranker 13 dests/81 ids, 63 writer rows dropped upstream. E170 #11: 7 dests 2,095 → 2,254 (+7.6%, 6/7 up) vs site Pinterest −0.8%. Writer: 147 rows inserted in 7d (21/day) but 136 at the 2025-01-01 placeholder and 0 real-dated on 10-15..21 — all 42 rows in the 14-day horizon are top-ups.
-- Verdict: MORE DATA (read 10-21)
-- Next time: the plugin dates a row only on its posting day, so a horizon-based runway can never see writer inflow; measure Q11 by rows dated ahead per day, not rows inserted.
 
 ## 2026-10-19
 - Tried: E237 (T0, read-only): traced the digest's "34 rows dated 10-17 posted vs ≤7/date" before any top-up — `scripts/agents/pin-queue-day-trace.py` (rows by origin per Post Date vs Pinterest API pins). Graded E188. No top-up: tool gate 2.43 d (25 ÷ 10.29 pinterest-14d) ≥ 2.0.

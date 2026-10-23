@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-23
+- Tried: E263 (T0, #363 55994c0; ledger 0d49439): Sage's 18 lots-grid non-lots (#359), all `residential`; 18 --ids pins, 12 retyped, 6 NULL. Graded E221 KEEP, E214 EXTEND, E90/E100/E109 KILL.
+- Before → after: lots top-48 off-type 16 → 6, none of the 18 left (the 6 are 5 wall rows + an EA pack); read-back 18/18; residential 566 → 548.
+- Verdict: MORE DATA (read 2026-11-04 with Sage's lots re-read).
+- Next time: `residential` has no writer and is 39.4% lot-titled; walls/doors/windows posts alone put ≥71 rows there. Clearing a top-N layer just lets the next layer of the same class move up. Fix the class, don't chase the grid.
+
 ## 2026-10-21
 - Tried: E256 (T0, #355 a600e55; apply ledger 2b7b414): read all 150 body-preset rows; 57 were nose/eye presets from the backfill's CAS hint regex. Rule moved to lib/bodyPresetRules.ts + 74 --ids pins (incl. nose post, furniture top-30, swimsuit post). Graded E207 KEEP.
 - Before → after: body-preset 150 → 93, face titles 57 → 0 (top 24 2 → 0); nose post 7 → 0; furniture top-30 off-facet 4 → 0; copy 130+ → 90+. E207 eyes/makeup/makeup-cc/eyes-cc top 24 0/0/0/0, 73/73.

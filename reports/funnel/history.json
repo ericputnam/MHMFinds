@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T10:37:49.572Z",
+  "generatedAt": "2026-10-23T11:50:29.585Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -3879,9 +3879,9 @@
     },
     {
       "date": "2026-10-20",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 179.3,
+      "sessions": 11559,
+      "rpm": 15.51,
       "expectedRevenue": 190.82,
       "expectedSessions": 11489,
       "nonAdMonthly": 152,
@@ -3915,9 +3915,9 @@
     },
     {
       "date": "2026-10-21",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 187.68,
+      "sessions": 11375,
+      "rpm": 16.49,
       "expectedRevenue": 186.84,
       "expectedSessions": 11649,
       "nonAdMonthly": 153,
@@ -3946,6 +3946,68 @@
         "Pip": 7,
         "Rio": 6,
         "Quinn": 10,
+        "operator": 1
+      }
+    },
+    {
+      "date": "2026-10-22",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 178.97,
+      "expectedSessions": 11857,
+      "nonAdMonthly": 153,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-23",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 196.45,
+      "expectedSessions": 12094,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": 258,
+      "pinterestSessions7d": 59813,
+      "returningShare7d": 0.4991293151668021,
+      "nonPinterestShare7d": 0.22304634729294404,
+      "pagesPerSession7d": 1.4931873142357968,
+      "engagementRate7d": 0.7008064430216578,
+      "favorites7d": 739,
+      "downloadClicks7d": 378,
+      "newMods7d": 101,
+      "catalogTotal": 17004,
+      "captureRatePer1k": 2.70219317539119,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.12244897959183673,
+      "paperOnlyMerges7d": 2,
+      "mergesByOwner7d": {
+        "Nova": 6,
+        "Sage": 5,
+        "Rio": 5,
+        "Rowan": 7,
+        "Pip": 6,
+        "Ops": 6,
+        "Quinn": 9,
+        "Cass": 4,
         "operator": 1
       }
     }
@@ -6359,6 +6421,69 @@
       "kind": "merge",
       "label": "Quinn: PR #352 funnel: daily run 2026-10-20",
       "commit": "a3a6efe",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Cass: PR #353 E254 issue-07 pre-send check",
+      "commit": "f2f6053",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Rowan: PR #355 E256 face presets out of body-preset + 74 --ids pins (Tier 0)",
+      "commit": "a600e55",
+      "result": "SUPERSEDED (production already on b128a6f, newer)"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Rio: PR #358 E255 yellow verdict 2026-10-21 (Tier 0, paper)",
+      "commit": "1d6c553",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Rowan: PR #360 E256 apply rollback file (paper)",
+      "commit": "9e61905",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Sage: PR #359 E252 hub-eligibility — no family → INCONCLUSIVE, OFF_TYPE_RE.lots, Nail Technician fix (Tier 0)",
+      "commit": "418fd87",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Ops: PR #356 funnel(ops): E257 Patreon page timeout gets one bounded re-attempt in every Members walk (Tier 0, paper trail)",
+      "commit": "18d50b5",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Nova: PR #354 funnel(nova): E253 new-mods row counts writer posts only (Tier 0)",
+      "commit": "3945b97",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Pip: PR #357 E251 topup-grade.ts — one grader for every SD-10 top-up; E202 KILL (lift), E216 KEEP (Tier 0, read-only)",
+      "commit": "3945b97",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-21",
+      "kind": "merge",
+      "label": "Quinn: PR #361 funnel: daily run 2026-10-21 (Tier 0 docs)",
+      "commit": "01906c6",
       "result": "PASS"
     }
   ]
