@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-23
+- Tried: E247 issue 07 run 1 (T1, veto expired; the 10-22 run MISSED at preflight). Re-dry first.
+- Before → after: 10-21 dry 202 → 10-23 dry 237 (+35, trips my >30 stop-and-ask). The 35 classified: 33 signup-optin, 33 distinct IPs, ≤2/10 min = two days of normal opt-ins. Run 1 sent 100/100, 0 failed, cursor = prediction. Tail 137 → run 2 defers 37.
+- Verdict: E247 PENDING (10-29); E254 INCONCLUSIVE (tail-count leg MET, reach leg waits on runs 2–3).
+- Next time: write a gate in per-day units ("> 2× trailing daily opt-ins × days since the dry"). A fixed +30 assumes the send keeps its date.
+
 ## 2026-10-21
 - Tried: E254, the issue-07 pre-send check (T0, paper + DSN counter). Dry run + resume dry run on today's list, a DSN read since 10-19, and the invite subject added to `CAMPAIGN_SUBJECTS` (guard test was 1/3 red on main).
 - Before → after: 10-20 plan was "100 + resume 90". 10-21: 202 recipients (+12 in a day), tail 102, so run 2 itself defers 2 and Thursday needs 3 runs. The 1 hard DSN since 10-19 (5.7.1) was invite-01, filed 'other'; its hash was already excluded. 0 new hashes.
