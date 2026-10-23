@@ -54,6 +54,7 @@ import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/ca
 import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
 import { summarizeCreatorSubmissions, type CreatorOnboardingSummary } from '../../lib/funnel/creatorOnboarding';
+import { summarizeSignups, formatCreatorFlaggedSignups, formatScriptedSignupWarning, type SignupQualitySummary } from '../../lib/funnel/signupQuality';
 import { summarizeCreatorLandings, formatCreatorLandings, sourceMatchedRead, EARNED_CHANNEL_GROUPS, type ChannelRow, type CreatorLandingSummary } from '../../lib/funnel/creatorLandings';
 import { summarizeCatalogInflow, formatCatalogInflow, type CatalogInflowSummary } from '../../lib/funnel/catalogInflow';
 import {
@@ -512,6 +513,10 @@ interface DbData {
   submissionsPendingReview: number;
   /** Whole days since the oldest pending submission; null when none. */
   oldestPendingSubmissionDays: number | null;
+  /** E260: sign-ups 7d split by form/OAuth, creator flag and scripted-shaped username (lib/funnel/signupQuality.ts). */
+  signupQuality: SignupQualitySummary;
+  /** Subscriber rows with source `signup-optin` created in the last 7d (the denominator the scripted share is read against). */
+  optInRows7d: number | null;
 }
 
 async function pullDb(): Promise<DbData> {
@@ -579,6 +584,34 @@ async function pullDb(): Promise<DbData> {
     }
     const creatorsOnboarded = onboarding.onboarded;
 
+    // E260: the "flagged" creator population was 80% script from 10-12 on
+    // (random-case letters-only usernames, every box ticked, 0 activity), and
+    // the same accounts sit in the `signup-optin` subscriber source. Read the
+    // 7d accounts once, join the opt-in rows by email in memory (never
+    // printed), and let the lib classify. Zeros + null on failure: the DB
+    // block's other counts still render, and the warning bullet stays silent.
+    let signupQuality: SignupQualitySummary = summarizeSignups([], new Date());
+    let optInRows7d: number | null = null;
+    try {
+      const subsAny = subs as unknown as { findMany: (a: unknown) => Promise<Array<{ email: string }>> };
+      const [recentUsers, optInRows] = await Promise.all([
+        prisma.user.findMany({
+          where: { createdAt: { gte: d7 } },
+          select: { email: true, username: true, isCreator: true, createdAt: true, accounts: { select: { provider: true } } },
+        }),
+        subsAny.findMany({ where: { source: 'signup-optin', createdAt: { gte: d7 } }, select: { email: true } }),
+      ]);
+      const optedIn = new Set(optInRows.map((r) => r.email.toLowerCase()));
+      optInRows7d = optInRows.length;
+      signupQuality = summarizeSignups(recentUsers.map((u) => ({
+        createdAt: u.createdAt, username: u.username, isCreator: !!u.isCreator,
+        isForm: u.accounts.some((a) => a.provider === 'credentials'),
+        optedIn: optedIn.has(u.email.toLowerCase()),
+      })), new Date());
+    } catch {
+      // leave the empty summary; the row prints "—"-equivalent zeros and no warning
+    }
+
     return {
       users, users7d, users30d,
       subscribers, subscribers7d, subscribers30d, subscribersBySource,
@@ -591,6 +624,7 @@ async function pullDb(): Promise<DbData> {
       creatorsHouseExcluded: onboarding.houseExcluded,
       submissionsPendingReview: onboarding.pendingReview,
       oldestPendingSubmissionDays: onboarding.oldestPendingDays,
+      signupQuality, optInRows7d,
     };
   } finally {
     await prisma.$disconnect();
@@ -1202,6 +1236,8 @@ async function main() {
     md += `| Affiliate clicks | | ${num(d.affiliateClicks7d)} | ${num(d.affiliateClicks30d)} |\n`;
     md += `| Affiliate earnings | | | ${money(d.affiliateEarnings30d)} |\n\n`;
     md += `- Subscribers by source: ${Object.entries(d.subscribersBySource).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'}\n`;
+    const scriptedWarning = formatScriptedSignupWarning(d.signupQuality, d.optInRows7d);
+    if (scriptedWarning) md += `- ${scriptedWarning}\n`;
     md += `- Catalog: ${num(d.mods)} mods · ${num(d.collections)} user collections · ${d.creatorProfiles} creator profiles · ${d.modSubmissions} submissions\n\n`;
   } else md += `_unavailable: ${errOf(db)}_\n\n`;
 
@@ -1257,6 +1293,7 @@ async function main() {
   md += `| Creators onboarded (>=1 submission) | ${db.ok ? `${num(db.data.creatorsOnboarded)} (${num(db.data.creatorsOnboardedApproved)} with >=1 approved${db.data.creatorsHouseExcluded ? `; ${num(db.data.creatorsHouseExcluded)} house account excluded` : ''})` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Submissions pending review | ${db.ok ? `${num(db.data.submissionsPendingReview)}${db.data.oldestPendingSubmissionDays != null ? ` (oldest ${db.data.oldestPendingSubmissionDays}d)` : ''}` : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Creator submissions 7d | ${db.ok ? num(db.data.submissions7d) : '—'} | ${owners.creatorSubmissions7d ?? '?'} |\n`;
+  md += `| Creator-flagged sign-ups 7d | ${db.ok ? formatCreatorFlaggedSignups(db.data.signupQuality) : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n`;
   md += `| Sessions to creator pages 7d (/creator/*) | ${ga4.ok && ga4.data.creatorLandings7d ? formatCreatorLandings(ga4.data.creatorLandings7d) : '—'} | ${owners.creatorsOnboarded ?? '?'} |\n\n`;
 
   md += `## Team health\n\n`;
@@ -1306,6 +1343,8 @@ async function main() {
       pendingReview: db.ok ? db.data.submissionsPendingReview : null,
       oldestPendingDays: db.ok ? db.data.oldestPendingSubmissionDays : null,
       landings7d: ga4.ok ? ga4.data.creatorLandings7d : null,
+      // E260: the flagged count with its scripted share; optInRows7d is the subscriber-side denominator.
+      signups7d: db.ok ? { ...db.data.signupQuality, optInRows7d: db.data.optInRows7d } : null,
     },
     team,
     owners,
