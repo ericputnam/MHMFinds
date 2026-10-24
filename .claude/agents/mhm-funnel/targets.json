@@ -1,11 +1,11 @@
 {
   "_comment": "Funnel team targets. Baselines are REAL numbers pulled 2026-09-01 (sources noted). The scoreboard script (scripts/agents/funnel-scoreboard.ts) reports actuals against these daily. Quinn rewrites `bets` monthly. All currency USD.",
-  "lastUpdated": "2026-10-16",
+  "lastUpdated": "2026-10-24",
   "autonomy": "tiered",
   "_autonomyNote": "\"tiered\" = Tier 0 ships, Tier 1 ships after a 24h veto window, Tier 2 queues for the operator (see autonomy.md). Set to \"ask\" to make everything queue.",
   "successCriterion": "Total revenue growth AND sessions growth, judged together: Mediavine + non-ad revenue 28d rolling vs prior 28d, and Mediavine sessions 28d rolling vs prior 28d. Operator decision 2026-09-19: RPM gains with falling sessions do not count as growth; a day is graded green only when both revenue and sessions are >= 97% of the expectation line in targets.monthly.sessions / reports/funnel/history.json (see /admin/funnel/). Owned-audience adds and non-ad revenue below are the levers, not the verdict.",
   "quarterEnd": "2026-12-31",
-  "quarterTest": "Owned-audience net adds/week must be >= 3x the September baseline AND non-ad revenue >= $1,000/mo AND Mediavine sessions 28d >= the December expectation (450,000/mo pace), or the team is replaced.",
+  "quarterTest": "Owned-audience net adds/week must be >= 3x the September baseline AND non-ad revenue >= $1,000/mo AND Mediavine sessions 28d >= the December expectation (600,000/mo pace — raised from 450,000 by the operator 2026-10-24), or the team is replaced.",
   "baseline": {
     "establishedOn": "2026-09-01",
     "sessions": {
@@ -127,10 +127,15 @@
       "sessions": {
         "2026-09": 400000,
         "2026-10": 415000,
-        "2026-11": 432000,
-        "2026-12": 450000
+        "2026-11": 500000,
+        "2026-12": 600000
       },
-      "_sessionsBasis": "Co-equal headline metric with revenue (operator, 2026-09-19). Straight ramp from the Aug baseline 401,901 to 450,000 (+12%) by Dec. Grown by Pinterest impressions/clicks (measured, not blasted), catalog + collection pages, AI referrals, search recovery, newsletter. Excludes Bing/(not set) once filtered. Bulk pin-queue changes are Tier 2."
+      "nonPinterestSessions": {
+        "2026-11": 160000,
+        "2026-12": 240000
+      },
+      "_nonPinterestBasis": "Operator 2026-10-24: second sessions headline, owned by Pip (Sage for search/AI). Non-Pinterest was ~25% of sessions (~100k/mo) in Oct; Dec = 40% of 600,000 (longRange.nonPinterestSessionSharePct). Grown by short video (TikTok / YouTube Shorts / Instagram Reels), Tumblr, Reddit, Facebook groups/Discord, search + AI. Singapore-direct crawler sessions (E236) never count. See growth-plan.md.",
+      "_sessionsBasis": "Co-equal headline metric with revenue (operator, 2026-09-19). Operator 2026-10-24: December target raised 450,000 -> 600,000 (+49% over the Aug baseline 401,901) because +12% was not growth; Nov 500,000. Sep/Oct rows unchanged (history). The expectation line in reports/funnel/history.json ramps from the Aug baseline to the Dec number, so the line steps up the day this lands and the team reads BELOW LINE until it closes the gap — intended. Grown by Pinterest impressions/clicks (measured, not blasted), catalog + collection pages, AI referrals, search recovery, newsletter. Excludes Bing/(not set) once filtered. Bulk pin-queue changes are Tier 2."
     },
     "yearly": {
       "nonAdRevenue2027": 60000,
@@ -140,6 +145,7 @@
   "owners": {
     "_comment": "Which specialist owns each scoreboard metric, restructure 2026-09-22.",
     "sessions28d": "Pip",
+    "nonPinterestSessions": "Pip",
     "pinterestSessions": "Pip",
     "bingOrganic": "Pip",
     "direct": "Pip",

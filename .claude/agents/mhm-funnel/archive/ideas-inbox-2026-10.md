@@ -76,3 +76,15 @@
 - [ ] [rowan] the preset facet is now ~97 face presets + GShade/ReShade presets mixed and backs no page. Split or leave alone; measure before proposing a face-presets page. — Rowan 10-21
 - [ ] [rowan] 4 Manual admin rows added 10-21 03:45–03:52Z (Mummy Costume ts2, Waste soil set, Mummy Outfit II, Mummy Costume S08) have creatorId null and sit on no writer post; if they are meant for a Halloween hub, check their facets. — Nova 10-21
 - [ ] [ops→quinn] `reports/funnel/2026-10-15.md` never landed on main (digest exists), so every 7-morning keep-if counts 10-15 as missing; the daily PR must `git add` the day's scoreboard .md — add a scanner test that each digest date has its scoreboard file. — Nova/Quinn 10-21
+
+
+## Parked 2026-10-24 (operator growth plan — launcher)
+
+## Operator watch 2026-10-18 — ON LINE run 16, normal weighting
+Sessions 28d 360,503 vs line 354,930 = 101.6% (09-19→10-16); revenue $5,865.53 vs $5,932.82 = 98.9% (WATCH bar 97%). Run 15 (10-17) read 101.3% / 98.8%. Ex the Singapore Direct segment the 28d headline reads ≈96.6% (E236, 09-18→10-15) — Q30 decides whether the human line is on line. Re-arms if a run reads <97%.
+
+- [ ] [ops] Concurrent deploy-verify runs slowed smoke renders to 5–16 min/page (/play 968 s) and one verify took 60 min; Nova's took 35 min while curl answered in <1 s. Serialize smoke-render across agents or make the first run's result reusable by the others. — Cass/Nova 10-16
+
+- [ ] [ops] deploy-verify's smoke set does not cover collection routes; E221 was confirmed by curling /games/sims-4/makeup-cc/ by hand. — Rowan 10-16
+
+- [ ] [ops] deploy-verify --check: check-blog-sidebar makes one curl (--max-time 60) and a could-not-run goes straight to INCONCLUSIVE with no retry (10-16 06:37; by-hand re-run PASS ~06:55). Retry once after 30 s before grading INCONCLUSIVE. Also vnotes() prints "smoke NOT" on every INCONCLUSIVE, even when only the blog curl failed. (T1, grading logic) — Ops 10-16
