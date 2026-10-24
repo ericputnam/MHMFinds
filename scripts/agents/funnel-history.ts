@@ -84,6 +84,8 @@ interface DayEntry {
   captureRatePer1k?: number | null;
   creatorsOnboarded?: number | null;
   creatorSubmissions7d?: number | null;
+  /** E267: owned adds net of scripted-shaped accounts + their opt-ins (bet B1 is graded on this from 2026-10-24). */
+  ownedAdds7dHumanShaped?: number | null;
   runSuccess14d?: number | null;
   opsMergeShare7d?: number | null;
   paperOnlyMerges7d?: number | null;
@@ -136,6 +138,7 @@ interface ScoreboardJson {
   date?: string;
   headline?: {
     ownedAdds7d?: number;
+    ownedAdds7dHumanShaped?: number | null;
     nonAdRevenueMonthlyGross?: number;
   };
   db?: { ok: boolean };
@@ -323,6 +326,7 @@ export function deriveScoreboardFields(
     captureRatePer1k: ga4Bad || dbBad ? null : nullableNum(scoreboard?.capture?.ratePer1kSessions7d),
     creatorsOnboarded: db(scoreboard?.creators?.onboarded),
     creatorSubmissions7d: db(scoreboard?.creators?.submissions7d),
+    ownedAdds7dHumanShaped: db(scoreboard?.headline?.ownedAdds7dHumanShaped),
     runSuccess14d: teamOk ? nullableNum(scoreboard?.team?.data?.runSuccess14d) : null,
     opsMergeShare7d: teamOk ? nullableNum(scoreboard?.team?.data?.opsMergeShare7d) : null,
     paperOnlyMerges7d: teamOk ? nullableNum(scoreboard?.team?.data?.paperOnlyMerges7d) : null,
@@ -364,6 +368,7 @@ function emptyDay(date: string): DayEntry {
     captureRatePer1k: null,
     creatorsOnboarded: null,
     creatorSubmissions7d: null,
+    ownedAdds7dHumanShaped: null,
     runSuccess14d: null,
     opsMergeShare7d: null,
     paperOnlyMerges7d: null,

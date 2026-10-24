@@ -125,6 +125,37 @@ export function formatCreatorFlaggedSignups(s: SignupQualitySummary): string {
 }
 
 /**
+ * E267 (Nova, 2026-10-24): the headline's owned-audience adds net of the
+ * scripted-shaped population, so bet B1 (200/wk) is graded on people.
+ *
+ * `rawOwnedAdds7d` is the scoreboard's `subscribers7d + users7d`. Both
+ * subtrahends are subsets of it by construction, read from the SAME summary
+ * (no second heuristic): `scripted7d` are accounts created in the 7 d window
+ * (⊂ users7d), `scriptedOptedIn7d` are `signup-optin` subscriber rows created
+ * in the window for those accounts (⊂ subscribers7d). Clamped at 0 anyway.
+ * Null when either input is null — "could not split" is never a number.
+ * 10-24 scoreboard: 235 raw − 57 accounts − 57 opt-ins = 121.
+ */
+export function humanShapedOwnedAdds(rawOwnedAdds7d: number | null, s: SignupQualitySummary | null): number | null {
+  if (rawOwnedAdds7d == null || s == null) return null;
+  return Math.max(0, rawOwnedAdds7d - s.scripted7d - s.scriptedOptedIn7d);
+}
+
+/**
+ * Headline cell after "owned-audience adds 7d ". The human-shaped figure leads
+ * and the raw figure stays beside it, so the series is still readable:
+ *   **121 human-shaped** (235 raw; 57 scripted accounts + 57 scripted opt-ins excluded; E260)
+ * Never blank and never throws: raw null → `**?**`; split null (the sign-up
+ * read failed) → `**235** (split unavailable)`.
+ */
+export function formatOwnedAddsHeadline(rawOwnedAdds7d: number | null, s: SignupQualitySummary | null): string {
+  if (rawOwnedAdds7d == null) return '**?**';
+  const human = humanShapedOwnedAdds(rawOwnedAdds7d, s);
+  if (s == null || human == null) return `**${rawOwnedAdds7d}** (split unavailable)`;
+  return `**${human} human-shaped** (${rawOwnedAdds7d} raw; ${s.scripted7d} scripted accounts + ${s.scriptedOptedIn7d} scripted opt-ins excluded; E260)`;
+}
+
+/**
  * Owned-audience bullet. Returns '' when nothing scripted-shaped signed up,
  * so a clean week prints no warning at all.
  */
