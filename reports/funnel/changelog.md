@@ -456,3 +456,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-23 08:26 | after-merge | Sage: PR #367 E259 homepage title leads with "Must-Have Sims 4 Mods"; 15,000+ → 17,000+ (Tier 0) | 5912df1 | https://mhm-finds-dw5l-g22khi1rx-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-23 08:30 | after-merge | Ops: PR #366 E264 preflight failure lands a MISSED row + degraded digest on main; refresh-token expiry warning (Tier 0) | b73e06a | https://mhm-finds-dw5l-raqfsnal6-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-23 08:50 | after-merge | Quinn: PR #369 funnel: daily run 2026-10-23 (Tier 0 docs) | 7701c84 | https://mhm-finds-dw5l-blj9z718e-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-24 06:50 | check | morning-check |  | https://mhm-finds-dw5l-lw76zt7ow-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
