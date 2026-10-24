@@ -427,6 +427,23 @@ if [ "$GUARD_STATUS" = "red-health" ] && ! ./scripts/agents/check-blog-sidebar.s
 fi
 if [ "${FUNNEL_DRY_RUN:-0}" = "1" ]; then log "Dry run — stopping after scoreboard + circuit breaker."; exit 0; fi
 
+# --- 1c. land the day's artifacts on main BEFORE Quinn (E271, 2026-10-24) ------------------------------
+# The scoreboard, guardrail and operator-did files reached main only via Quinn's step 8 `git add`; a run that died
+# between here and step 8 stranded them in $WT (landed by hand on 10-23). This runner wrote them, so it lands them:
+# artifacts-land.sh commits ONLY reports/funnel/{DATE,guardrail-DATE,operator-did-DATE}.{md,json} from $WT as a
+# `funnel(ledger): artifacts …` commit (paper; merge-gate/deploy-verify ledger-only exempt), skips identical
+# content (no empty commit on a re-run), and is never fatal. ORDER MATTERS: it runs here, before the preflight and
+# the Quinn invocation, so Quinn's later step-8 commit of the same unchanged files is a no-op diff on main (and a
+# regenerated scoreboard is an ordinary modification on top). history.json is NOT landed here — it is build-relevant
+# (outputFileTracingIncludes) and stays on Quinn's verified daily PR. Guarded by __tests__/unit/runner-artifacts-land.test.ts.
+AL="$WT/scripts/agents/artifacts-land.sh"
+if [ -x "$AL" ]; then
+  "$AL" --date "$TODAY" --src-dir "$WT/reports/funnel" 2>&1 | while IFS= read -r l; do log "$l"; done
+  log "artifacts-land: exit ${PIPESTATUS[0]} (0 landed / identical / nothing to land · 2 could not land or HELD — Quinn's step 8 still carries them)"
+else
+  log "artifacts-land.sh not executable in the worktree — the day's artifacts depend on Quinn's step 8"
+fi
+
 # --- 2. Quinn ----------------------------------------------------------------
 # The nested CLI must authenticate on its own (keychain OAuth), not through the desktop session that
 # launched the scheduled task: strip the host-session vars so it self-refreshes, and prove it can reach
