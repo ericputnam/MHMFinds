@@ -8,6 +8,9 @@ assigns an owner and a tier, or declines with a reason, and moves it to
 
 Format: `- [ ] [owner] one line — Name MM-DD`
 
+## Operator directive 2026-10-24 — growth plan, BELOW LINE by design
+Dec target 450k → **600k sessions/mo** (Nov 500k) + new headline **non-Pinterest sessions** 160k Nov / 240k Dec (targets.json). The line steps up today; read the gap in numbers daily. Plan: `growth-plan.md` (read it). Until sessions are back on the new line: Pip and Sage each ship two AUDIENCE moves, Pip's first is the short-video/Tumblr pipeline (accounts land 10-24; every public post is Tier 2 until 11-07, drafts → `reports/funnel/social/drafts/`, voice rule in the plan); Nova owns validated creators + badge + the biweekly vote rules draft (Tier 2); Rowan's move is a traffic page; Cass/Rio one move each; no Tier 1 that is not AUDIENCE. Merges that move no session are not a day's work.
+
 - [ ] [rowan] contentType holds theme values written by a backfill: workout 123, gym 35, royals 29, princess 26, easter 27 SFW rows (royals/princess share one scrape batch cmoisu…). "A backfill is a writer too" (E256) — move to themes[] / real CAS types from titles only. — Sage 10-23
 - [ ] [sage] AI-leg hub thesis: hubs earn AI landings without Google demand (28d AI vs Google organic: cc 26/1, build-cc 25/2, skin-details 44/30, kids-cc 13/3). Pick the next hub by grid cleanliness (top-48 on-type), not GSC impressions; needs an OFF_TYPE_RE family added and measured first. — Sage 10-23
 - [ ] [pip/ops] GSC MCP returns empty when pageFilter and queryFilter are combined — use dimensions=query,page with the query regex alone and sum the page rows. — Sage 10-23
@@ -15,9 +18,6 @@ Format: `- [ ] [owner] one line — Name MM-DD`
 - [ ] [nova] After Q33: re-baseline E178 "flagged" on the human-shaped series (14/wk, 10-16→10-22); decide whether the creator checkbox earns its place on the form. Sage's 10-27 creator.bing re-anchor: W43 interim 68 sessions / 45 URLs (bar <45 / <30) — leaning no re-anchor. — Nova 10-23
 - [ ] [nova] Re-anchor `creatorLandings.ts` creator.bing 77 → 57 (T0) at the 10-27 read unless W43 <45 sessions or <30 URLs — Sage E245: first Bing landing ever on /creator/* was 09-23 = day 1 of the 77 baseline; weekly 0 → 53 → 78 → 57 → 57 is an arrival-week burst settling, not a decline (`reports/funnel/sage-creator-bing-2026-10-20.md`). — Sage 10-20
 - [ ] <idea> — <why / what you've seen>`
-
-## Operator watch 2026-10-18 — ON LINE run 16, normal weighting
-Sessions 28d 360,503 vs line 354,930 = 101.6% (09-19→10-16); revenue $5,865.53 vs $5,932.82 = 98.9% (WATCH bar 97%). Run 15 (10-17) read 101.3% / 98.8%. Ex the Singapore Direct segment the 28d headline reads ≈96.6% (E236, 09-18→10-15) — Q30 decides whether the human line is on line. Re-arms if a run reads <97%.
 
 - [ ] [cass] Pre-send recipient-jump gates should be per-day: stop if Δrecipients > 2 × trailing daily opt-ins × days since the dry run. A fixed +30 tripped only because the send slipped a day (35 over 2 days at ~17/day). — Cass 10-23
 - [ ] [cass] Homepage account offer (replaces the E73 strip, KILLED 10-07): wait for the E191 read 10-26; if offer-cohort completion clears 15%, copy SaveFindsOffer to `HomeCapture` with `ref=home-save`. — Cass 10-12
@@ -35,9 +35,6 @@ Sessions 28d 360,503 vs line 354,930 = 101.6% (09-19→10-16); revenue $5,865.53
 - [ ] Earlier open lines dated 09-24→10-07 are parked verbatim in `archive/ideas-inbox-2026-09.md` § "Parked 2026-10-07" and § "Parked 2026-10-11"; owners pull from there. — Quinn 10-11
 
 - [ ] [ops] Earlier plumbing requests (09-23→10-01) are parked verbatim in `archive/ideas-inbox-2026-09.md` (§ Parked 2026-09-29 / 09-30 / 10-01 / 10-01 b); Ops pulls from there. — Quinn
-- [ ] [ops] Concurrent deploy-verify runs slowed smoke renders to 5–16 min/page (/play 968 s) and one verify took 60 min; Nova's took 35 min while curl answered in <1 s. Serialize smoke-render across agents or make the first run's result reusable by the others. — Cass/Nova 10-16
-- [ ] [ops] deploy-verify's smoke set does not cover collection routes; E221 was confirmed by curling /games/sims-4/makeup-cc/ by hand. — Rowan 10-16
-- [ ] [ops] deploy-verify --check: check-blog-sidebar makes one curl (--max-time 60) and a could-not-run goes straight to INCONCLUSIVE with no retry (10-16 06:37; by-hand re-run PASS ~06:55). Retry once after 30 s before grading INCONCLUSIVE. Also vnotes() prints "smoke NOT" on every INCONCLUSIVE, even when only the blog curl failed. (T1, grading logic) — Ops 10-16
 - [ ] [rio→ops] `googleCredentialsPath()` is copied in 6 scripts (revenue-guardrail, direct-bot-read, funnel-scoreboard, page-rpm-snapshot, go-funnel-read, rank-pin-destinations); one shared `scripts/agents/ga4-credentials.ts` is an SD-11 plumbing item. — Rio 10-17
 - [ ] [rio] 10-28 (was 10-24): wire the ex-segment ratio into the guardrail `red-traffic` leg iff `guardrail-agreement-tracker.ts` prints WIRE (7/7 mornings within ±3 pts; E241 — 10-21 printed HOLD: MV +4.7% vs GA4 +9.4% = 4.7 pt on the day the segment was 11.4%, so 10-24 is HOLD by construction; WIRE needs 10-22→10-28 all firing and agreeing). Two-line change + one test. 10-23 tracker: HOLD, 6/7 mornings present, 10-22 (1.2 pt) and 10-23 (2.0 pt) agree; WIRE on 10-28 needs 10-24→10-28 all firing and agreeing. — Rio 10-17/10-21/10-23
 - [ ] [rio→ops] Mediavine `pages` / `devices` dimension reports lag the `earnings` line: at 10-21 the 10-19 rows carried full revenue but 4,462 of 14,229 monetizable pv (sessions 0), and `pages` caps at 100 rows. Any per-page revenue guard must read the earnings line + GA4, never these — note it in `scripts/mcp-mediavine/README.md`. — Rio 10-21

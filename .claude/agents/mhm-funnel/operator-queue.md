@@ -18,6 +18,14 @@ day.
 **Guardrail 2026-10-23 (Rio):** 🟢 GREEN — finalized 10-21 $187.68 vs $186.84 (+0.4%); the identity `mon_pv × imp/mon_pv × CPM` is flat on every leg (+1.1% / −0.4% / −0.2%); the headline RPM +2.5% is mix in our favour — Singapore (direct) was 139 sessions = 1.25% of the day vs 6.29% on the controls, ex-segment RPM $17.03 vs $17.09 (−0.3%), Mediavine monetizable-session RPM +0.5%; 3-day −6.4% / −7.6% is the 10-19 Monday (70% of the gap) plus 10-20 (32%) and rolls off on 10-24; health ok; 28d line 98.08% revenue / 102.51% sessions (ON LINE run 20). E255 KEEP: 10-20 finalized $179.30 = 94% of its line (bar 90%), so the Monday was a one-day Mediavine-side dip and Tier 1 resumes today; no Mediavine ticket. 10-22 partial already $179.97 (100.6%); the line holds on 10-24 unless 10-22 earns under $138.15. **Affiliates-only through 10-31:** pipe read 09-29→10-22 gtracing 18 on-site / Impact 13 / 0 actions / $0 (72.2% recorded, kill read 11-11); Envato 9 / 0, Canva 3 / 0; `affiliate_click` 7d 9 clears the 10-29 bar (≥5); Q29 dropped 10-22 → the Amazon leg grades "unmeasurable". **Q32 filed (Tier 2):** the Mediavine reporting token expires ≈ 11-12 — a once-a-year paste, instructions in the item; without it the breaker cannot grade and Tier 1 stalls. Full read `reports/funnel/rio-verdict-2026-10-23.md`. **Tier 2 queue (Quinn 10-23):** Q28 dropped 10-21, Q29 10-22, Q30 10-23 under the 7-day rule; Q31 drops 10-26; Q32 and Q33 new. The 10-22 run MISSED (CLI OAuth expired at preflight) — nothing shipped that day; recorded here 10-23.
 ---
 
+## Operator to-do — growth plan 2026-10-24 (`growth-plan.md`)
+Decided in chat 10-24: Dec target 600k sessions; posts on new social channels need your approval until 11-07 and must not read as AI-written.
+- [ ] Create TikTok, YouTube, Instagram, Tumblr accounts; grant posting access (operator: "today", 10-24)
+- [ ] Approve each social draft batch — reply "approve social <date>" (Tier 2 until 11-07)
+- [ ] Set the paid-ads test budget (proposal: $100–200, one pack launch)
+- [ ] Set the biweekly contest prize budget
+- [ ] Approve the contest rules when Nova drafts them
+
 ## Tier 1 — shipping unless you say stop
 
 | Tier 1 | Owner | What | Reply to block |
