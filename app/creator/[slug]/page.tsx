@@ -15,6 +15,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../lib/creators';
 import { getRelatedCreators } from '../../../lib/creatorHubRelated';
+import { creatorMetaDescription, creatorPageTitle } from '../../../lib/seo/creatorMeta';
 import CreatorPageClient from './CreatorPageClient';
 
 // Author strings change with every ingest and there are ~540 eligible
@@ -36,8 +37,12 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
   const data = await getCreatorPageData(slug);
   if (!data) return { title: 'Creator not found | MustHaveMods', robots: { index: false } };
 
-  const title = `${data.displayName} Sims 4 CC & Mods (${data.totalMods}) | MustHaveMods`;
-  const description = `${data.totalMods} Sims 4 mods and custom content by ${data.displayName}, ranked by downloads — hair, clothes, furniture, gameplay and more, with download links.`;
+  // E267 (Sage, 2026-10-25): title names the creator's real top content
+  // types; description names them plus the most-downloaded mods. Replaced a
+  // single boilerplate that ran 0.94% CTR at positions 6–10 vs 2.9% for
+  // /mods/* in the same bucket (GSC 09-25→10-22). See lib/seo/creatorMeta.ts.
+  const title = creatorPageTitle(data);
+  const description = creatorMetaDescription(data);
   const canonical = canonicalFor(slug);
   return {
     title,
