@@ -392,6 +392,14 @@ fail_and_fix() {  # $1 = rollback target (may be empty)
   if echo "$first" | grep -q "check-blog-sidebar"; then restore_functions_php; fi
   if smoke; then
     FAILS="$first"
+    if [ -n "$NET_DEGRADED$INCONCLUSIVE" ]; then
+      # E273: smoke() returns 0 whenever FAILS is empty — including when it could not run at all. 2026-10-24 08:36 the host
+      # went to clamshell sleep seconds after the rollback; every page was ERR_INTERNET_DISCONNECTED and the control
+      # answered none/5ms, yet this branch wrote "Re-check PASSES". A re-check that could not run is NOT a pass.
+      local how; how="$(verdict)"
+      incident "verification failed; rolled back; re-check $how" "Rolled production back to ${1:-(unchanged)}${first##*check-blog-sidebar*} and/or re-pushed functions.php. Re-check could NOT verify the rolled-back state ($how): ${INCONCLUSIVE}. Re-run \`deploy-verify.sh --check\` when the control passes."
+      ledger "ROLLED BACK -> ${1:-functions.php restored} · re-check $how" "$(vnotes "was: $first")"; exit 2
+    fi
     incident "verification failed; rolled back" "Rolled production back to ${1:-(unchanged)}${first##*check-blog-sidebar*} and/or re-pushed functions.php. Re-check PASSES."
     ledger "ROLLED BACK -> ${1:-functions.php restored}" "$(vnotes "was: $first")"; exit 2
   fi

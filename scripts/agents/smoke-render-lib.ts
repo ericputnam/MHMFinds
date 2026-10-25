@@ -80,6 +80,32 @@ export interface RenderFacts {
 }
 
 export const isNavError = (e: string): boolean => /^(navigation|evaluate):/.test(e);
+
+/**
+ * E273: is an uncaught page error something a deploy of OURS could have caused? Two signals, either suffices:
+ *  1. a stack frame on another origin (the ` @ <frame>` suffix smoke-render appends) — Mediavine's prebid bundle
+ *     is the repeat offender ("Converting circular structure to JSON @ at track (https://scripts.mediavine.com/…)",
+ *     2026-09-07 09:14 rollback);
+ *  2. a cross-origin `SecurityError` whose message names the origin of the frame that threw it:
+ *     `Failed to read a named property 'addEventListener' from 'Window': Blocked a frame with origin "<origin>" from
+ *     accessing a cross-origin frame.` Chromium raises these with an EMPTY stack (verified with Playwright 2026-10-25),
+ *     so rule 1 can never see them. 2026-10-24 08:35: three of these from an ad safeframe
+ *     (`https://da4b576905d8f6e1f…`, a per-creative hash host) on /games/sims-4/furniture-cc/ reproduced on the retry,
+ *     were graded "3 uncaught page error(s)" and rolled production back (row 2026-10-24 08:33; incident
+ *     2026-10-24-083301.md). The origin named is the one whose script was blocked — i.e. the code that threw — so
+ *     a foreign host or `"null"` (a sandboxed ad frame has an opaque origin) is third-party; OUR host stays a hard
+ *     failure (our own code reaching into a cross-origin frame is a bug a deploy can introduce).
+ * An error with neither signal stays a hard failure. The message is truncated to 200 chars upstream; the origin
+ * sits inside the first 120, so a cut-off closing quote must not matter (`[^"\s]+`, no closing `"` required).
+ */
+export function isThirdPartyPageError(e: string, ourHost: string): boolean {
+  const frame = e.match(/@ .*?\(?(https?:\/\/[^/\s)]+)/);
+  if (frame) { try { return new URL(frame[1]).host !== ourHost; } catch { /* fall through to rule 2 */ } }
+  const blocked = e.match(/Blocked a frame with origin "([^"\s]+)/);
+  if (!blocked) return false;
+  if (blocked[1] === 'null') return true;
+  try { return new URL(blocked[1]).host !== ourHost; } catch { return false; }
+}
 export const navigationFailed = (f: Pick<RenderFacts, 'status' | 'pageErrors'>): boolean =>
   f.status === null && f.pageErrors.some((e) => e.startsWith('navigation:'));
 

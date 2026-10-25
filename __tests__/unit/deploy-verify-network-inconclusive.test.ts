@@ -36,19 +36,22 @@ afterEach(() => { if (base && existsSync(base)) rmSync(base, { recursive: true, 
 
 type Fixture = Record<string, unknown>;
 /** Runs `smoke`, prints its rc and verdict, then (when asked) runs fail_and_fix like --check does on a failed smoke. */
-function run(fixture: Fixture, opts: { thenFailAndFix?: boolean; blogFail?: string } = {}) {
+function run(fixture: Fixture, opts: { thenFailAndFix?: boolean; blogFail?: string; recheck?: Fixture } = {}) {
   const fx = join(base, 'fixture.json'); writeFileSync(fx, JSON.stringify(fixture));
+  // E273: the smoke AFTER a rollback may see a different world than the one before it — `recheck` is the second fixture.
+  const fx2 = join(base, 'fixture-recheck.json'); writeFileSync(fx2, JSON.stringify(opts.recheck ?? fixture));
   const calls = join(base, 'calls'); writeFileSync(calls, '');
   if (opts.blogFail) { const b = join(root, 'scripts', 'agents', 'check-blog-sidebar.sh'); writeFileSync(b, `#!/bin/sh\necho "  [FAIL] ${opts.blogFail}"\nexit 1\n`); chmodSync(b, 0o755); }
   const script = [
     `ROOT="${root}"; OPERATOR_DIR="${join(base, 'nope')}"; LOG="${join(base, 'dv.log')}"; STAMP=t; MODE=check; LABEL=test; SHA=""; DEPLOY_URL=x; TS=now`,
     'FAILS=""; FIVEXX=0; INCONCLUSIVE=""; NET_DEGRADED=""; SMOKE_JSON="$ROOT/logs/smoke-t.json"; LAST_INCIDENT_FILE=""',
     'log() { echo "LOG $*"; }',
-    `npx() { local a; for a in "$@"; do :; done; cp "${fx}" "$a"; return 0; }`,  // last arg is the --json path
+    // npx runs inside smoke()'s `(cd … && npx …)` subshell, so the call counter must live on disk, not in a variable.
+    `npx() { local a; for a in "$@"; do :; done; echo x >>"${join(base, 'smoke-calls')}"; if [ "$(wc -l <"${join(base, 'smoke-calls')}" | tr -d ' ')" -ge 2 ]; then cp "${fx2}" "$a"; else cp "${fx}" "$a"; fi; return 0; }`,  // last arg is the --json path
     'vercel() { return 1; }',
     `do_rollback() { echo "ROLLBACK $1" >>"${calls}"; return 0; }`,
     `restore_functions_php() { echo "RESTORE_PHP" >>"${calls}"; }`,
-    `incident() { echo "INCIDENT $1" >>"${calls}"; }`,
+    `incident() { echo "INCIDENT $1 | $2" >>"${calls}"; }`,
     `ledger() { echo "LEDGER $1 | $2" >>"${calls}"; }`,
     real,
     'smoke; rc=$?; echo "SMOKE_RC=$rc VERDICT=$(verdict) FAILS=$FAILS NET=$NET_DEGRADED"',
@@ -101,6 +104,36 @@ describe('deploy-verify.sh smoke(): an INCONCLUSIVE smoke never reaches the roll
     expect(r.rc).toBe(1);
     expect(r.out).toContain('FAILS=smoke-render: / -> HTTP 500');
     expect(r.calls).toContain('ROLLBACK https://prev');
+  });
+
+  // E273 (row 2026-10-24 08:33, incident 2026-10-24-083301.md): the host went to clamshell sleep seconds after the
+  // rollback; the re-check saw ERR_INTERNET_DISCONNECTED on every page with the control at none/5ms, smoke() returned 0
+  // (FAILS empty) and fail_and_fix wrote "Re-check PASSES" into the incident and a plain "ROLLED BACK -> X" row.
+  it('10-24 case: positive evidence → rollback, then a re-check the network could not run → row and incident say re-check INCONCLUSIVE, never "PASSES"', () => {
+    const r = run(
+      { verdict: 'FAIL', network: healthy, failed: [{ path: '/games/sims-4/furniture-cc/', failures: ['3 uncaught page error(s): Failed to read a named property'] }], suspect: [], inconclusive: [], results: [] },
+      { thenFailAndFix: true, recheck: { verdict: 'INCONCLUSIVE', network: degraded, failed: [], suspect: [], inconclusive: [{ path: '/mods', why: 'navigation: page.goto: net::ERR_INTERNET_DISCONNECTED while the network control was degraded' }], results: [] } },
+    );
+    expect(r.rc).toBe(1);
+    expect(r.calls).toContain('ROLLBACK https://prev');
+    expect(r.faf).toBe(2);
+    expect(r.calls).toMatch(/LEDGER ROLLED BACK -> https:\/\/prev · re-check INCONCLUSIVE \(network\) \|/);
+    expect(r.calls).toMatch(/INCIDENT verification failed; rolled back; re-check INCONCLUSIVE \(network\) \|.*could NOT verify/);
+    expect(r.calls).not.toContain('Re-check PASSES');
+    expect(r.calls).not.toContain('STILL FAILING');
+    // the row still carries the first-smoke evidence (what was rolled back on) and the suspect notes
+    expect(r.calls).toMatch(/LEDGER ROLLED BACK[^\n]*was: smoke-render: \/games\/sims-4\/furniture-cc\//);
+  });
+
+  it('positive evidence → rollback → a re-check that really ran and passed still says "Re-check PASSES" (the fix did not touch the honest path)', () => {
+    const r = run(
+      { verdict: 'FAIL', network: healthy, failed: [{ path: '/', failures: ['HTTP 500'] }], suspect: [], inconclusive: [], results: [] },
+      { thenFailAndFix: true, recheck: { verdict: 'PASS', network: healthy, failed: [], suspect: [], inconclusive: [], results: [] } },
+    );
+    expect(r.calls).toContain('ROLLBACK https://prev');
+    expect(r.faf).toBe(2);
+    expect(r.calls).toMatch(/LEDGER ROLLED BACK -> https:\/\/prev \|/);
+    expect(r.calls).toContain('Re-check PASSES');
   });
 
   it('a JSON from an older smoke-render.ts (no network / inconclusive keys) still reads as PASS', () => {
