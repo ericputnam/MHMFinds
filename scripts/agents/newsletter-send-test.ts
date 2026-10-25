@@ -58,6 +58,8 @@ import { sendBulk, previewBulkSend, resolvePostalAddress } from '../../lib/servi
 import { buildConfirmUrl } from '../../lib/services/subscribeConfirm';
 import { ISSUE_01, renderIssue } from '../../lib/services/newsletterIssue';
 import { partitionExcluded, EXCLUDED_RECIPIENT_HASHES } from '../../lib/services/sendExclusions';
+import { SCRIPTED_SIGNUP_HASHES, scriptedSubscriberHashes, unlistedScriptedHashes } from '../../lib/services/sendExclusions';
+import { loadSubscriberAccountRows } from './_subscriber-account-rows';
 import { resolveSeedRecipients, SEED_ALLOWLIST_HASHES } from '../../lib/services/seedSend';
 import {
   buildWeeklyIssueData,
@@ -337,11 +339,26 @@ async function runWeekly(): Promise<void> {
   const now = new Date();
   const prisma = directPrisma();
   try {
+    // E270: re-classify the whole waitlist with the E260 rule before every run. The
+    // sign-up route is not gated (Q33, Tier 2), so new scripted sign-ups keep arriving
+    // after the SCRIPTED_SIGNUP_HASHES snapshot; a LIVE run refuses until they are listed.
+    const current = scriptedSubscriberHashes(await loadSubscriberAccountRows(prisma));
+    const unlisted = unlistedScriptedHashes(current);
+    const listedInWaitlist = current.length - unlisted.length;
+    console.log(`scripted-shaped subscribers: ${current.length} in waitlist · ${listedInWaitlist} suppressed by list · ${unlisted.length} unlisted`);
+    if (SCRIPTED_SIGNUP_HASHES.length > 0 && listedInWaitlist === 0) {
+      console.error('SCRIPTED_SIGNUP_HASHES is non-empty but matches no waitlist row — refusing to run on an exclusion list that excludes nobody');
+      process.exit(1);
+    }
+    if (unlisted.length > 0 && !dry) {
+      console.error(`${unlisted.length} scripted-shaped subscriber(s) not in SCRIPTED_SIGNUP_HASHES — refusing a live send; run scripts/agents/scripted-signup-hashes.ts --hashes and ship the list first`);
+      process.exit(1);
+    }
     const r = await sendWeeklyNewsletter({ dryRun: dry, prisma, source: 'script', now, resumeAfter });
     if (r.skipped) { console.error(`weekly: skipped — ${r.reason}`); process.exit(1); }
     console.log(
       `weekly ${r.mode} → issue #${r.issueNumber} (${r.campaign}) "${r.subject}": ` +
-        `recipients ${r.recipients} (waitlist minus ${r.excludedCount} excluded; cap ${r.hardCap}) ` +
+        `recipients ${r.recipients} (waitlist minus ${r.excludedCount} excluded, ${r.scriptedExcludedCount ?? 0} of them scripted-shaped; cap ${r.hardCap}) ` +
         `attempted ${r.attempted} sent ${r.sent} failed ${r.failed} skipped ${r.skippedRecipients ?? 0} deferred ${r.deferred ?? 0}`
     );
     if (r.resumedAfter) console.log(`resumed after cursor ${r.resumedAfter}`);

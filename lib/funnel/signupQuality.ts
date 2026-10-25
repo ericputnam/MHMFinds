@@ -19,9 +19,11 @@
  * creator-flagged sign-ups (Nova), `signup-optin` subscribers (Cass) — 68 of
  * the 87 opt-in rows in the 7d to 10-23 — and registered accounts (Quinn).
  *
- * The classifier is DIAGNOSTIC. It never gates a send, a delete or a flag;
- * the sign-up route is auth (Tier 2) and any bot gate there is the
- * operator's call. What this does is let the scoreboard print the count with
+ * The classifier never gates a sign-up, a delete or a flag; the sign-up
+ * route is auth (Tier 2) and any bot gate there is the operator's call. Its
+ * one write-side use (Cass, E270, 2026-10-25) is send suppression: the
+ * scripted-shaped `signup-optin` subscribers are excluded from every send by
+ * hash through `lib/services/sendExclusions.ts`. What this does is let the scoreboard print the count with
  * its scripted share, so nobody grades a creator or capture experiment on a
  * population that is 80% script.
  *

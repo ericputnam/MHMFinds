@@ -32,7 +32,7 @@ import {
   type IssuePost,
 } from './newsletterIssue';
 import { resolvePostalAddress, sendBulk } from './bulkMailer';
-import { hashRecipient, partitionExcluded } from './sendExclusions';
+import { hashRecipient, isScriptedRecipient, partitionExcluded } from './sendExclusions';
 import { SIMS4_COLLECTIONS, buildWhereClause, collectionHref, type CollectionDefinition } from '../collections';
 
 const SITE = 'https://musthavemods.com';
@@ -442,6 +442,8 @@ export interface WeeklySendResult {
   skippedRecipients?: number;
   deferred?: number;
   excludedCount?: number;
+  /** Of `excludedCount`, how many were scripted-shaped sign-ups (`SCRIPTED_SIGNUP_HASHES`, E270). */
+  scriptedExcludedCount?: number;
   hardCap?: number;
   /**
    * One entry per recipient the transport rejected synchronously on a LIVE run:
@@ -601,6 +603,7 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
   }
   const allEmails = Array.from(rowByEmail.keys());
   const { kept: recipients, excluded } = partitionExcluded(allEmails);
+  const scriptedExcludedCount = excluded.filter(isScriptedRecipient).length;
 
   const campaign = `weekly-issue-${pad2(issue.number)}`;
   const kind = campaign;
@@ -617,6 +620,7 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
       sent: 0,
       failed: 0,
       excludedCount: excluded.length,
+      scriptedExcludedCount,
       hardCap: WEEKLY_NEWSLETTER_HARD_CAP,
     };
     appendFileLedger({ kind, subject: issue.subject, mode, source, ...summary });
@@ -651,6 +655,7 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
     skippedRecipients: result.skipped.length,
     deferred: result.deferred.length,
     excludedCount: excluded.length,
+    scriptedExcludedCount,
     hardCap: WEEKLY_NEWSLETTER_HARD_CAP,
   };
   if (!dryRun) {

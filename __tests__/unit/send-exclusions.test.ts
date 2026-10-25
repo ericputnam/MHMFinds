@@ -14,9 +14,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   EXCLUDED_RECIPIENT_HASHES,
+  SCRIPTED_SIGNUP_HASHES,
   hashRecipient,
   isExcludedRecipient,
+  isScriptedSubscriber,
   partitionExcluded,
+  scriptedSubscriberHashes,
+  unlistedScriptedHashes,
+  type SubscriberAccountRow,
 } from '@/lib/services/sendExclusions';
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -88,6 +93,45 @@ describe('hashing and matching', () => {
   });
 });
 
+describe('scripted-shaped sign-up suppression (E270)', () => {
+  // Synthetic fixtures only. The username shapes mirror E260: letters-only, >=6 case flips.
+  const bot: SubscriberAccountRow = { email: 'bot-synthetic@example.test', source: 'signup-optin', username: 'aAaaAAAaaAAaaAAa', isForm: true };
+  const human: SubscriberAccountRow = { email: 'human-synthetic@example.test', source: 'signup-optin', username: 'SimmerJane', isForm: true };
+
+  it('the shipped snapshot is hashes only, disjoint from the bounce list, and non-trivial', () => {
+    // 101 at the 10-25 snapshot. A list only ever grows; a truncation fails here.
+    expect(SCRIPTED_SIGNUP_HASHES.length).toBeGreaterThanOrEqual(101);
+    for (const h of SCRIPTED_SIGNUP_HASHES) expect(h).toMatch(HEX64);
+    expect(new Set(SCRIPTED_SIGNUP_HASHES).size).toBe(SCRIPTED_SIGNUP_HASHES.length);
+    for (const h of SCRIPTED_SIGNUP_HASHES) expect(EXCLUDED_RECIPIENT_HASHES).not.toContain(h);
+  });
+
+  it('classifies by the E260 rule: signup-optin + form account + scripted-shaped username', () => {
+    expect(isScriptedSubscriber(bot)).toBe(true);
+    expect(isScriptedSubscriber(human)).toBe(false);
+    expect(isScriptedSubscriber({ ...bot, source: 'footer' })).toBe(false);
+    expect(isScriptedSubscriber({ ...bot, isForm: false })).toBe(false);
+    expect(isScriptedSubscriber({ ...bot, username: null })).toBe(false);
+    expect(isScriptedSubscriber({ ...bot, username: 'aAaaAAAaaAAaaAA1' })).toBe(false);
+  });
+
+  it('a classifier-flagged fixture is partitioned out once its hash is listed; the human is kept', () => {
+    const hashes = scriptedSubscriberHashes([bot, human, { ...bot, email: ' BOT-synthetic@Example.TEST ' }]);
+    expect(hashes).toEqual([hashRecipient(bot.email)]);
+    // Not yet in the shipped list → the send script's drift check sees it as unlisted (live refuses).
+    expect(unlistedScriptedHashes(hashes)).toEqual(hashes);
+    // The real snapshot partitions through the same predicate every path uses.
+    expect(partitionExcluded([human.email]).kept).toEqual([human.email]);
+    const listed = unlistedScriptedHashes(SCRIPTED_SIGNUP_HASHES.slice(0, 3));
+    expect(listed).toEqual([]);
+  });
+
+  it('partitionExcluded consults the scripted set, not only the bounce set', () => {
+    const src = readFileSync(join(process.cwd(), 'lib/services/sendExclusions.ts'), 'utf8');
+    expect(src).toMatch(/new Set\(\[\.\.\.EXCLUDED_RECIPIENT_HASHES, \.\.\.SCRIPTED_SIGNUP_HASHES\]\)/);
+  });
+});
+
 describe('the shipped send script applies the list', () => {
   const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   const source = stripComments(
@@ -123,6 +167,13 @@ describe('the shipped send script applies the list', () => {
     expect(source).toMatch(/if \(!KNOWN_FLAGS\.has\(a\)\)/);
     expect(source).toMatch(/refusing to run \(dry switch is --dry\)/);
     expect(source).not.toMatch(/KNOWN_FLAGS = new Set\([^)]*'--dry-run'/);
+  });
+
+  it('re-classifies before every weekly run and refuses a live send with unlisted scripted subscribers (E270)', () => {
+    expect(source).toMatch(/scriptedSubscriberHashes\(await loadSubscriberAccountRows\(prisma\)\)/);
+    expect(source).toMatch(/SCRIPTED_SIGNUP_HASHES\.length > 0 && listedInWaitlist === 0/);
+    expect(source).toMatch(/if \(unlisted\.length > 0 && !dry\)/);
+    expect(source).toMatch(/refusing a live send/);
   });
 
   it('carries the exclusion counts on the ledger line, never addresses', () => {
