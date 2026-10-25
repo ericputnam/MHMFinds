@@ -74,6 +74,11 @@ export const EXCLUDED_RECIPIENT_HASHES: readonly string[] = [
   '53400f9602335d90f14b52df81926a224edc57913c310e7b57339680051fd112', // weekly-05/06, 5.x.x DSN
   'a09bf8178846bbb1d46278ff188f214424a8061f1fd85577cc89d36dbb83aac0', // weekly-05/06, 5.x.x DSN
   '5c4992b0a05759717b456266ead65f14d79065ace2ee9cfa052556c36e5c8f3a', // weekly-05/06, 5.x.x DSN
+  // 2026-10-25 weekly issue 07 run 2 (62 attempted, 60 sent; Cass, E270): 2 synchronous 550
+  // rejects, hashes from `rejects[]` in reports/funnel/newsletter-sends.jsonl. Both human-shaped
+  // (not on the scripted list); the 550 text says domain does not exist. Listed before issue 08.
+  'afa14ebd1815e5d3f7f6cc9ac97ad1ce5269f1ac8f5828144d8d3db53471114b', // weekly-07 run 2, 550 reject
+  'fbb1807dbb2eb5ecb1582126b2f8f57c6aa2572df278d42b1b5e0328eaba7c42', // weekly-07 run 2, 550 reject
 ];
 
 /**
