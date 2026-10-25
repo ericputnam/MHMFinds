@@ -789,7 +789,7 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmigonlrv000qoxkz3141v9df: { contentType: 'makeup', why: "E207 \"Sims 4 Eyelashes for Mermaids\" — makeup, was eyes; lashes (mermaid-cc); makeup, as 2D eyelashes A20" },
   cmim9ocvn00ngoxy74aaoj6x6: { contentType: 'makeup', why: "E207 \"Sims 4 Maxis Match 3D Eyelashes Set\" — makeup, was eyes; lashes (eyelashes-cc); makeup, as 2D eyelashes A20" },
   cmim9jyqm002ooxy7b64rey0f: { contentType: 'preset', why: "E207 \"Sims 4 Eye Sliders\" — preset, was eyes; eyelid shape slider (sliders post); E186 slider -> preset" },
-  cmijj22hv002loxs39fib12hv: { contentType: 'preset', why: "E207 \"Easy on the Eyes GShade Preset\" — preset, was eyes; GShade preset; 61 of 67 \"gshade\" titles are preset" },
+  cmijj22hv002loxs39fib12hv: { contentType: 'ui-preset', why: "E207 \"Easy on the Eyes GShade Preset\" — was eyes → preset; E272 (2026-10-25) → ui-preset: GShade/ReShade presets are `ui-preset` (lib/uiPresetRules.ts), moved with the other 94" },
   cmijpb77d00z6oxc8eyly9b68: { contentType: 'eyes', why: "E207 \"Glimmer Catchlights Collection\" — KEEP eyes: catchlights are an eye detail (desc \"make eyes look big and shiny\"); no eye word in title" },
   cmim9132u01j5oxy8982unpod: { contentType: 'skin', why: "E207 \"Sabrina Skin\" — skin, was makeup; title says skin; desc \"skin details and overlay version\" (skin-details post)" },
   cmim9fb9z004yoxqwiz7ofx0a: { contentType: 'skin', why: "E207 \"Ginevra Skin\" — skin, was makeup; title says skin; TSR category skindetails; 25 skin tones" },

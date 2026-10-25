@@ -105,6 +105,16 @@ export const OFF_TYPE_RE: Readonly<Record<string, RegExp>> = {
   //   catch: "Kiss and Grind" (gameplay), "Eva" (a Sim) — hand-grade those.
   lots:
     /\b(careers?|jobs?|challenge|save ?files?|build\/buy|wallpapers?|walls?|doors?|windows?|tiles?|plants?|decals?|tvs?|bookshel(?:f|ves)|playpen|heels|lamps?|rugs?|posters?|paintings?|traits?|swing|pacifier|set ?up|essentials|furniture|collections?|packs?|sets?|part\.? ?\d|mods?|cats & dogs|broom|kits?)\b/i,
+  // ui-preset = GShade / ReShade visual presets (E272, 2026-10-25). On-type is
+  // a visual preset; off-type is the CAS preset family the rows used to share
+  // a facet with (nose / lip / eye / body presets, sliders) and anything
+  // wearable or buildable. Measured against the 95 title-matched rows on
+  // 2026-10-25: 0 hits. REJECTED: `eyes?` — "Easy on the Eyes GShade Preset"
+  // is on-type (1/1 hit on-type); `cas` — "Coffee Jelly GShade for CAS" and
+  // "Sims 4 Reshade Angleic CAS" are presets tuned for CAS (2/2 on-type);
+  // `presets?` is the on-type word itself.
+  'ui-preset':
+    /\b(nose|noses|lips?|mouth|chin|jaw|cheeks?|ears?|body|face|sliders?|skin|hair|dress(?:es)?|tops?|shoes?|furniture|clutter|poses?|lot|house|makeup|eyeliner|lashes|eyebrows?|tattoos?|nails?|lighting)\b/i,
 };
 
 /** The families leg (c) can grade; the CLI rejects anything else. */

@@ -151,6 +151,11 @@ const SIMS_4_CONTENT_MAPPINGS: ContentTypeMapping[] = [
   // preset post's untitled row landed outside its own page. Must sit BEFORE
   // the generic `/presets/` rule. Guarded in collection-url-category.test.ts.
   { patterns: [/body-preset/], contentType: 'body-preset' },
+  // E272 (Rowan, 2026-10-25): `/sims-4-gshade-presets/` read as `preset` via
+  // the generic `/presets/` rule, so a GShade post's untitled row landed in the
+  // CAS preset facet; `/sims-4-reshade/` had no rule. The gshade-presets
+  // collection filters on `ui-preset`. Must sit BEFORE `/presets/`.
+  { patterns: [/gshade/, /reshade/], contentType: 'ui-preset' },
   { patterns: [/presets/, /ear-preset/], contentType: 'preset' },
   { patterns: [/woohoo|gameplay-mod|trait-mod/], contentType: 'gameplay-mod' },
   // E235: `/clutter/` used to share the `decor` rule; the clutter collection
