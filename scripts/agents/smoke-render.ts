@@ -22,7 +22,7 @@ import { INDEXNOW_KEY } from './indexnow-lib';
 import { collectionHref, getCollectionsForGame } from '../../lib/collections';
 import {
   AD_KINDS, CONTROL_TIMEOUT_MS, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
-  navigationFailed, pickCollectionPath, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
+  isThirdPartyPageError, navigationFailed, pickCollectionPath, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
 } from './smoke-render-lib';
 
 const args = process.argv.slice(2);
@@ -77,16 +77,15 @@ const OUR_HOST = new URL(BASE).host;
 const isHydration = (e: string) => /error #4(18|23|25)\b|Hydration failed|hydrat/i.test(e);
 /**
  * An uncaught error whose top frame lives on another origin (Mediavine's prebid bundle is the
- * repeat offender: "Converting circular structure to JSON @ at track (https://scripts.mediavine.com/…)")
- * is not something a deploy of ours can have caused, and rolling production back does not fix it —
- * 2026-09-07 09:14: a two-markdown-file merge was rolled back because it reproduced on both loads.
- * It is recorded and shown as a warning; the structural checks below still decide pass/fail.
- * An error with no frame, or one on our own host (/_next bundles), stays a hard failure.
+ * repeat offender: "Converting circular structure to JSON @ at track (https://scripts.mediavine.com/…)"),
+ * or a cross-origin SecurityError thrown by a foreign frame (an ad safeframe: "Blocked a frame with origin
+ * "https://<creative-hash>…"", 2026-10-24 08:35 rollback — these carry NO stack, so the frame rule alone missed
+ * them) is not something a deploy of ours can have caused, and rolling production back does not fix it.
+ * It is recorded and shown as a warning (thirdPartyErrors); the structural checks below still decide pass/fail.
+ * An error with no frame and no foreign origin, or one on our own host (/_next bundles), stays a hard failure.
+ * The rule itself lives in smoke-render-lib.ts (isThirdPartyPageError) so it is unit-tested on the exact messages.
  */
-const isThirdParty = (e: string) => {
-  const m = e.match(/@ .*?\(?(https?:\/\/[^/\s)]+)/);
-  return !!m && new URL(m[1]).host !== OUR_HOST;
-};
+const isThirdParty = (e: string) => isThirdPartyPageError(e, OUR_HOST);
 
 async function modIdFromSitemap(): Promise<string | null> {
   try {
