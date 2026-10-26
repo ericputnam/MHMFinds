@@ -506,6 +506,23 @@ model Waitlist {
   @@map("waitlist")
 }
 
+// Durable, source-independent "never email this address again" list.
+// Stores sha256(lower(trim(email))) only — never the address — so it can
+// suppress Users, Patreon members and waitlist rows alike, and survives the
+// waitlist row being deleted. Read by sendBulk before every send.
+model EmailSuppression {
+  id          String    @id @default(cuid())
+  emailHash   String    @unique // sha256(lower(trim(email)))
+  reason      String    @default("unsubscribe")
+  source      String // link | mailto | reply | manual
+  requestedAt DateTime
+  clearedAt   DateTime? // set when the address re-confirms via a signed link after requestedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("email_suppressions")
+}
+
 // Subscription and Payment Models
 model Subscription {
   id              String             @id @default(cuid())
