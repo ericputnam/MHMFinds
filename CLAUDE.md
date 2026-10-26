@@ -916,61 +916,52 @@ run died with `Prompt is too long`.
   `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
   one of them; wrap it before writing the second consumer.
 
-### 2026-10-15 → 10-19 — rotated to the archive
+### 2026-10-15 → 10-21 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25.
 
-### 2026-10-20
+### 2026-10-25
 
-- **A verifier must first ask whether the change *can* alter what it is waiting to observe.**
-  #340 touched only `.claude/**`; `deploy-verify.sh` waited 25 min for a production build that a
-  paper-only diff never triggers and graded it TIMEOUT — a verdict about an event that could not
-  occur. E250 (#351) classifies the merge's diff vs its first parent and grades an all-paper merge
-  on production *as served* at once (`PAPER …`, never a rollback). Classify by **allowlist,
-  failing closed** (unknown/empty diff = build); "paper" dirs still hold build inputs — any `.ts`
-  is type-checked, and `history.json`/`newsletter-sends.jsonl` are read by the build/app.
-- **Before calling a drop a decline, find the first day the series was non-zero.** "/creator/* Bing
-  77 → 52" was measured from the week Bing *first ever* landed those pages: 0 → 53 → 78 → 57 → 57
-  is an arrival burst settling (E245). A launch-week baseline is not a level.
-- **A quality share must exclude the fixes from its denominator.** E200's "title-supported share"
-  fell 70.9% → 67.7% because 15 hand-verified untitled pins entered the denominator — every verified
-  fix lowered the score meant to reward it (E249). Likewise, before quoting a segment as the cause
-  of an RPM dip, compute what mix *alone* predicts: Singapore `(direct)` at 10.62% vs 5.31% predicts
-  −5.6%, the print was −3.3%, so ex-segment RPM was *up* (E248).
-- **Write a keep-if against the experiment's own final output, never a sibling's interim one.**
-  E238's "8/8 `isNSFW`" leg quoted E242's dry run; E242 intentionally kept 2 false on apply, so
-  E238 can never grade MET. Re-read a sibling's final state before pinning a literal count.
-
-### 2026-10-21
-
-- **Before reading a ratio, list its denominator rows.** "11.5 mods/post, halved" had 4 single
-  manual admin rows (a mod page as `sourceUrl`) among its 8 "posts"; counting writer-host posts
-  only (exact host allowlist) gave 22.0 vs 23.6 (E253, #354). 57 of 150 `body-preset` rows were
-  nose/eye presets written by a **one-off backfill script — a backfill is a writer too**; when a
-  facet has no detector path, find the script that filled it (E256, #355, `lib/bodyPresetRules.ts`).
-- **A grader with an ungraded leg prints INCONCLUSIVE, never the passing verdict.** Hub
-  eligibility with no `--family` skipped the off-type leg and printed ELIGIBLE for a lots grid
-  whose first 48 rows held 18 objects, careers, a save file and an EA pack (E252, #359).
-- **A retry belongs in the shared helper, with the budget re-read per attempt.**
-  `withPageTimeoutRetry` (`scripts/_patreon-auth.ts`) retries only a page's own timeout, bounds
-  each attempt by `nextPageTimeoutMs`, and serves all four Members walks; one call-site retry
-  would have left three siblings broken (E257, #356). Replace copied literals with the constant.
-- **Every live send subject must be attributable by the bounce counter.** The only hard DSN since
-  10-19 was the invite, filed `other` because `CAMPAIGN_SUBJECTS` lacked it; the test now imports
-  `INVITE_SUBJECT` (E254, #353). Re-dry a batched send's tail the day before — the run count is a
-  function of the list (~12 opt-ins/day), not of last week's plan.
-- **For a revenue dip, print `revenue = mon_pv × imp/mon_pv × CPM` before any story.** 10-19's
-  yellow: mix predicted −7.1 of −17.5 RPM pts, 10/10 partners fell, in-window deploys touched only
-  surfaces earning 0% → Mediavine demand, no rollback (E255, #358). Mediavine `pages`/`devices`
-  lag >2 days; never read per-page concentration off them for a day-old verdict.
-- **Grade a repeated intervention against the channel curve, with one tool.** `topup-grade.ts`
-  (E251, #357): re-dated Pinterest rows beat site Pinterest in 1 of 3 grades — they ride the curve;
-  upside needs new destinations. When joining GA4 `landingPage`, fold `blog.*` and trailing slashes.
+- **A classifier keyed on one field misses every case that leaves it empty.** The smoke test's
+  third-party rule only recognised an error by the ` @ <frame url>` at the end of its stack. Chromium
+  raises a cross-origin ad-safeframe `SecurityError` with an *empty* stack, so the 10-24 check
+  counted it as our own error and rolled back a build that only added a ledger row (the third false
+  rollback since 09-22). `isThirdPartyPageError` (E273, #376) also matches `Blocked a frame with
+  origin "<foreign|null>"`, but an error from our own origin is still a hard failure. Check that
+  every real case fills the field before you key on it.
+- **"No failures recorded" is not a pass.** `smoke()` returned 0 whenever `FAILS` was empty,
+  *including when every page was `ERR_INTERNET_DISCONNECTED`*. The host went to sleep 23 s after
+  the rollback and the incident said "Re-check PASSES". Any branch that reads success off an empty
+  failure list must check the could-not-run flags first.
+- **A queued record must carry its payload, not a path into a disposable tree.** When the host was
+  offline, `ledger-commit.sh` queued the 10-24 row pointing at an incident file inside the run's
+  worktree. The worktree was reaped 37 min later and the flush landed the row with no file behind
+  it. The incident was rebuilt from logs a day later.
+- **Suppress a polluted population at the library choke point, and refuse when the classifier and
+  the list disagree.** About half of the W42–43 form sign-ups were scripted-shaped (E260).
+  `SCRIPTED_SIGNUP_HASHES` sits in `partitionExcluded`, so the weekly, invite and re-permission
+  paths all inherit it. The send script re-classifies the whole list before every run and refuses
+  a LIVE send while any scripted-shaped row is unlisted (E270, #371; the issue-07 tail went from
+  151 to 62). Owned-audience "adds" printed 220 but were about 130 human-shaped, so quote a metric
+  net of the suppression.
+- **Before scaling a cadence, find out which posts earn the sessions.** Our own Tumblr posts drove
+  2.3% of 28d Tumblr landings. 97.7% went to evergreen pages nobody had posted (`tumblr-curve.ts`,
+  E266, #379). The lever is selection, not volume, and the same holds for the social drafts (E265),
+  which rank destinations by GA4 earning power rather than recency.
+- **Title-only rules now cover content types too, not just room themes.** 95 GShade/ReShade rows
+  were sharing `preset` with 180 CAS presets. #380 added `lib/uiPresetRules.ts` (title-only), with
+  the rejected keywords and their catalog counts in its header, a retag script whose backup never
+  overwrites, and a test that was red against the pre-fix tree. Use it as the template for the next
+  facet split.
+- **The last merge of a run is the one that misses its verify.** #380 merged at 17:39:59, 31 s
+  after the previous ledger row. It applied a prod retag, yet it has **no** `after-merge` row in
+  `changelog.md` and the digest's "Changed today" table stops at #376. The runner then landed the
+  digest. Run the after-merge verify before the digest is written, never after.
 
 ---
 
-*Last compound review: 2026-10-21*
+*Last compound review: 2026-10-25*
 
 ---
 

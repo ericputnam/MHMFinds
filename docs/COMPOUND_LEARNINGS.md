@@ -2459,6 +2459,57 @@ The 10-07 section is in the archive.
   the **hub page's own selection** (`buildWhereClause` + `isNSFW:false` + its sort), not a facet
   count: the gameplay family had 550 SFW rows and 8 adult titles in its top 30 (#341).
 
+### 2026-10-20 — rotated from CLAUDE.md
+
+*(rotated verbatim from CLAUDE.md 2026-10-25 to keep it under its 60 KB budget)*
+
+- **A verifier must first ask whether the change *can* alter what it is waiting to observe.**
+  #340 touched only `.claude/**`; `deploy-verify.sh` waited 25 min for a production build that a
+  paper-only diff never triggers and graded it TIMEOUT — a verdict about an event that could not
+  occur. E250 (#351) classifies the merge's diff vs its first parent and grades an all-paper merge
+  on production *as served* at once (`PAPER …`, never a rollback). Classify by **allowlist,
+  failing closed** (unknown/empty diff = build); "paper" dirs still hold build inputs — any `.ts`
+  is type-checked, and `history.json`/`newsletter-sends.jsonl` are read by the build/app.
+- **Before calling a drop a decline, find the first day the series was non-zero.** "/creator/* Bing
+  77 → 52" was measured from the week Bing *first ever* landed those pages: 0 → 53 → 78 → 57 → 57
+  is an arrival burst settling (E245). A launch-week baseline is not a level.
+- **A quality share must exclude the fixes from its denominator.** E200's "title-supported share"
+  fell 70.9% → 67.7% because 15 hand-verified untitled pins entered the denominator — every verified
+  fix lowered the score meant to reward it (E249). Likewise, before quoting a segment as the cause
+  of an RPM dip, compute what mix *alone* predicts: Singapore `(direct)` at 10.62% vs 5.31% predicts
+  −5.6%, the print was −3.3%, so ex-segment RPM was *up* (E248).
+- **Write a keep-if against the experiment's own final output, never a sibling's interim one.**
+  E238's "8/8 `isNSFW`" leg quoted E242's dry run; E242 intentionally kept 2 false on apply, so
+  E238 can never grade MET. Re-read a sibling's final state before pinning a literal count.
+
+### 2026-10-21 — rotated from CLAUDE.md
+
+*(rotated verbatim from CLAUDE.md 2026-10-25 to keep it under its 60 KB budget)*
+
+- **Before reading a ratio, list its denominator rows.** "11.5 mods/post, halved" had 4 single
+  manual admin rows (a mod page as `sourceUrl`) among its 8 "posts"; counting writer-host posts
+  only (exact host allowlist) gave 22.0 vs 23.6 (E253, #354). 57 of 150 `body-preset` rows were
+  nose/eye presets written by a **one-off backfill script — a backfill is a writer too**; when a
+  facet has no detector path, find the script that filled it (E256, #355, `lib/bodyPresetRules.ts`).
+- **A grader with an ungraded leg prints INCONCLUSIVE, never the passing verdict.** Hub
+  eligibility with no `--family` skipped the off-type leg and printed ELIGIBLE for a lots grid
+  whose first 48 rows held 18 objects, careers, a save file and an EA pack (E252, #359).
+- **A retry belongs in the shared helper, with the budget re-read per attempt.**
+  `withPageTimeoutRetry` (`scripts/_patreon-auth.ts`) retries only a page's own timeout, bounds
+  each attempt by `nextPageTimeoutMs`, and serves all four Members walks; one call-site retry
+  would have left three siblings broken (E257, #356). Replace copied literals with the constant.
+- **Every live send subject must be attributable by the bounce counter.** The only hard DSN since
+  10-19 was the invite, filed `other` because `CAMPAIGN_SUBJECTS` lacked it; the test now imports
+  `INVITE_SUBJECT` (E254, #353). Re-dry a batched send's tail the day before — the run count is a
+  function of the list (~12 opt-ins/day), not of last week's plan.
+- **For a revenue dip, print `revenue = mon_pv × imp/mon_pv × CPM` before any story.** 10-19's
+  yellow: mix predicted −7.1 of −17.5 RPM pts, 10/10 partners fell, in-window deploys touched only
+  surfaces earning 0% → Mediavine demand, no rollback (E255, #358). Mediavine `pages`/`devices`
+  lag >2 days; never read per-page concentration off them for a day-old verdict.
+- **Grade a repeated intervention against the channel curve, with one tool.** `topup-grade.ts`
+  (E251, #357): re-dated Pinterest rows beat site Pinterest in 1 of 3 grades — they ride the curve;
+  upside needs new destinations. When joining GA4 `landingPage`, fold `blog.*` and trailing slashes.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
