@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CacheService } from '@/lib/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import { rehostModImages, ImageRehostError } from '@/lib/services/imageUploader';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -44,7 +45,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // Patreon image addresses expire and don't render — copy them to Blob first
+    const body = await rehostModImages(await request.json());
 
     const mod = await prisma.mod.update({
       where: { id: params.id },
@@ -99,6 +101,9 @@ export async function PATCH(
 
     return NextResponse.json(mod);
   } catch (error) {
+    if (error instanceof ImageRehostError) {
+      return NextResponse.json({ error: error.message }, { status: 422 });
+    }
     console.error('Error updating mod:', error);
     return NextResponse.json({ error: 'Failed to update mod' }, { status: 500 });
   }

@@ -1,5 +1,6 @@
 import { put } from '@vercel/blob';
 import axios from 'axios';
+import { needsRehost } from '@/lib/imageUpload';
 
 /**
  * Downloads an image from a URL and uploads it to Vercel Blob storage.
@@ -153,3 +154,37 @@ export function isValidImageUrl(url: string): boolean {
   const lowerUrl = url.toLowerCase();
   return !skipPatterns.some((pattern) => lowerUrl.includes(pattern));
 }
+
+/**
+ * Copy mod image URLs that can't be stored as-is (see needsRehost — Patreon's
+ * expiring signed URLs) to Vercel Blob. Other URLs pass through unchanged.
+ * Throws if a URL that needs re-hosting can't be copied, so the caller can
+ * tell the editor instead of silently saving an image that won't display.
+ */
+export async function rehostModImages<T extends { thumbnail?: unknown; images?: unknown }>(
+  body: T
+): Promise<T> {
+  const rehost = async (url: string): Promise<string> => {
+    if (!needsRehost(url)) return url;
+    const blobUrl = await uploadImageToBlob(url, { folder: 'mods/uploads' });
+    if (!blobUrl) {
+      throw new ImageRehostError(
+        'Could not copy the Patreon image. Download it and use "Upload image" instead.'
+      );
+    }
+    return blobUrl;
+  };
+
+  const out = { ...body };
+  if (typeof body.thumbnail === 'string') {
+    out.thumbnail = await rehost(body.thumbnail);
+  }
+  if (Array.isArray(body.images)) {
+    out.images = await Promise.all(
+      body.images.map((img) => (typeof img === 'string' ? rehost(img) : img))
+    );
+  }
+  return out;
+}
+
+export class ImageRehostError extends Error {}
