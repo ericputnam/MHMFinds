@@ -36,31 +36,22 @@ export function HomeCapture() {
   };
 
   return (
-    <section
-      aria-labelledby="home-capture-heading"
-      className="container mx-auto px-4 pt-6"
-    >
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-4 sm:px-6 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-        <div className="md:flex-1 min-w-0">
-          <h2 id="home-capture-heading" className="text-white font-semibold text-base leading-tight">
-            New Sims 4 CC lists every week, in one email
-          </h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Or{' '}
-            <Link
-              href={`/sign-in/?mode=signup&ref=${HOME_CAPTURE_SOURCE}`}
-              onClick={handleAccountClick}
-              className="text-slate-300 underline decoration-white/20 underline-offset-2 hover:text-white hover:decoration-sims-pink/60 transition-colors"
-            >
-              create a free account
-            </Link>{' '}
-            to save finds as you browse.
-          </p>
-        </div>
-        <div className="w-full md:w-auto md:min-w-[360px] lg:min-w-[420px]">
-          <NewsletterSignup source={HOME_CAPTURE_SOURCE} />
-        </div>
-      </div>
+    <section aria-labelledby="home-capture-heading" className="hero-capture">
+      <p id="home-capture-heading" className="hc-title">
+        Get the week&apos;s best finds
+      </p>
+      <p className="ef-copy">
+        <span className="ef-wide">One email a week with new mod &amp; CC lists — or </span>
+        <span className="ef-narrow">One email a week, or </span>
+        <Link
+          href={`/sign-in/?mode=signup&ref=${HOME_CAPTURE_SOURCE}`}
+          onClick={handleAccountClick}
+        >
+          create a free account
+        </Link>
+        <span className="ef-wide"> to save finds as you browse.</span>
+      </p>
+      <NewsletterSignup source={HOME_CAPTURE_SOURCE} variant="strip" />
     </section>
   );
 }

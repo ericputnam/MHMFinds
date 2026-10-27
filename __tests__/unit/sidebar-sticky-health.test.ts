@@ -314,6 +314,7 @@ describe('Mediavine DOM guard: no player relocation, no timed hiding of ad conta
       'app/go/[modId]/GoClient.tsx',
       'app/play/PlayClient.tsx',
       'components/ModGrid.tsx',
+      'components/launcher/LauncherGrid.tsx',
     ]) {
       expect(adContainerFiles.map(({ file }) => file)).toContain(known)
     }
