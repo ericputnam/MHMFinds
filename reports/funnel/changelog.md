@@ -468,3 +468,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-25 17:32 | after-merge | Pip: PR #379 funnel(pip): tumblr-curve tool + 10-25 reading — fresh posts are 2.3% of Tumblr sessions (E266) | 15f6404 | https://mhm-finds-dw5l-oys7awfb0-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-25 17:36 | after-merge | Ops: PR #376 E273 third-party SecurityError + honest post-rollback re-check | 59191dd | https://mhm-finds-dw5l-cpc56fjyd-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-26 18:08 | after-merge | Interactive: PR #382 admin waitlist → subscribers | 9dd2ee0 | https://mhm-finds-dw5l-pss480mdk-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-26 20:50 | after-merge | Operator: PR #388 homepage Launcher redesign | ef253d6 | https://mhm-finds-dw5l-3c5j8jpiv-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
