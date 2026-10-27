@@ -911,57 +911,59 @@ run died with `Prompt is too long`.
   can return a plausible, wrong population with no error at all. Guard completeness (`links.next`
   exhausted, page cap not hit), not just non-emptiness — and keep a self-diagnosing signal for a
   silent join failure (`paid > 0` with `paidWithUserId === 0` means `include=user` did not take).
-- **Enforce read-only-ness of an external read at the call, and expect it to be copied.** The
-  mailbox DSN counter is safe only because of two lines — `select(..., readonly=True)` and
-  `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
-  one of them; wrap it before writing the second consumer.
+- **Enforce read-only-ness of an external read in one wrapper, and test what the wrapper can issue.**
+  The mailbox scripts used to be safe only because each one contained `select(..., readonly=True)` and
+  `BODY.PEEK[]`. When the second consumer arrived (#384, unsubscribe replies), both scripts were moved
+  onto `scripts/agents/_mailbox_readonly.py` (`EXAMINE` + `BODY.PEEK` only). A test allowlists the
+  IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
+  consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-21 — rotated to the archive
+### 2026-10-15 → 10-25 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26.
 
-### 2026-10-25
+### 2026-10-26
 
-- **A classifier keyed on one field misses every case that leaves it empty.** The smoke test's
-  third-party rule only recognised an error by the ` @ <frame url>` at the end of its stack. Chromium
-  raises a cross-origin ad-safeframe `SecurityError` with an *empty* stack, so the 10-24 check
-  counted it as our own error and rolled back a build that only added a ledger row (the third false
-  rollback since 09-22). `isThirdPartyPageError` (E273, #376) also matches `Blocked a frame with
-  origin "<foreign|null>"`, but an error from our own origin is still a hard failure. Check that
-  every real case fills the field before you key on it.
-- **"No failures recorded" is not a pass.** `smoke()` returned 0 whenever `FAILS` was empty,
-  *including when every page was `ERR_INTERNET_DISCONNECTED`*. The host went to sleep 23 s after
-  the rollback and the incident said "Re-check PASSES". Any branch that reads success off an empty
-  failure list must check the could-not-run flags first.
-- **A queued record must carry its payload, not a path into a disposable tree.** When the host was
-  offline, `ledger-commit.sh` queued the 10-24 row pointing at an incident file inside the run's
-  worktree. The worktree was reaped 37 min later and the flush landed the row with no file behind
-  it. The incident was rebuilt from logs a day later.
-- **Suppress a polluted population at the library choke point, and refuse when the classifier and
-  the list disagree.** About half of the W42–43 form sign-ups were scripted-shaped (E260).
-  `SCRIPTED_SIGNUP_HASHES` sits in `partitionExcluded`, so the weekly, invite and re-permission
-  paths all inherit it. The send script re-classifies the whole list before every run and refuses
-  a LIVE send while any scripted-shaped row is unlisted (E270, #371; the issue-07 tail went from
-  151 to 62). Owned-audience "adds" printed 220 but were about 130 human-shaped, so quote a metric
-  net of the suppression.
-- **Before scaling a cadence, find out which posts earn the sessions.** Our own Tumblr posts drove
-  2.3% of 28d Tumblr landings. 97.7% went to evergreen pages nobody had posted (`tumblr-curve.ts`,
-  E266, #379). The lever is selection, not volume, and the same holds for the social drafts (E265),
-  which rank destinations by GA4 earning power rather than recency.
-- **Title-only rules now cover content types too, not just room themes.** 95 GShade/ReShade rows
-  were sharing `preset` with 180 CAS presets. #380 added `lib/uiPresetRules.ts` (title-only), with
-  the rejected keywords and their catalog counts in its header, a retag script whose backup never
-  overwrites, and a test that was red against the pre-fix tree. Use it as the template for the next
-  facet split.
-- **The last merge of a run is the one that misses its verify.** #380 merged at 17:39:59, 31 s
-  after the previous ledger row. It applied a prod retag, yet it has **no** `after-merge` row in
-  `changelog.md` and the digest's "Changed today" table stops at #376. The runner then landed the
-  digest. Run the after-merge verify before the digest is written, never after.
+- **Deleting a row is not an opt-out.** "Unsubscribed" used to mean that the `waitlist` row had been
+  deleted. That did nothing for an address mailed as a User or Patreon account (for example, the
+  re-permission email), and the opt-out was lost if anything re-created the row. #384 added
+  `email_suppressions` (hashes only) to `lib/services/emailSuppression.ts`. `sendBulk` throws on a
+  live send that has no lookup, or whose list cannot be read. The route records the suppression
+  *before* it deletes the row, so a failed delete still leaves the address safe. An opt-out lives in
+  a list that every send path reads, not in whichever list the address arrived through.
+- **Only proof of mailbox control may undo a consent withdrawal, and only one that came earlier.**
+  An opt-out is cleared only by a signed `/api/subscribe/confirm` POST, and only when it was
+  recorded before the click. A newer request re-activates it, and an older one counts as stale.
+  This means re-processing an old mailbox cannot undo a re-subscribe. The unauthenticated
+  `/api/waitlist` form never clears an opt-out, because anyone can type anyone's address.
+- **An advertised channel needs a consumer.** We sent a `mailto:` List-Unsubscribe header and
+  invited "reply unsubscribe", but nobody ever processed those requests. Now every LIVE send syncs
+  the mailbox first, and if the sync could not run, the send stops. A scanner test fails when a
+  script adds a live send without that sync. When you add a header, link or address that promises
+  an action, ship what reads it in the same PR.
+- **A migration applied to prod is not durable until its file is on `main`.**
+  `drop_orphaned_newsletter_tables` was applied to prod on 07-01 from an unmerged branch, and it
+  reached `main` on 10-26 (#385, almost four months later). Until then, `prisma migrate status`
+  reported prod drift. To recover, copy the file byte for byte from the original commit: its
+  checksum must match `_prisma_migrations`. Apply a migration to prod before merge only when it is
+  additive (as #384 did), and merge the migration on the same day.
+- **Store only image URLs we host or that `images.remotePatterns` allows.** Patreon post images
+  (`*.patreonusercontent.com`) are signed, they expire, and their host is not in `remotePatterns`,
+  so `/_next/image` returned 400 for them. #383 copies them to Vercel Blob at save time. The host
+  check is an exact-suffix allowlist (`needsRehost`), which also stops the server-side fetch from
+  following arbitrary admin-supplied URLs. An admin save fails with a 422 and a clear message;
+  approving a submission copies on a best-effort basis. Direct uploads take a token from the
+  admin-only `/api/admin/upload-image`, which pins the path prefix and excludes SVG. That route
+  uses no `onUploadCompleted`, because Vercel's callback carries no admin session.
+- **Interactive merges skip the ledger too.** #383, #384 and #385 all landed on 10-26. None of them
+  has an `after-merge` row in `changelog.md`. #382 does. The rule "A merge without a ledger row did
+  not happen" applies to operator sessions as well: run `deploy-verify.sh --after-merge --sha
+  <mergeCommit>` after every merge, not only after funnel merges.
 
 ---
 
-*Last compound review: 2026-10-25*
+*Last compound review: 2026-10-26*
 
 ---
 

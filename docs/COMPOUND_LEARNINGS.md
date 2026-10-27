@@ -2510,6 +2510,44 @@ The 10-07 section is in the archive.
   (E251, #357): re-dated Pinterest rows beat site Pinterest in 1 of 3 grades — they ride the curve;
   upside needs new destinations. When joining GA4 `landingPage`, fold `blog.*` and trailing slashes.
 
+### 2026-10-25 — rotated from CLAUDE.md
+
+- **A classifier keyed on one field misses every case that leaves it empty.** The smoke test's
+  third-party rule only recognised an error by the ` @ <frame url>` at the end of its stack. Chromium
+  raises a cross-origin ad-safeframe `SecurityError` with an *empty* stack, so the 10-24 check
+  counted it as our own error and rolled back a build that only added a ledger row (the third false
+  rollback since 09-22). `isThirdPartyPageError` (E273, #376) also matches `Blocked a frame with
+  origin "<foreign|null>"`, but an error from our own origin is still a hard failure. Check that
+  every real case fills the field before you key on it.
+- **"No failures recorded" is not a pass.** `smoke()` returned 0 whenever `FAILS` was empty,
+  *including when every page was `ERR_INTERNET_DISCONNECTED`*. The host went to sleep 23 s after
+  the rollback and the incident said "Re-check PASSES". Any branch that reads success off an empty
+  failure list must check the could-not-run flags first.
+- **A queued record must carry its payload, not a path into a disposable tree.** When the host was
+  offline, `ledger-commit.sh` queued the 10-24 row pointing at an incident file inside the run's
+  worktree. The worktree was reaped 37 min later and the flush landed the row with no file behind
+  it. The incident was rebuilt from logs a day later.
+- **Suppress a polluted population at the library choke point, and refuse when the classifier and
+  the list disagree.** About half of the W42–43 form sign-ups were scripted-shaped (E260).
+  `SCRIPTED_SIGNUP_HASHES` sits in `partitionExcluded`, so the weekly, invite and re-permission
+  paths all inherit it. The send script re-classifies the whole list before every run and refuses
+  a LIVE send while any scripted-shaped row is unlisted (E270, #371; the issue-07 tail went from
+  151 to 62). Owned-audience "adds" printed 220 but were about 130 human-shaped, so quote a metric
+  net of the suppression.
+- **Before scaling a cadence, find out which posts earn the sessions.** Our own Tumblr posts drove
+  2.3% of 28d Tumblr landings. 97.7% went to evergreen pages nobody had posted (`tumblr-curve.ts`,
+  E266, #379). The lever is selection, not volume, and the same holds for the social drafts (E265),
+  which rank destinations by GA4 earning power rather than recency.
+- **Title-only rules now cover content types too, not just room themes.** 95 GShade/ReShade rows
+  were sharing `preset` with 180 CAS presets. #380 added `lib/uiPresetRules.ts` (title-only), with
+  the rejected keywords and their catalog counts in its header, a retag script whose backup never
+  overwrites, and a test that was red against the pre-fix tree. Use it as the template for the next
+  facet split.
+- **The last merge of a run is the one that misses its verify.** #380 merged at 17:39:59, 31 s
+  after the previous ledger row. It applied a prod retag, yet it has **no** `after-merge` row in
+  `changelog.md` and the digest's "Changed today" table stops at #376. The runner then landed the
+  digest. Run the after-merge verify before the digest is written, never after.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
