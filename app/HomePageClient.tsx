@@ -5,27 +5,38 @@
  * SSR shell): the route entry is now the server component app/page.tsx,
  * which renders per-request so this tree — h1, collection links, the ad
  * sidebar, the .mv-ads grid — is in the served HTML instead of the
- * useSearchParams() Suspense fallback (a spinner). Nothing about the
- * layout, ad anchors, or data flow changed in the move: mods are still
- * client-fetched from /api/mods exactly as before.
+ * useSearchParams() Suspense fallback (a spinner). Mods are client-fetched
+ * from /api/mods.
+ *
+ * 2026-10-20: "Launcher" layout (components/launcher/). Slim sticky header
+ * with search + a sliding game switcher, an email strip, then one row of
+ * [toolbar + grid + below-grid discovery] beside the ad sidebar. The game
+ * accent colour follows the selected game via data-game on the root.
  *
  * Ad-anchor rules (see __tests__/unit/sidebar-sticky-health.test.ts): the
  * Mediavine sidebar aside stays empty, in normal flow, visible at lg:, and
- * is never wrapped in a loading guard.
+ * is never wrapped in a loading guard. The grid's .mv-ads container lives in
+ * components/launcher/LauncherGrid.tsx and renders in every state.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Navbar } from '../components/Navbar';
-import { Hero } from '../components/Hero';
-import { ModGrid } from '../components/ModGrid';
-import { Footer } from '../components/Footer';
 import { HomeCapture } from '../components/HomeCapture';
-import { FacetedSidebar } from '../components/FacetedSidebar';
 import { Mod } from '../lib/api';
 import { useSearchTracking } from '../lib/hooks/useAnalytics';
 import { useAffiliateOffers } from '../lib/hooks/useAffiliateOffers';
-import { ArrowUpDown } from 'lucide-react';
+import '../components/launcher/launcher.css';
+import { lxFontVars } from '../components/launcher/fonts';
+import { gameFor } from '../components/launcher/games';
+import { GameSwitch } from '../components/launcher/GameSwitch';
+import { LauncherHeader } from '../components/launcher/LauncherHeader';
+import { LauncherHero } from '../components/launcher/LauncherHero';
+import { LauncherFooter } from '../components/launcher/LauncherFooter';
+import { LauncherToolbar } from '../components/launcher/LauncherToolbar';
+import { LauncherGrid } from '../components/launcher/LauncherGrid';
+import { LauncherPager } from '../components/launcher/LauncherPager';
+import { LauncherBelow } from '../components/launcher/LauncherBelow';
+import { useFacetOptions, useGameCounts } from '../components/launcher/useLauncherData';
 
 interface HomePageClientProps {
   /**
@@ -34,9 +45,20 @@ interface HomePageClientProps {
    * of the client bundle and the links are in the HTML on first byte.
    */
   collectionsSlot?: React.ReactNode;
+  /** Server-rendered collection shortcuts for the hero (same file, same reason). */
+  collectionStripSlot?: React.ReactNode;
 }
 
-export default function HomePageClient({ collectionsSlot }: HomePageClientProps) {
+// Default 16 (was 20): the whole grid is one .mv-ads container, and a 5-row
+// default pushed several Content-unit ad injections below the fold — see
+// reports/viewability-investigation-2026-08-16.md before changing this.
+const MODS_PER_PAGE = 16;
+
+function scrollToResults() {
+  document.getElementById('lx-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+export default function HomePageClient({ collectionsSlot, collectionStripSlot }: HomePageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -47,68 +69,51 @@ export default function HomePageClient({ collectionsSlot }: HomePageClientProps)
   const initialCategory = searchParams.get('category') || 'All';
   const initialGameVersion = searchParams.get('gameVersion') || '';
   const initialSort = searchParams.get('sort') || 'downloads';
+  const initialContentType = searchParams.get('contentType') || '';
+  const initialVisualStyle = searchParams.get('visualStyle') || '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedGameVersion, setSelectedGameVersion] = useState(initialGameVersion);
   const [sortBy, setSortBy] = useState(initialSort);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentPage, setCurrentPage] = useState(Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1);
+  const [contentType, setContentType] = useState(initialContentType);
+  const [visualStyle, setVisualStyle] = useState(initialVisualStyle);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const gridColumns = 4;
-  // Default 16 (was 20): the whole grid is one .mv-ads container, and a 5-row
-  // default pushed several Content-unit ad injections below the fold — see
-  // reports/viewability-investigation-2026-08-16.md before changing this.
-  const [modsPerPage, setModsPerPage] = useState(16);
 
-  // Faceted filter state
-  const [selectedFacets, setSelectedFacets] = useState<{
-    contentType?: string[];
-    visualStyle?: string[];
-    themes?: string[];
-    ageGroups?: string[];
-    genderOptions?: string[];
-  }>({});
-
-  // Direct state management instead of hooks
   const [mods, setMods] = useState<Mod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<any>(null);
+  const [pagination, setPagination] = useState<{ total: number; totalPages: number } | null>(null);
+
+  const { types, styles } = useFacetOptions();
+  const gameCounts = useGameCounts();
 
   // Analytics tracking hooks (usePageTracking is now global in providers.tsx)
   const { trackSearch } = useSearchTracking();
 
   // Affiliate offers for grid injection - refreshKey triggers refetch on page/filter changes
   const { offers: affiliateOffers } = useAffiliateOffers({
-    limit: 4, // Enough for interval of 5 on a 20-card page
+    limit: 4,
     source: 'grid',
-    refreshKey: `${currentPage}-${searchQuery}-${selectedCategory}-${selectedGameVersion}`,
+    refreshKey: `${currentPage}-${searchQuery}-${selectedCategory}-${selectedGameVersion}-${contentType}-${visualStyle}`,
   });
 
   /**
-   * Build URL with current filter state
-   * Used for both browser URL updates and API calls
+   * Build URL with current filter state. Only non-default values are kept.
    */
-  const buildUrlParams = useCallback((overrides: Record<string, any> = {}) => {
+  const buildUrlParams = useCallback(() => {
     const params = new URLSearchParams();
-
-    const page = overrides.page !== undefined ? overrides.page : currentPage;
-    const search = overrides.search !== undefined ? overrides.search : searchQuery;
-    const category = overrides.category !== undefined ? overrides.category : selectedCategory;
-    const gameVersion = overrides.gameVersion !== undefined ? overrides.gameVersion : selectedGameVersion;
-    const sort = overrides.sort !== undefined ? overrides.sort : sortBy;
-    const creator = overrides.creator !== undefined ? overrides.creator : creatorParam;
-
-    // Only add non-default values to URL
-    if (page > 1) params.set('page', page.toString());
-    if (search) params.set('search', search);
-    if (category && category !== 'All') params.set('category', category);
-    if (gameVersion) params.set('gameVersion', gameVersion);
-    if (sort && sort !== 'downloads') params.set('sort', sort);
-    if (creator) params.set('creator', creator);
-
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    if (searchQuery) params.set('search', searchQuery);
+    if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (selectedGameVersion) params.set('gameVersion', selectedGameVersion);
+    if (sortBy && sortBy !== 'downloads') params.set('sort', sortBy);
+    if (contentType) params.set('contentType', contentType);
+    if (visualStyle) params.set('visualStyle', visualStyle);
+    if (creatorParam) params.set('creator', creatorParam);
     return params;
-  }, [currentPage, searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam]);
+  }, [currentPage, searchQuery, selectedCategory, selectedGameVersion, sortBy, contentType, visualStyle, creatorParam]);
 
   /**
    * Update browser URL without navigation
@@ -123,74 +128,37 @@ export default function HomePageClient({ collectionsSlot }: HomePageClientProps)
   /**
    * Fetch mods from API with current filter state
    */
-  const fetchMods = useCallback(async (pageOverride?: number) => {
+  const fetchMods = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const page = pageOverride !== undefined ? pageOverride : currentPage;
       const apiParams = new URLSearchParams();
+      apiParams.set('page', currentPage.toString());
+      apiParams.set('limit', MODS_PER_PAGE.toString());
+      if (searchQuery) apiParams.set('search', searchQuery);
+      if (selectedCategory && selectedCategory !== 'All') apiParams.set('category', selectedCategory);
+      if (selectedGameVersion) apiParams.set('gameVersion', selectedGameVersion);
+      if (creatorParam) apiParams.set('creator', creatorParam);
+      if (contentType) apiParams.set('contentType', contentType);
+      if (visualStyle) apiParams.set('visualStyle', visualStyle);
 
-      // Add page and limit
-      apiParams.set('page', page.toString());
-      apiParams.set('limit', modsPerPage.toString());
-
-      // Add search query if exists
-      if (searchQuery) {
-        apiParams.set('search', searchQuery);
-      }
-
-      // Add category filter (if not 'All')
-      if (selectedCategory && selectedCategory !== 'All') {
-        apiParams.set('category', selectedCategory);
-      }
-
-      // Add game version filter if exists
-      if (selectedGameVersion) {
-        apiParams.set('gameVersion', selectedGameVersion);
-      }
-
-      // Add creator filter if exists
-      if (creatorParam) {
-        apiParams.set('creator', creatorParam);
-      }
-
-      // Add faceted filters
-      if (selectedFacets.contentType?.length) {
-        apiParams.set('contentType', selectedFacets.contentType[0]); // Single select
-      }
-      if (selectedFacets.visualStyle?.length) {
-        apiParams.set('visualStyle', selectedFacets.visualStyle[0]); // Single select
-      }
-      if (selectedFacets.themes?.length) {
-        apiParams.set('themes', selectedFacets.themes.join(','));
-      }
-      if (selectedFacets.ageGroups?.length) {
-        apiParams.set('ageGroups', selectedFacets.ageGroups.join(','));
-      }
-      if (selectedFacets.genderOptions?.length) {
-        apiParams.set('genderOptions', selectedFacets.genderOptions.join(','));
-      }
-
-      // Add sort parameter
-      if (sortBy) {
-        switch (sortBy) {
-          case 'downloads':
-            apiParams.set('sortBy', 'downloadCount');
-            apiParams.set('sortOrder', 'desc');
-            break;
-          case 'rating':
-            apiParams.set('sortBy', 'rating');
-            apiParams.set('sortOrder', 'desc');
-            break;
-          case 'newest':
-            apiParams.set('sortBy', 'createdAt');
-            apiParams.set('sortOrder', 'desc');
-            break;
-          case 'relevance':
-            // No sort params - let API use its default
-            break;
-        }
+      switch (sortBy) {
+        case 'downloads':
+          apiParams.set('sortBy', 'downloadCount');
+          apiParams.set('sortOrder', 'desc');
+          break;
+        case 'rating':
+          apiParams.set('sortBy', 'rating');
+          apiParams.set('sortOrder', 'desc');
+          break;
+        case 'newest':
+          apiParams.set('sortBy', 'createdAt');
+          apiParams.set('sortOrder', 'desc');
+          break;
+        case 'relevance':
+          // No sort params - let API use its default
+          break;
       }
 
       const response = await fetch(`/api/mods?${apiParams.toString()}`);
@@ -207,67 +175,59 @@ export default function HomePageClient({ collectionsSlot }: HomePageClientProps)
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage, selectedFacets, modsPerPage]);
+  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, creatorParam, currentPage, contentType, visualStyle]);
 
   // Fetch mods on mount and when filters change
   useEffect(() => {
     fetchMods();
   }, [fetchMods]);
 
-  // Update URL when filter state changes (except on initial load)
+  // Keep the URL in sync with filter state
   useEffect(() => {
-    const params = buildUrlParams();
-    updateBrowserUrl(params);
-  }, [searchQuery, selectedCategory, selectedGameVersion, sortBy, currentPage, buildUrlParams, updateBrowserUrl]);
+    updateBrowserUrl(buildUrlParams());
+  }, [buildUrlParams, updateBrowserUrl]);
 
-  const handleSearch = async (query: string, category?: string, gameVersion?: string) => {
-    // Reset to page 1 when search changes
+  const handleSearch = useCallback((query: string) => {
     setCurrentPage(1);
     setSearchQuery(query);
-    setSelectedCategory(category || 'All');
-    if (gameVersion) {
-      setSelectedGameVersion(gameVersion);
-    }
-
-    // Track search event
+    setSelectedCategory('All');
     if (query) {
       trackSearch(query);
     }
-  };
+  }, [trackSearch]);
+
+  const handleGame = useCallback((value: string) => {
+    setCurrentPage(1);
+    setSelectedGameVersion(value);
+  }, []);
 
   const handleSortChange = (newSortBy: string) => {
-    setCurrentPage(1); // Reset to page 1
+    setCurrentPage(1);
     setSortBy(newSortBy);
   };
 
-  const handlePerPageChange = (newPerPage: number) => {
-    setCurrentPage(1); // Reset to page 1
-    setModsPerPage(newPerPage);
-  };
-
-  // Facet filter handlers
-  const handleFacetChange = (facetType: string, values: string[]) => {
-    setCurrentPage(1); // Reset to page 1
-    // Clear search when changing facets to avoid confusing combined results
-    setSearchQuery('');
-    setSelectedFacets(prev => ({
-      ...prev,
-      [facetType]: values.length > 0 ? values : undefined,
-    }));
-  };
-
-  const handleClearFacets = () => {
+  // Chips narrow the current results; they keep the search query.
+  const handleContentType = (value: string) => {
     setCurrentPage(1);
-    setSelectedFacets({});
+    setContentType(value);
   };
 
-  /**
-   * Handle page change - updates both state and URL
-   */
-  const handlePageChange = async (newPage: number) => {
+  const handleVisualStyle = (value: string) => {
+    setCurrentPage(1);
+    setVisualStyle(value);
+  };
+
+  const handleClearAll = () => {
+    setCurrentPage(1);
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setContentType('');
+    setVisualStyle('');
+  };
+
+  const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    // Scroll to top of grid
-    window.scrollTo({ top: 300, behavior: 'smooth' });
+    scrollToResults();
   };
 
   const handleFavorite = async (modId: string) => {
@@ -281,7 +241,6 @@ export default function HomePageClient({ collectionsSlot }: HomePageClientProps)
           : [...prev, modId]
       );
 
-      // Call API
       const response = await fetch(`/api/mods/${modId}/favorite`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: {
@@ -297,221 +256,131 @@ export default function HomePageClient({ collectionsSlot }: HomePageClientProps)
             : prev.filter(id => id !== modId)
         );
 
-        const error = await response.json();
-        console.error('Failed to toggle favorite:', error);
+        const body = await response.json().catch(() => null);
+        console.error('Failed to toggle favorite:', body);
 
-        // Show error to user (you could add a toast notification here)
         if (response.status === 401) {
           alert('Please sign in to favorite mods');
         }
       } else {
-        // Refresh the mod data to get updated rating, preserving current filters
+        // Refresh the mod data to get updated counts, preserving current filters
         await fetchMods();
       }
-    } catch (error) {
-      // Revert optimistic update on error
+    } catch (err) {
       setFavorites(prev =>
         isFavorited
           ? [...prev, modId]
           : prev.filter(id => id !== modId)
       );
-      console.error('Error toggling favorite:', error);
+      console.error('Error toggling favorite:', err);
     }
   };
 
+  const game = gameFor(selectedGameVersion);
+  const rankFrom = sortBy === 'downloads' && !searchQuery ? (currentPage - 1) * MODS_PER_PAGE + 1 : null;
+  const showFacetCounts = !searchQuery && !selectedGameVersion && !creatorParam;
+
   return (
-    <div className="min-h-screen bg-mhm-dark text-slate-200 flex flex-col font-sans selection:bg-sims-pink/30 selection:text-white">
-      <Navbar />
+    <div className={`lx ${lxFontVars}`} data-game={game.id}>
+      <LauncherHeader
+        search={searchQuery}
+        onSearch={handleSearch}
+        game={selectedGameVersion}
+        gameCounts={gameCounts}
+        onGame={handleGame}
+      />
 
-      <main className="flex-grow">
-        <Hero onSearch={handleSearch} isLoading={loading} initialSearch={searchQuery} />
-
-        {/* Browse-by-collection links — server-rendered from the
-            lib/collections.ts registry (app/HomeCollections.tsx) and passed
-            in from app/page.tsx. Same slot the hard-coded "Popular:" chips
-            occupied; self-contained block above the grid/sidebar row, so it
-            does not touch ad layout. */}
-        {collectionsSlot}
-
-        {/* Capture strip (E73) — email + free-account CTA above the grid.
-            Self-contained block, sibling of the grid/sidebar row below and
-            of aside#secondary; never inside a .mv-ads container. */}
-        <HomeCapture />
-
-        {/* Creator Filter Banner */}
-        {creatorParam && (
-          <div className="container mx-auto px-4 py-4">
-            <div className="bg-sims-pink/10 border border-sims-pink/20 rounded-lg px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-sims-pink/20 rounded-full p-2">
-                  <svg className="h-5 w-5 text-sims-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-400">Viewing mods by creator</p>
-                  <p className="text-lg font-semibold text-white">@{creatorParam}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  // Navigate to home page without creator parameter
-                  window.location.href = '/';
-                }}
-                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-              >
-                Clear Filter
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Main Content: filters + grid + ad sidebar.
-            No left spacer — the filter sidebar provides enough left-side visual weight
-            and the extra 300px gives the mod grid substantially more room. */}
-        <div className="max-w-[1800px] mx-auto px-4 xl:px-6 overflow-visible">
-          <div className="flex gap-6">
-            {/* Faceted Sidebar */}
-              <div className="hidden lg:block flex-shrink-0">
-                <div className="sticky top-24">
-                  <FacetedSidebar
-                    selectedFacets={selectedFacets}
-                    onFacetChange={handleFacetChange}
-                    onClearAll={handleClearFacets}
-                  />
-                </div>
-              </div>
-
-              {/* Mod Grid */}
-              <div className="flex-1 min-w-0">
-                {/* Results Header - inline with grid */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-                  <div className="text-slate-400 text-sm">
-                    {loading ? (
-                      <span className="animate-pulse">Loading...</span>
-                    ) : (
-                      <span>
-                        <span className="text-white font-medium">{pagination?.total?.toLocaleString() || mods.length}</span> mods
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Controls: Per Page + Sort */}
-                  <div className="flex items-center gap-3">
-                    {/* Per Page Selector */}
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <span className="hidden sm:inline">Show</span>
-                      <div className="flex items-center bg-black/20 border border-white/10 rounded-lg overflow-hidden">
-                        {[16, 50, 100].map((num) => (
-                          <button
-                            key={num}
-                            onClick={() => handlePerPageChange(num)}
-                            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                              modsPerPage === num
-                                ? 'bg-sims-purple text-white'
-                                : 'text-slate-400 hover:text-white hover:bg-white/5'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Sort Dropdown */}
-                    <div className="relative">
-                      <div className="flex items-center space-x-2 bg-black/20 hover:bg-white/5 border border-white/10 hover:border-white/20 rounded-xl px-3 py-2 cursor-pointer transition-all">
-                        <ArrowUpDown className="w-4 h-4 text-sims-purple" />
-                        <select
-                          value={sortBy}
-                          onChange={(e) => handleSortChange(e.target.value)}
-                          className="bg-transparent text-sm font-medium text-slate-300 outline-none appearance-none cursor-pointer"
-                        >
-                          <option value="relevance" className="bg-mhm-card text-slate-200">Relevance</option>
-                          <option value="downloads" className="bg-mhm-card text-slate-200">Most Downloads</option>
-                          <option value="rating" className="bg-mhm-card text-slate-200">Highest Rated</option>
-                          <option value="newest" className="bg-mhm-card text-slate-200">Newest Finds</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <ModGrid
-                  mods={mods}
-                  loading={loading}
-                  error={error}
-                  onFavorite={handleFavorite}
-                  favorites={favorites}
-                  gridColumns={gridColumns}
-                  affiliateOffers={affiliateOffers}
-                  affiliateInterval={8}
-                />
-              </div>
-
-            {/* Right Ad Sidebar — in normal document flow so Mediavine Script Wrapper
-                can apply sticky scroll behavior and auto-refresh ads as user scrolls.
-                Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
-                IMPORTANT: Do NOT add position:sticky/fixed — Mediavine handles stickiness.
-                overflow must be visible on this element and all ancestors. */}
-            <aside
-              id="secondary"
-              className="widget-area primary-sidebar hidden lg:block flex-shrink-0 w-[300px] overflow-visible"
-              role="complementary"
-              aria-label="Sidebar"
-            >
-              {/* Empty — Mediavine auto-fills with its own stacked ad containers.
-                  Placeholder divs removed: WordPress blog sidebar uses empty aside and
-                  Mediavine fills it better than when constrained by min-h placeholders. */}
-            </aside>
-          </div>
+      {/* Game switcher band — the same control as the header copy, shown
+          under 1280px where the header has no room for it. */}
+      <div className="gameband">
+        <div className="wrap">
+          <GameSwitch value={selectedGameVersion} counts={gameCounts} onChange={handleGame} label="Choose a game" />
         </div>
+      </div>
 
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="container mx-auto px-4 pb-20">
-            <div className="flex justify-center mt-12">
-              <nav className="flex items-center space-x-2" aria-label="Pagination">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage <= 1}
-                  className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-white/5 border border-white/5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Previous
-                </button>
+      <main>
+        {/* Hero: h1 + catalogue size, with the capture block (E73 — email +
+            free-account CTA) beside it. Sibling of the grid/sidebar row below
+            and of aside#secondary; never inside a .mv-ads container. */}
+        <LauncherHero total={gameCounts['']} game={game.id} collections={collectionStripSlot}>
+          <HomeCapture />
+        </LauncherHero>
 
-                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                  const page = Math.max(1, Math.min(pagination.totalPages - 4, currentPage - 2)) + i;
-                  if (page < 1 || page > pagination.totalPages) return null;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      aria-current={page === currentPage ? 'page' : undefined}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${page === currentPage
-                        ? 'bg-sims-pink text-white'
-                        : 'text-slate-400 hover:text-white bg-white/5 border border-white/5'
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+        {/* Main content row: results column + right ad sidebar. */}
+        <div className="wrap row">
+          <div className="main">
+            {creatorParam && (
+              <div className="creator-banner">
+                <span>
+                  Viewing mods by <strong>@{creatorParam}</strong>
+                </span>
+                <a href="/">Clear</a>
+              </div>
+            )}
 
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= pagination.totalPages}
-                  className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-white/5 border border-white/5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Next
-                </button>
-              </nav>
-            </div>
+            <LauncherToolbar
+              total={pagination?.total ?? null}
+              loading={loading}
+              search={searchQuery}
+              sort={sortBy}
+              onSort={handleSortChange}
+              types={types}
+              styles={styles}
+              contentType={contentType}
+              visualStyle={visualStyle}
+              onContentType={handleContentType}
+              onVisualStyle={handleVisualStyle}
+              showCounts={showFacetCounts}
+              onClearAll={handleClearAll}
+            />
+
+            <LauncherGrid
+              mods={mods}
+              loading={loading}
+              error={error}
+              pageSize={MODS_PER_PAGE}
+              rankFrom={rankFrom}
+              favorites={favorites}
+              onFavorite={handleFavorite}
+              affiliateOffers={affiliateOffers}
+              affiliateInterval={8}
+              onRetry={fetchMods}
+              onClear={handleClearAll}
+            />
+
+            {pagination && (
+              <LauncherPager page={currentPage} totalPages={pagination.totalPages} onPage={handlePageChange} />
+            )}
+
+            <LauncherBelow
+              game={selectedGameVersion}
+              gameCounts={gameCounts}
+              collectionsSlot={collectionsSlot}
+              types={types}
+              contentType={contentType}
+              onContentType={handleContentType}
+            />
           </div>
-        )}
+
+          {/* Right Ad Sidebar — in normal document flow so Mediavine Script Wrapper
+              can apply sticky scroll behavior and auto-refresh ads as user scrolls.
+              Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
+              IMPORTANT: Do NOT add position:sticky/fixed — Mediavine handles stickiness.
+              overflow must be visible on this element and all ancestors. */}
+          <aside
+            id="secondary"
+            className="widget-area primary-sidebar hidden lg:block flex-shrink-0 w-[300px] overflow-visible"
+            role="complementary"
+            aria-label="Sidebar"
+          >
+            {/* Empty — Mediavine auto-fills with its own stacked ad containers.
+                Placeholder divs removed: WordPress blog sidebar uses empty aside and
+                Mediavine fills it better than when constrained by min-h placeholders. */}
+          </aside>
+        </div>
       </main>
 
-      <Footer />
+      <LauncherFooter />
     </div>
   );
 }

@@ -46,6 +46,8 @@ const OTHER_APP_PREFIXES = new Set([
   // blog bucket. __tests__/unit/page-rpm-bucket-app-routes.test.ts now checks
   // every NEXTJS_PREFIXES entry and every app/ route directory.
   'creator',
+  // Static switcher icons (public/game-icons/) — files, never an article.
+  'game-icons',
 ]);
 
 /** Strip query/hash, guarantee a leading slash, collapse `//`. */

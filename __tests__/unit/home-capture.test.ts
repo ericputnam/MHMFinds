@@ -35,11 +35,11 @@ describe('HomeCapture — placement relative to ad anchors', () => {
     expect(home).toMatch(/import \{ HomeCapture \} from ['"]\.\.\/components\/HomeCapture['"]/);
   });
 
-  it('sits above the grid row, the ModGrid and aside#secondary', () => {
+  it('sits above the grid row, the LauncherGrid and aside#secondary', () => {
     const strip = home.indexOf('<HomeCapture');
-    const grid = home.indexOf('<ModGrid');
+    const grid = home.indexOf('<LauncherGrid');
     const aside = home.indexOf('id="secondary"');
-    const gridRow = home.indexOf('<FacetedSidebar');
+    const gridRow = home.indexOf('<LauncherToolbar');
     expect(grid).toBeGreaterThan(0);
     expect(aside).toBeGreaterThan(0);
     expect(gridRow).toBeGreaterThan(0);
