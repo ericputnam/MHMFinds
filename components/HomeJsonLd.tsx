@@ -1,4 +1,5 @@
 import { HOME_SHELL_LASTMOD } from '@/lib/seo/siteLastmod';
+import { CATALOG_FINDS } from '@/lib/seo/catalogCount';
 
 /**
  * Homepage-only JSON-LD: the homepage `WebPage` node and the site FAQ
@@ -43,7 +44,7 @@ export function homePageJsonLd() {
         // E150: the homepage shell's real change date, not the render day.
         dateModified: HOME_SHELL_LASTMOD,
         description:
-          'Search 17,000+ verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.',
+          `Search ${CATALOG_FINDS} verified mods and custom content for Sims 4, Stardew Valley, and Minecraft. Find CC by vibe, style, or keyword.`,
         inLanguage: 'en-US',
         potentialAction: [
           {

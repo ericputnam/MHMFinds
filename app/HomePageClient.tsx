@@ -302,7 +302,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
         {/* Hero: h1 + catalogue size, with the capture block (E73 — email +
             free-account CTA) beside it. Sibling of the grid/sidebar row below
             and of aside#secondary; never inside a .mv-ads container. */}
-        <LauncherHero total={gameCounts['']} game={game.id} collections={collectionStripSlot}>
+        <LauncherHero game={game.id} collections={collectionStripSlot}>
           <HomeCapture />
         </LauncherHero>
 
