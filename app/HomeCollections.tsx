@@ -124,12 +124,18 @@ export function HomeCollections() {
             <Icon name="chevron" />
           </summary>
           <div className="coll-pills">
-            {rest.map((l) => (
-              <Link key={l.slug} href={l.href} className="coll-pill">
-                {l.heading}
-                {fmt(counts.get(l.slug)) && <span className="cnt tabular">{fmt(counts.get(l.slug))}</span>}
-              </Link>
-            ))}
+            {rest.map((l) => {
+              const cover = coversFor(l.slug)[0];
+              return (
+                <Link key={l.slug} href={l.href} className="coll-pill">
+                  <span className="hcl-thumb" aria-hidden="true">
+                    {cover && <Image src={cover} alt="" fill sizes="22px" unoptimized />}
+                  </span>
+                  {l.heading}
+                  {fmt(counts.get(l.slug)) && <span className="cnt tabular">{fmt(counts.get(l.slug))}</span>}
+                </Link>
+              );
+            })}
           </div>
         </details>
       )}

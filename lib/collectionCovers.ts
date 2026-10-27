@@ -75,6 +75,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/09/w-920h-690-3760210.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/1f3083b6-185d-4adc-b722-1c980e7bd3da-1.png",
   ],
+  "gshade-presets": [
+    "https://blog.musthavemods.com/wp-content/uploads/2022/11/phonto-819x1024.jpg",
+    "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/magnolia-1-0-gshade-1769358546606-0.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2022/02/Dove-2.0-Sims-4-Reshade-Preset-1024x422.jpg",
+  ],
   "hair-cc": [
     "https://images.surferseo.art/822463a3-7c79-4866-9d29-385085ec8ed7.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/01/1725239b-f77a-4efe-ac34-43b51f496ea6.jpg",

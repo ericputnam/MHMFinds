@@ -349,8 +349,9 @@
 .lx .coll-more summary svg { width: 13px; height: 13px; transition: transform 0.18s ease; }
 .lx .coll-more[open] summary svg { transform: rotate(180deg); }
 .lx .coll-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.lx .coll-pill { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font: 600 12px var(--ff-body); text-decoration: none; }
+.lx .coll-pill { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px 0 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font: 600 12px var(--ff-body); text-decoration: none; }
 .lx .coll-pill:hover { color: var(--text); border-color: var(--line-strong); }
+.lx .coll-pill .hcl-thumb { width: 22px; height: 22px; flex-basis: 22px; }
 .lx .coll-pill .cnt { font: 600 10.5px var(--ff-hud); color: var(--dim); }
 
 .lx .type-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
