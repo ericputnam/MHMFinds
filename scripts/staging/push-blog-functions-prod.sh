@@ -35,6 +35,8 @@ CRITICAL_MARKERS=(
   "mhm_search_form_rewrite_js|Blog Search Form Rewrite"
   "is_from_apex_rewrite|Apex Domain Rewrite Helper"
   "mhm_collection_crosslinks|Collection Cross-links (SEO internal linking)"
+  "mhm_catalog_mod_links|Catalog mod cross-links (SEO internal linking)"
+  "mhm_affiliate_pack_block|Amazon Sims 4 pack picks (blog affiliate block)"
   "mhm_consolidated_post_map|Legacy canonical map (un-consolidated pairs, PR #63)"
   "mhm_host_split_301|Host-split 301 (blog.* -> apex, Pinterest consolidation Q13)"
   "mhm_host_split_js|Host-split JS fallback (cached blog.* HTML -> apex)"
