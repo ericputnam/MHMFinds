@@ -472,3 +472,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-26 21:16 | after-merge | Operator: PR #389 one catalogue count | 83b6a2d | https://mhm-finds-dw5l-fdck77lep-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-26 21:15 | after-merge | Interactive: PR #386 ModDetailPage stale favorite test | 83b6a2d | https://mhm-finds-dw5l-fdck77lep-ericputnams-projects.vercel.app | PASS | PR #386 mergeCommit fccaba8 ≠ graded head 83b6a2d · main moved past caller fccaba8; graded HEAD 83b6a2d · verified live · 5xx/15m=0  |
 | 2026-10-26 21:33 | after-merge | Interactive: PR #387 #384 review follow-ups | 5275115 | https://mhm-finds-dw5l-jxla30cmn-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-10-26 21:38 | after-merge | Operator: PR #390 collection pill covers + gshade | a7854a6 | https://mhm-finds-dw5l-7wr3g8x2z-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
