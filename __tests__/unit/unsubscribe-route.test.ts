@@ -92,6 +92,15 @@ describe('/api/unsubscribe', () => {
     expect(row?.clearedAt).toBeNull();
   });
 
+  it('never tells the reader they can re-subscribe from the site (the waitlist form cannot lift an opt-out)', async () => {
+    findUnique.mockResolvedValue({ id: 'w1' });
+    const pages = [
+      await (await GET(req(buildUnsubscribeUrl(EMAIL)))).text(),
+      await (await POST(req(buildUnsubscribeUrl(EMAIL), 'POST'))).text(),
+    ];
+    for (const html of pages) expect(html).not.toMatch(/sign up again|from the site/i);
+  });
+
   it('POST stores only the hash, never the address', async () => {
     await POST(req(buildUnsubscribeUrl(EMAIL), 'POST'));
     expect(JSON.stringify(Array.from(sup.fake.rows.entries())).toLowerCase()).not.toContain('reader@example.com');

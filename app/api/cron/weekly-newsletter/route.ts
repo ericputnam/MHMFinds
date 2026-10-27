@@ -10,6 +10,16 @@
  * 15:00 UTC) is Part B — Tier 2, operator-queue Q18, reply "approve 78-cron".
  * Turning NEWSLETTER_WEEKLY_ENABLED on is a separate Tier 1 send decision.
  *
+ * PRECONDITION FOR SCHEDULING (2026-10-26, #384 review): this path does NOT read the
+ * mailbox. `sendBulk` still drops every address in `email_suppressions` (link opt-outs
+ * and any mailbox request already recorded), but a mailto/reply unsubscribe sitting
+ * unprocessed in the inbox is only recorded by the script paths
+ * (`newsletter-send-test.ts`, `subscriber-invite-send.ts`), which run
+ * `syncUnsubscribeMailbox` before a live send. The reader is a Python/IMAP script and
+ * cannot run on Vercel. Before Q18 schedules this route, a daily
+ * `npx tsx scripts/agents/process-unsubscribe-mailbox.ts --apply` must run ahead of it,
+ * and its could-not-run (exit 2) must block the send.
+ *
  * Auth fails CLOSED: unlike the older /api/cron/* routes, a missing
  * CRON_SECRET is a 401, never an open door — this route can send email.
  */

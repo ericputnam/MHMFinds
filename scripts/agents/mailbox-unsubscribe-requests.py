@@ -19,8 +19,12 @@ address, subject, body or env value is ever printed.
 
 What counts as a request (deliberately conservative about *who*, generous about *how*):
   * subject  — the subject (after Re:/Fwd: prefixes) starts with "unsubscribe",
-               "remove me", "opt out" or "stop". Both the sender and any address named
-               in the subject (our mailto form puts it there) are suppressed.
+               "remove me", "opt out" or "stop". The SENDER is suppressed. An address
+               named in the subject (our mailto form puts it there) counts only when it
+               is the sender: neither the subject nor the From header is authenticated,
+               so honouring any other named address would let anyone silence a
+               subscriber with one email. A named address that differs is counted as
+               `named_ignored` (the reader can still use the signed https link).
   * reply    — a reply to one of our campaigns (subject carries a CAMPAIGN_SUBJECTS
                needle) whose own text — above the quoted original — asks to stop.
 Skipped: DSNs, auto-replies, complaint reports, bulk/list mail (it carries
@@ -28,7 +32,15 @@ List-Unsubscribe / List-Id / Precedence: bulk — every newsletter has "unsubscr
 footer), and mail from our own domain. `Auto-Submitted` mail is skipped for the reply
 form only: a client acting on our mailto header may legitimately set it.
 
-The request time is the server's INTERNALDATE (not the sender-controlled Date header).
+The request time is the server's INTERNALDATE, capped at the time of the read. It is never
+the sender-controlled Date header, and never "now" as a guess: a guessed time can re-suppress
+someone who has since re-confirmed (now > clearedAt), and a future one can make the row
+impossible to clear. A request with no INTERNALDATE makes the scan could-not-run (exit 2).
+
+Residual risk (checked 2026-10-26): our receiving server adds no Authentication-Results or
+Received-SPF header (0 of 37 messages), so a forged From can still unsubscribe the forged
+address. Requiring an auth pass would drop every real mailto unsubscribe. The cap above
+limits a forged request to that one address.
 
 Exit codes: 0 = scanned completely, 2 = could not run (missing env, IMAP unreachable, a
 folder that must be read could not be, or a message could not be fetched). A partial scan
@@ -43,7 +55,7 @@ import re
 import sys
 from datetime import date, datetime, timezone
 from email.message import Message
-from email.utils import getaddresses, parsedate_to_datetime
+from email.utils import getaddresses
 
 from _mailbox_readonly import (  # noqa: E402
     AUTOREPLY_RE,
@@ -155,8 +167,8 @@ def classify(msg: Message) -> dict:
     # Auto-Submitted — that is still the user's request, so the subject form is checked first.
     bare = REPLY_PREFIX_RE.sub("", subject).strip()
     if SUBJECT_REQUEST_RE.match(bare):
-        named = [a.lower() for a in EMAIL_RE.findall(bare) if not a.lower().endswith("@" + OWN_DOMAIN)]
-        return {"via": "subject", "skip": None, "addresses": sorted({frm, *named})}
+        named = {a.lower() for a in EMAIL_RE.findall(bare) if not a.lower().endswith("@" + OWN_DOMAIN)}
+        return {"via": "subject", "skip": None, "addresses": [frm], "named_ignored": len(named - {frm})}
     if is_auto_submitted(msg):
         return {"via": None, "skip": "auto-submitted", "addresses": []}
     if is_campaign_subject(subject) and BODY_REQUEST_RE.search(own_text(msg)):
@@ -164,16 +176,37 @@ def classify(msg: Message) -> dict:
     return {"via": None, "skip": None, "addresses": []}
 
 
-def request_time(msg: Message, received: datetime | None) -> datetime:
-    if received is not None:
-        return received
-    try:
-        d = parsedate_to_datetime(header_text(msg, "Date"))
-        if d.tzinfo is None:
-            d = d.replace(tzinfo=timezone.utc)
-        return d.astimezone(timezone.utc)
-    except Exception:
-        return datetime.now(timezone.utc)
+def request_time(received: datetime | None, read_at: datetime) -> datetime | None:
+    """The server's INTERNALDATE, capped at `read_at`. None when the server gave none —
+    the caller must treat that as could-not-run, never substitute a guess."""
+    if received is None:
+        return None
+    return min(received, read_at)
+
+
+def tally(latest: dict, counts: dict, msg: Message, received: datetime | None, read_at: datetime) -> None:
+    """Fold one fetched message into `latest` (hash -> (time, via)) and `counts`. Pure; self-tested."""
+    counts["scanned"] += 1
+    c = classify(msg)
+    if c["skip"]:
+        counts["skipped"][c["skip"]] = counts["skipped"].get(c["skip"], 0) + 1
+    if not c["via"]:
+        return
+    counts[c["via"]] += 1
+    counts["named_ignored"] += c.get("named_ignored", 0)
+    at = request_time(received, read_at)
+    if at is None:
+        counts["no_internaldate"] += 1
+        return
+    for addr in c["addresses"]:
+        h = hash_address(addr)
+        if h not in latest or at > latest[h][0]:
+            latest[h] = (at, c["via"])
+
+
+def new_counts() -> dict:
+    return {"folders": {}, "scanned": 0, "subject": 0, "reply": 0, "named_ignored": 0, "skipped": {},
+            "fetch_errors": 0, "no_internaldate": 0}
 
 
 def iso(d: datetime) -> str:
@@ -181,8 +214,9 @@ def iso(d: datetime) -> str:
 
 
 def scan(since: date, env_path: str) -> dict:
-    read_at = iso(datetime.now(timezone.utc))
-    counts = {"folders": {}, "scanned": 0, "subject": 0, "reply": 0, "skipped": {}, "fetch_errors": 0}
+    now = datetime.now(timezone.utc)
+    read_at = iso(now)
+    counts = new_counts()
     latest: dict[str, tuple[datetime, str]] = {}
     with ReadOnlyMailbox(env_path) as box:
         folders = [f for f in box.folders() if f.upper() == "INBOX" or SPAM_FOLDER_RE.search(f)]
@@ -199,20 +233,11 @@ def scan(since: date, env_path: str) -> dict:
                     counts["fetch_errors"] += 1
                     continue
                 msg, received = got
-                counts["scanned"] += 1
-                c = classify(msg)
-                if c["skip"]:
-                    counts["skipped"][c["skip"]] = counts["skipped"].get(c["skip"], 0) + 1
-                if not c["via"]:
-                    continue
-                counts[c["via"]] += 1
-                at = request_time(msg, received)
-                for addr in c["addresses"]:
-                    h = hash_address(addr)
-                    if h not in latest or at > latest[h][0]:
-                        latest[h] = (at, c["via"])
+                tally(latest, counts, msg, received, now)
     if counts["fetch_errors"]:
         raise CouldNotRun(f"{counts['fetch_errors']} message(s) could not be fetched; scan incomplete")
+    if counts["no_internaldate"]:
+        raise CouldNotRun(f"{counts['no_internaldate']} request(s) had no server INTERNALDATE; scan incomplete")
     requests = [{"hash": h, "via": via, "requestedAt": iso(at)} for h, (at, via) in sorted(latest.items())]
     return {"status": "ok", "read_at": read_at, "since": since.isoformat(), "requests": requests, "counts": counts}
 
@@ -238,8 +263,11 @@ def self_test() -> int:
         # (name, message, expected via, expected addresses)
         ("mailto form names the address", _mk("unsubscribe reader@example.com"), "subject",
          ["reader@example.com"]),
-        ("mailto form, other address too", _mk("unsubscribe other@example.org", frm="x@example.com"), "subject",
-         ["other@example.org", "x@example.com"]),
+        # Unauthenticated subject: a named address that is not the sender is never suppressed.
+        ("mailto form naming someone else suppresses only the sender",
+         _mk("unsubscribe victim@example.org", frm="x@example.com"), "subject", ["x@example.com"]),
+        ("named address matches sender case-insensitively",
+         _mk("unsubscribe Reader@Example.com"), "subject", ["reader@example.com"]),
         ("bare Unsubscribe subject", _mk("Unsubscribe"), "subject", ["reader@example.com"]),
         ("Re: prefix + remove me", _mk("RE: Remove me from this list"), "subject", ["reader@example.com"]),
         ("reply with unsubscribe above quote", _mk(weekly, "please unsubscribe me\n\nOn Sun, Oct 26 MustHaveMods wrote:\n> hi"),
@@ -268,20 +296,43 @@ def self_test() -> int:
         if not ok:
             failed += 1
         print(f"  {'ok  ' if ok else 'FAIL'} {name}" + ("" if ok else f" -> via={got['via']} n={len(got['addresses'])}"))
-    # INTERNALDATE wins over the sender's Date header.
-    m = _mk("unsubscribe", headers={"Date": "Mon, 01 Jan 2035 00:00:00 +0000"})
+    read_at = datetime(2026, 10, 26, 12, 0, tzinfo=timezone.utc)
     srv = datetime(2026, 10, 20, 12, 0, tzinfo=timezone.utc)
-    if request_time(m, srv) != srv:
-        failed += 1
-        print("  FAIL request_time prefers INTERNALDATE")
-    else:
-        print("  ok   request_time prefers INTERNALDATE")
+    future = datetime(2035, 1, 1, tzinfo=timezone.utc)
+    dated = _mk("unsubscribe", headers={"Date": "Mon, 01 Jan 2035 00:00:00 +0000"})
+
+    def run(msgs: list) -> tuple[dict, dict]:
+        latest: dict = {}
+        counts = new_counts()
+        for msg, received in msgs:
+            tally(latest, counts, msg, received, read_at)
+        return latest, counts
+
+    reader = hash_address("reader@example.com")
+    latest, counts = run([(dated, srv)])
+    checks = [
+        # The sender-controlled Date header is ignored; INTERNALDATE is the request time.
+        ("INTERNALDATE wins over the Date header", latest.get(reader, (None,))[0] == srv),
+        # A future INTERNALDATE is capped, so it can never make a row impossible to clear.
+        ("future INTERNALDATE is capped at the read time", request_time(future, read_at) == read_at),
+        # No INTERNALDATE: never guess (not the Date header, not now) — count it so scan() fails closed.
+        ("missing INTERNALDATE records nothing", run([(dated, None)])[0] == {}),
+        ("missing INTERNALDATE is counted", run([(dated, None)])[1]["no_internaldate"] == 1),
+        ("a non-request without INTERNALDATE is fine", run([(_mk("hello"), None)])[1]["no_internaldate"] == 0),
+        ("ignored named address is counted",
+         run([(_mk("unsubscribe victim@example.org", frm="x@example.com"), srv)])[1]["named_ignored"] == 1),
+    ]
+    for name, ok in checks:
+        if not ok:
+            failed += 1
+        print(f"  {'ok  ' if ok else 'FAIL'} {name}")
     if hash_address(" Reader@Example.com ") != hashlib.sha256(b"reader@example.com").hexdigest():
         failed += 1
         print("  FAIL hash normalization")
     else:
         print("  ok   hash normalization matches hashRecipient")
-    print(f"self-test: {len(cases) + 2 - failed}/{len(cases) + 2} passed")
+    total = len(cases) + len(checks) + 1
+    print(f"self-test: {total - failed}/{total} passed")
     return 1 if failed else 0
 
 

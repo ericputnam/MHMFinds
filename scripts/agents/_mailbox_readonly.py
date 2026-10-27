@@ -169,8 +169,13 @@ class ReadOnlyMailbox:
         if typ != "OK" or not data or not isinstance(data[0], tuple):
             return None
         meta, body = data[0][0], data[0][1]
+        # Servers may put INTERNALDATE before the literal (in `meta`) or after it (the
+        # trailing element, e.g. b' INTERNALDATE "…")'), so look in both.
+        tail = data[1] if len(data) > 1 and isinstance(data[1], (bytes, str)) else b""
+        meta_b = meta if isinstance(meta, bytes) else str(meta).encode()
+        tail_b = tail if isinstance(tail, bytes) else str(tail).encode()
         received: datetime | None = None
-        m = _INTERNALDATE_RE.search(meta if isinstance(meta, bytes) else str(meta).encode())
+        m = _INTERNALDATE_RE.search(meta_b) or _INTERNALDATE_RE.search(tail_b)
         if m:
             try:
                 received = datetime.strptime(m.group(1).decode(), "%d-%b-%Y %H:%M:%S %z").astimezone(timezone.utc)
