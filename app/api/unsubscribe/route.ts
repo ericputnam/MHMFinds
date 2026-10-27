@@ -4,6 +4,7 @@ import {
   decodeUnsubscribeEmail,
   verifyUnsubscribeToken,
 } from '@/lib/services/unsubscribe';
+import { isSuppressed, recordUnsubscribe } from '@/lib/services/emailSuppression';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +21,14 @@ export const dynamic = 'force-dynamic';
  *        "Unsubscribe" button (`List-Unsubscribe-Post: List-Unsubscribe=One-Click`):
  *        an unauthenticated POST with no confirmation step, answered with 2xx.
  *
- * "Subscribed" means "has a row in `waitlist`" (the only opt-in table on main).
- * Unsubscribing removes that row. There is no soft-delete column on `waitlist`;
- * adding one is a schema change (Tier 2, queued for the operator). Until then,
- * removing the row is the honest reading of "take me off the list" and is what
- * CAN-SPAM requires within 10 business days — here it is immediate.
+ * POST records the address's hash in `email_suppressions` (lib/services/emailSuppression.ts)
+ * and then removes its `waitlist` row. The suppression row is what every send path
+ * checks (`sendBulk` refuses a live send without it), so an unsubscribe also covers
+ * addresses that were mailed as accounts, not subscribers — e.g. the re-permission
+ * email — and survives anything that later re-creates the waitlist row. Only a signed
+ * confirm POST (/api/subscribe/confirm) clears it. CAN-SPAM allows 10 business days;
+ * here it is immediate. The suppression is written first: if the delete then fails,
+ * the address is already safe and a retry is idempotent.
  *
  * The address never appears in a log line; the token is a keyed HMAC of it, so
  * a link only works for the address it was issued to.
@@ -95,8 +99,13 @@ export async function GET(request: NextRequest) {
   try {
     const v = verifiedEmail(request);
     if (!v) return page(INVALID[0], INVALID[1], { status: 400 });
-    const row = await prisma.waitlist.findUnique({ where: { email: v.email }, select: { id: true } });
-    if (!row) {
+    // Reads only. "Already unsubscribed" needs both: no list row AND a recorded opt-out —
+    // an account that was mailed without a waitlist row still gets the button.
+    const [row, suppressed] = await Promise.all([
+      prisma.waitlist.findUnique({ where: { email: v.email }, select: { id: true } }),
+      isSuppressed(prisma, v.email),
+    ]);
+    if (!row && suppressed) {
       return page('Already unsubscribed', 'This address is not on the list. You will not get any more emails from us.');
     }
     return page(
@@ -114,7 +123,8 @@ export async function POST(request: NextRequest) {
   try {
     const v = verifiedEmail(request);
     if (!v) return page(INVALID[0], INVALID[1], { status: 400 });
-    // deleteMany is idempotent: a second click, or Gmail retrying its one-click POST, is not an error.
+    // Both writes are idempotent: a second click, or Gmail retrying its one-click POST, is not an error.
+    await recordUnsubscribe(prisma, v.email, 'link');
     await prisma.waitlist.deleteMany({ where: { email: v.email } });
     return page(
       "You're unsubscribed",

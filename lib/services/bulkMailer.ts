@@ -30,6 +30,7 @@ import {
   normalizeEmail,
   unsubscribeHeaders,
 } from './unsubscribe';
+import type { SuppressionLookup } from './emailSuppression';
 
 /** BigScoots has not confirmed a limit. 100/hour until they do — never higher. */
 export const DEFAULT_HOURLY_LIMIT = 100;
@@ -107,6 +108,13 @@ export interface BulkSendOptions {
    * promising one-click and not honouring it is worse than not promising it.
    */
   oneClickUnsubscribe?: boolean;
+  /**
+   * Durable unsubscribe list (`suppressionLookupFor(prisma)` in emailSuppression).
+   * Required for a real send — it refuses without one, and refuses if the lookup
+   * throws. A dry run without one renders everyone and reports
+   * `suppressionChecked: false`, so the preview never overstates its coverage.
+   */
+  suppressionLookup?: SuppressionLookup;
   /** Injected for tests. */
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
@@ -132,6 +140,10 @@ export interface BulkSendResult {
   failed: number;
   /** Duplicates, blanks and malformed addresses dropped before sending. */
   skipped: string[];
+  /** Dropped because they are on the durable unsubscribe list. Applied before the cap. */
+  suppressed: string[];
+  /** False only on a dry run with no lookup, or whose lookup failed. */
+  suppressionChecked: boolean;
   /** Dropped because `maxMessages` was reached. */
   deferred: string[];
   batches: number;
@@ -201,10 +213,6 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
 
   const { valid, skipped } = normalizeRecipients(options.recipients);
 
-  const cap = options.maxMessages ?? valid.length;
-  const targets = valid.slice(0, Math.max(0, cap));
-  const deferred = valid.slice(targets.length);
-
   if (!dryRun && transport === 'none') {
     throw new Error(
       'sendBulk: refusing to send with no transport configured. Set SMTP_HOST (preferred) or run with dryRun.'
@@ -218,6 +226,35 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
         '(or pass postalAddress) and render it in the footer, or run with dryRun.'
     );
   }
+
+  // Unsubscribes are honoured before anything else is decided — before the cap,
+  // so a suppressed address never uses a slot, and before any render.
+  let suppressedSet = new Set<string>();
+  let suppressionChecked = false;
+  if (options.suppressionLookup) {
+    try {
+      suppressedSet = await options.suppressionLookup(valid);
+      suppressionChecked = true;
+    } catch (e) {
+      if (!dryRun) {
+        throw new Error(
+          `sendBulk: refusing to send — the unsubscribe list could not be read (${String(e)}). ` +
+            'Mailing someone who opted out is the one failure this list exists to prevent.'
+        );
+      }
+    }
+  } else if (!dryRun) {
+    throw new Error(
+      'sendBulk: refusing to send without a suppressionLookup. Pass ' +
+        'suppressionLookupFor(prisma) from lib/services/emailSuppression so unsubscribes are honoured.'
+    );
+  }
+  const suppressed = valid.filter((e) => suppressedSet.has(e));
+  const eligible = suppressed.length ? valid.filter((e) => !suppressedSet.has(e)) : valid;
+
+  const cap = options.maxMessages ?? eligible.length;
+  const targets = eligible.slice(0, Math.max(0, cap));
+  const deferred = eligible.slice(targets.length);
 
   const batches = chunk(targets, batchSize);
   const throttleWaitsMs: number[] = [];
@@ -309,6 +346,8 @@ export async function sendBulk(options: BulkSendOptions): Promise<BulkSendResult
     sent: results.filter((r) => r.sent).length,
     failed: results.filter((r) => !r.sent && !r.preview).length,
     skipped,
+    suppressed,
+    suppressionChecked,
     deferred,
     batches: batches.length,
     hourlyLimit,

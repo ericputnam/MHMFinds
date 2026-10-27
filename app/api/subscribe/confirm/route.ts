@@ -6,6 +6,7 @@ import {
   decodeConfirmEmail,
   verifyConfirmToken,
 } from '@/lib/services/subscribeConfirm';
+import { clearUnsubscribe, isSuppressed } from '@/lib/services/emailSuppression';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,10 @@ export const dynamic = 'force-dynamic';
  * Tier 2 migration, so consent is recorded entirely in existing columns:
  * `source = 're-permission'` is the consent record and the campaign's attribution key,
  * and `ipAddress` / `userAgent` / `createdAt` are the audit trail of who clicked and when.
+ *
+ * A confirm POST is also the one thing that lifts an earlier unsubscribe
+ * (`clearUnsubscribe`): the signed link proves the click came from the mailbox. The
+ * unauthenticated /api/waitlist form never does — anyone can type anyone's address.
  *
  * The address never appears in a log line or in the rendered page, and the endpoint does
  * no lookup on `e` alone — the token is a keyed HMAC of the address, so a link only ever
@@ -110,8 +115,12 @@ export async function GET(request: NextRequest) {
   try {
     const v = verifiedEmail(request);
     if (!v) return page(INVALID[0], INVALID[1], { status: 400 });
-    const row = await prisma.waitlist.findUnique({ where: { email: v.email }, select: { id: true } });
-    if (row) return page(ALREADY[0], ALREADY[1]);
+    const [row, suppressed] = await Promise.all([
+      prisma.waitlist.findUnique({ where: { email: v.email }, select: { id: true } }),
+      isSuppressed(prisma, v.email),
+    ]);
+    // A list row with an active unsubscribe gets no mail, so it is not "on the list".
+    if (row && !suppressed) return page(ALREADY[0], ALREADY[1]);
     return page(
       'Send you the weekly Sims 4 finds email?',
       'One click and you are on the list: one email a week with the CC and mods worth your download slot, and nothing else. You can leave from the footer of any issue.',
@@ -148,6 +157,8 @@ export async function POST(request: NextRequest) {
       const code = (error as { code?: string })?.code;
       if (code !== 'P2002') throw error;
     }
+    // Lifts only an unsubscribe recorded before this click; a newer one still wins.
+    await clearUnsubscribe(prisma, v.email);
 
     return page(
       "You're subscribed",
