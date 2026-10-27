@@ -471,3 +471,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-10-26 20:50 | after-merge | Operator: PR #388 homepage Launcher redesign | ef253d6 | https://mhm-finds-dw5l-3c5j8jpiv-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-26 21:16 | after-merge | Operator: PR #389 one catalogue count | 83b6a2d | https://mhm-finds-dw5l-fdck77lep-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-10-26 21:15 | after-merge | Interactive: PR #386 ModDetailPage stale favorite test | 83b6a2d | https://mhm-finds-dw5l-fdck77lep-ericputnams-projects.vercel.app | PASS | PR #386 mergeCommit fccaba8 ≠ graded head 83b6a2d · main moved past caller fccaba8; graded HEAD 83b6a2d · verified live · 5xx/15m=0  |
+| 2026-10-26 21:33 | after-merge | Interactive: PR #387 #384 review follow-ups | 5275115 | https://mhm-finds-dw5l-jxla30cmn-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
