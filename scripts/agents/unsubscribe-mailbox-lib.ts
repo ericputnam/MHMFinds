@@ -130,5 +130,8 @@ export function describeSync(r: SyncResult): string {
   const a = r.applied
     ? ` → recorded new ${r.applied.created}, re-activated ${r.applied.reactivated}, already ${r.applied.already}, stale ${r.applied.stale}`
     : ' (not applied)';
-  return `[unsubscribe-mailbox] ${r.found} email unsubscribe request(s) (mailto ${r.bySource.mailto}, reply ${r.bySource.reply})${a}`;
+  // The reader suppresses only the sender: a subject naming a different address is unauthenticated.
+  const ignored = Number(r.readerCounts.named_ignored ?? 0);
+  const note = ignored > 0 ? `; ${ignored} named address(es) ignored (not the sender)` : '';
+  return `[unsubscribe-mailbox] ${r.found} email unsubscribe request(s) (mailto ${r.bySource.mailto}, reply ${r.bySource.reply})${a}${note}`;
 }

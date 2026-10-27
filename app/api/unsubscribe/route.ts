@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     }
     return page(
       'Unsubscribe from the weekly finds email?',
-      'One click and you are off the list. No login, no survey. You can sign up again from the site whenever you like.',
+      'One click and you are off the list for good. No login, no survey.',
       { button: { e: v.e, t: v.t } }
     );
   } catch (error) {
@@ -128,7 +128,9 @@ export async function POST(request: NextRequest) {
     await prisma.waitlist.deleteMany({ where: { email: v.email } });
     return page(
       "You're unsubscribed",
-      'No more emails from MustHaveMods. Changed your mind later? Sign up again from the site.'
+      // Not "sign up again from the site": the /api/waitlist form never lifts an opt-out
+      // (anyone can type anyone's address into it), so that promise would be false.
+      'No more emails from MustHaveMods. If you change your mind, reply to any of our emails.'
     );
   } catch (error) {
     console.error('[unsubscribe] POST failed:', error instanceof Error ? error.message : error);
