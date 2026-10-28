@@ -25,6 +25,8 @@ import { CollectionMoreLinks } from '../../../../components/CollectionMoreLinks'
 import { Mod } from '../../../../lib/api';
 import { collectionHref, type CollectionDefinition } from '../../../../lib/collections';
 import type { ModLink } from '../../../../lib/seo/collectionMoreLinks';
+import { GRID_FAVORITE_SOURCES } from '../../../../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../../../../lib/capture/useGridFavoriteCapture';
 
 interface CollectionPageClientProps {
   collection: CollectionDefinition;
@@ -50,6 +52,11 @@ export default function CollectionPageClient({
 }: CollectionPageClientProps) {
   const [mods] = useState<Mod[]>(initialMods);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.collection, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
 
   const handleFavorite = async (modId: string) => {
     const isFavorited = favorites.includes(modId);
@@ -70,7 +77,7 @@ export default function CollectionPageClient({
           isFavorited ? [...prev, modId] : prev.filter((id) => id !== modId),
         );
         if (response.status === 401) {
-          alert('Please sign in to favorite mods');
+          onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
         }
       }
     } catch {

@@ -79,6 +79,15 @@ export const EXCLUDED_RECIPIENT_HASHES: readonly string[] = [
   // (not on the scripted list); the 550 text says domain does not exist. Listed before issue 08.
   'afa14ebd1815e5d3f7f6cc9ac97ad1ce5269f1ac8f5828144d8d3db53471114b', // weekly-07 run 2, 550 reject
   'fbb1807dbb2eb5ecb1582126b2f8f57c6aa2572df278d42b1b5e0328eaba7c42', // weekly-07 run 2, 550 reject
+  // 2026-10-28 `mailbox-dsn-count.py --since 2026-10-23 --campaign all --hashes` (Cass, E279 rider):
+  // 6 hard DSNs, all weekly, all arrived 10-25 = issue 07 run 2 (5.1.3 x2, 5.2.2 x2, 5.0.0, 5.1.1).
+  // With the 2 rejects above, run 2 hard-failed 8/62 = 12.9% vs run 1 0/100. Listed before issue 08.
+  '2828a521d70e46786f7802433f90a3a43d6aabc318752e58a8b143bc9293390a', // weekly-07 run 2, 5.x.x DSN
+  'fabbf79373227fed2e0d2b7fc85dfe0a0e7c01e8ba5fb8bd2c8f154ddf38e15f', // weekly-07 run 2, 5.x.x DSN
+  'fa50a945e31453d4b3eeb3893e212316d781ed79e292269a9c4ce4a7bf898eba', // weekly-07 run 2, 5.x.x DSN
+  'ea1a3c7f3ae8d32809a83f1753e2bfc700eb28204c752e23a4e9074ab1ee3ad8', // weekly-07 run 2, 5.x.x DSN
+  '5b128803aae4c98a33aac539fb13d4b4d85ef4f56208722965923fe05c79bd43', // weekly-07 run 2, 5.x.x DSN
+  'a8abae3019a812c56640431401f7b15e1f9e73ac35a535604155dd1b5761c63a', // weekly-07 run 2, 5.x.x DSN
 ];
 
 /**

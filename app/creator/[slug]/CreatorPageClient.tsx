@@ -22,6 +22,8 @@ import type { RelatedCreator } from '../../../lib/creatorHubRelated';
 import { creatorHref } from '../../../lib/creatorSlug';
 import { badgeHref } from '../../../lib/creatorBadge';
 import { CreatorClaimCard } from '../../../components/creator/CreatorClaimCard';
+import { GRID_FAVORITE_SOURCES } from '../../../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../../../lib/capture/useGridFavoriteCapture';
 
 interface CreatorPageClientProps {
   data: CreatorPageData;
@@ -32,6 +34,11 @@ interface CreatorPageClientProps {
 export default function CreatorPageClient({ data, related = [] }: CreatorPageClientProps) {
   const [mods] = useState<Mod[]>(data.mods);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.creator, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
 
   const handleFavorite = async (modId: string) => {
     const isFavorited = favorites.includes(modId);
@@ -47,7 +54,7 @@ export default function CreatorPageClient({ data, related = [] }: CreatorPageCli
         setFavorites((prev) =>
           isFavorited ? [...prev, modId] : prev.filter((id) => id !== modId),
         );
-        if (response.status === 401) alert('Please sign in to favorite mods');
+        if (response.status === 401) onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
       }
     } catch {
       setFavorites((prev) =>
