@@ -136,8 +136,7 @@ describe('ModGrid: no onModClick passthrough', () => {
 // ─── 4. Page-level: no modal state for selected mod ─────────────────────────
 describe('Page components: no selectedMod modal state', () => {
   const pages = [
-    { name: 'Homepage', file: 'app/HomePageClient.tsx' },
-    { name: 'Game browse (/games/[game])', file: 'app/games/[game]/GamePageClient.tsx' },
+    { name: 'Homepage + game browse (/games/[game])', file: 'app/HomePageClient.tsx' },
     { name: 'Collection (/games/[game]/[topic])', file: 'app/games/[game]/[topic]/CollectionPageClient.tsx' },
   ]
 

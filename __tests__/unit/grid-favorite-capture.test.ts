@@ -119,7 +119,8 @@ describe('class scanner: no favorite 401 ends in an alert', () => {
 
   it('vacuity guard: the scan found the favorite callers', () => {
     expect(files.length).toBeGreaterThan(100);
-    expect(favoriteFiles.length).toBeGreaterThanOrEqual(5);
+    // 4 since 2026-10-28: GamePageClient (a caller) was deleted; /games/[game]/ renders HomePageClient.
+    expect(favoriteFiles.length).toBeGreaterThanOrEqual(4);
   });
 
   it('no file that calls the favorite API answers with alert()', () => {
@@ -129,14 +130,15 @@ describe('class scanner: no favorite 401 ends in an alert', () => {
 
   const wired: Array<[string, keyof typeof GRID_FAVORITE_SOURCES]> = [
     ['app/HomePageClient.tsx', 'home'],
-    ['app/games/[game]/GamePageClient.tsx', 'game'],
+    // /games/[game]/ renders HomePageClient with routeGame set (2026-10-28).
+    ['app/HomePageClient.tsx', 'game'],
     ['app/games/[game]/[topic]/CollectionPageClient.tsx', 'collection'],
     ['app/creator/[slug]/CreatorPageClient.tsx', 'creator'],
   ];
   for (const [file, key] of wired) {
     it(`${file} wires the hook with GRID_FAVORITE_SOURCES.${key} and calls it on 401`, () => {
       const src = stripComments(readFileSync(join(ROOT, file), 'utf8'));
-      expect(src).toContain(`useGridFavoriteCapture(GRID_FAVORITE_SOURCES.${key}`);
+      expect(src).toMatch(new RegExp(`useGridFavoriteCapture\\([^;]*GRID_FAVORITE_SOURCES\\.${key}\\b`));
       expect(src).toMatch(/status === 401\)\s*\{?\s*onUnauthorized\(modId\)/);
     });
   }

@@ -2,14 +2,14 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getGameFromSlug, GAME_METADATA } from '../../../lib/gameRoutes';
-import { getCollectionsForGame } from '../../../lib/collections';
-import GamePageClient from './GamePageClient';
+import HomePageClient from '../../HomePageClient';
+import { HomeCollections, HomeCollectionStrip } from '../../HomeCollections';
 
 interface GamePageProps {
   params: Promise<{ game: string }>;
 }
 
-// Render per-request instead of SSG: GamePageClient calls
+// Render per-request instead of SSG: the client tree calls
 // useSearchParams(), which makes statically-generated pages emit only
 // the Suspense fallback (a spinner) as their prerendered HTML — no
 // collection-nav links, no page shell for crawlers. Dynamic rendering
@@ -45,6 +45,15 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
   };
 }
 
+/**
+ * /games/<slug>/ — the launcher (app/HomePageClient.tsx) with the game fixed
+ * by the route. Replaced GamePageClient, the pre-launcher UI, on 2026-10-28:
+ * the homepage's "Explore" game cards linked here and landed visitors on the
+ * old design.
+ *
+ * The collection blocks are the Sims 4 registry, so they are passed only on
+ * the Sims 4 page (the launcher also hides them for any other game).
+ */
 export default async function GamePage({ params }: GamePageProps) {
   const { game } = await params;
   const gameName = getGameFromSlug(game);
@@ -54,13 +63,7 @@ export default async function GamePage({ params }: GamePageProps) {
     redirect('/');
   }
 
-  // Collection nav chips — pass only what the strip renders so the
-  // editorial intros in lib/collections.ts stay out of the client
-  // bundle. Empty for games without collections (section hidden).
-  const collections = getCollectionsForGame(game).map((c) => ({
-    slug: c.slug,
-    heading: c.heading,
-  }));
+  const isSims4 = game === 'sims-4';
 
   return (
     <Suspense fallback={
@@ -71,7 +74,11 @@ export default async function GamePage({ params }: GamePageProps) {
         </div>
       </div>
     }>
-      <GamePageClient gameName={gameName} gameSlug={game} collections={collections} />
+      <HomePageClient
+        routeGame={{ slug: game, value: gameName }}
+        collectionsSlot={isSims4 ? <HomeCollections /> : undefined}
+        collectionStripSlot={isSims4 ? <HomeCollectionStrip /> : undefined}
+      />
     </Suspense>
   );
 }

@@ -96,7 +96,7 @@ These are the levers that directly improve Mediavine RPM:
 | Tailwind config | `tailwind.config.js` |
 | Mod detail page | `app/mods/[id]/page.tsx` |
 | Homepage layout | `app/page.tsx` |
-| Game page | `app/games/[game]/GamePageClient.tsx` |
+| Game page | `app/HomePageClient.tsx` (via `app/games/[game]/page.tsx`) |
 | Sidebar | `components/FacetedSidebar.tsx` |
 | Mod card | `components/ModCard.tsx` |
 | Mod grid | `components/ModGrid.tsx` |

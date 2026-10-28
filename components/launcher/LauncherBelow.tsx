@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { GAMES, fmtCount } from './games';
+import { GAMES, fmtCount, gameFor, showsSims4Collections } from './games';
 import { FacetOption } from './useLauncherData';
 import { Icon } from './Icon';
 import { groupTypes } from './display';
@@ -9,6 +9,7 @@ import { groupTypes } from './display';
 interface LauncherBelowProps {
   game: string;
   gameCounts: Record<string, number | undefined>;
+  /** Sims 4 collection links; hidden while another game is selected. */
   collectionsSlot?: React.ReactNode;
   types: FacetOption[] | null;
   contentType: string;
@@ -56,7 +57,7 @@ export function LauncherBelow({ game, gameCounts, collectionsSlot, types, conten
         </div>
       </section>
 
-      {collectionsSlot}
+      {showsSims4Collections(gameFor(game).id) && collectionsSlot}
 
       {groups.length > 0 && (
         <section className="below-sec" aria-labelledby="lx-types-h">
