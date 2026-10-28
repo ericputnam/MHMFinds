@@ -161,10 +161,11 @@
 .lx .hero-colls { margin-top: 18px; }
 .lx .hcl-label { display: block; margin-bottom: 8px; font: 600 10.5px/1 var(--ff-hud); letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
 .lx .hcl-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.lx .hcl-pill { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 5px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--card); color: var(--text); font: 600 13px/1 var(--ff-body); text-decoration: none; transition: border-color 0.15s ease, background 0.15s ease; }
+.lx .hcl-pill { --thumb: 26px; display: inline-flex; flex: 0 0 auto; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 5px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--card); color: var(--text); font: 600 13px/1 var(--ff-body); text-decoration: none; transition: border-color 0.15s ease, background 0.15s ease; }
 .lx .hcl-pill:hover { border-color: rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.1); }
-.lx .hcl-thumb { position: relative; width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; overflow: clip; background: rgba(var(--accent-rgb), 0.18); }
-.lx .hcl-thumb img { object-fit: cover; }
+/* Round cover thumb shared by .hcl-pill and .coll-pill; each sets --thumb. */
+.lx .coll-thumb { position: relative; width: var(--thumb, 26px); height: var(--thumb, 26px); flex: 0 0 var(--thumb, 26px); border-radius: 50%; overflow: clip; background: rgba(var(--accent-rgb), 0.18); }
+.lx .coll-thumb img { object-fit: cover; }
 .lx .hcl-all { padding: 0 12px 0 14px; gap: 4px; border-color: rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.12); color: var(--accent); }
 .lx .hcl-all svg { width: 15px; height: 15px; }
 .lx #collections { scroll-margin-top: 72px; }
@@ -349,9 +350,8 @@
 .lx .coll-more summary svg { width: 13px; height: 13px; transition: transform 0.18s ease; }
 .lx .coll-more[open] summary svg { transform: rotate(180deg); }
 .lx .coll-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.lx .coll-pill { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px 0 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font: 600 12px var(--ff-body); text-decoration: none; }
+.lx .coll-pill { --thumb: 22px; display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px 0 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font: 600 12px var(--ff-body); text-decoration: none; }
 .lx .coll-pill:hover { color: var(--text); border-color: var(--line-strong); }
-.lx .coll-pill .hcl-thumb { width: 22px; height: 22px; flex-basis: 22px; }
 .lx .coll-pill .cnt { font: 600 10.5px var(--ff-hud); color: var(--dim); }
 
 .lx .type-cloud { display: flex; flex-wrap: wrap; gap: 8px; }

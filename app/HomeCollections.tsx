@@ -25,6 +25,21 @@ export function homeCollectionLinks() {
 }
 
 const FEATURED = 12;
+
+/**
+ * Round cover thumbnail shared by the hero strip and the "Show all" pills;
+ * each pill class sets its own --thumb size in launcher.css. Optimized (no
+ * `unoptimized`) on purpose: covers are a fixed, generated set of ~100 URLs on
+ * remotePatterns hosts, and unoptimized they shipped originals of up to 1.8 MB
+ * into 22px circles (~4.1 MB for the pills alone, 2026-10-26).
+ */
+function CoverThumb({ src, sizes }: { src?: string; sizes: string }) {
+  return (
+    <span className="coll-thumb" aria-hidden="true">
+      {src && <Image src={src} alt="" fill sizes={sizes} />}
+    </span>
+  );
+}
 /** Hero shortcuts: one per kind of CC people come for, not just the biggest (the top few all overlap clothes). */
 const QUICK = ['hair-cc', 'clothes-cc', 'build-cc', 'makeup-cc', 'poses', 'kids-cc'];
 
@@ -46,9 +61,7 @@ export function HomeCollectionStrip() {
           const cover = collectionCovers(l.slug)[0];
           return (
             <Link key={l.slug} href={l.href} className="hcl-pill">
-              <span className="hcl-thumb" aria-hidden="true">
-                {cover && <Image src={cover} alt="" fill sizes="26px" unoptimized />}
-              </span>
+              <CoverThumb src={cover} sizes="26px" />
               {short(l.heading)}
             </Link>
           );
@@ -68,12 +81,13 @@ export function HomeCollections() {
   const featured = links.slice(0, FEATURED);
   const rest = links.slice(FEATURED);
   // Big collections overlap (a top in "Sims 4 CC" is also in "Clothes"), so
-  // skip covers an earlier card already shows.
+  // skip covers an earlier card already shows. Only what is rendered is
+  // marked used: a pill shows one cover, so it must not reserve three.
   const used = new Set<string>();
-  const coversFor = (slug: string) => {
+  const coversFor = (slug: string, n: number) => {
     const all = collectionCovers(slug);
     const fresh = all.filter((src) => !used.has(src));
-    const pick = (fresh.length ? fresh : all).slice(0, 3);
+    const pick = (fresh.length ? fresh : all).slice(0, n);
     pick.forEach((src) => used.add(src));
     return pick;
   };
@@ -93,7 +107,7 @@ export function HomeCollections() {
       </p>
       <div className="coll-grid">
         {featured.map((l) => {
-          const covers = coversFor(l.slug);
+          const covers = coversFor(l.slug, 3);
           return (
             <Link key={l.slug} href={l.href} className="coll-card">
               <span className={`coll-cover n${Math.min(covers.length, 3)}`} aria-hidden="true">
@@ -104,7 +118,7 @@ export function HomeCollections() {
                 ) : (
                   covers.map((src, i) => (
                     <span key={src} className={`cc-img i${i}`}>
-                      <Image src={src} alt="" fill sizes="(max-width: 640px) 50vw, 200px" unoptimized />
+                      <Image src={src} alt="" fill sizes="(max-width: 640px) 50vw, 200px" />
                     </span>
                   ))
                 )}
@@ -125,12 +139,10 @@ export function HomeCollections() {
           </summary>
           <div className="coll-pills">
             {rest.map((l) => {
-              const cover = coversFor(l.slug)[0];
+              const [cover] = coversFor(l.slug, 1);
               return (
                 <Link key={l.slug} href={l.href} className="coll-pill">
-                  <span className="hcl-thumb" aria-hidden="true">
-                    {cover && <Image src={cover} alt="" fill sizes="22px" unoptimized />}
-                  </span>
+                  <CoverThumb src={cover} sizes="22px" />
                   {l.heading}
                   {fmt(counts.get(l.slug)) && <span className="cnt tabular">{fmt(counts.get(l.slug))}</span>}
                 </Link>
