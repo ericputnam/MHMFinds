@@ -1,5 +1,5 @@
 import React from 'react';
-import type { LauncherGame } from './games';
+import { showsSims4Collections, type LauncherGame } from './games';
 import { CATALOG_FINDS } from '@/lib/seo/catalogCount';
 
 /** What the visitor is hunting for, per game. "All" leads with Sims 4, the bulk of the catalogue. */
@@ -49,7 +49,7 @@ export function LauncherHero({
             <b className="tabular">{CATALOG_FINDS}</b> hand-picked mods for Sims&nbsp;4, Stardew Valley and Minecraft.
             Every download link is checked, so you never land on a dead page.
           </p>
-          {(game === 'all' || game === 'sims4') && collections}
+          {showsSims4Collections(game) && collections}
         </div>
         {children}
       </div>

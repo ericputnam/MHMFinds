@@ -10,14 +10,18 @@ export interface FacetOption {
   sortOrder?: number;
 }
 
-/** Content-type and visual-style options from /api/facets (global counts). */
-export function useFacetOptions() {
+/**
+ * Content-type and visual-style options from /api/facets, counted within the
+ * selected game ('' = every game) so a Minecraft view never offers Sims hair.
+ */
+export function useFacetOptions(gameVersion = '') {
   const [types, setTypes] = useState<FacetOption[] | null>(null);
   const [styles, setStyles] = useState<FacetOption[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/facets')
+    const qs = gameVersion ? `?${new URLSearchParams({ gameVersion })}` : '';
+    fetch(`/api/facets${qs}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data) => {
         if (cancelled) return;
@@ -35,7 +39,7 @@ export function useFacetOptions() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [gameVersion]);
 
   return { types, styles };
 }
