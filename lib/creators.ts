@@ -159,6 +159,10 @@ export interface CreatorPageData {
   profile: { website: string | null; isVerified: boolean; bio: string | null } | null;
   /** False for a claimed creator below MIN_MODS_FOR_PAGE: the page renders with noindex. */
   indexable: boolean;
+  /** contentType counts over ALL of this creator's SFW mods (E278 search snippet). */
+  typeCounts: Array<{ contentType: string | null; count: number }>;
+  /** Newest SFW listing (E278 search snippet); ISO string, because this object crosses the RSC boundary. */
+  newest: { title: string; createdAt: string } | null;
 }
 
 /**
@@ -213,7 +217,7 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
   const gate = creatorPageGate(totalMods, claimed);
   if (!gate.render) return null;
 
-  const [rawMods, downloadAgg] = await Promise.all([
+  const [rawMods, downloadAgg, typeGroups, newestRow] = await Promise.all([
     prisma.mod.findMany({
       where,
       orderBy: [{ downloadCount: 'desc' }, { createdAt: 'desc' }],
@@ -224,6 +228,15 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
       },
     }),
     prisma.mod.aggregate({ where, _sum: { downloadCount: true } }),
+    // E278: the search snippet names what this creator actually makes and
+    // their newest listing. Snippet-only, so a failure degrades to the
+    // generic copy rather than failing the page.
+    prisma.mod
+      .groupBy({ by: ['contentType'], where, _count: { _all: true } })
+      .catch(() => [] as Array<{ contentType: string | null; _count: { _all: number } }>),
+    prisma.mod
+      .findFirst({ where, orderBy: { createdAt: 'desc' }, select: { title: true, createdAt: true } })
+      .catch(() => null),
   ]);
 
   const displayName = (variants[0]?.author ?? slug).trim();
@@ -236,6 +249,8 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
     mods: rawMods.map(serializeMod),
     profile: pageProfileFrom(profile),
     indexable: gate.indexable,
+    typeCounts: typeGroups.map((g) => ({ contentType: g.contentType, count: g._count._all })),
+    newest: newestRow ? { title: newestRow.title, createdAt: newestRow.createdAt.toISOString() } : null,
   };
 }
 

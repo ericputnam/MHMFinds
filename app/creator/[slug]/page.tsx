@@ -15,6 +15,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../lib/creators';
 import { getRelatedCreators } from '../../../lib/creatorHubRelated';
+import { creatorSnippet } from '../../../lib/creatorMeta';
 import CreatorPageClient from './CreatorPageClient';
 
 // Author strings change with every ingest and there are ~540 eligible
@@ -36,8 +37,13 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
   const data = await getCreatorPageData(slug);
   if (!data) return { title: 'Creator not found | MustHaveMods', robots: { index: false } };
 
-  const title = `${data.displayName} Sims 4 CC & Mods (${data.totalMods}) | MustHaveMods`;
-  const description = `${data.totalMods} Sims 4 mods and custom content by ${data.displayName}, ranked by downloads — hair, clothes, furniture, gameplay and more, with download links.`;
+  // E278: title + description from this creator's own rows (lib/creatorMeta.ts).
+  const { title, description } = creatorSnippet({
+    displayName: data.displayName,
+    totalMods: data.totalMods,
+    typeCounts: data.typeCounts,
+    newest: data.newest,
+  });
   const canonical = canonicalFor(slug);
   return {
     title,
