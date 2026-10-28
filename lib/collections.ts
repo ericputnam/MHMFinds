@@ -615,14 +615,17 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     heading: 'Sims 4 Pose Packs',
     // Head-term title: the legacy article /sims-4-gallery-poses/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Gallery Poses & Pose Packs — 570+ Poses | MustHaveMods',
+    metaTitle: 'Sims 4 Gallery Poses & Pose Packs — 850+ Poses | MustHaveMods',
     metaDescription:
-      'Browse 570+ Sims 4 pose packs and gallery poses for CAS, couples, and storytelling — sorted by downloads, hand-picked from top creators.',
+      'Browse 850+ Sims 4 pose packs and gallery poses for CAS, couples, and storytelling — sorted by downloads, hand-picked from top creators.',
     tagline: 'Screenshot-ready poses for CAS, couples, and stories',
     intro:
-      'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together nearly 600 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',
+      'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together over 850 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',
     filter: { contentType: 'poses' },
-    expectedCount: 573,
+    // 573 → 902 on 2026-10-28 (E281): the facet had grown to 922 under copy
+    // that still said "570+" / "nearly 600"; 20 non-poses pinned out by id
+    // (hand-audited-content-types.ts § E281). Copy 570+ → 850+ (52 of headroom).
+    expectedCount: 902,
     // 2026-10-25 (E272): 'female-clothes' → 'gshade-presets' (female-clothes
     // keeps 5 inbound). Screenshotters run a pose pack and a GShade preset
     // together, so this is the natural first inbound for the new page.
