@@ -37,6 +37,8 @@ import { LauncherGrid } from '../components/launcher/LauncherGrid';
 import { LauncherPager } from '../components/launcher/LauncherPager';
 import { LauncherBelow } from '../components/launcher/LauncherBelow';
 import { useFacetOptions, useGameCounts } from '../components/launcher/useLauncherData';
+import { GRID_FAVORITE_SOURCES } from '../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../lib/capture/useGridFavoriteCapture';
 
 interface HomePageClientProps {
   /**
@@ -80,6 +82,11 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
   const [contentType, setContentType] = useState(initialContentType);
   const [visualStyle, setVisualStyle] = useState(initialVisualStyle);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.home, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
 
   const [mods, setMods] = useState<Mod[]>([]);
   const [loading, setLoading] = useState(true);
@@ -260,7 +267,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
         console.error('Failed to toggle favorite:', body);
 
         if (response.status === 401) {
-          alert('Please sign in to favorite mods');
+          onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
         }
       } else {
         // Refresh the mod data to get updated counts, preserving current filters

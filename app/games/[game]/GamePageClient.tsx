@@ -12,6 +12,8 @@ import { Mod } from '../../../lib/api';
 import { useSearchTracking } from '../../../lib/hooks/useAnalytics';
 import { useAffiliateOffers } from '../../../lib/hooks/useAffiliateOffers';
 import { ArrowUpDown } from 'lucide-react';
+import { GRID_FAVORITE_SOURCES } from '../../../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../../../lib/capture/useGridFavoriteCapture';
 
 interface GamePageClientProps {
   gameName: string;
@@ -35,6 +37,11 @@ export default function GamePageClient({ gameName, gameSlug, collections = [] }:
   const [sortBy, setSortBy] = useState(initialSort);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.game, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
   const [gridColumns] = useState(4);
   const [modsPerPage, setModsPerPage] = useState(20);
 
@@ -176,7 +183,7 @@ export default function GamePageClient({ gameName, gameSlug, collections = [] }:
       });
       if (!response.ok) {
         setFavorites(prev => isFavorited ? [...prev, modId] : prev.filter(id => id !== modId));
-        if (response.status === 401) alert('Please sign in to favorite mods');
+        if (response.status === 401) onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
       } else {
         await fetchMods();
       }
