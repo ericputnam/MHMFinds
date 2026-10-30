@@ -14,8 +14,8 @@ import { META_DESCRIPTION_MAX, SITE_NAME, modMetaDescription, modPageTitle } fro
 const ids = Object.keys(MOD_META_OVERRIDES);
 
 describe('MOD_META_OVERRIDES', () => {
-  it('has the seven measured pages and nothing templated', () => {
-    expect(ids).toHaveLength(7);
+  it('has the seven E268 pages plus the six E284 pages, nothing templated', () => {
+    expect(ids).toHaveLength(13);
     const descriptions = ids.map((id) => MOD_META_OVERRIDES[id].description);
     expect(new Set(descriptions).size).toBe(descriptions.length);
   });
