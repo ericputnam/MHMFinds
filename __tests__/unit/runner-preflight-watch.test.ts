@@ -158,3 +158,91 @@ describe('run-funnel-daily.sh preflight-watch block (E194)', () => {
     expect(run().out).toMatch(/DIAG OTHER\|/);
   });
 });
+
+/**
+ * E290 (2026-10-29): 10-24 (977 s wall, 974 s asleep) and 10-29 (1013 s wall, 998 s asleep) were graded HANG the
+ * moment the host woke — 3 s and 15 s awake, against a preflight that answers in 4–6 s. A slept-through attempt
+ * (asleep/suspended > 0) is now retried ONCE on the awake host after a bounded network wait; an awake hang is not.
+ * Pre-fix (RUNNER_UNDER_TEST=<pre-fix copy>): "retried once" fails (RC 1, DIAG HANG, no retry line); the other two
+ * pass (they are the controls that bound the retry).
+ */
+describe('run-funnel-daily.sh preflight-watch retry after a host sleep (E290)', () => {
+  /** A fake claude that hangs on call N and answers on later calls; the call counter lives in $base. */
+  function fakeClaudeHangingUntilCall(answerFrom: number): void {
+    fakeClaude(
+      `n=$(cat "${base}/calls" 2>/dev/null || echo 0); n=$((n+1)); echo "$n" >"${base}/calls"\n` +
+        `if [ "$n" -lt ${answerFrom} ]; then sleep 600; fi\necho '{"is_error":false}'`,
+    );
+  }
+  /**
+   * Spawn the driver detached and SIGSTOP the whole process group (like a sleeping host) at each [at, hold] pair:
+   * `at` is ms since spawn, or a RegExp polled against the run log (so a stop can be keyed to "attempt 2 started"
+   * instead of a guessed wall time); `hold` is ms stopped. Collects stdout.
+   */
+  async function runWithSleeps(extra: Record<string, string>, sleeps: Array<[number | RegExp, number]>): Promise<{ out: string; code: number | null }> {
+    const child = spawn(BASH, ['-uo', 'pipefail', '-c', script()], {
+      cwd: tmpdir(),
+      env: env({ FUNNEL_PREFLIGHT_GAP_S: '2', FUNNEL_PREFLIGHT_WALL_S: '3', ...extra }),
+      detached: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let out = '';
+    child.stdout?.on('data', (d) => (out += d));
+    const t0 = Date.now();
+    for (const [at, hold] of sleeps) {
+      if (typeof at === 'number') {
+        await new Promise((r) => setTimeout(r, Math.max(0, t0 + at - Date.now())));
+      } else {
+        const deadline = Date.now() + 30_000;
+        while (!at.test(log()) && Date.now() < deadline) await new Promise((r) => setTimeout(r, 100));
+        expect(log()).toMatch(at);
+      }
+      process.kill(-child.pid!, 'SIGSTOP');
+      await new Promise((r) => setTimeout(r, hold));
+      process.kill(-child.pid!, 'SIGCONT');
+    }
+    const code = await new Promise<number | null>((res) => child.on('exit', (c) => res(c)));
+    return { out, code };
+  }
+
+  it('a slept-through attempt (woke past the wall deadline) is retried once on the awake host and passes', async () => {
+    fakeClaudeHangingUntilCall(2);
+    writeFileSync(join(base, 'net-ok'), 'ok');
+    const r = await runWithSleeps({ FUNNEL_PREFLIGHT_NET_URL: `file://${base}/net-ok` }, [[800, 5000]]);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('PREFLIGHT-RC 0');
+    const l = log();
+    expect(l).toMatch(/preflight: rc=\d+ wall=\d+s asleep\/suspended=[1-9]\d*s hang=1 stdout=0B stderr=0B attempt=1/);
+    expect(l).toMatch(/preflight: host slept through attempt 1 \(asleep\/suspended \d+s of \d+s wall\) — retrying once the network answers \(E290\)/);
+    expect(l).toMatch(/preflight: network answers after 0s/);
+    expect(l).toMatch(/preflight: rc=0 wall=\d+s asleep\/suspended=0s hang=0 stdout=\d+B stderr=0B attempt=2/);
+    expect(spawnSync('pgrep', ['-f', `${bin}/claude`]).status).toBe(1); // the hung attempt 1 was reaped
+  }, 40_000);
+
+  it('an awake hang (asleep/suspended=0, the E194 shape) is never retried', () => {
+    fakeClaude(`sleep 600`);
+    const r = run({ FUNNEL_PREFLIGHT_WALL_S: '3' });
+    expect(r.out).toMatch(/PREFLIGHT-RC [1-9]/);
+    expect(r.out).toMatch(/DIAG HANG\|killed after \d+s wall; /);
+    expect(r.out).not.toMatch(/attempt 2/);
+    expect(log()).not.toMatch(/retrying/);
+    expect(log()).toMatch(/hang=1 stdout=0B stderr=0B attempt=1/);
+  });
+
+  it('the retry is bounded: a second slept-through attempt is HANG with both attempts in the excerpt, and the network wait gives up', async () => {
+    fakeClaude(`sleep 600`);
+    // attempt 1: stopped at 0.8 s for 5 s → HANG on wake → net wait (missing file, 3 s cap) → attempt 2 starts;
+    // stopped again ~1 s after its start line for 5 s → attempt 2 HANG → no third attempt.
+    const r = await runWithSleeps(
+      { FUNNEL_PREFLIGHT_NET_URL: `file://${base}/no-such-file`, FUNNEL_PREFLIGHT_NET_WAIT_S: '3' },
+      [[800, 5000], [/preflight: start \(attempt 2,/, 5000]],
+    );
+    expect(r.code).toBe(0); // the driver finished: nothing hung
+    expect(r.out).toMatch(/PREFLIGHT-RC [1-9]/);
+    expect(r.out).toMatch(/DIAG HANG\|killed after \d+s wall; attempt 1 killed after \d+s wall, asleep\/suspended \d+s; attempt 2: asleep\/suspended \d+s of \d+s wall; no output/);
+    const l = log();
+    expect(l).toMatch(/network still not answering after 3s — retrying anyway/);
+    expect(l.match(/preflight: start \(attempt/g)?.length).toBe(2);
+    expect(spawnSync('pgrep', ['-f', `${bin}/claude`]).status).toBe(1);
+  }, 60_000);
+});

@@ -446,12 +446,31 @@ CLAUDE_CLEAN=(env -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH -u 
 # diagnoses HANG; (c) every poll gap longer than FUNNEL_PREFLIGHT_GAP_S is counted as "asleep/suspended", so the
 # cause is a number in the log, not an inference. A stopped process does not act on TERM, so it gets TERM, then CONT,
 # then KILL. Self-contained: __tests__/unit/runner-preflight-watch.test.ts extracts this block and runs it.
+# E290 (2026-10-29): the watcher's wall clock keeps counting while the host sleeps, so a lid closed mid-preflight
+# is graded HANG the moment the host wakes — 10-24: killed at 977 s wall of which 974 s asleep (3 s awake); 10-29:
+# 1013 s wall, 998 s asleep (15 s awake). A healthy preflight answers in 4–6 s awake, so both were MISSED mornings
+# with a working CLI. Now a HANG whose attempt the host slept through (asleep/suspended > 0) is retried ONCE on
+# the awake host, after a bounded wait for the network (10-24: three "fetch failed" right after the wake — Wi-Fi
+# lags the wake). An awake hang (asleep/suspended = 0, the E194 shape) is never retried; a second slept-through
+# attempt is HANG with both attempts in the excerpt. FUNNEL_PREFLIGHT_RETRY=0 disables the retry.
 PREFLIGHT_OUT="$PROJECT_DIR/logs/funnel-preflight-$TODAY.json"
 PREFLIGHT_ERR="$PROJECT_DIR/logs/funnel-preflight-$TODAY.stderr"
 PREFLIGHT_WALL_S="${FUNNEL_PREFLIGHT_WALL_S:-300}"
 PREFLIGHT_POLL_S="${FUNNEL_PREFLIGHT_POLL_S:-2}"
 PREFLIGHT_GAP_S="${FUNNEL_PREFLIGHT_GAP_S:-30}"
-PREFLIGHT_HANG=0; PREFLIGHT_WALL=0; PREFLIGHT_SLEPT=0
+PREFLIGHT_RETRY="${FUNNEL_PREFLIGHT_RETRY:-1}"              # retries allowed after a slept-through attempt
+PREFLIGHT_NET_WAIT_S="${FUNNEL_PREFLIGHT_NET_WAIT_S:-90}"   # bounded wait for the network before a retry
+PREFLIGHT_NET_URL="${FUNNEL_PREFLIGHT_NET_URL:-https://www.google.com/generate_204}"
+PREFLIGHT_HANG=0; PREFLIGHT_WALL=0; PREFLIGHT_SLEPT=0; PREFLIGHT_ATTEMPT=0; PREFLIGHT_PRIOR=""
+pf_wait_net() {  # never fails: like the runner's own network wait, it logs and carries on
+  local waited=0
+  while [ "$waited" -lt "$PREFLIGHT_NET_WAIT_S" ]; do
+    if curl -sf -o /dev/null --max-time 3 "$PREFLIGHT_NET_URL"; then log "preflight: network answers after ${waited}s"; return 0; fi
+    sleep 3; waited=$((waited + 3))
+  done
+  log "preflight: network still not answering after ${waited}s — retrying anyway"
+  return 0
+}
 pf_signal_tree() {  # $1 pid $2 signal — children first, so nothing is reparented and missed
   local c
   for c in $(pgrep -P "$1" 2>/dev/null); do pf_signal_tree "$c" "$2"; done
@@ -459,12 +478,26 @@ pf_signal_tree() {  # $1 pid $2 signal — children first, so nothing is reparen
   return 0
 }
 pf_redact() { tr '\n\r\t' '   ' | sed -E 's/[A-Za-z0-9_-]{25,}/<redacted>/g; s/[`|]/ /g; s/  +/ /g'; }
-claude_preflight() {
+claude_preflight() {  # rc 0 the CLI answered (on attempt 1 or the one retry) · 1 failed — read preflight_diagnosis
+  PREFLIGHT_ATTEMPT=1; PREFLIGHT_PRIOR=""
+  while :; do
+    claude_preflight_once && return 0
+    if [ "$PREFLIGHT_HANG" = 1 ] && [ "$PREFLIGHT_SLEPT" -gt 0 ] && [ "$PREFLIGHT_ATTEMPT" -le "$PREFLIGHT_RETRY" ]; then
+      PREFLIGHT_PRIOR="${PREFLIGHT_PRIOR:+$PREFLIGHT_PRIOR; }attempt $PREFLIGHT_ATTEMPT killed after ${PREFLIGHT_WALL}s wall, asleep/suspended ${PREFLIGHT_SLEPT}s"
+      log "preflight: host slept through attempt $PREFLIGHT_ATTEMPT (asleep/suspended ${PREFLIGHT_SLEPT}s of ${PREFLIGHT_WALL}s wall) — retrying once the network answers (E290)"
+      pf_wait_net
+      PREFLIGHT_ATTEMPT=$((PREFLIGHT_ATTEMPT + 1))
+      continue
+    fi
+    return 1
+  done
+}
+claude_preflight_once() {
   local start now last gap pid rc
   : >"$PREFLIGHT_OUT"; : >"$PREFLIGHT_ERR"
   PREFLIGHT_HANG=0; PREFLIGHT_SLEPT=0
   start="$(date +%s)"; last="$start"
-  log "preflight: start (wall deadline ${PREFLIGHT_WALL_S}s, stderr → logs/funnel-preflight-$TODAY.stderr)"
+  log "preflight: start (attempt $PREFLIGHT_ATTEMPT, wall deadline ${PREFLIGHT_WALL_S}s, stderr → logs/funnel-preflight-$TODAY.stderr)"
   perl -e 'alarm 240; exec @ARGV' "${CLAUDE_CLEAN[@]}" claude -p "Reply with exactly: ok" --model "$MODEL" --max-turns 1 \
     --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null >"$PREFLIGHT_OUT" 2>"$PREFLIGHT_ERR" &
   pid=$!
@@ -482,7 +515,7 @@ claude_preflight() {
   done
   wait "$pid" 2>/dev/null; rc=$?
   PREFLIGHT_WALL=$(( $(date +%s) - start ))
-  log "preflight: rc=$rc wall=${PREFLIGHT_WALL}s asleep/suspended=${PREFLIGHT_SLEPT}s hang=$PREFLIGHT_HANG stdout=$(wc -c <"$PREFLIGHT_OUT" | tr -d ' ')B stderr=$(wc -c <"$PREFLIGHT_ERR" | tr -d ' ')B"
+  log "preflight: rc=$rc wall=${PREFLIGHT_WALL}s asleep/suspended=${PREFLIGHT_SLEPT}s hang=$PREFLIGHT_HANG stdout=$(wc -c <"$PREFLIGHT_OUT" | tr -d ' ')B stderr=$(wc -c <"$PREFLIGHT_ERR" | tr -d ' ')B attempt=$PREFLIGHT_ATTEMPT"
   [ "$PREFLIGHT_HANG" = 0 ] && grep -q '"is_error":false' "$PREFLIGHT_OUT"
 }
 # Why the preflight failed — the fix differs, so the digest must not blame auth for everything
@@ -495,6 +528,7 @@ preflight_diagnosis() {
   local excerpt; excerpt="$(printf '%s' "$out" | grep -oE '"(error|message)":"[^"]{0,200}' | head -2 | pf_redact)"
   [ -z "$excerpt" ] && [ -n "${err// /}" ] && excerpt="stderr: $(printf '%s' "$err" | tail -c 200)"
   [ "$PREFLIGHT_SLEPT" -gt 0 ] && excerpt="asleep/suspended ${PREFLIGHT_SLEPT}s of ${PREFLIGHT_WALL}s wall; ${excerpt:-no output}"
+  [ -n "$PREFLIGHT_PRIOR" ] && excerpt="$PREFLIGHT_PRIOR; attempt $PREFLIGHT_ATTEMPT: ${excerpt:-no output}"
   if printf '%s %s' "$out" "$err" | grep -q 'claude_code_version_too_old'; then echo "CLI_TOO_OLD|$excerpt"
   elif printf '%s' "$out" | grep -qiE 'authentication|not logged in|401|invalid.*token|oauth' \
     || printf '%s' "$err" | grep -qiE 'not logged in|401|authentication_error|invalid.*token'; then echo "AUTH|$excerpt"
@@ -584,7 +618,7 @@ if ! claude_preflight; then
   case "$DIAG_KIND" in
     CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
     AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth: access-token expiry $EXP; before the preflight: $AUTH_LINE; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
-    HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
+    HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth — a slept-through attempt is retried once on the awake host (E290), so a HANG row now means the retry failed too or the host was awake. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
     *)           CAUSE="The Claude CLI preflight failed for a reason that is neither auth nor version — see logs/funnel-preflight-$TODAY.json (excerpt: ${DIAG_EXCERPT:-none}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
   esac
   log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP auth=$AUTH_LINE ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"
