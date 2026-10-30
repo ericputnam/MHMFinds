@@ -629,7 +629,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-25 (E272): 'female-clothes' → 'gshade-presets' (female-clothes
     // keeps 5 inbound). Screenshotters run a pose pack and a GShade preset
     // together, so this is the natural first inbound for the new page.
-    related: ['gshade-presets', 'loading-screens', 'pregnancy-mods'],
+    related: ['gshade-presets', 'wedding-cc', 'pregnancy-mods'],
     // NOT /sims-4-gallery-poses/ — that article 301s here. The
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
@@ -822,7 +822,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['jewelry', 'watches'],
     },
     expectedCount: 439,
-    related: ['tattoos', 'goth-cc', 'makeup-cc'],
+    related: ['tattoos', 'wedding-cc', 'makeup-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // jewelry cc" intent, this page owns browse/filter intent.
     // /sims-4-jewelry-cc/ is live (HTTP 200, no redirect, verified
@@ -1269,6 +1269,33 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // family; the type carries one blogUrl, so the GShade post — the larger
     // of the two — is the twin.
     blogUrl: '/sims-4-gshade-presets/',
+  },
+  {
+    // Rowan, 2026-10-30 (E289, Tier 0 — registry entry in the existing
+    // pattern). The EA-pack page for My Wedding Stories. GSC 09-29→10-27:
+    // ~170 impressions / ~5 clicks on wedding queries ("sims 4 wedding dress
+    // cc" 11 at 17.7, "… maxis match" 7 at 15.1, "sims 4 wedding cc" 6 at
+    // 20.5, "wedding mods sims 4" 6 at 36.2) with no page matching browse
+    // intent. The theme is TITLE-ONLY (lib/weddingThemeRules.ts, keyword
+    // counts and rejections in its comment); 0 rows carried it before.
+    // Inbound: poses (wedding pose packs are 20 of the rows) and jewelry-cc
+    // (wedding/engagement rings), repointed from loading-screens and goth-cc,
+    // which keep 2 and 3 inbound.
+    slug: 'wedding-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Wedding CC',
+    heading: 'Sims 4 Wedding CC',
+    metaTitle: 'Sims 4 Wedding CC — 100+ Dresses, Poses & Venues | MustHaveMods',
+    metaDescription:
+      'Browse Sims 4 wedding CC in one place: wedding dresses, veils, suits, rings, arches, cakes, venues and wedding pose packs, sorted by downloads.',
+    tagline: 'Wedding dresses, suits, rings, venues and wedding-day pose packs',
+    intro:
+      'My Wedding Stories gave the game a proper ceremony: the arch, the vows, the cake cutting. What it did not give you is much to wear. There is a small rack of gowns, a couple of suits, and one bouquet, so every wedding in your save starts to look like the same wedding.\n\nThis collection is the wedding day as the community builds it. There are wedding dresses from sleek satin sheaths to cathedral-length gowns with veils, suits and tuxedos for the groom, bridesmaid dresses, and engagement and wedding rings. The build side has arches, wedding cakes, decor sets and whole ready-made venues, from a rustic barn to a beach ceremony. Storytellers get the pose packs: first look, the kiss, group portraits, and the bridal party.\n\nEvery mod here was picked because its own title says it is wedding CC. Nothing gets in because a blog post happened to mention a wedding. Everything is filtered to Sims 4, link-checked and SFW. Sort by downloads for the sets everyone already uses, or scroll for the smaller finds.',
+    filter: { themesAny: ['wedding'] },
+    expectedCount: 118,
+    related: ['female-clothes', 'jewelry-cc', 'poses'],
+    blogUrl: '/sims-4-wedding-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level

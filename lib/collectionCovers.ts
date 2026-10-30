@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-10-27
+ * Generated on:     2026-10-30
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -46,8 +46,8 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-163.png",
   ],
   "cottagecore-cc": [
-    "https://images.surferseo.art/5de8dc5c-86d8-4a44-ae02-704827195b15.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/43b68acd-390b-4d64-b149-6c4c1c930a93-1.webp",
+    "https://images.surferseo.art/5de8dc5c-86d8-4a44-ae02-704827195b15.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/11/tumblr_a7c96752b65397764f958f4c562581c5_e0be201f_540.png",
   ],
   "decor-cc": [
@@ -113,7 +113,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   "loading-screens": [
     "https://images.surferseo.art/dac15196-29a5-4270-80cf-e6ea4088a07f.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2024/01/Screen-Shot-2024-01-04-at-5.18.11-PM-1024x548.png",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/04/b1dd703a-c7cb-4770-acc0-99c3dabc7f8d-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2026/02/tumblr_412d07d22acf576270448fa6bd991a17_1c99b3e8_540.jpg",
   ],
   "makeup-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2021/11/sims-4-3d-eyelashes-ver-5-820x1024.jpg",
@@ -159,6 +159,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://images.surferseo.art/45be5ad0-d3f1-4978-896a-3d2bd889a493.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/10/teethpreview2.webp",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/4d2d25f6-affc-4b23-a1ec-3871f5b22fce.jpg",
+  ],
+  "wedding-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2024/09/9df7c217-f0a9-4e68-8fa8-b82712731c5d.jpeg",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/12/42440d83-70fa-4a17-95c3-83090022230c.jpg",
+    "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/alsine-bohemian-wedding-dress-1769634826189-0.jpg",
   ],
   "witch-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/06/8626b34c-e572-4611-9c9a-5f1dbadefd90-1.png",
