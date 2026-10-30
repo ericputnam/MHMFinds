@@ -19,6 +19,7 @@ import { NewsletterSignup } from '../../../components/NewsletterSignup';
 import type { Mod } from '../../../lib/api';
 import type { CreatorPageData } from '../../../lib/creators';
 import type { RelatedCreator } from '../../../lib/creatorHubRelated';
+import type { CreatorHubLink } from '../../../lib/creatorHubLinks';
 import { creatorHref } from '../../../lib/creatorSlug';
 import { badgeHref } from '../../../lib/creatorBadge';
 import { CreatorClaimCard } from '../../../components/creator/CreatorClaimCard';
@@ -29,9 +30,11 @@ interface CreatorPageClientProps {
   data: CreatorPageData;
   /** Server-resolved peer creators (E113); every slug has a page. */
   related?: RelatedCreator[];
+  /** Server-resolved collection hubs the creator's mods are listed in (E292). */
+  hubs?: CreatorHubLink[];
 }
 
-export default function CreatorPageClient({ data, related = [] }: CreatorPageClientProps) {
+export default function CreatorPageClient({ data, related = [], hubs = [] }: CreatorPageClientProps) {
   const [mods] = useState<Mod[]>(data.mods);
   const [favorites, setFavorites] = useState<string[]>([]);
   // E279: a signed-out heart tap goes to the save-intent sign-up and the
@@ -185,6 +188,37 @@ export default function CreatorPageClient({ data, related = [] }: CreatorPageCli
                 favorites={favorites}
                 gridColumns={3}
               />
+
+              {/* Collection hubs (E292, Sage): the /games/sims-4/* pages that
+                  list this creator's mods, most-populated first. Plain links
+                  from server data, a sibling of the grid, never inside the ad
+                  anchor. Every href comes from the collection registry. */}
+              {hubs.length > 0 && (
+                <nav
+                  className="mt-8 pt-6 border-t border-white/10"
+                  aria-labelledby="creator-collections-heading"
+                  data-testid="creator-collections"
+                >
+                  <h2 id="creator-collections-heading" className="text-lg font-bold text-white mb-3">
+                    Where {data.displayName}&rsquo;s CC lives
+                  </h2>
+                  <ul className="flex flex-wrap gap-2">
+                    {hubs.map((h) => (
+                      <li key={h.href}>
+                        <a
+                          href={h.href}
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 hover:border-sims-pink hover:text-sims-pink transition-colors"
+                        >
+                          <span>{h.title}</span>
+                          <span className="text-slate-500">
+                            {h.count} by {data.displayName}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
 
               {/* Email capture — sibling of the grid, never inside or adjacent
                   to the <aside id="secondary"> ad anchor. source="creator-page"
