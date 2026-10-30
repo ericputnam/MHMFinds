@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-29
+- Tried: E287 /mods/[id] member opt-in capped at 3 unanswered views (T0). No run 3: tail dry = issue #8 to 71 (62 already got 07 in run 2, which deferred 0).
+- Before → after: E198 4,168 views / 173 users (24 each) → 1 row in 14d = KILL. Issue 07: run 1 5 sess / 2 engaged per 100 (5 users, NL, 1/link, one hour = scanner shape), 0 DSN; run 2 6 / 2, 6 DSN of 62.
+- Verdict: E247 KILL, E184 KILL → biweekly, E240 KEEP (cause = post-10-12 cohort), E254 KEEP, E219 KEEP, E287 PENDING (11-12).
+- Next time: a "once" surface needs an impression cap; a click-only memory nags everyone who scrolls past.
+
 ## 2026-10-28
 - Tried: E279 grid hearts (home, game hubs, collections, creators) → save-intent sign-up + resume, replacing `alert('Please sign in')` (T0). No newsletter run 3: run 2 deferred 0.
 - Before → after: E191 offer sign-up completion 16/67 = 23.9% (was ~6%), so the copy was worth reusing. Issue-07 run 2 (post-10-12 cohort): 6 hard DSNs + 2 rejects = 8/62 = 12.9% vs run 1 0/100. E233 invite: 0/22 accounts.

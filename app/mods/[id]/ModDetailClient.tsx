@@ -31,6 +31,8 @@ import {
   MEMBER_OPTIN_EVENTS,
   MEMBER_OPTIN_SOURCE,
   readMemberOptInMemory,
+  readMemberOptInViews,
+  recordMemberOptInView,
   rememberMemberOptIn,
   shouldShowMemberOptIn,
   type MemberOptInMemory,
@@ -112,8 +114,13 @@ export default function ModDetailClient({
   // localStorage after mount, so the server render and first paint never
   // show it; `null` = read, no answer; a value = answered, hidden.
   const [memberOptInMemory, setMemberOptInMemory] = useState<MemberOptInMemory | null | undefined>(undefined);
+  // E287: prior unanswered views, read once on mount (before this page's own
+  // view is counted), so the page that reads 2 still shows and the next one stops.
+  const [memberOptInViews, setMemberOptInViews] = useState(0);
   useEffect(() => {
-    setMemberOptInMemory(readMemberOptInMemory(typeof window === 'undefined' ? null : window.localStorage));
+    const store = typeof window === 'undefined' ? null : window.localStorage;
+    setMemberOptInViews(readMemberOptInViews(store));
+    setMemberOptInMemory(readMemberOptInMemory(store));
   }, []);
   const rememberMemberAnswer = useCallback((value: MemberOptInMemory) => {
     rememberMemberOptIn(typeof window === 'undefined' ? null : window.localStorage, value);
@@ -123,7 +130,12 @@ export default function ModDetailClient({
     sessionStatus,
     email: session?.user?.email,
     remembered: memberOptInMemory,
+    views: memberOptInViews,
   });
+  // E287: count one view per mod shown, never for a hidden offer.
+  useEffect(() => {
+    if (showMemberOptIn) recordMemberOptInView(typeof window === 'undefined' ? null : window.localStorage);
+  }, [showMemberOptIn, mod.id]);
   const [selectedImage, setSelectedImage] = useState<string | null>(
     initialMod.thumbnail || initialMod.images?.[0] || null
   );
