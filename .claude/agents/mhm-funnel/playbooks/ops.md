@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-29 — E290
+- Tried: runner preflight retries ONCE after a slept-through attempt (HANG with asleep/suspended > 0) on the awake host, after a bounded network wait (`pf_wait_net`, 90 s, like step 1's own wait); an awake hang (E194 shape) is never retried; a second slept-through attempt is HANG with both attempts in the excerpt; `attempt=N` on every preflight log line. (T0)
+- Before → after: 10-24 killed at 977 s wall / 974 s asleep (3 s awake) and 10-29 at 1013 s / 998 s (15 s awake) — 2 of the 4 MISSED mornings 10-22→10-29 — against a preflight that answers in 4–6 s awake → read 11-05: 0 HANG rows whose first attempt was slept through; retry fires ≤1×/run. Test 3 new cases, 1 red pre-fix (the retry), 2 green controls.
+- Verdict: MORE DATA (read 2026-11-05).
+- Next time: a deadline measured on a clock that keeps running while the thing it bounds is frozen is a sleep detector, not a hang detector — act on the "slept" figure (retry) before grading the kill. Also: 10-26 was not "runner never started" — the day-lock line is there; the run was killed from outside during the morning check (10:25→10:27, no preflight) — the liveness grader should read the day-lock line before saying "never started".
+
 ## 2026-10-23 — E264
 - Tried: runner `preflight-missed` block — on preflight failure the run that knows it failed lands a MISSED ledger row (`ledger-commit.sh`) and the degraded digest + scoreboard + guardrail (`digest-land.sh --allow-degraded --extra …`); every run logs `auth: access=… refresh=… refresh_days=N` from the keychain (dates only) and puts one ⚠️ line in the digest at refresh_days ≤ 5 (`FUNNEL_AUTH_WARN_DAYS`). Retro MISSED row for 10-22 landed by hand (a632c57). (T0, PR #366 b73e06a PASS)
 - Before → after: 10-22 preflight rc=1 in 2 s ("OAuth session expired and could not be refreshed"), 0 rows, 0 artifacts on main, `token-expiry=unknown` → read 10-30: 0 MISSED mornings without a same-day row; warn fires ≥5 d before 2026-11-20 06:02 (today's refresh-token expiry; the 09-02 login lasted ~50 d). New test 6/6 red pre-fix; digest-land +1 red pre-fix (`--allow-degraded` was exit 64).
