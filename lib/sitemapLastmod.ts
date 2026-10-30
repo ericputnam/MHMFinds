@@ -23,6 +23,26 @@ export const APP_LASTMOD = '2026-09-08';
 // 2026). Bump when the template changes.
 export const COLLECTION_TEMPLATE_LASTMOD = '2026-07-03';
 
+// /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
+// title + meta changed on 2026-10-27 (E267) and every page gained its
+// collection-hub links on 2026-10-30 (E292), while /sitemap-creators.xml
+// still dated 526 of 554 entries by their newest mod alone (169 said
+// January 2026), so Google had no recrawl signal — /creator/orchiona/ was
+// last crawled 2026-09-24. Bump by hand when the creator template changes;
+// never derive it from "today".
+export const CREATOR_TEMPLATE_LASTMOD = '2026-10-30';
+
+/**
+ * /creator/[slug]/ lastmod: later of the creator template change and the
+ * creator's newest mod (listCreators().latest), as YYYY-MM-DD. Lives here,
+ * not in the route file, because Next.js only allows HTTP-method and config
+ * exports from a route.ts.
+ */
+export function creatorLastmod(latest: Date | string | null | undefined): string {
+  const newest = latest ? toDateStamp(new Date(latest)) : null;
+  return laterOf(CREATOR_TEMPLATE_LASTMOD, newest);
+}
+
 /** YYYY-MM-DD in UTC. */
 export function toDateStamp(d: Date): string {
   return d.toISOString().slice(0, 10);
