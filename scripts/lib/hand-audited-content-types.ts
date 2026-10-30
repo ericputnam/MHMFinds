@@ -1223,6 +1223,41 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmijpvf0z0198oxc8ku3nlctc: { contentType: "gameplay-mod", why: "E263 \"Lot Traits Pack\" — gameplay-mod, was residential; adds traits to lots (kiarasims4mods), a gameplay mod about lots, not a lot (/sims-4-traits/)" },
   cmim8rrsx002aoxy81rtglrco: { contentType: "gameplay-mod", why: "E263 \"Kiss and Grind\" — gameplay-mod, was residential; a romance-interaction mod (/sims-4-mods-for-realistic-relationships/). isNSFW left as-is: a separate E242-style call" },
   cmikd78hs000soxbhxrl6ojnt: { contentType: null, why: "E263 \"Eva\" — NULL, was residential; a pre-made Sim (desc: \"get this ready-made Sim\"), not CC of any facet (/sims-4-acne-cc/)" },
+
+  // ── Audited 2026-10-28 (Rowan, E281). Non-poses in the `poses` facet behind
+  //    /games/sims-4/poses/ (GSC 09-28→10-25: 1,176 impr, pos 12.9; the
+  //    "gallery poses" cluster ≈315 impr at pos ≈8). Read the top 60 by
+  //    downloads, then every one of the 922 rows whose title carries no
+  //    pose/animation word (127). Most of those are creatively named pose packs
+  //    from pose posts and stay. These 20 are not poses: gameplay mods from
+  //    romance/teen posts, objects, a hairstyle, a bag, a lot, pre-made Sims.
+  //    Decided by title, then the mod's OWN description sentence. NULL for mixed
+  //    sets (clothes + hair + poses), Sims, and doors (no door facet; E263 walls
+  //    precedent). Heterogeneous reasons, so hand-fixed by id, not a class retag.
+  //    Left alone on purpose: "Dressage pack update!" (horse animations), the
+  //    10 "Deco Sims" (posed sim statues), "First Kiss Override" (an animation
+  //    override). "YouHoo" (a solo-WoHoo mod) is NOT moved: re-typing it to
+  //    gameplay-mod without an isNSFW call would put it in the gameplay grids.
+  cmmvasf1k00egoxzg645lamo4: { contentType: "gameplay-mod", why: "E281 \"Autonomous Proposals\" — gameplay-mod, was poses; desc: \"allows Sims to propose on their own\" (PolarBearSims, MTS); poses #16 (/sims-4-romance-mods/)" },
+  cmijj49a2003loxs3qx4hhoc0: { contentType: "gameplay-mod", why: "E281 \"Auto Shorter Teens\" — gameplay-mod, was poses; desc: \"automatically shortens them in-game … no sliders or presets\" (MTS); poses #18 (/sims-4-teen-mods/)" },
+  cmsmcikvt00scoxeux4xk5q6r: { contentType: null, why: "E281 \"My BBL Journey\" — NULL, was poses; desc: a collection of post-op clothing, poses and medical objects, a mixed set with no single facet; poses #29 (/sims-4-plastic-surgery-mods/)" },
+  cmil3mobm00gpoxpz0gb8blk3: { contentType: "jewelry", why: "E281 \"Smile Karlie Grill\" — jewelry, was poses; grillz for female and male Sims, same call as E221 \"Kosmo Grillz Collection\" (/sims-4-cc-finds-for-january/)" },
+  cmil106oc0070oxee6xg2nrkg: { contentType: "wall-art", why: "E281 \"K-pop Posters\" — wall-art, was poses; desc: \"wall decorations featuring … K-pop group visuals\" (/sims-4-korean-cc/)" },
+  cmmvase7a00e2oxzgw7wu4wkq: { contentType: "gameplay-mod", why: "E281 \"The Sims 4 Passionate Romance Mod\" — gameplay-mod, was poses; title says mod; desc: adds romantic interactions (sacrificialmods) (/sims-4-romance-mods/)" },
+  cmim8rs23002doxy89oorbfog: { contentType: "gameplay-mod", why: "E281 \"Passionate Romance Mod\" — gameplay-mod, was poses; the same Sacrificial mod from a second post (/sims-4-mods-for-realistic-relationships/)" },
+  cmil130zy008coxeexzsclrnx: { contentType: "furniture", why: "E281 \"Dorm Sweet Dorm Office\" — furniture, was poses; desc: a seven-item study-area set (TSR SIMcredible!), room sets → furniture (E235) (/sims-4-office-cc/)" },
+  cmijoq5xl00s0oxc83ggdp0x1: { contentType: null, why: "E281 \"Cedar Doors and Arches\" — NULL, was poses; eight build-mode doors and arches; no door facet exists, E263 walls precedent (/sims-4-doors-cc/)" },
+  cmkyc3h8q00uqoxhc38xlkqph: { contentType: null, why: "E281 \"Sims 4 Stranger Things CC Sims\" — NULL, was poses; pre-made Sims for the Tray folder (#NoCC), not CC of any facet" },
+  cmijkw03z003yoxc8z98nxlfw: { contentType: "clutter", why: "E281 \"Tasty Breakfast Collection\" — clutter, was poses; desc: \"a full spread of decor items, including … pancakes, waffles\" (/sims-4-breakfast-cc/)" },
+  cmim9mv6b00ggoxy7h1tqkffa: { contentType: null, why: "E281 \"Sims 4 CC Clothes Pack for Male Sims\" — NULL, was poses; desc: 5 CAS items + a hair + a pose pack, a mixed set (/sims-4-cc-clothes-packs/)" },
+  cmik9w08u00c0oxk7p77wgdf2: { contentType: "hair", why: "E281 \"Curbs 50s Hairstyles\" — hair, was poses; title says hairstyles; desc: a pin-up updo with victory rolls (/sims-4-1950s-cc/)" },
+  cmiglj48n0015oxm58dg2hnta: { contentType: "accessories", why: "E281 \"Ricky Bag\" — accessories, was poses; desc: \"The handbag is designed with a structured shape\" (TSR) (/sims-4-cc-finds-for-november/)" },
+  cmikk76e9005jox33n2s5c2sm: { contentType: "furniture", why: "E281 \"Casablanca Moroccan cc\" — furniture, was poses; desc: an 8-piece set (coffee table, pouf, lanterns), room sets → furniture (E235) (/sims-4-boho-furniture-cc/)" },
+  cmil3ky7j00fwoxpzsdqt4pv5: { contentType: "clutter", why: "E281 \"Slay That Lace Set\" — clutter, was poses; desc: \"contains various clutter objects for Sims who love doing hair\" (/sims-4-cc-finds-for-february/)" },
+  cmim9svco005nox5638ukt83u: { contentType: "community", why: "E281 \"Sims 4 Beach Wedding Venue\" — community, was poses; desc: \"The lot is built…\"; TSR category sims4-lots-community (/sims-4-wedding-cc/)" },
+  cmilib4im00j4oxpzgvfe00qv: { contentType: "decor", why: "E281 \"Floret Grove\" — decor, was poses; desc: a garden set of bee boxes, planters, a lattice, a plant-display dresser (/sims-4-garden-cc/)" },
+  cmim9sv3w005jox56mk4ri6uk: { contentType: "accessories", why: "E281 \"Sims 4 CC Wedding Bouquet\" — accessories, was poses; BEO's held bouquet, \"all ages, all genders\" CAS accessory (/sims-4-wedding-cc/)" },
+  cmikab9mr00kvoxk7cg5hta26: { contentType: "accessories", why: "E281 \"Walking Canes\" — accessories, was poses; desc: \"The cane adds the perfect finishing touch to your elder Sim’s fashion\" (/sims-4-elder-cc/)" },
 };
 
 /**
