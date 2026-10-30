@@ -25,6 +25,12 @@ _Seeded 2026-09-22 from Nova's playbook: collection-page learnings moved here
 because collection pages are now Rowan's, not Nova's. Full originals in
 `archive/playbooks/nova-2026-09.md` and the live `playbooks/nova.md`._
 
+## 2026-10-30
+- Tried: landed #394 (E281, 20 poses pins, applied 20/20). E289 (T0): `/games/sims-4/wedding-cc/` on a new title-only `wedding` theme (`lib/weddingThemeRules.ts`; 6 words accepted, 10 rejected with counts), 118 rows applied, detector wired. Inbound from poses + jewelry-cc. Graded E256 KEEP.
+- Before → after: wedding theme 0 → 118 (top 24 hand-read 24/24 wedding); poses 922 → 902. Nearest page /goth-cc/ 98 sessions/7d (GA4 10-22→10-28); wedding queries ~170 impr/28d, no page.
+- Verdict: MORE DATA (read 2026-11-13).
+- Next time: on a brand-new theme, apply before generating covers. The covers test reads prod, so a page with 0 tagged rows cannot pass it.
+
 ## 2026-10-23
 - Tried: E263 (T0, #363 55994c0; ledger 0d49439): Sage's 18 lots-grid non-lots (#359), all `residential`; 18 --ids pins, 12 retyped, 6 NULL. Graded E221 KEEP, E214 EXTEND, E90/E100/E109 KILL.
 - Before → after: lots top-48 off-type 16 → 6, none of the 18 left (the 6 are 5 wall rows + an EA pack); read-back 18/18; residential 566 → 548.
