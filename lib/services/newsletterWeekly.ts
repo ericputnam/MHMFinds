@@ -33,6 +33,7 @@ import {
 } from './newsletterIssue';
 import { resolvePostalAddress, sendBulk } from './bulkMailer';
 import { hashRecipient, isScriptedRecipient, partitionExcluded } from './sendExclusions';
+import { suppressionLookupFor, type SuppressionDb } from './emailSuppression';
 import { SIMS4_COLLECTIONS, buildWhereClause, collectionHref, type CollectionDefinition } from '../collections';
 
 const SITE = 'https://musthavemods.com';
@@ -441,6 +442,8 @@ export interface WeeklySendResult {
   failed?: number;
   skippedRecipients?: number;
   deferred?: number;
+  /** Dropped because they unsubscribed (durable `email_suppressions` list). */
+  suppressedCount?: number;
   excludedCount?: number;
   /** Of `excludedCount`, how many were scripted-shaped sign-ups (`SCRIPTED_SIGNUP_HASHES`, E270). */
   scriptedExcludedCount?: number;
@@ -527,6 +530,8 @@ export function collectRejects(
 export type WeeklySendPrisma = PrismaLike & {
   waitlist: { findMany: (args: any) => Promise<Array<{ email: string; createdAt?: Date; id?: string }>> };
   notificationLog: { create: (args: any) => Promise<unknown> };
+  /** Durable unsubscribe list; `sendBulk` refuses a live send without it. */
+  emailSuppression: SuppressionDb['emailSuppression'];
 };
 
 export interface WeeklySendOptions {
@@ -562,8 +567,8 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
  * already gates on it) so no future caller — an admin button, a script, a
  * test — can trigger a live send just by skipping the route. Recipients are
  * every `waitlist` row (the same single/double opt-in universe `--from-db`
- * uses for the manual issue send; unsubscribing deletes the row, so an
- * unsubscribed reader is never in it) minus the hard-bounce exclusion list.
+ * uses for the manual issue send) minus the hard-bounce exclusion list, minus
+ * the durable unsubscribe list (`email_suppressions`, applied inside sendBulk).
  */
 export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promise<WeeklySendResult> {
   const dryRun = opts.dryRun === true;
@@ -639,6 +644,7 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
     replyTo: REPLY_TO,
     fromName: 'MustHaveMods',
     postalAddress,
+    suppressionLookup: suppressionLookupFor(prisma),
     build: ({ unsubscribeUrl }) => renderIssue(issue, { unsubscribeUrl, postalAddress, site: SITE, homeUrl }),
   });
 
@@ -654,6 +660,7 @@ export async function sendWeeklyNewsletter(opts: WeeklySendOptions = {}): Promis
     failed: result.failed,
     skippedRecipients: result.skipped.length,
     deferred: result.deferred.length,
+    suppressedCount: result.suppressed?.length ?? 0,
     excludedCount: excluded.length,
     scriptedExcludedCount,
     hardCap: WEEKLY_NEWSLETTER_HARD_CAP,

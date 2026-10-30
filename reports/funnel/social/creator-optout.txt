@@ -1,0 +1,4 @@
+# Creators who asked not to have their work shown on MHM social accounts.
+# One name per line, matched case- and whitespace-insensitively against Mod.author.
+# Read by scripts/agents/social-draft.ts (growth-plan.md "Creator assets" rule).
+# Adding a name is Tier 0; the list is honoured before any draft is written.

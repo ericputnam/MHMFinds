@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
+import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
 import {
   ArrowLeft,
   Save,
@@ -733,19 +734,28 @@ export default function EditModPage() {
             {/* Thumbnail */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Thumbnail URL <span className="text-red-500">*</span>
+                Thumbnail <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input
-                  type="url"
-                  required
-                  value={formData.thumbnail}
-                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input
+                    type="url"
+                    required
+                    value={formData.thumbnail}
+                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+                <ImageUploadButton
+                  onUploaded={(url) => setFormData((prev) => ({ ...prev, thumbnail: url }))}
                 />
               </div>
+              <p className="mt-1 text-xs text-slate-400">
+                Paste an image address or upload a file. For Patreon, save the image and
+                upload it — Patreon image addresses expire.
+              </p>
               {formData.thumbnail && (
                 <div className="mt-3">
                   <Image
@@ -787,6 +797,15 @@ export default function EditModPage() {
                 >
                   <Plus className="h-5 w-5" />
                 </button>
+                <ImageUploadButton
+                  multiple
+                  label="Upload"
+                  onUploaded={(url) =>
+                    setFormData((prev) =>
+                      prev.images.includes(url) ? prev : { ...prev, images: [...prev.images, url] }
+                    )
+                  }
+                />
               </div>
               {formData.images.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">

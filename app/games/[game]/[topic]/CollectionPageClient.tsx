@@ -10,21 +10,35 @@
  *   - Mediavine sidebar + in-content ad anchors
  *   - Related collections grid
  *
- * Layout mirrors /mods/[id] for Mediavine re-targeting parity:
- * container width, main + aside split, sticky sidebar placeholders.
+ * 2026-10-28: rendered in the launcher shell (components/launcher/), the same
+ * header, game switcher, grid and footer as the homepage and /games/<slug>/.
+ * The page stays statically generated, so nothing here reads
+ * useSearchParams(): search and the game switcher navigate to the game's grid.
+ *
+ * Ad-anchor rules (see __tests__/unit/sidebar-sticky-health.test.ts): the
+ * aside stays empty, in normal flow and visible at lg:. The grid's .mv-ads
+ * container is LauncherGrid's and renders on first paint.
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
-import { Navbar } from '../../../../components/Navbar';
-import { Footer } from '../../../../components/Footer';
-import { ModGrid } from '../../../../components/ModGrid';
+import { useRouter } from 'next/navigation';
+import '../../../../components/launcher/launcher.css';
+import { lxFontVars } from '../../../../components/launcher/fonts';
+import { gameFor } from '../../../../components/launcher/games';
+import { GameSwitch } from '../../../../components/launcher/GameSwitch';
+import { Icon } from '../../../../components/launcher/Icon';
+import { LauncherHeader } from '../../../../components/launcher/LauncherHeader';
+import { LauncherGrid } from '../../../../components/launcher/LauncherGrid';
+import { LauncherFooter } from '../../../../components/launcher/LauncherFooter';
+import { useGameCounts } from '../../../../components/launcher/useLauncherData';
 import { NewsletterSignup } from '../../../../components/NewsletterSignup';
 import { CollectionMoreLinks } from '../../../../components/CollectionMoreLinks';
 import { Mod } from '../../../../lib/api';
 import { collectionHref, type CollectionDefinition } from '../../../../lib/collections';
 import type { ModLink } from '../../../../lib/seo/collectionMoreLinks';
+import { GRID_FAVORITE_SOURCES } from '../../../../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../../../../lib/capture/useGridFavoriteCapture';
 
 interface CollectionPageClientProps {
   collection: CollectionDefinition;
@@ -48,8 +62,35 @@ export default function CollectionPageClient({
   relatedCollections,
   categoryLinks = [],
 }: CollectionPageClientProps) {
+  const router = useRouter();
+  const game = gameFor(collection.game);
+  const gamePath = `/games/${collection.gameSlug}/`;
+  const gameCounts = useGameCounts();
   const [mods] = useState<Mod[]>(initialMods);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.collection, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
+
+  // Search leaves the collection for the game's grid, which reads ?search=.
+  const handleSearch = useCallback(
+    (q: string) => {
+      if (q) router.push(`${gamePath}?${new URLSearchParams({ search: q })}`);
+    },
+    [router, gamePath],
+  );
+
+  const handleGame = useCallback(
+    (value: string) => {
+      const next = gameFor(value);
+      router.push(next.slug ? `/games/${next.slug}/` : '/');
+    },
+    [router],
+  );
+
+  const goToGame = useCallback(() => router.push(gamePath), [router, gamePath]);
 
   const handleFavorite = async (modId: string) => {
     const isFavorited = favorites.includes(modId);
@@ -70,7 +111,7 @@ export default function CollectionPageClient({
           isFavorited ? [...prev, modId] : prev.filter((id) => id !== modId),
         );
         if (response.status === 401) {
-          alert('Please sign in to favorite mods');
+          onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
         }
       }
     } catch {
@@ -81,46 +122,39 @@ export default function CollectionPageClient({
   };
 
   return (
-    <div className="min-h-screen bg-mhm-dark text-slate-200 flex flex-col font-sans selection:bg-sims-pink/30 selection:text-white">
-      <Navbar />
+    <div className={`lx ${lxFontVars}`} data-game={game.id}>
+      <LauncherHeader
+        search=""
+        onSearch={handleSearch}
+        game={game.value}
+        gameCounts={gameCounts}
+        onGame={handleGame}
+        submitOnly
+      />
 
-      <main className="flex-grow">
-        {/* Breadcrumbs */}
-        <div className="container mx-auto px-4 pt-6">
-          <nav
-            className="flex items-center gap-2 text-sm text-slate-400"
-            aria-label="Breadcrumb"
-          >
-            <Link
-              href="/"
-              className="flex items-center gap-1 hover:text-sims-pink transition-colors"
-            >
-              <Home size={14} />
-              <span>Home</span>
-            </Link>
-            <ChevronRight size={14} className="text-slate-600" />
-            <Link
-              href={`/games/${collection.gameSlug}/`}
-              className="hover:text-sims-pink transition-colors"
-            >
-              {collection.game}
-            </Link>
-            <ChevronRight size={14} className="text-slate-600" />
-            <span className="text-white font-medium truncate">
-              {collection.title}
-            </span>
-          </nav>
+      <div className="gameband">
+        <div className="wrap">
+          <GameSwitch value={game.value} counts={gameCounts} onChange={handleGame} label="Choose a game" />
         </div>
+      </div>
 
-        {/* Hero / intro */}
-        <header className="container mx-auto px-4 pt-6 pb-8">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
-              {collection.heading}
-            </h1>
-            <p className="text-lg text-slate-400 mb-6">{collection.tagline}</p>
+      <main>
+        {/* Collection intro. Sibling of the grid/sidebar row below — never
+            inside .mv-ads or beside <aside id="secondary">. */}
+        <header className="hero coll-hero">
+          <div className="wrap coll-hero-in">
+            <nav className="crumbs" aria-label="Breadcrumb">
+              <Link href="/">Home</Link>
+              <Icon name="chevron" />
+              <Link href={gamePath}>{collection.game}</Link>
+              <Icon name="chevron" />
+              <span aria-current="page">{collection.title}</span>
+            </nav>
 
-            <div className="prose prose-invert prose-slate max-w-none text-slate-300 leading-relaxed">
+            <h1 className="hero-h1">{collection.heading}</h1>
+            <p className="hero-sub">{collection.tagline}</p>
+
+            <div className="coll-intro">
               {/* Split the intro into paragraphs so humanizer-generated
                   copy renders cleanly in Phase 2 */}
               {collection.intro.split('\n\n').map((para, i) => (
@@ -129,15 +163,10 @@ export default function CollectionPageClient({
             </div>
 
             {(collection.blogUrl || (collection.guides?.length ?? 0) > 0) && (
-              <p className="mt-4 text-sm text-slate-500">
+              <p className="coll-reading">
                 Related reading:{' '}
                 {collection.blogUrl && (
-                  <a
-                    href={collection.blogUrl}
-                    className="text-sims-pink hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={collection.blogUrl} target="_blank" rel="noopener noreferrer">
                     Full article on the blog →
                   </a>
                 )}
@@ -148,33 +177,23 @@ export default function CollectionPageClient({
                 {collection.guides?.map((g) => (
                   <span key={g.href}>
                     {' · '}
-                    <a href={g.href} className="text-sims-pink hover:underline">
-                      {g.label}
-                    </a>
+                    <a href={g.href}>{g.label}</a>
                   </span>
                 ))}
               </p>
             )}
 
             {/* Hub category links (E182). Inside the header, above the
-                main/aside split — never inside .mv-ads or beside
-                <aside id="secondary">. Plain <Link>s so they are in the
+                main/aside split. Plain <Link>s so they are in the
                 first-paint HTML for crawlers. */}
             {categoryLinks.length > 0 && (
-              <nav aria-labelledby="hub-categories-heading" className="mt-6">
-                <h2
-                  id="hub-categories-heading"
-                  className="text-sm font-semibold text-slate-400 mb-2"
-                >
+              <nav aria-labelledby="hub-categories-heading" className="hub-cats">
+                <h2 id="hub-categories-heading" className="hcl-label">
                   Browse {collection.game} CC by category
                 </h2>
-                <div className="flex flex-wrap items-center gap-2 text-sm">
+                <div className="type-cloud">
                   {categoryLinks.map((l) => (
-                    <Link
-                      key={l.href}
-                      href={l.href}
-                      className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-sims-pink/40 transition-colors"
-                    >
+                    <Link key={l.href} href={l.href} className="chip">
                       {l.heading}
                     </Link>
                   ))}
@@ -184,104 +203,93 @@ export default function CollectionPageClient({
           </div>
         </header>
 
-        {/* Main + Sidebar layout — mirrors /mods/[id] so Mediavine
-            re-targeting reuses the same sidebar shape */}
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Main column: grid + results header */}
-            <div className="lg:col-span-3 min-w-0">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-                <div className="text-slate-400 text-sm">
-                  <span className="text-white font-medium">
-                    {totalCount.toLocaleString()}
-                  </span>{' '}
+        {/* Main content row: results column + right ad sidebar. */}
+        <div className="wrap row">
+          <div className="main">
+            <div className="toolbar">
+              <div className="tb-head">
+                <h2 className="tb-title">Most downloaded</h2>
+                <div className="tb-meta">
+                  <span className="cnt tabular">{totalCount.toLocaleString()}</span>
                   {totalCount === 1 ? 'mod' : 'mods'} in this collection
-                </div>
-              </div>
-
-              <ModGrid
-                mods={mods}
-                loading={false}
-                error={null}
-                onFavorite={handleFavorite}
-                favorites={favorites}
-                gridColumns={3}
-              />
-
-              {/* Crawlable links to the next 60 mods of this collection
-                  (E84). Sibling of the grid inside the main column —
-                  never inside or beside <aside id="secondary">. */}
-              <CollectionMoreLinks title={collection.title} links={moreLinks} />
-
-              {/* Related collections — internal linking for SEO +
-                  scroll depth */}
-              {relatedCollections.length > 0 && (
-                <section className="mt-16 pt-8 border-t border-white/10">
-                  <h2 className="text-2xl font-bold text-white mb-6">
-                    Related Collections
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* collectionHref() keeps the trailing slash —
-                        next.config.js sets trailingSlash: true, so a bare
-                        path 308s and the internal link stops pointing at
-                        the canonical URL. */}
-                    {relatedCollections.map((rel) => (
-                      <Link
-                        key={rel.slug}
-                        href={collectionHref(rel)}
-                        className="group block p-5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-sims-pink/40 rounded-2xl transition-all"
-                      >
-                        <h3 className="text-lg font-semibold text-white group-hover:text-sims-pink transition-colors mb-1">
-                          {rel.title}
-                        </h3>
-                        <p className="text-sm text-slate-400">{rel.tagline}</p>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Email capture — sibling of the mod grid, never inside or
-                  adjacent to the <aside id="secondary"> ad anchor.
-                  Placed after related collections so it appears at natural
-                  scroll depth without displacing ad injection slots.
-                  source="collection-page" so the scoreboard attributes
-                  net adds to this surface separately from footer/go. */}
-              <div className="mt-12 pt-8 border-t border-white/10">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-sims-pink mb-2">
-                    Weekly finds
-                  </p>
-                  <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
-                    New {collection.title} every week
-                  </h2>
-                  <p className="text-sm text-slate-400 mb-5">
-                    Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam, unsubscribe anytime.
-                  </p>
-                  <NewsletterSignup source="collection-page" />
                 </div>
               </div>
             </div>
 
-            {/* Sidebar column: Mediavine ad anchors.
-                MUST NOT add position:sticky/fixed — Mediavine Script
-                Wrapper handles stickiness itself. Keep overflow:visible
-                and use <aside id="secondary"> so Mediavine auto-detects.
-                See CLAUDE.md "Mediavine Sidebar Sticky Rules". */}
-            <aside
-              id="secondary"
-              className="widget-area primary-sidebar hidden lg:block overflow-visible"
-              role="complementary"
-              aria-label="Sidebar ads"
-            >
-              {/* Empty — Mediavine auto-fills with its own stacked ad containers.
-                  Matches WordPress blog sidebar pattern for better Mediavine detection. */}
-            </aside>
+            <LauncherGrid
+              mods={mods}
+              loading={false}
+              error={null}
+              pageSize={mods.length}
+              rankFrom={1}
+              favorites={favorites}
+              onFavorite={handleFavorite}
+              onRetry={goToGame}
+              onClear={goToGame}
+            />
+
+            {/* Crawlable links to the next 60 mods of this collection
+                (E84). Sibling of the grid inside the main column —
+                never inside or beside <aside id="secondary">. */}
+            <CollectionMoreLinks title={collection.title} links={moreLinks} />
+
+            {/* Related collections — internal linking for SEO + scroll depth */}
+            {relatedCollections.length > 0 && (
+              <section className="below-sec" aria-labelledby="related-collections-heading">
+                <div className="sec-head">
+                  <h2 id="related-collections-heading">Related collections</h2>
+                </div>
+                <div className="rel-grid">
+                  {/* collectionHref() keeps the trailing slash —
+                      next.config.js sets trailingSlash: true, so a bare
+                      path 308s and the internal link stops pointing at
+                      the canonical URL. */}
+                  {relatedCollections.map((rel) => (
+                    <Link key={rel.slug} href={collectionHref(rel)} className="rel-card">
+                      <h3>{rel.title}</h3>
+                      <p>{rel.tagline}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Email capture — sibling of the mod grid, never inside or
+                adjacent to the <aside id="secondary"> ad anchor.
+                source="collection-page" so the scoreboard attributes
+                net adds to this surface separately from footer/go. */}
+            <section className="below-sec" aria-labelledby="collection-news-heading">
+              <div className="coll-news">
+                <p className="hero-kicker">Weekly finds</p>
+                <h2 id="collection-news-heading" className="hc-title">
+                  New {collection.title} every week
+                </h2>
+                <p className="ef-copy">
+                  Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam,
+                  unsubscribe anytime.
+                </p>
+                <NewsletterSignup source="collection-page" variant="strip" />
+              </div>
+            </section>
           </div>
+
+          {/* Right Ad Sidebar — in normal document flow so Mediavine Script Wrapper
+              can apply sticky scroll behavior and auto-refresh ads as user scrolls.
+              Mediavine auto-detects <aside id="secondary"> for Sidebar Sticky.
+              IMPORTANT: Do NOT add position:sticky/fixed — Mediavine handles stickiness.
+              overflow must be visible on this element and all ancestors. */}
+          <aside
+            id="secondary"
+            className="widget-area primary-sidebar hidden lg:block flex-shrink-0 w-[300px] overflow-visible"
+            role="complementary"
+            aria-label="Sidebar"
+          >
+            {/* Empty — Mediavine auto-fills with its own stacked ad containers. */}
+          </aside>
         </div>
       </main>
 
-      <Footer />
+      <LauncherFooter />
     </div>
   );
 }

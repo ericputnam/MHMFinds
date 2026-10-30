@@ -5,6 +5,7 @@
  *  - a GET never mutates (link-scanners and prefetchers must not manufacture consent),
  *  - a forged, malformed or cross-purpose token is rejected before touching the database,
  *  - a valid POST records consent exactly once, idempotently, with `source='re-permission'`,
+ *  - a valid POST lifts an earlier unsubscribe, never a later one; GET never does,
  *  - a confirm token cannot be replayed as an unsubscribe token and vice versa,
  *  - every URL the module emits carries the trailing slash `trailingSlash: true` requires,
  *  - the shipped send script links to the real endpoint, not the old preview placeholder.
@@ -14,12 +15,18 @@ import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
+import type { fakeSuppressionDb as FakeFactory } from '../fixtures/fakeSuppressionDb';
+
 const findUnique = vi.fn();
 const upsert = vi.fn();
-vi.mock('@/lib/prisma', () => ({
-  prisma: { waitlist: { findUnique: (...a: unknown[]) => findUnique(...a), upsert: (...a: unknown[]) => upsert(...a) } },
-  default: { waitlist: { findUnique: (...a: unknown[]) => findUnique(...a), upsert: (...a: unknown[]) => upsert(...a) } },
-}));
+const sup = vi.hoisted(() => ({ fake: undefined as unknown as ReturnType<typeof FakeFactory> }));
+vi.mock('@/lib/prisma', () => {
+  const client = {
+    waitlist: { findUnique: (...a: unknown[]) => findUnique(...a), upsert: (...a: unknown[]) => upsert(...a) },
+    emailSuppression: new Proxy({}, { get: (_t, k) => (sup.fake.db.emailSuppression as Record<string | symbol, unknown>)[k] }),
+  };
+  return { prisma: client, default: client };
+});
 
 import { GET, POST } from '@/app/api/subscribe/confirm/route';
 import {
@@ -34,6 +41,8 @@ import {
   signUnsubscribeToken,
   verifyUnsubscribeToken,
 } from '@/lib/services/unsubscribe';
+import { hashRecipient } from '@/lib/services/sendExclusions';
+import { fakeSuppressionDb } from '../fixtures/fakeSuppressionDb';
 
 const ORIGINAL_ENV = { ...process.env };
 const EMAIL = 'Reader@Example.com';
@@ -114,6 +123,7 @@ describe('/api/subscribe/confirm', () => {
     upsert.mockReset();
     findUnique.mockResolvedValue(null);
     upsert.mockResolvedValue({ id: 'w1' });
+    sup.fake = fakeSuppressionDb();
   });
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
@@ -152,6 +162,39 @@ describe('/api/subscribe/confirm', () => {
       create: { email: NORMALIZED, source: CONFIRM_SOURCE, ipAddress: '203.0.113.7', userAgent: 'Mail/1.0' },
       update: {},
     });
+  });
+
+  it('GET offers the button to a list row that has unsubscribed since, and clears nothing', async () => {
+    findUnique.mockResolvedValue({ id: 'w1' });
+    sup.fake = fakeSuppressionDb([
+      { emailHash: hashRecipient(EMAIL), source: 'mailto', requestedAt: new Date('2026-10-01'), clearedAt: null },
+    ]);
+    const res = await GET(req(buildConfirmUrl(EMAIL)));
+    expect(await res.text()).toContain('Yes, send me the weekly email');
+    expect(sup.fake.rows.get(hashRecipient(EMAIL))?.clearedAt).toBeNull();
+  });
+
+  it('POST lifts an unsubscribe recorded before the click', async () => {
+    sup.fake = fakeSuppressionDb([
+      { emailHash: hashRecipient(EMAIL), source: 'link', requestedAt: new Date('2026-10-01'), clearedAt: null },
+    ]);
+    const res = await POST(req(buildConfirmUrl(EMAIL), 'POST'));
+    expect(res.status).toBe(200);
+    expect(sup.fake.rows.get(hashRecipient(EMAIL))?.clearedAt).toBeInstanceOf(Date);
+  });
+
+  it('POST never lifts an unsubscribe dated after the click', async () => {
+    const future = new Date(Date.now() + 60 * 60 * 1000);
+    sup.fake = fakeSuppressionDb([
+      { emailHash: hashRecipient(EMAIL), source: 'mailto', requestedAt: future, clearedAt: null },
+    ]);
+    await POST(req(buildConfirmUrl(EMAIL), 'POST'));
+    expect(sup.fake.rows.get(hashRecipient(EMAIL))?.clearedAt).toBeNull();
+  });
+
+  it('the unauthenticated waitlist form never lifts an unsubscribe', () => {
+    const src = readSource('app/api/waitlist/route.ts');
+    expect(src).not.toMatch(/clearUnsubscribe|emailSuppression/);
   });
 
   it('POST is idempotent: a second click never rewrites an existing row', async () => {

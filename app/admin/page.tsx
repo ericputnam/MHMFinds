@@ -143,16 +143,16 @@ function AdminDashboard() {
           <p className="text-sm text-slate-400">User Accounts</p>
         </div>
 
-        {/* Waitlist */}
+        {/* Newsletter subscribers */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-sims-pink/30 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <div className="bg-sims-blue/10 p-3 rounded-lg">
               <Mail className="h-6 w-6 text-sims-blue" />
             </div>
-            <span className="text-xs text-slate-500 font-medium">WAITING</span>
+            <span className="text-xs text-slate-500 font-medium">NEWSLETTER</span>
           </div>
           <h3 className="text-3xl font-bold text-white mb-1">{stats?.waitlistCount || 0}</h3>
-          <p className="text-sm text-slate-400">Waitlist Signups</p>
+          <p className="text-sm text-slate-400">Newsletter Subscribers</p>
         </div>
       </div>
 

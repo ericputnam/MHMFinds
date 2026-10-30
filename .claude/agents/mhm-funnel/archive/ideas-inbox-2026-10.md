@@ -88,3 +88,10 @@ Sessions 28d 360,503 vs line 354,930 = 101.6% (09-19→10-16); revenue $5,865.53
 - [ ] [ops] deploy-verify's smoke set does not cover collection routes; E221 was confirmed by curling /games/sims-4/makeup-cc/ by hand. — Rowan 10-16
 
 - [ ] [ops] deploy-verify --check: check-blog-sidebar makes one curl (--max-time 60) and a could-not-run goes straight to INCONCLUSIVE with no retry (10-16 06:37; by-hand re-run PASS ~06:55). Retry once after 30 s before grading INCONCLUSIVE. Also vnotes() prints "smoke NOT" on every INCONCLUSIVE, even when only the blog curl failed. (T1, grading logic) — Ops 10-16
+
+## Parked 2026-10-29 (operator watch: inbox over budget; ops plumbing, not AUDIENCE)
+- [ ] [ops] daily PR must `git add` the day's scoreboard .md + a scanner test — still open; E264 lands artifacts only on the preflight-failed path, a normal day still depends on Quinn's step 8. — Ops 10-23
+- [ ] [ops] liveness grader: print "MISSED · runner-landed record" (E264 path) separately from "MISSED · no digest on main" (nothing landed) so the two failure classes stay countable. — Ops 10-23
+- [ ] [ops] GA4 `favorite` event shows 172 per 30 days sitewide vs 739 per 7 days in the DB — per-page favorites cannot be graded from GA4 (E90/E100/E109 leg read 0). Instrument check. — Rowan 10-23
+- [ ] [ops] Earlier plumbing requests (09-23→10-01) are parked verbatim in `archive/ideas-inbox-2026-09.md` (§ Parked 2026-09-29 / 09-30 / 10-01 / 10-01 b); Ops pulls from there. — Quinn
+- [ ] [rio→ops] `googleCredentialsPath()` is copied in 6 scripts (revenue-guardrail, direct-bot-read, funnel-scoreboard, page-rpm-snapshot, go-funnel-read, rank-pin-destinations); one shared `scripts/agents/ga4-credentials.ts` is an SD-11 plumbing item. — Rio 10-17

@@ -23,26 +23,20 @@ export function CollectionMoreLinks({ title, links }: CollectionMoreLinksProps) 
   if (links.length === 0) return null;
 
   return (
+    // Launcher classes (components/launcher/launcher.css): the collection
+    // page renders inside the .lx shell since 2026-10-28.
     <section
-      className="mt-12 pt-8 border-t border-white/10"
+      className="below-sec"
       aria-labelledby="collection-more-links-heading"
       data-testid="collection-more-links"
     >
-      <h2
-        id="collection-more-links-heading"
-        className="text-2xl font-bold text-white mb-4"
-      >
-        More {title}
-      </h2>
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+      <div className="sec-head">
+        <h2 id="collection-more-links-heading">More {title}</h2>
+      </div>
+      <ul className="more-links">
         {links.map((link) => (
-          <li key={link.id} className="min-w-0">
-            <a
-              href={modHref(link.id)}
-              className="block truncate text-slate-300 hover:text-sims-pink transition-colors"
-            >
-              {link.title}
-            </a>
+          <li key={link.id}>
+            <a href={modHref(link.id)}>{link.title}</a>
           </li>
         ))}
       </ul>

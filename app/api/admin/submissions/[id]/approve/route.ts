@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/middleware/auth';
 import { planApprovalProfile } from '@/lib/submissionApprovalProfile';
+import { rehostModImages } from '@/lib/services/imageUploader';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +75,16 @@ export async function POST(
       );
     }
 
+    // Patreon image addresses expire and don't render — copy them to Blob.
+    // Best effort: approval still goes through with the original URLs.
+    const { thumbnail, images } = await rehostModImages({
+      thumbnail: submission.thumbnail,
+      images: submission.images,
+    }).catch((err) => {
+      console.error('Image rehost failed on approval:', err);
+      return { thumbnail: submission.thumbnail, images: submission.images };
+    });
+
     let mod;
     let profileHandle: string | null = null;
 
@@ -90,8 +101,8 @@ export async function POST(
           gameVersion: submission.gameVersion,
           category: submission.category,
           tags: submission.tags,
-          thumbnail: submission.thumbnail,
-          images: submission.images,
+          thumbnail,
+          images,
           downloadUrl: submission.downloadUrl,
           sourceUrl: submission.sourceUrl,
           source: submission.source || 'Creator Upload',
@@ -113,8 +124,8 @@ export async function POST(
         gameVersion: submission.gameVersion,
         category: submission.category,
         tags: submission.tags.length > 0 ? submission.tags : [submission.category],
-        thumbnail: submission.thumbnail,
-        images: submission.images,
+        thumbnail,
+        images,
         downloadUrl: submission.downloadUrl || submission.modUrl,
         sourceUrl: submission.sourceUrl || submission.modUrl,
         source: submission.source || 'User Submission',

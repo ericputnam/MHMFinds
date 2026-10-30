@@ -29,6 +29,9 @@ import {
 } from '@/lib/services/newsletterIssue';
 import { previewBulkSend, sendBulk } from '@/lib/services/bulkMailer';
 
+/** A live send must pass an unsubscribe lookup; these tests have nobody on it. */
+const noneSuppressed = async () => new Set<string>();
+
 const ROOT = join(__dirname, '..', '..');
 const readSource = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 /** Source with block and line comments removed, so the rules are checked against code, not prose. */
@@ -199,6 +202,7 @@ describe('through bulkMailer', () => {
       sendBulk({
         recipients: ['a@example.com'],
         dryRun: false,
+        suppressionLookup: noneSuppressed,
         send,
         postalAddress: CTX.postalAddress,
         // Renders with an empty address on purpose: the library must catch it.

@@ -27,6 +27,9 @@ const NEXTJS_PREFIXES = new Set([
   // Public creator pages /creator/[slug]/ (Nova, E85, 2026-09-23). Distinct
   // from 'creators' (the signed-in creator dashboard).
   'creator',
+  // Static switcher icons in public/game-icons/ (home "Launcher" layout). A
+  // public file whose first segment has no dot is otherwise proxied to WP.
+  'game-icons',
 ]);
 
 const WP_ORIGIN = 'https://blog.musthavemods.com';

@@ -40,6 +40,7 @@ vi.mock('next/image', () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
+import { useSession } from 'next-auth/react';
 import ModDetailClient from '@/app/mods/[id]/ModDetailClient';
 
 const mockMod: Mod = {
@@ -84,9 +85,29 @@ const mockMod: Mod = {
   _count: { reviews: 0, favorites: 5, downloads: 100 },
 };
 
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 describe('ModDetailClient behavior', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The heart calls the favorite API (E107) and its state is hydrated for
+    // signed-in visitors (E138), so drive it as a signed-in visitor whose
+    // hydration read says "not saved yet".
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { id: 'u1' }, expires: '' },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as never);
+    vi.mocked(global.fetch).mockImplementation(async (_url, init) => {
+      const method = init?.method ?? 'GET';
+      if (method === 'GET') return jsonResponse({ favorited: false });
+      return jsonResponse({ success: true });
+    });
   });
 
   it('toggles favorite state and routes download through the /go interstitial', async () => {
@@ -96,7 +117,18 @@ describe('ModDetailClient behavior', () => {
 
     const favoriteButton = screen.getByRole('button', { name: /add to favorites/i });
     await userEvent.click(favoriteButton);
-    expect(screen.getByRole('button', { name: /favorited/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /favorited/i })).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/mods/mod-1/favorite',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /favorited/i }));
+    expect(await screen.findByRole('button', { name: /add to favorites/i })).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/mods/mod-1/favorite',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
 
     const downloadButton = screen.getByRole('button', { name: /download this mod now/i });
     await userEvent.click(downloadButton);

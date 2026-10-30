@@ -25,6 +25,8 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { PrismaClient } from '@prisma/client';
 import { sendBulk, resolvePostalAddress } from '../../lib/services/bulkMailer';
 import { collectRejects } from '../../lib/services/newsletterWeekly';
+import { suppressionLookupFor } from '../../lib/services/emailSuppression';
+import { describeSync, syncUnsubscribeMailbox } from './unsubscribe-mailbox-lib';
 import {
   INVITE_CAMPAIGN,
   INVITE_HARD_CAP,
@@ -105,8 +107,13 @@ async function main() {
       limit,
     });
 
+    // Email-borne unsubscribes (mailto / "unsubscribe" replies) are recorded before a
+    // live send; a scan that could not complete stops the send.
+    if (live) console.log(describeSync(await syncUnsubscribeMailbox(prisma, { apply: true })));
+
     const postalAddress = resolvePostalAddress();
     const result = await sendBulk({
+      suppressionLookup: suppressionLookupFor(prisma),
       recipients: sel.recipients,
       dryRun: !live,
       maxMessages: INVITE_HARD_CAP,
@@ -124,6 +131,7 @@ async function main() {
       ...sel.counts,
       recipients: sel.recipients.length,
       deferred: sel.deferred + result.deferred.length,
+      suppressed: result.suppressed.length,
       hardCap: INVITE_HARD_CAP,
       attempted: result.attempted,
       sent: result.sent,

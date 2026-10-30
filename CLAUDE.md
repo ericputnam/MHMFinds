@@ -378,12 +378,19 @@ Users want full control over what gets committed and when. Even if you complete 
 
 **ALWAYS add new critical features to `CRITICAL_MARKERS`** in BOTH push scripts. If you ship a revenue feature (sidebar, ad container, schema, etc.) or a routing feature (search proxy, blog pagination, redirect rule), add a grep pattern to the `CRITICAL_MARKERS` array. The format is `"<grep-pattern>|<human-name>"`.
 
-Current critical markers (Apr 8 2026):
+Current critical markers (Oct 29 2026). The push scripts are the source of truth; this is a summary:
 - `mhm_inject_mediavine_sidebar` — Mediavine sidebar (~$2K/month)
 - `mhm_mediavine_sidebar_css` — Mediavine sidebar CSS
 - `mhm_search_form_rewrite_js` — Blog search form rewrite (PRD: blog search)
 - `is_from_apex_rewrite` — Apex domain rewrite helper
+- `mhm_collection_crosslinks` / `mhm_catalog_mod_links` — SEO internal linking
+- `mhm_affiliate_pack_block` — Amazon Sims 4 pack picks at the end of Sims posts (#391)
+- `mhm_consolidated_post_map` — legacy canonical map (#63)
 - `mhm_host_split_301` / `mhm_host_split_js` — blog.* → apex 301 + cached-HTML JS fallback (Q13, #208)
+
+The prod and staging arrays must match, and every marker must exist in its `functions.php`.
+`__tests__/unit/blog-push-markers.test.ts` enforces both. Before #391, `mhm_catalog_mod_links` was
+missing from the prod array.
 
 ### After Every Push to Prod
 
@@ -911,66 +918,57 @@ run died with `Prompt is too long`.
   can return a plausible, wrong population with no error at all. Guard completeness (`links.next`
   exhausted, page cap not hit), not just non-emptiness — and keep a self-diagnosing signal for a
   silent join failure (`paid > 0` with `paidWithUserId === 0` means `include=user` did not take).
-- **Enforce read-only-ness of an external read at the call, and expect it to be copied.** The
-  mailbox DSN counter is safe only because of two lines — `select(..., readonly=True)` and
-  `BODY.PEEK[]` — living in one script with no shared wrapper. The second such script will forget
-  one of them; wrap it before writing the second consumer.
+- **Enforce read-only-ness of an external read in one wrapper, and test what the wrapper can issue.**
+  The mailbox scripts used to be safe only because each one contained `select(..., readonly=True)` and
+  `BODY.PEEK[]`. When the second consumer arrived (#384, unsubscribe replies), both scripts were moved
+  onto `scripts/agents/_mailbox_readonly.py` (`EXAMINE` + `BODY.PEEK` only). A test allowlists the
+  IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
+  consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-19 — rotated to the archive
+### 2026-10-15 → 10-26 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29.
 
-### 2026-10-20
+### 2026-10-29 (covers merges #372–#396, 10-26 → 10-28)
 
-- **A verifier must first ask whether the change *can* alter what it is waiting to observe.**
-  #340 touched only `.claude/**`; `deploy-verify.sh` waited 25 min for a production build that a
-  paper-only diff never triggers and graded it TIMEOUT — a verdict about an event that could not
-  occur. E250 (#351) classifies the merge's diff vs its first parent and grades an all-paper merge
-  on production *as served* at once (`PAPER …`, never a rollback). Classify by **allowlist,
-  failing closed** (unknown/empty diff = build); "paper" dirs still hold build inputs — any `.ts`
-  is type-checked, and `history.json`/`newsletter-sends.jsonl` are read by the build/app.
-- **Before calling a drop a decline, find the first day the series was non-zero.** "/creator/* Bing
-  77 → 52" was measured from the week Bing *first ever* landed those pages: 0 → 53 → 78 → 57 → 57
-  is an arrival burst settling (E245). A launch-week baseline is not a level.
-- **A quality share must exclude the fixes from its denominator.** E200's "title-supported share"
-  fell 70.9% → 67.7% because 15 hand-verified untitled pins entered the denominator — every verified
-  fix lowered the score meant to reward it (E249). Likewise, before quoting a segment as the cause
-  of an RPM dip, compute what mix *alone* predicts: Singapore `(direct)` at 10.62% vs 5.31% predicts
-  −5.6%, the print was −3.3%, so ex-segment RPM was *up* (E248).
-- **Write a keep-if against the experiment's own final output, never a sibling's interim one.**
-  E238's "8/8 `isNSFW`" leg quoted E242's dry run; E242 intentionally kept 2 false on apply, so
-  E238 can never grade MET. Re-read a sibling's final state before pinning a literal count.
+Subsystem entries for the same window (image optimizer, launcher pages, grid-heart capture, host
+sleep) are in the archive under "2026-10-29 — subsystem entries".
 
-### 2026-10-21
-
-- **Before reading a ratio, list its denominator rows.** "11.5 mods/post, halved" had 4 single
-  manual admin rows (a mod page as `sourceUrl`) among its 8 "posts"; counting writer-host posts
-  only (exact host allowlist) gave 22.0 vs 23.6 (E253, #354). 57 of 150 `body-preset` rows were
-  nose/eye presets written by a **one-off backfill script — a backfill is a writer too**; when a
-  facet has no detector path, find the script that filled it (E256, #355, `lib/bodyPresetRules.ts`).
-- **A grader with an ungraded leg prints INCONCLUSIVE, never the passing verdict.** Hub
-  eligibility with no `--family` skipped the off-type leg and printed ELIGIBLE for a lots grid
-  whose first 48 rows held 18 objects, careers, a save file and an EA pack (E252, #359).
-- **A retry belongs in the shared helper, with the budget re-read per attempt.**
-  `withPageTimeoutRetry` (`scripts/_patreon-auth.ts`) retries only a page's own timeout, bounds
-  each attempt by `nextPageTimeoutMs`, and serves all four Members walks; one call-site retry
-  would have left three siblings broken (E257, #356). Replace copied literals with the constant.
-- **Every live send subject must be attributable by the bounce counter.** The only hard DSN since
-  10-19 was the invite, filed `other` because `CAMPAIGN_SUBJECTS` lacked it; the test now imports
-  `INVITE_SUBJECT` (E254, #353). Re-dry a batched send's tail the day before — the run count is a
-  function of the list (~12 opt-ins/day), not of last week's plan.
-- **For a revenue dip, print `revenue = mon_pv × imp/mon_pv × CPM` before any story.** 10-19's
-  yellow: mix predicted −7.1 of −17.5 RPM pts, 10/10 partners fell, in-window deploys touched only
-  surfaces earning 0% → Mediavine demand, no rollback (E255, #358). Mediavine `pages`/`devices`
-  lag >2 days; never read per-page concentration off them for a day-old verdict.
-- **Grade a repeated intervention against the channel curve, with one tool.** `topup-grade.ts`
-  (E251, #357): re-dated Pinterest rows beat site Pinterest in 1 of 3 grades — they ride the curve;
-  upside needs new destinations. When joining GA4 `landingPage`, fold `blog.*` and trailing slashes.
+- **A test that is red on `main` is a broken gate, not background noise.** `ModDetailPage.test.tsx`
+  failed on every run for weeks: it predated #178, which made the heart wait for a real
+  `POST /api/mods/[id]/favorite`, and the global `fetch` stub returns `undefined`. #387 shipped
+  with "1 failed, identical on `origin/main`, unrelated" in its body. #386 then fixed the test by
+  mocking the real API flow. When a change alters what a component does, update its test in the same
+  PR. When you see a failure that is already on `main`, fix it or file it that day. Do not let it
+  ride along.
+- **Order consent events by a clock the sender cannot set.** Mailbox unsubscribes (#387) now take
+  their time from the server's `INTERNALDATE`, capped at the time of the read. They never fall back
+  to the `Date` header or to `now()`, because either one could beat a later re-confirmation. If a
+  message has no INTERNALDATE, the scan is could-not-run (exit 2), which blocks a live send. A
+  mailto request suppresses only its `From` sender. If it names any other address, that address is
+  counted as `named_ignored`, so one email cannot unsubscribe somebody else. Check the data before
+  you require a signal: 0 of 37 messages carried SPF/auth headers, so requiring them would have
+  dropped every real request.
+- **Copy that crawlers read must not depend on a client fetch.** The homepage served three catalogue
+  counts: 17,000+ in `<title>`/JSON-LD, 15,000+ in the SSR hero (what crawlers saw) and 16,000+
+  after hydration. #389 made `lib/seo/catalogCount.ts` the only source and added a scanner that
+  rejects any other `NN,000+` literal (comments stripped, vacuity guard >200 files). When a page
+  states a number, put it in one constant and render it on the server.
+- **A generated file needs a test against the registry it was generated from.**
+  `lib/collectionCovers.ts` was generated before `gshade-presets` (E272) joined the registry, so
+  the new collection had no cover and nothing failed. #390's test requires ≥1 https cover for every
+  registry slug and no stale keys. #395's test requires every cover host to be in the real
+  `next.config.js` `remotePatterns`.
+- **Verify each merge before the next merge lands.** The 10-26 interactive merges all have ledger
+  rows, so the rule from that day held. However, #386's verify ran after #389 had merged, and its
+  row grades `83b6a2d` instead of its own `fccaba8`. The rows are also out of time order. Run
+  `merge-gate.sh && gh pr merge … && deploy-verify.sh --after-merge --sha <own mergeCommit>` as one
+  chain per PR.
 
 ---
 
-*Last compound review: 2026-10-21*
+*Last compound review: 2026-10-29*
 
 ---
 

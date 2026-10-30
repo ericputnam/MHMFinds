@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { INVITE_SUBJECT } from '../../lib/services/subscriberInvite';
 
 const ROOT = join(__dirname, '..', '..');
-const py = readFileSync(join(ROOT, 'scripts/agents/mailbox-dsn-count.py'), 'utf8');
+const py = readFileSync(join(ROOT, 'scripts/agents/_mailbox_readonly.py'), 'utf8');
 
 /** The quoted values of the CAMPAIGN_SUBJECTS dict, comments stripped. */
 function campaignNeedles(src: string): string[] {

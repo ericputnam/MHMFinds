@@ -20,6 +20,7 @@ import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
 import { ACCESSORIES_CONTENT_TYPE, ACCESSORIES_TITLE_KEYWORDS } from '../accessoriesContentTypeRules';
+import { UI_PRESET_CONTENT_TYPE, isUiPresetTitle } from '../uiPresetRules';
 
 // ============================================
 // TYPES
@@ -719,6 +720,19 @@ export function detectContentTypeWithConfidence(
   title: string,
   description?: string
 ): DetectionResult {
+  // E272 (2026-10-25): a GShade / ReShade preset is `ui-preset` on the TITLE
+  // alone (lib/uiPresetRules.ts). Checked before the keyword rules because
+  // the `preset` rule lists gshade/reshade as negatives and the title would
+  // otherwise fall through to undefined — and never from the description,
+  // which is shared by every row scraped from the same blog post.
+  if (isUiPresetTitle(title)) {
+    return {
+      contentType: UI_PRESET_CONTENT_TYPE,
+      confidence: 'high',
+      matchedKeywords: [UI_PRESET_CONTENT_TYPE],
+      reasoning: 'Title names a GShade/ReShade preset (title-only rule)',
+    };
+  }
   const result = detectWithRules(title, description, SORTED_RULES);
   if (
     !result.contentType ||

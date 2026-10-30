@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -8,9 +9,17 @@ export const dynamic = 'force-dynamic';
  *
  * Returns all facet definitions with mod counts for building the filter sidebar.
  * Groups facets by type for easy UI consumption.
+ *
+ * Optional `?gameVersion=Minecraft` counts only that game's mods, so a game
+ * page offers its own types (shaders, texture packs) instead of Sims 4 hair.
+ * Definitions are unchanged; a type with no mods in the game gets count 0.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const gameVersion = request.nextUrl.searchParams.get('gameVersion') || null;
+    const gameWhere = gameVersion ? { gameVersion } : {};
+    const gameSql = gameVersion ? Prisma.sql`AND "gameVersion" = ${gameVersion}` : Prisma.empty;
+
     // Get all active facet definitions
     const definitions = await prisma.facetDefinition.findMany({
       where: { isActive: true },
@@ -20,14 +29,14 @@ export async function GET() {
     // Count mods per content type
     const contentTypeCounts = await prisma.mod.groupBy({
       by: ['contentType'],
-      where: { contentType: { not: null }, isVerified: true },
+      where: { contentType: { not: null }, isVerified: true, ...gameWhere },
       _count: { id: true },
     });
 
     // Count mods per visual style
     const visualStyleCounts = await prisma.mod.groupBy({
       by: ['visualStyle'],
-      where: { visualStyle: { not: null }, isVerified: true },
+      where: { visualStyle: { not: null }, isVerified: true, ...gameWhere },
       _count: { id: true },
     });
 
@@ -36,7 +45,7 @@ export async function GET() {
     const themeCounts = await prisma.$queryRaw<{ theme: string; count: bigint }[]>`
       SELECT unnest(themes) as theme, COUNT(*) as count
       FROM mods
-      WHERE "isVerified" = true AND array_length(themes, 1) > 0
+      WHERE "isVerified" = true AND array_length(themes, 1) > 0 ${gameSql}
       GROUP BY theme
       ORDER BY count DESC
     `;
@@ -44,7 +53,7 @@ export async function GET() {
     const ageGroupCounts = await prisma.$queryRaw<{ age: string; count: bigint }[]>`
       SELECT unnest("ageGroups") as age, COUNT(*) as count
       FROM mods
-      WHERE "isVerified" = true AND array_length("ageGroups", 1) > 0
+      WHERE "isVerified" = true AND array_length("ageGroups", 1) > 0 ${gameSql}
       GROUP BY age
       ORDER BY count DESC
     `;
@@ -55,17 +64,17 @@ export async function GET() {
     // - unisex = has BOTH masculine AND feminine
     const genderCounts = await prisma.$queryRaw<{ gender: string; count: bigint }[]>`
       SELECT 'masculine' as gender, COUNT(*) as count FROM mods
-      WHERE "isVerified" = true
+      WHERE "isVerified" = true ${gameSql}
         AND 'masculine' = ANY("genderOptions")
         AND NOT ('feminine' = ANY("genderOptions"))
       UNION ALL
       SELECT 'feminine' as gender, COUNT(*) as count FROM mods
-      WHERE "isVerified" = true
+      WHERE "isVerified" = true ${gameSql}
         AND 'feminine' = ANY("genderOptions")
         AND NOT ('masculine' = ANY("genderOptions"))
       UNION ALL
       SELECT 'unisex' as gender, COUNT(*) as count FROM mods
-      WHERE "isVerified" = true
+      WHERE "isVerified" = true ${gameSql}
         AND 'masculine' = ANY("genderOptions")
         AND 'feminine' = ANY("genderOptions")
     `;

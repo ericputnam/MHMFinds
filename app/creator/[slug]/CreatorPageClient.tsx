@@ -20,7 +20,10 @@ import type { Mod } from '../../../lib/api';
 import type { CreatorPageData } from '../../../lib/creators';
 import type { RelatedCreator } from '../../../lib/creatorHubRelated';
 import { creatorHref } from '../../../lib/creatorSlug';
+import { badgeHref } from '../../../lib/creatorBadge';
 import { CreatorClaimCard } from '../../../components/creator/CreatorClaimCard';
+import { GRID_FAVORITE_SOURCES } from '../../../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../../../lib/capture/useGridFavoriteCapture';
 
 interface CreatorPageClientProps {
   data: CreatorPageData;
@@ -31,6 +34,11 @@ interface CreatorPageClientProps {
 export default function CreatorPageClient({ data, related = [] }: CreatorPageClientProps) {
   const [mods] = useState<Mod[]>(data.mods);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.creator, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
 
   const handleFavorite = async (modId: string) => {
     const isFavorited = favorites.includes(modId);
@@ -46,7 +54,7 @@ export default function CreatorPageClient({ data, related = [] }: CreatorPageCli
         setFavorites((prev) =>
           isFavorited ? [...prev, modId] : prev.filter((id) => id !== modId),
         );
-        if (response.status === 401) alert('Please sign in to favorite mods');
+        if (response.status === 401) onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
       }
     } catch {
       setFavorites((prev) =>
@@ -92,10 +100,19 @@ export default function CreatorPageClient({ data, related = [] }: CreatorPageCli
             <p className="text-xs font-semibold uppercase tracking-widest text-sims-pink mb-2">
               Creator
             </p>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight flex items-center gap-3">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight flex items-center gap-3 flex-wrap">
               {data.displayName}
+              {/* Validated-creator marker (E269): fed by CreatorProfile.isVerified
+                  through pageProfileFrom() — an existing field, no schema change.
+                  Icon + visible label so the mark reads without a tooltip. */}
               {data.profile?.isVerified && (
-                <BadgeCheck size={28} className="text-sims-blue" aria-label="Verified creator" />
+                <span
+                  className="inline-flex items-center gap-1 text-sims-blue text-sm font-semibold tracking-wide"
+                  data-testid="creator-verified-mark"
+                >
+                  <BadgeCheck size={28} aria-hidden="true" />
+                  <span>Verified creator</span>
+                </span>
               )}
             </h1>
             <p className="text-lg text-slate-400 mb-4">
@@ -129,6 +146,21 @@ export default function CreatorPageClient({ data, related = [] }: CreatorPageCli
               displayName={data.displayName}
               claimed={Boolean(data.profile?.isVerified)}
             />
+            {/* "Featured on MustHaveMods" badge (E269): the embed creators put
+                on their own pages, linking back here. Shown on every creator
+                page — for an unclaimed one the badge on the creator's own site
+                is the ownership proof the claim reviewer looks for. A child of
+                the hero <header>, never inside the ad anchor. */}
+            <p className="mt-3 text-sm text-slate-400">
+              Are you {data.displayName}?{' '}
+              <a
+                href={badgeHref(data.slug)}
+                className="text-sims-pink hover:underline"
+                data-testid="creator-badge-link"
+              >
+                Get your &ldquo;Featured on MustHaveMods&rdquo; badge →
+              </a>
+            </p>
           </div>
         </header>
 
