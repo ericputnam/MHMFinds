@@ -26,9 +26,24 @@
  * each under META_DESCRIPTION_MAX; `__tests__/unit/mod-meta-overrides.test.ts`
  * enforces the length and that the override is what the page serves.
  *
- * Add a row only for a page with its own GSC evidence (≥150 impressions in
- * 28d at a position ≤ 15 with CTR under half the class), and write the
- * numbers into the table above. This is not a place for templated text.
+ * E284 (Sage, 2026-10-29) — cohort 2, same mechanism, GSC 2026-09-30→10-27.
+ * Every query these pages rank for is the mod's own name ("into the light
+ * sims 4" 24 impr at 5.5, "dynamic teen life sims 4" 16 at 24.3, "better
+ * build buy" 19 at 25.9, "turbo careers sims 4" 9 at 15), so the searcher
+ * already knows the mod and the snippet has to say it is the right page:
+ *
+ *   id                          page                              impr  clk  pos
+ *   cmikk9rz5006wox33s47c746x   Better Build/Buy                   123    1 22.7
+ *   cmijl26ba0052oxc81fpj97z8   Dynamic Teen Life                  109    1 17.0
+ *   cmijj9r10006doxs3sfkry95m   Into the Light                     101    1  6.0
+ *   cmim8vu9e00kooxy84hrhwlni   Live-In Services                    70    1 14.7
+ *   cmim8vbvv00hqoxy8kthztwog   Black Magic Mod                     69    1  9.6
+ *   cmikk9l1p006qox3307hgn5ku   Turbo Careers Mod Pack              60    1 15.3
+ *                                                                  532    6  → 1.13%
+ *
+ * Add a row only for a page with its own GSC evidence (≥60 impressions in
+ * 28d at a position ≤ 23 with CTR under half the class), and write the
+ * numbers into a table above. This is not a place for templated text.
  */
 
 export interface ModMetaOverride {
@@ -74,6 +89,41 @@ export const MOD_META_OVERRIDES: Readonly<Record<string, ModMetaOverride>> = {
   cmijql77i0033ox8opf704hd7: {
     description:
       "ellesimsworld's Holiday Drama adds a pie menu of stir-the-pot family interactions — ask who the father is, give unwanted advice — for messy holidays. Free.",
+  },
+
+  // ---- E284 cohort 2 (2026-10-29) ----
+  // Better Build/Buy (TwistedMexi) — "better build buy sims 4"
+  cmikk9rz5006wox33s47c746x: {
+    description:
+      "TwistedMexi's Better Build/Buy revamps the Build/Buy catalog: debug and live-edit items unlocked, custom filters, better categories, freer placement. Free.",
+  },
+  // Dynamic Teen Life — "dynamic teen life sims 4"
+  cmijl26ba0052oxc81fpj97z8: {
+    description:
+      'Dynamic Teen Life adds popularity, social groups, after-school activities and dating to teen Sims. Base game compatible; packs unlock modules. Free.',
+  },
+  // Into the Light — "into the light sims 4". contentType is null in the
+  // catalog, so the rule-built title had no "Mod" qualifier at all.
+  cmijj9r10006doxs3sfkry95m: {
+    title: 'Into the Light Lighting Mod for Sims 4 | MustHaveMods',
+    description:
+      'Into the Light, a Sims 4 lighting mod, removes the blue aura around Sims in dark rooms, so they look brighter and less corpse-like in CAS shots. Free.',
+  },
+  // Live-In Services (LittleMsSam) — "live in services sims 4". contentType null, as above.
+  cmim8vu9e00kooxy84hrhwlni: {
+    title: 'Live-In Services Mod for Sims 4 | MustHaveMods',
+    description:
+      "LittleMsSam's Live-In Services lets you hire a nanny who stays in the household instead of clocking out. Updated for Sims 4 patches. Free.",
+  },
+  // Black Magic Mod — "black magic mod sims 4"
+  cmim8vbvv00hqoxy8kthztwog: {
+    description:
+      "Black Magic Mod lets Sims 4 witches sell another Sim's soul to the Old Gods for new spells and potions. Needs XML Injector and Spellbook Injector. Free.",
+  },
+  // Turbo Careers Mod Pack (Zerbu) — "turbo careers sims 4"
+  cmikk9l1p006qox3307hgn5ku: {
+    description:
+      "Zerbu's Turbo Careers turns rabbit-hole jobs — criminal, business, tech guru — into active careers you follow to work, with tasks and promotions. Free.",
   },
 };
 
