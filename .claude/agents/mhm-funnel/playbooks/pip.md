@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-30 (10-29 evening re-run)
+- Tried: E282 top-up #19 (T0, SD-10 floor; E274 leg; apply ledger on main 631ac76a): tool gate 0.51 d (7 ÷ 13.71 pinterest-14d) while the 10-29 scoreboard read 2.1 d on 27 rows — the poster shipped 50 pins in 24 h, so the morning buffer was gone by evening. 17 ranked rows 6×11-01, 6×11-02, 5×11-03, 6 dests 1/dest/date; the ranker found only 6 dests/52 ids ≥50 sess/7d (tattoos 588 + gshade 126 now writer-managed, dropped upstream). Post-apply 1.75 d still <2.0; a second pass was REFUSED by the tool (one --apply per UTC day), so the floor re-fires 10-31. E283: social draft batch 2026-10-29 (6 drafts, Tier 2 until 11-07). Graded E258 KEEP, E244 KEEP (tool, read 10-30; E251's keep-if now met: E209 + E244 graded with 0 hand pulls).
+- Before → after: runway 0.51 → 1.75 d after #19 (7 → 24 rows; bound hard_cap_21 then 1/dest/date). E258: treated 1,235 vs 1,184 (+4.3%) vs site −2.5%, post window +7.2% vs −0.1%, 5/9 dests up. E244: 1,099 vs 1,058 (+3.9%) vs site −2.5%, post window +8.3% vs −2.9%, 4/7 up. Lift record 3 of 6 ≥ site.
+- Verdict: E258 KEEP (lift); E244 KEEP (lift); E251 KEEP; E282 MORE DATA (read 11-06 by the tool)
+- Next time: a 1/dest/date cap with 6 live destinations caps a top-up at 6/day under the 7 allowed and the tool's "~2.04 d" target lands at 1.75 — when the ranker returns <7 dests, lower `--min-sessions` to 25 before the dry run, or the floor refills below the daily budget.
+
 ## 2026-10-23
 - Tried: E258 top-up #17 (T0, SD-10 floor; E244 leg; apply ledger on main 801e7b5, artifacts #365 5c48da0 PASS): tool gate 1.31 d (15 ÷ 11.43 pinterest-14d) = scoreboard ≈1.3 d. 20 ranked rows 6×10-26 + 7×10-27/28 (ranker 10 dests/55 ids, 94 writer rows dropped upstream, 0 in tool); cross-run cap skipped 10-23..25 (E244). Same PR: `topup-grade.ts` default `--end` T−1 → T−2 (`defaultGradeEnd`, 2 tests red pre-fix). Graded E209 KILL (lift), E223 KEEP.
 - Before → after: runway 1.31 → 3.06 d (15 → 35 rows; bound seven_per_day_cap); SEO 51 → 86 (0/20 → 20/20); day-trace 10-24..28 = 7/7/7/7/7 all top-up. E209: 1,116 vs 1,133 (−1.5%) vs site +4.8% at end 10-21, but −4.1% vs +4.6% at end 10-22 — 2.6 pts from one provisional GA4 day; MCP spot check = tool exactly.
