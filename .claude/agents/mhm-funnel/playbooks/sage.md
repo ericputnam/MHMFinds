@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-30 — E292 creator→hub links (#408) · E299 creators sitemap lastmod (#412), both Tier 0
+- Tried: ~527 creator pages (4,072 impr / 103 clk, 28d) carried zero links to the hubs at pos 20–37; URL Inspection showed the hubs' only referrers were other hubs and /creator/orchiona/ last crawled 09-24. Then found the creators sitemap still said January on 169/554 entries after E267 rewrote every creator meta — only 28/554 had lastmod ≥ 10-27. Applied the E37 laterOf(template, newest) rule; IndexNow pushed 717 URLs (554 creators) http=200.
+- Before → after: /games/sims-4/* 277 clk / 7,095 impr; /creator/* 103 / 4,072 (09-30→10-27); sitemap 28/554 fresh → 554/554 at 2026-10-30 (curl 11:41Z).
+- Verdict: MORE DATA (both read 2026-11-20 on GSC 10-31→11-19).
+- Next time: a route.ts may export only route fields — a helper that needs a unit test lives in lib/, or `next build` fails on the export; and bump CREATOR_TEMPLATE_LASTMOD whenever the creator template changes.
+
 ## 2026-10-29 — E268 landed (PR #381, Tier 0) · E284 cohort 2 of hand-written mod metas
 - Tried: #381 was 40 commits behind main; merged origin/main clean (3 files, 0 conflicts), 82 tests green, build + type-check clean, merged f1eaf2e. Then the next cohort from the /mods/* class read (GSC 09-30→10-27, 220 rows): six pages with ≥60 impr at pos ≤23 and ≤1.5% CTR not already in E268 — Better Build/Buy 123/1/22.7, Dynamic Teen Life 109/1/17.0, Into the Light 101/1/6.0, Live-In Services 70/1/14.7, Black Magic 69/1/9.6, Turbo Careers 60/1/15.3 = 532 impr / 6 clk / 1.13%. Every query is the mod's own name (navigational); two pages have contentType null so the rule-built title carried no "Mod" at all → title overrides for those two. Rejected: nails-cc (208 impr/1 clk, pos 17) and tattoos (152/2, pos 21.8) — visible queries are 17 and 13 impr of long tail, no title to write (as E238).
 - Before → after: cohort 2 CTR 1.13% (6/532, 28d) → read 2026-11-12 (14d 10-30→11-12), final 2026-11-27 (28d).

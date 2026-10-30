@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-30 (scheduled run, overlapping the 10-29 catch-up)
+- Tried: the scheduled run started 11:08Z while the 10-29 catch-up Quinn (pid 13470, started 21:40 local) was still merging #398/#401/#402/#404; dispatched all 7 at 11:15Z anyway, each brief carrying the list of E281–E290 already shipped and a pre-assigned id (E291–E299), because the 2 h ceiling left no room to wait. merge-gate serialized both runs: 10 merges 11:09→11:46Z, one every ~4 min, 0 collisions, 0 duplicate moves.
+- Before → after: concurrent-runner guard 0 → 1 (E297 #406, 6/11 tests red pre-fix); 8 code PRs merged with PASS rows, 2 paper-only PRs (#405, #407) lost every gate race (Rio 2 attempts / 1,180 s, Cass 2) and stayed open.
+- Verdict: KEEP dispatching behind a live sibling run — the gate is the serializer; the GM's job is the "already shipped" list in each brief and non-overlapping experiment ids.
+- Next time: merge paper-only PRs in one batch at the end of the run (or Ops queues the lock); opus agents write "Claude Opus 5.5" co-author lines whatever the brief says — the attribution follows the model.
+
 ## 2026-10-29 (evening re-run)
 - Tried: morning run MISSED (preflight HANG), re-run at 21:44 EDT; breaker green, watch BELOW LINE by directive (96.6% ex-crawler) though history.json read 100.4% — honoured the directive and sent Pip/Sage two AUDIENCE moves each. 7 specialists in parallel (Pip/Sage/Rio/Ops fable, Nova/Cass/Rowan opus); stranded 10-27/10-28 digests, scoreboards and the operator queue (Q34) recovered into #398.
 - Before → after: the host slept 03:03Z→06:01Z mid-run — 4 of 7 agents hit the 600 s stream watchdog and all 4 resumed by SendMessage with context intact (0 lost work, ~3 h wall). Two deploy-verifies hung in smoke-render (#392 3 h, #394 >40 min after READY) and neither wrote a row until killed/re-run. 10 team PRs merged (#375, #381, #394, #397, #399, #400, #403 + #401/#402/#404 in flight); experiments.md 18,260 → 20,598 B after 4 rows archived and 6 added. 0 of the ~16 rows for the 10-27/10-28 moves (E265–E280) exist anywhere — unlanded runs log nothing.

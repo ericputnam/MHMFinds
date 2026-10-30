@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-30 (scheduled run) — E291 wedding-cc launch pin + E298 collection og:image (#410)
+- Tried: same-day pin for a page that went live at 11:09Z (Supabase id 12538, 10-30 holds 8 rows ≤ 13.7/day) + IndexNow 82 URLs; then found all 35 collection pages shipped ~4 months with `twitter:card=summary_large_image` and no `og:image` while 330 shared-link sessions per 14 d landed on them as text-only cards.
+- Before → after: wedding-cc Pinterest landings 0 (page 2 h old); shared-link landings on `/games/sims-4/*` 330 per 14 d (simmersguide 131, tumblr 111, URL-saves ≈57) → read 11-16 at ≥380.
+- Verdict: MORE DATA (reads 11-14 / 11-16). Three gate attempts to merge one PR behind 9 sibling merges.
+- Next time: check `og:image` the day a new page type ships, with a per-registry test, not after the traffic arrives; 13 of 33 collections have ever been pinned and 8 of the top-10 by sessions have not (Q39).
+
 ## 2026-10-30 (10-29 evening re-run)
 - Tried: E282 top-up #19 (T0, SD-10 floor; E274 leg; apply ledger on main 631ac76a): tool gate 0.51 d (7 ÷ 13.71 pinterest-14d) while the 10-29 scoreboard read 2.1 d on 27 rows — the poster shipped 50 pins in 24 h, so the morning buffer was gone by evening. 17 ranked rows 6×11-01, 6×11-02, 5×11-03, 6 dests 1/dest/date; the ranker found only 6 dests/52 ids ≥50 sess/7d (tattoos 588 + gshade 126 now writer-managed, dropped upstream). Post-apply 1.75 d still <2.0; a second pass was REFUSED by the tool (one --apply per UTC day), so the floor re-fires 10-31. E283: social draft batch 2026-10-29 (6 drafts, Tier 2 until 11-07). Graded E258 KEEP, E244 KEEP (tool, read 10-30; E251's keep-if now met: E209 + E244 graded with 0 hand pulls).
 - Before → after: runway 0.51 → 1.75 d after #19 (7 → 24 rows; bound hard_cap_21 then 1/dest/date). E258: treated 1,235 vs 1,184 (+4.3%) vs site −2.5%, post window +7.2% vs −0.1%, 5/9 dests up. E244: 1,099 vs 1,058 (+3.9%) vs site −2.5%, post window +8.3% vs −2.9%, 4/7 up. Lift record 3 of 6 ≥ site.

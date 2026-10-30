@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-30 — E297 global run-lock (#406 d7a46e0)
+- Tried: `logs/funnel-run.lock` holding the runner pid; a runner for any day waits ≤1,800 s for a live runner, then lands a MISSED/DEFERRED row and exits 75 before touching a worktree; stale locks (dead pid, or pid reused by a non-funnel process) are broken with a log line. `FUNNEL_ALLOW_SECOND_RUN=1` now skips only the day-lock; `FUNNEL_ALLOW_CONCURRENT_RUN=1` bypasses the global lock.
+- Before → after: 1 overlap in 7d (the 10-29 catch-up ran ≈13.5 h, 21:40 local → past 11:08Z, and overlapped the scheduled 10-30 start; a lock keyed on the day cannot see a run for another day) → `runner-day-lock.test.ts` 11/11, 6 red pre-fix. Ops share 4 of 41 = 9.8%.
+- Verdict: MORE DATA (read 11-06). Rollout gap: only runners started from d7a46e0 on hold the lock — copy the runner fresh from main before a manual catch-up.
+- Next time: exclusion between runs needs a lock keyed on the resource ("a runner is running"), not on the thing being deduplicated; the liveness grader should read the lock line before saying "never started".
+
 ## 2026-10-29 — E290
 - Tried: runner preflight retries ONCE after a slept-through attempt (HANG with asleep/suspended > 0) on the awake host, after a bounded network wait (`pf_wait_net`, 90 s, like step 1's own wait); an awake hang (E194 shape) is never retried; a second slept-through attempt is HANG with both attempts in the excerpt; `attempt=N` on every preflight log line. (T0)
 - Before → after: 10-24 killed at 977 s wall / 974 s asleep (3 s awake) and 10-29 at 1013 s / 998 s (15 s awake) — 2 of the 4 MISSED mornings 10-22→10-29 — against a preflight that answers in 4–6 s awake → read 11-05: 0 HANG rows whose first attempt was slept through; retry fires ≤1×/run. Test 3 new cases, 1 red pre-fix (the retry), 2 green controls.

@@ -1,14 +1,14 @@
 # Operator-did probe — 2026-10-30
 
-**OK** · generated 2026-10-30T01:41:16.538Z · baseline: 2026-10-23
+**OK** · generated 2026-10-30T11:05:19.642Z · baseline: 2026-10-23
 
 Read-only. Names, titles and counts only — no env value, token, email or patron identity is read or printed.
 
 ## Since yesterday
 
-- $0 "Free": patrons 6193 → 6347
+- $0 "Free": patrons 6193 → 6353
 - $1 "Espresso Shot" still published (14 patrons)
-- $3 "Cappuccino": patrons 45 → 43
+- $3 "Cappuccino": patrons 45 → 41
 - $5 "Large Latte" still published (2 patrons)
 - tier welcome note: not observable via API
 - functions.php markers still ok
@@ -23,9 +23,9 @@ Read-only. Names, titles and counts only — no env value, token, email or patro
 
 | Tier | Price | Published | Patrons | Edited | Perk line | Welcome-note phrase in description |
 |---|--:|:-:|--:|---|:-:|:-:|
-| Free | $0 | yes | 6347 | 2025-01-14T19:04:38.578+00:00 | no | no |
+| Free | $0 | yes | 6353 | 2025-01-14T19:04:38.578+00:00 | no | no |
 | Espresso Shot | $1 | yes | 14 | 2026-09-25T04:54:35.931+00:00 | no | no |
-| Cappuccino | $3 | yes | 43 | 2026-09-25T04:54:06.913+00:00 | yes | no |
+| Cappuccino | $3 | yes | 41 | 2026-09-25T04:54:06.913+00:00 | yes | no |
 | Large Latte | $5 | yes | 2 | 2026-09-25T04:55:15.873+00:00 | no | no |
 
 - Tier welcome note: **not observable via API** — Patreon API v2 tier attributes have no welcome-note field. Checked campaign.thanks_msg and tier.description for the phrase "connect this patreon account" (from `reports/funnel/drafts/patreon-welcome-note-2026-09-09.md`): campaign.thanks_msg is empty (no campaign thank-you message set); tier descriptions do not contain it.
