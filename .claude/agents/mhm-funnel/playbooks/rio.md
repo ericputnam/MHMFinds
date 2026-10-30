@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-29 — 28d −6.2% is one-week-old news; B2 second trip did not fire; #375 landed
+- Tried: verdict 10-29 (T0 paper, `reports/funnel/rio-verdict-2026-10-29.md`) on the same PR as the stranded E271 (#375, merged origin/main, checks green); 28d decomposition from `client.ts` earnings 09-02→10-28 + GA4 segment by day; tracker run with Quinn's untracked 10-28/10-29 JSONs; `affiliate-pipe-read.ts --start 2026-09-29 --end 2026-10-28`.
+- Before → after: 28d $6,133.93 → $5,755.06 (−6.18%) = sessions +0.46% × RPM −6.61%; W1 09-30→10-06 −$300.33 = 79.8% of the gap (quarter-boundary rate, RPM −15.3%); W3 mix (segment 9,945 = 10.4%); W4 RPM +0.9% on 40 deploys; segment 2.60% → 5.25% predicts −2.7% RPM, ex-seg RPM $17.59 → $16.89 (−4.0%); E255 pair −$39.64 = 10.5%. Tracker HOLD 1/7 (10-21), 4 mornings absent → E262 leg 2 NOT MET, E241 earliest WIRE 11-01. affiliate_click 7d 16 ≥ 5 → B2 second trip not fired; pipe 25/19/0, $0, kill read 11-11. Non-ad $153 vs $450 line (MISSED).
+- Verdict: GREEN, no deploy signature; E241 HOLD; E262 closed 2/3 MET; E271 NOT READ (10-26 MISSED) → 10-31; November B2 = Q34 draft (A: $3 skip-the-wait perk, B: creator rev-share), affiliates repair-only to 11-11.
+- Next time: a 28d read anchored just after a quarter boundary carries the CPM trough for 28 days — print the week table first and the roll-off date (11-03), or a four-week-old demand dip gets read as this week's deploys.
+
 ## 2026-10-23 — E262: green Wednesday, flat on all three legs; E255 KEEP; the headline RPM +2.5% was the segment shrinking
 - Tried: guardrail verdict 10-23 (T0 paper, `reports/funnel/rio-verdict-2026-10-23.md`); E255 graded; E241 tracker on Quinn's tree; `affiliate-pipe-read.ts --start 2026-09-29 --end 2026-10-22`; Q32 (MV JWT renewal, T2) packaged. MV MCP down → `client.ts` direct; GA4 via the Data API MCP.
 - Before → after: 10-21 $187.68 vs $186.84 = 14,410 mon_pv (+1.1%) × 13.19 imp/mon_pv (−0.4%) × $0.988 CPM (−0.2%); segment 139 = 1.25% vs 6.29% → mix predicts RPM +5.4%, printed +2.5%, ex-seg RPM $17.03 vs $17.09 (−0.3%), MV mon-RPM +0.5%. 3-day −6.4% = 10-19 70% + 10-20 32% of the gap, Monday rolls off 10-24. 10-20 finalized $179.30 = 93.96% of $190.82 (E255 KEEP); 28d 98.08% / 102.51% (run 20). Pipe 09-29→10-22: gtracing 18 / 13 / 0 (72.2%), Envato 9 / 0, $0; affiliate_click 7d 9. JWT 20 d → ≈ 11-12.
@@ -49,10 +55,5 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: GREEN; E220 KEEP final (leg 2 MET); E227 leg 1 MET ×4 (leg 2 10-19); E234 MORE DATA (10-19 / 10-20 / 10-29). Amazon leg = unmeasurable (Q20 dropped).
 - Next time: a hand read whose window is `end − 27` drops the 4th same-weekday control (09-18 for a 10-16 read) — pass `--start` = end − 28 when reproducing a 4-control mean, or you reconcile three controls against four and call a 0.0-pt match a drift.
 
-## 2026-10-17 — E227: whole-segment read replaces excess-over-250; the guardrail prints it; E220 KEEP
-- Tried: guardrail verdict 10-17 (Tier 0) + code (PR #326 56f328f): revenue-guardrail.ts pulls GA4 site + segment sessions after status is decided, prints raw → ex-segment → share; rule imported from direct-bot-lib. MV MCP down again → client.ts direct; GA4 via the Data API MCP.
-- Before → after: 10-15 sessions +14.0% → ex-segment +0.7%; RPM −2.8% → ex-segment $17.82 (+10.0%); MV mon-session share 50.70% vs 56.71%, mon-RPM +8.8%. Segment 2,074 = 15.93% of the day (whole) vs 1,824 (excess method) — 250 apart on a spike day, 4.10% vs 1.93% over 28d. 28d 98.76% (run 15). E220 both legs MET.
-- Verdict: GREEN, mix not rate; E220 KEEP; E227 MORE DATA (read 10-18).
-- Next time: subtract the classifier's whole segment, never a hand threshold — and when a line's basis differs from the headline's (GA4 vs Mediavine), print both raw lines so the reader can see they agree before trusting the subtraction (10-15: +14.0% on both).
 
-_Older entries live verbatim in `archive/playbooks/rio-2026-09.md` (≤ 09-30) and `archive/playbooks/rio-2026-10.md` (10-01 → 10-04, 10-12 → 10-16); nothing deleted._
+_Older entries live verbatim in `archive/playbooks/rio-2026-09.md` (≤ 09-30) and `archive/playbooks/rio-2026-10.md` (10-01 → 10-04, 10-12 → 10-17); nothing deleted._
