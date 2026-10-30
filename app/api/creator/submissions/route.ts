@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCreator } from '@/lib/auth/creatorAuth';
 import { prisma } from '@/lib/prisma';
+import { getCreatorPageData } from '@/lib/creators';
+import { dashboardBadge, type DashboardBadge } from '@/lib/creatorBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -154,9 +156,26 @@ export async function GET(request: NextRequest) {
       rejected: statusCounts.find((s) => s.status === 'rejected')?._count || 0,
     };
 
+    // "Get your badge" card (Nova, E286): only when the signed-in creator's
+    // own profile has a page that renders. Optional — any failure → no card,
+    // never a failed dashboard.
+    let badge: DashboardBadge | null = null;
+    try {
+      const profile = await prisma.creatorProfile.findUnique({
+        where: { userId: auth.user.id },
+        select: { handle: true },
+      });
+      if (profile?.handle) {
+        badge = dashboardBadge(profile, await getCreatorPageData(profile.handle));
+      }
+    } catch (err) {
+      console.error('Creator badge lookup failed (dashboard renders without it):', err);
+    }
+
     return NextResponse.json({
       submissions,
       counts,
+      badge,
     });
   } catch (error) {
     console.error('Error fetching submissions:', error);
