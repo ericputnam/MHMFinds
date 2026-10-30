@@ -23,7 +23,7 @@ import { execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, sessionsExSegment, sessionsExSegmentLine, segmentDimensionFilter, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts, type SessionsByDate, type SessionsExSegment } from './revenue-guardrail-lib';
+import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, sessionsExSegment, sessionsExSegmentLine, exSegmentRpm, exSegmentRpmLine, segmentDimensionFilter, type ExSegmentRpm, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts, type SessionsByDate, type SessionsExSegment } from './revenue-guardrail-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -53,6 +53,9 @@ interface Verdict {
   /** E227: the judged day's sessions ex the Singapore Direct segment (GA4 basis). null = GA4 could not run; never a verdict input. */
   sessionsExSegment: SessionsExSegment | null;
   sessionsExSegmentLine: string;
+  /** E271: Mediavine revenue ÷ GA4 ex-segment sessions, day vs controls, with the mix-alone prediction and a mix/rate read. Informational. */
+  sessionsExSegmentRpm: ExSegmentRpm | null;
+  sessionsExSegmentRpmLine: string;
 }
 
 // E227 — GA4 sessions by day, site and segment, for the judged day and its same-weekday controls.
@@ -174,6 +177,10 @@ async function main() {
   const exSeg: SessionsExSegment | null = 'unavailable' in ga4 ? null : sessionsExSegment(day, priorDayKeys, ga4.site, ga4.segment);
   const exSegWhy = 'unavailable' in ga4 ? ga4.unavailable : exSeg ? null : `GA4 returned no row for ${day} or fewer than 2 same-weekday controls`;
   const exSegLine = sessionsExSegmentLine(exSeg, exSegWhy);
+  // E271: the same subtraction applied to the rate. Mediavine revenue over GA4 ex-segment sessions, so a headline
+  // RPM move that is only the segment's share moving reads "mix" in either direction. Informational, like exSeg.
+  const exSegRpm = exSegmentRpm(exSeg, actualDay.revenue, expectedDay.revenue);
+  const exSegRpmLine = exSegmentRpmLine(exSegRpm, exSegRpm ? null : exSegWhy ?? 'revenue or ex-segment sessions not positive');
 
   const reasons: string[] = [];
   let status: Status = 'green';
@@ -208,6 +215,7 @@ async function main() {
     rollbackBound: { ...facts, maxInWindowDeploys: ROLLBACK_BOUNDS.maxInWindowDeploys, maxTargetAgeHours: ROLLBACK_BOUNDS.maxTargetAgeMs / 3_600_000, line: bLine },
     day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, rollbackCandidate: rollbackTo, changes, health, reasons,
     sessionsExSegment: exSeg, sessionsExSegmentLine: exSegLine,
+    sessionsExSegmentRpm: exSegRpm, sessionsExSegmentRpmLine: exSegRpmLine,
   };
   const icon = status === 'green' ? '🟢' : status === 'yellow' ? '🟡' : '🔴';
   const actionText = `${action}${actionDetail ? ` (${actionDetail})` : ''}`;
@@ -221,9 +229,12 @@ async function main() {
     md += `| sessions, GA4 raw | ${Math.round(exSeg.raw.actual).toLocaleString()} | ${Math.round(exSeg.raw.expected).toLocaleString()} | ${pct(exSeg.raw.actual, exSeg.raw.expected)} |\n`;
     md += `| **sessions ex ${exSeg.rule.country} ${exSeg.rule.source}** (${exSeg.rule.experiment}, GA4) | ${Math.round(exSeg.exSegment.actual).toLocaleString()} | ${Math.round(exSeg.exSegment.expected).toLocaleString()} | ${pct(exSeg.exSegment.actual, exSeg.exSegment.expected)} |\n`;
   }
+  if (exSegRpm) {
+    md += `| **ex-segment RPM** (E271; MV revenue ÷ GA4 ex-segment sessions) | ${exSegRpm.actual.toFixed(2)} | ${exSegRpm.expected.toFixed(2)} | ${pct(exSegRpm.actual, exSegRpm.expected)} → ${exSegRpm.read} |\n`;
+  }
   md += `| 3-day revenue | ${money(window3.actualRevenue)} | ${money(window3.expectedRevenue)} | ${pct(window3.actualRevenue, window3.expectedRevenue)} |\n`;
   md += `| 3-day RPM | ${window3.actualRpm.toFixed(2)} | ${window3.expectedRpm.toFixed(2)} | ${pct(window3.actualRpm, window3.expectedRpm)} |\n`;
-  md += `\n${exSegLine}\n`;
+  md += `\n${exSegLine}\n\n${exSegRpmLine}\n`;
   md += `\nMediavine health: ${healthBad.length ? healthBad.map(([k, v]) => `${k}=${String(v)}`).join(', ') : 'all ok'}\n`;
   md += `\n## Production changes since ${shift(day, -3)} (72h before the judged day)\n\n`;
   md += changes.length ? changes.map((c) => `- ${c.kind} ${c.at.slice(0, 16)} \`${c.ref}\` ${c.text}${c.url ? ` — ${c.url}` : ''}`).join('\n') + '\n' : '- none\n';
@@ -233,7 +244,7 @@ async function main() {
   if (jsonOut) { mkdirSync(dirname(jsonOut), { recursive: true }); writeFileSync(jsonOut, JSON.stringify(v, null, 2)); }
   if (mdOut) { mkdirSync(dirname(mdOut), { recursive: true }); writeFileSync(mdOut, md); }
   if (!QUIET) console.log(md);
-  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine} · ${bLine} · ${exSegLine}`);
+  else console.log(`${icon} ${status} → ${actionText}${v.rollbackTo ? ` ${v.rollbackTo}` : ''} · ${reasons[0]} · ${covLine} · ${bLine} · ${exSegLine} · ${exSegRpmLine}`);
   process.exit(status.startsWith('red') ? 2 : 0);
 }
 
