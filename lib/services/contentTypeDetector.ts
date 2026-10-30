@@ -17,6 +17,8 @@
 import { BEDROOM_THEME, isBedroomTitle } from '../bedroomThemeRules';
 import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
 import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
+import { WEDDING_THEME, isWeddingTitle } from '../weddingThemeRules';
+import { GALLERY_POSE_THEME, isGalleryPoseTitle } from '../galleryPoseThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
 import { ACCESSORIES_CONTENT_TYPE, ACCESSORIES_TITLE_KEYWORDS } from '../accessoriesContentTypeRules';
@@ -1129,6 +1131,21 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Wedding theme — title only, whole words (E289; see lib/weddingThemeRules.ts).
+  // Never add it to ROOM_THEME_RULES: those also read the shared description.
+  if (isWeddingTitle(title) && !detectedThemes.includes(WEDDING_THEME)) {
+    detectedThemes.push(WEDDING_THEME);
+    allMatchedKeywords.push(WEDDING_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
+  // Gallery-pose theme — title only, whole words (E296; see lib/galleryPoseThemeRules.ts).
+  if (isGalleryPoseTitle(title) && !detectedThemes.includes(GALLERY_POSE_THEME)) {
+    detectedThemes.push(GALLERY_POSE_THEME);
+    allMatchedKeywords.push(GALLERY_POSE_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Determine overall confidence
   let confidence: ConfidenceLevel = 'low';
   if (detectedThemes.length > 0) {
@@ -1232,5 +1249,5 @@ export function getSupportedRoomThemes(): string[] {
   // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
   // a theme to its own rule file silently drops it from this list (bedroom
   // was missing here from #170 until 2026-09-25).
-  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME].sort();
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME].sort();
 }

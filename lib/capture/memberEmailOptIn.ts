@@ -74,6 +74,38 @@ export function rememberMemberOptIn(store: MemoryStore | null | undefined, value
   }
 }
 
+/**
+ * E287 (Cass, 2026-10-30) — "once" was only remembered on a click. A visitor
+ * who scrolled past was asked again on every mod page: 4,168 views from 173
+ * users (24 per user) for 1 waitlist row in 14 days (10-16→10-29, GA4
+ * `member_optin_view` / scoreboard `mod-detail-optin`), so E198 was KILLED by
+ * its own rule (≥14 rows). The offer now stops after this many page views
+ * without an answer — the remaining ask, not a nag.
+ */
+export const MEMBER_OPTIN_MAX_VIEWS = 3;
+
+/** localStorage key counting page views of the offer with no answer. */
+export const MEMBER_OPTIN_VIEWS_KEY = 'mhm_member_optin_views';
+
+/** Views so far; 0 when nothing valid is stored or the store throws. Never throws. */
+export function readMemberOptInViews(store: MemoryStore | null | undefined): number {
+  try {
+    const n = Number.parseInt(store?.getItem(MEMBER_OPTIN_VIEWS_KEY) ?? '', 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Count one more view. Swallows storage errors (worst case: the cap never trips). */
+export function recordMemberOptInView(store: MemoryStore | null | undefined): void {
+  try {
+    store?.setItem(MEMBER_OPTIN_VIEWS_KEY, String(readMemberOptInViews(store) + 1));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 export interface MemberOptInVisibility {
   /** next-auth `useSession().status`. */
   sessionStatus: 'authenticated' | 'unauthenticated' | 'loading';
@@ -84,6 +116,8 @@ export interface MemberOptInVisibility {
    * (before mount) — treated as "don't show" so first paint never guesses.
    */
   remembered: MemberOptInMemory | null | undefined;
+  /** Prior unanswered views (E287). Omitted = 0. At `MEMBER_OPTIN_MAX_VIEWS` the offer stops. */
+  views?: number;
 }
 
 /**
@@ -94,6 +128,7 @@ export interface MemberOptInVisibility {
 export function shouldShowMemberOptIn(v: MemberOptInVisibility): boolean {
   return (
     v.remembered === null &&
+    (v.views ?? 0) < MEMBER_OPTIN_MAX_VIEWS &&
     v.sessionStatus === 'authenticated' &&
     typeof v.email === 'string' &&
     EMAIL_SHAPE.test(v.email.trim())

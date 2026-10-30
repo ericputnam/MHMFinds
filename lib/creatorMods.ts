@@ -24,7 +24,7 @@
 
 import { prisma } from './prisma';
 import { MIN_MODS_FOR_PAGE, findAuthorVariants } from './creators';
-import { authorSlug, creatorHref, isJunkAuthorSlug } from './creatorSlug';
+import { authorSlug, canonicalCreatorSlug, creatorHref, isJunkAuthorSlug } from './creatorSlug';
 
 /** How many sibling mods the block shows. Same as the old API's `take`. */
 export const MORE_FROM_CREATOR_LIMIT = 6;
@@ -55,9 +55,15 @@ export interface MoreFromCreatorData {
  * 404 rule in lib/creators.ts getCreatorPageData so the mod page never
  * links to a creator URL that does not exist.
  */
-export function creatorHrefFor(author: string | null | undefined, totalMods: number): string | null {
+export function creatorHrefFor(
+  author: string | null | undefined,
+  totalMods: number,
+  /** E293: the folded spellings, so the link goes to the one canonical page, not a 308. */
+  variants?: ReadonlyArray<{ author: string; mods: number }>,
+): string | null {
   if (!author) return null;
-  const slug = authorSlug(author);
+  const own = authorSlug(author);
+  const slug = variants && variants.length > 0 ? canonicalCreatorSlug(variants, own) : own;
   if (isJunkAuthorSlug(slug)) return null;
   if (totalMods < MIN_MODS_FOR_PAGE) return null;
   return creatorHref(slug);
@@ -102,6 +108,7 @@ export async function getMoreFromCreator(
     let authors: string[];
     let totalMods: number;
     let displayName: string;
+    let folded: Array<{ author: string; mods: number }> | undefined;
 
     if (isJunkAuthorSlug(slug)) {
       // Scraper-fallback strings ("Kobe Sweats 135179830") are not a creator;
@@ -116,6 +123,7 @@ export async function getMoreFromCreator(
       authors = variants.map((v) => v.author);
       totalMods = variants.reduce((n, v) => n + v.mods, 0);
       displayName = variants[0].author.trim();
+      folded = variants;
     }
 
     if (totalMods < 2) return null;
@@ -140,7 +148,7 @@ export async function getMoreFromCreator(
     return {
       displayName,
       totalMods,
-      creatorHref: creatorHrefFor(author, totalMods),
+      creatorHref: creatorHrefFor(author, totalMods, folded),
       mods: rows.map(toCard),
     };
   } catch (error) {

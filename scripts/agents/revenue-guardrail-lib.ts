@@ -312,6 +312,54 @@ export function sessionsExSegmentLine(x: SessionsExSegment | null, unavailableWh
   return `${tag}: raw ${n(x.raw.actual)} vs ${n(x.raw.expected)} (${pctDelta(x.raw.actual, x.raw.expected)}) → ex-segment ${n(x.exSegment.actual)} vs ${n(x.exSegment.expected)} (${pctDelta(x.exSegment.actual, x.exSegment.expected)}) · segment ${n(x.segment.actual)} = ${pctShare(x.segment.shareActual)} of the day (controls ${pctShare(x.segment.shareExpected)}, ${x.priorDays.length} same weekdays)`;
 }
 
+/**
+ * E271 (2026-10-25, Rio): the headline session RPM moves for two reasons — the segment's share of the
+ * denominator moved (mix), or the real audience earned a different rate (rate). An ex-segment RPM delta
+ * at or inside this band reads as mix. It is a classification band for the verdict text, not a
+ * guardrail threshold: the status rules above never read it, and the band is symmetric because a
+ * mix-driven *gain* must be caught as readily as a mix-driven dip (10-21: headline RPM +2.5%, ex-segment
+ * −0.3% — the segment shrank from 6.29% to 1.25% and a flat demand day read as a lift).
+ */
+export const EX_SEGMENT_RPM_MIX_BAND = 0.01;
+
+export interface ExSegmentRpm {
+  /** Mediavine revenue ÷ GA4 sessions ex the segment × 1000 — the judged day and the mean of its controls. */
+  actual: number;
+  expected: number;
+  /** The raw-RPM delta that mix alone predicts, (1 − shareActual) / (1 − shareExpected) − 1; null when a share is null. */
+  mixPredictedRpmDelta: number | null;
+  exSegmentRpmDelta: number;
+  read: 'mix' | 'rate';
+}
+
+/**
+ * Pure. Revenue is Mediavine's (the basis the status rules grade on); sessions are GA4's ex the segment
+ * (the only basis the segment can be subtracted on). Returns null (could-not-run) when either revenue
+ * or either ex-segment session count is not positive — the caller prints "unavailable", never a number.
+ */
+export function exSegmentRpm(x: SessionsExSegment | null, revenueActual: number, revenueExpected: number, band: number = EX_SEGMENT_RPM_MIX_BAND): ExSegmentRpm | null {
+  if (!x) return null;
+  if (!(revenueActual > 0) || !(revenueExpected > 0) || !(x.exSegment.actual > 0) || !(x.exSegment.expected > 0)) return null;
+  const actual = (revenueActual / x.exSegment.actual) * 1000;
+  const expected = (revenueExpected / x.exSegment.expected) * 1000;
+  const exSegmentRpmDelta = actual / expected - 1;
+  const mixPredictedRpmDelta = x.segment.shareActual == null || x.segment.shareExpected == null
+    ? null
+    : (1 - x.segment.shareActual) / (1 - x.segment.shareExpected) - 1;
+  // Compare without the division so a delta exactly on the band reads inside it (101/100 − 1 is 0.010000000000000009).
+  return { actual, expected, mixPredictedRpmDelta, exSegmentRpmDelta, read: Math.abs(actual - expected) <= band * expected ? 'mix' : 'rate' };
+}
+
+const signedPct = (d: number) => `${d >= 0 ? '+' : ''}${(d * 100).toFixed(1)}%`;
+
+/** One line, printed every run under the sessions line, so a mix-driven RPM move is never booked as demand. */
+export function exSegmentRpmLine(r: ExSegmentRpm | null, unavailableWhy: string | null = null, band: number = EX_SEGMENT_RPM_MIX_BAND): string {
+  const tag = `ex-segment RPM (${SESSIONS_SEGMENT_RULE.experiment}; Mediavine revenue ÷ GA4 sessions ex ${SESSIONS_SEGMENT_RULE.country} ${SESSIONS_SEGMENT_RULE.source})`;
+  if (!r) return `${tag}: unavailable${unavailableWhy ? ` — ${unavailableWhy}` : ''}`;
+  const mix = r.mixPredictedRpmDelta == null ? 'n/a' : signedPct(r.mixPredictedRpmDelta);
+  return `${tag}: $${r.actual.toFixed(2)} vs $${r.expected.toFixed(2)} (${pctDelta(r.actual, r.expected)}) · mix alone predicts raw RPM ${mix} → ${r.read} (mix band ±${(band * 100).toFixed(0)}%)`;
+}
+
 /** One line, printed every run next to the coverage line, so the numbers behind a withheld rollback are visible. */
 export function boundLine(facts: RollbackFacts | undefined, rollbackTo: string | null, bounds: RollbackBounds = ROLLBACK_BOUNDS): string {
   if (!facts) return 'rollback bound: facts unknown (no classifyWindow pass) → withheld';

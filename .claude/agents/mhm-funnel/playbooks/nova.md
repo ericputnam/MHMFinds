@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-29
+- Tried: E286 (T0) — "Get your badge" card on the creator dashboard (`/creators/`), shown only when the signed-in creator's own page renders (`dashboardBadge`, decided in GET /api/creator/submissions), GA4 `creator_badge_cta`; dashboard fetch carries a per-request nonce (per-user GET under the /api/* `s-maxage=60` stamp). E253 KEEP ("+ N other" on 5/5 scoreboards written 10-22→10-29).
+- Before → after: creator-badge sessions 0 (GA4 09-25→10-23); dashboard links to the badge page 0 → 1 card.
+- Verdict: MORE DATA (read 2026-11-09 with E269).
+- Next time: an embed only drives traffic if the creator finds it — put the prompt where creators already are before building more badge variants.
+
 ## 2026-10-23
 - Tried: E260 (T0, PR #368 `67e3ebd`) — `lib/funnel/signupQuality.ts` + scoreboard row "Creator-flagged sign-ups 7d: N (M scripted-shaped, K human-shaped)" and an Owned-audience warning bullet. Grades: E211 KILL-lift (0 of ≥3; 2 CTA clicks ever), E218 KEEP (Bing /creator/* 68 ≥ 62, site Bing 95.46%), E106 KILL-lift (778 vs 1,172; 523 pages w/ GSC impr; /mods/* clicks 145%), E97 hub NOT MET (23/28d vs 50; leaves 778) — Navbar revert declined, Quinn's call.
 - Before → after: form sign-ups since 10-15: 86 flagged (6% ever active, 86/86 also opted in, 0 submissions, random-case letters-only usernames, 104 IPs/115 rows, one UA family) vs 46 unflagged (76% active, 14/46 opted in). GA4 `sign_up` 43 = the unflagged count. Onset W42 (10-12): 58 scripted vs 0–6/wk before. 68 of 87 `signup-optin` rows 7d are these accounts. Threshold ≥6 case flips chosen on the pre-onset population first (2 of 789 active humans match).

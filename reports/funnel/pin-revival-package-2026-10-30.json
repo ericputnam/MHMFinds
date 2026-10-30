@@ -1,0 +1,120 @@
+{
+  "generated": "2026-10-30",
+  "generator": "scripts/agents/rank-pin-destinations.ts",
+  "status": "GENERATED — read-only output; not a queued Tier 2 package until an operator/agent adds an experiment id and a per-day/days plan and gets approval (SD-10)",
+  "window_7d": "2026-10-22..2026-10-28",
+  "window_28d": "2026-10-01..2026-10-28",
+  "source": "GA4 hostName x landingPagePlusQueryString, sessionSource CONTAINS 'pinterest' (case-insensitive) — the wider definition used in reports/funnel/pinterest-read-2026-09-19.md",
+  "selection": "stranded rows (unposted, Post Date < today-14d), destination normalised (blog.musthavemods.com -> musthavemods.com, query stripped), >=50 Pinterest sessions/7d, <=10 ids/destination; writer plugin-scheduled rows excluded (Post Date 2025-01-01 and created_at >= 2026-09-21 or destination managed by the plugin — E135)",
+  "pool_rows": 1000,
+  "dropped_below_threshold_destinations": 81,
+  "dropped_skipped_host_rows": 80,
+  "dropped_unparseable_url_rows": 0,
+  "dropped_plugin_scheduled_rows": 121,
+  "plugin_managed_destinations": 40,
+  "destinations_selected": 6,
+  "ids_selected": 52,
+  "next_step": "python3 scripts/agents/revive-stranded-pins.py --ids-from <this file> --max-per-url 1 --per-day N --days N   (dry run first; --apply needs Tier 2 approval, SD-10)",
+  "destinations": [
+    {
+      "path": "/sims-4-graphic-tees/",
+      "sessions7d": 81,
+      "sessions28d": 342,
+      "stranded_rows": 13,
+      "ids": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2019,
+        2020,
+        2021,
+        2022
+      ]
+    },
+    {
+      "path": "/best-sims-4-bachelor-pad-cc/",
+      "sessions7d": 71,
+      "sessions28d": 220,
+      "stranded_rows": 17,
+      "ids": [
+        4553,
+        4555,
+        4556,
+        4557,
+        4558,
+        4559,
+        4560,
+        4561,
+        4562,
+        4563
+      ]
+    },
+    {
+      "path": "/best-sims-4-main-menu-overrides/",
+      "sessions7d": 65,
+      "sessions28d": 252,
+      "stranded_rows": 16,
+      "ids": [
+        4528,
+        4529,
+        4530,
+        4531,
+        4532,
+        4533,
+        4534,
+        4535,
+        4536,
+        4537
+      ]
+    },
+    {
+      "path": "/sims-4-rugs-cc/",
+      "sessions7d": 62,
+      "sessions28d": 259,
+      "stranded_rows": 21,
+      "ids": [
+        2383,
+        2384,
+        2385,
+        2386,
+        2387,
+        2389,
+        2390,
+        2391,
+        2392,
+        2393
+      ]
+    },
+    {
+      "path": "/sims-4-cc-finds-for-december/",
+      "sessions7d": 55,
+      "sessions28d": 203,
+      "stranded_rows": 29,
+      "ids": [
+        6569,
+        6985,
+        6986,
+        6987,
+        6988,
+        6989,
+        6990,
+        6991,
+        6992,
+        6993
+      ]
+    },
+    {
+      "path": "/sims-4-sandals-cc/",
+      "sessions7d": 51,
+      "sessions28d": 193,
+      "stranded_rows": 2,
+      "ids": [
+        1695,
+        1696
+      ]
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "generated": "2026-10-30",
+  "script": "scripts/agents/pin-runway-topup.py",
+  "experiment": "SD-22-topup",
+  "updated": 17,
+  "entries": [
+    {
+      "id": 2011,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4555,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 4528,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/best-sims-4-main-menu-overrides/",
+      "board_name": "Sims 4 House Layouts"
+    },
+    {
+      "id": 2383,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 6569,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/sims-4-cc-finds-for-december/",
+      "board_name": "Sims 4 Christmas CC"
+    },
+    {
+      "id": 1695,
+      "old_date": "2025-06-18",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/sims-4-sandals-cc/",
+      "board_name": "Sims 4 CC Shoes"
+    },
+    {
+      "id": 2012,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4556,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 4529,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/best-sims-4-main-menu-overrides/",
+      "board_name": "Sims 4 House Layouts"
+    },
+    {
+      "id": 2384,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 6985,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/sims-4-cc-finds-for-december/",
+      "board_name": "Sims 4 Christmas CC"
+    },
+    {
+      "id": 1696,
+      "old_date": "2025-06-18",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/sims-4-sandals-cc/",
+      "board_name": "Sims 4 CC Shoes"
+    },
+    {
+      "id": 2013,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4557,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 4530,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/best-sims-4-main-menu-overrides/",
+      "board_name": "Sims 4 House Layouts"
+    },
+    {
+      "id": 2385,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 6986,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/sims-4-cc-finds-for-december/",
+      "board_name": "Sims 4 Christmas CC"
+    }
+  ],
+  "seo_pass": {
+    "source": "page",
+    "status": "applied",
+    "reason": null,
+    "total": 17,
+    "passing": 0,
+    "need_fix": 17,
+    "fixable": 17,
+    "page_unavailable": 0,
+    "mean_score": 46,
+    "resolved": 6,
+    "slug_count": 6,
+    "updated": 17,
+    "skipped": 0,
+    "ledger": "reports/funnel/pin-seo-rollback-2026-10-30-topup.json"
+  }
+}

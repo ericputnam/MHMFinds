@@ -34,8 +34,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import {
   MEMBER_OPTIN_EVENTS,
   MEMBER_OPTIN_SOURCE,
+  MEMBER_OPTIN_MAX_VIEWS,
   MEMBER_OPTIN_STORAGE_KEY,
+  MEMBER_OPTIN_VIEWS_KEY,
   readMemberOptInMemory,
+  readMemberOptInViews,
+  recordMemberOptInView,
   rememberMemberOptIn,
   shouldShowMemberOptIn,
 } from '../../lib/capture/memberEmailOptIn';
@@ -76,6 +80,45 @@ describe('shouldShowMemberOptIn', () => {
     expect(shouldShowMemberOptIn({ sessionStatus: 'authenticated', email: null, remembered: null })).toBe(false);
     expect(shouldShowMemberOptIn({ sessionStatus: 'authenticated', email: '', remembered: null })).toBe(false);
     expect(shouldShowMemberOptIn({ sessionStatus: 'authenticated', email: 'not-an-address', remembered: null })).toBe(false);
+  });
+});
+
+describe('E287 view cap', () => {
+  const mapStore = () => {
+    const m = new Map<string, string>();
+    return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), m };
+  };
+
+  it('stops after MEMBER_OPTIN_MAX_VIEWS unanswered views (3), and an omitted count still shows', () => {
+    expect(MEMBER_OPTIN_MAX_VIEWS).toBe(3);
+    const base = { sessionStatus: 'authenticated' as const, email: ADDR, remembered: null };
+    expect(shouldShowMemberOptIn(base)).toBe(true);
+    for (let v = 0; v < MEMBER_OPTIN_MAX_VIEWS; v++) expect(shouldShowMemberOptIn({ ...base, views: v })).toBe(true);
+    expect(shouldShowMemberOptIn({ ...base, views: MEMBER_OPTIN_MAX_VIEWS })).toBe(false);
+    expect(shouldShowMemberOptIn({ ...base, views: 24 })).toBe(false);
+  });
+
+  it('counts views under its own key, separate from the answer key; bad or throwing stores read 0', () => {
+    expect(MEMBER_OPTIN_VIEWS_KEY).not.toBe(MEMBER_OPTIN_STORAGE_KEY);
+    const s = mapStore();
+    expect(readMemberOptInViews(s)).toBe(0);
+    recordMemberOptInView(s);
+    recordMemberOptInView(s);
+    expect(readMemberOptInViews(s)).toBe(2);
+    expect(s.m.has(MEMBER_OPTIN_STORAGE_KEY)).toBe(false);
+    s.setItem(MEMBER_OPTIN_VIEWS_KEY, 'junk');
+    expect(readMemberOptInViews(s)).toBe(0);
+    const throwing = { getItem: () => { throw new Error('x'); }, setItem: () => { throw new Error('x'); } };
+    expect(readMemberOptInViews(throwing)).toBe(0);
+    expect(() => recordMemberOptInView(throwing)).not.toThrow();
+    expect(readMemberOptInViews(null)).toBe(0);
+  });
+
+  it('ModDetailClient passes the stored count to the gate and records a view only while shown', () => {
+    const src = readFileSync(join(process.cwd(), 'app/mods/[id]/ModDetailClient.tsx'), 'utf8').replace(/^\s*\/\/.*$/gm, '');
+    expect(src).toMatch(/readMemberOptInViews\(/);
+    expect(src).toMatch(/views:\s*memberOptInViews/);
+    expect(src).toMatch(/if \(showMemberOptIn\) recordMemberOptInView\(/);
   });
 });
 

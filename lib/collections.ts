@@ -504,7 +504,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-25 (E272): 'male-clothes' → 'gshade-presets' (male-clothes
     // keeps 4 inbound; the GShade page needs a second source that itself
     // clears MIN_INBOUND). Visual presets sit next to CAS presets in search.
-    related: ['skin-details', 'pregnancy-mods', 'gshade-presets'],
+    // 2026-10-30 (E296): 'skin-details' → 'gallery-poses' (skin-details keeps
+    // 5 inbound). A body preset is shown off in CAS, where gallery poses live.
+    related: ['gallery-poses', 'pregnancy-mods', 'gshade-presets'],
     // The four legacy body-preset listicles were un-redirected (2026-07
     // revert — they outrank this page) and are now DIFFERENTIATED pairs.
     blogUrl: '/sims-4-body-presets/',
@@ -615,18 +617,24 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     heading: 'Sims 4 Pose Packs',
     // Head-term title: the legacy article /sims-4-gallery-poses/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Gallery Poses & Pose Packs — 570+ Poses | MustHaveMods',
+    metaTitle: 'Sims 4 Gallery Poses & Pose Packs — 850+ Poses | MustHaveMods',
     metaDescription:
-      'Browse 570+ Sims 4 pose packs and gallery poses for CAS, couples, and storytelling — sorted by downloads, hand-picked from top creators.',
+      'Browse 850+ Sims 4 pose packs and gallery poses for CAS, couples, and storytelling — sorted by downloads, hand-picked from top creators.',
     tagline: 'Screenshot-ready poses for CAS, couples, and stories',
     intro:
-      'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together nearly 600 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',
+      'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together over 850 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',
     filter: { contentType: 'poses' },
-    expectedCount: 573,
+    // 573 → 902 on 2026-10-28 (E281): the facet had grown to 922 under copy
+    // that still said "570+" / "nearly 600"; 20 non-poses pinned out by id
+    // (hand-audited-content-types.ts § E281). Copy 570+ → 850+ (52 of headroom).
+    expectedCount: 902,
     // 2026-10-25 (E272): 'female-clothes' → 'gshade-presets' (female-clothes
     // keeps 5 inbound). Screenshotters run a pose pack and a GShade preset
     // together, so this is the natural first inbound for the new page.
-    related: ['gshade-presets', 'loading-screens', 'pregnancy-mods'],
+    // 2026-10-30 (E296): 'pregnancy-mods' → 'gallery-poses' (pregnancy-mods
+    // keeps 2 inbound: body-presets, kids-cc). The gallery/CAS sub-page is
+    // the narrower answer to the queries this head-term title owns.
+    related: ['gshade-presets', 'wedding-cc', 'gallery-poses'],
     // NOT /sims-4-gallery-poses/ — that article 301s here. The
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
@@ -819,7 +827,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['jewelry', 'watches'],
     },
     expectedCount: 439,
-    related: ['tattoos', 'goth-cc', 'makeup-cc'],
+    related: ['tattoos', 'wedding-cc', 'makeup-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // jewelry cc" intent, this page owns browse/filter intent.
     // /sims-4-jewelry-cc/ is live (HTTP 200, no redirect, verified
@@ -1266,6 +1274,68 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // family; the type carries one blogUrl, so the GShade post — the larger
     // of the two — is the twin.
     blogUrl: '/sims-4-gshade-presets/',
+  },
+  {
+    // Rowan, 2026-10-30 (E289, Tier 0 — registry entry in the existing
+    // pattern). The EA-pack page for My Wedding Stories. GSC 09-29→10-27:
+    // ~170 impressions / ~5 clicks on wedding queries ("sims 4 wedding dress
+    // cc" 11 at 17.7, "… maxis match" 7 at 15.1, "sims 4 wedding cc" 6 at
+    // 20.5, "wedding mods sims 4" 6 at 36.2) with no page matching browse
+    // intent. The theme is TITLE-ONLY (lib/weddingThemeRules.ts, keyword
+    // counts and rejections in its comment); 0 rows carried it before.
+    // Inbound: poses (wedding pose packs are 20 of the rows) and jewelry-cc
+    // (wedding/engagement rings), repointed from loading-screens and goth-cc,
+    // which keep 2 and 3 inbound.
+    slug: 'wedding-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Wedding CC',
+    heading: 'Sims 4 Wedding CC',
+    // 2026-10-30 (E296): "Browse" added — canonical-trailing-slash.test.ts
+    // requires browse/finder intent on every differentiated page and this
+    // row (E289, #403) merged red on main against that rule.
+    metaTitle: 'Sims 4 Wedding CC — Browse 100+ Dresses, Poses & Venues | MustHaveMods',
+    metaDescription:
+      'Browse Sims 4 wedding CC in one place: wedding dresses, veils, suits, rings, arches, cakes, venues and wedding pose packs, sorted by downloads.',
+    tagline: 'Wedding dresses, suits, rings, venues and wedding-day pose packs',
+    intro:
+      'My Wedding Stories gave the game a proper ceremony: the arch, the vows, the cake cutting. What it did not give you is much to wear. There is a small rack of gowns, a couple of suits, and one bouquet, so every wedding in your save starts to look like the same wedding.\n\nThis collection is the wedding day as the community builds it. There are wedding dresses from sleek satin sheaths to cathedral-length gowns with veils, suits and tuxedos for the groom, bridesmaid dresses, and engagement and wedding rings. The build side has arches, wedding cakes, decor sets and whole ready-made venues, from a rustic barn to a beach ceremony. Storytellers get the pose packs: first look, the kiss, group portraits, and the bridal party.\n\nEvery mod here was picked because its own title says it is wedding CC. Nothing gets in because a blog post happened to mention a wedding. Everything is filtered to Sims 4, link-checked and SFW. Sort by downloads for the sets everyone already uses, or scroll for the smaller finds.',
+    filter: { themesAny: ['wedding'] },
+    expectedCount: 118,
+    related: ['female-clothes', 'jewelry-cc', 'poses'],
+    blogUrl: '/sims-4-wedding-cc/',
+  },
+  {
+    // Rowan, 2026-10-30 (E296, Tier 0 — registry entry in the existing
+    // pattern). GSC 10-02→10-29: the "gallery poses sims 4" family (≈20
+    // queries — "gallery poses sims 4" 47 impr / 1 click at 7.7, "ts4 gallery
+    // poses" 26 / 1 at 8.3, "sims 4 cas poses for gallery" 25 / 0 at 8.0,
+    // "the sims 4 gallery poses" 20 / 1 at 6.6, "gallery pose pack sims 4"
+    // 18 / 0 at 7.8) = ≈227 impressions / 12 clicks, every one landing on the
+    // 900-row /games/sims-4/poses/ at position 6–9. The legacy article
+    // /sims-4-gallery-poses/ 301s to that page (vercel.json), so nothing on
+    // the site answers the narrow intent. The theme is TITLE-ONLY
+    // (lib/galleryPoseThemeRules.ts, keyword counts and rejections in its
+    // comment); 0 rows carried it before the 2026-10-30 retag (88 added,
+    // 0 stripped, every row read). Inbound: poses and body-presets,
+    // repointed from pregnancy-mods and skin-details, which keep 2 and 5.
+    slug: 'gallery-poses',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Gallery Poses',
+    heading: 'Sims 4 Gallery Poses',
+    metaTitle: 'Sims 4 Gallery Poses — Browse 80+ CAS Poses for the Gallery | MustHaveMods',
+    metaDescription:
+      'Browse 80+ Sims 4 gallery poses and CAS pose packs: single, couple, family, toddler, pet and male gallery poses that replace the default CAS stance, sorted by downloads.',
+    tagline: 'CAS and Gallery card poses for singles, couples, families and pets',
+    intro:
+      'Every sim and household you upload to the Gallery gets one still: the pose they strike in Create-A-Sim. By default that is the same hands-at-sides stance for everyone, which is why the sims on the Gallery front page never look like they came out of the base game. They did — they just have a gallery pose pack installed.\n\nGallery poses are different from Pose Player packs. They replace the CAS idle, so they show up in Create-A-Sim and on the Gallery card with no extra mod, and most of them come as a set you pick from with the CAS trait or an in-pack override. This collection is only those: single-sim poses for a portrait, couple and fiancé poses, family poses with newborns, toddlers and teens, group poses for roommates and friends, poses with cats, dogs and horses, and male, child and toddler sets for the ages the default stance serves worst.\n\nEvery pack here was picked because its own title says it is a gallery or CAS pose. In-game Pose Player packs live on the pose packs page. Everything is filtered to Sims 4, link-checked and SFW. Sort by downloads for the sets people actually upload with, or scroll for the smaller finds.',
+    filter: { themesAny: ['gallery-pose'] },
+    expectedCount: 88,
+    related: ['poses', 'body-presets', 'gshade-presets'],
+    // The gallery-poses article 301s to /games/sims-4/poses/; the CAS-poses
+    // article (29 of these rows) is the still-live editorial companion.
+    blogUrl: '/sims-4-cas-poses/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level

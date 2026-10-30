@@ -98,7 +98,83 @@ if [ "${FUNNEL_ALLOW_SECOND_RUN:-0}" = "1" ]; then
   log "day-lock: FUNNEL_ALLOW_SECOND_RUN=1 — not taking the $TODAY lock (manual run)"
 else
   day_lock_acquire || exit 0
-  trap day_lock_release EXIT   # replaced below by `trap 'cleanup; day_lock_release' EXIT` once worktrees exist
+fi
+trap 'day_lock_release; run_lock_release' EXIT   # replaced below by `trap 'cleanup; day_lock_release; run_lock_release' EXIT`
+
+# E297 (2026-10-30): one runner at a time, ACROSS days. The day-lock above is keyed on TODAY, so it cannot see a
+# runner for another day: the 10-29 catch-up (runner pid 10739, started by hand 10-29 21:40 local) was still merging
+# at 07:08 local 10-30 when the scheduled 10-30 run (pid 28212) started — two Quinns dispatched specialists at once
+# and only merge-gate.sh kept their merges apart. Now a single global lock (logs/funnel-run.lock, pid + day inside,
+# atomic mkdir like the day-lock) is taken right after the day-lock. If another LIVE runner holds it, this run waits
+# up to FUNNEL_RUN_LOCK_WAIT_S (default 1800 s, polling FUNNEL_RUN_LOCK_POLL_S) for it to finish; past the ceiling
+# it lands a MISSED/DEFERRED ledger row (ledger-commit.sh, the run that knows it did not run writes the record) and
+# exits 75 BEFORE it touches a worktree. "Alive" is kill -0 / ps (EPERM counts as alive), and a live pid whose
+# command line does not mention "funnel" is a reused pid → stale (a power loss leaves the lock; the pid gets recycled).
+# A lock that never got a pid is broken after DAY_LOCK_EMPTY_GRACE_S, as above. FUNNEL_ALLOW_CONCURRENT_RUN=1 skips it
+# (manual use only; FUNNEL_ALLOW_SECOND_RUN does NOT — a manual re-run of a day must still not overlap another runner).
+RUN_LOCK="${FUNNEL_DAY_LOCK_DIR:-$PROJECT_DIR/logs}/funnel-run.lock"
+run_lock_holder_alive() {  # $1 pid -> rc 0 alive (or cannot tell), 1 dead or a recycled pid
+  local cmd
+  day_lock_holder_alive "$1" || return 1
+  cmd="$(ps -ww -p "$1" -o command= 2>/dev/null)"
+  [ -z "$cmd" ] && return 0                          # could not read it: alive (never break on "could not tell")
+  case "$cmd" in *funnel*) return 0 ;; esac
+  return 1
+}
+run_lock_try() {  # rc 0 taken · 1 held by a live runner (RUN_LOCK_HOLDER / RUN_LOCK_HOLDER_DAY set)
+  local m age
+  if mkdir "$RUN_LOCK" 2>/dev/null; then
+    echo "$TODAY" >"$RUN_LOCK/day"; echo "$$" >"$RUN_LOCK/pid"
+    log "run-lock: pid $$ owns the funnel runner for $TODAY ($RUN_LOCK)"
+    return 0
+  fi
+  RUN_LOCK_HOLDER="$(cat "$RUN_LOCK/pid" 2>/dev/null)"; RUN_LOCK_HOLDER_DAY="$(cat "$RUN_LOCK/day" 2>/dev/null)"
+  case "$RUN_LOCK_HOLDER" in
+    '' | *[!0-9]*)
+      m="$(stat -f %m "$RUN_LOCK" 2>/dev/null || stat -c %Y "$RUN_LOCK" 2>/dev/null)"
+      age=$(( $(date +%s) - ${m:-$(date +%s)} ))
+      [ "$age" -lt "${DAY_LOCK_EMPTY_GRACE_S:-60}" ] && { RUN_LOCK_HOLDER="?"; return 1; }
+      log "run-lock: stale lock — no holder pid after ${age}s, breaking it"
+      ;;
+    *)
+      run_lock_holder_alive "$RUN_LOCK_HOLDER" && return 1
+      log "run-lock: stale lock — holder pid $RUN_LOCK_HOLDER (day ${RUN_LOCK_HOLDER_DAY:-?}) is dead or recycled, breaking it"
+      ;;
+  esac
+  rm -rf "$RUN_LOCK"
+  mkdir "$RUN_LOCK" 2>/dev/null || return 1           # lost the race to another start: it is the live runner now
+  echo "$TODAY" >"$RUN_LOCK/day"; echo "$$" >"$RUN_LOCK/pid"
+  log "run-lock: pid $$ owns the funnel runner for $TODAY ($RUN_LOCK)"
+  return 0
+}
+run_lock_acquire() {  # rc 0 this run owns the runner · 75 another live runner outlasted the wait (row landed, caller exits)
+  local waited=0 wait_s="${FUNNEL_RUN_LOCK_WAIT_S:-1800}" poll="${FUNNEL_RUN_LOCK_POLL_S:-30}" lc row hhmm
+  RUN_LOCK_HOLDER=""; RUN_LOCK_HOLDER_DAY=""
+  while :; do
+    run_lock_try && { [ "$waited" -gt 0 ] && log "run-lock: waited ${waited}s for the other runner"; return 0; }
+    [ "$waited" -ge "$wait_s" ] && break
+    [ "$waited" -eq 0 ] && log "run-lock: another funnel runner is alive (pid ${RUN_LOCK_HOLDER:-?}, day ${RUN_LOCK_HOLDER_DAY:-?}) — waiting up to ${wait_s}s (E297)"
+    sleep "$poll"; waited=$((waited + poll))
+  done
+  hhmm="$(date '+%H:%M')"
+  log "DEFERRED RUN — funnel runner pid ${RUN_LOCK_HOLDER:-?} (day ${RUN_LOCK_HOLDER_DAY:-?}) still alive after ${waited}s; $TODAY's Quinn will not start, exiting 75 (E297)"
+  row="| $TODAY $hhmm | check | mhm-funnel-daily: MISSED $TODAY — DEFERRED, Quinn did not run: funnel runner pid ${RUN_LOCK_HOLDER:-?} (day ${RUN_LOCK_HOLDER_DAY:-?}) still alive after ${waited}s (E297 run-lock) |  |  | MISSED | two runners must not dispatch at once; re-run by hand once it exits |"
+  lc="${FUNNEL_LEDGER_COMMIT:-$PROJECT_DIR/scripts/agents/ledger-commit.sh}"
+  if [ -x "$lc" ]; then
+    "$lc" --row "$row" --label "MISSED $TODAY run-lock DEFERRED" 2>&1 | while IFS= read -r l; do log "run-lock: $l"; done
+  else
+    log "run-lock: ledger-commit.sh not found — DEFERRED row NOT landed: $row"
+  fi
+  return 75
+}
+run_lock_release() {  # only the holder releases
+  [ "$(cat "$RUN_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$RUN_LOCK" && log "run-lock: pid $$ released the funnel runner"
+  return 0
+}
+if [ "${FUNNEL_ALLOW_CONCURRENT_RUN:-0}" = "1" ]; then
+  log "run-lock: FUNNEL_ALLOW_CONCURRENT_RUN=1 — not taking the global runner lock (manual run)"
+else
+  run_lock_acquire || exit 75
 fi
 # <<< day-lock
 
@@ -191,7 +267,7 @@ cleanup() {
   [ "${#dirs[@]}" -gt 0 ] && reap_worktrees "${FUNNEL_CLEANUP_WAIT_S:-1800}" "${FUNNEL_CLEANUP_TERM_GRACE_S:-30}" "${dirs[@]}"
   git worktree prune >/dev/null 2>&1 || true
 }
-trap 'cleanup; day_lock_release' EXIT   # day-lock (E176): release only after the trees are reaped
+trap 'cleanup; day_lock_release; run_lock_release' EXIT   # day-lock (E176) + run-lock (E297): release only after the trees are reaped
 
 cd "$WT" || exit 1
 # Secrets: COPY .env.local into the throwaway worktrees — never symlink it. Webpack follows the link and
@@ -446,12 +522,31 @@ CLAUDE_CLEAN=(env -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH -u 
 # diagnoses HANG; (c) every poll gap longer than FUNNEL_PREFLIGHT_GAP_S is counted as "asleep/suspended", so the
 # cause is a number in the log, not an inference. A stopped process does not act on TERM, so it gets TERM, then CONT,
 # then KILL. Self-contained: __tests__/unit/runner-preflight-watch.test.ts extracts this block and runs it.
+# E290 (2026-10-29): the watcher's wall clock keeps counting while the host sleeps, so a lid closed mid-preflight
+# is graded HANG the moment the host wakes — 10-24: killed at 977 s wall of which 974 s asleep (3 s awake); 10-29:
+# 1013 s wall, 998 s asleep (15 s awake). A healthy preflight answers in 4–6 s awake, so both were MISSED mornings
+# with a working CLI. Now a HANG whose attempt the host slept through (asleep/suspended > 0) is retried ONCE on
+# the awake host, after a bounded wait for the network (10-24: three "fetch failed" right after the wake — Wi-Fi
+# lags the wake). An awake hang (asleep/suspended = 0, the E194 shape) is never retried; a second slept-through
+# attempt is HANG with both attempts in the excerpt. FUNNEL_PREFLIGHT_RETRY=0 disables the retry.
 PREFLIGHT_OUT="$PROJECT_DIR/logs/funnel-preflight-$TODAY.json"
 PREFLIGHT_ERR="$PROJECT_DIR/logs/funnel-preflight-$TODAY.stderr"
 PREFLIGHT_WALL_S="${FUNNEL_PREFLIGHT_WALL_S:-300}"
 PREFLIGHT_POLL_S="${FUNNEL_PREFLIGHT_POLL_S:-2}"
 PREFLIGHT_GAP_S="${FUNNEL_PREFLIGHT_GAP_S:-30}"
-PREFLIGHT_HANG=0; PREFLIGHT_WALL=0; PREFLIGHT_SLEPT=0
+PREFLIGHT_RETRY="${FUNNEL_PREFLIGHT_RETRY:-1}"              # retries allowed after a slept-through attempt
+PREFLIGHT_NET_WAIT_S="${FUNNEL_PREFLIGHT_NET_WAIT_S:-90}"   # bounded wait for the network before a retry
+PREFLIGHT_NET_URL="${FUNNEL_PREFLIGHT_NET_URL:-https://www.google.com/generate_204}"
+PREFLIGHT_HANG=0; PREFLIGHT_WALL=0; PREFLIGHT_SLEPT=0; PREFLIGHT_ATTEMPT=0; PREFLIGHT_PRIOR=""
+pf_wait_net() {  # never fails: like the runner's own network wait, it logs and carries on
+  local waited=0
+  while [ "$waited" -lt "$PREFLIGHT_NET_WAIT_S" ]; do
+    if curl -sf -o /dev/null --max-time 3 "$PREFLIGHT_NET_URL"; then log "preflight: network answers after ${waited}s"; return 0; fi
+    sleep 3; waited=$((waited + 3))
+  done
+  log "preflight: network still not answering after ${waited}s — retrying anyway"
+  return 0
+}
 pf_signal_tree() {  # $1 pid $2 signal — children first, so nothing is reparented and missed
   local c
   for c in $(pgrep -P "$1" 2>/dev/null); do pf_signal_tree "$c" "$2"; done
@@ -459,12 +554,26 @@ pf_signal_tree() {  # $1 pid $2 signal — children first, so nothing is reparen
   return 0
 }
 pf_redact() { tr '\n\r\t' '   ' | sed -E 's/[A-Za-z0-9_-]{25,}/<redacted>/g; s/[`|]/ /g; s/  +/ /g'; }
-claude_preflight() {
+claude_preflight() {  # rc 0 the CLI answered (on attempt 1 or the one retry) · 1 failed — read preflight_diagnosis
+  PREFLIGHT_ATTEMPT=1; PREFLIGHT_PRIOR=""
+  while :; do
+    claude_preflight_once && return 0
+    if [ "$PREFLIGHT_HANG" = 1 ] && [ "$PREFLIGHT_SLEPT" -gt 0 ] && [ "$PREFLIGHT_ATTEMPT" -le "$PREFLIGHT_RETRY" ]; then
+      PREFLIGHT_PRIOR="${PREFLIGHT_PRIOR:+$PREFLIGHT_PRIOR; }attempt $PREFLIGHT_ATTEMPT killed after ${PREFLIGHT_WALL}s wall, asleep/suspended ${PREFLIGHT_SLEPT}s"
+      log "preflight: host slept through attempt $PREFLIGHT_ATTEMPT (asleep/suspended ${PREFLIGHT_SLEPT}s of ${PREFLIGHT_WALL}s wall) — retrying once the network answers (E290)"
+      pf_wait_net
+      PREFLIGHT_ATTEMPT=$((PREFLIGHT_ATTEMPT + 1))
+      continue
+    fi
+    return 1
+  done
+}
+claude_preflight_once() {
   local start now last gap pid rc
   : >"$PREFLIGHT_OUT"; : >"$PREFLIGHT_ERR"
   PREFLIGHT_HANG=0; PREFLIGHT_SLEPT=0
   start="$(date +%s)"; last="$start"
-  log "preflight: start (wall deadline ${PREFLIGHT_WALL_S}s, stderr → logs/funnel-preflight-$TODAY.stderr)"
+  log "preflight: start (attempt $PREFLIGHT_ATTEMPT, wall deadline ${PREFLIGHT_WALL_S}s, stderr → logs/funnel-preflight-$TODAY.stderr)"
   perl -e 'alarm 240; exec @ARGV' "${CLAUDE_CLEAN[@]}" claude -p "Reply with exactly: ok" --model "$MODEL" --max-turns 1 \
     --strict-mcp-config --mcp-config '{"mcpServers":{}}' --output-format json </dev/null >"$PREFLIGHT_OUT" 2>"$PREFLIGHT_ERR" &
   pid=$!
@@ -482,7 +591,7 @@ claude_preflight() {
   done
   wait "$pid" 2>/dev/null; rc=$?
   PREFLIGHT_WALL=$(( $(date +%s) - start ))
-  log "preflight: rc=$rc wall=${PREFLIGHT_WALL}s asleep/suspended=${PREFLIGHT_SLEPT}s hang=$PREFLIGHT_HANG stdout=$(wc -c <"$PREFLIGHT_OUT" | tr -d ' ')B stderr=$(wc -c <"$PREFLIGHT_ERR" | tr -d ' ')B"
+  log "preflight: rc=$rc wall=${PREFLIGHT_WALL}s asleep/suspended=${PREFLIGHT_SLEPT}s hang=$PREFLIGHT_HANG stdout=$(wc -c <"$PREFLIGHT_OUT" | tr -d ' ')B stderr=$(wc -c <"$PREFLIGHT_ERR" | tr -d ' ')B attempt=$PREFLIGHT_ATTEMPT"
   [ "$PREFLIGHT_HANG" = 0 ] && grep -q '"is_error":false' "$PREFLIGHT_OUT"
 }
 # Why the preflight failed — the fix differs, so the digest must not blame auth for everything
@@ -495,6 +604,7 @@ preflight_diagnosis() {
   local excerpt; excerpt="$(printf '%s' "$out" | grep -oE '"(error|message)":"[^"]{0,200}' | head -2 | pf_redact)"
   [ -z "$excerpt" ] && [ -n "${err// /}" ] && excerpt="stderr: $(printf '%s' "$err" | tail -c 200)"
   [ "$PREFLIGHT_SLEPT" -gt 0 ] && excerpt="asleep/suspended ${PREFLIGHT_SLEPT}s of ${PREFLIGHT_WALL}s wall; ${excerpt:-no output}"
+  [ -n "$PREFLIGHT_PRIOR" ] && excerpt="$PREFLIGHT_PRIOR; attempt $PREFLIGHT_ATTEMPT: ${excerpt:-no output}"
   if printf '%s %s' "$out" "$err" | grep -q 'claude_code_version_too_old'; then echo "CLI_TOO_OLD|$excerpt"
   elif printf '%s' "$out" | grep -qiE 'authentication|not logged in|401|invalid.*token|oauth' \
     || printf '%s' "$err" | grep -qiE 'not logged in|401|authentication_error|invalid.*token'; then echo "AUTH|$excerpt"
@@ -584,7 +694,7 @@ if ! claude_preflight; then
   case "$DIAG_KIND" in
     CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
     AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth: access-token expiry $EXP; before the preflight: $AUTH_LINE; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
-    HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
+    HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth — a slept-through attempt is retried once on the awake host (E290), so a HANG row now means the retry failed too or the host was awake. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
     *)           CAUSE="The Claude CLI preflight failed for a reason that is neither auth nor version — see logs/funnel-preflight-$TODAY.json (excerpt: ${DIAG_EXCERPT:-none}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
   esac
   log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP auth=$AUTH_LINE ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"

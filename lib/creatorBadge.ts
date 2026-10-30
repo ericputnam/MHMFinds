@@ -55,6 +55,36 @@ export const BADGE_ALT = 'Featured on MustHaveMods';
 /** GA4 event fired when a creator copies an embed snippet. */
 export const BADGE_COPY_EVENT = 'creator_badge_copy';
 
+/**
+ * GA4 event fired when a creator clicks through to their badge page from an
+ * on-site prompt (E286). `source` is one of BADGE_CTA_SOURCES, never free text.
+ */
+export const BADGE_CTA_EVENT = 'creator_badge_cta';
+export const BADGE_CTA_SOURCES = { dashboard: 'dashboard' } as const;
+
+/** What the creator dashboard needs to show the "Get your badge" card. */
+export interface DashboardBadge {
+  href: string;
+  displayName: string;
+}
+
+/**
+ * The dashboard badge card (E286), decided server-side from the signed-in
+ * creator's own CreatorProfile and the result of getCreatorPageData(handle).
+ * Returns null — no card — unless that page actually renders for that exact
+ * handle, so the card never links to a 404 (the badge page 404s whenever
+ * getCreatorPageData does: an unclaimed profile with no catalog mods, or a
+ * claimed one with 0 mods).
+ */
+export function dashboardBadge(
+  profile: { handle: string } | null,
+  page: { slug: string; displayName: string } | null,
+): DashboardBadge | null {
+  if (!profile || !profile.handle || !page) return null;
+  if (page.slug !== profile.handle) return null;
+  return { href: badgeHref(profile.handle), displayName: page.displayName };
+}
+
 /** Relative href of the badge page for one creator (trailing slash: next.config.js). */
 export function badgeHref(slug: string): string {
   return `${creatorHref(slug)}badge/`;

@@ -65,9 +65,13 @@ describe('wiring', () => {
     const expr = `trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g')))`;
     const lib = read('lib/creators.ts');
     expect(lib).toContain(expr);
-    // Both the per-creator lookup and the population list use it (E95 moved
-    // the population query here from the sitemap so IndexNow shares it).
-    expect(lib.split(expr).length - 1).toBeGreaterThanOrEqual(2);
+    // E293: the population list prints the canonical URL with it; both the
+    // per-creator lookup and the population list *group* by the
+    // separator-free creator key (lib/creatorSlug.ts creatorKey), see
+    // __tests__/unit/creator-slug-fold.test.ts.
+    expect(lib.split(expr).length - 1).toBeGreaterThanOrEqual(1);
+    const fold = `regexp_replace(lower(author), '[^a-z0-9]+', '', 'g')`;
+    expect(lib.split(fold).length - 1).toBeGreaterThanOrEqual(2);
     // The sitemap no longer carries its own copy — it consumes the lib.
     expect(read('app/sitemap-creators.xml/route.ts')).toMatch(/import \{ listCreators[^}]*\} from '\.\.\/\.\.\/lib\/creators'/);
     expect(read('app/sitemap-creators.xml/route.ts')).not.toContain('regexp_replace');

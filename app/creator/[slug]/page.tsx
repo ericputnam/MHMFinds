@@ -12,9 +12,10 @@
  */
 
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../lib/creators';
 import { getRelatedCreators } from '../../../lib/creatorHubRelated';
+import { creatorHubLinks } from '../../../lib/creatorHubLinks';
 import { creatorMetaDescription, creatorPageTitle } from '../../../lib/seo/creatorMeta';
 import CreatorPageClient from './CreatorPageClient';
 
@@ -93,14 +94,19 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   const { slug } = await params;
   const data = await getCreatorPageData(slug);
   if (!data) notFound();
+  // E293: a non-canonical spelling of a folded creator 308s to its one page.
+  if (data.redirectTo) permanentRedirect(creatorHref(data.redirectTo));
 
   // Peer links (E113): resolved here so they are in the first-paint HTML.
   const related = await getRelatedCreators(data.slug);
+  // Collection hubs this creator's mods are listed in (E292, Sage): resolved
+  // here, in memory, so the links are in the first-paint HTML a crawler reads.
+  const hubs = creatorHubLinks(data.mods);
   const jsonLd = buildJsonLd(data);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <CreatorPageClient data={data} related={related} />
+      <CreatorPageClient data={data} related={related} hubs={hubs} />
     </>
   );
 }

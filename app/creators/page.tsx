@@ -11,8 +11,14 @@ import {
   Download,
   ArrowRight,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Award
 } from 'lucide-react';
+import {
+  BADGE_CTA_EVENT,
+  BADGE_CTA_SOURCES,
+  type DashboardBadge,
+} from '../../lib/creatorBadge';
 import {
   CREATOR_SUBMIT_CTA_EVENT,
   CREATOR_SUBMIT_CTA_SOURCES,
@@ -29,6 +35,15 @@ function trackSubmitCta(source: CreatorSubmitCtaSource) {
     'event',
     CREATOR_SUBMIT_CTA_EVENT,
     { source }
+  );
+}
+
+/** GA4 click on the dashboard "Get your badge" card (Nova, E286). */
+function trackBadgeCta() {
+  (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+    'event',
+    BADGE_CTA_EVENT,
+    { source: BADGE_CTA_SOURCES.dashboard }
   );
 }
 
@@ -59,6 +74,7 @@ export default function CreatorDashboard() {
     totalDownloads: 0,
   });
   const [recentSubmissions, setRecentSubmissions] = useState<Submission[]>([]);
+  const [badge, setBadge] = useState<DashboardBadge | null>(null);
   const [loading, setLoading] = useState(true);
   const [welcomeState, setWelcomeState] = useState<CreatorWelcomeState>({
     welcome: false,
@@ -74,7 +90,12 @@ export default function CreatorDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/creator/submissions');
+      // Per-user GET: next.config.js stamps every /api/* response
+      // `public, s-maxage=60`, so a per-request nonce keeps one creator's
+      // submissions and badge out of another's dashboard (E286).
+      const response = await fetch(`/api/creator/submissions/?_=${Date.now()}`, {
+        cache: 'no-store',
+      });
       const data = await response.json();
 
       if (data.submissions) {
@@ -95,6 +116,7 @@ export default function CreatorDashboard() {
         // Get recent 5 submissions
         setRecentSubmissions(submissions.slice(0, 5));
       }
+      setBadge(data.badge ?? null);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -214,6 +236,32 @@ export default function CreatorDashboard() {
           </div>
         </Link>
       </div>
+
+      {/* "Featured on MustHaveMods" badge (E269 → E286): only when the
+          creator's own page renders (decided server-side by dashboardBadge). */}
+      {badge && (
+        <div
+          className="bg-slate-900 rounded-xl border border-sims-pink/30 p-6 flex flex-col md:flex-row md:items-center gap-4"
+          data-testid="dashboard-badge-card"
+        >
+          <Award className="h-8 w-8 text-sims-pink flex-shrink-0" />
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-white mb-1">Your page is live on MustHaveMods</h3>
+            <p className="text-slate-400 text-sm">
+              Add the &ldquo;Featured on MustHaveMods&rdquo; badge to your Patreon, Tumblr or
+              site. It links your followers to all of {badge.displayName}&apos;s mods here.
+            </p>
+          </div>
+          <a
+            href={badge.href}
+            onClick={trackBadgeCta}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-sims-pink hover:bg-pink-600 text-white rounded-lg font-semibold transition-colors text-sm whitespace-nowrap"
+          >
+            Get your badge
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+      )}
 
       {/* Recent Submissions */}
       <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
