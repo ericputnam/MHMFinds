@@ -13,6 +13,11 @@
  * [toolbar + grid + below-grid discovery] beside the ad sidebar. The game
  * accent colour follows the selected game via data-game on the root.
  *
+ * 2026-10-28: also the client tree of /games/[game]/ (was GamePageClient,
+ * the pre-launcher UI). There `routeGame` fixes the game: the grid is that
+ * game's, the URL stays on /games/<slug>/, and the game switcher navigates to
+ * the other game's page instead of filtering in place.
+ *
  * Ad-anchor rules (see __tests__/unit/sidebar-sticky-health.test.ts): the
  * Mediavine sidebar aside stays empty, in normal flow, visible at lg:, and
  * is never wrapped in a loading guard. The grid's .mv-ads container lives in
@@ -37,6 +42,8 @@ import { LauncherGrid } from '../components/launcher/LauncherGrid';
 import { LauncherPager } from '../components/launcher/LauncherPager';
 import { LauncherBelow } from '../components/launcher/LauncherBelow';
 import { useFacetOptions, useGameCounts } from '../components/launcher/useLauncherData';
+import { GRID_FAVORITE_SOURCES } from '../lib/capture/gridFavorite';
+import { useGridFavoriteCapture } from '../lib/capture/useGridFavoriteCapture';
 
 interface HomePageClientProps {
   /**
@@ -47,6 +54,11 @@ interface HomePageClientProps {
   collectionsSlot?: React.ReactNode;
   /** Server-rendered collection shortcuts for the hero (same file, same reason). */
   collectionStripSlot?: React.ReactNode;
+  /**
+   * Set by app/games/[game]/page.tsx: the route's game. `value` is the
+   * /api/mods gameVersion, `slug` the /games/<slug>/ path segment.
+   */
+  routeGame?: { slug: string; value: string };
 }
 
 // Default 16 (was 20): the whole grid is one .mv-ads container, and a 5-row
@@ -58,16 +70,17 @@ function scrollToResults() {
   document.getElementById('lx-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-export default function HomePageClient({ collectionsSlot, collectionStripSlot }: HomePageClientProps) {
+export default function HomePageClient({ collectionsSlot, collectionStripSlot, routeGame }: HomePageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const basePath = routeGame ? `/games/${routeGame.slug}/` : '/';
 
   // Read initial state from URL parameters
   const creatorParam = searchParams.get('creator');
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'All';
-  const initialGameVersion = searchParams.get('gameVersion') || '';
+  const initialGameVersion = routeGame ? routeGame.value : searchParams.get('gameVersion') || '';
   const initialSort = searchParams.get('sort') || 'downloads';
   const initialContentType = searchParams.get('contentType') || '';
   const initialVisualStyle = searchParams.get('visualStyle') || '';
@@ -80,13 +93,18 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
   const [contentType, setContentType] = useState(initialContentType);
   const [visualStyle, setVisualStyle] = useState(initialVisualStyle);
   const [favorites, setFavorites] = useState<string[]>([]);
+  // E279: a signed-out heart tap goes to the save-intent sign-up and the
+  // save completes on return (lib/capture/gridFavorite.ts).
+  const { onUnauthorized } = useGridFavoriteCapture(routeGame ? GRID_FAVORITE_SOURCES.game : GRID_FAVORITE_SOURCES.home, (savedId) =>
+    setFavorites((prev) => (prev.includes(savedId) ? prev : [...prev, savedId])),
+  );
 
   const [mods, setMods] = useState<Mod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<{ total: number; totalPages: number } | null>(null);
 
-  const { types, styles } = useFacetOptions();
+  const { types, styles } = useFacetOptions(selectedGameVersion);
   const gameCounts = useGameCounts();
 
   // Analytics tracking hooks (usePageTracking is now global in providers.tsx)
@@ -107,13 +125,14 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
     if (currentPage > 1) params.set('page', currentPage.toString());
     if (searchQuery) params.set('search', searchQuery);
     if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
-    if (selectedGameVersion) params.set('gameVersion', selectedGameVersion);
+    // On a game page the path carries the game.
+    if (selectedGameVersion && basePath === '/') params.set('gameVersion', selectedGameVersion);
     if (sortBy && sortBy !== 'downloads') params.set('sort', sortBy);
     if (contentType) params.set('contentType', contentType);
     if (visualStyle) params.set('visualStyle', visualStyle);
     if (creatorParam) params.set('creator', creatorParam);
     return params;
-  }, [currentPage, searchQuery, selectedCategory, selectedGameVersion, sortBy, contentType, visualStyle, creatorParam]);
+  }, [basePath, currentPage, searchQuery, selectedCategory, selectedGameVersion, sortBy, contentType, visualStyle, creatorParam]);
 
   /**
    * Update browser URL without navigation
@@ -121,9 +140,9 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
    */
   const updateBrowserUrl = useCallback((params: URLSearchParams) => {
     const queryString = params.toString();
-    const newUrl = queryString ? `/?${queryString}` : '/';
+    const newUrl = queryString ? `${basePath}?${queryString}` : basePath;
     router.replace(newUrl, { scroll: false });
-  }, [router]);
+  }, [basePath, router]);
 
   /**
    * Fetch mods from API with current filter state
@@ -197,9 +216,15 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
   }, [trackSearch]);
 
   const handleGame = useCallback((value: string) => {
+    if (basePath !== '/') {
+      // A game page's game is its URL: switching goes to the other game's page.
+      const next = gameFor(value);
+      if (next.value !== selectedGameVersion) router.push(next.slug ? `/games/${next.slug}/` : '/');
+      return;
+    }
     setCurrentPage(1);
     setSelectedGameVersion(value);
-  }, []);
+  }, [basePath, router, selectedGameVersion]);
 
   const handleSortChange = (newSortBy: string) => {
     setCurrentPage(1);
@@ -260,7 +285,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
         console.error('Failed to toggle favorite:', body);
 
         if (response.status === 401) {
-          alert('Please sign in to favorite mods');
+          onUnauthorized(modId); // E279: save-intent sign-up, not a dead-end alert
         }
       } else {
         // Refresh the mod data to get updated counts, preserving current filters
@@ -314,7 +339,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot }:
                 <span>
                   Viewing mods by <strong>@{creatorParam}</strong>
                 </span>
-                <a href="/">Clear</a>
+                <a href={basePath}>Clear</a>
               </div>
             )}
 

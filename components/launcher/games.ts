@@ -52,6 +52,15 @@ export function gameFor(value: string): LauncherGame {
   return GAMES.find((g) => g.value === value) ?? GAMES[0];
 }
 
+/**
+ * The collection registry (lib/collections.ts) is Sims 4 only, so its blocks
+ * show for Sims 4 and "All" and nowhere else. Every launcher surface that
+ * renders a collections slot asks this one function.
+ */
+export function showsSims4Collections(id: LauncherGame['id']): boolean {
+  return id === 'all' || id === 'sims4';
+}
+
 /** 1234567 → "1.2M", 182000 → "182K", 4300 → "4.3K", 950 → "950". */
 export function fmtCount(n: number | null | undefined): string {
   if (n == null || !Number.isFinite(n)) return '';

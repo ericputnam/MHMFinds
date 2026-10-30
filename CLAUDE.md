@@ -378,12 +378,19 @@ Users want full control over what gets committed and when. Even if you complete 
 
 **ALWAYS add new critical features to `CRITICAL_MARKERS`** in BOTH push scripts. If you ship a revenue feature (sidebar, ad container, schema, etc.) or a routing feature (search proxy, blog pagination, redirect rule), add a grep pattern to the `CRITICAL_MARKERS` array. The format is `"<grep-pattern>|<human-name>"`.
 
-Current critical markers (Apr 8 2026):
+Current critical markers (Oct 29 2026). The push scripts are the source of truth; this is a summary:
 - `mhm_inject_mediavine_sidebar` — Mediavine sidebar (~$2K/month)
 - `mhm_mediavine_sidebar_css` — Mediavine sidebar CSS
 - `mhm_search_form_rewrite_js` — Blog search form rewrite (PRD: blog search)
 - `is_from_apex_rewrite` — Apex domain rewrite helper
+- `mhm_collection_crosslinks` / `mhm_catalog_mod_links` — SEO internal linking
+- `mhm_affiliate_pack_block` — Amazon Sims 4 pack picks at the end of Sims posts (#391)
+- `mhm_consolidated_post_map` — legacy canonical map (#63)
 - `mhm_host_split_301` / `mhm_host_split_js` — blog.* → apex 301 + cached-HTML JS fallback (Q13, #208)
+
+The prod and staging arrays must match, and every marker must exist in its `functions.php`.
+`__tests__/unit/blog-push-markers.test.ts` enforces both. Before #391, `mhm_catalog_mod_links` was
+missing from the prod array.
 
 ### After Every Push to Prod
 
@@ -918,52 +925,50 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-25 — rotated to the archive
+### 2026-10-15 → 10-26 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29.
 
-### 2026-10-26
+### 2026-10-29 (covers merges #372–#396, 10-26 → 10-28)
 
-- **Deleting a row is not an opt-out.** "Unsubscribed" used to mean that the `waitlist` row had been
-  deleted. That did nothing for an address mailed as a User or Patreon account (for example, the
-  re-permission email), and the opt-out was lost if anything re-created the row. #384 added
-  `email_suppressions` (hashes only) to `lib/services/emailSuppression.ts`. `sendBulk` throws on a
-  live send that has no lookup, or whose list cannot be read. The route records the suppression
-  *before* it deletes the row, so a failed delete still leaves the address safe. An opt-out lives in
-  a list that every send path reads, not in whichever list the address arrived through.
-- **Only proof of mailbox control may undo a consent withdrawal, and only one that came earlier.**
-  An opt-out is cleared only by a signed `/api/subscribe/confirm` POST, and only when it was
-  recorded before the click. A newer request re-activates it, and an older one counts as stale.
-  This means re-processing an old mailbox cannot undo a re-subscribe. The unauthenticated
-  `/api/waitlist` form never clears an opt-out, because anyone can type anyone's address.
-- **An advertised channel needs a consumer.** We sent a `mailto:` List-Unsubscribe header and
-  invited "reply unsubscribe", but nobody ever processed those requests. Now every LIVE send syncs
-  the mailbox first, and if the sync could not run, the send stops. A scanner test fails when a
-  script adds a live send without that sync. When you add a header, link or address that promises
-  an action, ship what reads it in the same PR.
-- **A migration applied to prod is not durable until its file is on `main`.**
-  `drop_orphaned_newsletter_tables` was applied to prod on 07-01 from an unmerged branch, and it
-  reached `main` on 10-26 (#385, almost four months later). Until then, `prisma migrate status`
-  reported prod drift. To recover, copy the file byte for byte from the original commit: its
-  checksum must match `_prisma_migrations`. Apply a migration to prod before merge only when it is
-  additive (as #384 did), and merge the migration on the same day.
-- **Store only image URLs we host or that `images.remotePatterns` allows.** Patreon post images
-  (`*.patreonusercontent.com`) are signed, they expire, and their host is not in `remotePatterns`,
-  so `/_next/image` returned 400 for them. #383 copies them to Vercel Blob at save time. The host
-  check is an exact-suffix allowlist (`needsRehost`), which also stops the server-side fetch from
-  following arbitrary admin-supplied URLs. An admin save fails with a 422 and a clear message;
-  approving a submission copies on a best-effort basis. Direct uploads take a token from the
-  admin-only `/api/admin/upload-image`, which pins the path prefix and excludes SVG. That route
-  uses no `onUploadCompleted`, because Vercel's callback carries no admin session.
-- **Interactive merges skip the ledger too.** #383, #384 and #385 all landed on 10-26. None of them
-  has an `after-merge` row in `changelog.md`. #382 does. The rule "A merge without a ledger row did
-  not happen" applies to operator sessions as well: run `deploy-verify.sh --after-merge --sha
-  <mergeCommit>` after every merge, not only after funnel merges.
+Subsystem entries for the same window (image optimizer, launcher pages, grid-heart capture, host
+sleep) are in the archive under "2026-10-29 — subsystem entries".
+
+- **A test that is red on `main` is a broken gate, not background noise.** `ModDetailPage.test.tsx`
+  failed on every run for weeks: it predated #178, which made the heart wait for a real
+  `POST /api/mods/[id]/favorite`, and the global `fetch` stub returns `undefined`. #387 shipped
+  with "1 failed, identical on `origin/main`, unrelated" in its body. #386 then fixed the test by
+  mocking the real API flow. When a change alters what a component does, update its test in the same
+  PR. When you see a failure that is already on `main`, fix it or file it that day. Do not let it
+  ride along.
+- **Order consent events by a clock the sender cannot set.** Mailbox unsubscribes (#387) now take
+  their time from the server's `INTERNALDATE`, capped at the time of the read. They never fall back
+  to the `Date` header or to `now()`, because either one could beat a later re-confirmation. If a
+  message has no INTERNALDATE, the scan is could-not-run (exit 2), which blocks a live send. A
+  mailto request suppresses only its `From` sender. If it names any other address, that address is
+  counted as `named_ignored`, so one email cannot unsubscribe somebody else. Check the data before
+  you require a signal: 0 of 37 messages carried SPF/auth headers, so requiring them would have
+  dropped every real request.
+- **Copy that crawlers read must not depend on a client fetch.** The homepage served three catalogue
+  counts: 17,000+ in `<title>`/JSON-LD, 15,000+ in the SSR hero (what crawlers saw) and 16,000+
+  after hydration. #389 made `lib/seo/catalogCount.ts` the only source and added a scanner that
+  rejects any other `NN,000+` literal (comments stripped, vacuity guard >200 files). When a page
+  states a number, put it in one constant and render it on the server.
+- **A generated file needs a test against the registry it was generated from.**
+  `lib/collectionCovers.ts` was generated before `gshade-presets` (E272) joined the registry, so
+  the new collection had no cover and nothing failed. #390's test requires ≥1 https cover for every
+  registry slug and no stale keys. #395's test requires every cover host to be in the real
+  `next.config.js` `remotePatterns`.
+- **Verify each merge before the next merge lands.** The 10-26 interactive merges all have ledger
+  rows, so the rule from that day held. However, #386's verify ran after #389 had merged, and its
+  row grades `83b6a2d` instead of its own `fccaba8`. The rows are also out of time order. Run
+  `merge-gate.sh && gh pr merge … && deploy-verify.sh --after-merge --sha <own mergeCommit>` as one
+  chain per PR.
 
 ---
 
-*Last compound review: 2026-10-26*
+*Last compound review: 2026-10-29*
 
 ---
 

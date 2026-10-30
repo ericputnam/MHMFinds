@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-28
+- Tried: E279 grid hearts (home, game hubs, collections, creators) → save-intent sign-up + resume, replacing `alert('Please sign in')` (T0). No newsletter run 3: run 2 deferred 0.
+- Before → after: E191 offer sign-up completion 16/67 = 23.9% (was ~6%), so the copy was worth reusing. Issue-07 run 2 (post-10-12 cohort): 6 hard DSNs + 2 rejects = 8/62 = 12.9% vs run 1 0/100. E233 invite: 0/22 accounts.
+- Verdict: E191 KEEP, E233 KILL, E279 PENDING (read 11-11).
+- Next time: before building a new surface, grep for dead ends on the action that already makes accounts. Four grids answered a heart with an alert.
+
 ## 2026-10-23
 - Tried: E247 issue 07 run 1 (T1, veto expired; the 10-22 run MISSED at preflight). Re-dry first.
 - Before → after: 10-21 dry 202 → 10-23 dry 237 (+35, trips my >30 stop-and-ask). The 35 classified: 33 signup-optin, 33 distinct IPs, ≤2/10 min = two days of normal opt-ins. Run 1 sent 100/100, 0 failed, cursor = prediction. Tail 137 → run 2 defers 37.
@@ -65,9 +71,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 72 redirected users vs ≤4 offer-sourced sign_ups (≈6%) 14d 09-28→10-11 → read 2026-10-26. E130 EXTEND 0.57/1K (7/12,227); E138 on track KEEP (26 fav users); E152 trending KILL 0.66/1K (2/3,020).
 - Verdict: PENDING (keep if ≥15% AND non-offer sign_ups ≥55/14d; EXTEND ≥10%).
 - Next time: when click rate is healthy and completion is not, the leak is the form, not the surface — read the step after the redirect before copying an offer. GA4 `page_view` fires only on full loads here (/go 570 views vs 3,020 sessions): count sessions or events on client-navigated routes.
-
-## 2026-10-07
-- Tried: E179 — emailed `/set-password` link gets the trailing slash and `mode=reset|invite` (`passwordLinkUrl()` in authEmail.ts; 4/4 link tests red on pre-fix main, 30/30 green). PR #266 `afad9e1`, Tier 0 (lib/tests/reports only), merged after Rio's 07:12 CLEAR; verify SUPERSEDED-PASS 07:21. Also built newsletter issue 05 as a read-only draft (sent 0); #260 (E173) HELD-RED day 4, MERGEABLE.
-- Before → after: bare `/set-password?token=` 308s in prod; GA4 14d 3 views / 2 `password_reset_complete`, all mode-less → read 10-21 with E123. Grades: E86 KEEP (46/98 = 46.9% opt-in, now 46 of 78 subscribers), E145 KEEP-inert (prod 401 w/o bearer, 0 weekly rows; Part B dropped as Q18), E73 below bar (3 home-hero rows lifetime, ≤1.9/1K) → Quinn KILL, replace with the account offer.
-- Verdict: MORE DATA (read on 2026-10-21).
-- Next time: an opt-in that reaches 47% on credentials sign-ups is worth nothing to the OAuth half (41 of 90 new accounts/7d) until #260 lands — count the population a surface can reach before quoting its rate.

@@ -21,12 +21,16 @@ import {
   MOD_DETAIL_SAVE_SOURCE,
 } from '../../lib/capture/modDetailFavorite';
 import { GO_SAVE_SOURCE } from '../go/[modId]/goSaveOffer';
+import { GRID_FAVORITE_SOURCES } from '../../lib/capture/gridFavorite';
 
 /** `ref` values whose visitor arrived by trying to save a mod. */
 export const SAVE_INTENT_REFS: readonly string[] = [
   MOD_DETAIL_SAVE_SOURCE,
   MOD_DETAIL_FAVORITE_SOURCE,
   GO_SAVE_SOURCE,
+  // E279 (2026-10-28): the heart on every mod grid — homepage, game hub,
+  // collection and creator pages — used to end in an alert().
+  ...Object.values(GRID_FAVORITE_SOURCES),
 ];
 
 /** GA4 event fired once per page load so the cohort has a denominator on the page itself. */

@@ -36,6 +36,7 @@ import {
 } from '../../lib/capture/modDetailFavorite';
 import { GO_SAVE_SOURCE } from '../../app/go/[modId]/goSaveOffer';
 import { HOME_CAPTURE_SOURCE } from '../../components/HomeCapture';
+import { GRID_FAVORITE_SOURCES } from '../../lib/capture/gridFavorite';
 
 const ROOT = join(__dirname, '..', '..');
 const stripComments = (src: string) =>
@@ -48,7 +49,7 @@ describe('resolveSignupIntent — which refs carry a save intent', () => {
     expect(SAVE_INTENT_REFS).toContain(MOD_DETAIL_FAVORITE_SOURCE);
     expect(SAVE_INTENT_REFS).toContain(GO_SAVE_SOURCE);
     expect(new Set(SAVE_INTENT_REFS).size).toBe(SAVE_INTENT_REFS.length);
-    expect(SAVE_INTENT_REFS.length).toBe(3);
+    expect(SAVE_INTENT_REFS.length).toBe(3 + Object.keys(GRID_FAVORITE_SOURCES).length);
   });
 
   for (const ref of SAVE_INTENT_REFS) {

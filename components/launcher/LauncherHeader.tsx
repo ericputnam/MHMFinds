@@ -14,6 +14,12 @@ interface LauncherHeaderProps {
   game: string;
   gameCounts: Record<string, number | undefined>;
   onGame: (value: string) => void;
+  /**
+   * Search only on Enter, not while typing. For pages where a search leaves
+   * the page (collection pages navigate to the game's grid), so a pause
+   * mid-word does not navigate away.
+   */
+  submitOnly?: boolean;
 }
 
 /**
@@ -21,7 +27,7 @@ interface LauncherHeaderProps {
  * game switcher (≥1280px), nav, and a slide-in menu under 1024px.
  * Sticky at 56px — the only sticky element on the page.
  */
-export function LauncherHeader({ search, onSearch, game, gameCounts, onGame }: LauncherHeaderProps) {
+export function LauncherHeader({ search, onSearch, game, gameCounts, onGame, submitOnly = false }: LauncherHeaderProps) {
   const { data: session, status } = useSession();
   const [draft, setDraft] = useState(search);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,13 +45,13 @@ export function LauncherHeader({ search, onSearch, game, gameCounts, onGame }: L
   // Debounced commit while typing.
   useEffect(() => {
     const q = draft.trim();
-    if (q === lastCommitted.current) return;
+    if (submitOnly || q === lastCommitted.current) return;
     const t = setTimeout(() => {
       lastCommitted.current = q;
       onSearch(q);
     }, 450);
     return () => clearTimeout(t);
-  }, [draft, onSearch]);
+  }, [draft, onSearch, submitOnly]);
 
   // ⌘K / Ctrl+K focuses search; Escape closes the menu.
   useEffect(() => {
