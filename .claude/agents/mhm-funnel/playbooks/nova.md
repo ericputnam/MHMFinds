@@ -19,6 +19,13 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-30 — E293 one creator, one page (#409 854d67e, T0)
+- Tried: the creator key drops all separators, the canonical URL is the dash-slug with the most mods, and other spellings 308 there (badge URLs too).
+- Before → after: 554 → 561 indexable creator URLs; 7 duplicate-page pairs → 0; 151 mods folded into existing pages; badge usage since #372 = 0 events (Q38 outreach ask).
+- Kill log: lowering `MIN_MODS_FOR_PAGE` from 5 to 3 (+360 slugs) was measured first and rejected — matching GSC 28d (11,521 query×page rows) against the 3–4-mod slugs found real name demand for very few; most hits were substring collisions (sims4cc, musthavemods, toddler) and the real names (marsmerizing, miiko, backtrack, aroundthesims) were split spellings of creators who already have pages.
+- Verdict: MORE DATA (read 2026-11-13).
+- Next time: before lowering a page threshold, match the candidates' names against GSC queries — the demand was one page split across two spellings, not missing pages.
+
 ## 2026-10-29
 - Tried: E286 (T0) — "Get your badge" card on the creator dashboard (`/creators/`), shown only when the signed-in creator's own page renders (`dashboardBadge`, decided in GET /api/creator/submissions), GA4 `creator_badge_cta`; dashboard fetch carries a per-request nonce (per-user GET under the /api/* `s-maxage=60` stamp). E253 KEEP ("+ N other" on 5/5 scoreboards written 10-22→10-29).
 - Before → after: creator-badge sessions 0 (GA4 09-25→10-23); dashboard links to the badge page 0 → 1 card.
