@@ -17,7 +17,14 @@
  *
  * Pure functions, no I/O — `__tests__/unit/mod-meta.test.ts` imports them
  * and `app/mods/[id]/page.tsx` is the only production caller.
+ *
+ * E268 (2026-10-25): a per-page hand-written override wins over both rules
+ * when the mod id is in `MOD_META_OVERRIDES` (lib/seo/modMetaOverrides.ts).
+ * Seven gameplay pages carrying 2,313 impressions at positions 8–14 ran
+ * 0.82% CTR because their snippet was a first-person blog opener.
  */
+
+import { modMetaOverride } from './modMetaOverrides';
 
 export const SITE_NAME = 'MustHaveMods';
 export const META_DESCRIPTION_MAX = 155;
@@ -38,6 +45,8 @@ export const GAMEPLAY_CATEGORIES: ReadonlySet<string> = new Set([
 ]);
 
 export interface ModTitleInput {
+  /** Catalog id; only consulted for the hand-written overrides (E268). */
+  id?: string | null;
   title: string;
   gameVersion?: string | null;
   contentType?: string | null;
@@ -45,6 +54,8 @@ export interface ModTitleInput {
 }
 
 export interface ModDescriptionInput {
+  /** Catalog id; only consulted for the hand-written overrides (E268). */
+  id?: string | null;
   title: string;
   shortDescription?: string | null;
   description?: string | null;
@@ -67,6 +78,8 @@ export function isGameplayMod(mod: ModTitleInput): boolean {
  * "<name> | MustHaveMods" when the title already names the game.
  */
 export function modPageTitle(mod: ModTitleInput): string {
+  const override = modMetaOverride(mod.id)?.title;
+  if (override) return override;
   const game = mod.gameVersion || 'Sims 4';
   const title = mod.title.trim();
   let qualifier: string;
@@ -100,6 +113,8 @@ export function truncateAtWord(text: string, max: number = META_DESCRIPTION_MAX)
 }
 
 export function modMetaDescription(mod: ModDescriptionInput): string {
+  const override = modMetaOverride(mod.id)?.description;
+  if (override) return override;
   const source = (mod.shortDescription || mod.description || '').trim();
   if (!source) return `${mod.title.trim()} - Sims 4 custom content mod on ${SITE_NAME}.`;
   return truncateAtWord(source, META_DESCRIPTION_MAX);
