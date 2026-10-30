@@ -2548,6 +2548,68 @@ The 10-07 section is in the archive.
   `changelog.md` and the digest's "Changed today" table stops at #376. The runner then landed the
   digest. Run the after-merge verify before the digest is written, never after.
 
+### 2026-10-26 — rotated from CLAUDE.md
+
+- **Deleting a row is not an opt-out.** "Unsubscribed" used to mean that the `waitlist` row had been
+  deleted. That did nothing for an address mailed as a User or Patreon account (for example, the
+  re-permission email), and the opt-out was lost if anything re-created the row. #384 added
+  `email_suppressions` (hashes only) to `lib/services/emailSuppression.ts`. `sendBulk` throws on a
+  live send that has no lookup, or whose list cannot be read. The route records the suppression
+  *before* it deletes the row, so a failed delete still leaves the address safe. An opt-out lives in
+  a list that every send path reads, not in whichever list the address arrived through.
+- **Only proof of mailbox control may undo a consent withdrawal, and only one that came earlier.**
+  An opt-out is cleared only by a signed `/api/subscribe/confirm` POST, and only when it was
+  recorded before the click. A newer request re-activates it, and an older one counts as stale.
+  This means re-processing an old mailbox cannot undo a re-subscribe. The unauthenticated
+  `/api/waitlist` form never clears an opt-out, because anyone can type anyone's address.
+- **An advertised channel needs a consumer.** We sent a `mailto:` List-Unsubscribe header and
+  invited "reply unsubscribe", but nobody ever processed those requests. Now every LIVE send syncs
+  the mailbox first, and if the sync could not run, the send stops. A scanner test fails when a
+  script adds a live send without that sync. When you add a header, link or address that promises
+  an action, ship what reads it in the same PR.
+- **A migration applied to prod is not durable until its file is on `main`.**
+  `drop_orphaned_newsletter_tables` was applied to prod on 07-01 from an unmerged branch, and it
+  reached `main` on 10-26 (#385, almost four months later). Until then, `prisma migrate status`
+  reported prod drift. To recover, copy the file byte for byte from the original commit: its
+  checksum must match `_prisma_migrations`. Apply a migration to prod before merge only when it is
+  additive (as #384 did), and merge the migration on the same day.
+- **Store only image URLs we host or that `images.remotePatterns` allows.** Patreon post images
+  (`*.patreonusercontent.com`) are signed, they expire, and their host is not in `remotePatterns`,
+  so `/_next/image` returned 400 for them. #383 copies them to Vercel Blob at save time. The host
+  check is an exact-suffix allowlist (`needsRehost`), which also stops the server-side fetch from
+  following arbitrary admin-supplied URLs. An admin save fails with a 422 and a clear message;
+  approving a submission copies on a best-effort basis. Direct uploads take a token from the
+  admin-only `/api/admin/upload-image`, which pins the path prefix and excludes SVG. That route
+  uses no `onUploadCompleted`, because Vercel's callback carries no admin session.
+- **Interactive merges skip the ledger too.** #383, #384 and #385 all landed on 10-26. None of them
+  has an `after-merge` row in `changelog.md`. #382 does. The rule "A merge without a ledger row did
+  not happen" applies to operator sessions as well: run `deploy-verify.sh --after-merge --sha
+  <mergeCommit>` after every merge, not only after funnel merges.
+
+### 2026-10-29 — subsystem entries (written directly to the archive)
+
+- **`unoptimized` on a small image ships the original file.** The 22 px collection pill thumbs
+  downloaded ~4.1 MB, and one image was 1.77 MB. After #395 the same block is ~1 MB for 56 images
+  through `/_next/image`. A fixed, bounded set of images on allowed hosts should go through the
+  optimizer. The `/play` exception applies only to an unbounded rotating catalogue. A test now
+  fails on `unoptimized` in `HomeCollections.tsx`.
+- **When you redesign an entry point, move the pages it links to as well.** After the launcher
+  homepage (#388), its Explore cards still led to `/games/<slug>/` on the old `GamePageClient`, and
+  Minecraft/Stardew pages showed Sims 4 collections because that registry is Sims 4 only. #396
+  moved game and collection pages onto the launcher and gated the collection slots with
+  `showsSims4Collections()`. Facet counts are now per game (`/api/facets?gameVersion=`). When a
+  page shows a registry, check which game the registry covers.
+- **A dead end for signed-out visitors is a capture leak.** Grid hearts answered a signed-out tap with
+  `alert('Please sign in…')`, which had no link and fired no event. E279 (#392) sends the tap to the
+  save-intent sign-up and finishes the save when the visitor returns. A class scanner fails on
+  `alert(` in any favorite-API caller (vacuity guard ≥5 callers).
+- **A host that sleeps through the run window is now a recurring miss.** The daily run recorded
+  `preflight=HANG` on 10-24 and again on 10-29 ("asleep/suspended 998 s of 1013 s"), and the 10-29
+  morning check ran at 15:19. The MISSED row and the degraded digest landed both times, as intended
+  (#366). The fix is on the host's side: keep it awake through the schedule. The runner is fine.
+  Morning checks on 10-27 and 10-29 read INCONCLUSIVE (network) and did not roll back, so the
+  network control (#186) and E273 are working.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
