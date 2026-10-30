@@ -19,7 +19,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
 import { Navbar } from '../../../../components/Navbar';
 import { Footer } from '../../../../components/Footer';
@@ -55,6 +55,8 @@ export default async function CreatorBadgePage({ params }: BadgePageProps) {
   const { slug } = await params;
   const data = await getCreatorPageData(slug);
   if (!data) notFound();
+  // E293: a non-canonical spelling of a folded creator 308s to its one page.
+  if (data.redirectTo) permanentRedirect(badgeHref(data.redirectTo));
 
   const verified = Boolean(data.profile?.isVerified);
 

@@ -23,10 +23,18 @@
 
 import { prisma } from './prisma';
 import type { Mod } from './api';
-import { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug } from './creatorSlug';
+import {
+  authorSlug,
+  canonicalCreatorSlug,
+  creatorHref,
+  creatorKey,
+  creatorRedirectSlug,
+  isJunkAuthorSlug,
+  isNonCreatorSlug,
+} from './creatorSlug';
 import { pageProfileFrom } from './creatorClaim';
 
-export { authorSlug, creatorHref, isJunkAuthorSlug, isNonCreatorSlug };
+export { authorSlug, creatorHref, creatorKey, isJunkAuthorSlug, isNonCreatorSlug };
 
 /** An unclaimed creator page needs at least this many SFW mods, else 404 (see creatorPageGate). */
 export const MIN_MODS_FOR_PAGE = 5;
@@ -72,7 +80,9 @@ export async function listCreators(): Promise<CreatorListRow[]> {
     Array<{ slug: string; author: string; mods: number; downloads: number; latest: Date | null }>
   >`
     WITH per_author AS (
-      SELECT trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug,
+      -- E293: grouped by the separator-free creator key (lib/creatorSlug.ts
+      -- creatorKey), so "Sixam CC" and "SixamCC" are one creator.
+      SELECT regexp_replace(lower(author), '[^a-z0-9]+', '', 'g') AS ckey,
              author,
              COUNT(*)::int AS n,
              COALESCE(SUM("downloadCount"), 0)::int AS dl,
@@ -81,21 +91,35 @@ export async function listCreators(): Promise<CreatorListRow[]> {
       WHERE author IS NOT NULL AND "isNSFW" = false
       GROUP BY 1, 2
     ),
-    per_slug AS (
-      SELECT slug, SUM(n)::int AS mods, SUM(dl)::int AS downloads, MAX(latest) AS latest
+    per_key AS (
+      SELECT ckey, SUM(n)::int AS mods, SUM(dl)::int AS downloads, MAX(latest) AS latest
       FROM per_author
-      GROUP BY slug
+      GROUP BY ckey
       HAVING SUM(n) >= ${MIN_MODS_FOR_PAGE}
     ),
     names AS (
-      SELECT DISTINCT ON (slug) slug, author
+      -- Same order as findAuthorVariants: most-used spelling, ties by author.
+      SELECT DISTINCT ON (ckey) ckey, author
       FROM per_author
-      ORDER BY slug, n DESC, author ASC
+      ORDER BY ckey, n DESC, author ASC
+    ),
+    slugs AS (
+      -- Canonical URL: the dash-slug carrying the most mods, ties by slug
+      -- (lib/creatorSlug.ts canonicalCreatorSlug — keep in lock-step).
+      SELECT DISTINCT ON (ckey) ckey, slug
+      FROM (
+        SELECT ckey, trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) AS slug, SUM(n) AS sn
+        FROM per_author
+        GROUP BY 1, 2
+      ) x
+      ORDER BY ckey, sn DESC, slug COLLATE "C" ASC
     )
-    SELECT s.slug, n.author, s.mods, s.downloads, s.latest
-    FROM per_slug s
-    JOIN names n USING (slug)
-    ORDER BY s.mods DESC, s.slug ASC
+    SELECT g.slug, n.author, s.mods, s.downloads, s.latest
+    FROM per_key s
+    JOIN names n USING (ckey)
+    JOIN slugs g USING (ckey)
+    WHERE s.ckey <> ''
+    ORDER BY s.mods DESC, g.slug ASC
   `;
   return rows
     .filter((r) => !isJunkAuthorSlug(r.slug))
@@ -141,7 +165,7 @@ export async function findAuthorVariants(slug: string): Promise<AuthorVariant[]>
     FROM mods
     WHERE author IS NOT NULL
       AND "isNSFW" = false
-      AND trim(both '-' from lower(regexp_replace(author, '[^A-Za-z0-9]+', '-', 'g'))) = ${slug}
+      AND regexp_replace(lower(author), '[^a-z0-9]+', '', 'g') = ${creatorKey(slug)}
     GROUP BY author
     ORDER BY COUNT(*) DESC, author ASC
   `;
@@ -159,6 +183,11 @@ export interface CreatorPageData {
   profile: { website: string | null; isVerified: boolean; bio: string | null } | null;
   /** False for a claimed creator below MIN_MODS_FOR_PAGE: the page renders with noindex. */
   indexable: boolean;
+  /**
+   * E293: the canonical slug when this URL is a non-canonical spelling of a
+   * folded creator ("sixamcc" → "sixam-cc"); the page 308s there. Null = serve.
+   */
+  redirectTo: string | null;
 }
 
 /**
@@ -202,6 +231,10 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
   const claimed = Boolean(profile && pageProfile?.isVerified);
   if (variants.length === 0 && !claimed) return null;
 
+  // E293: one creator, one page. A spelling that folds into another creator
+  // key's most-used slug redirects there (before any further query).
+  const redirectTo = creatorRedirectSlug(slug, canonicalCreatorSlug(variants, slug), Boolean(profile));
+
   const authors = variants.map((v) => v.author);
   // A claimed creator's page also carries mods linked to their profile
   // (Mod.creatorId) — approved submissions — whatever author string they hold.
@@ -236,6 +269,7 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
     mods: rawMods.map(serializeMod),
     profile: pageProfileFrom(profile),
     indexable: gate.indexable,
+    redirectTo,
   };
 }
 
