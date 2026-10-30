@@ -175,20 +175,23 @@ describe('un-consolidated legacy pairs (pregnancy-mods, y2k-cc — 2026-09)', ()
   });
 });
 
-describe('games-page collection nav (GamePageClient)', () => {
-  const src = read('app/games/[game]/GamePageClient.tsx');
+describe('games-page collection nav (/games/[game] renders the launcher)', () => {
+  // Since 2026-10-28 the game page is HomePageClient; its collection links
+  // are app/HomeCollections.tsx, the same server blocks as the homepage.
+  const src = read('app/games/[game]/page.tsx');
+  const colls = read('app/HomeCollections.tsx');
 
-  it('renders collection chips with trailing-slash hrefs, outside the ad flex row', () => {
+  it('collection links have trailing-slash hrefs and never sit in an ad container', () => {
     // Trailing slash keeps internal links pointed at the canonical
     // variant instead of a 308 (trailingSlash: true).
-    expect(src).toContain('href={`/games/${gameSlug}/${c.slug}/`}');
-    // Navigation strip must never become an ad-injection point.
-    const navBlock = src.slice(src.indexOf('Browse collections'), src.indexOf('Main Content'));
-    expect(navBlock).not.toContain('mv-ads');
+    expect(colls).toContain('href: `/games/${c.gameSlug}/${c.slug}/`');
+    expect(colls).not.toContain('mv-ads');
+    // The Sims 4 page passes the collection blocks; they are Sims 4 only.
+    expect(src).toMatch(/collectionsSlot=\{isSims4 \? <HomeCollections \/>/);
   });
 
   it('games page renders dynamically so the chips reach served HTML', () => {
-    // GamePageClient uses useSearchParams(); under SSG the prerendered
+    // HomePageClient uses useSearchParams(); under SSG the prerendered
     // HTML is only the Suspense fallback — the chips (and the whole
     // page shell) never reach crawlers. force-dynamic keeps the full
     // shell in the response. Verified against prod 2026-07-03.
@@ -196,14 +199,14 @@ describe('games-page collection nav (GamePageClient)', () => {
     expect(pageSrc).toContain("export const dynamic = 'force-dynamic'");
   });
 
-  it('collection chips are static — not gated behind the mods loading state', () => {
+  it('collection links are static — not gated behind the mods loading state', () => {
     // A loading guard here would hide the links (and delay layout) on
-    // first paint. The strip must only depend on the collections prop.
-    const navStart = src.indexOf('{collections.length > 0 && (');
-    expect(navStart).toBeGreaterThan(-1);
-    const navEnd = src.indexOf('</nav>');
-    const navBlock = src.slice(navStart, navEnd);
-    expect(navBlock).not.toContain('loading');
+    // first paint. The blocks are server components passed in as slots;
+    // the launcher gates them only on the selected game.
+    expect(colls).not.toMatch(/['"]use client['"]/);
+    expect(colls).not.toContain('loading');
+    const below = read('components/launcher/LauncherBelow.tsx');
+    expect(below).toContain('{showsSims4Collections(gameFor(game).id) && collectionsSlot}');
   });
 });
 

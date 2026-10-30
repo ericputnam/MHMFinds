@@ -121,13 +121,16 @@ describe('detectContentType', () => {
       expect(detectContentType('Male Skin (Monolids) Light To Medium Skintones', 'A male skin overlay.')).toBe('skin');
     });
 
-    it('does not classify a GShade preset as lighting', () => {
+    it('classifies a GShade preset as ui-preset, never as lighting', () => {
+      // Until E272 (2026-10-25) this asserted `undefined`: the `preset` rule
+      // lists gshade/reshade as negatives and nothing else claimed the title.
+      // The title-only rule in lib/uiPresetRules.ts now answers it.
       expect(
         detectContentType(
           'Sims 4 Rose Milk Tea GShade Preset',
           'A soft gshade preset that warms the in-game lighting.'
         )
-      ).toBeUndefined();
+      ).toBe('ui-preset');
     });
 
     it('does not classify curtain-bangs hair as curtains', () => {

@@ -31,6 +31,8 @@ CRITICAL_MARKERS=(
   'id="secondary"|Mediavine sidebar element'
   'mhm-mv-sidebar|Mediavine sidebar wrapper class'
   'scripts.mediavine.com|Mediavine script loader'
+  # Both TEST_URLS are Sims posts, so the block always renders (named packs or the popular fallback).
+  'mhm-pack-picks|Amazon Sims 4 pack picks block (mhm_affiliate_pack_block)'
 )
 
 FAIL=0

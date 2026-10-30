@@ -61,6 +61,8 @@ import { partitionExcluded, EXCLUDED_RECIPIENT_HASHES } from '../../lib/services
 import { SCRIPTED_SIGNUP_HASHES, scriptedSubscriberHashes, unlistedScriptedHashes } from '../../lib/services/sendExclusions';
 import { loadSubscriberAccountRows } from './_subscriber-account-rows';
 import { resolveSeedRecipients, SEED_ALLOWLIST_HASHES } from '../../lib/services/seedSend';
+import { suppressionLookupFor, type SuppressionLookup } from '../../lib/services/emailSuppression';
+import { describeSync, syncUnsubscribeMailbox } from './unsubscribe-mailbox-lib';
 import {
   buildWeeklyIssueData,
   createPrismaDataSource,
@@ -150,6 +152,15 @@ const dbSourced = fromDb || accountsFromDb;
 function directPrisma(): PrismaClient {
   if (!process.env.DIRECT_DATABASE_URL) throw new Error('DB-sourced recipients need DIRECT_DATABASE_URL');
   return new PrismaClient({ datasourceUrl: process.env.DIRECT_DATABASE_URL });
+}
+
+/**
+ * Before any LIVE send to people: record unsubscribes that arrived by email
+ * (List-Unsubscribe mailto, "unsubscribe" replies). Throws when the mailbox scan
+ * could not complete — that is never read as "nobody asked", so the send stops.
+ */
+async function syncMailboxBeforeLiveSend(prisma: PrismaClient): Promise<void> {
+  console.log(describeSync(await syncUnsubscribeMailbox(prisma, { apply: true })));
 }
 
 /** Subscriber addresses from the DB (direct connection, like funnel-scoreboard.ts). Never printed. */
@@ -354,12 +365,14 @@ async function runWeekly(): Promise<void> {
       console.error(`${unlisted.length} scripted-shaped subscriber(s) not in SCRIPTED_SIGNUP_HASHES — refusing a live send; run scripts/agents/scripted-signup-hashes.ts --hashes and ship the list first`);
       process.exit(1);
     }
+    if (!dry) await syncMailboxBeforeLiveSend(prisma);
     const r = await sendWeeklyNewsletter({ dryRun: dry, prisma, source: 'script', now, resumeAfter });
     if (r.skipped) { console.error(`weekly: skipped — ${r.reason}`); process.exit(1); }
     console.log(
       `weekly ${r.mode} → issue #${r.issueNumber} (${r.campaign}) "${r.subject}": ` +
         `recipients ${r.recipients} (waitlist minus ${r.excludedCount} excluded, ${r.scriptedExcludedCount ?? 0} of them scripted-shaped; cap ${r.hardCap}) ` +
-        `attempted ${r.attempted} sent ${r.sent} failed ${r.failed} skipped ${r.skippedRecipients ?? 0} deferred ${r.deferred ?? 0}`
+        `attempted ${r.attempted} sent ${r.sent} failed ${r.failed} skipped ${r.skippedRecipients ?? 0} deferred ${r.deferred ?? 0} ` +
+        `unsubscribed ${r.suppressedCount ?? 0}`
     );
     if (r.resumedAfter) console.log(`resumed after cursor ${r.resumedAfter}`);
     if (r.resumeCursor) {
@@ -423,6 +436,7 @@ async function runSeed(): Promise<void> {
     const campaign = `weekly-issue-${String(issue.number).padStart(2, '0')}`;
     const homeUrl = withUtm(`${SITE}/`, campaign);
     const r = await sendBulk({
+      suppressionLookup: suppressionLookupFor(prisma),
       recipients: seeds,
       dryRun: dry,
       site: SITE,
@@ -455,7 +469,26 @@ async function main() {
   if (weekly) return runWeekly();
   const recipients = await loadRecipients();
   if (!recipients.length) { console.error('no recipients'); process.exit(1); }
+  // The unsubscribe list applies to every send, --to included. A dry run without a DB
+  // still renders (reported as unverified); bulkMailer refuses a live one.
+  const prisma = process.env.DIRECT_DATABASE_URL ? directPrisma() : null;
+  try {
+    await sendAll(recipients, prisma);
+  } finally {
+    await prisma?.$disconnect();
+  }
+}
+
+async function sendAll(recipients: string[], prisma: PrismaClient | null): Promise<void> {
+  const suppressionLookup: SuppressionLookup = prisma
+    ? suppressionLookupFor(prisma)
+    : async () => { throw new Error('the unsubscribe list needs DIRECT_DATABASE_URL'); };
+  if (!dry) {
+    if (!prisma) throw new Error('a live send needs DIRECT_DATABASE_URL to read the unsubscribe list');
+    await syncMailboxBeforeLiveSend(prisma);
+  }
   const common = {
+    suppressionLookup,
     recipients,
     dryRun: dry,
     site: SITE,
@@ -476,6 +509,8 @@ async function main() {
     sent: r.sent,
     failed: r.failed,
     skipped: r.skipped.length,
+    suppressed: r.suppressed.length,
+    suppressionChecked: r.suppressionChecked,
     deferred: r.deferred.length,
     batches: r.batches,
     hourlyLimit: r.hourlyLimit,

@@ -79,10 +79,14 @@ describe('collection guides (E203)', () => {
     expect(llms).toContain('c.guides');
     // Plain anchors in the companion paragraph, above the main/aside split —
     // strip comments first: this repo's comments quote the patterns they warn about.
-    const code = page.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\/[^\n]*/g, '');
+    const code = page.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
     const anchorAt = code.indexOf('collection.guides?.map(');
+    // Since 2026-10-28 the .mv-ads container is LauncherGrid's, so the grid
+    // element is the boundary; a literal mv-ads in this file counts too.
+    const gridAt = code.indexOf('<LauncherGrid');
     const mvAdsAt = code.indexOf('mv-ads');
     expect(anchorAt).toBeGreaterThan(0);
+    expect(gridAt).toBeGreaterThan(anchorAt);
     expect(mvAdsAt === -1 || anchorAt < mvAdsAt).toBe(true);
   });
 });

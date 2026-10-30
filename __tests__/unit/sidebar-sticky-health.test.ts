@@ -10,7 +10,8 @@ import * as path from 'path'
  * causing a health score of 12.9 (target: 50+).
  *
  * Root causes fixed:
- * - GamePageClient had NO sidebar at all
+ * - GamePageClient had NO sidebar at all (retired 2026-10-28; /games/[game]/
+ *   now renders HomePageClient)
  * - Homepage sidebar used xl:block (1280px) instead of lg:block (1024px)
  * - Placeholder divs inside asides confused Mediavine's auto-fill
  * - Left spacer divs wasted 300px of horizontal space
@@ -48,8 +49,8 @@ function stripComments(src: string): string {
  * this suite for four days; registered with E58 (2026-09-16).
  */
 const PAGES_WITH_SIDEBAR = [
-  { name: 'Homepage', file: 'app/HomePageClient.tsx' },
-  { name: 'Game browse (/games/[game])', file: 'app/games/[game]/GamePageClient.tsx' },
+  // Also the client tree of /games/[game]/ since 2026-10-28 (see section 4b).
+  { name: 'Homepage + game browse', file: 'app/HomePageClient.tsx' },
   { name: 'Mod detail (/mods/[id])', file: 'app/mods/[id]/ModDetailClient.tsx' },
   { name: 'Download interstitial (/go/[modId])', file: 'app/go/[modId]/GoClient.tsx' },
   { name: 'Daily game (/play/)', file: 'app/play/PlayClient.tsx' },
@@ -92,13 +93,6 @@ describe('Sidebar breakpoint: visible at lg (1024px), not xl (1280px)', () => {
     const className = asideMatch![1]
     expect(className).toContain('lg:block')
     expect(className).not.toContain('xl:block')
-  })
-
-  it('Game browse sidebar must use lg:block', () => {
-    const src = readSource('app/games/[game]/GamePageClient.tsx')
-    const asideMatch = src.match(/id="secondary"[\s\S]*?className="([^"]*)"/)
-    expect(asideMatch).toBeTruthy()
-    expect(asideMatch![1]).toContain('lg:block')
   })
 
   it('Daily game (/play/) sidebar must use lg:block', () => {
@@ -183,14 +177,6 @@ describe('Layout: no left spacer divs wasting horizontal space', () => {
     expect(src).not.toMatch(reversePattern)
   })
 
-  it('Game browse must NOT have a left spacer div', () => {
-    const src = readSource('app/games/[game]/GamePageClient.tsx')
-    const spacerPattern = /aria-hidden="true"[\s\S]*?w-\[300px\][\s\S]*?FacetedSidebar/
-    const reversePattern = /w-\[300px\][\s\S]*?aria-hidden="true"[\s\S]{0,200}FacetedSidebar/
-    expect(src).not.toMatch(spacerPattern)
-    expect(src).not.toMatch(reversePattern)
-  })
-
   it('Download interstitial must NOT have an aria-hidden spacer div', () => {
     const src = readSource('app/go/[modId]/GoClient.tsx')
     // /go has no FacetedSidebar — any aria-hidden 300px element is a spacer
@@ -236,6 +222,19 @@ describe('Homepage server shell (app/page.tsx wraps app/HomePageClient.tsx)', ()
     // A top-level `if (loading) return <Loader/>` hides every ad anchor from
     // Mediavine's initial DOM scan. The grid's own skeleton lives in ModGrid.
     expect(src).not.toMatch(/if \(loading\)\s*return/)
+  })
+
+  // 2026-10-28: /games/[game]/ renders the same launcher tree, so it inherits
+  // every HomePageClient rule above. The legacy GamePageClient (old design)
+  // must not come back as a second, unguarded copy of the page.
+  it('app/games/[game]/page.tsx is the same kind of shell around HomePageClient', () => {
+    const src = stripComments(readSource('app/games/[game]/page.tsx'))
+    expect(src).not.toMatch(/^\s*['"]use client['"]/m)
+    expect(src).toMatch(/export const dynamic = ['"]force-dynamic['"]/)
+    expect(src).toMatch(/<HomePageClient\b/)
+    expect(src).toContain('routeGame=')
+    expect(src).not.toContain('GamePageClient')
+    expect(fs.existsSync(path.resolve(__dirname, '../../app/games/[game]/GamePageClient.tsx'))).toBe(false)
   })
 })
 
@@ -314,6 +313,7 @@ describe('Mediavine DOM guard: no player relocation, no timed hiding of ad conta
       'app/go/[modId]/GoClient.tsx',
       'app/play/PlayClient.tsx',
       'components/ModGrid.tsx',
+      'components/launcher/LauncherGrid.tsx',
     ]) {
       expect(adContainerFiles.map(({ file }) => file)).toContain(known)
     }

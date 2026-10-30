@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import HomePageClient from './HomePageClient';
-import { HomeCollections, homeCollectionLinks } from './HomeCollections';
+import { HomeCollections, HomeCollectionStrip, homeCollectionLinks } from './HomeCollections';
 import { HomeJsonLd } from '@/components/HomeJsonLd';
 
 /**
@@ -63,7 +63,7 @@ export default function HomePage() {
           </div>
         }
       >
-        <HomePageClient collectionsSlot={<HomeCollections />} />
+        <HomePageClient collectionsSlot={<HomeCollections />} collectionStripSlot={<HomeCollectionStrip />} />
       </Suspense>
     </>
   );

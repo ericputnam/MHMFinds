@@ -12,8 +12,9 @@ hand-typed IMAP session until this script. Now it is one command.
     python3 scripts/agents/mailbox-dsn-count.py --since 2026-09-16 [--gate 100] [--hashes]
 
 Guarantees (this is why it exists as a script and not as a shell one-liner):
-  * Read-only. Every folder is opened with `readonly=True` and bodies are fetched
-    with `BODY.PEEK[]`, so nothing is flagged \\Seen, moved or deleted.
+  * Read-only. Every IMAP call goes through `_mailbox_readonly.ReadOnlyMailbox`, which
+    only opens folders with `readonly=True` and fetches `BODY.PEEK[]`, so nothing is
+    flagged \\Seen, moved or deleted.
   * Counts only. No address, subject of a human reply, env value, or message body
     is ever printed. Env vars are read from .env.local and named, never echoed.
   * `--hashes` prints the SHA-256 of each hard-bounced recipient address
@@ -28,84 +29,27 @@ from __future__ import annotations
 
 import argparse
 import email
-import email.header
 import email.utils
 import hashlib
-import imaplib
-import os
 import re
-import ssl
 import sys
 from datetime import date, datetime, timezone
 from email.message import Message
 
-ENV_FILE = ".env.local"
-# IMAP on the BigScoots mailbox lives on the same host as SMTP submission.
-HOST_VAR, USER_VAR, PASS_VAR = "SMTP_HOST", "SMTP_USER", "SMTP_PASS"
-IMAP_PORT = 993
-
-# Subjects our two live sends have used. Attribution only — never printed with a recipient.
-CAMPAIGN_SUBJECTS = {
-    "re-permission": "Do you want the weekly Sims 4 finds email?",
-    "issue-01": "Your first MustHaveMods roundup",
-    # Every DB-built weekly issue (05, 06, ...) uses this subject prefix (newsletterWeekly.ts).
-    "weekly": "This week on MustHaveMods",
-    # E233 subscriber->account invite (INVITE_SUBJECT in lib/services/subscriberInvite.ts). Until
-    # E254 (2026-10-21) its DSNs read as "other": the one hard DSN of 10-19 (5.7.1) was this send.
-    "invite": "Save the mods you find on MustHaveMods",
-}
-DSN_SUBJECT_RE = re.compile(
-    r"(undeliver|delivery (status|failure|report)|mail delivery failed|returned mail|failure notice|"
-    r"delivery has failed|could not be delivered|delayed mail|non[- ]?delivery)",
-    re.I,
+# Every IMAP read goes through the shared read-only wrapper (EXAMINE + BODY.PEEK[]); the
+# constants live there too so the unsubscribe reader attributes subjects the same way.
+from _mailbox_readonly import (  # noqa: E402
+    AUTOREPLY_RE,
+    CAMPAIGN_SUBJECTS,
+    COMPLAINT_RE,
+    DSN_SUBJECT_RE,
+    ENV_FILE,
+    SPAM_FOLDER_RE,
+    CouldNotRun,
+    ReadOnlyMailbox,
+    header_text,
+    walk_parts,
 )
-AUTOREPLY_RE = re.compile(r"(automatic reply|auto[- ]?reply|out of (the )?office|autoresponder|away from)", re.I)
-COMPLAINT_RE = re.compile(r"(abuse|complaint|feedback[- ]?loop|feedback report|\bfbl\b|spam report)", re.I)
-SPAM_FOLDER_RE = re.compile(r"(spam|junk)", re.I)
-
-
-def load_env(path: str) -> dict[str, str]:
-    """Minimal .env parser. Values are returned to the caller and never logged."""
-    out: dict[str, str] = {}
-    try:
-        with open(path, encoding="utf-8") as fh:
-            for raw in fh:
-                line = raw.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                k, v = line.split("=", 1)
-                v = v.strip()
-                if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
-                    v = v[1:-1]
-                out[k.strip()] = v
-    except FileNotFoundError:
-        pass
-    return out
-
-
-def imap_date(d: date) -> str:
-    return d.strftime("%d-%b-%Y")
-
-
-def walk_parts(msg: Message):
-    if msg.is_multipart():
-        for part in msg.walk():
-            yield part
-    else:
-        yield msg
-
-
-def header_text(msg: Message, name: str) -> str:
-    """Header value with RFC 2047 encoded-words decoded. The weekly subject carries an em dash,
-    so it is sent as `=?utf-8?...?=` and a raw substring match never saw it (E240)."""
-    try:
-        raw = str(msg.get(name, "") or "")
-    except Exception:
-        return ""
-    try:
-        return str(email.header.make_header(email.header.decode_header(raw)))
-    except Exception:
-        return raw
 
 
 def classify_dsn(msg: Message) -> dict:
@@ -222,31 +166,14 @@ def main() -> int:
     ap.add_argument("--env", default=ENV_FILE)
     args = ap.parse_args()
 
-    env = {**load_env(args.env), **{k: v for k, v in os.environ.items() if k in (HOST_VAR, USER_VAR, PASS_VAR)}}
-    missing = [k for k in (HOST_VAR, USER_VAR, PASS_VAR) if not env.get(k)]
-    if missing:
-        print(f"could-not-run: missing env {', '.join(missing)} in {args.env}")
-        return 2
-
     since = date.fromisoformat(args.since)
     read_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     try:
-        conn = imaplib.IMAP4_SSL(env[HOST_VAR], IMAP_PORT, ssl_context=ssl.create_default_context())
-        conn.login(env[USER_VAR], env[PASS_VAR])
-    except Exception as e:  # never echo the host/user in the error
-        print(f"could-not-run: IMAP connect/login failed ({type(e).__name__})")
+        box = ReadOnlyMailbox(args.env)
+        folders = box.folders()
+    except CouldNotRun as e:
+        print(f"could-not-run: {e}")
         return 2
-
-    folders: list[str] = []
-    typ, data = conn.list()
-    if typ == "OK":
-        for raw in data or []:
-            if not raw:
-                continue
-            s = raw.decode() if isinstance(raw, bytes) else str(raw)
-            m = re.search(r'"([^"]+)"\s*$', s) or re.search(r"\s(\S+)\s*$", s)
-            if m:
-                folders.append(m.group(1))
 
     counts = {
         "read_at": read_at,
@@ -270,24 +197,22 @@ def main() -> int:
     by_day: dict[str, dict[str, dict]] = {}
 
     for folder in folders:
+        if not box.select(folder):
+            continue
         try:
-            typ, _ = conn.select(f'"{folder}"', readonly=True)
-        except Exception:
-            continue
-        if typ != "OK":
-            continue
-        typ, data = conn.search(None, "SINCE", imap_date(since))
-        ids = (data[0].split() if typ == "OK" and data and data[0] else [])
+            ids = box.search_since(since)
+        except CouldNotRun:
+            ids = []
         counts["folders"][folder] = len(ids)
         if SPAM_FOLDER_RE.search(folder):
             counts["spam_folder_messages"] += len(ids)
         if folder.upper() != "INBOX" and not SPAM_FOLDER_RE.search(folder):
             continue
         for mid in ids:
-            typ, data = conn.fetch(mid, "(BODY.PEEK[])")
-            if typ != "OK" or not data or not isinstance(data[0], tuple):
+            got = box.peek(mid)
+            if got is None:
                 continue
-            msg = email.message_from_bytes(data[0][1])
+            msg = got[0]
             subject = header_text(msg, "Subject")
             ctype = header_text(msg, "Content-Type").lower()
             if "feedback-report" in ctype or COMPLAINT_RE.search(subject):
@@ -324,10 +249,7 @@ def main() -> int:
                 seen_recipients.add(d["recipient"])
                 hashes.append(hashlib.sha256(d["recipient"].encode("utf-8")).hexdigest())
 
-    try:
-        conn.logout()
-    except Exception:
-        pass
+    box.close()
 
     # Distinct hard-bounced recipients is the number the gate uses (one DSN per address).
     counts["hard_distinct_recipients"] = len(seen_recipients)

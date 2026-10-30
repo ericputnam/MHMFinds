@@ -4876,3 +4876,188 @@ add_filter( 'rank_math/sitemap/entry', function ( $entry, $type, $object ) {
     }
     return $entry;
 }, 10, 3 );
+
+/**
+ * ============================================================
+ * Amazon Sims 4 pack picks (mhm_affiliate_pack_block)
+ * ============================================================
+ * Affiliate push, 2026-10-26 (MHMFinds repo: reports/affiliates/).
+ * ~97% of sessions land on blog listicles, and before this filter
+ * the blog had no tracked affiliate surface at all: 0 affiliate_click
+ * events from posts in 90 days, while 453 posts name Sims 4 packs and
+ * 115 link to ea.com unmonetized.
+ *
+ * Appends one end-of-post box (same pattern and position as
+ * mhm_collection_crosslinks / mhm_catalog_mod_links, never mid-content,
+ * never inside or beside a Mediavine container) listing up to 4 packs
+ * the post itself names, each linked to its PC/Mac EA-app code on
+ * Amazon with tag musthavemod04-20. A post that names no pack gets
+ * "Popular Sims 4 packs" instead. Text only: no Amazon images and no
+ * prices (Associates terms forbid unrefreshed prices and scraped images).
+ *
+ * Clicks fire GA4 affiliate_click (partner=amazon,
+ * source_type=blog_pack_block, offer_id=<ASIN>, affiliate_label=<pack>).
+ * No /api/affiliates/click/ beacon yet: that route needs an
+ * AffiliateOffer row to hang the click on, and none exists for this
+ * block. The href is the plain Amazon link, so the click works with
+ * JS off, and Amazon's own Orders report is the conversion record.
+ *
+ * Every ASIN was checked buyable on amazon.com on 2026-10-26.
+ * Ambiguous names (Seasons, Vampires, For Rent, and stuff-pack short
+ * names like "Vintage Glamour", which are also CC set names) only count when
+ * the text says they are a pack ("Sims 4 Seasons", "Seasons expansion",
+ * "requires Vampires", "Vampires (GP04)").
+ * Output is identical for proxied and direct requests
+ * (BigScoots-cache-safe).
+ */
+function mhm_affiliate_pack_catalog() {
+    // array( display name, type, ASIN, ambiguous?, extra aliases )
+    return array(
+        array( 'Get to Work', 'Expansion Pack', 'B00TEC9XH6', false, array() ),
+        array( 'Get Together', 'Expansion Pack', 'B013TOC7CM', false, array() ),
+        array( 'City Living', 'Expansion Pack', 'B01LX7O4IK', false, array() ),
+        array( 'Cats & Dogs', 'Expansion Pack', 'B07888WVKX', false, array( 'Cats and Dogs' ) ),
+        array( 'Seasons', 'Expansion Pack', 'B07DFZRJ6G', true, array() ),
+        array( 'Get Famous', 'Expansion Pack', 'B07L9XFQNK', false, array() ),
+        array( 'Island Living', 'Expansion Pack', 'B07STVKMKM', false, array() ),
+        array( 'Discover University', 'Expansion Pack', 'B0812MPB51', false, array() ),
+        array( 'Eco Lifestyle', 'Expansion Pack', 'B08921X7NP', false, array() ),
+        array( 'Snowy Escape', 'Expansion Pack', 'B08M1V413G', false, array() ),
+        array( 'Cottage Living', 'Expansion Pack', 'B0995Y2KQ4', false, array() ),
+        array( 'High School Years', 'Expansion Pack', 'B0B5SXT4WV', false, array() ),
+        array( 'Growing Together', 'Expansion Pack', 'B0BV15LZ8V', false, array() ),
+        array( 'Horse Ranch', 'Expansion Pack', 'B0CCT3JJGC', false, array() ),
+        array( 'For Rent', 'Expansion Pack', 'B0CMZGS84M', true, array() ),
+        array( 'Lovestruck', 'Expansion Pack', 'B0D94Z9PPZ', false, array() ),
+        array( 'Life & Death', 'Expansion Pack', 'B0DK2HN57R', false, array( 'Life and Death' ) ),
+        array( 'Businesses & Hobbies', 'Expansion Pack', 'B0DXXY7VQB', false, array( 'Businesses and Hobbies' ) ),
+        array( 'Enchanted by Nature', 'Expansion Pack', 'B0FDS9GBCZ', false, array() ),
+        array( 'Adventure Awaits', 'Expansion Pack', 'B0FQ6ZMJPK', false, array() ),
+        array( 'Royalty & Legacy', 'Expansion Pack', 'B0GGLRKKM7', false, array( 'Royalty and Legacy' ) ),
+        array( 'Outdoor Retreat', 'Game Pack', 'B00S00IJH8', false, array() ),
+        array( 'Spa Day', 'Game Pack', 'B011S6DBTG', true, array() ),
+        array( 'Dine Out', 'Game Pack', 'B01GSRMCY0', false, array() ),
+        array( 'Vampires', 'Game Pack', 'B01N10COO0', true, array() ),
+        array( 'Parenthood', 'Game Pack', 'B071FRD2Y9', true, array() ),
+        array( 'Jungle Adventure', 'Game Pack', 'B07B3Q33NM', false, array() ),
+        array( 'StrangerVille', 'Game Pack', 'B07PRPR14C', false, array() ),
+        array( 'Realm of Magic', 'Game Pack', 'B07X4YJ54T', false, array() ),
+        array( 'Journey to Batuu', 'Game Pack', 'B08CS3M62Z', false, array() ),
+        array( 'Dream Home Decorator', 'Game Pack', 'B094QBNSWZ', false, array() ),
+        array( 'My Wedding Stories', 'Game Pack', 'B09TQPCS88', false, array( 'Wedding Stories' ) ),
+        array( 'Werewolves', 'Game Pack', 'B0B3XSJ8MN', true, array() ),
+        array( 'Tiny Living', 'Stuff Pack', 'B084SCMFQH', false, array() ),
+        array( 'Home Chef Hustle', 'Stuff Pack', 'B0CJZSZZ7W', false, array() ),
+        array( 'Crystal Creations', 'Stuff Pack', 'B0DK9DNHL3', false, array() ),
+        array( 'Nifty Knitting', 'Stuff Pack', 'B08CYQ4SDY', false, array() ),
+        array( 'Moschino Stuff', 'Stuff Pack', 'B07WL674WR', false, array() ),
+        array( 'Vintage Glamour Stuff', 'Stuff Pack', 'B01N59SH11', true, array( 'Vintage Glamour' ) ),
+        array( 'Laundry Day Stuff', 'Stuff Pack', 'B079XT422B', true, array( 'Laundry Day' ) ),
+        array( 'Toddler Stuff', 'Stuff Pack', 'B075RLVVGN', false, array() ),
+        array( 'Kids Room Stuff', 'Stuff Pack', 'B01HH6JEOC', false, array() ),
+        array( 'Spooky Stuff', 'Stuff Pack', 'B01602IMKQ', false, array() ),
+        array( 'Backyard Stuff', 'Stuff Pack', 'B01J49RRNA', false, array() ),
+        array( 'Romantic Garden Stuff', 'Stuff Pack', 'B01BMY4LRA', true, array( 'Romantic Garden' ) ),
+        array( 'Luxury Party Stuff', 'Stuff Pack', 'B00XWUK9TM', true, array( 'Luxury Party' ) ),
+        array( 'Perfect Patio Stuff', 'Stuff Pack', 'B00ZGT21OI', true, array( 'Perfect Patio' ) ),
+        array( 'Cool Kitchen Stuff', 'Stuff Pack', 'B013TOCFP6', true, array( 'Cool Kitchen' ) ),
+        array( 'Movie Hangout Stuff', 'Stuff Pack', 'B01AITMOK6', true, array( 'Movie Hangout' ) ),
+        array( 'Fitness Stuff', 'Stuff Pack', 'B073PPLFCX', false, array() ),
+        array( 'Bust the Dust', 'Kit', 'B08YKCTLGM', false, array() ),
+        array( 'Country Kitchen', 'Kit', 'B08YKHYLPC', false, array() ),
+        array( 'Modern Luxe', 'Kit', 'B0CJZVZ4GN', false, array() ),
+        array( 'Greenhouse Haven', 'Kit', 'B0C47K8P7J', false, array() ),
+    );
+}
+
+// Shown when a post names no pack: the packs most CC lists assume.
+function mhm_affiliate_pack_fallback() {
+    return array( 'B07DFZRJ6G', 'B07888WVKX', 'B0995Y2KQ4', 'B0BR3W49KH' );
+}
+
+function mhm_affiliate_pack_matches( $text ) {
+    $found = array();
+    foreach ( mhm_affiliate_pack_catalog() as $pack ) {
+        list( $name, , $asin, $ambiguous, $aliases ) = $pack;
+        $count = 0;
+        foreach ( array_merge( array( $name ), $aliases ) as $label ) {
+            $q = str_replace( '\ ', '\s+', preg_quote( $label, '/' ) );
+            $q = str_replace( ' ', '\s+', $q );
+            if ( $ambiguous ) {
+                $re = '/(?:Sims\s*4\s*[:\-\x{2013}]?\s*' . $q . '\b'
+                    . '|\b' . $q . '\s+(?:expansion|game\s+pack|stuff\s+pack|pack|EP|GP|SP)\b'
+                    . '|\b' . $q . '\s*\((?:EP|GP|SP)\s*\d+\)'
+                    . '|\b(?:requires?|needs?)\s+(?:the\s+)?' . $q . '\b)/iu';
+            } else {
+                $re = '/\b' . $q . '\b/u';
+            }
+            $count += preg_match_all( $re, $text );
+        }
+        if ( $count > 0 ) {
+            $found[ $asin ] = $count;
+        }
+    }
+    arsort( $found );
+    return array_slice( array_keys( $found ), 0, 4 );
+}
+
+function mhm_affiliate_pack_block( $content ) {
+    if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+        return $content;
+    }
+    $text   = html_entity_decode( wp_strip_all_tags( $content ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+    // Minecraft / Stardew posts share this theme: no Sims packs there.
+    $slug = (string) get_post_field( 'post_name' );
+    if ( false === stripos( $slug, 'sims' ) && preg_match_all( '/\bSims\b/i', $text ) < 3 ) {
+        return $content;
+    }
+    $asins  = mhm_affiliate_pack_matches( $text );
+    $mode   = $asins ? 'mentioned' : 'popular';
+    if ( ! $asins ) {
+        $asins = mhm_affiliate_pack_fallback();
+    }
+
+    $by_asin = array();
+    foreach ( mhm_affiliate_pack_catalog() as $pack ) {
+        $by_asin[ $pack[2] ] = $pack;
+    }
+    $by_asin['B0BR3W49KH'] = array( 'Everyday Bundle', 'Bundle', 'B0BR3W49KH', false, array() );
+
+    $items = '';
+    foreach ( $asins as $asin ) {
+        if ( ! isset( $by_asin[ $asin ] ) ) {
+            continue;
+        }
+        list( $name, $type ) = $by_asin[ $asin ];
+        $url    = 'https://www.amazon.com/dp/' . $asin . '?tag=musthavemod04-20';
+        $items .= '<li style="margin:.45em 0;">'
+            . '<a href="' . esc_url( $url ) . '" target="_blank" rel="sponsored nofollow noopener"'
+            . ' data-mhm-asin="' . esc_attr( $asin ) . '" data-mhm-pack="' . esc_attr( $name ) . '"'
+            . ' style="font-weight:600;">The Sims 4 ' . esc_html( $name ) . '</a>'
+            . ' <span style="opacity:.75;">&middot; ' . esc_html( $type ) . ' &middot; PC/Mac EA app code on Amazon</span>'
+            . '</li>';
+    }
+    if ( '' === $items ) {
+        return $content;
+    }
+
+    $heading = 'mentioned' === $mode
+        ? 'Packs this post uses'
+        : 'Popular Sims 4 packs';
+    // Delegated listener; falls back to a querySelector scan when a JS
+    // optimiser defers the inline script and currentScript is null.
+    $script = "(function(){var c=document.currentScript,p=c&&c.parentNode,bs=(p&&p.classList&&p.classList.contains('mhm-pack-picks'))?[p]:document.querySelectorAll('.mhm-pack-picks');for(var i=0;i<bs.length;i++)bind(bs[i]);function bind(b){if(!b||b.getAttribute('data-mhm-bound'))return;b.setAttribute('data-mhm-bound','1');"
+        . "function h(e){var a=e.target&&e.target.closest?e.target.closest('a[data-mhm-asin]'):null;if(!a)return;var s=a.getAttribute('data-mhm-asin'),p=a.getAttribute('data-mhm-pack');"
+        . "try{if(typeof gtag==='function')gtag('event','affiliate_click',{partner:'amazon',source_type:'blog_pack_block',offer_id:s,affiliate_label:p,pack_match:b.getAttribute('data-mhm-mode'),transport_type:'beacon'});}catch(x){}"
+        . "}"
+        . "b.addEventListener('click',h);b.addEventListener('auxclick',h);}})();";
+
+    $box = '<div class="mhm-pack-picks" data-mhm-mode="' . esc_attr( $mode ) . '" style="margin:2em 0;padding:1.25em 1.5em;border:1px solid rgba(245,158,11,.45);border-radius:12px;background:rgba(245,158,11,.07);">'
+        . '<p style="margin:0 0 .5em;font-size:1.05em;font-weight:600;">' . esc_html( $heading ) . '</p>'
+        . '<ul style="margin:0;padding-left:1.25em;">' . $items . '</ul>'
+        . '<p style="margin:.75em 0 0;font-size:.8em;opacity:.7;">As an Amazon Associate we earn from qualifying purchases. Codes redeem in the EA app on PC or Mac.</p>'
+        . '<script>' . $script . '</script>'
+        . '</div>';
+    return $content . $box;
+}
+add_filter( 'the_content', 'mhm_affiliate_pack_block', 22 );

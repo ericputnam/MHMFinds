@@ -42,6 +42,9 @@ import {
 
 const ORIGINAL_ENV = { ...process.env };
 
+/** A live send must pass an unsubscribe lookup; these tests have nobody on it. */
+const noneSuppressed = async () => new Set<string>();
+
 /** Stand-in for the operator's real address; never a bracketed placeholder. */
 const POSTAL = 'MustHaveMods, PO Box 1, Testville, ST 00000';
 
@@ -276,7 +279,7 @@ describe('send safety', () => {
 
   it('throws rather than sending when no transport is configured', async () => {
     await expect(
-      sendBulk({ recipients: recipients(1), build, dryRun: false })
+      sendBulk({ recipients: recipients(1), build, dryRun: false, suppressionLookup: noneSuppressed })
     ).rejects.toThrow(/no transport configured/i);
   });
 
@@ -289,6 +292,7 @@ describe('send safety', () => {
       recipients: recipients(2),
       build,
       dryRun: false,
+      suppressionLookup: noneSuppressed,
       send,
       fromName: 'MustHaveMods',
     });
@@ -314,7 +318,7 @@ describe('send safety', () => {
       .mockResolvedValueOnce(true)
       .mockRejectedValueOnce(new Error('550 mailbox unavailable'));
 
-    const result = await sendBulk({ recipients: recipients(2), build, dryRun: false, send });
+    const result = await sendBulk({ recipients: recipients(2), build, dryRun: false, suppressionLookup: noneSuppressed, send });
     expect(result.sent).toBe(1);
     expect(result.failed).toBe(1);
     expect(result.results[1].error).toContain('550');
@@ -383,7 +387,7 @@ describe('CAN-SPAM postal address', () => {
     const send = vi.fn().mockResolvedValue(true);
 
     await expect(
-      sendBulk({ recipients: recipients(1), build, dryRun: false, send })
+      sendBulk({ recipients: recipients(1), build, dryRun: false, suppressionLookup: noneSuppressed, send })
     ).rejects.toThrow(/postal address/i);
     expect(send).not.toHaveBeenCalled();
   });
@@ -397,6 +401,7 @@ describe('CAN-SPAM postal address', () => {
       sendBulk({
         recipients: recipients(1),
         dryRun: false,
+        suppressionLookup: noneSuppressed,
         send,
         build: ({ unsubscribeUrl }) => ({
           subject: 'issue #1',
@@ -412,7 +417,7 @@ describe('CAN-SPAM postal address', () => {
     emailNotifier.resetTransport();
     const send = vi.fn().mockResolvedValue(true);
 
-    const result = await sendBulk({ recipients: recipients(2), build, dryRun: false, send });
+    const result = await sendBulk({ recipients: recipients(2), build, dryRun: false, suppressionLookup: noneSuppressed, send });
     expect(result.postalAddress).toBe(POSTAL);
     expect(result.sent).toBe(2);
     expect(send.mock.calls[0][2]).toContain(POSTAL);
@@ -472,5 +477,89 @@ describe('transport selection', () => {
     emailNotifier.resetTransport();
     expect(emailNotifier.transport()).toBe('smtp');
     expect(emailNotifier.isConfigured()).toBe(true);
+  });
+});
+
+describe('unsubscribe list (email_suppressions)', () => {
+  function live() {
+    process.env.SMTP_HOST = 'smtp.example.test';
+    emailNotifier.resetTransport();
+    return vi.fn().mockResolvedValue(true);
+  }
+
+  it('refuses a live send that passes no suppressionLookup, before any message goes out', async () => {
+    const send = live();
+    await expect(sendBulk({ recipients: recipients(2), build, dryRun: false, send })).rejects.toThrow(
+      /without a suppressionLookup/
+    );
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('refuses a live send when the lookup throws: an unreadable list is not an empty list', async () => {
+    const send = live();
+    const suppressionLookup = vi.fn().mockRejectedValue(new Error('db down'));
+    await expect(
+      sendBulk({ recipients: recipients(2), build, dryRun: false, send, suppressionLookup })
+    ).rejects.toThrow(/unsubscribe list could not be read/);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('never mails a suppressed address and reports it by count', async () => {
+    const send = live();
+    const suppressionLookup = vi.fn(async () => new Set(['sim1@example.com']));
+    const r = await sendBulk({ recipients: recipients(3), build, dryRun: false, send, suppressionLookup });
+    expect(send.mock.calls.map((c) => c[0])).toEqual(['sim0@example.com', 'sim2@example.com']);
+    expect(r.suppressed).toEqual(['sim1@example.com']);
+    expect(r.suppressionChecked).toBe(true);
+    expect(r.results.map((x) => x.email)).not.toContain('sim1@example.com');
+  });
+
+  it('looks up normalized addresses, so case and whitespace cannot dodge the list', async () => {
+    const send = live();
+    const suppressionLookup = vi.fn(async (emails: readonly string[]) => new Set(emails.filter((e) => e === 'sim0@example.com')));
+    await sendBulk({ recipients: ['  SIM0@Example.com ', 'sim1@example.com'], build, dryRun: false, send, suppressionLookup });
+    expect(suppressionLookup.mock.calls[0][0]).toEqual(['sim0@example.com', 'sim1@example.com']);
+    expect(send.mock.calls.map((c) => c[0])).toEqual(['sim1@example.com']);
+  });
+
+  it('applies the list before the cap, so a suppressed address never takes a slot', async () => {
+    const send = live();
+    const suppressionLookup = vi.fn(async () => new Set(['sim0@example.com', 'sim1@example.com']));
+    const r = await sendBulk({ recipients: recipients(4), build, dryRun: false, send, suppressionLookup, maxMessages: 2 });
+    expect(send.mock.calls.map((c) => c[0])).toEqual(['sim2@example.com', 'sim3@example.com']);
+    expect(r.deferred).toEqual([]);
+  });
+
+  it('a dry run with an unreadable list still renders but says it was not checked', async () => {
+    const r = await sendBulk({
+      recipients: recipients(2),
+      build,
+      suppressionLookup: vi.fn().mockRejectedValue(new Error('db down')),
+    });
+    expect(r.dryRun).toBe(true);
+    expect(r.results).toHaveLength(2);
+    expect(r.suppressionChecked).toBe(false);
+  });
+
+  it('every script that can send to people syncs emailed unsubscribes first (scanner)', () => {
+    // sendBulk already refuses a live send with no lookup; this covers the other half —
+    // a mailto/reply unsubscribe that is still sitting in the mailbox. Scans scripts/,
+    // so a new send script is covered without anyone adding it to a list.
+    const { readdirSync, statSync } = require('fs') as typeof import('fs');
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((n) => {
+        const f = join(dir, n);
+        return statSync(f).isDirectory() ? walk(f) : f.endsWith('.ts') ? [f] : [];
+      });
+    const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    const senders = walk(join(process.cwd(), 'scripts'))
+      .map((f) => ({ f, src: strip(readFileSync(f, 'utf8')) }))
+      .filter(({ src }) => /\bawait\s+(sendBulk|sendWeeklyNewsletter)\(/.test(src));
+    expect(senders.length).toBeGreaterThanOrEqual(2); // vacuity guard
+    for (const { f, src } of senders) {
+      expect(src, f).toMatch(/syncUnsubscribeMailbox\(prisma, \{ apply: true \}\)|syncMailboxBeforeLiveSend\(prisma\)/);
+    }
+    const weekly = readFileSync(join(process.cwd(), 'lib/services/newsletterWeekly.ts'), 'utf8');
+    expect(weekly).toContain('suppressionLookup: suppressionLookupFor(prisma)');
   });
 });

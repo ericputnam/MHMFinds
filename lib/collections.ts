@@ -501,7 +501,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 139 → 93 on 2026-10-21 (E256): 57 nose/eye presets moved to `preset`
     // (face presets are not body presets); copy 130+ → 90+.
     expectedCount: 93,
-    related: ['skin-details', 'pregnancy-mods', 'male-clothes'],
+    // 2026-10-25 (E272): 'male-clothes' → 'gshade-presets' (male-clothes
+    // keeps 4 inbound; the GShade page needs a second source that itself
+    // clears MIN_INBOUND). Visual presets sit next to CAS presets in search.
+    related: ['skin-details', 'pregnancy-mods', 'gshade-presets'],
     // The four legacy body-preset listicles were un-redirected (2026-07
     // revert — they outrank this page) and are now DIFFERENTIATED pairs.
     blogUrl: '/sims-4-body-presets/',
@@ -620,7 +623,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Poses are what Sims 4 storytellers and CAS screenshotters use instead of the default "sim stands awkwardly with hands at sides" loop. If you\'ve ever looked at a Sims Instagram or a machinima YouTube channel and wondered how the sims look like they\'re actually posing, the answer is almost always a pose pack and the Pose Player mod.\n\nWe\'ve pulled together nearly 600 pose picks here, leaning on the creators who basically built the Sims pose community — Katverse, Helgatisha, Natalia Auditore, Ratboysims — along with a long list of smaller pose makers whose single-pack releases are often better than the big comprehensive sets. Expect CAS poses (for the character sheets people love to make), couple poses for story beats, family poses, maternity poses, and individual storytelling poses that cover everything from quiet character moments to dramatic screenshots.\n\nYou\'ll need Pose Player and Teleport Any Sim to actually use these in-game. Once you\'ve got those two mods installed, the rest is just picking which pose pack matches the scene you\'re trying to tell.',
     filter: { contentType: 'poses' },
     expectedCount: 573,
-    related: ['female-clothes', 'loading-screens', 'pregnancy-mods'],
+    // 2026-10-25 (E272): 'female-clothes' → 'gshade-presets' (female-clothes
+    // keeps 5 inbound). Screenshotters run a pose pack and a GShade preset
+    // together, so this is the natural first inbound for the new page.
+    related: ['gshade-presets', 'loading-screens', 'pregnancy-mods'],
     // NOT /sims-4-gallery-poses/ — that article 301s here. The
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
@@ -1202,6 +1208,66 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
   },
   {
+    // Rowan, 2026-10-25 (E272, Tier 0 — new entry in the existing registry
+    // pattern). Demand proven before building: GSC 28d 09-27→10-24, the
+    // gshade/reshade query family is 53 queries / 203 impressions / 41 clicks,
+    // all of it landing on the two blog listicles (/sims-4-gshade-presets/
+    // 202 impressions / 12 clicks at position 17.1; /sims-4-reshade/ 162 / 8
+    // at 21.3) and on one creator's mod page (28 of the clicks are the brand
+    // query "nekoswirl gshade"). The non-brand tail (~121 impressions / 8
+    // clicks, positions 24–29) had no browse page at all: the catalog typed
+    // every GShade/ReShade preset `preset`, the facet that is otherwise nose,
+    // eye and lip CAS presets, so no page could filter to them. GA4 28d:
+    // the two listicles drew 2,214 + 1,559 sessions.
+    //
+    // Placed after build-cc so registry order keeps it behind every older
+    // single-contentType page; before the `cc` hub, which is appended last.
+    slug: 'gshade-presets',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'GShade & ReShade Presets',
+    heading: 'Sims 4 GShade & ReShade Presets',
+    metaTitle: 'Sims 4 GShade & ReShade Presets — Browse 90+ Visual Presets | MustHaveMods',
+    metaDescription:
+      'Browse 90+ Sims 4 GShade and ReShade presets in one grid — soft, warm, cinematic and CAS-only looks from Nekoswirl, Sangillis, kindlespice and more, sorted by downloads, links checked.',
+    tagline: 'Soft, warm, cinematic and CAS-only looks for screenshots and gameplay',
+    intro:
+      "A GShade or ReShade preset is the single download that changes how your whole game looks. It does not touch a sim or a build — it sits between the game and your screen and recolours everything: softer shadows, warmer skin, a film grain, a blur behind the sim in CAS. If you have ever wondered why someone's screenshots look like a photograph and yours look like a video game, the answer is almost always one of these.\n\nThis grid holds 95 of them, every one named GShade or ReShade in its own title — 67 GShade and 28 ReShade. That is deliberate. Until this page existed the catalog filed visual presets under the same tag as nose and body presets, so a search for a GShade preset turned up CAS sliders and a search for CAS presets turned up shaders. We split them by title only, and any preset whose creator did not call it GShade or ReShade is not here. CAS face and body presets have their own collection.\n\nThe names at the top are the ones the community already runs: Nekoswirl's preset is the most-downloaded by a wide margin, then Sangillis (Magnolia), kindlespice (Dove), Malixa's milk-tea series, ellcrze, Cozy Days and a long tail of single releases — Hallow Glow, Milk Chocolate, Dark Chery, Love Shade Vogue. Expect warm and soft everyday looks, a few high-contrast cinematic presets, and a handful built only for CAS, where a clean background and a shallow depth of field matter more than in-game performance.\n\nTwo practical notes. You need GShade or ReShade itself installed first — the preset is just a settings file it loads — and a GShade preset will usually need converting or a GShade-compatible build to run under plain ReShade, so read the creator's install note. And presets are heavier than CC: if your game stutters after installing one, turn off the depth-of-field or ambient-occlusion effects before you blame the preset.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link — all 95 are free. Sort by downloads for the presets everyone already uses, or scroll for the small single-release looks the roundup posts never reach.",
+    filter: {
+      // 95 SFW Sims 4 mods typed `ui-preset`, counted on production
+      // 2026-10-25 immediately after the same-PR retag.
+      //
+      // Before: `ui-preset` was a FACET_VALUES value with 0 rows; the 95
+      // GShade/ReShade rows were 90 `preset` + 5 NULL, sharing a facet with
+      // 180 nose/eye/lip CAS presets. The detector's `preset` rule even
+      // listed reshade/gshade/shader as negatives, so these rows only reached
+      // `preset` through the blog-URL fallback (/sims-4-gshade-presets/ →
+      // preset). Fixed at the source: `lib/uiPresetRules.ts` (title-only
+      // `\b(?:g-?shade|re-?shade)\b`, imported by the detector ahead of the
+      // keyword rules; URL map now reads both posts as ui-preset) and
+      // re-derived from titles (`scripts/retag-ui-preset-content-type.ts`:
+      // add 95, strip 0, pinned conflicts 0; backup in
+      // reports/funnel/ui-preset-retag-2026-10-25.csv).
+      //
+      // Audited before ranking: 95 of 95 titles carry the evidence; the top
+      // 48 by downloads graded 0 off-type (`collection-hub-eligibility.ts
+      // --slug=gshade-presets --family=ui-preset`). Rejected candidate words
+      // and their catalog counts are in the header of lib/uiPresetRules.ts.
+      contentType: 'ui-preset',
+    },
+    expectedCount: 95,
+    // Inbound: poses and body-presets (both ≥2 inbound themselves) link
+    // here; see the dated swaps on those entries.
+    related: ['poses', 'loading-screens', 'skin-details'],
+    // Differentiated pair: /sims-4-gshade-presets/ keeps the editorial
+    // "best presets" intent (202 impressions / 12 clicks at 17.1 over the
+    // 28d to 2026-10-24), this page owns browse/filter intent. The sibling
+    // listicle /sims-4-reshade/ (162 / 8 at 21.3) is the other half of the
+    // family; the type carries one blogUrl, so the GShade post — the larger
+    // of the two — is the twin.
+    blogUrl: '/sims-4-gshade-presets/',
+  },
+  {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
     // hub from the 7-query category gap (competitors-2026-10.md): nothing on
     // the site answers the bare head term. GSC 09-11→10-08: "sims 4 cc",
@@ -1265,6 +1331,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
         'beard',
         'facial-hair',
         'preset',
+        // 2026-10-25 (E272): the 90 GShade/ReShade rows this hub already
+        // counted under `preset` moved to `ui-preset`; listing it keeps the
+        // hub's population (and its 13,600+ copy) unchanged.
+        'ui-preset',
         'body-preset',
         'poses',
         'cas-background',

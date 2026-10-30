@@ -76,7 +76,7 @@ describe('/games/[game]/[topic] wiring (source guards)', () => {
 
   it('client renders the list inside the main column, before the ad aside', () => {
     const more = client.indexOf('<CollectionMoreLinks');
-    const grid = client.indexOf('<ModGrid');
+    const grid = client.indexOf('<LauncherGrid');
     const aside = client.indexOf('<aside');
     expect(more).toBeGreaterThan(grid);
     expect(more).toBeLessThan(aside);

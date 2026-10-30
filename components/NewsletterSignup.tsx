@@ -5,6 +5,8 @@ import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface NewsletterSignupProps {
   source?: string;
+  /** 'strip' = the one-line homepage form (styled by components/launcher/launcher.css). */
+  variant?: 'default' | 'strip';
 }
 
 /**
@@ -14,7 +16,7 @@ interface NewsletterSignupProps {
  * Capturing emails builds an owned audience we can bring back directly
  * if that referral source ever dips.
  */
-export function NewsletterSignup({ source = 'footer' }: NewsletterSignupProps) {
+export function NewsletterSignup({ source = 'footer', variant = 'default' }: NewsletterSignupProps) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -53,6 +55,35 @@ export function NewsletterSignup({ source = 'footer' }: NewsletterSignupProps) {
       setErrorMessage('Something went wrong. Please try again.');
     }
   };
+
+  if (variant === 'strip') {
+    if (status === 'success') {
+      return (
+        <div className="ef-success" role="status">
+          <CheckCircle2 size={16} />
+          <span>You&apos;re on the list.</span>
+        </div>
+      );
+    }
+    return (
+      <form onSubmit={handleSubmit} className="emailform">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          aria-label="Email address"
+          aria-invalid={status === 'error' || undefined}
+          title={status === 'error' ? errorMessage : undefined}
+        />
+        <button type="submit" disabled={status === 'submitting'}>
+          {status === 'submitting' ? 'Joining…' : 'Notify me'}
+        </button>
+        {status === 'error' && <span className="ef-error" role="alert">{errorMessage}</span>}
+      </form>
+    );
+  }
 
   if (status === 'success') {
     return (
