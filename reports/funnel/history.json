@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-10-23T11:50:29.585Z",
+  "generatedAt": "2026-10-30T01:43:44.340Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
     "revenue28dStart": 5569.43,
-    "revenue28dEnd": 7036.58,
+    "revenue28dEnd": 9081.03,
     "sessions28dStart": 363007,
-    "sessions28dEnd": 406452,
-    "basis": "Straight ramp from the 2026-08 baseline (Mediavine $6066.16/mo + non-ad $100/mo at 401901 sessions/mo) to the 2026-12 targets in targets.json targets.monthly (450000 sessions/mo at the baseline RPM $15.09, non-ad $1000/mo), each prorated to a 28-day window."
+    "sessions28dEnd": 541935,
+    "basis": "Straight ramp from the 2026-08 baseline (Mediavine $6066.16/mo + non-ad $100/mo at 401901 sessions/mo) to the 2026-12 targets in targets.json targets.monthly (600000 sessions/mo at the baseline RPM $15.09, non-ad $1000/mo), each prorated to a 28-day window."
   },
   "days": [
     {
@@ -3951,35 +3951,45 @@
     },
     {
       "date": "2026-10-22",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 179.97,
+      "sessions": 11359,
+      "rpm": 15.84,
       "expectedRevenue": 178.97,
       "expectedSessions": 11857,
-      "nonAdMonthly": 153,
-      "ownedAdds7d": null,
-      "pinterestSessions7d": null,
-      "returningShare7d": null,
-      "nonPinterestShare7d": null,
-      "pagesPerSession7d": null,
-      "engagementRate7d": null,
-      "favorites7d": null,
-      "downloadClicks7d": null,
-      "newMods7d": null,
-      "catalogTotal": null,
-      "captureRatePer1k": null,
-      "creatorsOnboarded": null,
-      "creatorSubmissions7d": null,
-      "runSuccess14d": null,
-      "opsMergeShare7d": null,
-      "paperOnlyMerges7d": null,
-      "mergesByOwner7d": null
+      "nonAdMonthly": 159,
+      "ownedAdds7d": 245,
+      "pinterestSessions7d": 58814,
+      "returningShare7d": 0.4835560284131802,
+      "nonPinterestShare7d": 0.2422048136886048,
+      "pagesPerSession7d": 1.4957106545223469,
+      "engagementRate7d": 0.689779707689049,
+      "favorites7d": 770,
+      "downloadClicks7d": 399,
+      "newMods7d": 113,
+      "catalogTotal": 16995,
+      "captureRatePer1k": 2.548128425672654,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.12280701754385964,
+      "paperOnlyMerges7d": 2,
+      "mergesByOwner7d": {
+        "Sage": 6,
+        "Ops": 7,
+        "Quinn": 10,
+        "Pip": 7,
+        "Rowan": 8,
+        "Nova": 7,
+        "Rio": 6,
+        "Cass": 5,
+        "operator": 1
+      }
     },
     {
       "date": "2026-10-23",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 213.63,
+      "sessions": 11888,
+      "rpm": 17.97,
       "expectedRevenue": 196.45,
       "expectedSessions": 12094,
       "nonAdMonthly": 159,
@@ -4009,6 +4019,174 @@
         "Quinn": 9,
         "Cass": 4,
         "operator": 1
+      }
+    },
+    {
+      "date": "2026-10-24",
+      "revenue": 269.81,
+      "sessions": 14232,
+      "rpm": 18.95,
+      "expectedRevenue": 265.2,
+      "expectedSessions": 15177,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-25",
+      "revenue": 281.32,
+      "sessions": 15171,
+      "rpm": 18.54,
+      "expectedRevenue": 261.9,
+      "expectedSessions": 16122,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-26",
+      "revenue": 198.09,
+      "sessions": 12135,
+      "rpm": 16.32,
+      "expectedRevenue": 180.64,
+      "expectedSessions": 12813,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-27",
+      "revenue": 190.69,
+      "sessions": 12278,
+      "rpm": 15.53,
+      "expectedRevenue": 187.53,
+      "expectedSessions": 11515,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-28",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 184.03,
+      "expectedSessions": 11550,
+      "nonAdMonthly": 159,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-10-29",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 172.9,
+      "expectedSessions": 11715,
+      "nonAdMonthly": 153,
+      "ownedAdds7d": 143,
+      "pinterestSessions7d": 58213,
+      "returningShare7d": 0.5378326606006705,
+      "nonPinterestShare7d": 0.1680529354598983,
+      "pagesPerSession7d": 1.553496515421958,
+      "engagementRate7d": 0.7141622801532532,
+      "favorites7d": 1093,
+      "downloadClicks7d": 537,
+      "newMods7d": 117,
+      "catalogTotal": 17111,
+      "captureRatePer1k": 1.6173360326634016,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.5714285714285714,
+      "opsMergeShare7d": 0.07407407407407407,
+      "paperOnlyMerges7d": 3,
+      "mergesByOwner7d": {
+        "Cass": 3,
+        "Rowan": 1,
+        "Rio": 1,
+        "Pip": 3,
+        "Nova": 3,
+        "Sage": 2,
+        "Ops": 2,
+        "Quinn": 1,
+        "manual": 2,
+        "Interactive": 4,
+        "Operator": 5
       }
     }
   ],
@@ -6485,6 +6663,230 @@
       "label": "Quinn: PR #361 funnel: daily run 2026-10-21 (Tier 0 docs)",
       "commit": "01906c6",
       "result": "PASS"
+    },
+    {
+      "date": "2026-10-22",
+      "kind": "check",
+      "label": "mhm-funnel-daily: MISSED 2026-10-22 — Quinn did not run (preflight=AUTH, cli=2.1.280 (Claude Code))",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Cass: PR #362 E247 issue-07 run 1 send record; tail held at the >30 gate",
+      "commit": "c22f7c4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Rowan: PR #363 E263 lots --ids — 18 non-lots out of residential (Tier 0)",
+      "commit": "55994c0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Rio: PR #364 E262 guardrail verdict 2026-10-23 (Tier 0, paper)",
+      "commit": "4ea0dd2",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Pip: PR #365 E258 runway top-up #17 artifacts + topup-grade default end anchors T−2; E209 KILL (lift), E223 KEEP (Tier 0, SD-10 floor)",
+      "commit": "5c48da0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Nova: PR #368 E260 scripted sign-ups split out of creator-flagged and signup-optin counts (Tier 0)",
+      "commit": "67e3ebd",
+      "result": "SUPERSEDED (production already on 92397d9, newer)"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Sage: PR #367 E259 homepage title leads with \"Must-Have Sims 4 Mods\"; 15,000+ → 17,000+ (Tier 0)",
+      "commit": "5912df1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Ops: PR #366 E264 preflight failure lands a MISSED row + degraded digest on main; refresh-token expiry warning (Tier 0)",
+      "commit": "b73e06a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-23",
+      "kind": "merge",
+      "label": "Quinn: PR #369 funnel: daily run 2026-10-23 (Tier 0 docs)",
+      "commit": "7701c84",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-24",
+      "kind": "merge",
+      "label": "manual",
+      "commit": "2deeab3",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-24",
+      "kind": "rollback",
+      "label": "morning-check",
+      "result": "ROLLED BACK -> https://mhm-finds-dw5l-r7zlkzdzk-ericputnams-projects.vercel.app"
+    },
+    {
+      "date": "2026-10-24",
+      "kind": "check",
+      "label": "mhm-funnel-daily: MISSED 2026-10-24 — Quinn did not run (preflight=HANG, cli=2.1.280 (Claude Code))",
+      "result": "MISSED"
+    },
+    {
+      "date": "2026-10-24",
+      "kind": "incident",
+      "label": "Incident: verification failed; rolled back (re-check INCONCLUSIVE) — FALSE ALARM"
+    },
+    {
+      "date": "2026-10-25",
+      "kind": "merge",
+      "label": "Cass: PR #371 E270 suppress scripted-shaped sign-ups from every send by hash",
+      "commit": "e83fc82",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-25",
+      "kind": "merge",
+      "label": "Cass: PR #373 issue-07 run 2 ledger + 2 reject hashes",
+      "commit": "7108b67",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-25",
+      "kind": "merge",
+      "label": "Nova: PR #374 funnel(nova): biweekly community vote — rules draft v1 (Tier 0 paper)",
+      "commit": "c9a3042",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-25",
+      "kind": "merge",
+      "label": "Pip: PR #377 funnel(pip): social draft pipeline + first Tier 2 batch 2026-10-25 (E265)",
+      "commit": "64645f1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-25",
+      "kind": "merge",
+      "label": "Pip: PR #379 funnel(pip): tumblr-curve tool + 10-25 reading — fresh posts are 2.3% of Tumblr sessions (E266)",
+      "commit": "15f6404",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-25",
+      "kind": "merge",
+      "label": "Ops: PR #376 E273 third-party SecurityError + honest post-rollback re-check",
+      "commit": "59191dd",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Interactive: PR #382 admin waitlist → subscribers",
+      "commit": "9dd2ee0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Operator: PR #388 homepage Launcher redesign",
+      "commit": "ef253d6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Operator: PR #389 one catalogue count",
+      "commit": "83b6a2d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Interactive: PR #386 ModDetailPage stale favorite test",
+      "commit": "83b6a2d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Interactive: PR #387 #384 review follow-ups",
+      "commit": "5275115",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Operator: PR #390 collection pill covers + gshade",
+      "commit": "a7854a6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "Interactive: PR #391 blog Amazon pack block",
+      "commit": "044d836",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-26",
+      "kind": "merge",
+      "label": "manual: PR #383 Patreon image upload",
+      "commit": "9d700f1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-27",
+      "kind": "check",
+      "label": "morning-check",
+      "result": "INCONCLUSIVE (network)"
+    },
+    {
+      "date": "2026-10-28",
+      "kind": "merge",
+      "label": "Nova: PR #372 funnel(nova): \"Featured on MustHaveMods\" creator badge — embed page + verified label (E269, Tier 1)",
+      "commit": "1bd04e4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-28",
+      "kind": "merge",
+      "label": "Sage: PR #378 funnel(sage): E267 creator page title + meta name real content types and top mods (Tier 0)",
+      "commit": "ab3b798",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-28",
+      "kind": "merge",
+      "label": "Operator: PR #395 collection cover images optimized",
+      "commit": "945bf3d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-28",
+      "kind": "merge",
+      "label": "Operator: PR #396 game + collection pages on the launcher",
+      "commit": "948204a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-29",
+      "kind": "check",
+      "label": "morning-check",
+      "result": "INCONCLUSIVE (network)"
     }
   ]
 }
