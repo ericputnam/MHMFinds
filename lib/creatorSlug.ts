@@ -19,6 +19,60 @@ export function authorSlug(author: string): string {
 }
 
 /**
+ * One creator, one page (Nova, E293, 2026-10-30). The dash-slug splits one
+ * creator whenever their name is stored both spaced and run together:
+ * "sixam-cc" (16 mods) and "sixamcc" (11) were two indexed
+ * pages competing for one name query ("sixam" sat at position 40), and
+ * "Marsmerizing Sims" (4) / "MarsmerizingSims" lost their 3–4-mod spellings
+ * to the 5-mod gate. Catalog on 2026-10-30: 108 such groups — 7 with two
+ * indexed pages, 14 that clear MIN_MODS_FOR_PAGE only once folded, 151 mods
+ * joining an existing page. The creator *key* drops every separator; the
+ * SQL twin is `regexp_replace(lower(author), '[^a-z0-9]+', '', 'g')` in
+ * lib/creators.ts (listCreators, findAuthorVariants). Keep them in lock-step.
+ */
+export function creatorKey(slugOrAuthor: string): string {
+  return slugOrAuthor.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+/**
+ * The one URL a folded creator lives at: the dash-slug carrying the most
+ * mods across its spellings, ties by slug ASC — the same rule as the
+ * `slugs` CTE in listCreators, so the sitemap and the page always agree.
+ * Picking by mods (not by the single most-used spelling) keeps the URL that
+ * already holds most of the creator's catalog — usually the one Google has.
+ */
+export function canonicalCreatorSlug(variants: ReadonlyArray<{ author: string; mods: number }>, requested: string): string {
+  const bySlug = new Map<string, number>();
+  for (const v of variants) {
+    const s = authorSlug(v.author);
+    if (!s) continue;
+    bySlug.set(s, (bySlug.get(s) ?? 0) + v.mods);
+  }
+  let best: string | null = null;
+  let bestN = -1;
+  bySlug.forEach((n, s) => {
+    if (n > bestN || (n === bestN && best !== null && s < best)) {
+      best = s;
+      bestN = n;
+    }
+  });
+  if (!best || isJunkAuthorSlug(best)) return requested;
+  return best;
+}
+
+/**
+ * Where a creator URL should 308 to, or null to serve it. Never redirects a
+ * slug that holds a CreatorProfile (a claimed page keeps its own handle; on
+ * 2026-10-30 all 4 profiles inside a split group already held the canonical
+ * spelling), never redirects to itself.
+ */
+export function creatorRedirectSlug(requested: string, canonical: string, requestedHasProfile: boolean): string | null {
+  if (requestedHasProfile) return null;
+  if (!canonical || canonical === requested) return null;
+  return canonical;
+}
+
+/**
  * The scraper's author fallback produces strings like
  * "Kobe Sweats 135179830" (a title plus a Patreon post id), "75940181"
  * (a bare id) or "" — none of them is a creator. Reject those slugs so
