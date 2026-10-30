@@ -98,7 +98,83 @@ if [ "${FUNNEL_ALLOW_SECOND_RUN:-0}" = "1" ]; then
   log "day-lock: FUNNEL_ALLOW_SECOND_RUN=1 — not taking the $TODAY lock (manual run)"
 else
   day_lock_acquire || exit 0
-  trap day_lock_release EXIT   # replaced below by `trap 'cleanup; day_lock_release' EXIT` once worktrees exist
+fi
+trap 'day_lock_release; run_lock_release' EXIT   # replaced below by `trap 'cleanup; day_lock_release; run_lock_release' EXIT`
+
+# E297 (2026-10-30): one runner at a time, ACROSS days. The day-lock above is keyed on TODAY, so it cannot see a
+# runner for another day: the 10-29 catch-up (runner pid 10739, started by hand 10-29 21:40 local) was still merging
+# at 07:08 local 10-30 when the scheduled 10-30 run (pid 28212) started — two Quinns dispatched specialists at once
+# and only merge-gate.sh kept their merges apart. Now a single global lock (logs/funnel-run.lock, pid + day inside,
+# atomic mkdir like the day-lock) is taken right after the day-lock. If another LIVE runner holds it, this run waits
+# up to FUNNEL_RUN_LOCK_WAIT_S (default 1800 s, polling FUNNEL_RUN_LOCK_POLL_S) for it to finish; past the ceiling
+# it lands a MISSED/DEFERRED ledger row (ledger-commit.sh, the run that knows it did not run writes the record) and
+# exits 75 BEFORE it touches a worktree. "Alive" is kill -0 / ps (EPERM counts as alive), and a live pid whose
+# command line does not mention "funnel" is a reused pid → stale (a power loss leaves the lock; the pid gets recycled).
+# A lock that never got a pid is broken after DAY_LOCK_EMPTY_GRACE_S, as above. FUNNEL_ALLOW_CONCURRENT_RUN=1 skips it
+# (manual use only; FUNNEL_ALLOW_SECOND_RUN does NOT — a manual re-run of a day must still not overlap another runner).
+RUN_LOCK="${FUNNEL_DAY_LOCK_DIR:-$PROJECT_DIR/logs}/funnel-run.lock"
+run_lock_holder_alive() {  # $1 pid -> rc 0 alive (or cannot tell), 1 dead or a recycled pid
+  local cmd
+  day_lock_holder_alive "$1" || return 1
+  cmd="$(ps -ww -p "$1" -o command= 2>/dev/null)"
+  [ -z "$cmd" ] && return 0                          # could not read it: alive (never break on "could not tell")
+  case "$cmd" in *funnel*) return 0 ;; esac
+  return 1
+}
+run_lock_try() {  # rc 0 taken · 1 held by a live runner (RUN_LOCK_HOLDER / RUN_LOCK_HOLDER_DAY set)
+  local m age
+  if mkdir "$RUN_LOCK" 2>/dev/null; then
+    echo "$TODAY" >"$RUN_LOCK/day"; echo "$$" >"$RUN_LOCK/pid"
+    log "run-lock: pid $$ owns the funnel runner for $TODAY ($RUN_LOCK)"
+    return 0
+  fi
+  RUN_LOCK_HOLDER="$(cat "$RUN_LOCK/pid" 2>/dev/null)"; RUN_LOCK_HOLDER_DAY="$(cat "$RUN_LOCK/day" 2>/dev/null)"
+  case "$RUN_LOCK_HOLDER" in
+    '' | *[!0-9]*)
+      m="$(stat -f %m "$RUN_LOCK" 2>/dev/null || stat -c %Y "$RUN_LOCK" 2>/dev/null)"
+      age=$(( $(date +%s) - ${m:-$(date +%s)} ))
+      [ "$age" -lt "${DAY_LOCK_EMPTY_GRACE_S:-60}" ] && { RUN_LOCK_HOLDER="?"; return 1; }
+      log "run-lock: stale lock — no holder pid after ${age}s, breaking it"
+      ;;
+    *)
+      run_lock_holder_alive "$RUN_LOCK_HOLDER" && return 1
+      log "run-lock: stale lock — holder pid $RUN_LOCK_HOLDER (day ${RUN_LOCK_HOLDER_DAY:-?}) is dead or recycled, breaking it"
+      ;;
+  esac
+  rm -rf "$RUN_LOCK"
+  mkdir "$RUN_LOCK" 2>/dev/null || return 1           # lost the race to another start: it is the live runner now
+  echo "$TODAY" >"$RUN_LOCK/day"; echo "$$" >"$RUN_LOCK/pid"
+  log "run-lock: pid $$ owns the funnel runner for $TODAY ($RUN_LOCK)"
+  return 0
+}
+run_lock_acquire() {  # rc 0 this run owns the runner · 75 another live runner outlasted the wait (row landed, caller exits)
+  local waited=0 wait_s="${FUNNEL_RUN_LOCK_WAIT_S:-1800}" poll="${FUNNEL_RUN_LOCK_POLL_S:-30}" lc row hhmm
+  RUN_LOCK_HOLDER=""; RUN_LOCK_HOLDER_DAY=""
+  while :; do
+    run_lock_try && { [ "$waited" -gt 0 ] && log "run-lock: waited ${waited}s for the other runner"; return 0; }
+    [ "$waited" -ge "$wait_s" ] && break
+    [ "$waited" -eq 0 ] && log "run-lock: another funnel runner is alive (pid ${RUN_LOCK_HOLDER:-?}, day ${RUN_LOCK_HOLDER_DAY:-?}) — waiting up to ${wait_s}s (E297)"
+    sleep "$poll"; waited=$((waited + poll))
+  done
+  hhmm="$(date '+%H:%M')"
+  log "DEFERRED RUN — funnel runner pid ${RUN_LOCK_HOLDER:-?} (day ${RUN_LOCK_HOLDER_DAY:-?}) still alive after ${waited}s; $TODAY's Quinn will not start, exiting 75 (E297)"
+  row="| $TODAY $hhmm | check | mhm-funnel-daily: MISSED $TODAY — DEFERRED, Quinn did not run: funnel runner pid ${RUN_LOCK_HOLDER:-?} (day ${RUN_LOCK_HOLDER_DAY:-?}) still alive after ${waited}s (E297 run-lock) |  |  | MISSED | two runners must not dispatch at once; re-run by hand once it exits |"
+  lc="${FUNNEL_LEDGER_COMMIT:-$PROJECT_DIR/scripts/agents/ledger-commit.sh}"
+  if [ -x "$lc" ]; then
+    "$lc" --row "$row" --label "MISSED $TODAY run-lock DEFERRED" 2>&1 | while IFS= read -r l; do log "run-lock: $l"; done
+  else
+    log "run-lock: ledger-commit.sh not found — DEFERRED row NOT landed: $row"
+  fi
+  return 75
+}
+run_lock_release() {  # only the holder releases
+  [ "$(cat "$RUN_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$RUN_LOCK" && log "run-lock: pid $$ released the funnel runner"
+  return 0
+}
+if [ "${FUNNEL_ALLOW_CONCURRENT_RUN:-0}" = "1" ]; then
+  log "run-lock: FUNNEL_ALLOW_CONCURRENT_RUN=1 — not taking the global runner lock (manual run)"
+else
+  run_lock_acquire || exit 75
 fi
 # <<< day-lock
 
@@ -191,7 +267,7 @@ cleanup() {
   [ "${#dirs[@]}" -gt 0 ] && reap_worktrees "${FUNNEL_CLEANUP_WAIT_S:-1800}" "${FUNNEL_CLEANUP_TERM_GRACE_S:-30}" "${dirs[@]}"
   git worktree prune >/dev/null 2>&1 || true
 }
-trap 'cleanup; day_lock_release' EXIT   # day-lock (E176): release only after the trees are reaped
+trap 'cleanup; day_lock_release; run_lock_release' EXIT   # day-lock (E176) + run-lock (E297): release only after the trees are reaped
 
 cd "$WT" || exit 1
 # Secrets: COPY .env.local into the throwaway worktrees — never symlink it. Webpack follows the link and
