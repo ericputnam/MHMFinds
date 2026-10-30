@@ -30,6 +30,7 @@ import {
 } from '../../../../lib/collections';
 import { prisma } from '../../../../lib/prisma';
 import { getGameFromSlug } from '../../../../lib/gameRoutes';
+import { collectionMetadata } from '../../../../lib/seo/collectionMetadata';
 import CollectionPageClient from './CollectionPageClient';
 import type { Mod } from '../../../../lib/api';
 // INITIAL_PAGE_SIZE (48) fills the viewport and exceeds the Pinterest
@@ -63,35 +64,10 @@ export async function generateMetadata({
     return { title: 'Collection not found | MustHaveMods' };
   }
 
-  // Trailing slash required: next.config.js sets trailingSlash: true,
-  // so the non-slash variant 308-redirects. A canonical pointing at a
-  // redirect splits indexing signals (caused "Crawled - currently not
-  // indexed" on /games/sims-4/pregnancy-mods/, found Jul 2026).
-  const canonical = `https://musthavemods.com/games/${collection.gameSlug}/${collection.slug}/`;
-
-  return {
-    title: collection.metaTitle,
-    description: collection.metaDescription,
-    alternates: {
-      canonical,
-      // Per-collection RSS of the newest mods (E42) — feed readers and answer
-      // engines discover it from this <link rel="alternate">.
-      types: {
-        'application/rss+xml': `https://musthavemods.com/feeds/${collection.gameSlug}/${collection.slug}/`,
-      },
-    },
-    openGraph: {
-      title: collection.metaTitle,
-      description: collection.metaDescription,
-      url: canonical,
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: collection.metaTitle,
-      description: collection.metaDescription,
-    },
-  };
+  // Canonical (trailing slash), RSS alternate, and og:image / twitter:image
+  // from the cover registry (E298) — built in lib/seo/collectionMetadata.ts so
+  // __tests__/unit/collection-og-image.test.ts can check every registry entry.
+  return collectionMetadata(collection);
 }
 
 /**

@@ -111,6 +111,75 @@ CATALOG_ENTRIES = [
         'Post Date': POST_DATE,
         'Is Posted': False,
     },
+    {
+        # E275 / 2026-10-28 (Pip) — /games/sims-4/gshade-presets/ (E272, live
+        # 10-25). Inserted as id 12446 and posted; the branch that carried
+        # this entry never reached main, so it is recorded here after the
+        # fact. The Image URL duplicate check skips it on every re-run.
+        'Post Title': 'Sims 4 GShade & ReShade Presets — 90+ Looks, Sorted by Downloads',
+        'Post URL': 'https://musthavemods.com/games/sims-4/gshade-presets/',
+        'Image URL': 'https://blog.musthavemods.com/wp-content/uploads/2022/11/phonto-819x1024.jpg',
+        'Board ID': '762656586837588640',
+        'Board Name': 'Sims 4 CC',
+        'Wordpress Keyword': 'sims-4-gshade-presets',
+        'AI Text Slug': (
+            'Every Sims 4 GShade and ReShade preset in one grid: Nekoswirl, Sangillis '
+            'Magnolia, kindlespice Dove, Malixa milk tea, Cozy Days and the small single '
+            'releases the roundups skip. 67 GShade, 28 ReShade, all free, links checked. '
+            '#sims4 #sims4cc #gshade'
+        ),
+        'Post Date': POST_DATE,
+        'Is Posted': False,
+    },
+    {
+        # E275 / 2026-10-28 (Pip) — /games/sims-4/eyes-cc/ (E231, live 10-19).
+        # Inserted as id 12447 and posted; recorded after the fact, see above.
+        'Post Title': 'Sims 4 Eyes, Brows & Lashes CC — 260+ Finds in One Grid',
+        'Post URL': 'https://musthavemods.com/games/sims-4/eyes-cc/',
+        'Image URL': (
+            'https://blog.musthavemods.com/wp-content/uploads/2024/11/'
+            'aeb04de5-51fb-4f71-8efa-cb21f2e9893c-1.png'
+        ),
+        'Board ID': '762656586837358122',
+        'Board Name': 'Sims 4 CC Makeup',
+        'Wordpress Keyword': 'sims-4-eyes-cc',
+        'AI Text Slug': (
+            'Default eye replacements, maxis match brows and 3D mink lashes for Sims 4, '
+            '260+ of them in one filterable grid. Sort by downloads for the ones everyone '
+            'runs, or filter to lashes only. Free, every link checked. #sims4 #sims4cc #sims4eyes'
+        ),
+        'Post Date': POST_DATE,
+        'Is Posted': False,
+    },
+    {
+        # E291 / 2026-10-30 (Pip) — /games/sims-4/wedding-cc/ (Rowan E289,
+        # PR #403 merged 2026-10-30 11:09Z, 118 title-only wedding mods).
+        # Board: the writer pins /best-sims-4-wedding-cc/ to "Sims 4 Wedding CC"
+        # (12 posted rows, section 5476810247628724807, last used 2026-09-22),
+        # so the collection goes to the same board + section. Image: the
+        # page's own first cover (lib/collectionCovers.ts, 620x727, never
+        # queued before) — not one of the writer's pin images, which the
+        # duplicate check would skip.
+        'Post Title': 'Sims 4 Wedding CC — 100+ Dresses, Veils, Rings and Pose Packs in One Grid',
+        'Post URL': 'https://musthavemods.com/games/sims-4/wedding-cc/',
+        'Image URL': (
+            'https://blog.musthavemods.com/wp-content/uploads/2024/09/'
+            '9df7c217-f0a9-4e68-8fa8-b82712731c5d.jpeg'
+        ),
+        'Board ID': '762656586837741149',
+        'Board Name': 'Sims 4 Wedding CC',
+        'Board Section ID': '5476810247628724807',
+        'Wordpress Keyword': 'sims-4-wedding-cc',
+        'AI Text Slug': (
+            'My Wedding Stories gave you the arch and the vows, not much to wear. This grid '
+            'is the rest: satin sheaths and cathedral gowns with veils, suits for the groom, '
+            'bridesmaid dresses, engagement rings, cakes and arches, a barn and a beach venue, '
+            'and the first-look and kiss pose packs. 100+ free finds, every link checked. '
+            '#sims4 #sims4cc #sims4wedding'
+        ),
+        'Post Date': POST_DATE,
+        'Is Posted': False,
+    },
 ]
 
 
