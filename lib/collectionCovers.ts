@@ -70,6 +70,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/662f8614-4c93-4d71-a0f7-db9dca7ea088-1.png",
     "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/1-robin-bedroom-set-1769368650934-0.jpg",
   ],
+  "gallery-poses": [
+    "https://blog.musthavemods.com/wp-content/uploads/2022/03/female-secondary-sims-4-gallery-poses.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2022/03/sims-4-family-gallery-pose-with-baby.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2022/03/male-sims-4-gallery-poses.jpg",
+  ],
   "goth-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/10/image-9.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/09/w-920h-690-3760210.jpg",

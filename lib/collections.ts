@@ -504,7 +504,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-25 (E272): 'male-clothes' → 'gshade-presets' (male-clothes
     // keeps 4 inbound; the GShade page needs a second source that itself
     // clears MIN_INBOUND). Visual presets sit next to CAS presets in search.
-    related: ['skin-details', 'pregnancy-mods', 'gshade-presets'],
+    // 2026-10-30 (E296): 'skin-details' → 'gallery-poses' (skin-details keeps
+    // 5 inbound). A body preset is shown off in CAS, where gallery poses live.
+    related: ['gallery-poses', 'pregnancy-mods', 'gshade-presets'],
     // The four legacy body-preset listicles were un-redirected (2026-07
     // revert — they outrank this page) and are now DIFFERENTIATED pairs.
     blogUrl: '/sims-4-body-presets/',
@@ -629,7 +631,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-25 (E272): 'female-clothes' → 'gshade-presets' (female-clothes
     // keeps 5 inbound). Screenshotters run a pose pack and a GShade preset
     // together, so this is the natural first inbound for the new page.
-    related: ['gshade-presets', 'wedding-cc', 'pregnancy-mods'],
+    // 2026-10-30 (E296): 'pregnancy-mods' → 'gallery-poses' (pregnancy-mods
+    // keeps 2 inbound: body-presets, kids-cc). The gallery/CAS sub-page is
+    // the narrower answer to the queries this head-term title owns.
+    related: ['gshade-presets', 'wedding-cc', 'gallery-poses'],
     // NOT /sims-4-gallery-poses/ — that article 301s here. The
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
@@ -1286,7 +1291,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Wedding CC',
     heading: 'Sims 4 Wedding CC',
-    metaTitle: 'Sims 4 Wedding CC — 100+ Dresses, Poses & Venues | MustHaveMods',
+    // 2026-10-30 (E296): "Browse" added — canonical-trailing-slash.test.ts
+    // requires browse/finder intent on every differentiated page and this
+    // row (E289, #403) merged red on main against that rule.
+    metaTitle: 'Sims 4 Wedding CC — Browse 100+ Dresses, Poses & Venues | MustHaveMods',
     metaDescription:
       'Browse Sims 4 wedding CC in one place: wedding dresses, veils, suits, rings, arches, cakes, venues and wedding pose packs, sorted by downloads.',
     tagline: 'Wedding dresses, suits, rings, venues and wedding-day pose packs',
@@ -1296,6 +1304,38 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 118,
     related: ['female-clothes', 'jewelry-cc', 'poses'],
     blogUrl: '/sims-4-wedding-cc/',
+  },
+  {
+    // Rowan, 2026-10-30 (E296, Tier 0 — registry entry in the existing
+    // pattern). GSC 10-02→10-29: the "gallery poses sims 4" family (≈20
+    // queries — "gallery poses sims 4" 47 impr / 1 click at 7.7, "ts4 gallery
+    // poses" 26 / 1 at 8.3, "sims 4 cas poses for gallery" 25 / 0 at 8.0,
+    // "the sims 4 gallery poses" 20 / 1 at 6.6, "gallery pose pack sims 4"
+    // 18 / 0 at 7.8) = ≈227 impressions / 12 clicks, every one landing on the
+    // 900-row /games/sims-4/poses/ at position 6–9. The legacy article
+    // /sims-4-gallery-poses/ 301s to that page (vercel.json), so nothing on
+    // the site answers the narrow intent. The theme is TITLE-ONLY
+    // (lib/galleryPoseThemeRules.ts, keyword counts and rejections in its
+    // comment); 0 rows carried it before the 2026-10-30 retag (88 added,
+    // 0 stripped, every row read). Inbound: poses and body-presets,
+    // repointed from pregnancy-mods and skin-details, which keep 2 and 5.
+    slug: 'gallery-poses',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Gallery Poses',
+    heading: 'Sims 4 Gallery Poses',
+    metaTitle: 'Sims 4 Gallery Poses — Browse 80+ CAS Poses for the Gallery | MustHaveMods',
+    metaDescription:
+      'Browse 80+ Sims 4 gallery poses and CAS pose packs: single, couple, family, toddler, pet and male gallery poses that replace the default CAS stance, sorted by downloads.',
+    tagline: 'CAS and Gallery card poses for singles, couples, families and pets',
+    intro:
+      'Every sim and household you upload to the Gallery gets one still: the pose they strike in Create-A-Sim. By default that is the same hands-at-sides stance for everyone, which is why the sims on the Gallery front page never look like they came out of the base game. They did — they just have a gallery pose pack installed.\n\nGallery poses are different from Pose Player packs. They replace the CAS idle, so they show up in Create-A-Sim and on the Gallery card with no extra mod, and most of them come as a set you pick from with the CAS trait or an in-pack override. This collection is only those: single-sim poses for a portrait, couple and fiancé poses, family poses with newborns, toddlers and teens, group poses for roommates and friends, poses with cats, dogs and horses, and male, child and toddler sets for the ages the default stance serves worst.\n\nEvery pack here was picked because its own title says it is a gallery or CAS pose. In-game Pose Player packs live on the pose packs page. Everything is filtered to Sims 4, link-checked and SFW. Sort by downloads for the sets people actually upload with, or scroll for the smaller finds.',
+    filter: { themesAny: ['gallery-pose'] },
+    expectedCount: 88,
+    related: ['poses', 'body-presets', 'gshade-presets'],
+    // The gallery-poses article 301s to /games/sims-4/poses/; the CAS-poses
+    // article (29 of these rows) is the still-live editorial companion.
+    blogUrl: '/sims-4-cas-poses/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
