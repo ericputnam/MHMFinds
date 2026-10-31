@@ -24,7 +24,11 @@
 #   --check [--label "<who>"]      verify what is live now (morning check, runner step 0e); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
-# Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back.
+# Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back. DEPLOY_VERIFY_SMOKE_MAX_S (default 600) caps one smoke-render.
+# E308 (2026-10-31): (a) while <sha>'s own build is absent/BUILDING, a READY production build whose commit CONTAINS <sha>
+# is graded instead of waiting out --wait-min; the result column says "SUPERSEDED via <sha7> · <verdict>" (10-30 #394
+# TIMEOUT). Its own ERROR/CANCELED still takes the stricter E201 same-code path. (b) smoke-render past the cap is killed
+# and graded INCONCLUSIVE (exit 0, no rollback) — 10-30 #392 hung ~3 h, #394 ~40 min.
 # Exit: 0 pass · 1 smoke-only failure / PAPER FAIL (nothing rolled back) · 2 failed and rolled back / build failed / build not promoted · 3 still failing after rollback
 # A check that CANNOT RUN (no node_modules/playwright in a fresh worktree, Chromium missing) is INCONCLUSIVE:
 # it is logged, the ledger row says INCONCLUSIVE, exit stays 0 and nothing is rolled back. Only a smoke run that
@@ -76,6 +80,8 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$MODE" ] || { sed -n '2,/^set -uo/p' "$0" | sed '$d'; exit 64; }
 case "$PLATFORM_WAIT_MIN" in ''|*[!0-9]*) echo "--platform-wait-min needs a whole number of minutes"; exit 64 ;; esac
+SMOKE_MAX_S="${DEPLOY_VERIFY_SMOKE_MAX_S:-600}"  # E308: wall-clock cap on one smoke-render run (≤10 min)
+case "$SMOKE_MAX_S" in ''|*[!0-9]*|0) echo "DEPLOY_VERIFY_SMOKE_MAX_S needs a positive whole number of seconds"; exit 64 ;; esac
 
 TS="$(date '+%Y-%m-%d %H:%M')"; STAMP="$(date '+%Y-%m-%d-%H%M%S')"
 INC_DIR="$ROOT/reports/funnel/incidents"; mkdir -p "$INC_DIR" "$ROOT/logs"
@@ -145,12 +151,13 @@ paper_merge() {  # E250: $1 sha → 0 ONLY when git lists the files it changed v
 }
 find_containing_ready() {  # E201: $1 = sha whose own build failed → "sha https://url" of the newest READY production
   # build whose commit contains $1 (ancestry, not timing) with the same application code. Non-zero = none found (yet).
+  # E308: $2 = "any" drops the same-code requirement — used only while $1's own build is absent/BUILDING (never ERROR).
   local s u
   (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1)
   while read -r s u; do
     [ -n "${u:-}" ] || continue
     (cd "$ROOT" && git merge-base --is-ancestor "$1" "$s") 2>/dev/null || continue  # unknown commit = not proof
-    same_code "$1" "$s" || continue
+    [ "${2:-}" = "any" ] || same_code "$1" "$s" || continue
     echo "$s $u"; return 0
   done <<<"$(vls | python3 -c '
 import json,sys
@@ -173,14 +180,38 @@ smoke_dir() {  # first tree that has the deps smoke-render needs — fresh runne
   done
   return 1
 }
+killtree() {  # $1 pid → TERM it and every descendant (npx → tsx → node → Chromium), children first
+  local c
+  for c in $(pgrep -P "$1" 2>/dev/null); do killtree "$c"; done
+  kill -TERM "$1" 2>/dev/null
+}
+capped_wait() {  # E308: $1 background pid, $2 max seconds (wall clock) → 0 it exited in time · 1 killed at the cap.
+  # 10-30: smoke-render hung ~3 h after READY on #392 and ~40 min on #394, so the after-merge row (and the agent's
+  # turn) waited on it. A smoke that did not finish is could-not-run (INCONCLUSIVE, exit 0, no rollback), never FAIL.
+  local t0; t0=$(date +%s)
+  while kill -0 "$1" 2>/dev/null; do
+    if [ $(( $(date +%s) - t0 )) -ge "$2" ]; then
+      log "WARN: smoke-render still running after ${2}s wall clock — killing it (INCONCLUSIVE, not a verdict)"
+      killtree "$1"; sleep 2; pkill -KILL -P "$1" 2>/dev/null; kill -KILL "$1" 2>/dev/null; wait "$1" 2>/dev/null
+      return 1
+    fi
+    /bin/sleep 0.5
+  done
+  wait "$1" 2>/dev/null; return 0
+}
 smoke() {
   FAILS=""; INCONCLUSIVE=""; NET_DEGRADED=""
   local sdir out="$SMOKE_JSON.out"
   rm -f "$SMOKE_JSON"
   if sdir="$(smoke_dir)"; then
     log "check: rendering production pages in headless Chromium (deps from $sdir)…"
-    (cd "$sdir" && npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1; cat "$out" >>"$LOG"
-    if [ -f "$SMOKE_JSON" ]; then  # smoke-render writes the JSON only after it really rendered every page
+    (cd "$sdir" && npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1 &
+    if ! capped_wait $! "${SMOKE_MAX_S:-600}"; then
+      cat "$out" >>"$LOG"; rm -f "$SMOKE_JSON"  # a JSON written in the kill window is not a finished run
+      INCONCLUSIVE="smoke-render timed out after ${SMOKE_MAX_S:-600}s wall clock (killed) — pages NOT judged"
+    else cat "$out" >>"$LOG"; fi
+    if [ -n "$INCONCLUSIVE" ]; then :  # E308: timed out — could not run, never FAIL
+    elif [ -f "$SMOKE_JSON" ]; then  # smoke-render writes the JSON only after it really rendered every page
       # E111: `failed` holds only positive-evidence failures. `network.degraded` (control hosts slow/unreachable) makes the
       # whole smoke INCONCLUSIVE (network) — suspect pages are named in the row, never graded. `inconclusive` (a timeout or
       # unsettled render that reproduced on a fresh page while the control passed) is could-not-run for that page. An older
@@ -307,6 +338,7 @@ LAST_INCIDENT_FILE=""
 # ---------------------------------------------------------------- E155: the label's PR must be MERGED
 PR_NUM=""; PR_MC=""; PR_NOTE=""; GRADED=""
 PLATFORM_RES=""; PLATFORM_NOTE=""; VIA_SHA=""; HEAD_NOTE=""  # E201: set only when a same-code READY build proves a platform ERROR
+SUPER_RES=""; SUPER_NOTE=""  # E308: set only when a READY build CONTAINING the sha was graded because its own was not READY
 label_pr() { printf '%s\n' "$1" | grep -oE 'PR #[0-9]+' | head -1 | sed 's/^PR #//'; }  # first "PR #N" in a label
 pr_mc_note() {  # $1 PR number, $2 PR mergeCommit, $3 graded head → note when they differ (prefix-tolerant), else ""
   [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] || return 0
@@ -329,6 +361,7 @@ ledger() {  # $1 result, $2 notes
   local row dir f seen=" " notes res="$1"
   # E201: an after-merge result graded past a platform ERROR says so in the result column itself
   case "$MODE:$res" in after-merge:"${PLATFORM_RES:-}"*) ;; after-merge:*) [ -n "${PLATFORM_RES:-}" ] && res="$PLATFORM_RES · $res" ;; esac
+  case "$MODE" in after-merge) [ -n "${SUPER_RES:-}" ] && res="$SUPER_RES · $res" ;; esac  # E308
   notes="${PR_NOTE}$(pr_mc_note "$PR_NUM" "$PR_MC" "$GRADED")$2"
   row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$res" "$(echo "$notes" | tr '|' '/' | tr '\n' ' ')")"
   for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
@@ -467,7 +500,8 @@ case "$MODE" in
       DEPLOY_URL="$errurl"; return 1
     }
     wait_ready() {  # sets DEPLOY_URL to the READY production build of $SHA; exits 2 on build error / timeout
-      VIA_SHA=""
+      VIA_SHA=""; SUPER_RES=""; SUPER_NOTE=""
+      local vs vu
       while :; do
         read -r STATE URL <<<"$(find_deploy "$SHA")"
         if [ -n "${URL:-}" ] && { [ -n "$SHA" ] || [ "$URL" != "$PREV" ]; }; then
@@ -480,6 +514,16 @@ case "$MODE" in
               ledger "BUILD $STATE" "never promoted; production still $PREV"; exit 2 ;;
           esac
         fi
+        # E308 (10-30: #394 fb4b264 graded TIMEOUT at 07:40 while sibling verifies had already seen two newer READY
+        # builds — Vercel coalesced its own build away). Own build absent or still BUILDING (an ERROR/CANCELED took the
+        # E201 branch above and never reaches here) + a READY production build whose commit CONTAINS $SHA (ancestry,
+        # never timing; an unknown commit is not proof) = this code is built. Grade that build, row says SUPERSEDED.
+        if [ -n "$SHA" ] && read -r vs vu <<<"$(find_containing_ready "$SHA" any)" && [ -n "${vu:-}" ]; then
+          VIA_SHA="$vs"; DEPLOY_URL="$vu"; SUPER_RES="SUPERSEDED via ${vs:0:7}"
+          SUPER_NOTE="own build of ${SHA:0:7} ${STATE:-not listed}${URL:+ ($URL)}; READY build $vu of ${vs:0:7} contains it · "
+          log "$SUPER_RES — own build ${STATE:-not listed}; $vu (${vs:0:7}) contains ${SHA:0:7}: grading it instead of waiting"
+          return 0
+        fi
         if [ $(( $(date +%s) - START )) -ge $(( WAIT_MIN * 60 )) ]; then
           ledger "TIMEOUT" "no READY production deploy for ${SHA:-newest} within ${WAIT_MIN}m; production still $PREV"; exit 2
         fi
@@ -491,7 +535,7 @@ case "$MODE" in
     # graded PASS against the caller's sha while production served its parent. Production must serve origin/main
     # HEAD, so if main moved past the caller's sha while we waited, re-target: wait for HEAD's build, promote and
     # verify THAT, and say so in the ledger row. The caller's sha is a lower bound, never the thing we certify.
-    HEAD_NOTE="$PLATFORM_NOTE"
+    HEAD_NOTE="$PLATFORM_NOTE$SUPER_NOTE"
     HEAD_SHA="$( (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1 && git rev-parse origin/main) 2>/dev/null)"
     if [ -n "$HEAD_SHA" ] && [ -n "$SHA" ] && [ "${HEAD_SHA#"${SHA:0:7}"}" = "$HEAD_SHA" ]; then
       if is_ledger_only_commit "$HEAD_SHA"; then
@@ -499,9 +543,12 @@ case "$MODE" in
       else
         log "origin/main moved past ${SHA:0:7} → ${HEAD_SHA:0:7} while waiting; verifying HEAD's build instead (the alias must serve main HEAD)"
         HEAD_NOTE="${HEAD_NOTE}main moved past caller ${SHA:0:7}; graded HEAD ${HEAD_SHA:0:7} · "
-        SHA="$HEAD_SHA"; wait_ready
+        SHA="$HEAD_SHA"; wait_ready; HEAD_NOTE="${HEAD_NOTE}${SUPER_NOTE}"
       fi
     fi
+    # E308: a containing build that was already serving when we started is its own "production before" — the rollback
+    # target is then the READY build before it (same semantics as --check), never the build under test.
+    [ -n "$SUPER_RES" ] && [ "$PREV" = "$DEPLOY_URL" ] && PREV="$(previous_ready "$DEPLOY_URL")"
     log "deployment READY: $DEPLOY_URL"; sleep 15
     ensure_promoted "$DEPLOY_URL"; PROMO=$?
     case "$PROMO" in 0) GRADED="${VIA_SHA:-$SHA}" ;; 3) GRADED="$SERVED_SHA" ;; esac   # the head the verdict below is actually about
