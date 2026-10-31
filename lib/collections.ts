@@ -195,7 +195,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 503,
     // 'furniture' was a dangling slug until 2026-09-07 (the real slug is
     // 'furniture-cc'); the renderer silently dropped it.
-    related: ['clutter', 'halloween-cc', 'witch-cc'],
+    // E307 (2026-10-31): 'witch-cc' → 'christmas-cc' (the seasonal child page);
+    // witch-cc keeps 2 inbound (cottagecore-cc, halloween-cc).
+    related: ['clutter', 'halloween-cc', 'christmas-cc'],
     blogUrl: '/sims-4-holiday-mods/',
   },
   {
@@ -980,7 +982,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       themesAny: ['halloween'],
     },
     expectedCount: 190,
-    related: ['holidays-cc', 'witch-cc', 'goth-cc'],
+    // E307 (2026-10-31): 'goth-cc' → 'christmas-cc' (the next seasonal page
+    // after the October peak); goth-cc keeps 2 inbound (vampire-cc, witch-cc).
+    related: ['holidays-cc', 'witch-cc', 'christmas-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // halloween cc" intent, this page owns browse/filter intent.
     // /sims-4-halloween-cc/ is live (HTTP 200, no redirect, verified
@@ -1336,6 +1340,56 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // The gallery-poses article 301s to /games/sims-4/poses/; the CAS-poses
     // article (29 of these rows) is the still-live editorial companion.
     blogUrl: '/sims-4-cas-poses/',
+  },
+  {
+    // Rowan, 2026-10-31 (E307). Seasonal `themesAny` page, appended after
+    // the other theme pages (specificity 1 sorts behind every contentType
+    // collection, so 232 of its rows keep `holidays-cc` as their first
+    // breadcrumb and gain this one). Shipped eight weeks before the peak,
+    // the same lead halloween-cc had (15 → 53 landing sessions Sep → Oct).
+    //
+    // Demand: the legacy Christmas articles already land traffic before the
+    // season — GA4 Oct 2026: /sims-4-christmas-clothes-cc/ 188 social + 28
+    // search, /sims-4-christmas-cc/ 134 social + 130 search, christmas-poses
+    // 76 + 9, christmas-tree-cc 42 + 26 — and GSC 10-03→10-30 has 18
+    // Christmas queries (≈43 impressions, 0 clicks) with no browse page:
+    // "christmas tree sims 4 cc" pos 11.8, "sims 4 christmas cc" 14.5,
+    // "sims 4 christmas poses" 17.5, "sims 4 christmas clothes cc" 23.8.
+    //
+    // The `christmas` theme was repaired in the same PR, the halloween-cc
+    // way: 312 rows, 186 title-supported (59.6%) — "Beard N3" and "FSP
+    // Family Portrait" were cards #3–#4 — because THEME_KEYWORDS mapped
+    // holiday / santa / festive to it over the shared description. Now
+    // title-only (lib/christmasThemeRules.ts, counts and rejections in its
+    // comment); scripts/retag-christmas-theme.ts: 46 added, 96 stripped,
+    // every row of both lists read; backup
+    // reports/funnel/christmas-theme-retag-2026-10-31.csv. Inbound:
+    // holidays-cc and halloween-cc (both keep 2 inbound themselves).
+    slug: 'christmas-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Christmas CC',
+    heading: 'Sims 4 Christmas CC',
+    metaTitle: 'Sims 4 Christmas CC Finder — Browse 250+ Trees, Decor & Outfits | MustHaveMods',
+    metaDescription:
+      'Browse 250+ Sims 4 Christmas CC finds in one filterable grid — trees, lights and Winterfest decor, Santa outfits, Christmas sweaters and nails, loading screens and pose packs, links checked.',
+    tagline: 'Trees, Winterfest decor, Santa outfits, and holiday pose packs in one grid',
+    intro:
+      "Winterfest is the one holiday every Sims 4 save celebrates whether you planned it or not, and the base game gives it exactly one tree, one wreath and a Father Winter who turns up uninvited. If December in your game is going to look like December — a tree with presents under it, garland and lights on the build, a household in matching pyjamas for the gift opening — that all comes from custom content.\n\nThis collection is every Christmas find in our catalog in one grid: 250-odd mods, sorted by downloads, and every one of them says Christmas (or Xmas, Winterfest, Santa, mistletoe, gingerbread, candy cane) in its own title. That last part is deliberate. Seasonal tags are the easiest facet to get wrong — a beard or a family portrait that happened to appear in a Christmas roundup is not Christmas CC — so this grid only holds items whose creator called them that. Generic holiday sets, New Year's outfits and plain winter coats live on the holiday and seasonal page instead.\n\nThe shelf splits roughly three ways. Build and decor is the biggest: Christmas trees (in baskets, flocked, Scandinavian, mountain-cabin), lighting and decor sets dated by year from the big build creators, fireplaces, Winterfest lots and whole holiday houses. CAS: Santa outfits and beards, Christmas sweaters, pyjama sets and dresses for adults, kids and infants, Christmas and candy-cane nails, and the Winterfest hair sets. Finishing touches: Christmas loading screens, main-menu overrides and CAS backgrounds, plus Santa and Merry Christmas pose packs for the holiday card.\n\nTwo practical notes. Many of these are dated sets (\"Christmas 2019 Decor\", \"Christmas 2022 Lighting Set\") that creators re-release every year — the older ones generally still work, but check the creator page for a newer version before you install both. And the Winterfest decor from the base game and the Seasons pack is not replaced by any of this; it is added to, so you can mix.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the trees and decor sets everyone already runs, or scroll for the one-off nail sets and loading screens the big roundups never reach.",
+    filter: {
+      // 262 SFW Sims 4 mods on the `christmas` theme, verified against
+      // production 2026-10-31 *after* the same-PR title-only repair
+      // (see the comment above the slug).
+      themesAny: ['christmas'],
+    },
+    expectedCount: 262,
+    related: ['holidays-cc', 'halloween-cc', 'decor-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // christmas cc" intent (130 organic-search landing sessions in Oct 2026,
+    // GSC 38 impressions at position 28.3 over 10-03→10-30), this page owns
+    // browse/filter intent. /sims-4-christmas-cc/ is live (HTTP 200,
+    // verified 2026-10-31) and is not in vercel.json.
+    blogUrl: '/sims-4-christmas-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level

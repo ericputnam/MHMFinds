@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { AGE_TITLE_PATTERNS, AGE_NEGATIVE_TITLE_CONTEXTS } from '../ageGroupRules';
 import { HALLOWEEN_THEME, isHalloweenTitle } from '../halloweenThemeRules';
+import { CHRISTMAS_THEME, isChristmasTitle } from '../christmasThemeRules';
 
 // ============================================
 // FACET VALUE DEFINITIONS
@@ -231,12 +232,14 @@ const CONTENT_TYPE_KEYWORDS: Record<string, ContentType> = {
 
 const THEME_KEYWORDS: Record<string, Theme> = {
   // Seasonal
-  'christmas': 'christmas', 'xmas': 'christmas', 'holiday': 'christmas',
-  'santa': 'christmas', 'festive': 'christmas', 'winter holiday': 'christmas',
   // `halloween` is deliberately NOT keyword-mapped here: it is derived from the
   // TITLE only by `lib/halloweenThemeRules.ts` (Rowan, 2026-09-23). The old
   // entries ('witch', 'vampire', 'ghost', 'pumpkin', ... over title +
   // description) left the theme 34.7% title-supported (190 of 547 rows).
+  // `christmas` likewise (Rowan, 2026-10-31, E307; `lib/christmasThemeRules.ts`):
+  // the old entries ('christmas', 'xmas', 'holiday', 'santa', 'festive',
+  // 'winter holiday' over title + description) left it 59.6% title-supported
+  // (186 of 312 rows), with "Beard N3" and "FSP Family Portrait" as cards #3–#4.
   'valentine': 'valentines', 'romantic': 'romantic', 'love': 'romantic',
   'heart': 'valentines', 'cupid': 'valentines',
   'easter': 'easter', 'bunny': 'easter', 'pastel': 'easter',
@@ -417,6 +420,12 @@ export class AIFacetExtractor {
       result.themes.push(HALLOWEEN_THEME);
     }
 
+    // Christmas theme — title only, whole words, shared rules (E307).
+    if (isChristmasTitle(title) && !seenThemes.has(CHRISTMAS_THEME)) {
+      seenThemes.add(CHRISTMAS_THEME);
+      result.themes.push(CHRISTMAS_THEME);
+    }
+
     // Extract age groups — title only, whole words, shared rules.
     // (`text` above deliberately is not used here; see the AGE note above.)
     if (!AGE_NEGATIVE_TITLE_CONTEXTS.test(title)) {
@@ -561,11 +570,14 @@ Respond with ONLY valid JSON:
       visualStyle: keywordFacets.visualStyle || aiFacets.visualStyle,
 
       // Themes: union of both
-      // `halloween` is title-authoritative: keep it only if the keyword pass
-      // (which applies `isHalloweenTitle`) found it; never from the AI alone.
+      // `halloween` and `christmas` are title-authoritative: keep them only if
+      // the keyword pass (which applies `isHalloweenTitle` / `isChristmasTitle`)
+      // found them; never from the AI alone.
       themes: Array.from(new Set([
         ...keywordFacets.themes,
-        ...aiFacets.themes.filter((t) => t !== HALLOWEEN_THEME || keywordFacets.themes.includes(HALLOWEEN_THEME)),
+        ...aiFacets.themes
+          .filter((t) => t !== HALLOWEEN_THEME || keywordFacets.themes.includes(HALLOWEEN_THEME))
+          .filter((t) => t !== CHRISTMAS_THEME || keywordFacets.themes.includes(CHRISTMAS_THEME)),
       ])),
 
       // Age groups: union of both
