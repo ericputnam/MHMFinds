@@ -26,6 +26,8 @@ import {
   keyLocation,
   modUrl,
   parseArgs,
+  parseCreatorSlugList,
+  pickCreatorSlugs,
   postIndexNow,
   resolveCap,
   selectUrls,
@@ -322,6 +324,37 @@ describe('creator pages (E95)', () => {
     // A full --creators run wins over --creators-changed.
     expect(script).toMatch(/const changedSince = args\.creators\s*\?\s*null/);
   });
+
+  it('E303: --creator-slugs parses both forms, cleans the list, and does not lift the cap', () => {
+    expect(parseArgs([]).creatorSlugs).toEqual([]);
+    expect(parseArgs(['--creator-slugs=giuliettasims,leosims']).creatorSlugs).toEqual(['giuliettasims', 'leosims']);
+    expect(parseArgs(['--creator-slugs', 'a-b,c']).creatorSlugs).toEqual(['a-b', 'c']);
+    const a = parseArgs(['--creator-slugs=a,b', '--cap', '800']);
+    expect(a).toMatchObject({ creators: false, creatorsChanged: false, cap: HARD_CAP });
+    expect(capCeiling(a)).toBe(HARD_CAP);
+    // Whitespace, case, duplicates, URLs and empty items never become lookup keys.
+    expect(parseCreatorSlugList(' A , b,,B, https://musthavemods.com/creator/x/ ,c d, under_score ')).toEqual(['a', 'b']);
+    expect(parseCreatorSlugList(undefined)).toEqual([]);
+    expect(parseCreatorSlugList('')).toEqual([]);
+  });
+
+  it('E303: pickCreatorSlugs keeps only listed slugs, in requested order, and names the rest', () => {
+    const rows = [{ slug: 'leosims' }, { slug: 'giuliettasims' }, { slug: 'other' }];
+    expect(pickCreatorSlugs(rows, ['giuliettasims', 'nope', 'leosims'])).toEqual({
+      found: ['giuliettasims', 'leosims'],
+      missing: ['nope'],
+    });
+    expect(pickCreatorSlugs([], ['x'])).toEqual({ found: [], missing: ['x'] });
+    expect(pickCreatorSlugs(rows, [])).toEqual({ found: [], missing: [] });
+  });
+
+  it('E303: the script validates --creator-slugs against the listCreators population before selecting', () => {
+    const script = stripComments(read('scripts/agents/indexnow-submit.ts'));
+    expect(script).toMatch(/else if \(args\.creatorSlugs\.length > 0\)/);
+    expect(script).toMatch(/const listed = await fetchCreatorSlugs\(null\)/);
+    expect(script).toMatch(/pickCreatorSlugs\(listed\.map\(\(slug\) => \(\{ slug \}\)\), args\.creatorSlugs\)/);
+    expect(script).toMatch(/creatorSlugs = picked\.found/);
+  });
 });
 
 describe('buildPayload', () => {
@@ -431,6 +464,7 @@ describe('parseArgs', () => {
       creators: false,
       creatorsChanged: false,
       creatorsDays: null,
+      creatorSlugs: [],
       guides: false,
       help: false,
     });

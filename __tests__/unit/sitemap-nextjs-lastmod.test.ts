@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { SIMS4_COLLECTIONS } from '@/lib/collections';
+import { COLLECTION_TEMPLATE_LASTMOD } from '@/lib/sitemapLastmod';
 
 /**
  * /sitemap-nextjs.xml per-collection <lastmod> (E37).
@@ -32,16 +33,27 @@ function entries(xml: string): Array<{ loc: string; lastmod: string }> {
 }
 
 // Deterministic per-collection dates keyed off the where-clause the route
-// builds: hair → recent, everything else → older than the template date.
+// builds: hair → newer than the template date, poses → a day less new,
+// everything else → older than the template date (clamps up to it).
+// Derived from the real COLLECTION_TEMPLATE_LASTMOD (E303): hard-coded
+// fixture dates silently fell behind the constant the first time it moved.
+const DAY_MS = 24 * 3600 * 1000;
+const plusDays = (stamp: string, n: number) => new Date(Date.parse(`${stamp}T00:00:00.000Z`) + n * DAY_MS);
+const stampOf = (d: Date) => d.toISOString().slice(0, 10);
+const HAIR_CREATED = new Date(plusDays(COLLECTION_TEMPLATE_LASTMOD, 2).getTime() + 18 * 3600 * 1000);
+const POSES_CREATED = new Date(plusDays(COLLECTION_TEMPLATE_LASTMOD, 1).getTime() + 2 * 3600 * 1000);
+const HAIR_STAMP = stampOf(HAIR_CREATED);
+const OLD_CREATED = new Date('2026-01-25T00:00:00.000Z');
+
 function aggregateByWhere(args: any) {
   const where = JSON.stringify(args?.where ?? {});
   if (where.includes('"hair"')) {
-    return Promise.resolve({ _max: { createdAt: new Date('2026-09-10T18:22:00.000Z') } });
+    return Promise.resolve({ _max: { createdAt: HAIR_CREATED } });
   }
   if (where.includes('"poses"')) {
-    return Promise.resolve({ _max: { createdAt: new Date('2026-09-09T02:00:00.000Z') } });
+    return Promise.resolve({ _max: { createdAt: POSES_CREATED } });
   }
-  return Promise.resolve({ _max: { createdAt: new Date('2026-01-25T00:00:00.000Z') } });
+  return Promise.resolve({ _max: { createdAt: OLD_CREATED } });
 }
 
 beforeEach(() => {
@@ -84,7 +96,7 @@ describe('sitemap-nextjs.xml per-URL lastmod', () => {
 
     const hair = rows.find((r) => r.loc === 'https://musthavemods.com/games/sims-4/hair-cc/');
     const goth = rows.find((r) => r.loc === 'https://musthavemods.com/games/sims-4/goth-cc/');
-    expect(hair?.lastmod).toBe('2026-09-10');
+    expect(hair?.lastmod).toBe(HAIR_STAMP);
     // Older than the template change → clamps up to the template date.
     expect(goth?.lastmod).toBe(COLLECTION_TEMPLATE_LASTMOD);
 
@@ -93,13 +105,16 @@ describe('sitemap-nextjs.xml per-URL lastmod', () => {
   });
 
   it('queries the DB once per collection and never with a dynamic "today"', async () => {
-    aggregateMock.mockImplementation(aggregateByWhere);
+    // Old-only fixtures here: every date the route can emit is a pinned
+    // constant or 2026-01-25, so "today" can only appear if something
+    // reads the clock. (The derived hair/poses fixtures sit just after the
+    // template date and could coincide with the calendar on bump day.)
+    aggregateMock.mockResolvedValue({ _max: { createdAt: OLD_CREATED } });
     const { GET } = await import('@/app/sitemap-nextjs.xml/route');
     const xml = await (await GET()).text();
 
     expect(aggregateMock).toHaveBeenCalledTimes(SIMS4_COLLECTIONS.length);
     const today = new Date().toISOString().slice(0, 10);
-    // Fixture dates are all in the past, so "today" must not appear.
     expect(xml).not.toContain(`<lastmod>${today}</lastmod>`);
   });
 
@@ -110,8 +125,8 @@ describe('sitemap-nextjs.xml per-URL lastmod', () => {
 
     const home = rows.find((r) => r.loc === 'https://musthavemods.com/');
     const sims4 = rows.find((r) => r.loc === 'https://musthavemods.com/games/sims-4/');
-    expect(home?.lastmod).toBe('2026-09-10');
-    expect(sims4?.lastmod).toBe('2026-09-10');
+    expect(home?.lastmod).toBe(HAIR_STAMP);
+    expect(sims4?.lastmod).toBe(HAIR_STAMP);
   });
 
   it('degrades to the template date with a 200 when the DB rejects', async () => {
