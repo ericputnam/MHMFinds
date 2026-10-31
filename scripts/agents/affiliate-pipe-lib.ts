@@ -94,6 +94,10 @@ export interface PipeInput {
    * not after `now`, the KILL clock starts here instead of on the run date.
    */
   confirmedOn?: string | null;
+  /** E306: GA4 `affiliate_click` rows (date × pagePath) for the window; null/undefined when the GA4 leg could not run. Informational — the status rules never read it. */
+  ga4Rows?: Ga4AffiliateRow[] | null;
+  /** redacted reason when `ga4Rows` is null */
+  ga4Error?: string | null;
 }
 
 export interface PipeRead {
@@ -119,6 +123,9 @@ export interface PipeRead {
   killReadOn: string | null;
   impactRows: ImpactProgramRow[];
   impactError: string | null;
+  /** E306: the two GA4 surfaces (grid vs blog Amazon block); null when GA4 could not run */
+  ga4Leg: Ga4AffiliateLeg | null;
+  ga4Error: string | null;
   generatedAt: string;
 }
 
@@ -198,6 +205,9 @@ export function assessPipe(i: PipeInput): PipeRead {
     killReadOn: null as string | null,
     impactRows,
     impactError: i.impactError ?? null,
+    // E306: informational only — nothing below this object reads it.
+    ga4Leg: i.ga4Rows ? summarizeGa4AffiliateClicks(i.ga4Rows, i.windowStart, i.windowEnd) : null,
+    ga4Error: i.ga4Rows ? null : (i.ga4Error ?? 'GA4 leg not run'),
     generatedAt,
   };
 
@@ -238,6 +248,117 @@ export function assessPipe(i: PipeInput): PipeRead {
 }
 
 const pct = (x: number | null, dp = 1) => (x == null ? '—' : `${(x * 100).toFixed(dp)}%`);
+
+/**
+ * GA4 leg (E306, 2026-10-31). The operator's blog Amazon pack block (#391,
+ * live 2026-10-27 00:45Z) fires the same `affiliate_click` event as the
+ * Next.js grid, so the E134 kill read on 11-11 would otherwise fold the first
+ * blog-side affiliate clicks ever recorded into Impact's $0. The two surfaces
+ * are told apart by `pagePath`: the grid fires only on `/` and `/games/*`
+ * (`AffiliateProductGrid` is mounted nowhere else), every other path is a
+ * WordPress post carrying the block. `customEvent:source_type` / `partner`
+ * would be the honest split but are not registered GA4 dimensions (Data API
+ * 400 on 10-30; operator-only item in operator-queue.md) — when they are,
+ * swap the classifier for the parameter and keep the shape below.
+ *
+ * Counts only. Earnings for the block are Amazon Associates, operator-only;
+ * this leg never prints a dollar for it. A GA4 failure is `null` → the line
+ * says "unavailable — <why>" with no digits (house rule: unknown never writes).
+ */
+export type AffiliateSurface = 'grid' | 'blog_pack_block';
+
+export const GA4_LEG = {
+  id: 'E306',
+  event: 'affiliate_click',
+  /** first full day the #391 block was live (merged 2026-10-27 00:45Z) */
+  blockLiveFrom: '2026-10-27',
+  /** the E295 launch-spike bar: the block keeps its own line if ≥ this many clicks/day on 11-11 */
+  blockMinPerDay: 5,
+} as const;
+
+export function classifyAffiliateSurface(pagePath: string): AffiliateSurface {
+  const p = (pagePath || '').split('?')[0].split('#')[0];
+  if (p === '/' || p === '' || p === '/games' || p.startsWith('/games/')) return 'grid';
+  return 'blog_pack_block';
+}
+
+export interface Ga4AffiliateRow {
+  /** `YYYY-MM-DD` or GA4's `YYYYMMDD` */
+  date: string;
+  pagePath: string;
+  eventCount: number;
+}
+
+export interface Ga4AffiliateLeg {
+  windowStart: string;
+  windowEnd: string;
+  grid: number;
+  blogPackBlock: number;
+  /** days in the window on which the block was live (≥ `GA4_LEG.blockLiveFrom`) */
+  blockLiveDays: number;
+  /** block clicks ÷ block-live days; null before the block was live */
+  blockPerDay: number | null;
+  gridPerDay: number;
+  /** block clicks per day, newest last, only for days ≥ `blockLiveFrom` */
+  blockByDay: Record<string, number>;
+  /** distinct blog paths that fired the block */
+  blockPaths: number;
+}
+
+function ga4DateKey(raw: string): string {
+  return /^\d{8}$/.test(raw) ? `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}` : raw;
+}
+
+/** Pure: GA4 `affiliate_click` rows (date × pagePath) → the two surfaces, each with its own pace. */
+export function summarizeGa4AffiliateClicks(rows: Ga4AffiliateRow[], windowStart: string, windowEnd: string): Ga4AffiliateLeg {
+  let grid = 0;
+  let blogPackBlock = 0;
+  const blockByDay: Record<string, number> = {};
+  const blockPaths = new Set<string>();
+  for (const r of rows) {
+    const d = ga4DateKey(String(r.date ?? ''));
+    if (d < windowStart || d > windowEnd) continue;
+    const n = num(r.eventCount);
+    if (n <= 0) continue;
+    if (classifyAffiliateSurface(r.pagePath) === 'grid') {
+      grid += n;
+    } else {
+      blogPackBlock += n;
+      blockPaths.add(r.pagePath.split('?')[0]);
+      if (d >= GA4_LEG.blockLiveFrom) blockByDay[d] = (blockByDay[d] ?? 0) + n;
+    }
+  }
+  const windowDays = Math.max(1, Math.round((Date.parse(`${windowEnd}T00:00:00Z`) - Date.parse(`${windowStart}T00:00:00Z`)) / 864e5) + 1);
+  const liveStart = windowStart > GA4_LEG.blockLiveFrom ? windowStart : GA4_LEG.blockLiveFrom;
+  const blockLiveDays = windowEnd < GA4_LEG.blockLiveFrom ? 0 : Math.round((Date.parse(`${windowEnd}T00:00:00Z`) - Date.parse(`${liveStart}T00:00:00Z`)) / 864e5) + 1;
+  return {
+    windowStart,
+    windowEnd,
+    grid,
+    blogPackBlock,
+    blockLiveDays,
+    blockPerDay: blockLiveDays > 0 ? round(blogPackBlock / blockLiveDays, 2) : null,
+    gridPerDay: round(grid / windowDays, 2),
+    blockByDay,
+    blockPaths: blockPaths.size,
+  };
+}
+
+/**
+ * The two lines the 11-11 read prints. Impact's leg is the E134 kill rule;
+ * the Amazon block is a separate surface with its own bar and no dollar.
+ * `leg === null` → one line saying unavailable, with the reason and no digits.
+ */
+export function ga4LegLines(leg: Ga4AffiliateLeg | null, unavailableWhy: string | null = null): string[] {
+  if (!leg) return [`- GA4 \`${GA4_LEG.event}\` by surface: unavailable — ${unavailableWhy ?? 'no reason given'}`];
+  const blockLine = leg.blockLiveDays > 0
+    ? `${leg.blogPackBlock} click(s) on ${leg.blockPaths} post path(s) over ${leg.blockLiveDays} live day(s) = ${leg.blockPerDay}/day (bar ≥ ${GA4_LEG.blockMinPerDay}/day on ${PIPE_RULE.readOn}; earnings are Amazon Associates, operator-only — no dollar printed here)`
+    : `not live in this window (block live from ${GA4_LEG.blockLiveFrom})`;
+  return [
+    `- GA4 \`${GA4_LEG.event}\`, grid (\`/\` + \`/games/*\`, Impact-tracked partners): ${leg.grid} click(s) over ${leg.windowStart} → ${leg.windowEnd} = ${leg.gridPerDay}/day`,
+    `- GA4 \`${GA4_LEG.event}\`, blog Amazon pack block (#391, every other path): ${blockLine}`,
+  ];
+}
 
 /** Markdown report. The decision rule is printed before any reading (house rule). */
 export function renderPipeReadMd(read: PipeRead): string {
@@ -284,5 +405,16 @@ export function renderPipeReadMd(read: PipeRead): string {
     L.push(`- Impact leg: COULD-NOT-RUN — ${read.impactError}`);
     L.push('');
   }
+  // E306: the kill read prints Impact and the blog Amazon block as two lines, never one sum.
+  L.push(`## GA4 \`${GA4_LEG.event}\` by surface (${GA4_LEG.id}; informational, not a verdict input)`);
+  L.push('');
+  for (const line of ga4LegLines(read.ga4Leg, read.ga4Error)) L.push(line);
+  if (read.ga4Leg && Object.keys(read.ga4Leg.blockByDay).length) {
+    L.push('');
+    L.push('| Day | Block clicks |');
+    L.push('|---|--:|');
+    for (const d of Object.keys(read.ga4Leg.blockByDay).sort()) L.push(`| ${d} | ${read.ga4Leg.blockByDay[d]} |`);
+  }
+  L.push('');
   return L.join('\n');
 }
