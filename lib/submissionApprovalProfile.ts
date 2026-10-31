@@ -28,6 +28,71 @@
 
 import { authorSlug } from './creatorSlug';
 import { parseClaimSlug, pendingProfileHandle } from './creatorClaim';
+import { resolveIngestContentType } from './services/contentTypeDetector';
+
+/** The submission columns a new catalog row is built from (ModSubmission, non-edit). */
+export interface SubmissionModSource<Img = string | null, Imgs = string[], Price = unknown> {
+  modName: string;
+  description: string;
+  shortDescription: string | null;
+  version: string | null;
+  gameVersion: string | null;
+  category: string;
+  tags: string[];
+  thumbnail: Img;
+  images: Imgs;
+  modUrl: string;
+  downloadUrl: string | null;
+  sourceUrl: string | null;
+  source: string | null;
+  author: string | null;
+  isFree: boolean;
+  price: Price;
+  currency: string | null;
+  isNSFW: boolean;
+}
+
+/**
+ * The `Mod` row an approved (non-edit) submission becomes — one builder for
+ * the admin approve route and for scripts/agents/approve-submissions.ts
+ * (E304, 2026-10-31), so a scripted approval and a dashboard click write
+ * the same row.
+ *
+ * E304 also sets `contentType` here, the way every other ingest path does
+ * (`resolveIngestContentType`, E168: confident title answer, else the
+ * title+description detector, then the room/holiday guards; `null` when
+ * nothing confident — NULL beats a guess). Before E304 the route never
+ * wrote the column, so an approved mod joined no `/games/sims-4/*` facet
+ * page until a later retag pass happened to fill it (the 3 approved mods
+ * on 2026-10-31 carry a type, none of it written at approval). The
+ * description here is the creator's own text for one item, not a shared
+ * blog-post description, so it cannot contaminate a whole facet.
+ */
+export function newModDataFromSubmission<S extends SubmissionModSource>(
+  s: S,
+  rehosted: { thumbnail: S['thumbnail']; images: S['images'] },
+) {
+  return {
+    title: s.modName,
+    description: s.description,
+    shortDescription: s.shortDescription,
+    version: s.version,
+    gameVersion: s.gameVersion,
+    category: s.category,
+    tags: s.tags.length > 0 ? s.tags : [s.category],
+    thumbnail: rehosted.thumbnail,
+    images: rehosted.images,
+    downloadUrl: s.downloadUrl || s.modUrl,
+    sourceUrl: s.sourceUrl || s.modUrl,
+    source: s.source || 'User Submission',
+    author: s.author,
+    isFree: s.isFree,
+    price: s.price as S['price'],
+    currency: s.currency,
+    isNSFW: s.isNSFW,
+    contentType: resolveIngestContentType(s.modName, s.description, null) ?? null,
+  };
+}
 
 export interface ApprovalProfileInput {
   isEdit: boolean;
