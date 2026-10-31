@@ -19,7 +19,7 @@ const raw = readFileSync(join(process.cwd(), SCRIPT), 'utf8');
 const fn = (name: string) =>
   raw.match(new RegExp(`^${name}\\(\\) \\{[^\\n]*\\}\\n`, 'm'))?.[0]  // one-liner
   ?? raw.match(new RegExp(`^${name}\\(\\) \\{.*\\n[\\s\\S]*?\\n\\}\\n`, 'm'))?.[0] ?? '';
-const real = ['addfail', 'smoke_dir', 'smoke', 'verdict', 'vnotes', 'fail_and_fix'].map(fn).join('\n');
+const real = ['addfail', 'killtree', 'capped_wait', 'smoke_dir', 'smoke', 'verdict', 'vnotes', 'fail_and_fix'].map(fn).join('\n');
 
 let base: string; let root: string;
 beforeEach(() => {
