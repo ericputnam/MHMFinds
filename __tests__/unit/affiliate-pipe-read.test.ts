@@ -4,9 +4,14 @@ import { join } from 'node:path';
 import {
   addDays,
   assessPipe,
+  classifyAffiliateSurface,
+  GA4_LEG,
+  ga4LegLines,
   parseImpactProgramRows,
   PIPE_RULE,
   renderPipeReadMd,
+  summarizeGa4AffiliateClicks,
+  type Ga4AffiliateRow,
   type PipeInput,
 } from '../../scripts/agents/affiliate-pipe-lib';
 
@@ -241,6 +246,130 @@ describe('affiliate-pipe-read.ts · source guards', () => {
 
   it('pulls the DB leg read-only (no create/update/delete on affiliate tables)', () => {
     expect(src).not.toMatch(/\.(create|update|delete|upsert|createMany|updateMany|deleteMany)\(/);
+  });
+});
+
+/**
+ * E306 (2026-10-31). Real GA4 `affiliate_click` rows by date × pagePath,
+ * 2026-10-24→2026-10-30 (Data API, property 437117335, pulled 10-31). The
+ * 10-23→10-29 sum of these rows is 41 — the scoreboard's capture-events
+ * line that morning — so the fixture is the production shape, not a sketch.
+ * Grid clicks (`/`, `/games/sims-4/`) 9; blog block 44 over its 4 live days.
+ */
+const GA4_ROWS: Ga4AffiliateRow[] = [
+  { date: '20261024', pagePath: '/', eventCount: 1 },
+  { date: '20261026', pagePath: '/games/sims-4/', eventCount: 2 },
+  { date: '20261026', pagePath: '/', eventCount: 1 },
+  { date: '20261027', pagePath: '/new-sims-4-mods-2026/', eventCount: 2 },
+  ...['/best-sims-4-realistic-mods/', '/sims-4-animations/', '/sims-4-castles/', '/sims-4-cc-furniture/', '/sims-4-elf-cc/', '/sims-4-off-the-grid-cc/', '/sims-4-pixie-cut-lookbook/', '/sims-4-pregnancy-mods/', '/sims-4-ranch-cc/', '/sims-4-short-hair-cc/', '/sims-4-social-media-mods/', '/sims-4-trait-mods/'].map((pagePath) => ({ date: '20261027', pagePath, eventCount: 1 })),
+  { date: '20261028', pagePath: '/', eventCount: 3 },
+  ...['/sims-4-braids-cc/', '/sims-4-eyebrows-cc/', '/sims-4-living-room-cc/', '/sims-4-plus-size-body-presets/', '/sims-4-witch-houses/'].map((pagePath) => ({ date: '20261028', pagePath, eventCount: 1 })),
+  { date: '20261029', pagePath: '/best-sims-4-maxis-match-cc/', eventCount: 2 },
+  { date: '20261029', pagePath: '/sims-4-hello-kitty-cc/', eventCount: 2 },
+  { date: '20261029', pagePath: '/games/sims-4/', eventCount: 1 },
+  ...['/sims-4-alpha-hair-lookbook/', '/sims-4-cc-furniture/', '/sims-4-custom-scenarios/', '/sims-4-lovestruck-cc/', '/sims-4-male-shorts-cc/', '/sims-4-punk-rock-lookbook/', '/sims-4-ranch-cc/', '/sims-4-urban-furniture-cc/', '/the-sims-4-very-veggie-challenge/', '/the-sims-4-vs-inzoi/'].map((pagePath) => ({ date: '20261029', pagePath, eventCount: 1 })),
+  { date: '20261030', pagePath: '/sims-4-parenting-mods/', eventCount: 2 },
+  { date: '20261030', pagePath: '/', eventCount: 1 },
+  ...['/sims-4-alpha-hair-lookbook/', '/sims-4-career-mods/', '/sims-4-cc-furniture/', '/sims-4-eyes-cc/', '/sims-4-halloween-mods/', '/sims-4-holiday-mods/', '/sims-4-overrides/', '/sims-4-parenthood/', '/sims-4-princess-cc/'].map((pagePath) => ({ date: '20261030', pagePath, eventCount: 1 })),
+];
+
+describe('E306 · classifyAffiliateSurface — the grid is only `/` and `/games/*`', () => {
+  it('home, the game hub and every collection page are grid; a WordPress post is the block', () => {
+    expect(classifyAffiliateSurface('/')).toBe('grid');
+    expect(classifyAffiliateSurface('/games/sims-4/')).toBe('grid');
+    expect(classifyAffiliateSurface('/games/sims-4/wedding-cc/')).toBe('grid');
+    expect(classifyAffiliateSurface('/?utm_source=pinterest')).toBe('grid');
+    expect(classifyAffiliateSurface('/sims-4-cc-furniture/')).toBe('blog_pack_block');
+    expect(classifyAffiliateSurface('/the-sims-4-vs-inzoi/')).toBe('blog_pack_block');
+    // a post whose slug merely starts with "games" is not the hub
+    expect(classifyAffiliateSurface('/gameshow-sims-4-mods/')).toBe('blog_pack_block');
+  });
+});
+
+describe('E306 · summarizeGa4AffiliateClicks — two surfaces, two paces', () => {
+  it('reproduces the 10-31 read: grid 9, block 44 on 36 paths over 4 live days = 11/day, and the scoreboard 41 on 10-23→10-29', () => {
+    const leg = summarizeGa4AffiliateClicks(GA4_ROWS, '2026-10-24', '2026-10-30');
+    expect(leg.grid).toBe(9);
+    expect(leg.blogPackBlock).toBe(44);
+    expect(leg.blockLiveDays).toBe(4);
+    expect(leg.blockPerDay).toBe(11);
+    expect(leg.blockByDay).toEqual({ '2026-10-27': 14, '2026-10-28': 5, '2026-10-29': 14, '2026-10-30': 11 });
+    // 40 path-days, three paths repeat across days (cc-furniture ×3, ranch-cc ×2, alpha-hair ×2) → 36 distinct
+    expect(leg.blockPaths).toBe(36);
+    const scoreboard = summarizeGa4AffiliateClicks(GA4_ROWS, '2026-10-23', '2026-10-29');
+    expect(scoreboard.grid + scoreboard.blogPackBlock).toBe(41);
+  });
+
+  it('a window that ends before the block was live prints no block pace (null, not 0/day)', () => {
+    const leg = summarizeGa4AffiliateClicks(GA4_ROWS, '2026-10-24', '2026-10-26');
+    expect(leg.grid).toBe(4);
+    expect(leg.blogPackBlock).toBe(0);
+    expect(leg.blockLiveDays).toBe(0);
+    expect(leg.blockPerDay).toBeNull();
+    expect(ga4LegLines(leg)[1]).toMatch(/not live in this window/);
+  });
+
+  it('accepts ISO dates too and drops rows outside the window', () => {
+    const leg = summarizeGa4AffiliateClicks(
+      [{ date: '2026-10-29', pagePath: '/sims-4-x/', eventCount: 3 }, { date: '2026-11-05', pagePath: '/sims-4-y/', eventCount: 9 }],
+      '2026-10-27',
+      '2026-10-30',
+    );
+    expect(leg.blogPackBlock).toBe(3);
+  });
+});
+
+describe('E306 · the kill read prints Impact and the Amazon block as two lines; GA4 unavailable never writes a number', () => {
+  it('assessPipe carries the leg without touching the verdict', () => {
+    const withLeg = assessPipe(input({ ga4Rows: GA4_ROWS, windowStart: '2026-10-24', windowEnd: '2026-10-30' }));
+    const without = assessPipe(input({ ga4Rows: null, ga4Error: 'GA4 could-not-run: no service-account credentials', windowStart: '2026-10-24', windowEnd: '2026-10-30' }));
+    expect(withLeg.status).toBe(without.status);
+    expect(withLeg.reason).toBe(without.reason);
+    expect(withLeg.ga4Leg?.blogPackBlock).toBe(44);
+    expect(without.ga4Leg).toBeNull();
+    expect(without.ga4Error).toBe('GA4 could-not-run: no service-account credentials');
+  });
+
+  it('the report has a GA4 section with one grid line and one block line, after the Impact legs', () => {
+    const md = renderPipeReadMd(assessPipe(input({ ga4Rows: GA4_ROWS, windowStart: '2026-10-24', windowEnd: '2026-10-30' })));
+    const ga4At = md.indexOf('## GA4 `affiliate_click` by surface (E306');
+    expect(ga4At).toBeGreaterThan(md.indexOf('| Impact actions'));
+    expect(md).toContain('grid (`/` + `/games/*`, Impact-tracked partners): 9 click(s)');
+    expect(md).toContain('blog Amazon pack block (#391, every other path): 44 click(s) on 36 post path(s) over 4 live day(s) = 11/day');
+    expect(md).toContain('| 2026-10-29 | 14 |');
+    // no dollar is ever printed for the block
+    const blockLine = md.split('\n').find((l) => l.includes('blog Amazon pack block'))!;
+    expect(blockLine).not.toMatch(/\$\d/);
+  });
+
+  it('GA4 unavailable → one line with the reason and no digits that look like a reading', () => {
+    const lines = ga4LegLines(null, 'GA4 could-not-run: no service-account credentials');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^- GA4 `affiliate_click` by surface: unavailable — GA4 could-not-run: no service-account credentials$/);
+    // "GA4" is the product name, not a reading; nothing else on the line may be a digit
+    expect(lines[0].replace(/GA4/g, 'GA')).not.toMatch(/\d/);
+    const md = renderPipeReadMd(assessPipe(input({ ga4Rows: null, ga4Error: 'GA4 could-not-run: timeout' })));
+    expect(md).toContain('by surface: unavailable — GA4 could-not-run: timeout');
+    expect(md).not.toContain('| Day | Block clicks |');
+  });
+
+  it('the status rules never read the GA4 leg (source guard, comments stripped)', () => {
+    const lib = stripComments(read('scripts/agents/affiliate-pipe-lib.ts'));
+    const assess = lib.slice(lib.indexOf('export function assessPipe'), lib.indexOf('const pct ='));
+    const statusDecisions = assess.split('\n').filter((l) => /status: '/.test(l) || /^\s*if \(/.test(l));
+    expect(statusDecisions.length).toBeGreaterThan(3);
+    for (const l of statusDecisions) expect(l).not.toMatch(/ga4/i);
+  });
+
+  it('the entrypoint bounds the GA4 report, passes both GA4 fields, and the constants are frozen', () => {
+    const src = stripComments(read('scripts/agents/affiliate-pipe-read.ts'));
+    expect(src).toMatch(/\{ timeout: GA4_REPORT_TIMEOUT_MS \}/);
+    expect(src).toMatch(/ga4Rows:\s*ga4\.rows/);
+    expect(src).toMatch(/ga4Error:\s*ga4\.error/);
+    expect(src).toMatch(/value: GA4_LEG\.event/);
+    expect(GA4_LEG.event).toBe('affiliate_click');
+    expect(GA4_LEG.blockLiveFrom).toBe('2026-10-27');
+    expect(GA4_LEG.blockMinPerDay).toBe(5);
   });
 });
 

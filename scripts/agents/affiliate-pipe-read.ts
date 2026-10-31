@@ -18,7 +18,8 @@
  * Error strings go through `redactError()` before they are printed or
  * written. Credentials are read from env and never printed.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
 // Load `.env.local` (real DB + Impact credentials), overriding the bare `.env`
@@ -34,9 +35,11 @@ if (process.env.DIRECT_DATABASE_URL && /^prisma(\+postgres)?:\/\//.test(process.
 import { redactError } from './operator-did-probe-lib';
 import {
   assessPipe,
+  GA4_LEG,
   parseImpactProgramRows,
   PIPE_RULE,
   renderPipeReadMd,
+  type Ga4AffiliateRow,
   type ImpactProgramRow,
   type PipeRead,
 } from './affiliate-pipe-lib';
@@ -44,6 +47,8 @@ import {
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? resolve(__dirname, '..', '..');
 const IMPACT_API_BASE = 'https://api.impact.com';
 export const IMPACT_TIMEOUT_MS = 30_000;
+const GA4_PROPERTY = process.env.GA4_PROPERTY_ID ?? '437117335';
+const GA4_REPORT_TIMEOUT_MS = 30_000;
 
 function iso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -112,6 +117,49 @@ async function pullImpact(start: string, end: string): Promise<{ rows: ImpactPro
   }
 }
 
+// E306 — GA4 `affiliate_click` by date × pagePath for the window, so the Impact leg and the blog Amazon
+// block print as two lines. Same credential resolution as revenue-guardrail.ts / direct-bot-read.ts (a
+// shared helper is an Ops item, SD-11). Bounded (30 s), read-only; any failure returns a redacted reason
+// and the lib prints "unavailable" — it never changes the pipe verdict.
+function googleCredentialsPath(): string | undefined {
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) return process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  try {
+    const cfg = JSON.parse(readFileSync(join(homedir(), '.claude.json'), 'utf8'));
+    return cfg?.mcpServers?.['google-analytics']?.env?.GOOGLE_APPLICATION_CREDENTIALS ?? cfg?.mcpServers?.gsc?.env?.GOOGLE_APPLICATION_CREDENTIALS;
+  } catch { return undefined; }
+}
+
+async function pullGa4AffiliateClicks(start: string, end: string): Promise<{ rows: Ga4AffiliateRow[] | null; error?: string }> {
+  try {
+    const keyFilename = googleCredentialsPath();
+    if (!keyFilename) return { rows: null, error: 'GA4 could-not-run: no service-account credentials' };
+    const { BetaAnalyticsDataClient } = await import('@google-analytics/data');
+    const client = new BetaAnalyticsDataClient({ keyFilename });
+    const [res] = await client.runReport(
+      {
+        property: `properties/${GA4_PROPERTY}`,
+        dateRanges: [{ startDate: start, endDate: end }],
+        dimensions: [{ name: 'date' }, { name: 'pagePath' }],
+        metrics: [{ name: 'eventCount' }],
+        dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: GA4_LEG.event } } },
+        limit: 5000,
+      },
+      { timeout: GA4_REPORT_TIMEOUT_MS },
+    );
+    const rows: Ga4AffiliateRow[] = [];
+    for (const row of res.rows ?? []) {
+      rows.push({
+        date: row.dimensionValues?.[0]?.value ?? '',
+        pagePath: row.dimensionValues?.[1]?.value ?? '',
+        eventCount: Number(row.metricValues?.[0]?.value ?? 0),
+      });
+    }
+    return { rows };
+  } catch (e) {
+    return { rows: null, error: `GA4 could-not-run: ${redactError(String((e as Error)?.message ?? e)).replace(/[A-Za-z0-9_-]{40,}/g, '[redacted]').slice(0, 120)}` };
+  }
+}
+
 async function main(): Promise<number> {
   const start = arg('start') ?? PIPE_RULE.windowStart;
   const end = arg('end') ?? daysAgo(1);
@@ -130,6 +178,7 @@ async function main(): Promise<number> {
     return 2;
   }
   const impact = await pullImpact(start, end);
+  const ga4 = await pullGa4AffiliateClicks(start, end);
 
   const read: PipeRead = assessPipe({
     windowStart: start,
@@ -141,6 +190,8 @@ async function main(): Promise<number> {
     onSitePerDay: onSite.perDay,
     now: new Date(),
     confirmedOn: PIPE_RULE.confirmedOn,
+    ga4Rows: ga4.rows,
+    ga4Error: ga4.error,
   });
   const md = renderPipeReadMd(read);
   mkdirSync(dirname(outPath), { recursive: true });
@@ -150,7 +201,7 @@ async function main(): Promise<number> {
     writeFileSync(jsonPath, redactError(JSON.stringify(read, null, 2)) + '\n');
   }
   say(
-    `${read.status === 'unknown' ? 'UNKNOWN' : 'OK'} ${start}→${end} on_site_${PIPE_RULE.partner}=${read.onSitePartner} (repaired ${read.onSiteRepaired}, all partners ${read.onSiteTotal}) impact_clicks=${read.recorded ?? 'unknown'} impact_actions=${read.actions ?? 'unknown'} share=${read.recordedShare == null ? 'n/a' : (read.recordedShare * 100).toFixed(1) + '%'} status=${read.status}${read.killClockStartsOn ? ` kill_clock_starts=${read.killClockStartsOn} kill_read=${read.killReadOn}` : ''} out=${outPath}`,
+    `${read.status === 'unknown' ? 'UNKNOWN' : 'OK'} ${start}→${end} on_site_${PIPE_RULE.partner}=${read.onSitePartner} (repaired ${read.onSiteRepaired}, all partners ${read.onSiteTotal}) impact_clicks=${read.recorded ?? 'unknown'} impact_actions=${read.actions ?? 'unknown'} share=${read.recordedShare == null ? 'n/a' : (read.recordedShare * 100).toFixed(1) + '%'} status=${read.status}${read.killClockStartsOn ? ` kill_clock_starts=${read.killClockStartsOn} kill_read=${read.killReadOn}` : ''} ga4_grid=${read.ga4Leg ? read.ga4Leg.grid : 'unavailable'} ga4_blog_block=${read.ga4Leg ? `${read.ga4Leg.blogPackBlock} (${read.ga4Leg.blockPerDay ?? 'n/a'}/day)` : 'unavailable'} out=${outPath}`,
   );
   return 0;
 }
