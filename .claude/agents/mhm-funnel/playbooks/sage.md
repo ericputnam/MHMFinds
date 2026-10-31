@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-31 — E303 template-lastmod git guard + IndexNow for the 14 E293 pages (#422) · E302 hub→creator links (#423), both Tier 0
+- Tried: E303 — `TEMPLATE_LASTMOD_SOURCES` + a test that asks `git log -1 -- <paths>` for each pinned constant; red pre-fix on 2 of 3 (COLLECTION 07-03 vs template 10-30, APP 09-08 vs 10-27), CREATOR passed. Bumped both; IndexNow `--creator-slugs` live push for the 14 creator pages E293 created five minutes after the E299 push: http=200, 14/14, dropped=0. E302 — hubs had 0 links to creator pages; 175/561 creator pages got a Google landing in 28d and 5/5 new E293 pages were unknown to Google. Block "Creators in this collection" (6 links, ≥2 mods in hub, folded by creator key, joined to listHubCreators): 35/35 hubs, 208 links, 112 distinct creators.
+- Before → after: /creator/* google+AI landings 7d 151 (80+71, 10-23→10-29) → read 2026-11-14 (keep ≥166 with /games/* ≥372 of 392); collection last-crawl hair-cc 10-26 / poses 10-30 / cc hub 10-21 → read 11-14.
+- Verdict: MORE DATA (E303 read 11-14; E302 read 11-14, secondary 11-28).
+- Next time: a test fixture that restates a constant's value (2026-09-10 for the collection template) is the drift the guard exists for — derive fixtures from the imported constant; and experiments.md sits 400 bytes under its 24,000 budget, so rows go to Quinn, not into a Sage PR.
+
 ## 2026-10-30 — E292 creator→hub links (#408) · E299 creators sitemap lastmod (#412), both Tier 0
 - Tried: ~527 creator pages (4,072 impr / 103 clk, 28d) carried zero links to the hubs at pos 20–37; URL Inspection showed the hubs' only referrers were other hubs and /creator/orchiona/ last crawled 09-24. Then found the creators sitemap still said January on 169/554 entries after E267 rewrote every creator meta — only 28/554 had lastmod ≥ 10-27. Applied the E37 laterOf(template, newest) rule; IndexNow pushed 717 URLs (554 creators) http=200.
 - Before → after: /games/sims-4/* 277 clk / 7,095 impr; /creator/* 103 / 4,072 (09-30→10-27); sitemap 28/554 fresh → 554/554 at 2026-10-30 (curl 11:41Z).

@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-31 — E304 ownership-gated submission approval (#421 5c69ff09, T0 code; apply T1 11-01)
+- Tried: scripted, ownership-gated approval for the 7 Atino00 submissions (27 d old). CurseForge API (`/v1/mods/search?gameId=78062&slug=`) answers author per project; 7/7 match the account. Shared the Mod builder with the admin route and found the route never wrote `contentType`.
+- Before → after: 7 pending / 1 onboarded-with-approval → unchanged today (code only; apply is T1 11-01). Red pre-fix: 3/31 cases fail on origin/main's route+lib.
+- Verdict: PENDING. Inherited branches `funnel/nova/e172-submissions-triage` and `funnel/nova/triage-creator-hosting-second-game` are superseded by #258/#289 — nothing to land, both can be deleted.
+- Next time: "verified email" is not evidence for credentials accounts (auto-stamp). Gate on the source platform's author field; never on the account. Tumblr/Patreon submissions have no API check yet — they come out `source-unchecked` and stay skipped until a second lookup exists.
+
 ## 2026-10-30 — E293 one creator, one page (#409 854d67e, T0)
 - Tried: the creator key drops all separators, the canonical URL is the dash-slug with the most mods, and other spellings 308 there (badge URLs too).
 - Before → after: 554 → 561 indexable creator URLs; 7 duplicate-page pairs → 0; 151 mods folded into existing pages; badge usage since #372 = 0 events (Q38 outreach ask).

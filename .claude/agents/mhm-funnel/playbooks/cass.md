@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-31 — E305 connect opt-in copy A/B (T1, #414)
+- Tried: split new accounts by sign-in provider before choosing a surface. Patreon sign-in made 52 of 102 accounts 10-24→10-30 and 1 of the 52 is subscribed; password sign-ups 21 of 50. The checkbox converts 46%; the /go box converts 3/77. Both arms drop "once a week".
+- Before → after: 3/77 → read 11-15.
+- Verdict: PENDING.
+- Next time: split new accounts by provider before picking a surface — half of them never saw the offer that converts.
+
 ## 2026-10-30 — E294 Patreon members post draft (#405, paper)
 - Tried: a monthly "what's new" post to all 6,352 free + 57 paid members, four traffic pages + sign-up, `utm_campaign=patreon-post-2026-11`; posting is Tier 2 (Q36). Rejected a "your favorites got updates" email after a counts-only query: 64 sendable subscribers with favorites, 54 with ≥3 new mods — ≈4 sessions at issue-07's 5–6 per 100 sent.
 - Before → after: Patreon brings ≈199 untagged sessions/week with no post (GA4 W32–W43, range 138–256); the member list is ≈23× the sendable email list (6,352 vs 279, 159 sendable). Newsletter-07 tail is finished (run 2: 60 of 62 sent 10-25); issue 08 ≈11-06 is Tier 1.
