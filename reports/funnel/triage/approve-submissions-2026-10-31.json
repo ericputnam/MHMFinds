@@ -1,0 +1,192 @@
+{
+  "experiment": "E304",
+  "written": "2026-10-31",
+  "change": "approve pending ModSubmission → create Mod (+contentType) + E183 pending CreatorProfile; only source-verified rows",
+  "gameId": 78062,
+  "rows": [
+    {
+      "submissionId": "cmus9uhjzfcbk3nf48hbrbede",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Vintage decor set",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "vintage-decor-set",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1712665,
+        "sourceDownloads": 819,
+        "sourceCreated": "2026-09-27",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmus9yh4wfccn3nf4b2dc64sj",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Elegant Dark Hair Victorian Lady Portraits",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "elegant-dark-hair-victorian-lady-portraits",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1706673,
+        "sourceDownloads": 892,
+        "sourceCreated": "2026-09-22",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmusa21whfcdz3nf4zrdbumlm",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Angel sculpture, statue collection.",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "angel-sculpture-statue-collection",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1707873,
+        "sourceDownloads": 1338,
+        "sourceCreated": "2026-09-23",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmusa4yypfcf73nf478xwohl2",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Cute & kawaii cat and bunny doll",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "cute-kawaii-cat-and-bunny-doll",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1701064,
+        "sourceDownloads": 679,
+        "sourceCreated": "2026-09-19",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmusa73z8fcg73nf4ra0ffp9w",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Cute & Kawaii Doll Collection",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "cute-kawaii-doll-collection",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1698267,
+        "sourceDownloads": 1379,
+        "sourceCreated": "2026-09-16",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmusac86cfcic3nf4t1bo835g",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Cute & kawaii doll wallpaper",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "cute-kawaii-doll-wallpaper",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1702477,
+        "sourceDownloads": 262,
+        "sourceCreated": "2026-09-19",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmusahftdfckg3nf4dmbqbh8k",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "create",
+        "handle": "pending-atino00-u56dphnz"
+      },
+      "modName": "Elegant boho floor big collections",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "elegant-boho-floor",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1541069,
+        "sourceDownloads": 13215,
+        "sourceCreated": "2026-05-12",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    }
+  ],
+  "skipped": [],
+  "applied": []
+}

@@ -40,6 +40,7 @@ vi.mock('@/lib/middleware/auth', () => ({ requireAdmin: (...a: unknown[]) => req
 
 import { POST } from '@/app/api/admin/submissions/[id]/approve/route';
 import { approvalSlug, planApprovalProfile } from '@/lib/submissionApprovalProfile';
+import { resolveIngestContentType } from '@/lib/services/contentTypeDetector';
 import { isPendingHandle } from '@/lib/creatorClaim';
 import { planPromotion, promotionData, slugFromPendingHandle } from '@/lib/creatorClaimReview';
 
@@ -198,6 +199,15 @@ describe('POST /api/admin/submissions/[id]/approve', () => {
     expect((db.modCreate.mock.calls[0][0] as { data: { creatorId?: string } }).data.creatorId).toBe('p-new');
     const body = await res.json();
     expect(body.createdCreatorProfileHandle).toBe(arg.data.handle);
+  });
+
+  it('E304: a new mod gets its contentType through the ingest resolver, like every other ingest path', async () => {
+    db.submissionFindUnique.mockResolvedValue(submission({ modName: 'Cute & kawaii doll wallpaper' }));
+    await call();
+    const data = (db.modCreate.mock.calls[0][0] as { data: { contentType?: string | null; downloadUrl: string } }).data;
+    expect(data.contentType).toBe(resolveIngestContentType('Cute & kawaii doll wallpaper', 'd', null));
+    expect(typeof data.contentType).toBe('string');
+    expect(data.downloadUrl).toBe('https://example.com/d');
   });
 
   it('reuses an existing profile without creating one', async () => {

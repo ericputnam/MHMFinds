@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/middleware/auth';
-import { planApprovalProfile } from '@/lib/submissionApprovalProfile';
+import { newModDataFromSubmission, planApprovalProfile } from '@/lib/submissionApprovalProfile';
 import { rehostModImages } from '@/lib/services/imageUploader';
 
 export const dynamic = 'force-dynamic';
@@ -115,26 +115,8 @@ export async function POST(
         },
       });
     } else {
-      // CREATE new mod
-      const modData: any = {
-        title: submission.modName,
-        description: submission.description,
-        shortDescription: submission.shortDescription,
-        version: submission.version,
-        gameVersion: submission.gameVersion,
-        category: submission.category,
-        tags: submission.tags.length > 0 ? submission.tags : [submission.category],
-        thumbnail,
-        images,
-        downloadUrl: submission.downloadUrl || submission.modUrl,
-        sourceUrl: submission.sourceUrl || submission.modUrl,
-        source: submission.source || 'User Submission',
-        author: submission.author,
-        isFree: submission.isFree,
-        price: submission.price,
-        currency: submission.currency,
-        isNSFW: submission.isNSFW,
-      };
+      // CREATE new mod — same builder as scripts/agents/approve-submissions.ts (E304).
+      const modData: any = newModDataFromSubmission(submission, { thumbnail, images });
 
       // E183: link to the submitter's CreatorProfile, creating a pending
       // (unverified) one when they have none — see lib/submissionApprovalProfile.ts.
