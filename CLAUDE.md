@@ -925,50 +925,55 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-26 — rotated to the archive
+### 2026-10-15 → 10-29 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30.
 
-### 2026-10-29 (covers merges #372–#396, 10-26 → 10-28)
+### 2026-10-30 (covers merges #375, #381, #392, #394, #397–#413, 10-29 → 10-30)
 
-Subsystem entries for the same window (image optimizer, launcher pages, grid-heart capture, host
-sleep) are in the archive under "2026-10-29 — subsystem entries".
+Subsystem entries (opt-in frequency cap, wedding/gallery-pose themes) are in the archive under
+"2026-10-30 — subsystem entries".
 
-- **A test that is red on `main` is a broken gate, not background noise.** `ModDetailPage.test.tsx`
-  failed on every run for weeks: it predated #178, which made the heart wait for a real
-  `POST /api/mods/[id]/favorite`, and the global `fetch` stub returns `undefined`. #387 shipped
-  with "1 failed, identical on `origin/main`, unrelated" in its body. #386 then fixed the test by
-  mocking the real API flow. When a change alters what a component does, update its test in the same
-  PR. When you see a failure that is already on `main`, fix it or file it that day. Do not let it
-  ride along.
-- **Order consent events by a clock the sender cannot set.** Mailbox unsubscribes (#387) now take
-  their time from the server's `INTERNALDATE`, capped at the time of the read. They never fall back
-  to the `Date` header or to `now()`, because either one could beat a later re-confirmation. If a
-  message has no INTERNALDATE, the scan is could-not-run (exit 2), which blocks a live send. A
-  mailto request suppresses only its `From` sender. If it names any other address, that address is
-  counted as `named_ignored`, so one email cannot unsubscribe somebody else. Check the data before
-  you require a signal: 0 of 37 messages carried SPF/auth headers, so requiring them would have
-  dropped every real request.
-- **Copy that crawlers read must not depend on a client fetch.** The homepage served three catalogue
-  counts: 17,000+ in `<title>`/JSON-LD, 15,000+ in the SSR hero (what crawlers saw) and 16,000+
-  after hydration. #389 made `lib/seo/catalogCount.ts` the only source and added a scanner that
-  rejects any other `NN,000+` literal (comments stripped, vacuity guard >200 files). When a page
-  states a number, put it in one constant and render it on the server.
-- **A generated file needs a test against the registry it was generated from.**
-  `lib/collectionCovers.ts` was generated before `gshade-presets` (E272) joined the registry, so
-  the new collection had no cover and nothing failed. #390's test requires ≥1 https cover for every
-  registry slug and no stale keys. #395's test requires every cover host to be in the real
-  `next.config.js` `remotePatterns`.
-- **Verify each merge before the next merge lands.** The 10-26 interactive merges all have ledger
-  rows, so the rule from that day held. However, #386's verify ran after #389 had merged, and its
-  row grades `83b6a2d` instead of its own `fccaba8`. The rows are also out of time order. Run
-  `merge-gate.sh && gh pr merge … && deploy-verify.sh --after-merge --sha <own mergeCommit>` as one
-  chain per PR.
+- **Key a lock on the thing that contends, not on a proxy for it.** The day-lock
+  `funnel-run-$TODAY.lock` could not see the 10-29 catch-up runner, which was still merging at
+  07:08 when the 10-30 runner started. Only `merge-gate.sh` kept their merges apart. #406 adds a
+  global `logs/funnel-run.lock` (atomic `mkdir`, holder pid + day). A holder is live only if its pid
+  answers (EPERM counts as alive) *and* its command line mentions `funnel`, so a reused pid cannot
+  hold the lock. A run that times out waiting lands a DEFERRED row and exits 75: a deferred run is
+  still a row.
+- **Grade a timeout on awake time, not wall time.** Two of the four MISSED mornings 10-22→10-29
+  were preflights killed at ~1,000 s wall with 3–15 s awake; a healthy one answers in 4–6 s awake.
+  The 10-29 entry said "the runner is fine". It was not: it graded the host's sleep as a hang. #404
+  retries once after wake with a bounded network wait, and never retries an awake hang. The 10-26
+  MISSED (killed from outside before the preflight; the EXIT trap ran with no cause logged) got its
+  row only from a retro four days later. A trap that records no cause leaves a miss that only a
+  human can explain.
+- **"Red on `main`" recurred the day after the rule.** #403 added `wedding-cc` and ran 18 test files
+  picked by name. It missed `canonical-trailing-slash.test.ts`, which also imports
+  `SIMS4_COLLECTIONS`, so `main` was red until #411. #409 then shipped citing it as "identical on
+  `origin/main`" — the phrase the 10-29 rule bans. A registry change runs the full
+  `npx vitest run`, or at minimum every test that imports the registry
+  (`grep -rl lib/collections __tests__`), never a name glob.
+- **One entity, one URL: canonicalize the key before you slug it.** "Sixam CC" and "SixamCC" had two
+  indexed creator pages competing for one query (108 split groups, 7 double-indexed, 14 that clear
+  the 5-mod gate only once folded). #409 groups on a separator-free key and 308s the other spellings
+  to the dash-slug with the most mods. A slug that holds a `CreatorProfile` is never redirected.
+  The SQL tie-break is `COLLATE "C"` so that Postgres and the JS compare pick the same canonical.
+ 
+- **A sitemap `<lastmod>` must move when the template changes, not only when the data does.** After
+  every creator page was rewritten (E267, E292), 169 of 554 creator entries still said January 2026,
+  and the top creator page had last been crawled on 09-24. #412 emits the later of a pinned
+  `CREATOR_TEMPLATE_LASTMOD` (a literal, never the clock; bump it with the template) and the newest
+  mod. `next build` rejects any non-route export from a `route.ts`, so helpers like this live in `lib/`.
+- **Same-day class leak:** #399 nonced the per-user `/api/creator/submissions` fetch in
+  `app/creators/page.tsx` and queued the identical un-nonced call in
+  `components/admin/CreatorDashboard.tsx:52`. It is still on `main`. Fix the sibling in the
+  same PR. Better: a scanner for un-nonced per-user GETs.
 
 ---
 
-*Last compound review: 2026-10-29*
+*Last compound review: 2026-10-30*
 
 ---
 

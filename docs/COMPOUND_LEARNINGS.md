@@ -2586,6 +2586,42 @@ The 10-07 section is in the archive.
   not happen" applies to operator sessions as well: run `deploy-verify.sh --after-merge --sha
   <mergeCommit>` after every merge, not only after funnel merges.
 
+### 2026-10-29 — rotated from CLAUDE.md
+
+Subsystem entries for the same window (image optimizer, launcher pages, grid-heart capture, host
+sleep) are in the archive under "2026-10-29 — subsystem entries".
+
+- **A test that is red on `main` is a broken gate, not background noise.** `ModDetailPage.test.tsx`
+  failed on every run for weeks: it predated #178, which made the heart wait for a real
+  `POST /api/mods/[id]/favorite`, and the global `fetch` stub returns `undefined`. #387 shipped
+  with "1 failed, identical on `origin/main`, unrelated" in its body. #386 then fixed the test by
+  mocking the real API flow. When a change alters what a component does, update its test in the same
+  PR. When you see a failure that is already on `main`, fix it or file it that day. Do not let it
+  ride along.
+- **Order consent events by a clock the sender cannot set.** Mailbox unsubscribes (#387) now take
+  their time from the server's `INTERNALDATE`, capped at the time of the read. They never fall back
+  to the `Date` header or to `now()`, because either one could beat a later re-confirmation. If a
+  message has no INTERNALDATE, the scan is could-not-run (exit 2), which blocks a live send. A
+  mailto request suppresses only its `From` sender. If it names any other address, that address is
+  counted as `named_ignored`, so one email cannot unsubscribe somebody else. Check the data before
+  you require a signal: 0 of 37 messages carried SPF/auth headers, so requiring them would have
+  dropped every real request.
+- **Copy that crawlers read must not depend on a client fetch.** The homepage served three catalogue
+  counts: 17,000+ in `<title>`/JSON-LD, 15,000+ in the SSR hero (what crawlers saw) and 16,000+
+  after hydration. #389 made `lib/seo/catalogCount.ts` the only source and added a scanner that
+  rejects any other `NN,000+` literal (comments stripped, vacuity guard >200 files). When a page
+  states a number, put it in one constant and render it on the server.
+- **A generated file needs a test against the registry it was generated from.**
+  `lib/collectionCovers.ts` was generated before `gshade-presets` (E272) joined the registry, so
+  the new collection had no cover and nothing failed. #390's test requires ≥1 https cover for every
+  registry slug and no stale keys. #395's test requires every cover host to be in the real
+  `next.config.js` `remotePatterns`.
+- **Verify each merge before the next merge lands.** The 10-26 interactive merges all have ledger
+  rows, so the rule from that day held. However, #386's verify ran after #389 had merged, and its
+  row grades `83b6a2d` instead of its own `fccaba8`. The rows are also out of time order. Run
+  `merge-gate.sh && gh pr merge … && deploy-verify.sh --after-merge --sha <own mergeCommit>` as one
+  chain per PR.
+
 ### 2026-10-29 — subsystem entries (written directly to the archive)
 
 - **`unoptimized` on a small image ships the original file.** The 22 px collection pill thumbs
@@ -2609,6 +2645,17 @@ The 10-07 section is in the archive.
   (#366). The fix is on the host's side: keep it awake through the schedule. The runner is fine.
   Morning checks on 10-27 and 10-29 read INCONCLUSIVE (network) and did not roll back, so the
   network control (#186) and E273 are working.
+
+### 2026-10-30 — subsystem entries (written directly to the archive)
+
+- **A frequency cap must count the unanswered impression.** E198's mod-page opt-in remembered only a
+  click, so a visitor who scrolled past was asked again on every page: 24.1 views per user and 1
+  sign-up in 14 days, a KILL by its own rule. #400 counts views in `localStorage` and stops at 3. It
+  reads the count after mount, so first paint is unchanged.
+- New title-only themes `wedding` (#403, 118 rows, 24/24 spot-check) and `gallery-pose` (#411, 88
+  rows) followed the room-theme pattern, with their rejections and counts in the rule header
+  (`veil` 15, bare `gallery` 58 → lots, bare `cas` 207 → CAS backgrounds/UI). A collection's
+  `blogUrl` must be a live 200, never a redirected legacy path.
 
 ## Recent UI/UX Enhancements
 
