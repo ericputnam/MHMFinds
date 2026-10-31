@@ -21,6 +21,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-31 — E307 christmas-cc (title-only theme, 262 cards)
+- Tried: 7th theme moved to title-only (`lib/christmasThemeRules.ts`), page `/games/sims-4/christmas-cc/`, PR #419 49cdb66 PASS.
+- Before → after: `christmas` 312 rows / 59.6% title-supported ("Beard N3", "FSP Family Portrait" at cards #3–#4) → 262 / 100%; 18 Christmas queries (≈43 impr, 0 clicks) landing on no browse page → a 262-card page, top 24 by downloads hand-read 24/24.
+- Verdict: MORE DATA — read 11-14 / 11-28.
+- Next time: the first dry run's STRIP list is where the missing word hides — "Christmassy Fireplace" was in it, which is how `christmas(?:sy)?` got into the pattern. A theme that already sits in `FACET_VALUES.themes` needs the halloween wiring (drop the keyword map, filter the AI-only tag at the merge), not the wedding "not in FACET_VALUES" guard. Rejections worth remembering: `elf` (Elf Bar Vape, 1,089 dl), `stocking` (hosiery, 0/24), `holly` (a name), `advent` (creator countdowns), bare `holiday` (holidays-cc territory).
+
 ## 2026-10-30 (scheduled run) — E296 `/games/sims-4/gallery-poses/` (#411 908a2b1, T0)
 - Tried: a title-only `gallery-pose` theme (88 rows, dry run add 88 / strip 0 / no-op 3; rejections recorded: bare `gallery` 58 → a lot, bare `cas` 207 → UI mods); poses + body-presets link in; wedding-cc metaTitle gained "Browse" because `canonical-trailing-slash.test.ts` was red on main after #403.
 - Before → after: "gallery pose" family 12 clk / 227 impr at pos 6–9, 100% landing on the 902-row poses page → 88-card exact page live 11:37Z; read 11-13 / 11-27 at ≥12 clk with ≥50% landing on the new page, poses ≥33.

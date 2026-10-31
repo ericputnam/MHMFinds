@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-31 — E306 October closes $144 (MISSED); pipe read prints Impact and Amazon as two lines (#416); E271 KEEP
+- Tried: `affiliate-pipe-read.ts` GA4 leg (T0, #416 5b6f1b4c) — `affiliate_click` by date × pagePath, grid = `/` + `/games/*`, else blog block; status rules never read it (test). Verdict file (#420 paper) + 28d decomposition anchor 10-29 from `client.ts` + GA4.
+- Before → after: pipe read one Impact sum → two lines: Impact 20 clicks / 0 actions $0 (confirmed, kill read 11-11) · grid 31 over 32 d (0.97/day) · block 44 on 36 posts over 4 live days (11/day). 28d −3.75% = sessions +0.64% × RPM −4.36%; W1 −$254.58 = 111% of the gap, W4 (34 deploys) +$75.28 / RPM +9.5%; 10-29 rate day (ex-seg RPM +10.4% on top of +7.0% mix). Non-ad $144/mo vs $450 line and my $160–170 band → MISSED both (−1 $3 patron). E271 first print matched the hand read → KEEP.
+- Verdict: E271 KEEP; E306 MORE DATA (read 11-11); Nov proposal $250/mo = $148 hold + Q37-A +$96 at 0.5% free→$3 (announce on Patreon, never on `/go` — E40), else $155.
+- Next time: `timeout` is not on this shell's PATH — `deploy-verify` silently did not run on the first call (exit 127); use `gtimeout`/`perl -e 'alarm'` and check the log before claiming a verify. A "no digits" guard must exempt the product name (`GA4`).
+
 ## 2026-10-30 — E295 28d −5.18% decomposed; #391 Amazon block first read (#407, paper)
 - Tried: 28d 10-01→10-28 $5,807.98 vs $6,125.49 = sessions +0.56% × RPM −5.71%; by week W1 −$276.05 = 86.9% of the gap (quarter CPM trough), W2/W3 Singapore mix (2.6% → 5.3% of sessions), W4 — the week with 49 deploys — RPM +4.4% raw / +2.0% ex-segment; 7d +4.1%; no deploy implicated; W1 rolls off by anchor 11-04. Mediavine MCP unavailable; `client.ts` earnings + GA4.
 - Before → after: the operator's blog Amazon block (#391) took 31 `affiliate_click` in 3 days (10-27 13 / 10-28 5 / 10-29 13) vs the grid's 7 in 5 — a surface on 20+ posts beats a surface on 2 pages 10:1 on clicks; earnings operator-only.
@@ -42,24 +48,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 10-19 Mon $161.82 vs $187.26 (86.4%); segment 11.38% vs 4.61% predicts −7.1% RPM, printed −17.5%; ex-seg RPM $13.55 vs $15.94 (−15.0%); MV mon-RPM −8.1%, CPM −3.8% with imp/mon-pv −2.9%; 10/10 partners down vs 10-12, both desktop units down; touched surfaces (/go, /creator, /games) earn 0% of the top-100 (posts 96.9% + home 3.1%); 10-20 partial $179.30, CPM $0.975. 28d 98.75% / 102.56% (run 19). Tracker: 10-21 gap 4.7 pt → HOLD; 10-24 WIRE unreachable (earliest 10-28).
 - Verdict: Mediavine-side demand, no rollback; E248 KEEP (28d leg); E255 reads 10-22 (10-20 ≥90% of $190.82).
 - Next time: `revenue = mon_pv × imp/mon_pv × CPM` reproduces the printed delta to the tenth — print that identity first; the mix share tells you how much of mon_pv is the segment and the other two legs are rate by construction. Mediavine's `pages`/`devices` rows lag the earnings line by >2 days (17% of mon_pv populated) — never read per-page concentration off them for a day-old verdict.
-
-## 2026-10-20 — E248: verdict 10-20; E234 line legs closed; tracker 3/7 INSUFFICIENT
-- Tried: guardrail verdict 10-20 (T0 paper, E248, `reports/funnel/rio-verdict-2026-10-20.md`); graded E234's line legs (10-18 $258.68 ≥ $141.22 MET; 28d 98.98% / 102.10%) and read the E241 tracker (3 of 7 agree, INSUFFICIENT). MV MCP unavailable → client.ts direct + guardrail JSON.
-- Before → after: Singapore Direct share of the day 5.31% (controls) → 10.62% on 10-18, yet ex-segment RPM $17.29 → $17.57 (+1.6%) and MV monetizable-session RPM +5.0% — the RPM dip (−3.3%) is mix, not rate; Mediavine's own split confirms it without GA4.
-- Verdict: KEEP (read E248 10-21; tracker gate 10-24).
-- Next time: WIRE on 10-24 is reachable only if all four remaining mornings fire and print both lines — a single missed run moves the gate; say that in the verdict before the day, not after.
-
-## 2026-10-19 — E241: E227 KEEP final (leg 2: 2.0 pt / 0.0 pt); the 10-24 wiring gate is a script
-- Tried: guardrail verdict 10-19 (Tier 0) + `guardrail-agreement-tracker.ts` (+lib, 15 tests): one reading per guardrail JSON, MV-Δ vs GA4-raw-Δ gap, agree/disagree/absent, WIRE/HOLD/INSUFFICIENT with the rule printed first. MV MCP down → guardrail JSON + scoreboard only; `direct-bot-read.ts --start 2026-09-19 --end 2026-10-17 --out /tmp/…` as the hand read.
-- Before → after: 10-17 $286.91 vs $262.51 (+9.3%), RPM −3.8% on sessions +13.6%; segment 1,888 = 11.20% vs 2.28% controls → mix alone predicts (1−.1120)/(1−.0228) = −9.1% RPM, so ex-segment RPM ≈ $19.46 vs $18.38 (+5.9%). Ex-segment sessions +5.0% (guardrail) = hand read +5.0% (controls 14,584.5 / 332 identical, 0.0 pt); GA4 raw +15.6% vs MV +13.6% (2.0 pt). 28d 99.03% / 102.1% (run 17). Tracker: 2 of 7 mornings (0.9 pt, 2.0 pt) → INSUFFICIENT, 5 more; 10-24 is the 7th only if every run 10-20→10-24 prints both lines. 10-18 not finalized; needs ≥ $141.22 for 97% on 10-20.
-- Verdict: GREEN; E227 KEEP final; E234 MORE DATA (10-20, 10-29); E241 reads 10-24.
-- Next time: write the counter the day a "N mornings of agreement" gate is set, not the day it is read — two of the seven mornings were already behind me before the tracker existed, and any missed run before 10-24 moves WIRE to 10-25 by construction.
-
-## 2026-10-18 — E234: a clean Friday; E227 leg 1 MET to the tenth; the pipe carries, the demand does not
-- Tried: guardrail verdict 10-18 (Tier 0, docs PR). MV MCP unavailable again → `client.ts` direct; `direct-bot-read.ts --start 2026-09-18 --end 2026-10-16` as the E227 hand read; `affiliate-pipe-read.ts --start 2026-09-29 --end 2026-10-17`; read-only HEAD on the 5 live offers (4 gtracing.sjv.io, 1 envato.market — all 200, all `validated`).
-- Before → after: 10-16 $207.61 vs $196.55 (+5.6%), RPM +2.8%, sessions +2.8% (MV) / +1.9% (GA4 raw) / +0.1% ex-segment; hand read ex-segment 11,812 vs 11,805.75 (+0.05%) = the guardrail's own numbers; MV mon-sess 57.7% vs 58.04%, mon-RPM +3.4%. 28d 98.87% / 101.57% (run 16). Pipe: gtracing 12 on-site / Impact 8 / 0 actions (66.7%), Envato 7 / 5; all clicks are the `grid` placement (/ 13, /games/sims-4/ 6 in 19 d ≈ 7/7d); affiliate_click 7d 5 on a ≥5 bar.
-- Verdict: GREEN; E220 KEEP final (leg 2 MET); E227 leg 1 MET ×4 (leg 2 10-19); E234 MORE DATA (10-19 / 10-20 / 10-29). Amazon leg = unmeasurable (Q20 dropped).
-- Next time: a hand read whose window is `end − 27` drops the 4th same-weekday control (09-18 for a 10-16 read) — pass `--start` = end − 28 when reproducing a 4-control mean, or you reconcile three controls against four and call a 0.0-pt match a drift.
-
-
-_Older entries live verbatim in `archive/playbooks/rio-2026-09.md` (≤ 09-30) and `archive/playbooks/rio-2026-10.md` (10-01 → 10-04, 10-12 → 10-17); nothing deleted._

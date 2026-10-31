@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-10-31 — E300 top-up #20 + E301 social batch + #417 red-main fix
+- Tried: E300 top-up #20 (T0, SD-10 floor; ledger 3c264807, artifacts #418): gate 1.23 d (17 ÷ 13.79 pinterest-14d). Ranker at the default --min-sessions 50 gave 5 dests/50 ids; 25 gave 20/145 — the 10-30 lesson held. 21 rows over 6 dates, bound hard_cap_21, 11-01..03 already carried #19's rows. Also fixed red main from #410 (#417, test asserted the page source instead of the helper's value).
+- Before → after: runway 1.23 → 2.76 d (17 → 38 rows); SEO 45 → pass (21/21). Bing corroboration (GA4 10-23→10-29): bing desktop 14,626 sessions / 10,219 users / 79.5% engaged / 1.81 pv/session / 362 s avg vs Google desktop 87.3% / 1.57 / 185 s; landings are real content pages; the only non-traffic is the (not set) landing slice (US 384 sessions / 8 engaged / 0 pageviews, UK 95/1/0 ≈ 3% of Bing).
+- Verdict: MORE DATA (E300 read 11-07); Bing can be counted in the non-Pinterest headline minus the zero-pageview slice.
+- Next time: a source-level guard that greps a page for a template string breaks the moment the value moves into a lib — assert the helper's output for every registry entry and that the page calls the helper.
+
 ## 2026-10-30 (scheduled run) — E291 wedding-cc launch pin + E298 collection og:image (#410)
 - Tried: same-day pin for a page that went live at 11:09Z (Supabase id 12538, 10-30 holds 8 rows ≤ 13.7/day) + IndexNow 82 URLs; then found all 35 collection pages shipped ~4 months with `twitter:card=summary_large_image` and no `og:image` while 330 shared-link sessions per 14 d landed on them as text-only cards.
 - Before → after: wedding-cc Pinterest landings 0 (page 2 h old); shared-link landings on `/games/sims-4/*` 330 per 14 d (simmersguide 131, tumblr 111, URL-saves ≈57) → read 11-16 at ≥380.
@@ -48,23 +54,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: runway 1.51 → 3.02 d (18 → 36 rows; bound seven_per_day_cap, stopped at the ~3-day target); SEO 58 → 94 (0/18 → 18/18); read-back 18/18, created_at 2025-06-11..2026-01-27, 1/dest/date (E223 default held). Day-trace: plugin 0 real-dated rows on 10-21..27 — the 14-day horizon is again 100% top-ups (Q28).
 - Verdict: MORE DATA (read 10-27; treated WoW ≥ site WoW, re-pulled)
 - Next time: at ≈12 pins/day the floor fires every ~5 days and the trailing rate is now set by the top-ups themselves, so each refill buys the same 3 days for fewer sessions — only Q28 (plugin dates ahead) changes the slope.
-
-## 2026-10-18
-- Tried: E230 (T0, #334): diagnosed the scoreboard 🔴 "Pinner writer 72.1 h" before any pin work — rule printed first (`reports/funnel/pip-writer-pinner-2026-10-18.md`). Graded E181. No top-up: tool gate 2.99 d (32 ÷ 10.71 pinterest-14d) ≥ 2.0.
-- Before → after: writer inserts are publish-keyed — 17/17 WP posts since 09-21 got a same-UTC-day batch (lag 10 min–6.8 h), 0/14 non-post days had one; 0 posts since 10-15 03:42Z → 72.2 h of silence is the weekend, not a death. Last 4 weekends: 1 false 🔴 (today), 1 near-miss (10-12, 1.1 h). Dating step: 518/745 writer rows since 09-21 still placeholder (219 from the 8 batches since 10-05); poster shipped 29 writer vs 181 top-up rows in 14 d → Q28 addendum. E181: treated 3,087 vs 3,172 (−2.7%) vs site −1.1% → KILL as lift.
-- Verdict: FALSE ALARM (a) → [pip→ops] publish-keyed flag; read 10-25.
-- Next time: a liveness clock must tick from the upstream event (a publish), not from the last output — an idle-by-design producer reads dead on every gap longer than the floor.
-
-## 2026-10-17
-- Tried: E223 (T0, PR #324 d258059): top-up allocator per-URL cap re-keyed on destination_key (host-folded) and --max-per-url default 2→1 with build_parser() + 2 guard tests (both red pre-fix). No top-up: tool gate 2.62 d (39 ÷ 14.86 pinterest-14d) ≥ 2.0. Sections --check --stranded 63: 63/63 live.
-- Before → after: 10-15 ledger 18 rows → 5 dests at 2/dest/date (tattoos ×6, gshade ×6 over 3 dates) vs 10-14 21 → 9 at 1/dest/date; pool 37 blog.* / 26 apex of 63 rows, 0 host-split destinations today.
-- Verdict: MORE DATA (read 10-22 on the next apply's ledger)
-- Next time: a lesson that lives only as "always pass --flag" in the playbook is not a guard — make it the default and pin it with a test that was red first.
-
-## 2026-10-19
-- Tried: E237 (T0, read-only): traced the digest's "34 rows dated 10-17 posted vs ≤7/date" before any top-up — `scripts/agents/pin-queue-day-trace.py` (rows by origin per Post Date vs Pinterest API pins). Graded E188. No top-up: tool gate 2.43 d (25 ÷ 10.29 pinterest-14d) ≥ 2.0.
-- Before → after: 10-17 = 7 Pip E188 rows + 27 legacy rows of WP 33529 (`/sims-4-halloween-loading-screens/`, republished 10-14, rows created 2025-10-21) — the Pinterest API shows **7 pins** that day, so the 27 flipped `Is Posted` with no pin (ghost flips; a 10-11 plugin re-date of 25 rows did post 20). Q28 number (tool, 10-05→10-19): API 150 pins = 91 Pip top-up rows (61%) + 29 plugin new-post rows on 4 post days + 76 legacy re-dates, 55 of them ghost (10-05 23, 10-17 27); the queue-posted proxy reads 14.0/day vs 10.29 real. E188: treated 1,568 vs 1,485 (+5.6%) vs site +5.0% → KEEP by rule; post-window 10-15→17 671 vs 671 (0.0%) vs site +8.2%.
-- Verdict: E188 KEEP (rule), no lift shown; E237 MORE DATA (read 10-26)
-- Next time: a queue "posted" flag is not a pin — reconcile a per-date burst against Pinterest's own created_at before calling it a norm breach or counting it as drain.
-
-_Older entries live verbatim in `archive/playbooks/pip-2026-10.md` (10-07, 10-12, 10-13) and `archive/playbooks/pip-2026-09.md` (≤10-04); nothing deleted._
