@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { SIMS4_COLLECTIONS } from '@/lib/collections';
+import { collectionMetadata } from '@/lib/seo/collectionMetadata';
 import {
   buildJsonFeed,
   buildRssFeed,
@@ -220,9 +221,22 @@ describe('wiring that would otherwise fail silently', () => {
   it('the homepage and collection pages advertise the feeds via <link rel="alternate">', () => {
     expect(read('app/layout.tsx')).toContain("'application/rss+xml': 'https://musthavemods.com/feeds/mods.xml'");
     expect(read('app/layout.tsx')).toContain("'application/feed+json': 'https://musthavemods.com/feeds/mods.json'");
-    expect(read('app/games/[game]/[topic]/page.tsx')).toContain(
-      "'application/rss+xml': `https://musthavemods.com/feeds/${collection.gameSlug}/${collection.slug}/`",
-    );
+
+    // Collection-page metadata moved into lib/seo/collectionMetadata.ts with
+    // #410 (E298 og:image); the page delegates to it. Assert the value the
+    // helper actually emits for every registry entry (guard the constant, not
+    // a copy of its source text), and that the page still calls the helper.
+    const page = read('app/games/[game]/[topic]/page.tsx');
+    expect(page).toMatch(/import \{ collectionMetadata \} from ['"][^'"]*lib\/seo\/collectionMetadata['"]/);
+    expect(page).toContain('return collectionMetadata(collection);');
+
+    expect(SIMS4_COLLECTIONS.length).toBeGreaterThan(10); // vacuity guard
+    for (const c of SIMS4_COLLECTIONS) {
+      const types = collectionMetadata(c).alternates?.types as Record<string, unknown> | undefined;
+      expect(types?.['application/rss+xml'], c.slug).toBe(
+        `https://musthavemods.com/feeds/${c.gameSlug}/${c.slug}/`,
+      );
+    }
   });
 
   it('llms.txt points assistants at the feeds', async () => {
