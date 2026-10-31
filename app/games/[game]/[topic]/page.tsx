@@ -31,6 +31,7 @@ import {
 import { prisma } from '../../../../lib/prisma';
 import { getGameFromSlug } from '../../../../lib/gameRoutes';
 import { collectionMetadata } from '../../../../lib/seo/collectionMetadata';
+import { getCollectionCreators } from '../../../../lib/collectionCreators';
 import CollectionPageClient from './CollectionPageClient';
 import type { Mod } from '../../../../lib/api';
 // INITIAL_PAGE_SIZE (48) fills the viewport and exceeds the Pinterest
@@ -234,7 +235,12 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
     notFound();
   }
 
-  const { mods: rawMods, totalCount, moreLinks } = await fetchCollectionMods(collection);
+  // The creators block (E302) shares the hub's where-clause and degrades to
+  // [] on its own; it must never delay or fail the grid.
+  const [{ mods: rawMods, totalCount, moreLinks }, creators] = await Promise.all([
+    fetchCollectionMods(collection),
+    getCollectionCreators(collection),
+  ]);
   const mods = serializeMods(rawMods);
 
   // Pull sibling collections for the "related" grid at the bottom.
@@ -268,6 +274,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         moreLinks={moreLinks}
         relatedCollections={relatedCollections}
         categoryLinks={categoryLinks}
+        creators={creators}
       />
     </>
   );
