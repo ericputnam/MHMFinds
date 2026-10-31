@@ -19,6 +19,7 @@ import { KITCHEN_THEME, isKitchenTitle } from '../kitchenThemeRules';
 import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
 import { WEDDING_THEME, isWeddingTitle } from '../weddingThemeRules';
 import { GALLERY_POSE_THEME, isGalleryPoseTitle } from '../galleryPoseThemeRules';
+import { CHRISTMAS_THEME, isChristmasTitle } from '../christmasThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
 import { ACCESSORIES_CONTENT_TYPE, ACCESSORIES_TITLE_KEYWORDS } from '../accessoriesContentTypeRules';
@@ -1143,6 +1144,13 @@ export function detectRoomThemesWithConfidence(
   if (isGalleryPoseTitle(title) && !detectedThemes.includes(GALLERY_POSE_THEME)) {
     detectedThemes.push(GALLERY_POSE_THEME);
     allMatchedKeywords.push(GALLERY_POSE_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
+  // Christmas theme — title only, whole words (E307; see lib/christmasThemeRules.ts).
+  if (isChristmasTitle(title) && !detectedThemes.includes(CHRISTMAS_THEME)) {
+    detectedThemes.push(CHRISTMAS_THEME);
+    allMatchedKeywords.push(CHRISTMAS_THEME);
     hasHighConfidenceMatch = true;
   }
 

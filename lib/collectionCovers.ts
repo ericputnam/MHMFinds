@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-10-30
+ * Generated on:     2026-10-31
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -35,6 +35,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2021/11/sims-4-3d-eyelashes-ver-5-820x1024.jpg",
     "https://musthavemods.com/wp-content/uploads/2024/11/image-50.jpeg",
   ],
+  "christmas-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/12/Wine-country-3-1024x1024.webp",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/12/76k75-1024x576.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/12/8544bc7f-e04b-420f-b3be-b698bed34702-1.png",
+  ],
   "clothes-cc": [
     "https://images.surferseo.art/8102bc3f-5909-409f-9592-6199434de136.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/8d10febd-8172-4ad3-bb60-134c19d04f55-1.png",
@@ -48,7 +53,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   "cottagecore-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/43b68acd-390b-4d64-b149-6c4c1c930a93-1.webp",
     "https://images.surferseo.art/5de8dc5c-86d8-4a44-ae02-704827195b15.jpeg",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/11/tumblr_a7c96752b65397764f958f4c562581c5_e0be201f_540.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/07/1fd24669-e246-447c-9f3b-32f375f1f7be.jpg",
   ],
   "decor-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/08/ec97cee6-f59d-4e2d-825f-4fa2156e2f66.png",
