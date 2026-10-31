@@ -58,6 +58,7 @@ import {
   exitCodeFor,
   keyLocation,
   parseArgs,
+  pickCreatorSlugs,
   postIndexNow,
   selectUrls,
   summaryLine,
@@ -122,6 +123,7 @@ function usage(): void {
       '  --creators          also submit every /creator/[slug]/ page (the /sitemap-creators.xml population)',
       '  --creators-changed  also submit /creator/[slug]/ pages whose newest mod is inside the creators window (E218)',
       '  --creators-days N   window for --creators-changed (default: --days)',
+      '  --creator-slugs=a,b submit exactly these /creator/[slug]/ pages (each must be in the sitemap population; E303)',
       '  --guides            also submit blog guides published/edited in the last --days (WordPress REST)',
       '',
       `Key: ${INDEXNOW_KEY} (public; served at ${keyLocation()})`,
@@ -234,6 +236,21 @@ async function main(): Promise<void> {
       console.error(`[indexnow] creator query failed: ${String((err as Error).message ?? err).slice(0, 200)}`);
       finish({ ...base, reason: 'db-error-creators' });
     }
+  } else if (args.creatorSlugs.length > 0) {
+    // E303: an explicit page set, validated against the sitemap population
+    // so a typo or a folded-away spelling (E293) is refused, not submitted.
+    try {
+      const listed = await fetchCreatorSlugs(null);
+      const picked = pickCreatorSlugs(listed.map((slug) => ({ slug })), args.creatorSlugs);
+      if (picked.missing.length) {
+        console.error(`[indexnow] ${picked.missing.length} requested creator slug(s) are not in the sitemap population; dropped:`);
+        for (const s of picked.missing) console.error(`  - ${s}`);
+      }
+      creatorSlugs = picked.found;
+    } catch (err) {
+      console.error(`[indexnow] creator query failed: ${String((err as Error).message ?? err).slice(0, 200)}`);
+      finish({ ...base, reason: 'db-error-creators' });
+    }
   }
 
   let guideUrls: string[] = [];
@@ -272,7 +289,7 @@ async function main(): Promise<void> {
   console.log(
     `[indexnow] ${mode}: ${counts.urls} URL(s) — ${counts.collections} collection/hub, ${counts.mods} mods from the last ${args.days} day(s)` +
       (args.guides ? `, ${counts.guides} blog guides` : '') +
-      (args.creators ? `, ${counts.creators} creator pages` : ''),
+      (args.creators || args.creatorsChanged || args.creatorSlugs.length ? `, ${counts.creators} creator pages` : ''),
   );
   const preview = sel.urls.slice(0, 25);
   for (const u of preview) console.log(`  ${u}`);

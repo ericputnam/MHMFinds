@@ -401,6 +401,16 @@ export interface CliArgs {
   creatorsChanged: boolean;
   /** Window for `--creators-changed`, in days; null = same as --days. */
   creatorsDays: number | null;
+  /**
+   * `--creator-slugs=a,b,c` (Sage, E303, 2026-10-31): submit exactly these
+   * /creator/[slug]/ pages — for a page set that changed without a new mod
+   * (E293 folded 14 creators onto pages the sitemap had never listed; the
+   * E299 push ran five minutes before they existed). Each slug is checked
+   * against listCreators() so nothing the sitemap would not list is sent;
+   * unknown slugs are reported and dropped. Does not lift the cap. Empty
+   * when the flag is absent.
+   */
+  creatorSlugs: string[];
   /** `--guides`: also submit blog guides published/edited in the last --days (E121). Does not lift the cap. */
   guides: boolean;
   help: boolean;
@@ -432,6 +442,38 @@ export function changedCreatorSlugs(
   return rows.filter((r) => r.latest instanceof Date && r.latest.getTime() >= t).map((r) => r.slug);
 }
 
+/**
+ * Split a `--creator-slugs` value into clean, de-duplicated slugs (order
+ * kept). Anything that is not a dash-slug is dropped here, before the DB
+ * lookup, so a stray space or a pasted URL cannot become a lookup key.
+ */
+export function parseCreatorSlugList(value: string | undefined): string[] {
+  if (!value) return [];
+  const out: string[] = [];
+  for (const raw of value.split(',')) {
+    const s = raw.trim().toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s)) continue;
+    if (!out.includes(s)) out.push(s);
+  }
+  return out;
+}
+
+/**
+ * Keep only the requested slugs that listCreators() actually lists (the
+ * /sitemap-creators.xml population), in the requested order; everything
+ * else comes back as `missing` so the run can say what it refused.
+ */
+export function pickCreatorSlugs(
+  rows: ReadonlyArray<{ slug: string }>,
+  requested: readonly string[],
+): { found: string[]; missing: string[] } {
+  const listed = new Set(rows.map((r) => r.slug));
+  const found: string[] = [];
+  const missing: string[] = [];
+  for (const s of requested) (listed.has(s) ? found : missing).push(s);
+  return { found, missing };
+}
+
 /** `--apply` is the only way to send anything; everything else defaults safe. */
 export function parseArgs(argv: readonly string[]): CliArgs {
   const args: CliArgs = {
@@ -442,6 +484,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     creators: false,
     creatorsChanged: false,
     creatorsDays: null,
+    creatorSlugs: [],
     guides: false,
     help: false,
   };
@@ -457,6 +500,10 @@ export function parseArgs(argv: readonly string[]): CliArgs {
       const v = a.includes('=') ? a.split('=')[1] : argv[++i];
       const n = Number(v);
       args.creatorsDays = Number.isFinite(n) && n > 0 ? Math.floor(n) : null;
+    }
+    else if (a === '--creator-slugs' || a.startsWith('--creator-slugs=')) {
+      const v = a.includes('=') ? a.slice(a.indexOf('=') + 1) : argv[++i];
+      args.creatorSlugs = parseCreatorSlugList(v);
     }
     else if (a === '--guides') args.guides = true;
     else if (a === '--help' || a === '-h') args.help = true;
