@@ -36,6 +36,8 @@ import { NewsletterSignup } from '../../../../components/NewsletterSignup';
 import { CollectionMoreLinks } from '../../../../components/CollectionMoreLinks';
 import { Mod } from '../../../../lib/api';
 import { collectionHref, type CollectionDefinition } from '../../../../lib/collections';
+import type { CollectionCreator } from '../../../../lib/collectionCreators';
+import { creatorHref } from '../../../../lib/creatorSlug';
 import type { ModLink } from '../../../../lib/seo/collectionMoreLinks';
 import { GRID_FAVORITE_SOURCES } from '../../../../lib/capture/gridFavorite';
 import { useGridFavoriteCapture } from '../../../../lib/capture/useGridFavoriteCapture';
@@ -52,6 +54,12 @@ interface CollectionPageClientProps {
    * in the header above the grid. Empty everywhere else (section hidden).
    */
   categoryLinks?: Array<{ href: string; heading: string }>;
+  /**
+   * Creators with the most mods in this collection (E302), rendered as
+   * crawlable links to /creator/[slug]/ below the related collections.
+   * Empty hides the section.
+   */
+  creators?: CollectionCreator[];
 }
 
 export default function CollectionPageClient({
@@ -61,6 +69,7 @@ export default function CollectionPageClient({
   moreLinks = [],
   relatedCollections,
   categoryLinks = [],
+  creators = [],
 }: CollectionPageClientProps) {
   const router = useRouter();
   const game = gameFor(collection.game);
@@ -248,6 +257,28 @@ export default function CollectionPageClient({
                     <Link key={rel.slug} href={collectionHref(rel)} className="rel-card">
                       <h3>{rel.title}</h3>
                       <p>{rel.tagline}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Creators in this collection (E302) — the hub's only links
+                down to /creator/[slug]/. Sibling of the grid inside the
+                main column, never inside or beside <aside id="secondary">.
+                creatorHref() keeps the trailing slash. */}
+            {creators.length > 0 && (
+              <section className="below-sec" aria-labelledby="collection-creators-heading">
+                <div className="sec-head">
+                  <h2 id="collection-creators-heading">Creators in this collection</h2>
+                </div>
+                <div className="rel-grid">
+                  {creators.map((c) => (
+                    <Link key={c.slug} href={creatorHref(c.slug)} className="rel-card">
+                      <h3>{c.displayName}</h3>
+                      <p>
+                        {c.count} {c.count === 1 ? 'mod' : 'mods'} here · browse all their CC
+                      </p>
                     </Link>
                   ))}
                 </div>
