@@ -1,0 +1,171 @@
+{
+  "generated": "2026-10-31",
+  "script": "scripts/agents/pin-runway-topup.py",
+  "experiment": "SD-22-topup",
+  "updated": 21,
+  "entries": [
+    {
+      "id": 2014,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-01",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 2015,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-02",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 2016,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4558,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-03",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2019,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4559,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2386,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 4531,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/best-sims-4-main-menu-overrides/",
+      "board_name": "Sims 4 House Layouts"
+    },
+    {
+      "id": 6987,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/sims-4-cc-finds-for-december/",
+      "board_name": "Sims 4 Christmas CC"
+    },
+    {
+      "id": 2581,
+      "old_date": "2025-07-10",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/sims-4-masks-cc/",
+      "board_name": "Sims 4 CC Clothes - Sims 4 Maxis Match CC"
+    },
+    {
+      "id": 6336,
+      "old_date": "2025-12-18",
+      "new_date": "2026-11-04",
+      "post_url": "https://musthavemods.com/sims-4-christmas-clothes-cc/",
+      "board_name": "Sims 4 Christmas Clothes CC"
+    },
+    {
+      "id": 2020,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4560,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2387,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 4532,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/best-sims-4-main-menu-overrides/",
+      "board_name": "Sims 4 House Layouts"
+    },
+    {
+      "id": 6988,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/sims-4-cc-finds-for-december/",
+      "board_name": "Sims 4 Christmas CC"
+    },
+    {
+      "id": 2583,
+      "old_date": "2025-07-10",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/sims-4-masks-cc/",
+      "board_name": "Sims 4 CC Clothes - Sims 4 Maxis Match CC"
+    },
+    {
+      "id": 6359,
+      "old_date": "2025-12-18",
+      "new_date": "2026-11-05",
+      "post_url": "https://musthavemods.com/sims-4-christmas-clothes-cc/",
+      "board_name": "Sims 4 Christmas Clothes CC"
+    },
+    {
+      "id": 2021,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-06",
+      "post_url": "https://musthavemods.com/sims-4-graphic-tees/",
+      "board_name": "Sims 4 Male Clothes"
+    },
+    {
+      "id": 4561,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-06",
+      "post_url": "https://musthavemods.com/best-sims-4-bachelor-pad-cc/",
+      "board_name": "Sims 4 CC"
+    },
+    {
+      "id": 2389,
+      "old_date": "2025-01-01",
+      "new_date": "2026-11-06",
+      "post_url": "https://musthavemods.com/sims-4-rugs-cc/",
+      "board_name": "Sims 4 CC"
+    }
+  ],
+  "seo_pass": {
+    "source": "page",
+    "status": "applied",
+    "reason": null,
+    "total": 21,
+    "passing": 0,
+    "need_fix": 21,
+    "fixable": 21,
+    "page_unavailable": 0,
+    "mean_score": 45,
+    "resolved": 7,
+    "slug_count": 7,
+    "updated": 21,
+    "skipped": 0,
+    "ledger": "reports/funnel/pin-seo-rollback-2026-10-31-topup.json"
+  }
+}
