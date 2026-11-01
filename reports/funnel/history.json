@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T10:37:50.832Z",
+  "generatedAt": "2026-11-01T11:38:34.352Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -4203,9 +4203,9 @@
     },
     {
       "date": "2026-10-30",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 211.61,
+      "sessions": 11071,
+      "rpm": 19.11,
       "expectedRevenue": 195.51,
       "expectedSessions": 11864,
       "nonAdMonthly": 147,
@@ -4275,6 +4275,44 @@
         "Quinn": 3,
         "Rio": 2,
         "Rowan": 3
+      }
+    },
+    {
+      "date": "2026-11-01",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 257.45,
+      "expectedSessions": 15499,
+      "nonAdMonthly": 144,
+      "ownedAdds7d": 135,
+      "pinterestSessions7d": 58766,
+      "returningShare7d": 0.5423656156579615,
+      "nonPinterestShare7d": 0.16633329077470882,
+      "pagesPerSession7d": 1.6168007250481478,
+      "engagementRate7d": 0.7328197575620256,
+      "favorites7d": 1055,
+      "downloadClicks7d": 523,
+      "newMods7d": 111,
+      "catalogTotal": 17132,
+      "captureRatePer1k": 1.5100840054139308,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.7142857142857143,
+      "opsMergeShare7d": 0.08163265306122448,
+      "paperOnlyMerges7d": 7,
+      "mergesByOwner7d": {
+        "Cass": 5,
+        "Nova": 5,
+        "Pip": 6,
+        "Ops": 4,
+        "Interactive": 4,
+        "Operator": 5,
+        "Sage": 7,
+        "Quinn": 4,
+        "Rio": 4,
+        "Rowan": 4,
+        "manual": 1
       }
     }
   ],
@@ -7134,6 +7172,76 @@
       "label": "Quinn: PR #413 funnel: daily run 2026-10-30",
       "commit": "cb62dbd",
       "result": "PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Ops: PR #415 E308 deploy-verify grades a READY build containing the sha; smoke-render wall-clock cap",
+      "commit": "5ab4df4",
+      "result": "BUILD ERROR (platform) → READY via cda0c72 · PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Pip: PR #417 test(feeds): fix red feeds.test.ts on main after #410 moved collection metadata",
+      "commit": "202384c",
+      "result": "SUPERSEDED (production already on dbaeed4, newer)"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Rio: PR #416 E306 affiliate-pipe-read GA4 leg — Impact and the blog Amazon block print as two lines (Tier 0)",
+      "commit": "5b6f1b4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Rowan: PR #419 E307 /games/sims-4/christmas-cc/ on a title-only christmas theme (262 cards, Tier 0)",
+      "commit": "49cdb66",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Nova: PR #421 E304 ownership-gated approval path for creator submissions (Tier 0 code; apply Tier 1 11-01)",
+      "commit": "5c69ff0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Pip: PR #418 E300 runway top-up #20 artifacts + E301 social draft batch 2026-10-31 (paper-only)",
+      "commit": "49a55ef",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Sage: PR #422 E303 template lastmod git guard + IndexNow --creator-slugs for the 14 E293 pages (Tier 0)",
+      "commit": "9ef6031",
+      "result": "SUPERSEDED (production already on 49a55ef, newer)"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Rio: PR #420 E306 verdict 2026-10-31 (paper-only)",
+      "commit": "0f04e2d",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Sage: PR #423 E302 Creators in this collection — hubs link down to the creator pages that fill them (Tier 0)",
+      "commit": "214ac2b",
+      "result": "BUILD ERROR (platform) → READY via 66238d1 · PASS"
+    },
+    {
+      "date": "2026-10-31",
+      "kind": "merge",
+      "label": "Quinn: PR #424 funnel: daily run 2026-10-31",
+      "commit": "83d7d19",
+      "result": "BUILD ERROR (platform) → READY via 10b9e4a · PASS"
     }
   ]
 }

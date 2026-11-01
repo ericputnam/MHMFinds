@@ -1,6 +1,6 @@
 {
   "_comment": "Funnel team targets. Baselines are REAL numbers pulled 2026-09-01 (sources noted). The scoreboard script (scripts/agents/funnel-scoreboard.ts) reports actuals against these daily. Quinn rewrites `bets` monthly. All currency USD.",
-  "lastUpdated": "2026-10-24",
+  "lastUpdated": "2026-11-01",
   "autonomy": "tiered",
   "_autonomyNote": "\"tiered\" = Tier 0 ships, Tier 1 ships after a 24h veto window, Tier 2 queues for the operator (see autonomy.md). Set to \"ask\" to make everything queue.",
   "successCriterion": "Total revenue growth AND sessions growth, judged together: Mediavine + non-ad revenue 28d rolling vs prior 28d, and Mediavine sessions 28d rolling vs prior 28d. Operator decision 2026-09-19: RPM gains with falling sessions do not count as growth; a day is graded green only when both revenue and sessions are >= 97% of the expectation line in targets.monthly.sessions / reports/funnel/history.json (see /admin/funnel/). Owned-audience adds and non-ad revenue below are the levers, not the verdict.",
@@ -195,42 +195,86 @@
     }
   },
   "bets": {
-    "month": "2026-10",
-    "_septemberGrade": "B1 HIT (owned adds 121/wk on 09-29 and 09-30 vs 120; 119 on 10-01). B2 MISSED ($155/mo public, 57 paid, vs $200; 1 of 111 linked accounts is paid-and-connected, so the OAuth membership leg never had a population - Q4 closed, no tier/pricing re-pitch). B3 HIT on AI referral (379/7d vs 287 prior, +32 %; +25 % was the bar) and the diagnosis shipped 09-08; organic 2,806/7d (+7.1 %), GSC clicks 28d 2,607 (+25 %). Sessions 09-01->09-30 (29 reported days) 369,600 vs the 400,000 line pace = 96.3 %; last 28d ON LINE run 5 at 99.5 %. See reports/funnel/monthly-2026-10.md.",
+    "month": "2026-11",
+    "_octoberGrade": "All three MISSED. B1 68% (owned adds 135/wk on 11-01 vs 200; peak 247 on 10-17 when newsletter + invite sends ran). B2 32% ($144/mo gross, 56 paid, vs $450; affiliates $0 on Impact 20 clicks / 0 actions; sponsorship $0, no outreach approved; Q4 closed). B3 95.2% of the 415,000 calendar target (382,432 on 30 reported days = 12,748/day, +0.4%/day vs Sep; per-day expectation line 100.1%; operator ramp 79.7% sessions / 83.1% revenue, 28d to 10-30). Revenue $6,218.51 on 30 days (-3.5%/day vs Sep) on a W1 CPM trough. See reports/funnel/monthly-2026-11.md.",
+    "_septemberGrade": "B1 HIT (121/wk vs 120). B2 MISSED ($155 vs $200). B3 HIT on AI referral (+32%); sessions 96.3% of the 400,000 pace. See reports/funnel/monthly-2026-10.md.",
     "list": [
       {
         "id": "B1",
-        "name": "Owned audience to 200/wk: an account or email offer on every page with >1 % of sessions (the /go slot becomes an account offer, E152), the favorites loop as the reason to register (#223, read 10-07), and the weekly newsletter the day Q18's cron line is approved",
+        "name": "Owned audience to 300/wk by copy, not coverage: every >1% page already carries an offer (B1 Oct), so November is the biweekly newsletter on cadence, a copy test on the sign-up opt-in (236 of 285 subscribers come from it), invite-02 to accounts without email consent, and E305 (/go post-Patreon-connect copy A/B, PR #414) the day the AUDIENCE-only hold lifts or the operator replies \"approve 414\"",
         "owner": "Cass (Rowan owns the favorites loop)",
         "metric": "ownedAudienceNetAdds weekly (email + accounts, scoreboard)",
-        "target": "160/wk by 2026-10-15, 200/wk by 2026-10-31 (119/wk on 10-01)",
-        "killIf": "adds 7d < 130 on 2026-10-15 with every >1 % page carrying an offer -> the lever is offer quality, not coverage; stop adding surfaces and split-test the copy"
+        "target": "200/wk by 2026-11-15, 300/wk by 2026-11-30 (135/wk on 11-01)",
+        "killIf": "adds 7d < 180 on 2026-11-15 -> stop adding surfaces entirely; one copy test per week, graded on subscribers per 1k viewers of that surface"
       },
       {
         "id": "B2",
-        "name": "Non-ad revenue, affiliates-only from 10-15 (B2 killIf MET 10-15: paid joins 7d 4 on 10-08 and 3 on 10-15, Q17 dropped 10-07): affiliates repair A-D (E134, pipe read 11-11), the one-post Amazon tag fix (Q29, Tier 2), and the creator program as the supply lever (Nova, E211). No tier, pricing, sponsorship or /go Connect work in October (Q4 closed won't-do; Q23 dropped)",
+        "name": "Non-ad revenue: Rio's line is $250/mo with Q37-A (the $3 skip-the-wait perk, +$96/mo at a 0.5% free->$3 assumption on 6,393 free members) plus the E294 Patreon members post (Q36), or $155/mo if Q37 is unanswered by 11-05. The $750 targets.monthly line stands as the line, not the forecast: it needs ~200 more $3 patrons or two $300 sponsors, neither of which has a lever inside the Tier 2 fence. Levers: Q37-A (Tier 2), E294 post (Tier 2), affiliates read 11-11 (E134/E306: Impact + the #391 blog Amazon block as two lines), creator supply via E304 apply + badge (Nova, Q38)",
         "owner": "Rio (Nova for creators)",
         "metric": "nonAdRevenue monthly (Patreon public gross + sponsorship + AffiliateEarning)",
-        "target": "$450/mo by 2026-10-31 per targets.monthly stands as the line, not the forecast; the October grade is the _rioOctoberRead band and the affiliates-only mandate",
-        "_rioOctoberRead": "$160-170/mo by 10-31 (Patreon $162 on 10-16, 60 paid; affiliates $0 until the 11-11 pipe read); rewritten by Quinn 2026-10-16 after the killIf fired — the $450 target is MISSED for October and is re-set with the November bets on 11-01",
-        "killIf": "MET 2026-10-15 (joins 7d 4 / 3 < 5; Q17 dropped) -> Rio is affiliates-only 10-15 -> 10-31. Second trip: affiliate_click 7d < 5 on 10-29 with Q29 unanswered -> affiliates are also paper-only and November's B2 is a creator-rev-share bet"
+        "target": "$250/mo by 2026-11-30 with Q37-A and E294 posted by 11-08; $155/mo floor ($144 on 11-01)",
+        "killIf": "Q37 unanswered on 2026-11-05 -> November is affiliates + the members post only. $3-tier joins in the 7 days after the E294 post < 4 (1.5x the 0.29/day baseline) -> withdraw the perk pitch. Impact $0 on the 11-11 read -> affiliates revert to E13 (no new placements); Amazon block < 5 clicks/day -> close that leg too"
       },
       {
         "id": "B3",
-        "name": "Sessions on the 415,000 October line: writer-plugin pin inflow as the runway lever (not top-ups - six held runway <= 2.44 d), writer-row pin SEO (Q24), collection pages + catalog freshness (Rowan), organic + AI referral (Sage; E27/E42 final read 10-07 at >= 385/7d), measured by impressions/clicks, never by pins posted",
+        "name": "Sessions on the operator ramp (500,000 Nov / 600,000 Dec; do not re-base) and non-Pinterest 160,000: fresh pins onto pages that already exist (Q39: 20 never-pinned collection pages, 8 of the top-10 by sessions), the social channels (Q34/Q40 drafts; Tier 1 proposal after 11-07 once accounts exist), Bing + IndexNow coverage of every new page the day it serves 200, hubs on the Google (+21.9% WoW) and AI (+38.8%) legs (Sage), traffic pages only with a same-week link or pin source (Rowan), the EA release calendar (Nova + Pip + Sage). Top-ups only re-date; the writer plugin is the only inflow that holds",
         "owner": "Pip (Sage for organic/AI, Rowan for collections/freshness)",
-        "metric": "Mediavine sessions 28d vs the expectation line in reports/funnel/history.json",
-        "target": "28d >= 97 % of the line every run in October (99.5 % on 10-01); 415,000 calendar-month sessions by 2026-10-31",
-        "killIf": "two runs < 92 % -> re-weight dispatch to AUDIENCE moves only (operator-watch rule, ideas-inbox.md) and Pip's move becomes diagnosis"
+        "metric": "Mediavine sessions 28d vs the expectation ramp in reports/funnel/history.json (what /admin/funnel grades); non-Pinterest sessions 28d ex the Singapore crawler (E236)",
+        "target": "28d >= 90% of the ramp by 2026-11-30 (79.7% on 11-01); non-Pinterest ex-crawler >= 100,000/28d by 11-30 (~59,000 on 11-01)",
+        "killIf": "AUDIENCE-only dispatch persists until two consecutive runs read >= 97% of the ramp. Non-Pinterest 28d ex-crawler < 80,000 on 2026-11-15 -> Pip's move becomes diagnosis of the channel mix, and every Q39/social re-pitch names the sessions it would have brought"
       }
     ],
     "competitorMoves": {
-      "_comment": "The 3 ranked moves from reports/funnel/competitors-2026-10.md, folded in on 10-01. Proposals, not commitments; each goes through its owner's tier.",
+      "_comment": "The 3 ranked moves from reports/funnel/competitors-2026-11.md, folded in on 11-01 (second read). Proposals, not commitments; each goes through its owner's tier. October's list is kept below as _competitorMovesOctober and in reports/funnel/monthly-2026-10.md section 4.",
       "list": [
-        {"rank": 1, "move": "Close the 7-query category-hub gap (hair cc, poses, build cc, clothes cc, skin overlay, custom content, cc finds): we surface in 0 results where CurseForge/TSR/SimsFinds hold top 5, while our long-tail pages rank top 10 on the same subjects", "owner": "Sage", "tier": "0/1", "status": "folded into B3; first hub by 10-08", "evidence": "11 of 20 head queries lost in the top 5, all 7 bare category terms"},
-        {"rank": 2, "move": "Add the 8 favorites-ranked creators missing from the E137 batch (lead BADDDIESIMS: on 3 of 4 competitor sites, 0 CreatorProfile here)", "owner": "Nova", "tier": "1 (paper; sending stays Q23/Tier 2)", "status": "folded into B2 creator program", "evidence": "8 of our top 15 favorited creators are not in the 20-row batch"},
-        {"rank": 3, "move": "Paid-tier perk that shortens or skips the /go countdown (TSR VIP one-click, SimsFinds Premium skip-the-wait both monetize this)", "owner": "Rio", "tier": "2", "status": "PARKED: tier/perk changes are Q4 (closed won't-do 09-22); re-open only if the operator reopens Q4", "evidence": "2 of 4 benchmarked competitors sell exactly this"}
+        {
+          "rank": 1,
+          "owner": "Sage",
+          "tier": "0/1",
+          "move": "Keep closing the category-hub gap against a disclosed number: CurseForge now publishes 139,202 Sims 4 projects (8.1x our 17,132) and holds top-5 on the aggregator terms (hair cc, clothes cc, skin overlay, poses, build cc) where we sit 22-50; extend the narrow long-tail hub pattern (gallery pose 8.3, boho braids 7.3) rather than chase volume. Folds into B3 (Sage hub leg, E302/E303/E311).",
+          "read": "2026-12-01 competitor read: head queries lost in top-5 (10 of 20 on 11-01)"
+        },
+        {
+          "rank": 2,
+          "owner": "Nova",
+          "tier": "1",
+          "move": "Add Seoulsoul-sims alongside BADDDIESIMS to the next creator-outreach batch: both measured on 3 of 4 benchmarked competitor sites with 0 CreatorProfile here. Existing template and cadence; not a new send authorization (Q38 badge outreach is the open ask).",
+          "read": "2026-12-01: creatorsOnboarded (2 on 11-01, Dec goal 10)"
+        },
+        {
+          "rank": 3,
+          "owner": "Rio",
+          "tier": "2",
+          "move": "Read the B2 skip-countdown member perk (shipped 10-16 from the October report) against nonAdRevenue before widening it: $144/mo gross vs $750 two weeks later. Confirm whether it moved paid-and-connected or $3-tier joins before any further /go-flow or pricing change (Tier 2 either way). Folds into B2 / Q37.",
+          "read": "2026-11-30 with the B2 non-ad line ($250 / $155)"
+        }
       ]
-    }
+    },
+    "_competitorMovesOctober": [
+      {
+        "rank": 1,
+        "move": "Close the 7-query category-hub gap (hair cc, poses, build cc, clothes cc, skin overlay, custom content, cc finds): we surface in 0 results where CurseForge/TSR/SimsFinds hold top 5, while our long-tail pages rank top 10 on the same subjects",
+        "owner": "Sage",
+        "tier": "0/1",
+        "status": "folded into B3; first hub by 10-08",
+        "evidence": "11 of 20 head queries lost in the top 5, all 7 bare category terms"
+      },
+      {
+        "rank": 2,
+        "move": "Add the 8 favorites-ranked creators missing from the E137 batch (lead BADDDIESIMS: on 3 of 4 competitor sites, 0 CreatorProfile here)",
+        "owner": "Nova",
+        "tier": "1 (paper; sending stays Q23/Tier 2)",
+        "status": "folded into B2 creator program",
+        "evidence": "8 of our top 15 favorited creators are not in the 20-row batch"
+      },
+      {
+        "rank": 3,
+        "move": "Paid-tier perk that shortens or skips the /go countdown (TSR VIP one-click, SimsFinds Premium skip-the-wait both monetize this)",
+        "owner": "Rio",
+        "tier": "2",
+        "status": "PARKED: tier/perk changes are Q4 (closed won't-do 09-22); re-open only if the operator reopens Q4",
+        "evidence": "2 of 4 benchmarked competitors sell exactly this"
+      }
+    ]
   }
 }
