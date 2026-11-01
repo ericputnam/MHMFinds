@@ -1,0 +1,38 @@
+{
+ "date": "2026-11-01",
+ "experiments": [
+  "E309",
+  "E310"
+ ],
+ "tool": "scripts/agents/insert-catalog-pins.py",
+ "dry_run": "would insert=2, skipped=6",
+ "rows": [
+  {
+   "id": 12539,
+   "Post Title": "Sims 4 Christmas CC \u2014 260+ Trees, Decor and Outfits in One Place",
+   "Post URL": "https://musthavemods.com/games/sims-4/christmas-cc/",
+   "Image URL": "https://blog.musthavemods.com/wp-content/uploads/2025/12/Wine-country-3-1024x1024.webp",
+   "Board ID": "762656586838195483",
+   "Board Name": "Sims 4 Christmas CC",
+   "Board Section ID": null,
+   "Post Date": "2026-11-01",
+   "Is Posted": false,
+   "created_at": "2026-11-01T14:01:55.810154+00:00"
+  },
+  {
+   "id": 12540,
+   "Post Title": "Sims 4 Female Clothes CC \u2014 1,600+ Dresses, Tops and Full Outfits in One Grid",
+   "Post URL": "https://musthavemods.com/games/sims-4/female-clothes/",
+   "Image URL": "https://blog.musthavemods.com/wp-content/uploads/2025/09/J1-8-873x1024.jpg",
+   "Board ID": "762656586837364848",
+   "Board Name": "Sims 4 CC Clothes - Sims 4 Maxis Match CC",
+   "Board Section ID": "3419371186658919872",
+   "Post Date": "2026-11-01",
+   "Is Posted": false,
+   "created_at": "2026-11-01T14:01:56.212938+00:00"
+  }
+ ],
+ "rows_dated_2026_11_01_after": 9,
+ "rate_pinterest_14d": 14.5,
+ "runway_gate_days": 2.14
+}
