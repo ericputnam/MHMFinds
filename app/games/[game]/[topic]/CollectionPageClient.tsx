@@ -291,9 +291,9 @@ export default function CollectionPageClient({
                 net adds to this surface separately from footer/go. */}
             <section className="below-sec" aria-labelledby="collection-news-heading">
               <div className="coll-news">
-                <p className="hero-kicker">Weekly finds</p>
+                <p className="hero-kicker">New finds by email</p>
                 <h2 id="collection-news-heading" className="hc-title">
-                  New {collection.title} every week
+                  New {collection.title} every two weeks
                 </h2>
                 <p className="ef-copy">
                   Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam,

@@ -133,7 +133,7 @@ describe('/api/subscribe/confirm', () => {
     const res = await GET(req(buildConfirmUrl(EMAIL, 'https://musthavemods.com')));
     expect(res.status).toBe(200);
     const html = await res.text();
-    expect(html).toContain('Yes, send me the weekly email');
+    expect(html).toContain('Yes, send me the finds email');
     expect(html).toContain('method="POST"');
     expect(html).toContain('action="/api/subscribe/confirm/?e=');
     expect(findUnique).toHaveBeenCalledWith({ where: { email: NORMALIZED }, select: { id: true } });
@@ -170,7 +170,7 @@ describe('/api/subscribe/confirm', () => {
       { emailHash: hashRecipient(EMAIL), source: 'mailto', requestedAt: new Date('2026-10-01'), clearedAt: null },
     ]);
     const res = await GET(req(buildConfirmUrl(EMAIL)));
-    expect(await res.text()).toContain('Yes, send me the weekly email');
+    expect(await res.text()).toContain('Yes, send me the finds email');
     expect(sup.fake.rows.get(hashRecipient(EMAIL))?.clearedAt).toBeNull();
   });
 

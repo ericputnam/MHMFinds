@@ -109,13 +109,21 @@ describe('sitemap-nextjs.xml per-URL lastmod', () => {
     // constant or 2026-01-25, so "today" can only appear if something
     // reads the clock. (The derived hair/poses fixtures sit just after the
     // template date and could coincide with the calendar on bump day.)
+    // The clock is pinned to a date no constant can equal: on a bump day the
+    // real "today" IS the pinned constant (E314, 2026-11-01), so comparing
+    // against the real calendar failed on correct code.
     aggregateMock.mockResolvedValue({ _max: { createdAt: OLD_CREATED } });
-    const { GET } = await import('@/app/sitemap-nextjs.xml/route');
-    const xml = await (await GET()).text();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2099-06-15T12:00:00.000Z'));
+    try {
+      const { GET } = await import('@/app/sitemap-nextjs.xml/route');
+      const xml = await (await GET()).text();
 
-    expect(aggregateMock).toHaveBeenCalledTimes(SIMS4_COLLECTIONS.length);
-    const today = new Date().toISOString().slice(0, 10);
-    expect(xml).not.toContain(`<lastmod>${today}</lastmod>`);
+      expect(aggregateMock).toHaveBeenCalledTimes(SIMS4_COLLECTIONS.length);
+      expect(xml).not.toContain('<lastmod>2099-06-15</lastmod>');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('rolls the newest collection date up to the game hub and the homepage', async () => {

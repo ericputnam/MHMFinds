@@ -70,7 +70,7 @@ export default function AdminSubscribersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Newsletter Subscribers</h1>
-          <p className="text-slate-400">Everyone opted in to the weekly finds email, by the form they used to sign up</p>
+          <p className="text-slate-400">Everyone opted in to the finds email (every two weeks), by the form they used to sign up</p>
         </div>
         <button onClick={exportCSV} disabled={exporting || entries.length === 0} className="flex items-center gap-2 px-4 py-2 bg-sims-pink hover:bg-sims-pink/80 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <Download className="h-4 w-4" />

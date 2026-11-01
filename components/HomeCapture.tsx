@@ -38,11 +38,11 @@ export function HomeCapture() {
   return (
     <section aria-labelledby="home-capture-heading" className="hero-capture">
       <p id="home-capture-heading" className="hc-title">
-        Get the week&apos;s best finds
+        Get the best new finds by email
       </p>
       <p className="ef-copy">
-        <span className="ef-wide">One email a week with new mod &amp; CC lists — or </span>
-        <span className="ef-narrow">One email a week, or </span>
+        <span className="ef-wide">One email every two weeks with new mod &amp; CC lists — or </span>
+        <span className="ef-narrow">One email every two weeks, or </span>
         <Link
           href={`/sign-in/?mode=signup&ref=${HOME_CAPTURE_SOURCE}`}
           onClick={handleAccountClick}

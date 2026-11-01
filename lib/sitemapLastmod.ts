@@ -16,15 +16,17 @@ import { buildWhereClause, getCollection } from './collections';
 import { prisma } from './prisma';
 
 // Homepage shell: SSR shell 2026-09-08 (PR #48); app/page.tsx + HomeCapture
-// 2026-10-26 and app/layout.tsx + HomeJsonLd 2026-10-27 (#389). Bump when
+// 2026-10-26, app/layout.tsx + HomeJsonLd 2026-10-27 (#389), HomeCapture
+// cadence copy "every two weeks" 2026-11-01 (E314). Bump when
 // app-level pages actually change — the git guard below fails if you forget.
 // HOME_SHELL_LASTMOD in lib/seo/siteLastmod.ts restates this; bump both.
-export const APP_LASTMOD = '2026-10-27';
+export const APP_LASTMOD = '2026-11-01';
 
 // /games/[game]/[topic] template — trailing-slash canonical fix 2026-07-03;
-// og:image on every collection page 2026-10-30 (E298, #410). Bump when the
+// og:image on every collection page 2026-10-30 (E298, #410); email-box
+// cadence copy "every two weeks" 2026-11-01 (E314). Bump when the
 // template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-10-30';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-01';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
@@ -32,8 +34,8 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-10-30';
 // still dated 526 of 554 entries by their newest mod alone (169 said
 // January 2026), so Google had no recrawl signal — /creator/orchiona/ was
 // last crawled 2026-09-24. Bump by hand when the creator template changes;
-// never derive it from "today".
-export const CREATOR_TEMPLATE_LASTMOD = '2026-10-30';
+// never derive it from "today". Email-box cadence copy 2026-11-01 (E314).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-01';
 
 /**
  * Which source files each template constant stands for (E303, Sage,

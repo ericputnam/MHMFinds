@@ -226,10 +226,10 @@ export default function CreatorPageClient({ data, related = [], hubs = [] }: Cre
               <div className="mt-12 pt-8 border-t border-white/10">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
                   <p className="text-xs font-semibold uppercase tracking-widest text-sims-pink mb-2">
-                    Weekly finds
+                    New finds by email
                   </p>
                   <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
-                    New mods from creators like {data.displayName}, every week
+                    New mods from creators like {data.displayName}, every two weeks
                   </h2>
                   <p className="text-sm text-slate-400 mb-5">
                     The best new Sims 4 CC drops delivered to your inbox — no spam, unsubscribe anytime.

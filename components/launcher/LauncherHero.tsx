@@ -37,7 +37,7 @@ export function LauncherHero({
         <div className="hero-copy">
           <p className="hero-kicker">
             <span className="pulse" aria-hidden="true" />
-            Fresh finds every week
+            Fresh finds, every link checked
           </p>
           <h1 id="lx-h1" className="hero-h1">
             <span className="h1-a">
