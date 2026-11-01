@@ -188,5 +188,55 @@
     }
   ],
   "skipped": [],
-  "applied": []
+  "applied": [
+    {
+      "submissionId": "cmus9uhjzfcbk3nf48hbrbede",
+      "modId": "cmvxvtzus0003ox6gqfys2q3v",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": true,
+      "contentType": "decor"
+    },
+    {
+      "submissionId": "cmus9yh4wfccn3nf4b2dc64sj",
+      "modId": "cmvxxhtex0001oxx87u4lisos",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": false,
+      "contentType": "hair"
+    },
+    {
+      "submissionId": "cmusa21whfcdz3nf4zrdbumlm",
+      "modId": "cmvxxhtu80003oxx890xvoc1j",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": false,
+      "contentType": null
+    },
+    {
+      "submissionId": "cmusa4yypfcf73nf478xwohl2",
+      "modId": "cmvxxhu0u0005oxx8259gjr5b",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": false,
+      "contentType": null
+    },
+    {
+      "submissionId": "cmusa73z8fcg73nf4ra0ffp9w",
+      "modId": "cmvxxhu7r0007oxx89bvki8fk",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": false,
+      "contentType": null
+    },
+    {
+      "submissionId": "cmusac86cfcic3nf4t1bo835g",
+      "modId": "cmvxxhueg0009oxx8kg0brfpj",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": false,
+      "contentType": "decor"
+    },
+    {
+      "submissionId": "cmusahftdfckg3nf4dmbqbh8k",
+      "modId": "cmvxxhul0000boxx8n9vq98dr",
+      "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+      "profileCreated": false,
+      "contentType": null
+    }
+  ]
 }

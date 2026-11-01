@@ -37,6 +37,7 @@ function row(overrides: Partial<SubmissionRow> = {}): SubmissionRow {
     userId: USER_ID,
     submitterIsAdmin: false,
     existingProfileId: null,
+    existingProfileHandle: null,
     author: 'Atino00',
     displayName: 'atino00',
     username: 'atino00',
@@ -117,10 +118,10 @@ describe('planApprovalRow', () => {
   });
 
   it('links an existing profile instead of creating one', () => {
-    const d = planApprovalRow(row({ existingProfileId: 'p-old' }), found);
+    const d = planApprovalRow(row({ existingProfileId: 'p-old', existingProfileHandle: 'atino00' }), found);
     expect(d.action).toBe('approve');
     if (d.action !== 'approve') return;
-    expect(d.profile).toEqual({ kind: 'link', profileId: 'p-old' });
+    expect(d.profile).toEqual({ kind: 'link', profileId: 'p-old', handle: 'atino00' });
   });
 
   it('skips rows the gate cannot judge, with the reason recorded', () => {
@@ -156,6 +157,21 @@ describe('frozen plan', () => {
     expect(driftedProfile.drifted).toEqual(['s1']);
     const gone = stillApplicable(frozen, []);
     expect(gone.drifted).toEqual(['s1']);
+  });
+
+  it('a later row of the same account still applies once the plan\'s own pending profile exists (11-01: 1/7 written, 6 P2002)', () => {
+    // Seven rows, one account, all frozen as `create pending-atino00-…`. After
+    // row 1 lands, the live re-plan reads rows 2–7 as `link` to that handle.
+    const handle = pendingProfileHandle('atino00', USER_ID);
+    const frozen = writable([planApprovalRow(row({ submissionId: 's2' }), found)]);
+    expect(frozen[0].profile).toEqual({ kind: 'create', handle });
+    const afterRow1 = planApprovalRow(row({ submissionId: 's2', existingProfileId: 'p-created', existingProfileHandle: handle }), found);
+    const same = stillApplicable(frozen, [afterRow1]);
+    expect(same.apply.map((d) => d.submissionId)).toEqual(['s2']);
+    expect(same.drifted).toEqual([]);
+    // A profile under any other handle (promoted / renamed) is still drift.
+    const moved = planApprovalRow(row({ submissionId: 's2', existingProfileId: 'p-created', existingProfileHandle: 'atino00' }), found);
+    expect(stillApplicable(frozen, [moved]).drifted).toEqual(['s2']);
   });
 
   it('never overwrites a non-empty plan without --replace-plan; caps the apply', () => {

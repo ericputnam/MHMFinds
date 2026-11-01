@@ -96,7 +96,7 @@ async function readRows(prisma: PrismaClient, ids: string[] | null): Promise<Sub
           username: true,
           emailVerified: true,
           accounts: { select: { provider: true } },
-          creatorProfile: { select: { id: true } },
+          creatorProfile: { select: { id: true, handle: true } },
         },
       },
     },
@@ -108,6 +108,7 @@ async function readRows(prisma: PrismaClient, ids: string[] | null): Promise<Sub
     userId: s.userId,
     submitterIsAdmin: s.user?.isAdmin === true,
     existingProfileId: s.user?.creatorProfile?.id ?? null,
+    existingProfileHandle: s.user?.creatorProfile?.handle ?? null,
     author: s.author,
     displayName: s.user?.displayName ?? null,
     username: s.user?.username ?? null,
@@ -223,17 +224,21 @@ async function main(): Promise<number> {
             data: { status: 'pending', approvedModId: null, reviewedAt: null, reviewedBy: null },
           })
         ).count;
+        console.log(`  ${row.submissionId}: mod deleted ${deleted}, submission re-opened ${reopened}`);
+      }
+      // Profiles this plan created go last, after every mod of the plan is
+      // gone — checking per row would keep the profile whenever a later row
+      // of the same account was still attached (one profile, seven mods).
+      for (const profileId of Array.from(new Set(plan.applied.filter((a) => a.profileCreated && a.profileId).map((a) => a.profileId as string)))) {
+        const left = await prisma.mod.count({ where: { creatorId: profileId } });
         let profileDeleted = 0;
-        if (row.profileCreated && row.profileId) {
-          const left = await prisma.mod.count({ where: { creatorId: row.profileId } });
-          if (left === 0) {
-            const p = await prisma.creatorProfile.findUnique({ where: { id: row.profileId }, select: { handle: true, isVerified: true } });
-            if (p && isPendingHandle(p.handle) && !p.isVerified) {
-              profileDeleted = (await prisma.creatorProfile.deleteMany({ where: { id: row.profileId } })).count;
-            }
+        if (left === 0) {
+          const p = await prisma.creatorProfile.findUnique({ where: { id: profileId }, select: { handle: true, isVerified: true } });
+          if (p && isPendingHandle(p.handle) && !p.isVerified) {
+            profileDeleted = (await prisma.creatorProfile.deleteMany({ where: { id: profileId } })).count;
           }
         }
-        console.log(`  ${row.submissionId}: mod deleted ${deleted}, submission re-opened ${reopened}, pending profile deleted ${profileDeleted}`);
+        console.log(`  profile ${profileId}: mods left ${left}, pending profile deleted ${profileDeleted}`);
       }
       plan.applied = [];
       writePlan(plan);
@@ -337,12 +342,28 @@ async function main(): Promise<number> {
           if (row.profile.kind === 'link') {
             profileId = row.profile.profileId;
           } else {
-            const p = await tx.creatorProfile.create({
-              data: { userId: row.userId, handle: row.profile.handle, isVerified: false },
-              select: { id: true },
+            // Same reuse as the route's ensureApprovalProfile: the account's
+            // profile may already exist — written by an earlier row of this
+            // very plan (7 rows, one account, 2026-11-01: rows 2–7 hit P2002
+            // on the handle row 1 had just created). CreatorProfile.userId is
+            // unique, so one read decides; a different handle means the
+            // profile moved (promotion/rename) and this row must be re-planned.
+            const have = await tx.creatorProfile.findUnique({
+              where: { userId: row.userId },
+              select: { id: true, handle: true },
             });
-            profileId = p.id;
-            profileCreated = true;
+            if (have && have.handle === row.profile.handle) {
+              profileId = have.id;
+            } else if (have) {
+              throw new Error(`account already holds handle ${have.handle} ≠ plan ${row.profile.handle} — re-plan`);
+            } else {
+              const p = await tx.creatorProfile.create({
+                data: { userId: row.userId, handle: row.profile.handle, isVerified: false },
+                select: { id: true },
+              });
+              profileId = p.id;
+              profileCreated = true;
+            }
           }
           const data = newModDataFromSubmission(sub, { thumbnail, images });
           const mod = await tx.mod.create({ data: { ...data, creatorId: profileId }, select: { id: true, contentType: true } });
