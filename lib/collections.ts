@@ -259,20 +259,47 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     game: 'Sims 4',
     gameSlug: 'sims-4',
     title: 'Hair CC',
-    heading: 'Sims 4 Hair CC',
-    metaTitle: 'Sims 4 Hair CC Finder — Browse 1,700+ Styles | MustHaveMods',
+    // Sage, 2026-11-01 (E311, Tier 0 — head-term retitle in the E210
+    // skin-details pattern). GSC 10-02→10-29: 414 impressions / 4 clicks /
+    // position 37.7 on this hub, and every query is the bare family —
+    // "sims 4 cc hair" 14, "sims 4 hair cc" 10, "sims 4 hair mods" 9,
+    // "mods sims 4 hair" 6, "sims 4 hair mod" 5, "custom content hair /
+    // hairstyles" 8 — at positions 35–53. Neither "hair mods", "hairstyles"
+    // nor "custom content" appeared in the title or H1. The facet supports
+    // the count: 2,099 SFW Sims 4 hair rows on 2026-11-01, 1,859 (88.6%)
+    // title-supported. Only 16 titles say "maxis match" and 1 says "alpha",
+    // so those words stay in the tagline and never become a count claim.
+    heading: 'Sims 4 Hair CC & Hair Mods',
+    metaTitle: 'Sims 4 Hair CC — 2,000+ Hairstyles, Hair Mods & Custom Content | MustHaveMods',
     metaDescription:
-      'Browse 1,700+ Sims 4 hair CC picks in one filterable finder — alpha, maxis match, curly, braids, buns, and short cuts sorted by downloads.',
+      'Browse 2,000+ Sims 4 hair CC and hair mods in one filterable finder — alpha, maxis match, curly, braids, buns, short cuts and male hairstyles, sorted by downloads.',
     tagline: 'Alpha, maxis match, and every style in between',
     intro:
-      'Hair is where most Sims 4 CC journeys start, and for good reason — the base game has maybe six hairstyles you can look at without flinching. Everything else gets a recolor pass and that\'s the wardrobe.\n\nThe 1,700+ hair CC picks in this collection split roughly in half between alpha (Simpliciaty, Anto, Stealthic territory — shiny, high-detail, the aesthetic most gameplay YouTubers use) and maxis match (Sentate, SimStrouds, Aharris00britney — matches EA\'s art style without sticking out). We also pulled in the curly and textured hair creators worth knowing by name — NaevysSims and Ebonix come up constantly because they\'re some of the few people shipping hair that actually looks like Black hair instead of a texture slapped on a straight mesh.\n\nSort by downloads for the known quantities and scroll for the less-obvious picks. Every hair in the collection is Sims 4 specifically — no cross-game mixups — and the grid is filtered to verified, SFW mods only.',
+      'Hair is where most Sims 4 CC journeys start, and for good reason — the base game has maybe six hairstyles you can look at without flinching. Everything else gets a recolor pass and that\'s the wardrobe.\n\nThe 2,000+ hair CC picks in this collection split roughly in half between alpha (Simpliciaty, Anto, Stealthic territory — shiny, high-detail, the aesthetic most gameplay YouTubers use) and maxis match (Sentate, SimStrouds, Aharris00britney — matches EA\'s art style without sticking out). We also pulled in the curly and textured hair creators worth knowing by name — NaevysSims and Ebonix come up constantly because they\'re some of the few people shipping hair that actually looks like Black hair instead of a texture slapped on a straight mesh.\n\nSort by downloads for the known quantities and scroll for the less-obvious picks. Every hair in the collection is Sims 4 specifically — no cross-game mixups — and the grid is filtered to verified, SFW mods only.',
     filter: { contentType: 'hair' },
-    expectedCount: 1780,
+    expectedCount: 2099, // prod count 2026-11-01 (was 1780)
     // skin-details -> kids-cc (2026-09-21): hair is the biggest category
     // inside the kids grid (164 of 686), so this is the strongest topical
     // edge available, and skin-details keeps 5 inbound without it.
     related: ['kids-cc', 'female-clothes', 'male-clothes'],
     blogUrl: '/sims-4-hairstyles-cc/',
+    // E311 (2026-11-01): the hair articles that already rank for this
+    // family, GSC 10-02→10-29 clicks / impressions / position:
+    // /sims-4-male-long-hair-cc/ 27 / 552 / 6.6, /sims-4-short-hair-cc/
+    // 7 / 194 / 11.6, /sims-4-black-hair/ 5 / 124 / 24.7 (34 AI landings in
+    // 28d), /afro-hair-sims-4/ 4 / 27 / 20.0, /sims-4-cc-curly-hair/
+    // 1 / 67 / 14.3, /best-sims-4-hair-cc/ 0 / 63 / 21.9 (pos 5–10 on the
+    // head terms). All six live 200, self-canonical on the apex. Only two
+    // of them (hairstyles-cc, hair-mods) link back to this hub from the
+    // functions.php crosslink map; the other six are a Tier 2 package.
+    guides: [
+      { href: '/best-sims-4-hair-cc/', label: 'Best Sims 4 hair CC right now' },
+      { href: '/sims-4-male-long-hair-cc/', label: 'Sims 4 male long hair CC' },
+      { href: '/sims-4-short-hair-cc/', label: 'Sims 4 short hair CC' },
+      { href: '/sims-4-cc-curly-hair/', label: 'Sims 4 curly hair CC' },
+      { href: '/sims-4-black-hair/', label: 'Sims 4 Black hair CC' },
+      { href: '/afro-hair-sims-4/', label: 'Sims 4 afro hair CC' },
+    ],
   },
   {
     slug: 'tattoos',
