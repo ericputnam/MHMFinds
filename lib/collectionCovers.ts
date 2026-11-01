@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-10-31
+ * Generated on:     2026-11-01
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -78,7 +78,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   "gallery-poses": [
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/female-secondary-sims-4-gallery-poses.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/sims-4-family-gallery-pose-with-baby.jpg",
-    "https://blog.musthavemods.com/wp-content/uploads/2022/03/male-sims-4-gallery-poses.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2022/03/sims-4-hand-poses-for-cas-1-1024x247.jpg",
   ],
   "goth-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/10/image-9.jpg",
@@ -97,8 +97,8 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   ],
   "halloween-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2026/07/Outbreak_header-1024x768.webp",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/04/43e0676f-e7de-40d1-b034-08b3df451c12-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/10/5Q2Mo7eg-tile-747x1024.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/43e0676f-e7de-40d1-b034-08b3df451c12-1.png",
   ],
   "holidays-cc": [
     "https://musthavemods.com/wp-content/uploads/2025/12/w-920h-690-3383266.jpg",
@@ -139,6 +139,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/80205747-8a08-4c3d-9832-98228cfe3420-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/14e70d16-1ec8-4135-aa7b-bd731d8817a8-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/e5ff504c-bf65-4518-bd08-dee185aee51a-1.png",
+  ],
+  "piercings-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2026/01/bodygems2preview-1024x1024.webp",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/7ed085cd-a70d-4e41-bda6-37aa0769f57b.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2026/04/nose.jpg",
   ],
   "poses": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/07/0841ce0e-e0de-4149-94ac-e71d8db293b5-1.png",

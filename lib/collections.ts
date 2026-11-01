@@ -288,7 +288,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Sims 4 ships with a handful of tattoos that haven\'t been updated since 2014. They look it. If you want ink that actually reads as a real design at CAS distance — a fine-line flower on the collarbone, a sleeve that wraps properly, a single small piece that doesn\'t pixelate when you zoom in — you need community tattoo CC.\n\nThis collection is smaller than the hair or clothing grids (about a hundred mods) because tattoo CC is a narrower niche, but it\'s one of the categories where the drop in quality between vanilla and community content is most obvious. Creators like Pralinesims, Sims3Melancholic, and remussirion have basically carried the scene for years.\n\nYou\'ll find sleeves, back pieces, small minimalist ink, and a handful of full-body sets. If you build story-heavy sims, tattoos are one of the cheapest character-building details you can add — a single well-chosen piece communicates more about a sim than half the traits panel.',
     filter: { contentType: 'tattoos' },
     expectedCount: 107,
-    related: ['skin-details', 'jewelry-cc', 'female-clothes'],
+    // 2026-11-01 (E316): 'female-clothes' → 'piercings-cc' (female-clothes
+    // is the most-linked page in the graph; tattoos and piercings share a
+    // reader).
+    related: ['skin-details', 'jewelry-cc', 'piercings-cc'],
     blogUrl: '/sims-4-tattoos/',
   },
   {
@@ -533,7 +536,11 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // array. 'hair-cc' is one of the two 7-inbound hubs and loses nothing;
     // 5 of the 145 nail sets carry the goth theme tag and the goth-nails
     // article is the best-positioned page in the nail cluster (position 6.3).
-    related: ['vampire-cc', 'halloween-cc', 'nails-cc'],
+    // 2026-11-01 (E316): 'halloween-cc' → 'piercings-cc' (halloween-cc keeps
+    // christmas-cc, holidays-cc and witch-cc; nails-cc stays because it has
+    // only one other inbound link; goth-cc is the 119-sessions/7d sibling
+    // that sends the new page its first-week traffic).
+    related: ['vampire-cc', 'piercings-cc', 'nails-cc'],
   },
   {
     slug: 'cottagecore-cc',
@@ -829,7 +836,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['jewelry', 'watches'],
     },
     expectedCount: 439,
-    related: ['tattoos', 'wedding-cc', 'makeup-cc'],
+    // 2026-11-01 (E316): 'makeup-cc' → 'piercings-cc' (makeup-cc keeps
+    // nails-cc and more; the 82-piercing shelf described above now has its
+    // own page).
+    related: ['tattoos', 'wedding-cc', 'piercings-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // jewelry cc" intent, this page owns browse/filter intent.
     // /sims-4-jewelry-cc/ is live (HTTP 200, no redirect, verified
@@ -1390,6 +1400,43 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // browse/filter intent. /sims-4-christmas-cc/ is live (HTTP 200,
     // verified 2026-10-31) and is not in vercel.json.
     blogUrl: '/sims-4-christmas-cc/',
+  },
+  {
+    // Rowan, 2026-11-01 (E316, Tier 0 — registry entry in the existing
+    // pattern). GSC 10-02→10-29: a 41-query piercing family ("sims 4 cc
+    // piercings" 6 impr, "sims 4 belly piercing" 5, "sims 4 navel piercing"
+    // 4, "sims 4 lip piercing cc" 3, "sims 4 eyebrow piercing cc" 3 …) =
+    // 81 impressions / 0 clicks at position 8–31, every landing one of four
+    // legacy articles (/sims-4-piercings/ holds the head terms at 24–50;
+    // belly, lip and nose articles the narrow ones at 8–22). The only browse
+    // page touched was jewelry-cc: 1 impression at 52 — 439 rows bury the
+    // piercings under necklaces and earrings. The four articles carry 982
+    // landing sessions / 7d (GA4 10-24→10-30: belly 624, piercings 215,
+    // nose 86, lip 57). The theme is TITLE-ONLY (lib/piercingThemeRules.ts,
+    // keyword counts and rejections in its comment); 0 rows carried it
+    // before the 2026-11-01 retag (100 added, 0 stripped, every row read).
+    // Inbound: jewelry-cc, goth-cc and tattoos, each repointed from a slot
+    // whose target keeps ≥2 inbound links.
+    slug: 'piercings-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Piercings',
+    heading: 'Sims 4 Piercings CC',
+    metaTitle: 'Sims 4 Piercings CC — Browse 90+ Septum, Nose, Lip & Belly Piercings | MustHaveMods',
+    metaDescription:
+      'Browse 90+ Sims 4 piercing CC picks in one grid: septums, nose rings and studs, lip piercings and snake bites, belly bars, ear piercing sets and full face sets, sorted by downloads.',
+    tagline: 'Septums, nose rings, lip studs, belly bars and ear sets',
+    intro:
+      'The base game has no piercings to speak of — a couple of packs added a nose stud and a few earrings, and that is the whole shelf. Every septum, snake bite and belly bar you see on a Gallery sim is custom content, and most of it is scattered across a dozen single-set creator releases that the big jewelry roundups mention once and move on from.\n\nThis collection is every piercing in our catalog in one grid: 100 sets, sorted by downloads, and every one of them says piercing (or septum, nose ring, nose stud, belly ring, lip ring, lip stud) in its own title. That last part is deliberate — a hoop earring or an ear cuff is jewelry, not a piercing, and those live on the jewelry page instead. Roughly a third of the grid is nose and septum work (diamond butterflies, stretched septums, captive beads, high-nostril sets), a quarter is belly and navel bars including the skin-matched "basic skins" versions, and the rest splits between lip studs, angel bites and snake bites, multi-slot ear sets, and the big all-in-one collections like Carly Piercings and the Piercing Ultimate Collection that cover a whole face at once.\n\nTwo practical notes. Most piercings occupy CAS accessory slots that other CC also wants — a septum and a pair of glasses can fight over the same slot, and the usual symptom is one of them vanishing in-game rather than an error. And belly piercings are usually skin overlays rather than accessories, so check the creator\'s page for which skin tones a set was painted for before you install it on a dark-skinned sim.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and checked for a working download link. Sort by downloads for the sets half the community already has, or scroll for the single-slot releases the roundups never reach.',
+    filter: { themesAny: ['piercing'] },
+    expectedCount: 100,
+    related: ['jewelry-cc', 'goth-cc', 'tattoos'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // piercings" intent (215 landing sessions / 7d, GSC head terms at
+    // position 24–50 with 0 clicks over 10-02→10-29), this page owns
+    // browse/filter intent. /sims-4-piercings/ is live (HTTP 200, verified
+    // 2026-11-01) and is not in vercel.json.
+    blogUrl: '/sims-4-piercings/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level

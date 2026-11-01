@@ -20,6 +20,7 @@ import { BATHROOM_THEME, isBathroomTitle } from '../bathroomThemeRules';
 import { WEDDING_THEME, isWeddingTitle } from '../weddingThemeRules';
 import { GALLERY_POSE_THEME, isGalleryPoseTitle } from '../galleryPoseThemeRules';
 import { CHRISTMAS_THEME, isChristmasTitle } from '../christmasThemeRules';
+import { PIERCING_THEME, isPiercingTitle } from '../piercingThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
 import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
 import { ACCESSORIES_CONTENT_TYPE, ACCESSORIES_TITLE_KEYWORDS } from '../accessoriesContentTypeRules';
@@ -1147,6 +1148,13 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Piercing theme — title only, whole words (E316; see lib/piercingThemeRules.ts).
+  if (isPiercingTitle(title) && !detectedThemes.includes(PIERCING_THEME)) {
+    detectedThemes.push(PIERCING_THEME);
+    allMatchedKeywords.push(PIERCING_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Christmas theme — title only, whole words (E307; see lib/christmasThemeRules.ts).
   if (isChristmasTitle(title) && !detectedThemes.includes(CHRISTMAS_THEME)) {
     detectedThemes.push(CHRISTMAS_THEME);
@@ -1257,5 +1265,5 @@ export function getSupportedRoomThemes(): string[] {
   // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
   // a theme to its own rule file silently drops it from this list (bedroom
   // was missing here from #170 until 2026-09-25).
-  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME].sort();
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME].sort();
 }
