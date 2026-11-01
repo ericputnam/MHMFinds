@@ -44,6 +44,8 @@ export interface SubmissionRow {
   userId: string | null;
   submitterIsAdmin: boolean;
   existingProfileId: string | null;
+  /** Handle of that profile — a plan's own `create` handle, once it exists, must read as the same account (11-01). */
+  existingProfileHandle: string | null;
   author: string | null;
   displayName: string | null;
   username: string | null;
@@ -88,7 +90,7 @@ export type Decision =
       submissionId: string;
       action: 'approve';
       userId: string;
-      profile: { kind: 'create'; handle: string } | { kind: 'link'; profileId: string };
+      profile: { kind: 'create'; handle: string } | { kind: 'link'; profileId: string; handle: string | null };
       modName: string;
       evidence: Evidence;
     }
@@ -175,7 +177,10 @@ export function planApprovalRow(row: SubmissionRow, lookup: SourceLookup): Decis
     submissionId: row.submissionId,
     action: 'approve',
     userId: row.userId as string,
-    profile: plan.kind === 'create' ? { kind: 'create', handle: plan.data.handle } : { kind: 'link', profileId: plan.profileId },
+    profile:
+      plan.kind === 'create'
+        ? { kind: 'create', handle: plan.data.handle }
+        : { kind: 'link', profileId: plan.profileId, handle: row.existingProfileHandle },
     modName: row.modName,
     evidence,
   };
@@ -189,14 +194,22 @@ export function writable(decisions: Decision[]): WritableDecision[] {
   return decisions.filter((d): d is WritableDecision => d.action === 'approve');
 }
 
-/** The part of a decision that must not move between the frozen plan and the live re-plan. */
+/**
+ * The part of a decision that must not move between the frozen plan and the
+ * live re-plan. The profile is pinned by its *handle*, not by create-vs-link:
+ * a plan with N rows for one account freezes all N as `create <handle>`, and
+ * once the first row lands the live re-plan reads the other N−1 as `link` to
+ * that very handle — the same account, not drift. (2026-11-01 apply: 1 of 7
+ * written, 6 P2002 in-run, and a re-run would have skipped all 6 as drifted.)
+ * A link to any *other* handle (a promoted or renamed profile) still drifts.
+ */
 export function signature(d: Decision): string {
   if (d.action === 'skip') return JSON.stringify({ id: d.submissionId, action: 'skip', reason: d.reason });
   return JSON.stringify({
     id: d.submissionId,
     action: 'approve',
     userId: d.userId,
-    profile: d.profile,
+    profileHandle: d.profile.handle,
     verdict: d.evidence.verdict,
     slug: d.evidence.curseforgeSlug,
     authors: d.evidence.sourceAuthors,
