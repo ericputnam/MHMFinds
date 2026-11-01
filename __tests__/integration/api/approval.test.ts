@@ -15,6 +15,7 @@ vi.mock('@/lib/middleware/auth', () => ({
 }))
 
 import { requireAdmin } from '@/lib/middleware/auth'
+import { newModDataFromSubmission } from '@/lib/submissionApprovalProfile'
 import { POST } from '@/app/api/admin/submissions/[id]/approve/route'
 
 const mockAdminUser = {
@@ -321,6 +322,7 @@ describe('API /api/admin/submissions/[id]/approve', () => {
                 tags: ['build', 'modern', 'luxury'],
                 thumbnail: 'https://example.com/thumb.jpg',
                 images: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+                modUrl: 'https://example.com/source',
                 downloadUrl: 'https://example.com/download',
                 sourceUrl: 'https://example.com/source',
                 source: 'Patreon',
@@ -347,28 +349,45 @@ describe('API /api/admin/submissions/[id]/approve', () => {
 
             await POST(request, { params: { id: 'sub-4' } })
 
-            expect(mockPrismaClient.mod.create).toHaveBeenCalledWith({
-                data: {
-                    title: fullSubmission.modName,
-                    description: fullSubmission.description,
-                    shortDescription: fullSubmission.shortDescription,
-                    version: fullSubmission.version,
-                    gameVersion: fullSubmission.gameVersion,
-                    category: fullSubmission.category,
-                    tags: fullSubmission.tags,
+            // E304 (#421): the route and scripts/agents/approve-submissions.ts share
+            // one builder, so the row is asserted against the real builder — not a
+            // restated copy of its value, which drifted when the builder gained
+            // `contentType`. The builder's own fields (incl. contentType) are
+            // covered by __tests__/unit/approve-submissions.test.ts; this test
+            // guards that the route writes exactly the builder's row + creatorId.
+            const expectedData = {
+                ...newModDataFromSubmission(fullSubmission, {
                     thumbnail: fullSubmission.thumbnail,
                     images: fullSubmission.images,
-                    downloadUrl: fullSubmission.downloadUrl,
-                    sourceUrl: fullSubmission.sourceUrl,
-                    source: fullSubmission.source,
-                    author: fullSubmission.author,
-                    isFree: fullSubmission.isFree,
-                    price: fullSubmission.price,
-                    currency: fullSubmission.currency,
-                    isNSFW: fullSubmission.isNSFW,
-                    creatorId: 'profile-1',
-                },
+                }),
+                creatorId: 'profile-1',
+            }
+            expect(mockPrismaClient.mod.create).toHaveBeenCalledTimes(1)
+            expect(mockPrismaClient.mod.create).toHaveBeenCalledWith({ data: expectedData })
+
+            // Every submission field survives into the row (the fields the old
+            // literal spelled out), and the row is exactly the builder's shape.
+            const written = mockPrismaClient.mod.create.mock.calls[0][0].data
+            expect(written).toMatchObject({
+                title: fullSubmission.modName,
+                description: fullSubmission.description,
+                shortDescription: fullSubmission.shortDescription,
+                version: fullSubmission.version,
+                gameVersion: fullSubmission.gameVersion,
+                category: fullSubmission.category,
+                tags: fullSubmission.tags,
+                thumbnail: fullSubmission.thumbnail,
+                images: fullSubmission.images,
+                downloadUrl: fullSubmission.downloadUrl,
+                sourceUrl: fullSubmission.sourceUrl,
+                source: fullSubmission.source,
+                author: fullSubmission.author,
+                isFree: fullSubmission.isFree,
+                price: fullSubmission.price,
+                currency: fullSubmission.currency,
+                isNSFW: fullSubmission.isNSFW,
             })
+            expect(Object.keys(written).sort()).toEqual(Object.keys(expectedData).sort())
         })
     })
 })
