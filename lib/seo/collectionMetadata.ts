@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import type { CollectionDefinition } from '../collections';
 import { collectionCovers } from '../collectionCovers';
+import { buildBreadcrumbListJsonLd, SITE_ORIGIN, type BreadcrumbCrumb } from './modBreadcrumb';
 
 /**
  * <head> metadata for a collection page (app/games/[game]/[topic]/page.tsx).
@@ -30,6 +31,42 @@ export function collectionCanonical(collection: Pick<CollectionDefinition, 'game
 export function collectionOgImage(collection: Pick<CollectionDefinition, 'slug'>): string | null {
   const first = collectionCovers(collection.slug)[0];
   return first && first.startsWith('https://') ? first : null;
+}
+
+/**
+ * The visible crumb trail of a collection page, in order
+ * (CollectionPageClient: Home → {collection.game} → {collection.title}).
+ *
+ * E312 (Sage, 2026-11-01): every /mods/[id] page has emitted a BreadcrumbList
+ * since E171, but the 35 hubs only emitted CollectionPage + ItemList, so the
+ * trail Google shows under a hub result was whatever it inferred from the
+ * URL. The JSON-LD must mirror the rendered <nav class="crumbs"> exactly —
+ * __tests__/unit/collection-breadcrumb-jsonld.test.ts checks every registry
+ * entry against the client markup.
+ */
+export function collectionBreadcrumbs(
+  collection: Pick<CollectionDefinition, 'game' | 'gameSlug' | 'slug' | 'title'>,
+): BreadcrumbCrumb[] {
+  const gamePath = `/games/${collection.gameSlug}/`;
+  return [
+    { name: 'Home', href: '/', item: `${SITE_ORIGIN}/` },
+    { name: collection.game, href: gamePath, item: `${SITE_ORIGIN}${gamePath}` },
+    {
+      name: collection.title,
+      href: `${gamePath}${collection.slug}/`,
+      item: collectionCanonical(collection),
+    },
+  ];
+}
+
+/** BreadcrumbList node for a collection page's JSON-LD @graph. */
+export function collectionBreadcrumbJsonLd(
+  collection: Pick<CollectionDefinition, 'game' | 'gameSlug' | 'slug' | 'title'>,
+) {
+  // Drop the per-node @context: this node is embedded in the page's @graph,
+  // which already carries it.
+  const { '@type': type, itemListElement } = buildBreadcrumbListJsonLd(collectionBreadcrumbs(collection));
+  return { '@type': type, itemListElement };
 }
 
 export function collectionMetadata(collection: CollectionDefinition): Metadata {

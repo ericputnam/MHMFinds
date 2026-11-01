@@ -30,7 +30,7 @@ import {
 } from '../../../../lib/collections';
 import { prisma } from '../../../../lib/prisma';
 import { getGameFromSlug } from '../../../../lib/gameRoutes';
-import { collectionMetadata } from '../../../../lib/seo/collectionMetadata';
+import { collectionBreadcrumbJsonLd, collectionMetadata } from '../../../../lib/seo/collectionMetadata';
 import { getCollectionCreators } from '../../../../lib/collectionCreators';
 import CollectionPageClient from './CollectionPageClient';
 import type { Mod } from '../../../../lib/api';
@@ -221,6 +221,9 @@ function buildJsonLd(
         mainEntity: itemList,
       },
       itemList,
+      // E312: mirrors the visible Home → game → collection crumbs, same as
+      // /mods/[id] has done since E171.
+      collectionBreadcrumbJsonLd(collection),
     ],
   };
 }
