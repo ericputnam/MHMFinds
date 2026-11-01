@@ -205,7 +205,14 @@ smoke() {
   rm -f "$SMOKE_JSON"
   if sdir="$(smoke_dir)"; then
     log "check: rendering production pages in headless Chromium (deps from $sdir)…"
-    (cd "$sdir" && npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1 &
+    # E317: also render every collection page the merged sha ADDED (the rotation alone grades ~1 in 35 per day).
+    # git cannot read the sha → empty file → nothing extra rendered (could-not-read is never a verdict).
+    local cdiff=""
+    if [ -n "$SHA" ]; then
+      cdiff="$SMOKE_JSON.collections.diff"
+      (cd "$ROOT" && git show --format= --unified=0 "$SHA" -- lib/collections.ts) >"$cdiff" 2>/dev/null || : >"$cdiff"
+    fi
+    (cd "$sdir" && SMOKE_COLLECTIONS_DIFF="$cdiff" npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1 &
     if ! capped_wait $! "${SMOKE_MAX_S:-600}"; then
       cat "$out" >>"$LOG"; rm -f "$SMOKE_JSON"  # a JSON written in the kill window is not a finished run
       INCONCLUSIVE="smoke-render timed out after ${SMOKE_MAX_S:-600}s wall clock (killed) — pages NOT judged"

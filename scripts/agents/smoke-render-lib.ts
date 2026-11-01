@@ -31,6 +31,31 @@ export function pickCollectionPath(hrefs: readonly string[], now: Date = new Dat
 }
 
 /**
+ * E317: the collection pages a merge ADDS to the registry. pickCollectionPath rotates one of ~35 per day, and
+ * smoke-render reads the registry from whichever tree has node_modules, which can be older than the merge. So the
+ * page a merge just shipped was almost never rendered by its own after-merge verify (E307 christmas-cc, #419, was
+ * hand-curled after PASS). deploy-verify passes `git show --unified=0 <sha> -- lib/collections.ts`. Every added
+ * `slug:` line becomes `/games/<gameSlug>/<slug>/`, using the nearest added `gameSlug:` line above it (else sims-4).
+ * The result is capped at `max` to bound render cost, and an empty or unreadable diff returns [].
+ */
+export const MAX_CHANGED_COLLECTIONS = 3;
+export function collectionPathsAddedInDiff(diff: string, max: number = MAX_CHANGED_COLLECTIONS): string[] {
+  const out: string[] = [];
+  let game = 'sims-4';
+  for (const line of diff.split('\n')) {
+    if (!line.startsWith('+') || line.startsWith('+++')) continue;
+    const g = line.match(/^\+\s*gameSlug:\s*['"]([a-z0-9-]+)['"]/);
+    if (g) { game = g[1]; continue; }
+    const s = line.match(/^\+\s*slug:\s*['"]([a-z0-9-]+)['"]/);
+    if (!s) continue;
+    const p = `/games/${game}/${s[1]}/`;
+    if (!out.includes(p)) out.push(p);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/**
  * A full ad page normally loads in 7–10 s on this host. At or above SLOW_LOAD_MS a page whose text is
  * still below its `settledText` floor is "unsettled" (the client fetch has not finished), not "blank":
  * 2026-09-26 06:46 the homepage grid (client-fetched from /api/mods) sat at 1,788 chars after 27.8 s
