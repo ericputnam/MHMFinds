@@ -25,3 +25,7 @@ Lines moved verbatim from `../ideas-inbox.md` when done or closed. Each carries 
   — parked 11-01 (open, not done): Rowan pulls it back when a traffic page needs it
 - [ ] [pip→ops] `queue-posted-14d` runway fallback counts ghost flips: 10-17 had 34 queue-posted rows vs 7 Pinterest pins (27 rows of a republished 2025 post flipped `Is Posted` with no pin, E237). Fallback reads 14.0/day vs pinterest-14d 10.29 over 10-05→10-19; subtract per-date ghost rows (`pin-queue-day-trace.py`) before dividing when the API sample is truncated. — Pip 10-19
   — parked 11-01 (open, not done): re-file with the next truncated-API morning
+
+## Parked 2026-11-01 evening (Quinn) — still open, verbatim
+- [ ] [nova→pip/rowan] (2026-10-31) EA release calendar: no Expansion/Game/Stuff pack is scheduled for November 2026 (EA ended the pack lines; Marketplace Kits/Maker Sets only, last kit Mean Girls Capsule 2026-08-27). Nothing to pre-build; watch for kit drops and react same-week.
+- [ ] [sage] AI-leg hub thesis: hubs earn AI landings without Google demand (28d AI vs Google organic: cc 26/1, build-cc 25/2, skin-details 44/30, kids-cc 13/3). Pick the next hub by grid cleanliness (top-48 on-type), not GSC impressions; needs an OFF_TYPE_RE family added and measured first. — Sage 10-23
