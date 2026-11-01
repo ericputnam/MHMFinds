@@ -180,6 +180,61 @@ CATALOG_ENTRIES = [
         'Post Date': POST_DATE,
         'Is Posted': False,
     },
+    {
+        # E309 / 2026-11-01 (Pip) — /games/sims-4/christmas-cc/ (Rowan E307,
+        # PR #419 live 2026-10-31, 262 title-only christmas mods; Rowan's
+        # 10-31 inbox request). Board: the writer's "Sims 4 Christmas CC"
+        # (233 queue rows, no sections; the legacy /sims-4-christmas-*-cc/
+        # articles go there). Image: the page's first cover
+        # (lib/collectionCovers.ts, 1024x1024 webp, never queued; 793 posted
+        # rows already carry .webp images). Counts match the live page (262).
+        'Post Title': 'Sims 4 Christmas CC — 260+ Trees, Decor and Outfits in One Place',
+        'Post URL': 'https://musthavemods.com/games/sims-4/christmas-cc/',
+        'Image URL': (
+            'https://blog.musthavemods.com/wp-content/uploads/2025/12/'
+            'Wine-country-3-1024x1024.webp'
+        ),
+        'Board ID': '762656586838195483',
+        'Board Name': 'Sims 4 Christmas CC',
+        'Wordpress Keyword': 'sims-4-christmas-cc',
+        'AI Text Slug': (
+            'Winterfest is one holiday in the base game; this is the rest of December. '
+            'Christmas trees and lights, wreaths and garlands, stockings and gift clutter, '
+            'ugly sweaters and Santa outfits, plus the holiday pose packs for the family '
+            'photo. 260+ free Sims 4 finds in one filterable grid, every link checked. '
+            '#sims4 #sims4cc #sims4christmas #winterfest'
+        ),
+        'Post Date': POST_DATE,
+        'Is Posted': False,
+    },
+    {
+        # E310 / 2026-11-01 (Pip) — /games/sims-4/female-clothes/ (live since
+        # 2026-07; 1,633 finds). The top never-pinned collection page by
+        # sessions (255 landings/7d, GA4 10-24→10-30, Pinterest only 47 of
+        # them — all sideways through article pins). One fresh catalog pin,
+        # single row, same-day, inside the posted rate: the E275 eyes-cc
+        # precedent (page live 10-19, pinned 10-28). Q39's other 19 pages
+        # stay a Tier 2 package. Board + section: where the writer pins the
+        # female-clothes articles (65 posted rows). Image: all three registry
+        # covers (lib/collectionCovers.ts) are already queue rows (11460,
+        # 2445, 3493 — the dedupe would skip them), so this is one of the
+        # page's own card images, 873x1024 portrait, never queued.
+        'Post Title': 'Sims 4 Female Clothes CC — 1,600+ Dresses, Tops and Full Outfits in One Grid',
+        'Post URL': 'https://musthavemods.com/games/sims-4/female-clothes/',
+        'Image URL': 'https://blog.musthavemods.com/wp-content/uploads/2025/09/J1-8-873x1024.jpg',
+        'Board ID': '762656586837364848',
+        'Board Name': 'Sims 4 CC Clothes - Sims 4 Maxis Match CC',
+        'Board Section ID': '3419371186658919872',
+        'Wordpress Keyword': 'sims-4-female-clothes-cc',
+        'AI Text Slug': (
+            'Every Sims 4 female clothes CC find in one grid: maxis match and alpha dresses, '
+            'tops, jeans, skirts, swimwear, sleepwear and full outfit sets, sorted by what '
+            'simmers download most. Filter to dresses only or scroll the lot. 1,600+ free '
+            'finds, every link checked. #sims4 #sims4cc #sims4clothes #maxismatch'
+        ),
+        'Post Date': POST_DATE,
+        'Is Posted': False,
+    },
 ]
 
 
