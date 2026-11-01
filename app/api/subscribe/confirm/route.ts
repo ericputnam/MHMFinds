@@ -81,7 +81,7 @@ function page(
     <p style="font-size:15px;line-height:1.6;color:#4b5563;margin:0 0 22px;">${escapeHtml(body)}</p>
     ${
       action
-        ? `<form method="POST" action="${action}"><button type="submit" style="background:#4f46e5;color:#ffffff;border:0;font-size:15px;font-weight:600;padding:12px 26px;border-radius:6px;cursor:pointer;">Yes, send me the weekly email</button></form>`
+        ? `<form method="POST" action="${action}"><button type="submit" style="background:#4f46e5;color:#ffffff;border:0;font-size:15px;font-weight:600;padding:12px 26px;border-radius:6px;cursor:pointer;">Yes, send me the finds email</button></form>`
         : `<a href="${SITE}/" style="color:#4f46e5;font-size:14px;">Back to MustHaveMods</a>`
     }
   </main>
@@ -108,7 +108,7 @@ const INVALID = [
 
 const ALREADY = [
   "You're on the list",
-  'This address is already signed up for the weekly finds email. Nothing more to do — the next issue will arrive on schedule.',
+  'This address is already signed up for the finds email. Nothing more to do — the next issue will arrive on schedule.',
 ] as const;
 
 export async function GET(request: NextRequest) {
@@ -122,8 +122,8 @@ export async function GET(request: NextRequest) {
     // A list row with an active unsubscribe gets no mail, so it is not "on the list".
     if (row && !suppressed) return page(ALREADY[0], ALREADY[1]);
     return page(
-      'Send you the weekly Sims 4 finds email?',
-      'One click and you are on the list: one email a week with the CC and mods worth your download slot, and nothing else. You can leave from the footer of any issue.',
+      'Send you the Sims 4 finds email?',
+      'One click and you are on the list: one email every two weeks with the CC and mods worth your download slot, and nothing else. You can leave from the footer of any issue.',
       { button: { e: v.e, t: v.t } }
     );
   } catch (error) {
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
 
     return page(
       "You're subscribed",
-      'Thank you — that is the whole opt-in. The weekly finds email starts arriving with the next issue, and every one of them has a one-click unsubscribe in the footer.'
+      'Thank you — that is the whole opt-in. The finds email starts arriving with the next issue, and every one of them has a one-click unsubscribe in the footer.'
     );
   } catch (error) {
     console.error('[subscribe/confirm] POST failed:', error instanceof Error ? error.message : error);

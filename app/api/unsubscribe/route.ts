@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       return page('Already unsubscribed', 'This address is not on the list. You will not get any more emails from us.');
     }
     return page(
-      'Unsubscribe from the weekly finds email?',
+      'Unsubscribe from the MustHaveMods finds email?',
       'One click and you are off the list for good. No login, no survey.',
       { button: { e: v.e, t: v.t } }
     );

@@ -297,7 +297,7 @@ export async function buildWeeklyIssueData(db: NewsletterDb, opts?: { now?: Date
       { ...ASKS[0], ctaUrl: withUtm(ASKS[0].ctaUrl, campaign) },
       ASKS[1], // Patreon — off-site, untagged (see withUtm)
     ],
-    signoff: "That's it. Next one lands in a week. — The MustHaveMods team",
+    signoff: "That's it. Next one lands in two weeks. — The MustHaveMods team",
   };
 }
 
