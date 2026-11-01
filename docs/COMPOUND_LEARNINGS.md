@@ -2646,6 +2646,47 @@ sleep) are in the archive under "2026-10-29 — subsystem entries".
   Morning checks on 10-27 and 10-29 read INCONCLUSIVE (network) and did not roll back, so the
   network control (#186) and E273 are working.
 
+### 2026-10-30 — rotated from CLAUDE.md
+
+Subsystem entries (opt-in frequency cap, wedding/gallery-pose themes) are in the archive under
+"2026-10-30 — subsystem entries".
+
+- **Key a lock on the thing that contends, not on a proxy for it.** The day-lock
+  `funnel-run-$TODAY.lock` could not see the 10-29 catch-up runner, which was still merging at
+  07:08 when the 10-30 runner started. Only `merge-gate.sh` kept their merges apart. #406 adds a
+  global `logs/funnel-run.lock` (atomic `mkdir`, holder pid + day). A holder is live only if its pid
+  answers (EPERM counts as alive) *and* its command line mentions `funnel`, so a reused pid cannot
+  hold the lock. A run that times out waiting lands a DEFERRED row and exits 75: a deferred run is
+  still a row.
+- **Grade a timeout on awake time, not wall time.** Two of the four MISSED mornings 10-22→10-29
+  were preflights killed at ~1,000 s wall with 3–15 s awake; a healthy one answers in 4–6 s awake.
+  The 10-29 entry said "the runner is fine". It was not: it graded the host's sleep as a hang. #404
+  retries once after wake with a bounded network wait, and never retries an awake hang. The 10-26
+  MISSED (killed from outside before the preflight; the EXIT trap ran with no cause logged) got its
+  row only from a retro four days later. A trap that records no cause leaves a miss that only a
+  human can explain.
+- **"Red on `main`" recurred the day after the rule.** #403 added `wedding-cc` and ran 18 test files
+  picked by name. It missed `canonical-trailing-slash.test.ts`, which also imports
+  `SIMS4_COLLECTIONS`, so `main` was red until #411. #409 then shipped citing it as "identical on
+  `origin/main`" — the phrase the 10-29 rule bans. A registry change runs the full
+  `npx vitest run`, or at minimum every test that imports the registry
+  (`grep -rl lib/collections __tests__`), never a name glob.
+- **One entity, one URL: canonicalize the key before you slug it.** "Sixam CC" and "SixamCC" had two
+  indexed creator pages competing for one query (108 split groups, 7 double-indexed, 14 that clear
+  the 5-mod gate only once folded). #409 groups on a separator-free key and 308s the other spellings
+  to the dash-slug with the most mods. A slug that holds a `CreatorProfile` is never redirected.
+  The SQL tie-break is `COLLATE "C"` so that Postgres and the JS compare pick the same canonical.
+ 
+- **A sitemap `<lastmod>` must move when the template changes, not only when the data does.** After
+  every creator page was rewritten (E267, E292), 169 of 554 creator entries still said January 2026,
+  and the top creator page had last been crawled on 09-24. #412 emits the later of a pinned
+  `CREATOR_TEMPLATE_LASTMOD` (a literal, never the clock; bump it with the template) and the newest
+  mod. `next build` rejects any non-route export from a `route.ts`, so helpers like this live in `lib/`.
+- **Same-day class leak:** #399 nonced the per-user `/api/creator/submissions` fetch in
+  `app/creators/page.tsx` and queued the identical un-nonced call in
+  `components/admin/CreatorDashboard.tsx:52`. It is still on `main`. Fix the sibling in the
+  same PR. Better: a scanner for un-nonced per-user GETs.
+
 ### 2026-10-30 — subsystem entries (written directly to the archive)
 
 - **A frequency cap must count the unanswered impression.** E198's mod-page opt-in remembered only a
@@ -2656,6 +2697,23 @@ sleep) are in the archive under "2026-10-29 — subsystem entries".
   rows) followed the room-theme pattern, with their rejections and counts in the rule header
   (`veil` 15, bare `gallery` 58 → lots, bare `cas` 207 → CAS backgrounds/UI). A collection's
   `blogUrl` must be a live 200, never a redirected legacy path.
+
+### 2026-10-31 — subsystem entries (written directly to the archive)
+
+- **Christmas is title-only now (#419).** `lib/christmasThemeRules.ts` follows the halloween wiring
+  (#156): the six `THEME_KEYWORDS` mappings over title+description were removed, and an AI-only
+  `christmas` is filtered at the merge. The theme was 312 rows, 59.6% title-supported, with "Beard N3"
+  at card #3. The retag made 142 updates, leaving 262. Rejected with counts: holiday 68, elf 17
+  ("Elf Bar Vape"), stocking 24 (hosiery), holly 10 (a name), festive 11. `christmassy` was found in
+  the first dry run's STRIP list. Read the STRIP list as hard as the ADD list.
+- **An informational leg must be proven not to move the verdict.** #416 added GA4 `affiliate_click`
+  by surface to `affiliate-pipe-read`. A test asserts `assessPipe` returns the same status with and
+  without `ga4Rows`, and the Impact and blog-Amazon-block numbers print as two lines, never a sum.
+  The scoreboard had been summing them. The GA4 custom dims `source_type`/`partner` are not
+  registered (Data API 400), so pagePath is the only cut.
+- **A link block joins to the target's own population (#423).** "Creators in this collection"
+  links only creators that `listHubCreators()` would render ("never emit a link the target would
+  404"). It is hidden when empty, and it is a sibling below the grid, outside `.mv-ads`.
 
 ## Recent UI/UX Enhancements
 

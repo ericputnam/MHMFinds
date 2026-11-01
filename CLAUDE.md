@@ -925,55 +925,44 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-29 — rotated to the archive
+### 2026-10-15 → 10-30 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31.
 
-### 2026-10-30 (covers merges #375, #381, #392, #394, #397–#413, 10-29 → 10-30)
+### 2026-10-31 (covers merges #415–#424, 10-30 → 10-31)
 
-Subsystem entries (opt-in frequency cap, wedding/gallery-pose themes) are in the archive under
-"2026-10-30 — subsystem entries".
+Subsystem entries (christmas theme, affiliate GA4 leg, hub→creator links) are in the archive under
+"2026-10-31 — subsystem entries".
 
-- **Key a lock on the thing that contends, not on a proxy for it.** The day-lock
-  `funnel-run-$TODAY.lock` could not see the 10-29 catch-up runner, which was still merging at
-  07:08 when the 10-30 runner started. Only `merge-gate.sh` kept their merges apart. #406 adds a
-  global `logs/funnel-run.lock` (atomic `mkdir`, holder pid + day). A holder is live only if its pid
-  answers (EPERM counts as alive) *and* its command line mentions `funnel`, so a reused pid cannot
-  hold the lock. A run that times out waiting lands a DEFERRED row and exits 75: a deferred run is
-  still a row.
-- **Grade a timeout on awake time, not wall time.** Two of the four MISSED mornings 10-22→10-29
-  were preflights killed at ~1,000 s wall with 3–15 s awake; a healthy one answers in 4–6 s awake.
-  The 10-29 entry said "the runner is fine". It was not: it graded the host's sleep as a hang. #404
-  retries once after wake with a bounded network wait, and never retries an awake hang. The 10-26
-  MISSED (killed from outside before the preflight; the EXIT trap ran with no cause logged) got its
-  row only from a retro four days later. A trap that records no cause leaves a miss that only a
-  human can explain.
-- **"Red on `main`" recurred the day after the rule.** #403 added `wedding-cc` and ran 18 test files
-  picked by name. It missed `canonical-trailing-slash.test.ts`, which also imports
-  `SIMS4_COLLECTIONS`, so `main` was red until #411. #409 then shipped citing it as "identical on
-  `origin/main`" — the phrase the 10-29 rule bans. A registry change runs the full
-  `npx vitest run`, or at minimum every test that imports the registry
-  (`grep -rl lib/collections __tests__`), never a name glob.
-- **One entity, one URL: canonicalize the key before you slug it.** "Sixam CC" and "SixamCC" had two
-  indexed creator pages competing for one query (108 split groups, 7 double-indexed, 14 that clear
-  the 5-mod gate only once folded). #409 groups on a separator-free key and 308s the other spellings
-  to the dash-slug with the most mods. A slug that holds a `CreatorProfile` is never redirected.
-  The SQL tie-break is `COLLATE "C"` so that Postgres and the JS compare pick the same canonical.
- 
-- **A sitemap `<lastmod>` must move when the template changes, not only when the data does.** After
-  every creator page was rewritten (E267, E292), 169 of 554 creator entries still said January 2026,
-  and the top creator page had last been crawled on 09-24. #412 emits the later of a pinned
-  `CREATOR_TEMPLATE_LASTMOD` (a literal, never the clock; bump it with the template) and the newest
-  mod. `next build` rejects any non-route export from a `route.ts`, so helpers like this live in `lib/`.
-- **Same-day class leak:** #399 nonced the per-user `/api/creator/submissions` fetch in
-  `app/creators/page.tsx` and queued the identical un-nonced call in
-  `components/admin/CreatorDashboard.tsx:52`. It is still on `main`. Fix the sibling in the
-  same PR. Better: a scanner for un-nonced per-user GETs.
+- **"Full suite" means `npx vitest run` with no path — a third day of red on `main`.** #410 moved
+  collection metadata into a helper and broke `feeds.test.ts`, which grepped the page for a literal
+  (#417 fixed it by asserting `collectionMetadata(c)` over the registry). #421 then ran only
+  `__tests__/unit`, changed the approve route's `mod.create` payload, and left
+  `__tests__/integration/api/approval.test.ts` red. It was still red at 22:30. #423 saw it, flagged
+  it, and did not widen its own PR, which was right. Before you change a route, run every test that
+  imports it (`grep -rl <route> __tests__`), integration tests included.
+- **Grade the build that contains your commit, and prove containment from git, not the clock.** When
+  Vercel coalesces a sha's build away, the READY build whose commit has the sha as an ancestor
+  (`git merge-base --is-ancestor`) is the one to grade. A commit this clone can't see is not proof.
+  A child check needs a wall-clock cap that kills its whole tree (npx → tsx → node → Chromium). A
+  killed check is INCONCLUSIVE, never FAIL (#415; smoke-render had hung 3 h).
+- **A pinned constant needs a guard that reads its source of truth.** The day after #412 added
+  "bump it with the template", 2 of 3 template lastmods were already stale. #422 asserts
+  `git log -1 --format=%cs -- <paths>` ≤ each constant. It skips (not fails) on a shallow clone.
+  The same PR found the second-order miss: E299's IndexNow ping ran before #409 created the 14
+  pages it was for. Ping a URL only after it serves 200.
+- **A flag set by default proves nothing.** Credentials sign-up stamps `emailVerified` at creation,
+  so it cannot back an ownership claim. #421 gates creator-submission approval on the source host
+  instead: exact-allowlist CurseForge URL, the API's author matches the submission, and the
+  submission matches the account. `--apply` re-plans live and writes only rows whose signature still
+  matches the frozen plan. Also, an approve route and a script that build the same row must share
+  one builder. The route had never written `contentType`, so approved mods joined no facet.
+- **Still open from 10-30:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`.
 
 ---
 
-*Last compound review: 2026-10-30*
+*Last compound review: 2026-10-31*
 
 ---
 
