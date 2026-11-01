@@ -11,7 +11,12 @@ import { AffiliateRecommendations } from '@/components/AffiliateRecommendations'
 import { isAffiliatePlacementEnabled } from '@/lib/affiliatePlacements';
 import { GoPatreonFollowOffer } from '@/components/GoPatreonFollowOffer';
 import { ConnectEmailOptIn } from '@/components/ConnectEmailOptIn';
-import { shouldShowConnectOptIn } from '@/lib/capture/patreonConnectOptIn';
+import {
+  CONNECT_OPTIN_ARM_SOURCE,
+  CONNECT_OPTIN_COPY,
+  assignConnectOptInArm,
+  shouldShowConnectOptIn,
+} from '@/lib/capture/patreonConnectOptIn';
 import { GO_FOLLOW_SLOT_EVENT, GO_FOLLOW_SLOT_SOURCE } from '@/lib/capture/goPatreonFollow';
 import {
   isMembershipEnabled,
@@ -90,6 +95,8 @@ export default function GoClient() {
     sessionStatus,
     email: session?.user?.email,
   });
+  // E305 (Cass): stable copy arm per address; 'a' is E173's copy.
+  const connectOptInArm = session?.user?.email ? assignConnectOptInArm(session.user.email) : 'a';
 
   const handleConnectPatreon = useCallback(() => {
     gtag('event', 'patreon_click', { source: 'go-member-cta-connect', mod_id: String(params.modId) });
@@ -479,9 +486,16 @@ export default function GoClient() {
                   account without the sign-up form's opt-in (E86), so this is
                   the first ask. Inside the mod card, a sibling of the mv-ads
                   wrapper below — never inside it or the aside (SD-3).
+                  E305: copy split-test, arm from a hash of the session
+                  address; each arm carries its own waitlist source.
                 */}
                 {showConnectOptIn && !loading && session?.user?.email && (
-                  <ConnectEmailOptIn email={session.user.email} modId={String(params.modId)} />
+                  <ConnectEmailOptIn
+                    email={session.user.email}
+                    modId={String(params.modId)}
+                    source={CONNECT_OPTIN_ARM_SOURCE[connectOptInArm]}
+                    copy={CONNECT_OPTIN_COPY[connectOptInArm]}
+                  />
                 )}
               </div>
             </div>
