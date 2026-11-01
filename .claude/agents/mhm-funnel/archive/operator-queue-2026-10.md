@@ -20,3 +20,15 @@ Verbatim records moved out of `operator-queue.md` to keep it under its 16,000-by
 
 **Tier 2 queue (Quinn 10-29, evening re-run — the morning run MISSED at preflight):** no operator replies found since 10-23; Q34 (social batch 10-25) and Q33 (sign-up gate, drops 10-30) and Q32 (Mediavine JWT, 13 days) stay open; Q31 stays dropped. The 10-27 and 10-28 digests that never reached `main` ride in today's daily PR. Watch: BELOW LINE by directive (PR #397) — 28d sessions 100.4% of the old-mix line but 96.6% ex-crawler and ≈94% on the stepped Dec-600k daily line; the day is re-weighted to AUDIENCE moves.
 ---
+
+## Status paragraphs moved 2026-11-01 (verbatim)
+
+**Tier 2 queue (Quinn 10-31):** no operator replies since 10-23. New: Q40 (third social batch, drops 11-07). Tier 1 shipping 11-01 unless stopped: E305 (#414 "stop 414") and the E304 apply ("stop E304 apply"). Status paragraphs from 10-23/10-28/10-29 are verbatim in `archive/operator-queue-2026-10.md` § "Status paragraphs moved 2026-10-31".
+
+**Tier 2 queue (Quinn 10-30):** no operator replies since 10-23. Q33 DROPPED 10-30 (7-day rule). New: Q35 gallery-poses redirect (Rowan), Q36 Patreon members post (Cass), Q37 November non-ad bet A/B (Rio, decide by 11-05), Q38 badge outreach (Nova), Q39 catalog pins for 20 unpinned collections (Pip). Q34 (social batch, drops 11-04) and Q32 (Mediavine JWT, ≈11-12) stay open.
+
+## Closed Tier 1 rows moved 2026-11-01 (verbatim)
+
+| Tier 1 | Owner | What | Reply to block |
+|---|---|---|---|
+| T1 | Cass | **Newsletter issue 07 run 1 SENT 10-23 12:02Z: 100/100, 0 failed (ledger c9bb094, PR #362).** The remaining 137 subscribers are held because the list grew +35 since the 10-21 dry run (202 → 237), which trips the draft's pre-committed >30 stop-and-ask. All 35 are post-10-21 opt-ins (33 via sign-up opt-in, 33 distinct IPs, no bursts) — two days of normal growth because the send slipped a day (the 10-22 run MISSED at preflight). **Quinn 10-23 (after Nova's E260 read): the tail is the post-10-12 cohort, which is where the ~115 scripted sign-ups live (Q33) — run 1 was entirely pre-10-12 and is clean. Runs 2–3 ship Sat 10-24 only AFTER Cass hash-suppresses the scripted-shaped addresses via `sendExclusions` (Tier 0, her first move), then the ≤100/run path as before; "stop newsletter-07" still blocks.** Read 10-29 with E240. | "stop newsletter-07" |
