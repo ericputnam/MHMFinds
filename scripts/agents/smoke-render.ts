@@ -15,13 +15,13 @@
  * failure that did not amount to evidence about the site — see smoke-render-lib.ts), 3 = could not run.
  */
 import { chromium } from 'playwright';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { INDEXNOW_KEY } from './indexnow-lib';
 import { collectionHref, getCollectionsForGame } from '../../lib/collections';
 import {
-  AD_KINDS, CONTROL_TIMEOUT_MS, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
+  AD_KINDS, CONTROL_TIMEOUT_MS, collectionPathsAddedInDiff, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
   isThirdPartyPageError, navigationFailed, pickCollectionPath, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
 } from './smoke-render-lib';
 
@@ -127,6 +127,15 @@ async function main() {
   const modId = await modIdFromSitemap();
   // E133: one collection page per run, chosen from the live registry (see pickCollectionPath).
   const collectionPath = pickCollectionPath(getCollectionsForGame('sims-4').map(collectionHref));
+  // E317: plus every collection the merged sha ADDED (deploy-verify writes `git show --unified=0 <sha> --
+  // lib/collections.ts` to this file). Unreadable → WARN and none added: could-not-read is never a verdict.
+  const diffFile = arg('--collections-diff') || process.env.SMOKE_COLLECTIONS_DIFF || undefined;
+  let changedCollections: string[] = [];
+  if (diffFile) {
+    try { changedCollections = collectionPathsAddedInDiff(readFileSync(diffFile, 'utf8')).filter((p) => p !== collectionPath); }
+    catch { console.error(`[smoke] WARN could not read --collections-diff ${diffFile} — newly added collections NOT rendered`); }
+  }
+  if (changedCollections.length) console.error(`[smoke] E317 rendering collection(s) added by this merge: ${changedCollections.join(' ')}`);
   const targets: Target[] = [
     // settledText: the grid on these three is client-fetched (/api/mods); a 200 with fewer chars than this after
     // SLOW_LOAD_MS is an unsettled render, not a blank one (≈9,600 / 10,300 / 10,700 chars when settled, E111).
@@ -147,6 +156,7 @@ async function main() {
     // A navigation timeout here is retried and graded by classifyRender like every other ad page (E111): could-not-run
     // is INCONCLUSIVE, never a rollback; a 404 or a render missing its anchors is positive evidence.
     ...(collectionPath ? [{ path: collectionPath, kind: 'collection' as Kind, settledText: 1500 }] : []),
+    ...changedCollections.map((path) => ({ path, kind: 'collection' as Kind, settledText: 1500 })),
     { path: '/sitemap.xml', kind: 'xml' },
     { path: '/llms.txt', kind: 'text' },
     { path: '/llms-full.txt', kind: 'text' },

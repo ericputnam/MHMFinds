@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SIMS4_COLLECTIONS, collectionHref, getCollectionsForGame } from '../../lib/collections';
 import {
-  AD_KINDS, classifyRender, pickCollectionPath, shouldRetryRender, type RenderFacts,
+  AD_KINDS, MAX_CHANGED_COLLECTIONS, classifyRender, collectionPathsAddedInDiff, pickCollectionPath, shouldRetryRender, type RenderFacts,
 } from '../../scripts/agents/smoke-render-lib';
 
 /**
@@ -75,5 +75,47 @@ describe('collection verdicts follow E111: positive evidence fails, could-not-ru
     const f: RenderFacts = { ...base, status: 200, ms: 25000, textLength: 700, failures: ['.mv-ads in-content anchors missing'] };
     expect(shouldRetryRender('collection', f.failures, f.pageErrors, f)).toBe(true);
     expect(classifyRender(f, { networkOk: true }).verdict).toBe('inconclusive');
+  });
+});
+
+/**
+ * E317: the rotation above renders ~1 of 35 collections per day, from whichever tree has node_modules. The page a
+ * merge just ADDED was therefore almost never graded by its own after-merge verify (E307 christmas-cc, #419, was
+ * hand-curled after PASS). deploy-verify now hands smoke-render the sha's lib/collections.ts diff.
+ */
+describe('E317: collections added by the merged sha are rendered', () => {
+  const dv = readFileSync(join(__dirname, '../../scripts/agents/deploy-verify.sh'), 'utf8')
+    .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+  // The real E307 merge diff shape (git show --format= --unified=0 49cdb66 -- lib/collections.ts), trimmed.
+  const e307 = [
+    'diff --git a/lib/collections.ts b/lib/collections.ts', '+++ b/lib/collections.ts',
+    "@@ -1343,0 +1344,60 @@", '+  {', "+    gameSlug: 'sims-4',", "+    slug: 'christmas-cc',", "+    blogUrl: '/sims-4-christmas-cc/',",
+  ].join('\n');
+
+  it('parses an added registry entry into its canonical href', () => {
+    expect(collectionPathsAddedInDiff(e307)).toEqual(['/games/sims-4/christmas-cc/']);
+  });
+  it('every live registry entry, written as an added block, round-trips to collectionHref (vacuity: ≥ 20)', () => {
+    const diff = SIMS4_COLLECTIONS.map((c) => `+    gameSlug: '${c.gameSlug}',\n+    slug: '${c.slug}',`).join('\n');
+    const all = collectionPathsAddedInDiff(diff, Infinity);
+    expect(all.length).toBeGreaterThanOrEqual(20);
+    expect(all).toEqual(SIMS4_COLLECTIONS.map(collectionHref));
+  });
+  it('ignores removed and context lines, de-dupes, caps at MAX_CHANGED_COLLECTIONS, empty → []', () => {
+    expect(collectionPathsAddedInDiff("-    slug: 'old-cc',\n     slug: 'ctx-cc',")).toEqual([]);
+    expect(collectionPathsAddedInDiff("+    slug: 'a-cc',\n+    slug: 'a-cc',")).toEqual(['/games/sims-4/a-cc/']);
+    const many = Array.from({ length: 8 }, (_, i) => `+    slug: 's${i}-cc',`).join('\n');
+    expect(collectionPathsAddedInDiff(many)).toHaveLength(MAX_CHANGED_COLLECTIONS);
+    expect(collectionPathsAddedInDiff('')).toEqual([]);
+  });
+  it('smoke-render.ts reads --collections-diff through the lib parser and renders them as collection kind', () => {
+    expect(src).toMatch(/arg\('--collections-diff'\) \|\| process\.env\.SMOKE_COLLECTIONS_DIFF/);
+    expect(src).toMatch(/collectionPathsAddedInDiff\(readFileSync\(/);
+    expect(src).toMatch(/changedCollections\.map\(\(path\) => \(\{ path, kind: 'collection'/);
+  });
+  it('deploy-verify.sh passes the merged sha\'s registry diff (never origin/main) to smoke-render', () => {
+    expect(dv).toMatch(/git show --format= --unified=0 "\$SHA" -- lib\/collections\.ts/);
+    expect(dv).toMatch(/SMOKE_COLLECTIONS_DIFF="\$cdiff" npx tsx scripts\/agents\/smoke-render\.ts --json "\$SMOKE_JSON"/);
+    expect(dv).not.toMatch(/git show[^\n]*origin\/main[^\n]*collections/);
   });
 });
