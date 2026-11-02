@@ -2698,6 +2698,38 @@ Subsystem entries (opt-in frequency cap, wedding/gallery-pose themes) are in the
   (`veil` 15, bare `gallery` 58 → lots, bare `cas` 207 → CAS backgrounds/UI). A collection's
   `blogUrl` must be a live 200, never a redirected legacy path.
 
+### 2026-10-31 — rotated from CLAUDE.md
+
+(covers merges #415–#424, 10-30 → 10-31)
+
+Subsystem entries (christmas theme, affiliate GA4 leg, hub→creator links) are in the archive under
+"2026-10-31 — subsystem entries".
+
+- **"Full suite" means `npx vitest run` with no path — a third day of red on `main`.** #410 moved
+  collection metadata into a helper and broke `feeds.test.ts`, which grepped the page for a literal
+  (#417 fixed it by asserting `collectionMetadata(c)` over the registry). #421 then ran only
+  `__tests__/unit`, changed the approve route's `mod.create` payload, and left
+  `__tests__/integration/api/approval.test.ts` red. It was still red at 22:30. #423 saw it, flagged
+  it, and did not widen its own PR, which was right. Before you change a route, run every test that
+  imports it (`grep -rl <route> __tests__`), integration tests included.
+- **Grade the build that contains your commit, and prove containment from git, not the clock.** When
+  Vercel coalesces a sha's build away, the READY build whose commit has the sha as an ancestor
+  (`git merge-base --is-ancestor`) is the one to grade. A commit this clone can't see is not proof.
+  A child check needs a wall-clock cap that kills its whole tree (npx → tsx → node → Chromium). A
+  killed check is INCONCLUSIVE, never FAIL (#415; smoke-render had hung 3 h).
+- **A pinned constant needs a guard that reads its source of truth.** The day after #412 added
+  "bump it with the template", 2 of 3 template lastmods were already stale. #422 asserts
+  `git log -1 --format=%cs -- <paths>` ≤ each constant. It skips (not fails) on a shallow clone.
+  The same PR found the second-order miss: E299's IndexNow ping ran before #409 created the 14
+  pages it was for. Ping a URL only after it serves 200.
+- **A flag set by default proves nothing.** Credentials sign-up stamps `emailVerified` at creation,
+  so it cannot back an ownership claim. #421 gates creator-submission approval on the source host
+  instead: exact-allowlist CurseForge URL, the API's author matches the submission, and the
+  submission matches the account. `--apply` re-plans live and writes only rows whose signature still
+  matches the frozen plan. Also, an approve route and a script that build the same row must share
+  one builder. The route had never written `contentType`, so approved mods joined no facet.
+- **Still open from 10-30:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`.
+
 ### 2026-10-31 — subsystem entries (written directly to the archive)
 
 - **Christmas is title-only now (#419).** `lib/christmasThemeRules.ts` follows the halloween wiring
@@ -2714,6 +2746,32 @@ Subsystem entries (opt-in frequency cap, wedding/gallery-pose themes) are in the
 - **A link block joins to the target's own population (#423).** "Creators in this collection"
   links only creators that `listHubCreators()` would render ("never emit a link the target would
   404"). It is hidden when empty, and it is a sibling below the grid, outside `.mv-ads`.
+
+### 2026-11-01 — subsystem entries (written directly to the archive)
+
+- **Piercing is title-only from birth (#434).** `lib/piercingThemeRules.ts` follows the room-theme
+  pattern: whole-word, title-only, every candidate measured against all 17,132 titles. Accepted:
+  piercing(s) 80, septum 14, nose ring(s) 10, nose chain 2, nose stud / belly ring / lip ring /
+  lip stud 1 each. Rejected with counts: hoops 34, plugs 10, belly button 5, gauges 4, pierced 3,
+  studs 2, ear cuff 1, navel 1. Dry run: 100 ADD / 0 STRIP, every ADD row read. The 982 sessions/7d
+  that land on the four legacy piercing articles reach the new hub only through
+  `mhm_collection_crosslink_map()` in `functions.php` (Tier 2, queued). A traffic page needs its
+  link source, and for blog-borne traffic that source is Tier 2.
+- **Hub retitle on the bare head term (#435, E311).** `/games/sims-4/hair-cc/` had 414 impressions
+  at position 37.7, and none of "hair mods", "hairstyles" or "custom content" was in its title or
+  H1. The E210 pattern: put the query family in `metaTitle` and H1, and add `guides` that link
+  articles already ranking for that family. A count claim in copy (`expectedCount`, "2,000+") comes
+  from a prod count. Words that appear in only a handful of titles ("maxis match" 16, "alpha" 1)
+  stay in the tagline and never back a number.
+- **Schema mirrors the visible page from one helper (#437, E312).** Hub `BreadcrumbList` JSON-LD
+  comes from `collectionBreadcrumbs()`, which reuses `buildBreadcrumbListJsonLd`. A test asserts
+  that the visible crumbs in `CollectionPageClient.tsx` show the same three names in the same
+  order. The node drops its own `@context` because it sits inside the page `@graph`.
+- **Newsletter cadence copy (#429, E314).** 17 "weekly" promises survived the 10-29 move to every
+  two weeks. The guard finds capture surfaces by scanning for `/api/subscribe`, `NewsletterSignup`,
+  `EmailOptIn` and `HomeCapture`, with a vacuity guard of 12 or more plus 7 named must-haves. It
+  exempts the one file that a held PR (#414) already fixes. Name such an exemption with the PR
+  number so it can be removed when the PR lands.
 
 ## Recent UI/UX Enhancements
 

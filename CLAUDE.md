@@ -925,44 +925,52 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-30 — rotated to the archive
+### 2026-10-15 → 10-31 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01.
 
-### 2026-10-31 (covers merges #415–#424, 10-30 → 10-31)
+### 2026-11-01 (covers merges #425–#438, 10-31 → 11-01)
 
-Subsystem entries (christmas theme, affiliate GA4 leg, hub→creator links) are in the archive under
-"2026-10-31 — subsystem entries".
+Subsystem entries (piercing theme, hair-cc retitle, hub breadcrumbs, cadence copy) are in the
+archive under "2026-11-01 — subsystem entries". `main` is green again (#427 asserts the builder's
+row instead of restating a literal).
 
-- **"Full suite" means `npx vitest run` with no path — a third day of red on `main`.** #410 moved
-  collection metadata into a helper and broke `feeds.test.ts`, which grepped the page for a literal
-  (#417 fixed it by asserting `collectionMetadata(c)` over the registry). #421 then ran only
-  `__tests__/unit`, changed the approve route's `mod.create` payload, and left
-  `__tests__/integration/api/approval.test.ts` red. It was still red at 22:30. #423 saw it, flagged
-  it, and did not widen its own PR, which was right. Before you change a route, run every test that
-  imports it (`grep -rl <route> __tests__`), integration tests included.
-- **Grade the build that contains your commit, and prove containment from git, not the clock.** When
-  Vercel coalesces a sha's build away, the READY build whose commit has the sha as an ancestor
-  (`git merge-base --is-ancestor`) is the one to grade. A commit this clone can't see is not proof.
-  A child check needs a wall-clock cap that kills its whole tree (npx → tsx → node → Chromium). A
-  killed check is INCONCLUSIVE, never FAIL (#415; smoke-render had hung 3 h).
-- **A pinned constant needs a guard that reads its source of truth.** The day after #412 added
-  "bump it with the template", 2 of 3 template lastmods were already stale. #422 asserts
-  `git log -1 --format=%cs -- <paths>` ≤ each constant. It skips (not fails) on a shallow clone.
-  The same PR found the second-order miss: E299's IndexNow ping ran before #409 created the 14
-  pages it was for. Ping a URL only after it serves 200.
-- **A flag set by default proves nothing.** Credentials sign-up stamps `emailVerified` at creation,
-  so it cannot back an ownership claim. #421 gates creator-submission approval on the source host
-  instead: exact-allowlist CurseForge URL, the API's author matches the submission, and the
-  submission matches the account. `--apply` re-plans live and writes only rows whose signature still
-  matches the frozen plan. Also, an approve route and a script that build the same row must share
-  one builder. The route had never written `contentType`, so approved mods joined no facet.
-- **Still open from 10-30:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`.
+- **A frozen plan must model its own earlier rows.** E304 froze 7 submissions from one account, and
+  each said `profile: create`. Row 1 created the profile. Rows 2–7 failed P2002, so 1 of 7 applied.
+  A re-run would have skipped the 6 as "drifted", because `signature()` compared the whole action
+  (`create` ≠ `link`). #432 reads the live state by unique key at apply time: same handle → link,
+  other handle → re-plan, none → create. The signature pins the *identity* (`profileHandle`), not
+  the action. Rollback deletes children before parents, in a second pass after every row of the plan
+  is gone. Any plan with N rows per parent needs a test where row 2 meets row 1's write.
+- **A new write path inherits every reader's filter, not just the schema's required fields.** The
+  scripted approvals left `Mod.isVerified` at its default `false`. The 7 mods render on the creator
+  page, but they are missing from `sitemap-mods.xml`, `/api/mods`, search, `aiSearch` and IndexNow,
+  because each of those reads `where: { isVerified: true }` (`grep -rln "isVerified: true" app lib`).
+  Before a script creates rows that a human route used to create, grep the readers' `where` clauses
+  for every flag the route set by hand. A row no reader selects does not exist for traffic. (E313
+  is open.)
+- **Verify what the merge added, not a rotation sample (#431, E317).** #419 added `christmas-cc` and
+  passed after-merge without rendering it, because the page sample rotates 1 of 35 per day. With
+  `--sha`, deploy-verify now parses `git show <sha> -- lib/collections.ts` and renders each added
+  slug (cap 3). Derive a verify's targets from the diff; an unreadable sha adds nothing, not a
+  verdict.
+- **Diagnose the host before the probe.** All 7 after-merge verifies on 11-01 graded INCONCLUSIVE
+  (600 s smoke cap). A full `npx vitest run` lost one case in 9 files at about 940 s, and the run
+  lock was held for 24.8 h. One cause covered all of it: the laptop idle-slept about 15 min per
+  cycle (`pmset -g log`). Every one of those checks passed when re-run by hand. When several
+  unrelated timeouts land on the same day, check sleep/wake and concurrency (3 agent suites at
+  once) before blaming any one of them. Record the hand re-run as a *correcting* ledger row; never
+  edit the INCONCLUSIVE row (#430). Proposed fix: `caffeinate -i` (awaiting operator approval).
+- **A date assertion must pin the clock.** `sitemap-nextjs-lastmod.test.ts` asserted a lastmod was
+  "never today", so it failed on correct code on the day a constant was bumped to today. #429 pins
+  the clock to 2099-06-15. Never let a test's verdict depend on what day CI runs.
+- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:51`
+  (open since 10-30, third day).
 
 ---
 
-*Last compound review: 2026-10-31*
+*Last compound review: 2026-11-01*
 
 ---
 
