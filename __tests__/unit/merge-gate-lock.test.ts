@@ -46,18 +46,19 @@ function commitAged(ageS: number, msg = 'feat: x') {
   git(work, ['push', '-q', 'origin', 'HEAD:main']);
 }
 
-const gateEnv = (who: string): NodeJS.ProcessEnv => ({
+const gateEnv = (who: string, extra: Record<string, string> = {}): NodeJS.ProcessEnv => ({
   NODE_ENV: 'test',
   PATH: process.env.PATH ?? '/usr/bin:/bin',
   HOME: process.env.HOME ?? tmpdir(),
   MERGE_GATE_WHO: who,
+  ...extra,
 });
 
-function gate(args: string[] = [], who = 'tester') {
+function gate(args: string[] = [], who = 'tester', extra: Record<string, string> = {}) {
   const r = spawnSync(BASH, [join(work, 'scripts/agents/merge-gate.sh'), ...args], {
     cwd: work,
     encoding: 'utf8',
-    env: gateEnv(who),
+    env: gateEnv(who, extra),
   });
   return { code: r.status, out: `${r.stdout}${r.stderr}` };
 }
@@ -73,7 +74,7 @@ function gateAsync(who: string): Promise<{ code: number | null; out: string }> {
 }
 
 /** Plant a lock as another agent would have left it. */
-function plantLock(o: { pid: number; epoch: number; who?: string }) {
+function plantLock(o: { pid: number; epoch: number; who?: string; pr?: number; root?: string }) {
   mkdirSync(lock);
   writeFileSync(
     join(lock, 'owner'),
@@ -82,9 +83,10 @@ function plantLock(o: { pid: number; epoch: number; who?: string }) {
       `who=${o.who ?? 'other-agent'}`,
       `pid=${o.pid}`,
       `host=${execFileSync('hostname', { encoding: 'utf8' }).trim()}`,
-      'root=/elsewhere/funnel-x-pip',
+      `root=${o.root ?? '/elsewhere/funnel-x-pip'}`,
       `epoch=${o.epoch}`,
       'since=then',
+      ...(o.pr ? [`pr=${o.pr}`] : []),
       '',
     ].join('\n'),
   );
@@ -208,5 +210,119 @@ describe('merge-gate.sh lock (E155)', () => {
     const r = gate();
     expect(r.code).toBe(2);
     expect(existsSync(lock)).toBe(false);
+  });
+});
+
+/**
+ * E326 (2026-11-02): release on MERGED, not on TTL.
+ *
+ * 11-01 inbox: "the gate broke Quinn's own lock 4,009 s after #425 landed … every agent then waited a full TTL".
+ * Reading the lock left on 11-02 (pid 56211 dead, #438 landed 3 s after its epoch) showed rules "shell exited" and
+ * "merge landed" both already applied — but lock_stale_reason checked TTL FIRST, so every lock broken on first
+ * contact was reported as "older than TTL". These cases pin: reasons most-specific first; a live holder whose PR is
+ * MERGED (≥ min-age ago) is released without waiting for the TTL; gh could-not-run is unknown, never "stale";
+ * --release --sha (what deploy-verify --after-merge runs) frees only the lock that guarded that merge.
+ */
+describe('merge-gate.sh releases on MERGED (E326)', () => {
+  /** A fake `gh` on PATH: `gh pr view N --json state,mergedAt -q …` prints "$FAKE_GH_OUT" (or fails). */
+  function fakeGh(out: string | null): Record<string, string> {
+    const bin = join(base, 'bin');
+    mkdirSync(bin, { recursive: true });
+    writeFileSync(
+      join(bin, 'gh'),
+      out === null ? '#!/bin/sh\necho "gh: could not connect" >&2\nexit 1\n' : `#!/bin/sh\necho "${out}"\n`,
+      { mode: 0o755 },
+    );
+    return { PATH: `${bin}:${process.env.PATH ?? '/usr/bin:/bin'}` };
+  }
+  const iso = (agoS: number) => new Date((now() - agoS) * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const deadPid = () => Number(spawnSync('/bin/sh', ['-c', 'echo $$'], { encoding: 'utf8' }).stdout.trim());
+
+  it('live holder, its PR MERGED ≥240 s ago, merge commit not visible → --wait opens within one poll (fails pre-fix)', () => {
+    plantLock({ pid: process.pid, epoch: now() - 300, who: 'quinn', pr: 77 });
+    const t0 = Date.now();
+    const r = gate(['--wait', '--max-wait', '25'], 'sage', fakeGh(`MERGED ${iso(280)}`));
+    expect(r.code).toBe(0);
+    expect(Date.now() - t0).toBeLessThan(15_000); // no 20 s poll was needed
+    expect(r.out).toMatch(/broke stale lock \(quinn.*holder's PR #77 is MERGED/);
+    expect(owner()).toMatch(/^who=sage$/m);
+  });
+
+  it('holder alive and its PR not merged → still held, lock not stolen', () => {
+    plantLock({ pid: process.pid, epoch: now() - 300, who: 'quinn', pr: 77 });
+    const r = gate([], 'sage', fakeGh('OPEN '));
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/held by quinn/);
+    expect(owner()).toMatch(/^who=quinn$/m);
+  });
+
+  it('PR merged only 30 s ago (< 240 s cooldown) → still held: the MERGED rule never opens before the age gate would', () => {
+    plantLock({ pid: process.pid, epoch: now() - 300, who: 'quinn', pr: 77 });
+    expect(gate([], 'sage', fakeGh(`MERGED ${iso(30)}`)).code).toBe(1);
+    expect(owner()).toMatch(/^who=quinn$/m);
+  });
+
+  it('gh could not run → unknown → held (never a verdict from could-not-run)', () => {
+    plantLock({ pid: process.pid, epoch: now() - 300, who: 'quinn', pr: 77 });
+    expect(gate([], 'sage', fakeGh(null)).code).toBe(1);
+    expect(owner()).toMatch(/^who=quinn$/m);
+  });
+
+  it('dead pid + PR MERGED → --wait opens within one poll', () => {
+    plantLock({ pid: deadPid(), epoch: now() - 300, who: 'quinn', pr: 77 });
+    const t0 = Date.now();
+    const r = gate(['--wait', '--max-wait', '25'], 'sage', fakeGh(`MERGED ${iso(280)}`));
+    expect(r.code).toBe(0);
+    expect(Date.now() - t0).toBeLessThan(15_000);
+  });
+
+  it('a long-dead holder is reported as "shell exited", not "older than TTL" (the 11-01 misdiagnosis; fails pre-fix)', () => {
+    plantLock({ pid: deadPid(), epoch: now() - 4009, who: 'quinn' });
+    const r = gate([], 'sage');
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/holder shell pid \d+ has exited \(lock age \d+s\)/);
+    expect(r.out).not.toMatch(/older than TTL/);
+  });
+
+  it('records the PR from the holder shell command line (`gate && gh pr merge N`), chain unchanged (fails pre-fix)', () => {
+    const g = join(work, 'scripts/agents/merge-gate.sh');
+    const r = spawnSync(BASH, ['-c', `"${BASH}" "${g}" && echo gh pr merge 4242 --squash --delete-branch`], {
+      cwd: work,
+      encoding: 'utf8',
+      env: gateEnv('rio'),
+    });
+    expect(r.status).toBe(0);
+    expect(owner()).toMatch(/^pr=4242$/m);
+  });
+
+  it('--release --sha frees this tree\'s lock taken before that merge, keeps one taken after it (fails pre-fix)', () => {
+    commitAged(100, 'feat: the merge');
+    const sha = git(work, ['rev-parse', 'HEAD']).trim();
+    plantLock({ pid: process.pid, epoch: now() - 130, root: work });
+    expect(gate(['--release', '--sha', sha]).code).toBe(0);
+    expect(existsSync(lock)).toBe(false);
+    plantLock({ pid: process.pid, epoch: now() - 10, root: work }); // a newer chain, 90 s after the merge
+    expect(gate(['--release', '--sha', sha]).code).toBe(1);
+    expect(existsSync(lock)).toBe(true);
+  });
+
+  it('--release from another tree frees a stale (dead-holder) lock and refuses a live one (fails pre-fix)', () => {
+    plantLock({ pid: deadPid(), epoch: now() - 30 });
+    expect(gate(['--release']).code).toBe(0);
+    expect(existsSync(lock)).toBe(false);
+    plantLock({ pid: process.pid, epoch: now() - 30 });
+    expect(gate(['--release']).code).toBe(1);
+    expect(existsSync(lock)).toBe(true);
+  });
+
+  it('deploy-verify --after-merge releases the lock for the sha it grades (source guard; fails pre-fix)', () => {
+    const src = readFileSync(join(process.cwd(), 'scripts/agents/deploy-verify.sh'), 'utf8')
+      .split('\n')
+      .filter((l) => !/^\s*#/.test(l))
+      .join('\n');
+    const afterMerge = src.slice(src.indexOf('  after-merge)'));
+    expect(afterMerge).toMatch(/merge-gate\.sh" --release --sha "\$SHA"[^\n]*\|\| true/);
+    // released before any build wait / smoke, i.e. at the start of the after-merge path
+    expect(afterMerge.indexOf('--release --sha')).toBeLessThan(afterMerge.indexOf('paper_merge "$SHA"'));
   });
 });

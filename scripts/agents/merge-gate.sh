@@ -25,20 +25,32 @@
 #          then holds everyone else off on its own);
 #       2. the holder shell exits (its pid is gone on this host) — the chain ended, merged or not;
 #       3. TTL (default 600 s, never more) — a hung or foreign-host holder cannot strand six other agents;
-#       4. `merge-gate.sh --release` from the same worktree (or `--release --force` from anywhere);
-#       5. the gate itself, on every non-zero exit (closed / could not run) — a closed gate never keeps the lock.
+#       4. `merge-gate.sh --release` from the same worktree (or `--release --force` from anywhere); since E326
+#          `--release` from ANY tree also frees a lock that rules 1/2/6 already call stale, and
+#          `--release --sha <mergeCommit>` (what deploy-verify.sh --after-merge runs first) frees this tree's lock
+#          only if it was taken before that commit landed;
+#       5. the gate itself, on every non-zero exit (closed / could not run) — a closed gate never keeps the lock;
+#       6. (E326) the holder's PR is MERGED per `gh pr view` and was merged ≥ --min-age s ago. The PR number is read
+#          from the holder shell's own command line (`... && gh pr merge N ...`, the ship-protocol chain, unchanged) or
+#          $MERGE_GATE_PR, and recorded as `pr=N` in the owner file. gh unreachable / unparsable = unknown = NOT stale.
+#          Covers a holder that is still alive after its merge (e.g. deploy-verify chained into the same call) when
+#          GitHub's commit clock reads earlier than ours, so rule 1 cannot see it.
+#     Stale reasons are reported most-specific first (shell exited / merge landed / PR merged) and TTL LAST: until
+#     E326 TTL was checked first, so every lock broken on first contact read "older than TTL (4009s)" and the team
+#     concluded TTL was the only release (11-01 inbox).
 #   - Exit 1 while another agent holds it, printing "held by <who> (pid, tree) since <time>, frees in ≤Ns".
 #   Fetch happens AFTER the lock is taken, so a holder whose merge landed a second ago is always seen.
 #   Breaking a stale lock is an atomic rename; a breaker that finds it renamed a FRESH lock puts it back.
 #
 # Usage: merge-gate.sh [--min-age 240] [--wait [--max-wait 600]] [--quiet] [--ttl 600]
-#        merge-gate.sh --status | --release [--force]
+#        merge-gate.sh --status | --release [--force | --sha <mergeCommit>]
 #   --wait      poll every 20 s until the gate opens and the lock is free (or --max-wait elapses → exit 1)
 # Exit: 0 gate open, lock held by the caller · 1 gate closed (too soon) or lock held by another agent ·
 #       2 could not read origin/main / could not create the lock (could-not-run — never "go")
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-MIN_AGE=240; WAIT=0; MAX_WAIT=600; QUIET=0; TTL="${MERGE_GATE_TTL:-600}"; ACTION=gate; FORCE=0
+MIN_AGE=240; WAIT=0; MAX_WAIT=600; QUIET=0; TTL="${MERGE_GATE_TTL:-600}"; ACTION=gate; FORCE=0; REL_SHA=""
+SKEW_S=60   # --release --sha: a lock taken ≤60 s after the merge commit's timestamp still counts as that merge's lock
 while [ $# -gt 0 ]; do
   case "$1" in
     --min-age) MIN_AGE="$2"; shift ;;
@@ -49,6 +61,7 @@ while [ $# -gt 0 ]; do
     --status) ACTION=status ;;
     --release) ACTION=release ;;
     --force) FORCE=1 ;;
+    --sha) REL_SHA="$2"; shift ;;
     *) echo "unknown argument: $1"; exit 64 ;;
   esac
   shift
@@ -65,6 +78,12 @@ HOST="$(hostname 2>/dev/null || echo unknown)"
 HOLDER_PID="$PPID"
 TOKEN="$$-$(date +%s)-$RANDOM"
 HAVE_LOCK=0
+# E326: the PR this gate is guarding — the ship-protocol chain names it on the holder shell's own command line.
+HOLDER_PR="${MERGE_GATE_PR:-}"
+if [ -z "$HOLDER_PR" ]; then
+  HOLDER_PR="$(ps -ww -o command= -p "$HOLDER_PID" 2>/dev/null | sed -E -n 's/.*gh pr merge[[:space:]]+#?([0-9]+).*/\1/p' | head -1)"
+fi
+case "$HOLDER_PR" in *[!0-9]*) HOLDER_PR="" ;; esac
 
 # An autonomous `funnel(ledger): ...` commit (scripts/agents/ledger-commit.sh) that touches only
 # reports/funnel/** ships no application code and needs no serialization against a real Vercel build —
@@ -98,9 +117,22 @@ newest_gateable_commit() {  # walks origin/main back past any ledger-only commit
 # ---------------------------------------------------------------- lock
 owner_field() { sed -n "s/^$2=//p" "$1/owner" 2>/dev/null | head -1; }  # $1 lock dir, $2 key
 pid_alive() { [ -n "$1" ] && ps -p "$1" >/dev/null 2>&1; }             # ps, not kill -0: no EPERM false-dead
+iso_epoch() {  # ISO-8601 UTC (gh mergedAt) → epoch; empty when unparsable
+  date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$1" +%s 2>/dev/null || date -u -d "$1" +%s 2>/dev/null || true
+}
+pr_merged_age() {  # $1 PR number → prints seconds since it merged; empty = not merged OR could not tell (unknown)
+  local n="$1" out st at ep
+  [ -n "$n" ] && command -v gh >/dev/null 2>&1 || return 0
+  out="$( (cd "$ROOT" && gh pr view "$n" --json state,mergedAt -q '.state + " " + (.mergedAt // "")') 2>/dev/null)" || return 0
+  read -r st at <<<"$out"
+  [ "$st" = MERGED ] && [ -n "${at:-}" ] || return 0
+  ep="$(iso_epoch "$at")"
+  case "$ep" in ''|*[!0-9]*) return 0 ;; esac
+  echo $(( $(date +%s) - ep ))
+}
 fmt_time() { date -r "$1" '+%H:%M:%S' 2>/dev/null || date -d "@$1" '+%H:%M:%S' 2>/dev/null || echo "$1"; }
 lock_stale_reason() {  # prints why the current lock is stale; empty = live. Needs a fresh origin/main for rule 1.
-  local epoch pid host now age ts
+  local epoch pid host now age ts pr ma
   epoch="$(owner_field "$LOCK" epoch)"; pid="$(owner_field "$LOCK" pid)"; host="$(owner_field "$LOCK" host)"
   now=$(date +%s)
   case "$epoch" in ''|*[!0-9]*)
@@ -112,10 +144,16 @@ lock_stale_reason() {  # prints why the current lock is stale; empty = live. Nee
     [ "$age" -ge "${MERGE_GATE_EMPTY_GRACE_S:-60}" ] && { echo "owner never written after ${age}s"; return; } ;;
   esac
   age=$(( now - epoch ))
-  [ "$age" -ge "$TTL" ] && { echo "older than TTL ${TTL}s (${age}s)"; return; }
-  if [ -n "$pid" ] && [ "$host" = "$HOST" ] && ! pid_alive "$pid"; then echo "holder shell pid $pid has exited"; return; fi
+  # E326: most specific first, TTL last — the reason string is how the team diagnoses the gate.
+  if [ -n "$pid" ] && [ "$host" = "$HOST" ] && ! pid_alive "$pid"; then echo "holder shell pid $pid has exited (lock age ${age}s)"; return; fi
   read -r ts _ <<<"$(newest_gateable_commit)"
-  if [ -n "${ts:-}" ] && [ "$ts" -ge "$epoch" ]; then echo "a merge landed on origin/main after it was taken"; return; fi
+  if [ -n "${ts:-}" ] && [ "$ts" -ge "$epoch" ]; then echo "a merge landed on origin/main after it was taken (lock age ${age}s)"; return; fi
+  pr="$(owner_field "$LOCK" pr)"
+  if [ -n "$pr" ] && [ "$age" -lt "$TTL" ]; then
+    ma="$(pr_merged_age "$pr")"
+    if [ -n "$ma" ] && [ "$ma" -ge "$MIN_AGE" ]; then echo "holder's PR #$pr is MERGED (${ma}s ago, ≥${MIN_AGE}s; lock age ${age}s)"; return; fi
+  fi
+  [ "$age" -ge "$TTL" ] && { echo "older than TTL ${TTL}s (${age}s)"; return; }
   echo ""
 }
 lock_holder_msg() {
@@ -126,14 +164,27 @@ lock_holder_msg() {
   echo "held by ${who:-?} (pid ${pid:-?}, $(basename "${root:-?}")) since $(fmt_time "$epoch") ($(( $(date +%s) - epoch ))s ago; frees when its merge lands, its shell exits, or in ≤$(( TTL - ($(date +%s) - epoch) ))s)"
 }
 write_owner() {
-  printf 'token=%s\nwho=%s\npid=%s\nhost=%s\nroot=%s\nepoch=%s\nsince=%s\n' \
-    "$TOKEN" "$WHO" "$HOLDER_PID" "$HOST" "$ROOT" "$(date +%s)" "$(date '+%Y-%m-%d %H:%M:%S')" >"$LOCK/owner.$TOKEN" \
+  # pr= is optional and new in E326; older gates ignore keys they do not read, so the format stays compatible.
+  printf 'token=%s\nwho=%s\npid=%s\nhost=%s\nroot=%s\nepoch=%s\nsince=%s\npr=%s\n' \
+    "$TOKEN" "$WHO" "$HOLDER_PID" "$HOST" "$ROOT" "$(date +%s)" "$(date '+%Y-%m-%d %H:%M:%S')" "$HOLDER_PR" >"$LOCK/owner.$TOKEN" \
     && mv -f "$LOCK/owner.$TOKEN" "$LOCK/owner"
 }
 release_lock() {  # only ever removes a lock carrying OUR token
   [ "$HAVE_LOCK" = 1 ] || return 0
   if [ "$(owner_field "$LOCK" token)" = "$TOKEN" ]; then rm -rf "$LOCK"; fi
   HAVE_LOCK=0
+}
+break_lock() {  # $1 token we judged stale, $2 reason. Atomic: rename, then confirm we renamed the lock we judged
+  # (same token). If someone broke and re-took it in between, put theirs back and report busy (return 1).
+  local seen="$1" why="$2" grave="$LOCK.stale.$TOKEN"
+  mv "$LOCK" "$grave" 2>/dev/null || return 1
+  if [ "$(owner_field "$grave" token)" != "$seen" ]; then
+    [ -e "$LOCK" ] || mv "$grave" "$LOCK" 2>/dev/null
+    rm -rf "$grave" 2>/dev/null
+    return 1
+  fi
+  say "merge-gate: broke stale lock ($(owner_field "$grave" who), since $(owner_field "$grave" since)): $why"
+  rm -rf "$grave"
 }
 try_lock() {  # 0 acquired · 1 held by a live holder (message in LOCK_MSG) · 2 cannot create
   LOCK_MSG=""
@@ -145,21 +196,11 @@ try_lock() {  # 0 acquired · 1 held by a live holder (message in LOCK_MSG) · 2
   [ -d "$LOCK" ] || { LOCK_MSG="could not create $LOCK"; return 2; }
   # held: fetch first so "its merge landed" is judged on a fresh origin/main
   (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1) || true
-  local why seen grave
+  local why seen
   seen="$(owner_field "$LOCK" token)"
   why="$(lock_stale_reason)"
   if [ -z "$why" ]; then LOCK_MSG="$(lock_holder_msg)"; return 1; fi
-  # Break atomically: rename, then confirm we renamed the lock we judged (same token). If someone broke and
-  # re-took it in between, put theirs back and report busy.
-  grave="$LOCK.stale.$TOKEN"
-  mv "$LOCK" "$grave" 2>/dev/null || { LOCK_MSG="$(lock_holder_msg)"; return 1; }
-  if [ "$(owner_field "$grave" token)" != "$seen" ]; then
-    [ -e "$LOCK" ] || mv "$grave" "$LOCK" 2>/dev/null
-    rm -rf "$grave" 2>/dev/null
-    LOCK_MSG="$(lock_holder_msg)"; return 1
-  fi
-  say "merge-gate: broke stale lock ($(owner_field "$grave" who), since $(owner_field "$grave" since)): $why"
-  rm -rf "$grave"
+  break_lock "$seen" "$why" || { LOCK_MSG="$(lock_holder_msg)"; return 1; }
   if mkdir "$LOCK" 2>/dev/null; then
     write_owner || { rm -rf "$LOCK"; LOCK_MSG="could not write $LOCK/owner"; return 2; }
     HAVE_LOCK=1; return 0
@@ -176,10 +217,20 @@ case "$ACTION" in
     exit 0 ;;
   release)
     [ -d "$LOCK" ] || { say "merge-gate: lock already free"; exit 0; }
-    if [ "$FORCE" = 1 ] || [ "$(owner_field "$LOCK" root)" = "$ROOT" ]; then
-      rm -rf "$LOCK"; say "merge-gate: lock released"; exit 0
+    if [ "$FORCE" = 1 ]; then rm -rf "$LOCK"; say "merge-gate: lock released (--force)"; exit 0; fi
+    (cd "$ROOT" && git fetch -q origin main >/dev/null 2>&1) || true
+    if [ "$(owner_field "$LOCK" root)" = "$ROOT" ]; then
+      if [ -z "$REL_SHA" ]; then rm -rf "$LOCK"; say "merge-gate: lock released"; exit 0; fi
+      # --sha: release only the lock that guarded THIS merge (taken before the commit landed, ≤SKEW_S clock slack).
+      # A lock this tree took for a later chain is newer than that and is left alone. Unknown sha → leave it.
+      ct="$( (cd "$ROOT" && git log -1 --format=%ct "$REL_SHA") 2>/dev/null)"; ep="$(owner_field "$LOCK" epoch)"
+      case "$ct:$ep" in *[!0-9:]*|:*|*:) say "merge-gate: NOT releasing — cannot date ${REL_SHA:0:7} or the lock (unknown)"; exit 1 ;; esac
+      if [ "$ep" -le $(( ct + SKEW_S )) ]; then rm -rf "$LOCK"; say "merge-gate: lock released (its merge ${REL_SHA:0:7} landed)"; exit 0; fi
+      say "merge-gate: NOT releasing — this tree's lock was taken after ${REL_SHA:0:7} landed (a newer chain)"; exit 1
     fi
-    say "merge-gate: NOT releasing — $(lock_holder_msg) (another tree; use --force only if that agent is gone)"; exit 1 ;;
+    why="$(lock_stale_reason)"
+    if [ -n "$why" ] && break_lock "$(owner_field "$LOCK" token)" "$why"; then say "merge-gate: lock released"; exit 0; fi
+    say "merge-gate: NOT releasing — $(lock_holder_msg) (another tree, holder live; use --force only if that agent is gone)"; exit 1 ;;
 esac
 
 trap 'release_lock' INT TERM HUP

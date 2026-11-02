@@ -466,6 +466,12 @@ case "$MODE" in
         log "WARN: could not read PR #$PR_NUM state from gh — verifying anyway (could-not-check is not a refusal), row will say so"
       fi
     fi
+    # E326: the merge this verify grades has landed, so the merge-gate lock that guarded it has done its job. Free it
+    # now (only this tree's lock, only if it predates $SHA) instead of leaving siblings to wait on a live-holder rule.
+    # Never affects this verify: any failure is ignored, and the 240 s age gate still spaces the next merge.
+    if [ -n "$SHA" ] && [ -x "$ROOT/scripts/agents/merge-gate.sh" ]; then
+      "$ROOT/scripts/agents/merge-gate.sh" --release --sha "$SHA" --quiet >/dev/null 2>&1 || true
+    fi
     if [ -z "$NO_PAPER" ] && paper_merge "$SHA"; then
       # E250: nothing a visitor is served can have changed — grade production as served now; never write production.
       DEPLOY_URL="$(current_prod)"
