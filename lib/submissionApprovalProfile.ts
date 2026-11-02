@@ -91,6 +91,15 @@ export function newModDataFromSubmission<S extends SubmissionModSource>(
     currency: s.currency,
     isNSFW: s.isNSFW,
     contentType: resolveIngestContentType(s.modName, s.description, null) ?? null,
+    // E322 (2026-11-02): approval IS the review, so the row is published.
+    // Every public reader — sitemap-mods.xml, /api/mods, search, aiSearch,
+    // IndexNow — selects `isVerified: true`, and the column defaults to false.
+    // Neither the route nor the E304 script ever set it: the 7 Atino00 mods
+    // approved 2026-11-01 rendered on their creator page but were absent from
+    // every one of those readers (17,129 of 17,147 mods are verified). This
+    // is the Mod flag only; the CreatorProfile stays unverified (E151 — only
+    // promotion verifies an identity).
+    isVerified: true,
   };
 }
 
