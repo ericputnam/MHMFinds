@@ -237,6 +237,28 @@ export default function CollectionPageClient({
               onClear={goToGame}
             />
 
+            {/* Email capture (E323, 2026-11-02): directly under the 48-card
+                grid, a sibling of <LauncherGrid> and outside its .mv-ads
+                container (siblings do not change ad geometry), never inside
+                or beside <aside id="secondary">. Until E323 it rendered
+                last, below 60 more-links, related collections and creators:
+                2,009 sessions / 4,387 views → 1 newsletter_signup
+                (10-25→10-31). Placement only, copy unchanged.
+                source="collection-page" keeps attribution per surface. */}
+            <section className="below-sec" aria-labelledby="collection-news-heading">
+              <div className="coll-news">
+                <p className="hero-kicker">New finds by email</p>
+                <h2 id="collection-news-heading" className="hc-title">
+                  New {collection.title} every two weeks
+                </h2>
+                <p className="ef-copy">
+                  Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam,
+                  unsubscribe anytime.
+                </p>
+                <NewsletterSignup source="collection-page" variant="strip" />
+              </div>
+            </section>
+
             {/* Crawlable links to the next 60 mods of this collection
                 (E84). Sibling of the grid inside the main column —
                 never inside or beside <aside id="secondary">. */}
@@ -284,24 +306,6 @@ export default function CollectionPageClient({
                 </div>
               </section>
             )}
-
-            {/* Email capture — sibling of the mod grid, never inside or
-                adjacent to the <aside id="secondary"> ad anchor.
-                source="collection-page" so the scoreboard attributes
-                net adds to this surface separately from footer/go. */}
-            <section className="below-sec" aria-labelledby="collection-news-heading">
-              <div className="coll-news">
-                <p className="hero-kicker">New finds by email</p>
-                <h2 id="collection-news-heading" className="hc-title">
-                  New {collection.title} every two weeks
-                </h2>
-                <p className="ef-copy">
-                  Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam,
-                  unsubscribe anytime.
-                </p>
-                <NewsletterSignup source="collection-page" variant="strip" />
-              </div>
-            </section>
           </div>
 
           {/* Right Ad Sidebar — in normal document flow so Mediavine Script Wrapper
