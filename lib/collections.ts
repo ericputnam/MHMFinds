@@ -522,17 +522,31 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     game: 'Sims 4',
     gameSlug: 'sims-4',
     title: 'Body Presets',
+    // Sage, 2026-11-02 (E320, Tier 0 — head-term retitle in the E311
+    // hair-cc pattern). GSC 10-03→10-30: this hub is the top /games/* page
+    // by clicks (1,113 impr / 55 clicks / pos 10.7), but the "body preset"
+    // query family on it is 119 impr / 2 clicks / 1.7% CTR at pos 13.3 while
+    // /sims-4-male-body-presets-cc/ takes 1,528 impr / 115 clicks / 7.5% on
+    // the same family. The head term is the plural ("sims 4 body presets"
+    // 26 impr / pos 15.5, "the sims 4 body presets" 8, "body presets sims 4"
+    // 7); the old title said "Body Preset Finder — Browse 90+ CAS Presets",
+    // singular and with none of the modifiers people type ("curvy body
+    // preset" 11 / pos 7.5, "plus size athletic" 9 / 5.3, "body diversity
+    // mod" 8 / 8.1, "thick body preset" 7 / 11.0, "bbl body preset" 5 / 7.8).
+    // The grid supports every word in the title: 30 of the top 30 by
+    // downloads are body presets (prod 2026-11-02), with curvy, BBL, thick,
+    // athletic, petite and male presets all in that 30.
     heading: 'Sims 4 Body Presets',
-    metaTitle: 'Sims 4 Body Preset Finder — Browse 90+ CAS Presets | MustHaveMods',
+    metaTitle: 'Sims 4 Body Presets — 90+ Curvy, Plus-Size, Athletic & Male CAS Presets | MustHaveMods',
     metaDescription:
-      'Browse every Sims 4 body preset in one place. Filter 90+ realistic, curvy, plus-size, athletic, and male presets by style and sort by downloads.',
+      'Browse 90+ Sims 4 body presets in one filterable finder — curvy, plus-size, thick, athletic and male CAS presets for real body diversity, sorted by downloads.',
     tagline: 'Curvy, plus-size, athletic, and male presets for realistic sims',
     intro:
       'CAS sliders will only take a sim\'s body so far. Vanilla Sims 4 bodies converge on the same two or three silhouettes no matter how long you drag, because the sliders move a handful of regions and leave the rest alone. Body presets fix this at the mesh level: one click in CAS and the whole body shape changes — hip-to-waist ratios the sliders can\'t reach, shoulders that actually vary, soft bodies that look like people instead of mannequins.\n\nThis collection pulls together 90+ body presets across the full range: curvy and plus-size presets (consistently the most-downloaded category), athletic and muscular builds, male body presets — chronically under-served in CAS content — and the subtle "slightly more realistic than vanilla" presets that you\'ll end up applying to half your saves. Presets are also the cheapest diversity tool in the game: a household where every sim shares the same body reads as generated; one where bodies actually vary reads as written.\n\nTwo tips before you download: presets stack with skin details (a body preset plus a skin overlay is the standard realism combo — see the skin details collection), and most presets are found under the body type icons in CAS, not in a catalog category, so check the creator\'s install note if you can\'t find one in-game.',
     filter: { contentType: 'body-preset' },
     // 139 → 93 on 2026-10-21 (E256): 57 nose/eye presets moved to `preset`
     // (face presets are not body presets); copy 130+ → 90+.
-    expectedCount: 93,
+    expectedCount: 92, // prod count 2026-11-02 (was 93)
     // 2026-10-25 (E272): 'male-clothes' → 'gshade-presets' (male-clothes
     // keeps 4 inbound; the GShade page needs a second source that itself
     // clears MIN_INBOUND). Visual presets sit next to CAS presets in search.
@@ -542,6 +556,18 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // The four legacy body-preset listicles were un-redirected (2026-07
     // revert — they outrank this page) and are now DIFFERENTIATED pairs.
     blogUrl: '/sims-4-body-presets/',
+    // E320 (2026-11-02): the three other body-preset articles already rank
+    // for the family and get no link from this hub. GSC 10-03→10-30
+    // clicks / impressions / position: /sims-4-male-body-presets-cc/
+    // 115 / 1,528 / 9.2, /sims-4-plus-size-body-presets/ 15 / 210 / 11.2,
+    // /sims-4-athletic-body-presets/ 6 / 116 / 13.8. All three live 200 on
+    // the apex (curl 2026-11-02). Same E311 hair-cc pattern: the hub names
+    // the family, the guides hold the modifier intents.
+    guides: [
+      { href: '/sims-4-male-body-presets-cc/', label: 'Sims 4 male body presets' },
+      { href: '/sims-4-plus-size-body-presets/', label: 'Sims 4 plus-size body presets' },
+      { href: '/sims-4-athletic-body-presets/', label: 'Sims 4 athletic body presets' },
+    ],
   },
   {
     slug: 'goth-cc',
