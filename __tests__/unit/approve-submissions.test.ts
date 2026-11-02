@@ -4,6 +4,9 @@
  * names the submission's author, the author names the submitting account.
  * Only `source-verified` rows are writable; everything else is a recorded skip.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { isPendingHandle, pendingProfileHandle } from '../../lib/creatorClaim';
@@ -229,6 +232,16 @@ describe('newModDataFromSubmission (shared with the approve route)', () => {
     expect(data.source).toBe('User Submission');
     expect(data.title).toBe(sub.modName);
     expect(data.author).toBe('Atino00');
+  });
+
+  it('E322: publishes the mod (isVerified true) so every isVerified:true reader selects it', () => {
+    const data = newModDataFromSubmission(sub, { thumbnail: null, images: [] });
+    expect(data.isVerified).toBe(true);
+    // The reader filter the flag must satisfy, read from the real sitemap route source.
+    const src = readFileSync(join(process.cwd(), 'app/sitemap-mods.xml/route.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, ''); // strip comments: assert the code, not its documentation
+    expect(src).toMatch(/isVerified:\s*true/);
   });
 
   it('sets contentType through the E168 ingest resolver and NULL when nothing is confident', () => {
