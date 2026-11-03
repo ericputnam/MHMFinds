@@ -34,6 +34,13 @@ export const PLATFORMS: readonly Platform[] = ['tumblr', 'short-video', 'reddit'
 /** Growth plan rank order (10-24): short video first, then Tumblr, Reddit; X/Bluesky lowest. */
 export const PLATFORM_RANK: Record<Platform, number> = { 'short-video': 1, tumblr: 2, reddit: 3, x: 5 };
 
+/**
+ * Platforms the team may not draft for (operator 2026-11-02): Tumblr is the
+ * operator's, Reddit is unavailable (account banned). Kept in `Platform` so
+ * `--lint` still reads the 10-25..10-31 batches that contain them.
+ */
+export const FROZEN_PLATFORMS: readonly Platform[] = ['tumblr', 'reddit'];
+
 /** The day the operator said Tier 2 for new-channel posts may be revisited. */
 export const SOCIAL_TIER2_UNTIL = '2026-11-07';
 
