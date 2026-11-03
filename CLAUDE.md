@@ -925,52 +925,52 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 10-31 — rotated to the archive
+### 2026-10-15 → 11-01 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02.
 
-### 2026-11-01 (covers merges #425–#438, 10-31 → 11-01)
+### 2026-11-02 (covers merges #440–#448, 11-02)
 
-Subsystem entries (piercing theme, hair-cc retitle, hub breadcrumbs, cadence copy) are in the
-archive under "2026-11-01 — subsystem entries". `main` is green again (#427 asserts the builder's
-row instead of restating a literal).
+Subsystem entries (Pinterest freeze, short video, hub capture, body-presets, style-to-test) are
+in the archive under "2026-11-02 — subsystem entries". E313 is closed by #440.
 
-- **A frozen plan must model its own earlier rows.** E304 froze 7 submissions from one account, and
-  each said `profile: create`. Row 1 created the profile. Rows 2–7 failed P2002, so 1 of 7 applied.
-  A re-run would have skipped the 6 as "drifted", because `signature()` compared the whole action
-  (`create` ≠ `link`). #432 reads the live state by unique key at apply time: same handle → link,
-  other handle → re-plan, none → create. The signature pins the *identity* (`profileHandle`), not
-  the action. Rollback deletes children before parents, in a second pass after every row of the plan
-  is gone. Any plan with N rows per parent needs a test where row 2 meets row 1's write.
-- **A new write path inherits every reader's filter, not just the schema's required fields.** The
-  scripted approvals left `Mod.isVerified` at its default `false`. The 7 mods render on the creator
-  page, but they are missing from `sitemap-mods.xml`, `/api/mods`, search, `aiSearch` and IndexNow,
-  because each of those reads `where: { isVerified: true }` (`grep -rln "isVerified: true" app lib`).
-  Before a script creates rows that a human route used to create, grep the readers' `where` clauses
-  for every flag the route set by hand. A row no reader selects does not exist for traffic. (E313
-  is open.)
-- **Verify what the merge added, not a rotation sample (#431, E317).** #419 added `christmas-cc` and
-  passed after-merge without rendering it, because the page sample rotates 1 of 35 per day. With
-  `--sha`, deploy-verify now parses `git show <sha> -- lib/collections.ts` and renders each added
-  slug (cap 3). Derive a verify's targets from the diff; an unreadable sha adds nothing, not a
-  verdict.
-- **Diagnose the host before the probe.** All 7 after-merge verifies on 11-01 graded INCONCLUSIVE
-  (600 s smoke cap). A full `npx vitest run` lost one case in 9 files at about 940 s, and the run
-  lock was held for 24.8 h. One cause covered all of it: the laptop idle-slept about 15 min per
-  cycle (`pmset -g log`). Every one of those checks passed when re-run by hand. When several
-  unrelated timeouts land on the same day, check sleep/wake and concurrency (3 agent suites at
-  once) before blaming any one of them. Record the hand re-run as a *correcting* ledger row; never
-  edit the INCONCLUSIVE row (#430). Proposed fix: `caffeinate -i` (awaiting operator approval).
-- **A date assertion must pin the clock.** `sitemap-nextjs-lastmod.test.ts` asserted a lastmod was
-  "never today", so it failed on correct code on the day a constant was bumped to today. #429 pins
-  the clock to 2099-06-15. Never let a test's verdict depend on what day CI runs.
-- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:51`
-  (open since 10-30, third day).
+- **Fix the shared builder, not the caller (#440).** The bug was in `newModDataFromSubmission`, so
+  the admin approve route *and* the E304 script both wrote rows that no reader selects. The test
+  imports the real builder, and it failed on the pre-fix tree. A write-side backfill takes
+  `--expect=N` and refuses to apply if the live population is a different size.
+- **A lock diagnosis names the most specific cause first (#444, E326).** `merge-gate.sh` checked the
+  TTL before anything else, so every lock it broke read "older than TTL", including locks whose
+  shell had exited or whose PR had merged long before. It now checks in order: shell exited, merge
+  landed, holder's PR `MERGED`, then the TTL, and releases on that positive evidence. A `gh`
+  failure counts as unknown, never as stale. `deploy-verify --after-merge` calls `--release --sha`.
+- **An operator freeze is a committed file that every write path checks before its first write
+  (#446).** `pinterest-freeze.json` makes each pin-queue writer exit **3** (a distinct code). Dry runs and
+  `--check` still work, and a malformed file counts as frozen. **Gap:** a *missing* file counts as
+  not frozen, and a branch cut before #446 does not have the file. So a writer run from an older
+  branch, or after the file is deleted, writes anyway (the same race as "a comment is not a gate").
+  Run pin writers only from `origin/main`.
+- **Every merge needs a ledger label, interactive sessions included.** `deploy-verify.sh` defaults
+  `LABEL="manual"`. The three operator-session merges on 11-02 (#446, #447, #448) all landed as
+  `after-merge | manual`, so the ledger cannot tell which PR a row grades. #447's row is `TIMEOUT`
+  (no READY deploy within 25 min) and has no correcting row. #448's PASS covers that code, but only
+  by ancestry. Pass `--label "PR #N …"`, and write a correcting row after a TIMEOUT.
+- **One timezone in the ledger.** The 11-02 hand-written `apply` rows (E322 backfill, E319 pin) say
+  17:58/17:59 (UTC), and the script rows around them say 12:58 (local, −0500). As a result, the
+  apply rows sort five hours after the merge that shipped their script. Copy the timestamp format
+  of the row above, or take it from the script's own output.
+- **"BUILD ERROR (platform) → READY via ledger commit" is now routine:** 7 rows so far, 3 on 11-01/02
+  (#437, #442, #446). The own build of the merge commit ERRORs, and the ledger commit pushed about
+  30 s later builds READY with the same app code. E201 grades this correctly and never acts on it.
+  But a pattern this regular is a cause, not noise. Find out why Vercel ERRORs the first build
+  before treating it as weather (open).
+- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`
+  (fourth day). The 11-02 digest landed via `digest-land.sh` with Team / Insight "not written yet":
+  the daily PR did not merge.
 
 ---
 
-*Last compound review: 2026-11-01*
+*Last compound review: 2026-11-02*
 
 ---
 

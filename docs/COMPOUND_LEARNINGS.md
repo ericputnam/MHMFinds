@@ -2773,6 +2773,75 @@ Subsystem entries (christmas theme, affiliate GA4 leg, hub→creator links) are 
   exempts the one file that a held PR (#414) already fixes. Name such an exemption with the PR
   number so it can be removed when the PR lands.
 
+### 2026-11-01 — rotated from CLAUDE.md
+
+(Heading in CLAUDE.md was "2026-11-01 (covers merges #425–#438, 10-31 → 11-01)".)
+
+Subsystem entries (piercing theme, hair-cc retitle, hub breadcrumbs, cadence copy) are in the
+archive under "2026-11-01 — subsystem entries". `main` is green again (#427 asserts the builder's
+row instead of restating a literal).
+
+- **A frozen plan must model its own earlier rows.** E304 froze 7 submissions from one account, and
+  each said `profile: create`. Row 1 created the profile. Rows 2–7 failed P2002, so 1 of 7 applied.
+  A re-run would have skipped the 6 as "drifted", because `signature()` compared the whole action
+  (`create` ≠ `link`). #432 reads the live state by unique key at apply time: same handle → link,
+  other handle → re-plan, none → create. The signature pins the *identity* (`profileHandle`), not
+  the action. Rollback deletes children before parents, in a second pass after every row of the plan
+  is gone. Any plan with N rows per parent needs a test where row 2 meets row 1's write.
+- **A new write path inherits every reader's filter, not just the schema's required fields.** The
+  scripted approvals left `Mod.isVerified` at its default `false`. The 7 mods render on the creator
+  page, but they are missing from `sitemap-mods.xml`, `/api/mods`, search, `aiSearch` and IndexNow,
+  because each of those reads `where: { isVerified: true }` (`grep -rln "isVerified: true" app lib`).
+  Before a script creates rows that a human route used to create, grep the readers' `where` clauses
+  for every flag the route set by hand. A row no reader selects does not exist for traffic. (E313
+  is open.)
+- **Verify what the merge added, not a rotation sample (#431, E317).** #419 added `christmas-cc` and
+  passed after-merge without rendering it, because the page sample rotates 1 of 35 per day. With
+  `--sha`, deploy-verify now parses `git show <sha> -- lib/collections.ts` and renders each added
+  slug (cap 3). Derive a verify's targets from the diff; an unreadable sha adds nothing, not a
+  verdict.
+- **Diagnose the host before the probe.** All 7 after-merge verifies on 11-01 graded INCONCLUSIVE
+  (600 s smoke cap). A full `npx vitest run` lost one case in 9 files at about 940 s, and the run
+  lock was held for 24.8 h. One cause covered all of it: the laptop idle-slept about 15 min per
+  cycle (`pmset -g log`). Every one of those checks passed when re-run by hand. When several
+  unrelated timeouts land on the same day, check sleep/wake and concurrency (3 agent suites at
+  once) before blaming any one of them. Record the hand re-run as a *correcting* ledger row; never
+  edit the INCONCLUSIVE row (#430). Proposed fix: `caffeinate -i` (awaiting operator approval).
+- **A date assertion must pin the clock.** `sitemap-nextjs-lastmod.test.ts` asserted a lastmod was
+  "never today", so it failed on correct code on the day a constant was bumped to today. #429 pins
+  the clock to 2099-06-15. Never let a test's verdict depend on what day CI runs.
+- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:51`
+  (open since 10-30, third day).
+
+### 2026-11-02 — subsystem entries (written directly to the archive)
+
+- **Pinterest and Tumblr frozen by the operator (#446, 2026-11-02).** `scripts/agents/pinterest_freeze.py`
+  `refuse_if_frozen()` runs in `insert-catalog-pins`, `pin-runway-topup`, `repair-pin-sections`,
+  `revive-stranded-pins` and `pin-seo-audit` before their first write. Reddit is unavailable, and
+  `social-draft.ts` filters `FROZEN_PLATFORMS` (tumblr, reddit) and defaults to `short-video,x` (#447).
+  Short video is Pip's rank-1 channel. The E319 piercings-cc catalog pin (row 12541) was applied at
+  17:59Z, *before* the freeze. Only the operator lifts the freeze.
+- **Short-video renderer (#447 → #448).** `short-video-frames.ts` steps a deterministic composition
+  at 30 fps in Playwright and pipes it to ffmpeg. Outputs: `video.mp4` (synthesized SFX),
+  `video-silent.mp4`, `cover.jpg` and per-scene PNGs, all gitignored. It writes no copy (every word
+  comes from the draft), never posts, and credits every creator on screen. Brand colours are flat:
+  no gradient, glow, gloss or vignette, enforced by a test.
+- **Capture goes directly under the grid (#442, E323).** The collection-hub form rendered last,
+  below 60 more-links: 2,009 sessions / 4,387 views → 1 `newsletter_signup` (10-25→10-31). It is now
+  a sibling of `<LauncherGrid>` before `<CollectionMoreLinks>`, outside `.mv-ads` and
+  `aside#secondary`. `collection-capture-placement.test.ts` was red on the pre-fix file (1/3).
+- **Operator taste goes into a test the same day (#448).** "No gradients, nothing that reads
+  AI-made" became a test that greps the video composition for `gradient`/`glow`/`gloss`. Feedback
+  about style that is not encoded in a test comes back on the next draft.
+- **Body-presets hub retitle (#441, E320).** Same pattern as E311. The page got 1,113 impressions at
+  pos 10.7, but the "body preset" family on it was 119 impressions at 1.7% CTR, against 7.5% for the
+  male listicle. The title now leads with the plural head term plus curvy / plus-size / athletic /
+  male, and 3 ranking articles are linked as guides. `expectedCount` 93 → 92, from prod.
+- **RPM read (#443, E324).** The 10-31 dip was volume, not rate: sessions were −24.7% on Halloween
+  Saturday with RPM −4.2%, and 11-01 RPM was 107.5% of its Sunday baseline. The guardrail held. The
+  runner withheld a red-traffic rollback because 90 deploys in the window exceeded the 24 bound.
+  This is the "could not run ≠ broken" rule working as designed.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
