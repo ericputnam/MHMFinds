@@ -85,6 +85,11 @@ describe('short-video-frames-lib', () => {
     expect(html).not.toContain('</script><x>');
   });
 
+  it('flat colours only: no gradients, glows or gloss (operator 2026-11-02)', () => {
+    const html = compositionHtml(buildTimeline(parseDraft(DRAFT)));
+    expect(html).not.toMatch(/gradient|drop-shadow|mix-blend|shine|glow/i);
+  });
+
   it('tries the original WordPress upload before the resized variant', () => {
     expect(fullResCandidates('https://x/a-1024x576.png')).toEqual(['https://x/a.png', 'https://x/a-1024x576.png']);
     expect(fullResCandidates('https://x/a.png')).toEqual(['https://x/a.png']);

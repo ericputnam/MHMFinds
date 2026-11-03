@@ -13,6 +13,9 @@
  * Layout respects TikTok/Reels/Shorts UI: nothing important in the top 150 px,
  * the right 140 px (action rail) or the bottom ~450 px (caption + music bar).
  *
+ * Look rule (operator 2026-11-02): flat brand colours only. No gradients, glows, gloss
+ * sweeps or anything else that reads as AI-made; the test suite greps for them.
+ *
  * Copy rule (growth-plan.md): every word is the draft's — hook, Text lines, mod titles,
  * creators, destination. The only fixed strings are the CTA labels on the end card.
  * `*word*` in the draft's Hook line renders that word on a pink highlight.
@@ -180,23 +183,20 @@ export function sfxWav(tl: Timeline, sampleRate = 44100): Buffer {
 // ---------------------------------------------------------------- composition
 
 const PLUMBOB =
-  '<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">' +
-  '<stop offset="0" stop-color="#A7F3D0"/><stop offset=".45" stop-color="#10B981"/><stop offset="1" stop-color="#065F46"/></linearGradient></defs>' +
-  '<polygon points="30,0 60,42 30,100 0,42" fill="url(#pg)"/><polygon points="30,0 60,42 30,52 0,42" fill="rgba(255,255,255,.28)"/>' +
-  '<polyline points="0,42 30,52 60,42" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/></svg>';
+  '<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">' +
+  '<polygon points="30,0 60,42 30,100 0,42" fill="#10B981"/><polygon points="30,0 60,42 30,52 0,42" fill="#34D399"/></svg>';
 
 const CSS = `
-:root{--pink:#EC4899;--purple:#8B5CF6;--green:#10B981;--dark:#0B0F19}
+:root{--pink:#EC4899;--green:#10B981;--dark:#0B0F19}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:1080px;height:1920px;overflow:hidden;background:var(--dark);color:#fff;font-family:Inter,-apple-system,"Helvetica Neue",sans-serif}
 .layer{position:absolute;inset:0;opacity:0;overflow:hidden}
 .bg,.mimg,.tile{background-size:cover;background-position:center;background-color:#1b2136}
 .bg{position:absolute;inset:-90px;filter:blur(48px) brightness(.36) saturate(1.4)}
-.vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,rgba(11,15,25,0) 35%,rgba(11,15,25,.88) 100%)}
+.vig{position:absolute;inset:0;background:rgba(11,15,25,.45)}
 .card{position:absolute;left:60px;top:440px;width:960px;height:790px;border-radius:44px;overflow:hidden;
   box-shadow:0 46px 100px rgba(0,0,0,.65),0 0 0 3px rgba(255,255,255,.10)}
 .card .ph{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;background-color:#1b2136}
-.card .shine{position:absolute;top:0;bottom:0;width:60%;left:0;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.35) 50%,transparent 100%);mix-blend-mode:overlay}
 .num{position:absolute;left:30px;top:1010px;font-family:Anton,Impact,sans-serif;font-size:250px;line-height:1;color:#fff;
   text-shadow:0 12px 0 var(--pink),0 24px 50px rgba(0,0,0,.65);transform-origin:30% 70%}
 .num small{font-size:120px;opacity:.9}
@@ -210,7 +210,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:var(--dark);colo
 .tblock .tx{position:relative;text-shadow:0 4px 20px rgba(0,0,0,.55)}
 .tblock .hl{position:absolute;left:0;top:0;right:0;color:transparent}
 .tblock .hl span,.tblock .tx span{padding:0 16px;margin-left:-16px;-webkit-box-decoration-break:clone;box-decoration-break:clone;border-radius:14px}
-.tblock .hl span{background:linear-gradient(90deg,var(--pink),var(--purple))}
+.tblock .hl span{background:var(--pink)}
 .by{display:flex;align-items:center;gap:16px;margin-top:22px;font-size:44px;font-weight:700;color:rgba(255,255,255,.94)}
 .by svg{width:26px;height:44px}
 .chrome{position:absolute;inset:0;opacity:0;pointer-events:none}
@@ -223,7 +223,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:var(--dark);colo
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 .mimg{position:absolute;inset:0;opacity:0;filter:brightness(.5) saturate(1.25)}
 .pb{position:absolute;left:50%;width:96px;height:160px;margin-left:-48px}
-.pb svg{width:100%;height:100%;filter:drop-shadow(0 0 28px rgba(16,185,129,.75))}
+.pb svg{width:100%;height:100%}
 .hooktext{position:absolute;left:72px;right:140px;top:640px;font-family:Anton,Impact,sans-serif;font-size:142px;line-height:1.02;text-transform:uppercase;
   text-shadow:0 8px 30px rgba(0,0,0,.6)}
 .hooktext .w{margin-right:.2em;transform-origin:50% 60%}
@@ -232,12 +232,12 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:var(--dark);colo
 .wordmark b{color:var(--pink)}
 .grid{position:absolute;left:0;top:0;width:1080px;display:grid;grid-template-columns:repeat(3,360px);grid-auto-rows:360px}
 .tile{opacity:0;border:3px solid var(--dark)}
-.dim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,15,25,.78) 0%,rgba(11,15,25,.9) 45%,rgba(11,15,25,.97) 100%)}
+.dim{position:absolute;inset:0;background:rgba(11,15,25,.9)}
 .endc{position:absolute;left:72px;right:140px;top:470px;text-align:center}
 .endc .pb{position:relative;left:auto;margin:0 auto 40px;display:block}
 .cta1{font-family:Anton,Impact,sans-serif;font-size:118px;line-height:1.02;text-transform:uppercase;opacity:0}
-.url{display:inline-block;margin-top:56px;padding:30px 44px 34px;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--purple));
-  font-weight:900;font-size:50px;line-height:1.15;word-break:break-word;box-shadow:0 20px 60px rgba(236,72,153,.45);opacity:0}
+.url{display:inline-block;margin-top:56px;padding:30px 44px 34px;border-radius:999px;background:var(--pink);
+  font-weight:900;font-size:50px;line-height:1.15;word-break:break-word;box-shadow:0 12px 30px rgba(0,0,0,.45);opacity:0}
 .url .arr{display:inline-block;margin-left:14px}
 .bio{margin-top:40px;font-size:40px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85);opacity:0}
 .credits{margin-top:46px;font-size:34px;font-weight:600;line-height:1.4;color:rgba(255,255,255,.7);opacity:0}
@@ -268,7 +268,7 @@ function sceneHtml(s: Scene, tl: Timeline): string {
       `<div class="layer" data-scene="mod">` +
       `<div class="bg" data-img="${s.index}"></div><div class="vig"></div>` +
       (s.caption ? `<div class="cap"><span class="box">${wordsHtml(s.caption)}</span></div>` : '') +
-      `<div class="card"><div class="ph" data-img="${s.index}"></div><div class="shine"></div></div>` +
+      `<div class="card"><div class="ph" data-img="${s.index}"></div></div>` +
       `<div class="num">${s.index + 1}<small>/${tl.mods.length}</small></div>` +
       `<div class="meta"><div class="tblock" style="--fs:${fs}px"><div class="hl"><span>${title}</span></div><div class="tx"><span>${title}</span></div></div>` +
       `<div class="by">${PLUMBOB}<span>by ${escapeHtml(s.mod.creator)}</span></div></div>` +
@@ -326,7 +326,6 @@ window.__seek=function(t){
       var ph=L.querySelector('.ph'), a=aspect[s.index]||1.2, z=P(u,0,d);
       setT(ph,'scale('+(1.06+0.14*z)+')');
       ph.style.backgroundPosition=a>1.25?(18+64*z)+'% 50%':'50% '+(12+30*z)+'%';
-      setT(L.querySelector('.shine'),'translateX('+(-120+340*eo(P(u,0.35,0.6)))+'%)');
       var bg=L.querySelector('.bg');setT(bg,'scale('+(1.15+0.1*z)+')');
       var num=L.querySelector('.num'),np=P(u,0.12,0.32);num.style.opacity=np>0?1-outP:0;
       setT(num,'translateX('+(-outP*600)+'px) scale('+bo(np)+') rotate('+(-14+8*np)+'deg)');
