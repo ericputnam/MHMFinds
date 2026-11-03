@@ -1358,6 +1358,10 @@ def main():
                              'window; selection is `Is Posted=false` only, no date '
                              'predicate (E127). Report/rollback files get an `-ids` suffix.')
     args = parser.parse_args()
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from pinterest_freeze import refuse_if_frozen
+    if args.apply:
+        refuse_if_frozen('pin-seo-audit.py')
 
     if args.self_test:
         return self_test()

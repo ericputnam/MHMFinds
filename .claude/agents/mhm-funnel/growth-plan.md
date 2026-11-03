@@ -1,4 +1,9 @@
-# Growth plan — operator directive 2026-10-24
+# Growth plan — operator directive 2026-10-24 (amended 2026-11-02)
+
+**11-02 amendment (operator):** Pinterest and Tumblr are frozen to the team: no automated writes
+of any kind (`pinterest-freeze.json`, SD-10). The writer runs Pinterest by hand; the team may only
+*recommend* Pinterest changes to the operator. Reddit is out (account banned). Every other channel
+is the team's, and **short video is rank 1**: the fastest odds of a breakout post.
 
 The operator's read on 10-24: traffic is flat (Aug 414k → Sep 381k → Oct ≈400k pace), ~75% of it
 is Pinterest, and "ON LINE" only meant on a +12% line. That is not growth. From 10-24:
@@ -18,12 +23,12 @@ tagged catalog (Rowan). These convert traffic; they do not create it.
 | Rank | Channel | Owner | First deliverable |
 |---|---|---|---|
 | 1 | Short video: TikTok, YouTube Shorts, Instagram Reels (one asset, three posts) | Pip (+Nova for picks) | Weekly "new mods this week" and "best CC for <new pack>" shorts, built from the catalog |
-| 2 | Tumblr | Pip | Weekly finds posts in the community's own format (reblog-friendly, creator tagged) |
-| 3 | Reddit (r/thesims, r/Sims4, r/TheSimsBuilding) | Pip | Genuine finds posts only, within each sub's self-promo rules; never a bot cadence |
+| ~~2~~ | Tumblr | — | Out of scope (operator, 11-02) |
+| ~~3~~ | Reddit | — | Unavailable: account banned (11-02) |
 | 4 | Facebook groups, Discord servers | Nova | Admin relationships first; share only where admins allow |
 | 5 | X, Bluesky | Pip | Cheap auto-cross-post of the weekly finds; lowest priority |
 | — | Search + AI | Sage | Continue; category hubs vs CurseForge/TSR/SimsFinds head queries |
-| — | EA release calendar | Nova + Pip + Sage | Pages, pins, shorts and newsletter ready the day a pack/kit lands |
+| — | EA release calendar | Nova + Pip + Sage | Pages, shorts and newsletter ready the day a pack/kit lands (pins: recommend to the operator) |
 
 **Approval rule (operator, 10-24): every public post on a new channel is Tier 2 until 2026-11-07.**
 Drafts go to `reports/funnel/social/drafts/YYYY-MM-DD/` (caption, asset, target account, creator
@@ -47,7 +52,7 @@ the queue, so posting starts the day access arrives.
 
 ## Paid ads test (budget pending — operator to-do)
 At ≈$16.50 per 1,000 sessions a paid session loses money; only a subscriber or returning user pays
-back. Test design (Rio + Cass): one EA pack launch, $100–200, Reddit or TikTok, graded on cost per
+back. Test design (Rio + Cass): one EA pack launch, $100–200, TikTok or Meta, graded on cost per
 email subscriber and 14-day return rate, not CPC. No bids on competitor trademarks ("CurseForge").
 Positioning vs CurseForge/SimsFinds: "search every site at once."
 
@@ -69,6 +74,6 @@ Pages per session 1.47 and returning share 48%: "more like this", collections, f
 that touches ad layout stays Tier 2.
 
 ## Operator to-dos (tracked in operator-queue.md)
-Create TikTok / YouTube / Instagram / Tumblr accounts and grant posting access (10-24) · approve
+Create TikTok / YouTube / Instagram accounts and grant posting access (10-24) · approve
 social drafts for two weeks · set the ads test budget · set the contest prize budget · approve
 contest rules when Nova drafts them.

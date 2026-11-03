@@ -1317,6 +1317,10 @@ def build_parser():
 
 def main():
     args = build_parser().parse_args()
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from pinterest_freeze import refuse_if_frozen
+    if args.apply:
+        refuse_if_frozen('pin-runway-topup.py')
 
     if args.self_test:
         return self_test()
