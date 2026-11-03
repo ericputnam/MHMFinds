@@ -273,6 +273,10 @@ def image_url_exists(config, image_url):
 
 def main():
     dry_run = '--dry-run' in sys.argv
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from pinterest_freeze import refuse_if_frozen
+    if not dry_run:
+        refuse_if_frozen('insert-catalog-pins.py')
     print('=== {} catalog pins -> {} ==='.format(
         'DRY RUN:' if dry_run else 'Inserting', TABLE))
 

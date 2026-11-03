@@ -1,0 +1,7 @@
+{
+  "frozen": true,
+  "since": "2026-11-02",
+  "by": "operator",
+  "reason": "Operator 2026-11-02: no automated Pinterest writes (pin-queue inserts, top-ups, re-dates, SEO rewrites, section repairs) until the operator lifts this. The writer posts holiday topic boards by hand; the team may only recommend Pinterest changes to the operator. Tumblr is also out of scope; Reddit is unavailable (banned).",
+  "lift": "Operator only: set \"frozen\": false in this file (or delete it) in a PR the operator merges. Agents never edit this file."
+}

@@ -14,6 +14,9 @@ Entry format:
 - Next time: one sentence
 ```
 
+## Standing order 2026-11-02 — Pinterest + Tumblr frozen
+Operator froze all automated Pinterest writes (top-ups, catalog pins, re-dates, SEO, sections) and Tumblr changes; write scripts exit 3 on `pinterest-freeze.json`. The E300 read 11-07 is a read-only grade. Your work is short video + every other channel (growth-plan.md); Pinterest ideas go to the operator as recommendations.
+
 ## Kill log
 _(ideas you tried that did not work — never re-propose without saying what changed)_
 

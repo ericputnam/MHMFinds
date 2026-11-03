@@ -533,6 +533,10 @@ def main():
                              'Default 0. A stranded row never blocks the poster; '
                              'a dead section there only starves the top-up')
     args = parser.parse_args()
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from pinterest_freeze import refuse_if_frozen
+    if args.apply:
+        refuse_if_frozen('repair-pin-sections.py')
 
     if args.self_test:
         return self_test()

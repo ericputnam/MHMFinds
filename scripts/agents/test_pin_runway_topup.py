@@ -33,6 +33,15 @@ def _load_module(name, filename):
     return module
 
 
+@pytest.fixture(autouse=True)
+def _bypass_pinterest_freeze(monkeypatch):
+    """These tests exercise main() --apply against mocked I/O, never Supabase.
+    The operator freeze (pinterest_freeze.py) is tested in test_pinterest_freeze.py."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import pinterest_freeze
+    monkeypatch.setattr(pinterest_freeze, 'refuse_if_frozen', lambda *a, **k: None)
+
+
 @pytest.fixture(scope='module')
 def topup():
     return _load_module('mhm_pin_runway_topup', 'pin-runway-topup.py')

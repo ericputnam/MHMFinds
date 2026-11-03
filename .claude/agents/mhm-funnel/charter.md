@@ -82,8 +82,8 @@ it. A week of green levers and red revenue is a red week.
 
 ```
 AUDIENCE                CONTENT                       PRODUCT
-Pinterest (scale it)    Blog listicles (human, 20/mo) Patreon paid tiers (real perks)
-Tumblr / X / FB (auto)  Catalog 15.9K mods + facets    Membership: no countdown/ads, early mods
+Pinterest (operator)    Blog listicles (human, 20/mo) Patreon paid tiers (real perks)
+Short video, X, FB      Catalog 15.9K mods + facets    Membership: no countdown/ads, early mods
 SEO recovery            Collection pages               First-party mods (free → premium)
 AI / LLM answer engines Lookbooks (writer)             Creator program / hosting (supply + audience)
 Creators bring fans     /play daily game               Affiliates (background), sponsorships
@@ -203,24 +203,17 @@ scope, then dropped from the queue and logged — it does not block the team.
   for the team is total revenue (ad + non-ad) growth, 28d vs prior 28d. The
   digest leads with it; monthly bets are ranked by expected revenue impact.
   *Amended 2026-09-19:* sessions 28d is a co-equal headline; both must grow.
-- **SD-10 · Pinterest is the main traffic pipe; do not blast it (2026-09-19,
-  amended 2026-09-22).** Three stranded-pin revivals (E26/E46/E56) pushed
-  hundreds of never-pinned images into the queue on top of the writer's own
-  scheduled pins; Pinterest sessions fell every day after. The operator rolled
-  back E46/E56 on 09-19. Rule: anything that changes pin *volume, timing or
-  inventory* (re-dating, bulk inserts into `n8n_pinterest_posts`, cadence, new
-  crons touching the writer's queue) is **Tier 2**. The writer's scheduled
-  queue is not the team's to reshape. Pinterest work the team may still ship
-  at Tier 0/1: reading analytics back, pin SEO (titles/descriptions/alt
-  text/board fit), board hygiene, repairing dead sections, catalog landing
-  pages — anything judged by impressions and clicks growing, not by pins
-  posted. **Amendment (operator, 2026-09-22) — standing pin-runway floor:**
-  when queue runway drops below 2.0 days, Pip may schedule stranded/revival
-  rows without asking, bounded by ≤7 rows/day, never above the trailing-14-day
-  average daily posted rate, sessions-ranked selection only (`--ids-from`),
-  never the writer's own scheduled rows, dry-run first + a ledger row on every
-  apply, stopping at runway ≥3 days. `scripts/agents/pin-runway-topup.py` is
-  the only mechanism. Everything else above stays Tier 2.
+- **SD-10 · Pinterest and Tumblr are the operator's; the team does not touch
+  them (2026-09-19, superseded 2026-11-02).** E26/E46/E56 revivals pushed
+  never-pinned images on top of the writer's queue; Pinterest sessions fell and
+  the operator rolled them back. The 09-22 runway floor ran until **11-02, when
+  the operator froze all automated Pinterest writes**: no inserts, top-ups,
+  re-dates, SEO rewrites or section repairs in `n8n_pinterest_posts`, no new
+  boards or formats, and no Tumblr changes. The writer posts holiday boards by
+  hand. `pinterest-freeze.json` makes every write script exit 3; only the
+  operator lifts it. Allowed: read-only analytics, dry runs, and Pinterest
+  *recommendations* in `operator-queue.md`. Reddit is unavailable (banned).
+  Grow every other channel (growth-plan.md).
 - **SD-11 · Ops budget — plumbing is capped (2026-09-22).** Ops
   (`mhm-platform-ops.md`) may ship at most 20% of the team's merges in any
   rolling 7-day window (Quinn tallies the ledger's "who" column). Above that,
