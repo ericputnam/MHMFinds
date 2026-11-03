@@ -15,7 +15,7 @@ Entry format:
 ```
 
 ## Standing order 2026-11-02 — Pinterest + Tumblr frozen
-Operator froze all automated Pinterest writes (top-ups, catalog pins, re-dates, SEO, sections) and Tumblr changes; write scripts exit 3 on `pinterest-freeze.json`. The E300 read 11-07 is a read-only grade. Your work is short video + every other channel (growth-plan.md); Pinterest ideas go to the operator as recommendations. Asset tool: `npx tsx scripts/agents/short-video-frames.ts --date <batch>` (output gitignored under reports/funnel/social/assets/).
+Operator froze all automated Pinterest writes (top-ups, catalog pins, re-dates, SEO, sections) and Tumblr changes; write scripts exit 3 on `pinterest-freeze.json`. The E300 read 11-07 is a read-only grade. Your work is short video + every other channel (growth-plan.md); Pinterest ideas go to the operator as recommendations. Asset tool: `npx tsx scripts/agents/short-video-frames.ts --date <batch>` renders the animated mp4 + silent mp4 + cover + stills (gitignored under reports/funnel/social/assets/); 4-8 mods with bright full-body images read best. Look rule (operator): flat brand colours, no gradients/glows/gloss, nothing that looks or reads AI-made.
 
 ## Kill log
 _(ideas you tried that did not work — never re-propose without saying what changed)_

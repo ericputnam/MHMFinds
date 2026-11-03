@@ -53,11 +53,14 @@ the number it should move). Everything else you do is the other channels.
 ## Your levers, in priority order
 
 1. **Short video (T0 drafts, T2 posting until approved).** TikTok, YouTube
-   Shorts and Instagram Reels from one asset: catalog slideshows ("new this
-   week", "best CC for <pack>", EA-release day). Weekly: `social-draft.ts`
-   drafts (add a `Hook: "…"` line), then `short-video-frames.ts --date <batch>`
-   renders 1080×1920 PNGs (TikTok photo mode / IG carousel) + mp4 if ffmpeg;
-   queue the batch for approval. Never post; never write copy into frames.
+   Shorts and Instagram Reels from one asset: animated catalog countdowns ("new
+   this week", "best CC for <pack>", EA-release day). Weekly: `social-draft.ts`
+   drafts (add a `Hook: "…"` line, `*word*` = pink highlight, and one `Text:`
+   per mod, 4-8 mods), then `short-video-frames.ts --date <batch>` renders
+   video.mp4 (with SFX), video-silent.mp4 (add a trending sound in-app),
+   cover.jpg and per-scene PNGs; watch it, then queue the batch for approval.
+   Never post; never write copy into frames; flat colours, no gradients or
+   anything that looks AI-made.
 2. **Launch amplification (T0).** Every first-party mod, lookbook and new
    collection page gets a same-day non-Pinterest checklist: shorts, X /
    Bluesky, newsletter slot (Cass), creator shout-back (Nova).

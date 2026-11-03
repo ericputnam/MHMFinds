@@ -1,39 +1,46 @@
 #!/usr/bin/env npx tsx
 /**
- * short-video-frames.ts — render a short-video draft into postable slides (Pip, Traffic).
+ * short-video-frames.ts — render a short-video draft into a postable vertical video (Pip, Traffic).
  *
  * WHAT IT DOES
  *   For each short-video draft in reports/funnel/social/drafts/<date>/ (or one --file),
- *   renders 1080×1920 PNG slides in headless Chromium: optional hook slide, one slide per
- *   credited mod (creator's preview image, mod name, "by <creator>"), end card. When a
- *   system `ffmpeg` is on PATH it also stitches slideshow.mp4 (2.5 s per slide, H.264).
- *   PNGs post as TikTok photo mode / an Instagram carousel; the mp4 posts as a Short or
- *   Reel. Output: reports/funnel/social/assets/<date>/<draft>/ (gitignored).
+ *   builds the animated composition in short-video-motion-lib.ts (kinetic hook, one
+ *   whip-in card per credited mod, end card with the destination and every creator),
+ *   steps it frame by frame in headless Chromium and pipes the frames into ffmpeg:
+ *     video.mp4         1080×1920 30 fps H.264 with our synthesized sound design
+ *     video-silent.mp4  same picture, no audio — use this one to add a trending sound in-app
+ *     cover.jpg         the cover frame (TikTok/Reels cover picker)
+ *     slide-NN.png      one still per scene for TikTok photo mode / an Instagram carousel
+ *   Output: reports/funnel/social/assets/<date>/<draft>/ (gitignored). Without ffmpeg on
+ *   PATH only the stills and cover are written.
  *
  * WHAT IT NEVER DOES
- *   Post, or write copy. Every word comes from the draft (see short-video-frames-lib.ts).
+ *   Post, or write copy. Every word comes from the draft (see short-video-motion-lib.ts).
  *   Posting stays the operator's until the channel's approval window ends (growth-plan.md).
  *
  * USAGE
- *   npx tsx scripts/agents/short-video-frames.ts --date YYYY-MM-DD [--file NN-short-video-x.md]
+ *   npx tsx scripts/agents/short-video-frames.ts --date YYYY-MM-DD [--file NN-short-video-x.md] [--stills-only]
  *
  * Exit codes: 0 ok · 1 error · 2 nothing to render.
  */
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 
-import { chromium } from 'playwright';
+import { chromium, type Page } from 'playwright';
 
+import { FRAME_HEIGHT, FRAME_WIDTH, parseDraft } from './short-video-frames-lib';
 import {
-  FRAME_HEIGHT,
-  FRAME_WIDTH,
-  buildSlides,
-  ffmpegArgs,
-  parseDraft,
-  slideHtml,
-  slideImages,
-} from './short-video-frames-lib';
+  FPS,
+  type Timeline,
+  buildTimeline,
+  compositionHtml,
+  coverTime,
+  encodeArgs,
+  frameCount,
+  sfxWav,
+  stillTimes,
+} from './short-video-motion-lib';
 
 const ROOT = resolve(__dirname, '..', '..');
 
@@ -44,6 +51,26 @@ function arg(name: string): string | undefined {
 
 function hasFfmpeg(): boolean {
   return spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' }).status === 0;
+}
+
+async function seek(page: Page, t: number): Promise<void> {
+  await page.evaluate((x) => (window as unknown as { __seek: (t: number) => void }).__seek(x), t);
+}
+
+/** Steps the timeline at FPS and streams JPEG frames into ffmpeg's stdin. */
+async function encode(page: Page, tl: Timeline, out: string): Promise<string | null> {
+  const ff = spawn('ffmpeg', encodeArgs({ fps: FPS, audio: null, out }), { stdio: ['pipe', 'ignore', 'pipe'] });
+  let stderr = '';
+  ff.stderr.on('data', (b) => (stderr += b));
+  const closed = new Promise<number>((done) => ff.on('close', (code) => done(code ?? 1)));
+  const n = frameCount(tl);
+  for (let f = 0; f < n; f++) {
+    await seek(page, f / FPS);
+    const jpg = await page.screenshot({ type: 'jpeg', quality: 92 });
+    if (!ff.stdin.write(jpg)) await new Promise((r) => ff.stdin.once('drain', r));
+  }
+  ff.stdin.end();
+  return (await closed) === 0 ? null : stderr.trim().slice(0, 300) || 'ffmpeg failed';
 }
 
 async function main(): Promise<number> {
@@ -61,7 +88,7 @@ async function main(): Promise<number> {
     return 2;
   }
 
-  const ffmpeg = hasFfmpeg();
+  const ffmpeg = hasFfmpeg() && !process.argv.includes('--stills-only');
   const browser = await chromium.launch({ headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: FRAME_WIDTH, height: FRAME_HEIGHT } });
@@ -73,36 +100,47 @@ async function main(): Promise<number> {
       }
       const outDir = join(ROOT, 'reports', 'funnel', 'social', 'assets', date, basename(file, '.md'));
       mkdirSync(outDir, { recursive: true });
-      const slides = buildSlides(draft);
-      const failed: string[] = [];
-      for (let i = 0; i < slides.length; i++) {
-        const slide = slides[i];
-        await page.setContent(slideHtml(slide), { waitUntil: 'networkidle', timeout: 30_000 });
-        for (const url of slideImages(slide)) {
-          const ok = await page.evaluate(
-            (u) => new Promise<boolean>((done) => { const im = new Image(); im.onload = () => done(true); im.onerror = () => done(false); im.src = u; }),
-            url,
-          );
-          if (!ok) failed.push(url);
-        }
+      const tl = buildTimeline(draft);
+      await page.setContent(compositionHtml(tl), { waitUntil: 'networkidle', timeout: 60_000 });
+      const ready = (await page.evaluate(() => (window as unknown as { __ready: Promise<{ failed: string[] }> }).__ready)) as { failed: string[] };
+
+      const stills = stillTimes(tl);
+      for (let i = 0; i < stills.length; i++) {
+        await seek(page, stills[i]);
         await page.screenshot({ path: join(outDir, `slide-${String(i + 1).padStart(2, '0')}.png`) });
       }
-      let video = 'no mp4 (install ffmpeg: brew install ffmpeg)';
+      await seek(page, coverTime(tl));
+      await page.screenshot({ path: join(outDir, 'cover.jpg'), type: 'jpeg', quality: 92 });
+
+      let video = process.argv.includes('--stills-only') ? 'stills only (--stills-only)' : 'no mp4 (install ffmpeg: brew install ffmpeg)';
       if (ffmpeg) {
-        const r = spawnSync('ffmpeg', ffmpegArgs(outDir, join(outDir, 'slideshow.mp4')), { encoding: 'utf8' });
-        video = r.status === 0 ? 'slideshow.mp4' : `mp4 FAILED: ${r.stderr.trim().slice(0, 200)}`;
+        const silent = join(outDir, 'video-silent.mp4');
+        const err = await encode(page, tl, silent);
+        if (err) video = `mp4 FAILED: ${err}`;
+        else {
+          const wav = join(outDir, 'sfx.wav');
+          writeFileSync(wav, sfxWav(tl));
+          const mux = spawnSync(
+            'ffmpeg',
+            ['-y', '-loglevel', 'error', '-i', silent, '-i', wav, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', join(outDir, 'video.mp4')],
+            { encoding: 'utf8' },
+          );
+          unlinkSync(wav);
+          video = mux.status === 0 ? `video.mp4 + video-silent.mp4 (${tl.duration.toFixed(1)} s)` : `sound mux FAILED: ${mux.stderr.trim().slice(0, 200)}`;
+        }
       }
       writeFileSync(
         join(outDir, 'README.txt'),
         [
           `Draft: reports/funnel/social/drafts/${date}/${file}`,
-          `Slides: ${slides.length} (hook ${draft.hook ? 'yes' : 'no — add a Hook: "…" line to the draft Copy section'})`,
+          `Scenes: ${tl.scenes.length} (hook ${draft.hook ? 'yes' : 'no — add a Hook: "…" line to the draft Copy section; *word* highlights a word'})`,
           `Video: ${video}`,
-          failed.length ? `IMAGES THAT DID NOT LOAD (re-check before posting):\n${failed.join('\n')}` : 'All images loaded.',
+          'Stills: slide-NN.png (photo mode / carousel) · cover.jpg (cover picker)',
+          ready.failed.length ? `IMAGES THAT DID NOT LOAD (re-check before posting):\n${ready.failed.join('\n')}` : 'All images loaded.',
           'Post the caption from the draft. Nothing here has been posted.',
         ].join('\n') + '\n',
       );
-      console.log(`[short-video-frames] ${file}: ${slides.length} slides · ${video}${failed.length ? ` · ${failed.length} image(s) failed` : ''} → ${outDir}`);
+      console.log(`[short-video-frames] ${file}: ${video}${ready.failed.length ? ` · ${ready.failed.length} image(s) failed` : ''} → ${outDir}`);
     }
   } finally {
     await browser.close();
