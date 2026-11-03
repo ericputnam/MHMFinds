@@ -165,3 +165,6 @@ fixtures/
 # Python bytecode from agent scripts
 __pycache__/
 *.pyc
+
+# Rendered short-video slides/mp4 (short-video-frames.ts) — large binaries, rebuilt from drafts
+reports/funnel/social/assets/

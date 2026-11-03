@@ -54,8 +54,10 @@ the number it should move). Everything else you do is the other channels.
 
 1. **Short video (T0 drafts, T2 posting until approved).** TikTok, YouTube
    Shorts and Instagram Reels from one asset: catalog slideshows ("new this
-   week", "best CC for <pack>", EA-release day). Build the asset pipeline,
-   draft the week, queue the batch for approval.
+   week", "best CC for <pack>", EA-release day). Weekly: `social-draft.ts`
+   drafts (add a `Hook: "…"` line), then `short-video-frames.ts --date <batch>`
+   renders 1080×1920 PNGs (TikTok photo mode / IG carousel) + mp4 if ffmpeg;
+   queue the batch for approval. Never post; never write copy into frames.
 2. **Launch amplification (T0).** Every first-party mod, lookbook and new
    collection page gets a same-day non-Pinterest checklist: shorts, X /
    Bluesky, newsletter slot (Cass), creator shout-back (Nova).

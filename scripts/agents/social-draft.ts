@@ -30,7 +30,7 @@
  * USAGE
  *   MHM_PROJECT_DIR=<worktree> npx tsx scripts/agents/social-draft.ts \
  *     [--date YYYY-MM-DD] [--top 6] [--rank-by nonPinterest7d|nonPinterest28d|tumblr28d|all7d] \
- *     [--platforms tumblr,short-video,reddit] [--kinds post,collection] [--dry-run]
+ *     [--platforms short-video,x] [--kinds post,collection] [--dry-run]
  *   MHM_PROJECT_DIR=<worktree> npx tsx scripts/agents/social-draft.ts --lint --date YYYY-MM-DD
  *
  * Exit codes: 0 ok · 1 error · 2 refused (posting) / could-not-run.
@@ -45,6 +45,7 @@ import { prisma } from '../../lib/prisma';
 import { SIMS4_COLLECTIONS, collectionHref } from '../../lib/collections';
 import { requireProjectDir } from './project-dir-guard';
 import {
+  FROZEN_PLATFORMS,
   PLATFORMS,
   SOCIAL_POSTING_FLAG,
   approvalString,
@@ -231,7 +232,10 @@ async function main(): Promise<number> {
 
   const top = Number(arg('top', '6'));
   const rankBy = (arg('rank-by', 'nonPinterest7d') as RankBy) ?? 'nonPinterest7d';
-  const platforms = (arg('platforms', 'tumblr,short-video,reddit')!.split(',') as Platform[]).filter((p) => (PLATFORMS as readonly string[]).includes(p));
+  const requested = arg('platforms', 'short-video,x')!.split(',') as Platform[];
+  const frozen = requested.filter((p) => FROZEN_PLATFORMS.includes(p));
+  if (frozen.length) console.warn(`[social-draft] skipping ${frozen.join(',')}: frozen by the operator 2026-11-02 (Tumblr operator-only, Reddit banned)`);
+  const platforms = requested.filter((p) => (PLATFORMS as readonly string[]).includes(p) && !FROZEN_PLATFORMS.includes(p));
   const kinds = arg('kinds', 'post,collection,mod')!.split(',') as Array<RankedDestination['kind']>;
   const dryRun = has('dry-run');
   if (!platforms.length) throw new Error('no valid --platforms');
