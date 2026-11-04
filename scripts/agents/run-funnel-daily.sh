@@ -596,16 +596,32 @@ claude_preflight_once() {
 }
 # Why the preflight failed — the fix differs, so the digest must not blame auth for everything
 # (2026-09-06/07: the CLI was 2.1.108, Fable needs >= 2.1.251; the digest said "run claude auth login" and
-# two days were lost). Echoes one of: CLI_TOO_OLD | AUTH | HANG | OTHER, plus a short sanitized excerpt.
+# two days were lost). Echoes one of: CLI_TOO_OLD | QUOTA | AUTH | HANG | OTHER, plus a short sanitized excerpt.
 # AUTH reads stdout broadly but stderr only on strict patterns (stderr can mention OAuth without failing on it).
+# E331 (2026-11-04): on 11-03 the API answered HTTP 429 "You're out of usage credits" and this was filed OTHER with
+# "no excerpt" — `claude -p --output-format json` reports an API error as "is_error":true, "api_error_status":N and
+# "result":"…" (stderr 0 B), and only the "error"/"message" keys were read. Now: QUOTA on api_error_status 429 or the
+# usage-credit text (an operator action like AUTH; no retry clears it), checked before AUTH so a stray "401" in a
+# session id cannot mislabel it; the excerpt falls back to api_error_status + .result; and when nothing named is
+# found the excerpt is the raw redacted tail of what was read (stdout/stderr sizes if both are empty) — never empty.
 preflight_diagnosis() {
   local out err; out="$(tr -d '\n\r' <"$PREFLIGHT_OUT" 2>/dev/null | head -c 4000)"
   err="$(tail -c 2000 "$PREFLIGHT_ERR" 2>/dev/null | pf_redact)"
+  local status; status="$(printf '%s' "$out" | grep -oE '"api_error_status": ?[0-9]+' | head -1 | grep -oE '[0-9]+$')"
   local excerpt; excerpt="$(printf '%s' "$out" | grep -oE '"(error|message)":"[^"]{0,200}' | head -2 | pf_redact)"
+  if [ -z "$excerpt" ] && printf '%s' "$out" | grep -q '"is_error": \{0,1\}true'; then
+    excerpt="$(printf '%s' "$out" | grep -oE '"result":"[^"]{0,200}' | head -1 | sed 's/^"result":"//' | pf_redact)"
+    [ -n "$status" ] && excerpt="api_error_status=$status${excerpt:+: $excerpt}"
+  fi
   [ -z "$excerpt" ] && [ -n "${err// /}" ] && excerpt="stderr: $(printf '%s' "$err" | tail -c 200)"
+  if [ -z "$excerpt" ]; then
+    if [ -n "${out// /}" ]; then excerpt="raw stdout tail: $(printf '%s' "$out" | tail -c 200 | pf_redact)"
+    else excerpt="no output (stdout $(wc -c <"$PREFLIGHT_OUT" 2>/dev/null | tr -d ' ' || echo 0)B, stderr $(wc -c <"$PREFLIGHT_ERR" 2>/dev/null | tr -d ' ' || echo 0)B)"; fi
+  fi
   [ "$PREFLIGHT_SLEPT" -gt 0 ] && excerpt="asleep/suspended ${PREFLIGHT_SLEPT}s of ${PREFLIGHT_WALL}s wall; ${excerpt:-no output}"
   [ -n "$PREFLIGHT_PRIOR" ] && excerpt="$PREFLIGHT_PRIOR; attempt $PREFLIGHT_ATTEMPT: ${excerpt:-no output}"
   if printf '%s %s' "$out" "$err" | grep -q 'claude_code_version_too_old'; then echo "CLI_TOO_OLD|$excerpt"
+  elif [ "$status" = 429 ] || printf '%s %s' "$out" "$err" | grep -qiE 'out of usage credits|usage credits|usage limit reached'; then echo "QUOTA|$excerpt"
   elif printf '%s' "$out" | grep -qiE 'authentication|not logged in|401|invalid.*token|oauth' \
     || printf '%s' "$err" | grep -qiE 'not logged in|401|authentication_error|invalid.*token'; then echo "AUTH|$excerpt"
   elif [ "$PREFLIGHT_HANG" = 1 ]; then echo "HANG|killed after ${PREFLIGHT_WALL}s wall; $excerpt"
@@ -693,9 +709,10 @@ if ! claude_preflight; then
   CLI_VER="$(claude --version 2>/dev/null | head -1 || echo unknown)"
   case "$DIAG_KIND" in
     CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
+    QUOTA)       CAUSE="The Claude account is out of usage credits or at its usage limit — the API answered HTTP 429 (${DIAG_EXCERPT}). Auth and the CLI ($CLI_VER) are fine, and no retry or agent can clear this. **Add usage credits or wait for the limit to reset at claude.ai/settings/usage**";;
     AUTH)        CAUSE="The Claude CLI could not authenticate headlessly (keychain OAuth: access-token expiry $EXP; before the preflight: $AUTH_LINE; the API rejected the token and it could not be refreshed). **Open a terminal and run \`claude auth login\`**";;
     HANG)        CAUSE="The Claude CLI preflight never answered and was killed by the wall-clock watcher ($DIAG_EXCERPT). A large asleep/suspended figure means the host slept mid-run (check \`pmset -g log\`), not auth — a slept-through attempt is retried once on the awake host (E290), so a HANG row now means the retry failed too or the host was awake. **Keep the laptop on AC with the lid open on run mornings**; stderr is in logs/funnel-preflight-$TODAY.stderr";;
-    *)           CAUSE="The Claude CLI preflight failed for a reason that is neither auth nor version — see logs/funnel-preflight-$TODAY.json (excerpt: ${DIAG_EXCERPT:-none}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
+    *)           CAUSE="The Claude CLI preflight failed for a reason that is not auth, quota, version or a hang — see logs/funnel-preflight-$TODAY.json (what the preflight read: ${DIAG_EXCERPT:-no output at all, stdout and stderr both empty}). Try \`claude -p 'ok' --model $MODEL\` in a terminal";;
   esac
   log "🔴 Quinn cannot run: preflight=$DIAG_KIND cli=$CLI_VER token-expiry=$EXP auth=$AUTH_LINE ${DIAG_EXCERPT:+excerpt=$DIAG_EXCERPT}"
   GUARD_SUMMARY="status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" )"
