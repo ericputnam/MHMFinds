@@ -18,6 +18,8 @@ import {
   changedCreatorSlugs,
   checkKeyFile,
   collectionUrls,
+  NEXTJS_CONTENT_HUBS,
+  NEXTJS_NOT_PUSHED,
   creatorUrl,
   exitCodeFor,
   interpretResponse,
@@ -37,6 +39,9 @@ import {
 } from '../../scripts/agents/indexnow-lib';
 import { fetchWpGuidesModifiedSince, wpModifiedAfterParam } from '@/lib/seo/wpGuides';
 import { SIMS4_COLLECTIONS } from '@/lib/collections';
+import { getAllGameSlugs } from '@/lib/gameRoutes';
+import { readFileSync as readFileSyncE335 } from 'node:fs';
+import { join as joinE335 } from 'node:path';
 
 vi.mock('next-auth/jwt', () => ({ getToken: vi.fn() }));
 
@@ -144,7 +149,8 @@ describe('URL builders', () => {
     for (const c of SIMS4_COLLECTIONS) {
       expect(urls).toContain(`https://musthavemods.com/games/${c.gameSlug}/${c.slug}/`);
     }
-    expect(urls.length).toBe(2 + SIMS4_COLLECTIONS.length);
+    // homepage + every game hub + the E335 content hubs + every collection
+    expect(urls.length).toBe(1 + getAllGameSlugs().length + NEXTJS_CONTENT_HUBS.length + SIMS4_COLLECTIONS.length);
     for (const u of urls) expect(isCanonicalUrl(u)).toBe(true);
     expect(new Set(urls).size).toBe(urls.length);
   });
@@ -153,7 +159,7 @@ describe('URL builders', () => {
 describe('selectUrls', () => {
   it('puts collections first, then mods, deduplicated', () => {
     const sel = selectUrls({ modIds: ['a', 'b', 'a', ' ', 'c'], includeCollections: true, cap: HARD_CAP });
-    expect(sel.collections).toBe(2 + SIMS4_COLLECTIONS.length);
+    expect(sel.collections).toBe(collectionUrls().length);
     expect(sel.mods).toBe(3);
     expect(sel.urls.slice(-3)).toEqual([modUrl('a'), modUrl('b'), modUrl('c')]);
     expect(sel.dropped).toEqual([]);
@@ -219,7 +225,7 @@ describe('creator pages (E95)', () => {
       includeCollections: true,
       cap: HARD_CAP,
     });
-    expect(sel.collections).toBe(2 + SIMS4_COLLECTIONS.length);
+    expect(sel.collections).toBe(collectionUrls().length);
     expect(sel.mods).toBe(2);
     expect(sel.creators).toBe(2);
     expect(sel.urls.slice(-4)).toEqual([modUrl('m1'), modUrl('m2'), creatorUrl('c1'), creatorUrl('c2')]);
@@ -572,7 +578,7 @@ describe('blog guides (E121)', () => {
 
   it('orders collections → guides → mods → creators and counts guides', () => {
     const sel = selectUrls({ modIds: ['m1'], guideUrls: [g1, g2, g1], creatorSlugs: ['alice'], includeCollections: true, cap: HARD_CAP, ceiling: CREATORS_HARD_CAP });
-    const nColl = 2 + SIMS4_COLLECTIONS.length;
+    const nColl = collectionUrls().length;
     expect(sel.collections).toBe(nColl);
     expect(sel.guides).toBe(2);
     expect(sel.urls.slice(nColl)).toEqual([g1, g2, modUrl('m1'), creatorUrl('alice')]);
@@ -740,5 +746,37 @@ describe('network calls are bounded (E128)', () => {
     }
     // WP wrapper + key-file GET + POST. Fewer means the scanner went blind.
     expect(seen).toBeGreaterThanOrEqual(3);
+  });
+});
+
+// E335 (2026-11-04): every static page /sitemap-nextjs.xml lists is either
+// pushed by the daily IndexNow run or named in NEXTJS_NOT_PUSHED. Parses the
+// route source (comments stripped) so a new static entry there cannot be
+// silently left out of the push, the way /play/, /creator/, /top-creators/
+// and three game hubs were until today.
+describe('E335 sitemap-nextjs ⊆ IndexNow daily push', () => {
+  const src = readFileSyncE335(joinE335(__dirname, '..', '..', 'app', 'sitemap-nextjs.xml', 'route.ts'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+  const statics = Array.from(src.matchAll(/loc: `\$\{baseUrl\}(\/[a-z0-9-]+\/)`/g)).map((m) => m[1]);
+  it('found the static entries (vacuity guard)', () => {
+    expect(statics.length).toBeGreaterThanOrEqual(6);
+    expect(statics).toContain('/play/');
+  });
+  it('the route still builds game hubs from getAllGameSlugs()', () => {
+    expect(src).toContain('getAllGameSlugs()');
+  });
+  it('every static entry is pushed or explicitly excluded', () => {
+    const pushed = new Set(collectionUrls());
+    for (const p of statics) {
+      const isPushed = pushed.has(`https://musthavemods.com${p}`);
+      expect(isPushed || NEXTJS_NOT_PUSHED.includes(p), p).toBe(true);
+      expect(isPushed && NEXTJS_NOT_PUSHED.includes(p), `${p} both pushed and excluded`).toBe(false);
+    }
+  });
+  it('every game hub is pushed, including games with no registry collection', () => {
+    const pushed = new Set(collectionUrls());
+    expect(getAllGameSlugs().length).toBeGreaterThanOrEqual(4);
+    for (const g of getAllGameSlugs()) expect(pushed.has(`https://musthavemods.com/games/${g}/`), g).toBe(true);
   });
 });
