@@ -19,6 +19,7 @@
 
 import { getAllCollectionRoutes, collectionHref } from '../../lib/collections';
 import { creatorHref } from '../../lib/creatorSlug';
+import { getAllGameSlugs } from '../../lib/gameRoutes';
 import { isRedirectedPostUrl } from '../../lib/seo/wpGuides';
 
 /** Public IndexNow key. Change it and `public/<key>.txt` together (test enforces). */
@@ -69,17 +70,37 @@ export function creatorUrl(slug: string): string {
 }
 
 /**
- * Homepage, each game hub and every collection page from the registry.
+ * Content hubs from /sitemap-nextjs.xml that change without a registry change:
+ * /play/ gets a new episode every midnight ET, /creator/ (the A–Z hub) and
+ * /top-creators/ move with every ingest. E335 (2026-11-04): until then the
+ * daily push sent none of them, and only the game hubs that own a registry
+ * collection — so /games/minecraft/, /games/stardew-valley/ and
+ * /games/animal-crossing/ were listed in the sitemap but never pushed.
+ * Legal and form pages (/about/, /privacy-policy/, /terms/, /submit-mod/)
+ * stay out on purpose: they do not change and earn no search sessions.
+ * `__tests__/unit/indexnow.test.ts` parses the sitemap route so a new static
+ * page there has to be pushed here or named as excluded.
+ */
+export const NEXTJS_CONTENT_HUBS: readonly string[] = ['/play/', '/creator/', '/top-creators/'];
+
+/** Static sitemap-nextjs pages deliberately never pushed (see NEXTJS_CONTENT_HUBS). */
+export const NEXTJS_NOT_PUSHED: readonly string[] = ['/about/', '/submit-mod/', '/privacy-policy/', '/terms/'];
+
+/**
+ * Homepage, every game hub (getAllGameSlugs — the same list the sitemap
+ * uses), the content hubs above and every collection page from the registry.
  * Built from `collectionHref()` so a registry change cannot produce a
  * slashless URL here while the page itself canonicalises to the slashed one.
  */
 export function collectionUrls(): string[] {
   const out: string[] = [`${SITE_ORIGIN}/`];
   const hubs = new Set<string>();
+  for (const slug of getAllGameSlugs()) hubs.add(`${SITE_ORIGIN}/games/${slug}/`);
   for (const r of getAllCollectionRoutes()) {
     hubs.add(`${SITE_ORIGIN}/games/${r.gameSlug}/`);
   }
   out.push(...Array.from(hubs).sort());
+  for (const p of NEXTJS_CONTENT_HUBS) out.push(`${SITE_ORIGIN}${p}`);
   for (const r of getAllCollectionRoutes()) {
     out.push(`${SITE_ORIGIN}${collectionHref({ gameSlug: r.gameSlug, slug: r.topicSlug })}`);
   }

@@ -22,6 +22,11 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E335 IndexNow covers every sitemap-nextjs content page
+- Tried: (T0) `collectionUrls()` built game hubs only from registry collections, so 3 of 4 game hubs plus /play/, /creator/, /top-creators/ were in the sitemap but never pushed; now from `getAllGameSlugs()` + `NEXTJS_CONTENT_HUBS`, with a test that parses the sitemap route.
+- Before → after: daily push collections=38 → 44; the 6 pages earned 11 organic+AI landings / 28d (10-06→11-02). Live push 15:13Z http=200.
+- Verdict: MORE DATA (read 11-18). Small: Bing's 13,957/7d sits on WP guides, which `--guides` already covers.
+- Next time: diff the push list against every sitemap, not just one registry, the day a sitemap gains a URL.
 ## 2026-11-04 — E333 social-draft filter + pending skip
 - Tried: (T0) `NON_CONTENT_PATH_RE` had `signin|login` while the route is `/sign-in/`, so the auth page (228 nonPinterest7d) ranked as a destination; regex now hyphen-optional + `/creators/`, about, legal, with a test that walks `app/` so every new top-level route must be classified (6 of 6 sample paths postable pre-fix). Also skip URLs already in a DRAFT-status batch (`pendingDraftPaths`).
 - Before → after: dry run 11-04 top 8 = 8/8 already pending in unposted batches (15 pending URLs) → 0/8 duplicates, 8 new URLs (sims-4-cc-creators 271, challenges-list 237, poses 201 …).
