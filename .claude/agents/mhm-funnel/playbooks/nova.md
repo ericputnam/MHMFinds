@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E327 second approval batch, one plan file per batch (T0 code; apply QUEUED-T1 11-05)
+- Tried: dry run over the 3 new pending submissions (Atino00, 1–10 d old): 3/3 source-verified on CurseForge (467/730/861 downloads), all link the existing profile, creator page 7 → 10 mods. `--plan=` gives the batch its own frozen plan `approve-submissions-2026-11-04.json`, so the 10-31 plan (the only record of the 7 applied mods) is never `--replace-plan`ed. YELLOW breaker, so the apply waits for the veto.
+- Before → after: batch 1 (8 URLs) drew 16 sessions 11-01→11-03, already over E304's ≥15 by 11-13. E322: 7/7 in sitemap-mods.xml on 11-04 (rule: by 11-09).
+- Verdict: PENDING (read 2026-11-19).
+- Next time: give every batch its own rollback file from the first batch on. A fixed plan path turns batch 2 into a choice between overwriting batch 1's rollback record or not shipping.
+
 ## 2026-10-31 — E304 ownership-gated submission approval (#421 5c69ff09, T0 code; apply T1 11-01)
 - Tried: scripted, ownership-gated approval for the 7 Atino00 submissions (27 d old). CurseForge API (`/v1/mods/search?gameId=78062&slug=`) answers author per project; 7/7 match the account. Shared the Mod builder with the admin route and found the route never wrote `contentType`.
 - Before → after: 7 pending / 1 onboarded-with-approval → unchanged today (code only; apply is T1 11-01). Red pre-fix: 3/31 cases fail on origin/main's route+lib.
@@ -67,16 +73,3 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Before → after: 80 from 4 posts, 20.0/post vs 130 from 5, 26.0/post. First-time posts created 63/67 (94%, prior week 130/135); the gap is one re-dated 2025 post (48 found, 17 created, 31 already in) and a 10-item post. Writer last posted 10-15 → the row reads 70 on 10-20, 21 on 10-22 without a new post.
 - Verdict: MORE DATA (read 2026-10-25: denominator printed ≥6/7 mornings).
 - Next time: a count with no denominator cannot tell "supply broke" from "the human posted less". Read the ingest log's OK lines and the per-post created/found before proposing to run or fix the scraper.
-
-## 2026-10-17
-- Tried: E166 graded. E225 (T0, #322 5605877): the /creator/* row now prints a source-matched control next to the site-relative guard. Diagnostic only.
-- Before → after: guard 91.3% FAIL → source-matched 99.0% (10-09→15). By source, creator vs expected: google 57/51.5, bing 52/69.7, chatgpt 5/10.8 (sitewide chatgpt 337→154), other 23/6.4. Nothing broken on our side (sitemap 549, 200 + canonical, mod→creator links present). E166: 1 claim promoted (dor-e 10-16), 0 409s, seed-rename untested in production.
-- Verdict: E166 KEEP/close. E225 MORE DATA (read 2026-10-24).
-- Next time: a site control has to match the slice's source mix. A slice that is 18% ChatGPT, graded against a site that is 1.4% ChatGPT, fails whenever ChatGPT moves.
-
-## 2026-10-16
-- Tried: E158 graded. E218 (T0) — IndexNow `--creators-changed` in the daily runner, plus one catch-up push of the 72 creator pages with a new mod since the last full push (09-26).
-- Before → after: E158 legs: 0/8 seed pages hide the claim card (curl 8/8 "Claim this page", 0 badges); 0/20 seed verified; 0 mods on verified no-OAuth profiles. /creator/* organic+AI 165 → 137 (10-09→15; site 89.9%, ratio 92.3%, FAIL). The 8 treated pages were 6 → 1, so they are not the cause. By source: Google 52 → 57, Bing 77 → 52 (−32% vs site −10%), chatgpt 29 → 5. No creator push since 09-26; 549 pages, 66 with a new mod since.
-- Verdict: E158 KEEP on its own legs; the guard fail is Bing+ChatGPT, untreated. E218 read 2026-10-23.
-- Next time: split a guard fail by source before blaming a page change. A one-off IndexNow push decays, so it should have been a daily changed-only push from E95.
-

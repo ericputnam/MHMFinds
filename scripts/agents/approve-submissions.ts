@@ -8,6 +8,7 @@
  *   npx tsx scripts/agents/approve-submissions.ts                    # dry run over every pending submission
  *   npx tsx scripts/agents/approve-submissions.ts --ids=a,b --apply  # write only plan rows whose live re-plan still agrees
  *   npx tsx scripts/agents/approve-submissions.ts --rollback         # delete the mods this plan created, re-open the submissions
+ *   … --plan=approve-submissions-YYYY-MM-DD.json                     # E327: one plan file per batch (default: the 10-31 E304 plan)
  *
  * Writes exactly what the admin approve route writes (one builder,
  * lib/submissionApprovalProfile.ts newModDataFromSubmission; the E183
@@ -36,10 +37,12 @@ import { resolveIngestContentType } from '../../lib/services/contentTypeDetector
 import { rehostModImages } from '../../lib/services/imageUploader';
 import {
   CURSEFORGE_SIMS4_GAME_ID,
+  DEFAULT_PLAN_NAME,
   MAX_APPROVE_ROWS,
   curseforgeSlug,
   emailVerifiedVia,
   parseIds,
+  parsePlanName,
   planApprovals,
   shouldWritePlan,
   stillApplicable,
@@ -52,7 +55,9 @@ import {
 } from './approve-submissions-lib';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? resolve(__dirname, '..', '..');
-const PLAN_PATH = resolve(PROJECT_DIR, 'reports/funnel/triage/approve-submissions-2026-10-31.json');
+const TRIAGE_DIR = resolve(PROJECT_DIR, 'reports/funnel/triage');
+// Set once in main() from --plan= (validated dated basename, never a path).
+let PLAN_PATH = resolve(TRIAGE_DIR, DEFAULT_PLAN_NAME);
 const REVIEWED_BY = 'script:approve-submissions';
 const LOOKUP_TIMEOUT_MS = 15_000;
 
@@ -203,6 +208,12 @@ async function main(): Promise<number> {
   }
   const apply = argv.includes('--apply');
   const rollback = argv.includes('--rollback');
+  const planName = parsePlanName(argv);
+  if (!planName) {
+    console.error('REFUSED: --plan= must be a basename like approve-submissions-YYYY-MM-DD.json');
+    return 1;
+  }
+  PLAN_PATH = resolve(TRIAGE_DIR, planName);
   const ids = parseIds(argv);
   if (ids && ids.length === 0) {
     console.error('REFUSED: --ids= is empty');

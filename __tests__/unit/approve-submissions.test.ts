@@ -14,12 +14,14 @@ import { resolveIngestContentType } from '../../lib/services/contentTypeDetector
 import { newModDataFromSubmission } from '../../lib/submissionApprovalProfile';
 import {
   CURSEFORGE_SIMS4_GAME_ID,
+  DEFAULT_PLAN_NAME,
   MAX_APPROVE_ROWS,
   curseforgeSlug,
   emailVerifiedVia,
   nameMatches,
   ownershipVerdict,
   parseIds,
+  parsePlanName,
   planApprovalRow,
   planApprovals,
   shouldWritePlan,
@@ -193,6 +195,16 @@ describe('argv', () => {
     expect(parseIds(['--ids='])).toEqual([]);
     expect(unknownFlags(['--ids=a', '--apply', '--rollback', '--replace-plan'])).toEqual([]);
     expect(unknownFlags(['--aply'])).toEqual(['--aply']);
+  });
+
+  it('E327: --plan= picks a per-batch plan file, never a path, and the default stays the E304 plan', () => {
+    expect(parsePlanName([])).toBe(DEFAULT_PLAN_NAME);
+    expect(DEFAULT_PLAN_NAME).toBe('approve-submissions-2026-10-31.json');
+    expect(parsePlanName(['--plan=approve-submissions-2026-11-04.json'])).toBe('approve-submissions-2026-11-04.json');
+    expect(parsePlanName(['--plan=../../.env.local'])).toBeNull();
+    expect(parsePlanName(['--plan=reports/funnel/triage/approve-submissions-2026-11-04.json'])).toBeNull();
+    expect(parsePlanName(['--plan='])).toBeNull();
+    expect(unknownFlags(['--plan=approve-submissions-2026-11-04.json', '--apply'])).toEqual([]);
   });
 
   it('records how an email counts as verified; a credentials auto-stamp is not OAuth', () => {
