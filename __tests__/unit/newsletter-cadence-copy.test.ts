@@ -21,7 +21,17 @@ const ROOT = process.cwd();
 const SCAN_DIRS = ['app', 'components', 'lib'];
 
 /** A file that renders or serves an email ask contains one of these. */
-const CAPTURE_MARKERS = [/\/api\/subscribe/, /\bNewsletterSignup\b/, /\bEmailOptIn\b/, /\bHomeCapture\b/];
+const CAPTURE_MARKERS = [
+  /\/api\/subscribe/,
+  /\bNewsletterSignup\b/,
+  /\bEmailOptIn\b/,
+  /\bHomeCapture\b/,
+  // E327 (11-04): the sign-up form's opt-in posts to /api/waitlist, and its copy
+  // lives in lib/capture/signupOptInCopy.ts. Neither matched the four markers
+  // above, so the source of 245 of 299 subscribers was outside this guard.
+  /\/api\/waitlist/,
+  /\bSIGNUP_OPTIN_COPY\b/,
+];
 
 /** Email templates that state the cadence but have no form. */
 const EMAIL_COPY_FILES = ['lib/services/newsletterWeekly.ts', 'lib/services/newsletterIssue.ts'];
@@ -102,6 +112,8 @@ describe('newsletter cadence copy says every two weeks, never weekly (E314)', ()
       'app/api/subscribe/confirm/route.ts',
       'app/api/unsubscribe/route.ts',
       'lib/services/newsletterWeekly.ts',
+      'app/sign-in/page.tsx',
+      'lib/capture/signupOptInCopy.ts',
     ]) {
       expect(surfaces).toContain(must);
     }

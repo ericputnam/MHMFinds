@@ -10,6 +10,13 @@ import { Sparkles, Crown, CheckCircle2, Download, X } from 'lucide-react';
 import { resolveSignInReturn } from './returnTo';
 import { SIGNUP_INTENT_VIEW_EVENT, resolveSignupIntent } from './signupIntent';
 import { resolvePostSignUpPath } from './creatorWelcome';
+import {
+  SIGNUP_OPTIN_ARM_LABEL,
+  SIGNUP_OPTIN_COPY,
+  SIGNUP_OPTIN_EVENTS,
+  resolveSignupOptInArm,
+  type SignupOptInArm,
+} from '../../lib/capture/signupOptInCopy';
 
 /** waitlist.source for the sign-up form's email opt-in (Cass, E86). */
 const SIGNUP_OPTIN_SOURCE = 'signup-optin';
@@ -43,6 +50,14 @@ export default function SignInPage() {
   // Weekly-email opt-in on the sign-up form (Cass, E86). MUST start false —
   // consent is an explicit tick, never a pre-checked box.
   const [wantsNewsletter, setWantsNewsletter] = useState(false);
+  // Opt-in copy arm (Cass, E327). Resolved after mount (localStorage), so the
+  // server render and first client render match; until then the label is
+  // laid out but invisible, so neither arm's copy flashes before the other.
+  const [optInArm, setOptInArm] = useState<SignupOptInArm | null>(null);
+  useEffect(() => {
+    setOptInArm(resolveSignupOptInArm());
+  }, []);
+  const optInCopy = SIGNUP_OPTIN_COPY[optInArm ?? 'a'];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [selectedTier, setSelectedTier] = useState('ANNUAL');
@@ -156,6 +171,16 @@ export default function SignInPage() {
         }
       );
 
+      // E327 denominator: this visitor submitted the form, so read the box.
+      const armLabel = optInArm ? SIGNUP_OPTIN_ARM_LABEL[optInArm] : null;
+      if (armLabel) {
+        (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+          'event',
+          SIGNUP_OPTIN_EVENTS.exposure,
+          { source: armLabel }
+        );
+      }
+
       // Newsletter opt-in (Cass, E86): only when the visitor ticked the box,
       // only after the account exists, and never able to fail the sign-up.
       // Attributed on its own waitlist.source so the scoreboard counts it.
@@ -175,6 +200,13 @@ export default function SignInPage() {
               'newsletter_signup',
               { source: SIGNUP_OPTIN_SOURCE }
             );
+            if (armLabel) {
+              (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+                'event',
+                SIGNUP_OPTIN_EVENTS.tick,
+                { source: armLabel }
+              );
+            }
           }
         } catch {
           // Opt-in is best-effort; the account was created either way.
@@ -401,9 +433,12 @@ export default function SignInPage() {
                         onChange={(e) => setWantsNewsletter(e.target.checked)}
                         className="mt-0.5 w-5 h-5 rounded border-white/20 bg-white/5 text-sims-pink focus:ring-2 focus:ring-sims-pink focus:ring-offset-0 cursor-pointer"
                       />
-                      <span className="text-sm text-slate-300 leading-snug">
-                        Email me the best new Sims 4 CC finds.{' '}
-                        <span className="text-slate-500">No spam, unsubscribe anytime.</span>
+                      <span
+                        className={`text-sm text-slate-300 leading-snug ${optInArm ? '' : 'invisible'}`}
+                        data-optin-arm={optInArm ?? 'pending'}
+                      >
+                        {optInCopy.label}{' '}
+                        <span className="text-slate-500">{optInCopy.note}</span>
                       </span>
                     </label>
                   )}
