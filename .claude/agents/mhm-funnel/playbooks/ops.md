@@ -20,6 +20,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E331 preflight QUOTA kind
+- Tried: `preflight_diagnosis` gets a QUOTA kind (api_error_status 429 or "out of usage credits" text, checked before AUTH), excerpt falls back to `api_error_status=N: .result`, then the raw redacted stdout tail, then byte counts — never empty; degraded digest names QUOTA as an operator action (T0 tooling).
+- Before → after: real 11-03 file → `OTHER|` (0-char excerpt) pre-fix → `QUOTA|api_error_status=429: You're out of usage credits…` (148 chars); `runner-preflight-diagnosis.test.ts` 9/9, 9 red pre-fix. Run success 14d 64.3%.
+- Verdict: MORE DATA (read 2026-11-18: 0 MISSED rows with an empty excerpt or `preflight=OTHER` whose json carries `api_error_status`).
+- Next time: `claude -p --output-format json` puts its error in `.result` + `api_error_status`, not `error`/`message` — read the fixture of the real failing file before writing a classifier.
+
 ## 2026-10-30 — E297 global run-lock (#406 d7a46e0)
 - Tried: `logs/funnel-run.lock` holding the runner pid; a runner for any day waits ≤1,800 s for a live runner, then lands a MISSED/DEFERRED row and exits 75 before touching a worktree; stale locks (dead pid, or pid reused by a non-funnel process) are broken with a log line. `FUNNEL_ALLOW_SECOND_RUN=1` now skips only the day-lock; `FUNNEL_ALLOW_CONCURRENT_RUN=1` bypasses the global lock.
 - Before → after: 1 overlap in 7d (the 10-29 catch-up ran ≈13.5 h, 21:40 local → past 11:08Z, and overlapped the scheduled 10-30 start; a lock keyed on the day cannot see a run for another day) → `runner-day-lock.test.ts` 11/11, 6 red pre-fix. Ops share 4 of 41 = 9.8%.
