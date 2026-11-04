@@ -226,6 +226,14 @@ describe('legacy/collection strategy (lib/collections.ts)', () => {
     'cottagecore-cc',
   ]);
 
+  // Hubs that were deliberately retitled onto the head term people type
+  // (Sage: E311 hair-cc 2026-11-01, E320 body-presets 2026-11-02). Like the
+  // consolidated set they own the head term, so "Finder/Browse" is not
+  // required in the title — but they keep their blogUrl, so they are NOT in
+  // CONSOLIDATED. This test was red on main from #435 until E330 (11-04):
+  // add the slug here in the same PR as the retitle.
+  const HEAD_TERM_RETITLES = new Set(['hair-cc', 'body-presets']);
+
   // Legacy paths that 301 to collection pages — a blogUrl must never
   // point at one of these.
   const REDIRECTED_LEGACY_PATHS = new Set([
@@ -309,8 +317,12 @@ describe('legacy/collection strategy (lib/collections.ts)', () => {
 
   it('differentiated collections signal browse intent, distinct from legacy listicles', async () => {
     const { SIMS4_COLLECTIONS } = await import('@/lib/collections');
+    // A slug listed as a head-term retitle that left the registry is a stale entry.
+    for (const slug of Array.from(HEAD_TERM_RETITLES)) {
+      expect(SIMS4_COLLECTIONS.some((c) => c.slug === slug), `${slug} not in registry`).toBe(true);
+    }
     for (const c of SIMS4_COLLECTIONS) {
-      if (CONSOLIDATED.has(c.slug)) continue; // consolidated pages own head terms
+      if (CONSOLIDATED.has(c.slug) || HEAD_TERM_RETITLES.has(c.slug)) continue; // these own head terms
       expect(
         /Finder|Browse/.test(c.metaTitle),
         `${c.slug} metaTitle should carry browse/finder intent: "${c.metaTitle}"`,

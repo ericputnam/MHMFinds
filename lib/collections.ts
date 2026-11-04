@@ -600,10 +600,18 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     game: 'Sims 4',
     gameSlug: 'sims-4',
     title: 'Cottagecore CC',
-    heading: 'Sims 4 Cottagecore CC',
-    metaTitle: 'Sims 4 Cottagecore CC — 270+ Cozy Cottage Finds | MustHaveMods',
+    // Sage, 2026-11-04 (E330, Tier 0 — head-term retitle, E311/E320
+    // pattern). GSC 10-04→10-31: the hub is 241 impr / 7 clicks / pos 14.1,
+    // and the single biggest query on it is "sims 4 cottagecore mods" —
+    // 67 impr, pos 14.5, 0 clicks — a word the old title, H1 and description
+    // never said. The cottage query family on the page is 116 impr / 3 clicks
+    // (2.6%); "sims 4 cottage cc" 7 / pos 13.1 and "cottage living cc" also
+    // appear. The legacy /sims-4-cottagecore-cc/ 301s here, so this page owns
+    // the head term (CONSOLIDATED in canonical-trailing-slash.test.ts).
+    heading: 'Sims 4 Cottagecore CC & Mods',
+    metaTitle: 'Sims 4 Cottagecore CC & Mods — 270+ Cozy Cottage Finds | MustHaveMods',
     metaDescription:
-      'The best Sims 4 cottagecore CC. Cozy cottage furniture, prairie dresses, kitchen clutter, and garden decor for soft rural builds.',
+      'The best Sims 4 cottagecore CC and mods: 270+ cozy cottage furniture sets, prairie dresses, kitchen clutter and garden decor to stretch Cottage Living.',
     tagline: 'Prairie dresses, cozy kitchens, and garden clutter for soft rural sims',
     intro:
       'Cottage Living gave us the setting; it didn\'t give us nearly enough stuff. If your sim\'s aesthetic is linen dresses, a kitchen full of dried herbs, and a garden that looks lived-in rather than landscaped, you burn through the pack\'s catalog fast. Cottagecore is one of the biggest CC aesthetics in the community, and it shows in the depth available.\n\nThe 270+ picks here cover both halves of the aesthetic: CAS (prairie and milkmaid dresses, knit cardigans, braided hair, soft floral everything) and build/buy (farmhouse kitchens, quilted bedding, canned-goods clutter, cottage garden decor). It pairs naturally with the clutter and furniture collections — most cottagecore builds are really clutter-density projects wearing a floral apron.\n\nEverything is Sims 4 only, link-checked, and SFW. Sort by downloads for the staples, or dig into the long tail where single-set creators do some of the best cottage clutter in the community.',

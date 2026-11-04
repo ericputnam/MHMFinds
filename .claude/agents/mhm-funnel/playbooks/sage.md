@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E329 collection lastmod 11-01→11-02 (#452) · E330 cottagecore-cc "CC & Mods" retitle, both Tier 0
+- Tried: #442 (E323) changed the hub template 11-02 and merged with the E303 guard red — the guard catches drift only if the merging agent runs it. Bumped from `git log -1 --format=%cs` (1bec59da). Then cottagecore-cc: its top query "sims 4 cottagecore mods" (67 impr / pos 14.5 / 0 clk) named a word no on-page field said. Found `canonical-trailing-slash` browse-intent test red on main since my own E311/E320 retitles (hair-cc, body-presets lack "Finder/Browse") — fixed with an explicit HEAD_TERM_RETITLES set.
+- Before → after: hubs search+AI landings 1,091/7d (10-27→11-02) → read 11-16; cottagecore 241 impr / 7 clk / pos 14.1 (10-04→10-31), 14 search+AI sessions/14d → read 11-18.
+- Verdict: MORE DATA.
+- Next time: run `canonical-trailing-slash` + `template-lastmod-git-guard` on every lib/collections.ts or hub-template PR — both were red on main for 2–3 days and no one ran them; and `next-experiment-id.ts` does not reserve (E327/E328 were taken by Nova/Cass/Rowan mid-run) — re-run it right before the commit.
+
 ## 2026-10-31 — E303 template-lastmod git guard + IndexNow for the 14 E293 pages (#422) · E302 hub→creator links (#423), both Tier 0
 - Tried: E303 — `TEMPLATE_LASTMOD_SOURCES` + a test that asks `git log -1 -- <paths>` for each pinned constant; red pre-fix on 2 of 3 (COLLECTION 07-03 vs template 10-30, APP 09-08 vs 10-27), CREATOR passed. Bumped both; IndexNow `--creator-slugs` live push for the 14 creator pages E293 created five minutes after the E299 push: http=200, 14/14, dropped=0. E302 — hubs had 0 links to creator pages; 175/561 creator pages got a Google landing in 28d and 5/5 new E293 pages were unknown to Google. Block "Creators in this collection" (6 links, ≥2 mods in hub, folded by creator key, joined to listHubCreators): 35/35 hubs, 208 links, 112 distinct creators.
 - Before → after: /creator/* google+AI landings 7d 151 (80+71, 10-23→10-29) → read 2026-11-14 (keep ≥166 with /games/* ≥372 of 392); collection last-crawl hair-cc 10-26 / poses 10-30 / cc hub 10-21 → read 11-14.
@@ -49,10 +55,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Demand (GSC 09-21→10-18): bare lot/house browse terms ≈60 queries, none >5 impr, 1 click; hospital-lot terms (65 impr) already land on /sims-4-hospital-lots/ @6–10. The 10-18 "≈170 impr" was the generous read. No hub.
 - Verdict: KEEP (deterministic). Next time: a hub grader with no family is not a grader — add and measure the family BEFORE quoting a verdict. 18 ids for Rowan in PR #359.
 
-## 2026-10-19 — E238 hub-eligibility read is a script; gameplay BEFORE taken (Tier 0)
-- Tried: no title fix was worth shipping — `/games/*` 28d (GSC 09-19→10-16): the only hub at pos ≤15 with ≥50 impr and 0 clicks is nails-cc (90 impr, pos 15.3) and its title already names its 14 visible-query impressions; poses (1,036 impr, pos 12.1, CTR 3.9%) already carries "Gallery Poses" and moved 968/18/pos 25.4 → 1,036/40/12.1 on its own. So: `scripts/agents/collection-hub-eligibility.ts` (+ `-lib`, 11 tests) mirrors the hub page's own where/order and prints the rule before the read.
-- Before → after: gameplay-mod+script-mod+career = 550 SFW rows, 8/8 watchlist titles in the top 30 (ranks 4, 6, 8, 16, 20, 22, 23, 25), isNSFW=true 0/8, off-type 0 → NOT ELIGIBLE (prod 10-19 10:49Z). Re-read 10-20 after Rowan's E242 pass with the same command.
-- Verdict: MORE DATA (read 2026-10-20).
-- Next time: if 10-20 reads ELIGIBLE, the gameplay hub is a registry entry + copy the same day — but "Teen Pregnancy and Drama" (#2) and "Realistic Life and Pregnancy" (#3) are not on the watchlist; read Mediavine's content policy on them before writing the copy, not after.
-
-_Older entries (2026-09-29 → 2026-10-18) live verbatim in `archive/playbooks/sage-2026-10.md` and `sage-2026-09.md`; nothing deleted._
+_Older entries (2026-09-29 → 2026-10-19) live verbatim in `archive/playbooks/sage-2026-10.md` and `sage-2026-09.md`; nothing deleted._
