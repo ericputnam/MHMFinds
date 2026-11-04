@@ -251,9 +251,31 @@ export function parseIds(argv: readonly string[]): string[] | null {
 
 export const KNOWN_FLAGS = new Set(['--apply', '--rollback', '--replace-plan']);
 
+/** The first batch's plan (E304, 7 Atino00 rows). Still the default so its rollback keeps working. */
+export const DEFAULT_PLAN_NAME = 'approve-submissions-2026-10-31.json';
+
+/** Plan files live in reports/funnel/triage/ under one dated shape — no paths, no traversal. */
+const PLAN_NAME_RE = /^approve-submissions-\d{4}-\d{2}-\d{2}\.json$/;
+
+/**
+ * E327 (Nova, 2026-11-04): `--plan=approve-submissions-YYYY-MM-DD.json` gives
+ * each batch its own frozen plan, so a second batch never has to
+ * `--replace-plan` over the first batch's rollback artifact (its `applied`
+ * list is the only record of which mods to delete). Absent → the default
+ * name; present but not the dated shape → null (refused by the caller).
+ */
+export function parsePlanName(argv: readonly string[]): string | null {
+  const arg = argv.find((a) => a.startsWith('--plan='));
+  if (!arg) return DEFAULT_PLAN_NAME;
+  const name = arg.slice('--plan='.length).trim();
+  return PLAN_NAME_RE.test(name) ? name : null;
+}
+
 /** Unknown flags are refused, never ignored — a typo in `--aply` must not become a dry run. */
 export function unknownFlags(argv: readonly string[]): string[] {
-  return argv.filter((a) => a.startsWith('--') && !a.startsWith('--ids=') && !KNOWN_FLAGS.has(a));
+  return argv.filter(
+    (a) => a.startsWith('--') && !a.startsWith('--ids=') && !a.startsWith('--plan=') && !KNOWN_FLAGS.has(a),
+  );
 }
 
 export function emailVerifiedVia(input: { emailVerified: Date | string | null; providers: string[] }): EmailVerifiedVia {

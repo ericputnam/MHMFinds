@@ -1,0 +1,91 @@
+{
+  "experiment": "E304",
+  "written": "2026-11-04",
+  "change": "approve pending ModSubmission → create Mod (+contentType) + E183 pending CreatorProfile; only source-verified rows",
+  "gameId": 78062,
+  "rows": [
+    {
+      "submissionId": "cmw0dmghc1hy9xjdzov6tbzmj",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "link",
+        "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+        "handle": "atino00"
+      },
+      "modName": "Midnight Glamour Dress",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "midnight-glamour-dress",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1762981,
+        "sourceDownloads": 467,
+        "sourceCreated": "2026-10-25",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmw0dp6p21hz0xjdz3e3184uk",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "link",
+        "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+        "handle": "atino00"
+      },
+      "modName": "Cute and kawaii doll collection",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "cute-and-kawaii-doll-collection",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1766735,
+        "sourceDownloads": 730,
+        "sourceCreated": "2026-10-26",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    },
+    {
+      "submissionId": "cmw0drkk71hzqxjdz6ply28u0",
+      "action": "approve",
+      "userId": "cmus9patifca33nf4u56dphnz",
+      "profile": {
+        "kind": "link",
+        "profileId": "cmvxvtzsp0001ox6gfr9ypvja",
+        "handle": "atino00"
+      },
+      "modName": "Vintage Ornate Wardrobe",
+      "evidence": {
+        "verdict": "source-verified",
+        "curseforgeSlug": "vintage-ornate-wardrobe",
+        "sourceAuthors": [
+          "Atino00"
+        ],
+        "sourceProjectId": 1770492,
+        "sourceDownloads": 861,
+        "sourceCreated": "2026-10-28",
+        "authorKey": "atino00",
+        "accountKeys": [
+          "atino00",
+          "atino00"
+        ],
+        "emailVerifiedVia": "credentials-auto"
+      }
+    }
+  ],
+  "skipped": [],
+  "applied": []
+}
