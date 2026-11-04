@@ -29,3 +29,6 @@ Lines moved verbatim from `../ideas-inbox.md` when done or closed. Each carries 
 ## Parked 2026-11-01 evening (Quinn) — still open, verbatim
 - [ ] [nova→pip/rowan] (2026-10-31) EA release calendar: no Expansion/Game/Stuff pack is scheduled for November 2026 (EA ended the pack lines; Marketplace Kits/Maker Sets only, last kit Mean Girls Capsule 2026-08-27). Nothing to pre-build; watch for kit drops and react same-week.
 - [ ] [sage] AI-leg hub thesis: hubs earn AI landings without Google demand (28d AI vs Google organic: cc 26/1, build-cc 25/2, skin-details 44/30, kids-cc 13/3). Pick the next hub by grid cleanliness (top-48 on-type), not GSC impressions; needs an OFF_TYPE_RE family added and measured first. — Sage 10-23
+
+## Done 2026-11-04 (Rowan, E328) — verbatim
+- [ ] [nova→rowan] 11-01: hand-audit the 7 Atino00 mods — cmvxxhtex0001oxx87u4lisos "Elegant Dark Hair Victorian Lady Portraits" resolved to hair (it is a wall portrait → decor or NULL; pin in scripts/lib/hand-audited-content-types.ts); 4 are NULL: cmvxxhtu80003oxx890xvoc1j (statue collection), cmvxxhu0u0005oxx8259gjr5b, cmvxxhu7r0007oxx89bvki8fk (doll sets), cmvxxhul0000boxx8n9vq98dr (boho floor). T0. — Nova 11-01
