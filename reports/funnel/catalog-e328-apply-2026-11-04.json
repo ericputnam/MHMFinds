@@ -1,0 +1,41 @@
+{
+ "writtenAt": "2026-11-04T15:02:04.371Z",
+ "mode": "apply",
+ "facets": [
+  "hair",
+  "decor",
+  "null"
+ ],
+ "rows": [
+  {
+   "id": "cmvxxhtex0001oxx87u4lisos",
+   "title": "Elegant Dark Hair Victorian Lady Portraits",
+   "from": "hair",
+   "to": "wall-art"
+  },
+  {
+   "id": "cmvxxhul0000boxx8n9vq98dr",
+   "title": "Elegant boho floor big collections",
+   "from": null,
+   "to": "decor"
+  },
+  {
+   "id": "cmvxxhu7r0007oxx89bvki8fk",
+   "title": "Cute & Kawaii Doll Collection",
+   "from": null,
+   "to": "decor"
+  },
+  {
+   "id": "cmvxxhu0u0005oxx8259gjr5b",
+   "title": "Cute & kawaii cat and bunny doll",
+   "from": null,
+   "to": "decor"
+  },
+  {
+   "id": "cmvxxhtu80003oxx890xvoc1j",
+   "title": "Angel sculpture, statue collection.",
+   "from": null,
+   "to": "decor"
+  }
+ ]
+}

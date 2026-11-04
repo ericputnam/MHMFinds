@@ -21,6 +21,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E328 Atino00 pins (T0 data; traffic page skipped)
+- Tried: male hair and male body presets as a traffic page. Neither cleared the bar: 73/259 masculine-tagged hair titles say male (28%) with "Bernard Face Mask" at #16, and male body presets has 14 rows. So 7 `--ids` pins on the Atino00 submissions instead; apply 5, no-op 2 (ledger 60887367).
+- Before → after: Atino00 NULL 4 → 0, wrong-type 1 → 0 (a wall portrait in `hair` from "Dark Hair").
+- Verdict: MORE DATA (read 11-11 with E327's 3 new rows).
+- Next time: the submission resolver reads two-word phrases ("Dark Hair") as a type. Check the next batch on approval, not 3 days later. Male body presets (392 impr, 34 clk) already sits at pos ~7 on the legacy article; a page would compete with it, not fill a gap.
+
 ## 2026-10-31 — E307 christmas-cc (title-only theme, 262 cards)
 - Tried: 7th theme moved to title-only (`lib/christmasThemeRules.ts`), page `/games/sims-4/christmas-cc/`, PR #419 49cdb66 PASS.
 - Before → after: `christmas` 312 rows / 59.6% title-supported ("Beard N3", "FSP Family Portrait" at cards #3–#4) → 262 / 100%; 18 Christmas queries (≈43 impr, 0 clicks) landing on no browse page → a 262-card page, top 24 by downloads hand-read 24/24.

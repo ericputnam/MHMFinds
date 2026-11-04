@@ -1258,6 +1258,24 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmilib4im00j4oxpzgvfe00qv: { contentType: "decor", why: "E281 \"Floret Grove\" — decor, was poses; desc: a garden set of bee boxes, planters, a lattice, a plant-display dresser (/sims-4-garden-cc/)" },
   cmim9sv3w005jox56mk4ri6uk: { contentType: "accessories", why: "E281 \"Sims 4 CC Wedding Bouquet\" — accessories, was poses; BEO's held bouquet, \"all ages, all genders\" CAS accessory (/sims-4-wedding-cc/)" },
   cmikab9mr00kvoxk7cg5hta26: { contentType: "accessories", why: "E281 \"Walking Canes\" — accessories, was poses; desc: \"The cane adds the perfect finishing touch to your elder Sim’s fashion\" (/sims-4-elder-cc/)" },
+
+  // ── Audited 2026-11-04 (Rowan, E328). The 7 Atino00 rows approved by E304
+  //    (Nova, 11-01) through the submission path, which resolves contentType
+  //    with the E168 ingest resolver. One landed wrong (a wall portrait read as
+  //    `hair` from "Dark Hair" in the title) and 4 landed NULL. Decided from the
+  //    title, then the mod's OWN description (a creator submission, not a blog
+  //    post's shared description). Peer typing checked on the whole catalog
+  //    11-04: titled `portrait` → the one non-pose build-buy row is `wall-art`
+  //    ("Wizard House Portraits #01"); titled `wallpaper` → 49 of 60 `decor`, so
+  //    the floor-tile set follows the wallpaper precedent. The 2 rows already
+  //    right are pinned as no-ops so a later pass cannot re-break them.
+  cmvxxhtex0001oxx87u4lisos: { contentType: "wall-art", why: "E328 \"Elegant Dark Hair Victorian Lady Portraits\" — wall-art, was hair (\"Dark Hair\" in the title); desc: \"beautifully detailed portraits of elegant women … displayed in ornate gold and silver antique\" frames" },
+  cmvxxhtu80003oxx890xvoc1j: { contentType: "decor", why: "E328 \"Angel sculpture, statue collection.\" — decor, was NULL; desc: \"4 Victorian-inspired angel statues\", antique marble and aged stone" },
+  cmvxxhu0u0005oxx8259gjr5b: { contentType: "decor", why: "E328 \"Cute & kawaii cat and bunny doll\" — decor, was NULL; desc: \"four adorable decorative dolls … add a soft and whimsical touch to any room\"" },
+  cmvxxhu7r0007oxx89bvki8fk: { contentType: "decor", why: "E328 \"Cute & Kawaii Doll Collection\" — decor, was NULL; desc: \"a charming collection of four cute & kawaii decorative dolls\"" },
+  cmvxxhul0000boxx8n9vq98dr: { contentType: "decor", why: "E328 \"Elegant boho floor big collections\" — decor, was NULL; desc: \"Elegant boho floor tile collection\", 100+ swatches; floors/walls follow the wallpaper precedent (49 of 60 wallpaper titles are decor)" },
+  cmvxxhueg0009oxx8kg0brfpj: { contentType: "decor", why: "E328 \"Cute & kawaii doll wallpaper\" — KEEP decor (no-op pin); desc: \"a sweet and dreamy kawaii wallpaper set\" — the word doll is the motif, not the object" },
+  cmvxvtzus0003ox6gqfys2q3v: { contentType: "decor", why: "E328 \"Vintage decor set\" — KEEP decor (no-op pin); Atino00 submission, title is the type" },
 };
 
 /**
