@@ -560,3 +560,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-02 20:37 | after-merge | manual | bfaf5c5 | https://mhm-finds-dw5l-1422v999u-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-03 06:35 | check | morning-check |  | https://mhm-finds-dw5l-12v4azxhd-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-11-03 06:38 | check | mhm-funnel-daily: MISSED 2026-11-03 — Quinn did not run (preflight=OTHER, cli=2.1.280 (Claude Code)) |  |  | MISSED | no excerpt · access=2026-11-03 06:30 refresh=2026-11-20 06:02 refresh_days=16 · degraded digest + scoreboard + guardrail landed on main by the runner (E264) |
+| 2026-11-04 06:51 | check | morning-check |  | https://mhm-finds-dw5l-426hfky48-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
