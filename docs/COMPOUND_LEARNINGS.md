@@ -2842,6 +2842,46 @@ row instead of restating a literal).
   runner withheld a red-traffic rollback because 90 deploys in the window exceeded the 24 bound.
   This is the "could not run ≠ broken" rule working as designed.
 
+### 2026-11-02 — rotated from CLAUDE.md
+
+(Heading in CLAUDE.md was "2026-11-02 (covers merges #440–#448, 11-02)".)
+
+Subsystem entries (Pinterest freeze, short video, hub capture, body-presets, style-to-test) are
+in the archive under "2026-11-02 — subsystem entries". E313 is closed by #440.
+
+- **Fix the shared builder, not the caller (#440).** The bug was in `newModDataFromSubmission`, so
+  the admin approve route *and* the E304 script both wrote rows that no reader selects. The test
+  imports the real builder, and it failed on the pre-fix tree. A write-side backfill takes
+  `--expect=N` and refuses to apply if the live population is a different size.
+- **A lock diagnosis names the most specific cause first (#444, E326).** `merge-gate.sh` checked the
+  TTL before anything else, so every lock it broke read "older than TTL", including locks whose
+  shell had exited or whose PR had merged long before. It now checks in order: shell exited, merge
+  landed, holder's PR `MERGED`, then the TTL, and releases on that positive evidence. A `gh`
+  failure counts as unknown, never as stale. `deploy-verify --after-merge` calls `--release --sha`.
+- **An operator freeze is a committed file that every write path checks before its first write
+  (#446).** `pinterest-freeze.json` makes each pin-queue writer exit **3** (a distinct code). Dry runs and
+  `--check` still work, and a malformed file counts as frozen. **Gap:** a *missing* file counts as
+  not frozen, and a branch cut before #446 does not have the file. So a writer run from an older
+  branch, or after the file is deleted, writes anyway (the same race as "a comment is not a gate").
+  Run pin writers only from `origin/main`.
+- **Every merge needs a ledger label, interactive sessions included.** `deploy-verify.sh` defaults
+  `LABEL="manual"`. The three operator-session merges on 11-02 (#446, #447, #448) all landed as
+  `after-merge | manual`, so the ledger cannot tell which PR a row grades. #447's row is `TIMEOUT`
+  (no READY deploy within 25 min) and has no correcting row. #448's PASS covers that code, but only
+  by ancestry. Pass `--label "PR #N …"`, and write a correcting row after a TIMEOUT.
+- **One timezone in the ledger.** The 11-02 hand-written `apply` rows (E322 backfill, E319 pin) say
+  17:58/17:59 (UTC), and the script rows around them say 12:58 (local, −0500). As a result, the
+  apply rows sort five hours after the merge that shipped their script. Copy the timestamp format
+  of the row above, or take it from the script's own output.
+- **"BUILD ERROR (platform) → READY via ledger commit" is now routine:** 7 rows so far, 3 on 11-01/02
+  (#437, #442, #446). The own build of the merge commit ERRORs, and the ledger commit pushed about
+  30 s later builds READY with the same app code. E201 grades this correctly and never acts on it.
+  But a pattern this regular is a cause, not noise. Find out why Vercel ERRORs the first build
+  before treating it as weather (open).
+- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`
+  (fourth day). The 11-02 digest landed via `digest-land.sh` with Team / Insight "not written yet":
+  the daily PR did not merge.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

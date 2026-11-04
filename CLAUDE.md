@@ -925,52 +925,36 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-01 — rotated to the archive
+### 2026-10-15 → 11-02 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03.
 
-### 2026-11-02 (covers merges #440–#448, 11-02)
+### 2026-11-03 (no merges; the funnel run MISSED)
 
-Subsystem entries (Pinterest freeze, short video, hub capture, body-presets, style-to-test) are
-in the archive under "2026-11-02 — subsystem entries". E313 is closed by #440.
+The 11-02 section was rotated to the archive. Its standing points are still open: always pass
+`--label "PR #N …"` to `deploy-verify.sh`, which defaults to `manual`. #447 still has no correcting
+row after its `TIMEOUT`. The first Vercel build of a merge still ERRORs.
 
-- **Fix the shared builder, not the caller (#440).** The bug was in `newModDataFromSubmission`, so
-  the admin approve route *and* the E304 script both wrote rows that no reader selects. The test
-  imports the real builder, and it failed on the pre-fix tree. A write-side backfill takes
-  `--expect=N` and refuses to apply if the live population is a different size.
-- **A lock diagnosis names the most specific cause first (#444, E326).** `merge-gate.sh` checked the
-  TTL before anything else, so every lock it broke read "older than TTL", including locks whose
-  shell had exited or whose PR had merged long before. It now checks in order: shell exited, merge
-  landed, holder's PR `MERGED`, then the TTL, and releases on that positive evidence. A `gh`
-  failure counts as unknown, never as stale. `deploy-verify --after-merge` calls `--release --sha`.
-- **An operator freeze is a committed file that every write path checks before its first write
-  (#446).** `pinterest-freeze.json` makes each pin-queue writer exit **3** (a distinct code). Dry runs and
-  `--check` still work, and a malformed file counts as frozen. **Gap:** a *missing* file counts as
-  not frozen, and a branch cut before #446 does not have the file. So a writer run from an older
-  branch, or after the file is deleted, writes anyway (the same race as "a comment is not a gate").
-  Run pin writers only from `origin/main`.
-- **Every merge needs a ledger label, interactive sessions included.** `deploy-verify.sh` defaults
-  `LABEL="manual"`. The three operator-session merges on 11-02 (#446, #447, #448) all landed as
-  `after-merge | manual`, so the ledger cannot tell which PR a row grades. #447's row is `TIMEOUT`
-  (no READY deploy within 25 min) and has no correcting row. #448's PASS covers that code, but only
-  by ancestry. Pass `--label "PR #N …"`, and write a correcting row after a TIMEOUT.
-- **One timezone in the ledger.** The 11-02 hand-written `apply` rows (E322 backfill, E319 pin) say
-  17:58/17:59 (UTC), and the script rows around them say 12:58 (local, −0500). As a result, the
-  apply rows sort five hours after the merge that shipped their script. Copy the timestamp format
-  of the row above, or take it from the script's own output.
-- **"BUILD ERROR (platform) → READY via ledger commit" is now routine:** 7 rows so far, 3 on 11-01/02
-  (#437, #442, #446). The own build of the merge commit ERRORs, and the ledger commit pushed about
-  30 s later builds READY with the same app code. E201 grades this correctly and never acts on it.
-  But a pattern this regular is a cause, not noise. Find out why Vercel ERRORs the first build
-  before treating it as weather (open).
+- **A failure classifier must parse the shape its source actually emits (E264 follow-up, open).**
+  On 11-03 the preflight got HTTP 429, *"You're out of usage credits"*. The runner filed it as
+  `preflight=OTHER`, "no excerpt", and the digest told the operator the cause was "neither auth nor
+  version (excerpt: none)". The cause was on stdout the whole time. `claude -p --output-format
+  json` reports an error as `"is_error":true`, `"api_error_status":429` and `"result":"…"`, and
+  stderr was 0 bytes. `preflight_diagnosis` (`run-funnel-daily.sh:604`) only greps the
+  `"error"`/`"message"` keys, so it found nothing. Fix: add a `QUOTA` kind keyed on
+  `api_error_status` 429, and take the excerpt from `.result`. Quota is an operator action, like
+  `AUTH`. A retry cannot clear it. Rule: when a classifier falls through to its catch-all, it must
+  still show the raw tail of what it read. "None" while the file names the cause is worse than no
+  digest at all.
+- **E264 held.** The MISSED row and the degraded digest, scoreboard and guardrail (green) landed on
+  `main` 3 s after the preflight failed. The morning check passed (5xx/15m = 0). Nothing shipped.
 - **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`
-  (fourth day). The 11-02 digest landed via `digest-land.sh` with Team / Insight "not written yet":
-  the daily PR did not merge.
+  (`/api/creator/submissions`, fifth day).
 
 ---
 
-*Last compound review: 2026-11-02*
+*Last compound review: 2026-11-03*
 
 ---
 
