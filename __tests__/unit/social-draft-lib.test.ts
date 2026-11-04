@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -6,10 +9,12 @@ import {
   NSFW_PATH_RE,
   approvalString,
   draftFilename,
+  dropPending,
   isOptedOut,
   isPostable,
   normalizeDestination,
   parseOptout,
+  pendingDraftPaths,
   rankDestinations,
   renderDraft,
   voiceLint,
@@ -163,5 +168,65 @@ describe('draft rendering', () => {
   });
   it('builds stable filenames', () => {
     expect(draftFilename(3, 'short-video', '/games/sims-4/male-clothes/')).toBe('03-short-video-games-sims-4-male-clothes.md');
+  });
+});
+
+// E333 (2026-11-04) -------------------------------------------------------
+describe('E333 non-content routes', () => {
+  it('rejects the hyphenated auth routes that slipped through (/sign-in/ ranked 228 nonPinterest7d)', () => {
+    for (const p of ['/sign-in/', '/sign-in/?callbackUrl=x', '/signin/', '/log-in/', '/login/', '/sign-out/', '/sign-up/', '/account/settings/', '/api/x/', '/go/abc/', '/creators/', '/creators/dashboard/', '/about/', '/privacy-policy/', '/terms/']) {
+      expect(isPostable(normalizeDestination('musthavemods.com', p)), p).toBe(false);
+    }
+  });
+  it('keeps the public content routes that share a prefix', () => {
+    for (const p of ['/creator/atino00/', '/creator/', '/top-creators/', '/games/sims-4/hair-cc/', '/mods/cmabc123/', '/play/', '/sims-4-terms-of-endearment-mods/', '/about-face-cc/']) {
+      expect(isPostable(p), p).toBe(true);
+    }
+  });
+
+  // Walks app/: every top-level route must be classified, so a new auth/form
+  // route cannot become a "destination" by default. Dotted entries (llms.txt,
+  // sitemaps, robots.txt) are files, not pages; app/components holds no route.
+  const CONTENT_ROUTES = new Set(['games', 'mods', 'creator', 'play', 'top-creators']);
+  const SKIP = new Set(['components']);
+  const appDir = join(__dirname, '..', '..', 'app');
+  const routes = readdirSync(appDir).filter((d) => !d.includes('.') && !d.startsWith('_') && !d.startsWith('(') && !SKIP.has(d) && statSync(join(appDir, d)).isDirectory());
+  it('found the app routes (vacuity guard)', () => {
+    expect(routes.length).toBeGreaterThan(15);
+    expect(routes).toContain('sign-in');
+  });
+  it.each(routes)('app/%s is postable only if it is a content route', (d) => {
+    expect(isPostable(`/${d}/some-leaf/`)).toBe(CONTENT_ROUTES.has(d));
+  });
+});
+
+describe('E333 pending-draft skip', () => {
+  const draft = (status: string, url: string) => `---\nstatus: ${status}\nplatform: x\ntarget_url: ${url}\nbatch: 2026-10-31\n---\n\n## Copy\n`;
+  it('collects DRAFT targets, normalized, and ignores posted/archived ones', () => {
+    const pending = pendingDraftPaths([
+      draft('DRAFT — Tier 2 until 2026-11-07; posts only after "approve social 2026-10-31"', 'https://musthavemods.com/black-sims-4-cc/'),
+      draft('DRAFT', 'https://blog.musthavemods.com/sims-4-reshade'),
+      draft('POSTED 2026-11-08 tiktok', 'https://musthavemods.com/sims-4-poses/'),
+      draft('ARCHIVED unposted 2026-11-04', 'https://musthavemods.com/new-sims-4-mods-2026/'),
+      'no front matter at all',
+    ]);
+    expect(Array.from(pending).sort()).toEqual(['/black-sims-4-cc/', '/sims-4-reshade/']);
+  });
+  it('drops pending destinations from the ranking and keeps order', () => {
+    const ranked = rankDestinations({
+      rows: [row('/a/', 300, 'all', '7d'), row('/b/', 200, 'all', '7d'), row('/c/', 100, 'all', '7d')],
+    });
+    expect(dropPending(ranked, new Set(['/b/'])).map((d) => d.path)).toEqual(['/a/', '/c/']);
+  });
+  it('the committed batches yield pending destinations (reads the real tree)', () => {
+    const root = join(__dirname, '..', '..', 'reports', 'funnel', 'social', 'drafts');
+    const texts: string[] = [];
+    for (const b of readdirSync(root).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x))) {
+      for (const f of readdirSync(join(root, b)).filter((x) => /^\d{2}-.*\.md$/.test(x))) texts.push(readFileSync(join(root, b, f), 'utf8'));
+    }
+    expect(texts.length).toBeGreaterThan(10);
+    const pending = pendingDraftPaths(texts);
+    expect(pending.size).toBeGreaterThan(5);
+    expect(pending.has('/black-sims-4-cc/')).toBe(true);
   });
 });

@@ -69,8 +69,19 @@ export const NSFW_PATH_RE = /adult|woohoo|nsfw|wicked|\bsex|porn|nude|kink|basem
  * on the first dry run — a form page that the scripted-shaped sign-ups hit
  * (E260), not something to post about.
  */
+/*
+ * E333 (2026-11-04): the original alternation had `signin|login` but the app
+ * route is `/sign-in/` (hyphenated), so `/sign-in/` (228 nonPinterest7d) ranked
+ * as a destination and took skeleton 14 in the 10-31 batch. Hyphen-optional
+ * now, plus the remaining top-level app routes that are not content: the
+ * `/creators/` dashboard (307s to sign-in for logged-out visitors), about and
+ * the legal pages. `/creator/` (singular, the public creator pages) and
+ * `/top-creators/` stay postable — the trailing `(\/|$)` keeps `creators` from
+ * matching `creator/…`. `__tests__/unit/social-draft-lib.test.ts` walks `app/`
+ * so a new top-level route has to be classified, not forgotten.
+ */
 export const NON_CONTENT_PATH_RE =
-  /^\/$|^\/(category|page|tag|author|feed|search|go|api|auth|signin|login|account|admin|wp-|submit-mod|sign-?up|register|forgot-password|set-password|favorites|profile|dashboard|newsletter|unsubscribe|confirm|creator-signup)/i;
+  /^\/$|^\/(category|page|tag|author|feed|search|go|api|auth|sign-?in|log-?in|sign-?out|log-?out|account|admin|wp-|submit-mod|sign-?up|register|forgot-password|set-password|favorites|profile|dashboard|newsletter|unsubscribe|confirm|creator-signup|creators(\/|$)|about(\/|$)|privacy-policy|terms(\/|$))/i;
 
 export interface LandingRow {
   host: string;
@@ -187,6 +198,43 @@ export function rankDestinations(opts: RankOptions): RankedDestination[] {
   }
   out.sort((a, b) => b[rankBy] - a[rankBy] || a.path.localeCompare(b.path));
   return out;
+}
+
+// ---------------------------------------------------------------- pending drafts
+
+/**
+ * E333: destinations that already sit in a batch still waiting on the
+ * operator. Re-drafting them makes each new batch mostly duplicates (10 of 16
+ * on 10-31), so the CLI skips them by default. A draft counts as pending when
+ * its front-matter `status:` starts with DRAFT; anything else (POSTED,
+ * ARCHIVED, REJECTED…) frees the URL again. Paths come from `target_url:` and
+ * are normalized exactly like a GA4 row, so blog.* / slashless variants match.
+ * Pure: the caller hands in file contents.
+ */
+export function pendingDraftPaths(texts: readonly string[]): Set<string> {
+  const out = new Set<string>();
+  for (const text of texts) {
+    const fm = text.match(/^---\n([\s\S]*?)\n---/);
+    if (!fm) continue;
+    const status = fm[1].match(/^status:\s*(.*)$/m)?.[1]?.trim() ?? '';
+    if (!/^DRAFT\b/i.test(status)) continue;
+    const target = fm[1].match(/^target_url:\s*(\S+)/m)?.[1];
+    if (!target) continue;
+    let u: URL;
+    try {
+      u = new URL(target);
+    } catch {
+      continue;
+    }
+    const p = normalizeDestination(u.host, u.pathname);
+    if (p) out.add(p);
+  }
+  return out;
+}
+
+/** Ranked list minus pending destinations; order preserved. */
+export function dropPending(ranked: readonly RankedDestination[], pending: ReadonlySet<string>): RankedDestination[] {
+  return ranked.filter((d) => !pending.has(d.path));
 }
 
 // ---------------------------------------------------------------- voice rule
