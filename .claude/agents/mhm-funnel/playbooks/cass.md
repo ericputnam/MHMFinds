@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E334 (PR #451 says E327) sign-up opt-in copy A/B (T0, #451)
+- Tried: checkbox copy split (b names the cadence); kept one waitlist source because a signup-optin-b would have bypassed the E270 scripted exclusion, which keys on source === 'signup-optin'; the cadence guard never scanned this form (it posts to /api/waitlist) and now does.
+- Before → after: 42/100 human-shaped form sign-ups ticked (42.0%, 10-21→11-03); 32/32 scripted-shaped ticked; accounts 14d: 108 Patreon, 129 form, 3 both → read 11-18.
+- Verdict: PENDING.
+- Next time: before giving an arm its own source, grep every consumer of the old source; an exclusion keyed on the string would silently miss the new arm.
+
 ## 2026-10-31 — E305 connect opt-in copy A/B (T1, #414)
 - Tried: split new accounts by sign-in provider before choosing a surface. Patreon sign-in made 52 of 102 accounts 10-24→10-30 and 1 of the 52 is subscribed; password sign-ups 21 of 50. The checkbox converts 46%; the /go box converts 3/77. Both arms drop "once a week".
 - Before → after: 3/77 → read 11-15.

@@ -1,114 +1,113 @@
-# Funnel scoreboard — 2026-11-01
+# Funnel scoreboard — 2026-11-04
 
-**Headline:** owned-audience adds 7d **135** (target 300/wk) · non-ad revenue **$144.00/mo gross** (target $750.00) · Mediavine 28d **$5,928.99** (-2.0% vs prior)
+**Headline:** owned-audience adds 7d **140** (target 300/wk) · non-ad revenue **$138.00/mo gross** (target $750.00) · Mediavine 28d **$5,940.34** (+1.9% vs prior)
 
 ## Flags
 
-- 🟡 Mediavine JWT expires in 11 days
-- 🟡 Pinner: inventory runway ≈ 2.1 days (31 rows dated through +14d ÷ pinterest-14d 14.5/day; observed 7d 17.9/day, not the divisor; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)
-- 🟡 Pinner writer: newest writer-attributed row queued 2026-10-30 10:30Z (49.1 h ago) · 0 inserted in 24h, 173 in 7d · runway 2.1d — between 26-72h, watch it
-- 🔴 Loop MISSED 1 of the last 7 mornings: 2026-10-26 — see Team health (E187)
+- 🟡 Pinner: inventory runway ≈ 1.7 days (26 rows dated through +14d ÷ pinterest-14d 15.4/day; observed 7d 22.4/day, not the divisor; 16 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)
+- 🔴 Loop MISSED 1 of the last 7 mornings: 2026-11-03 — see Team health (E187)
 
-## Audience (GA4 2026-10-24→2026-10-30 vs 2026-10-17→2026-10-23)
+## Audience (GA4 2026-10-27→2026-11-02 vs 2026-10-20→2026-10-26)
 
 | Channel | 7d | prev 7d | Δ |
 |---|--:|--:|--:|
-| **All sessions** | 89,399 | 92,852 | -3.7% |
-| pinterest | 58,766 | 58,997 | -0.4% |
-| bing_organic | 14,925 | 14,443 | +3.3% |
-| direct | 5,425 | 10,038 | -46.0% |
-| direct_ex_sg_bot | 3,509 | 3,792 | -7.5% |
-| google_organic | 3,144 | 2,580 | +21.9% |
-| other | 2,535 | 2,437 | +4.0% |
-| other_search | 2,302 | 2,376 | -3.1% |
-| tumblr | 1,342 | 1,253 | +7.1% |
-| ai_referral | 812 | 585 | +38.8% |
-| reddit | 148 | 143 | +3.5% |
+| **All sessions** | 85,598 | 87,649 | -2.3% |
+| pinterest | 56,359 | 58,131 | -3.0% |
+| bing_organic | 13,957 | 14,357 | -2.8% |
+| direct | 5,392 | 5,227 | +3.2% |
+| direct_ex_sg_bot | 3,149 | 3,560 | -11.5% |
+| google_organic | 2,959 | 2,889 | +2.4% |
+| other | 2,478 | 2,496 | -0.7% |
+| other_search | 2,135 | 2,383 | -10.4% |
+| tumblr | 1,312 | 1,284 | +2.2% |
+| ai_referral | 858 | 754 | +13.8% |
+| reddit | 148 | 128 | +15.6% |
 
-- 28d headline ex Singapore (direct) (E236 · rule E216): sessions 360,222 vs line 358,794 = 100.4% → ex segment 341,661 = 95.2% of line (2026-10-02→2026-10-29; segment 5.2% of GA4 sessions, applied per day; the line still carries the segment, so this read is conservative)
+- 28d headline ex Singapore (direct) (E236 · rule E216): sessions 359,583 vs line 358,486 = 100.3% → ex segment 341,035 = 95.1% of line (2026-10-03→2026-10-30; segment 5.2% of GA4 sessions, applied per day; the line still carries the segment, so this read is conservative)
 
-- (not set) landing sessions 7d: 3,983 (suspected bot/tag noise)
-- Capture events 7d: patreon_click=86, affiliate_click=53, favorite=45, sign_up=43, newsletter_signup=26, favorite_signin_redirect=23, patreon_click_after_wait=17, member_skip_countdown=10, favorite_after_signin=5
+- (not set) landing sessions 7d: 3,756 (suspected bot/tag noise)
+- Capture events 7d: favorite=92, patreon_click=92, affiliate_click=82, sign_up=50, patreon_click_after_wait=36, favorite_signin_redirect=29, newsletter_signup=25, member_skip_countdown=12, favorite_after_signin=8
 
-## Search (GSC 2026-10-02→2026-10-29)
+## Search (GSC 2026-10-05→2026-11-01)
 
-- Clicks 28d: **3,131** (+17.4% vs prior 28d) · impressions 95,004
+- Clicks 28d: **3,126** (+13.3% vs prior 28d) · impressions 95,115
 
-## Ad revenue (Mediavine, anchored 2026-10-30)
+## Ad revenue (Mediavine, anchored 2026-11-02)
 
 | Window | Revenue | Δ | Session RPM | Sessions |
 |---|--:|--:|--:|--:|
-| 7d | $1,555.12 | +5.9% | $17.72 (prev $15.95) | 87,753 |
-| 28d | $5,928.99 | -2.0% | $16.49 | |
+| 7d | $1,423.87 | -5.7% | $17.14 (prev $17.21) | 83,050 |
+| 28d | $5,940.34 | +1.9% | $16.73 | |
 
-- Health: date=2026/11/01 · ads_txt=ok · privacy_policy=ok
+- Health: date=2026/11/04 · ads_txt=ok · privacy_policy=ok
 
 ## Owned audience & engagement (production DB)
 
 | Metric | Total | 7d | 30d |
 |---|--:|--:|--:|
-| Registered accounts | 2,364 | +108 | +539 |
-| Email subscribers | 285 | +27 | +223 |
-| Favorites | 25,769 | +1055 | |
-| Download clicks | | 523 | 1,920 |
-| Affiliate clicks | | 19 | 49 |
+| Registered accounts | 2,417 | +115 | +543 |
+| Email subscribers | 299 | +25 | +225 |
+| Favorites | 26,103 | +696 | |
+| Download clicks | | 397 | 1,672 |
+| Affiliate clicks | | 19 | 53 |
 | Affiliate earnings | | | $0.00 |
 
-- Subscribers by source: collection-page=5, footer=20, go-interstitial=6, home-hero=8, sign-in=1, signup-optin=236, re-permission=2, mod-detail-optin=2, patreon-connect-optin=5
-- Catalog: 17,132 mods · 2,337 user collections · 21 creator profiles · 11 submissions
+- Subscribers by source: collection-page=5, footer=20, go-interstitial=6, home-hero=12, sign-in=1, creator-page=1, signup-optin=245, re-permission=2, mod-detail-optin=2, patreon-connect-optin=5
+- ⚠️ Scripted-shaped sign-ups 7d: 1 of 53 form accounts (1 ticked "I'm a creator", 1 ticked the newsletter) · signup-optin rows 7d 16 → 15 net of them — diagnostic (lib/funnel/signupQuality.ts, E260); a sign-up gate is Tier 2
+- Catalog: 17,214 mods · 2,390 user collections · 22 creator profiles · 14 submissions
 
 ## Patreon (public page)
 
-- Paid patrons: **56** · free members: **6393** · gross ≈ $144.00/mo
-- Tiers: Espresso Shot $1×14, Cappuccino $3×40, Large Latte $5×2
+- Paid patrons: **54** · free members: **6476** · gross ≈ $138.00/mo
+- Tiers: Espresso Shot $1×15, Cappuccino $3×36, Large Latte $5×3
 
 ## Patreon (Members API + site accounts) — E40 read 2026-09-19 · Q4 gate 2026-09-22
 
 | Metric | Value |
 |---|--:|
-| Paid patrons (API) | 57 (13×$1, 41×$3, 2×$5, 1×$8) ≈ $153.50/mo |
-| Paid-and-connected | **5** of 342 linked accounts (9% of paid; gate needs ≥ 1/3) · by Patreon id 5, by email 5 (email-only was the pre-09-14 join) · 342 linked accounts carry a Patreon id, 57 of 57 paid rows carry one · premium-flagged users 3 |
-| $3-tier joins since 2026-09-08 | **15** (all tiers 26) |
-| $3-tier joins 7d (2026-10-25→2026-11-01) | 2 → 0.29/day |
+| Paid patrons (API) | 54 (14×$1, 37×$3, 2×$5, 1×$8) ≈ $142.50/mo |
+| Paid-and-connected | **4** of 374 linked accounts (7% of paid; gate needs ≥ 1/3) · by Patreon id 4, by email 4 (email-only was the pre-09-14 join) · 374 linked accounts carry a Patreon id, 54 of 54 paid rows carry one · premium-flagged users 3 |
+| $3-tier joins since 2026-09-08 | **12** (all tiers 24) |
+| $3-tier joins 7d (2026-10-28→2026-11-04) | 0 → 0/day |
 | Paid joins / cancels 7d | 4 / 1 (Aug 2026 pace: 17 / 16 per month) |
-| patreon_click users/day (GA4, mean of daily distinct users, 2026-10-24→2026-10-30) | 9.86 (69 users / 7 days) vs E40 baseline 8.75 (35 users / 4 days, 2026-09-08→2026-09-11, frozen 09-12; GA4 re-reads that window today as 8.75) |
+| patreon_click users/day (GA4, mean of daily distinct users, 2026-10-27→2026-11-02) | 11.43 (80 users / 7 days) vs E40 baseline 8.75 (35 users / 4 days, 2026-09-08→2026-09-11, frozen 09-12; GA4 re-reads that window today as 8.75) |
 
-- E40 keep if: paid-and-connected ≥ 3 OR $3-tier joins 09-13→09-19 ≥ 11, with session RPM within ±5% of $17.55; revert if paid-and-connected still 0 AND joins < 8 AND patreon_click users/day (mean of daily distinct users over 2026-10-24→2026-10-30) < 4.375 (50% of the 8.75 baseline, mean of daily distinct users 2026-09-08→2026-09-11). Paid-and-connected is the id join (fallback email); the E40 BEFORE of 0 was email-only.
+- E40 keep if: paid-and-connected ≥ 3 OR $3-tier joins 09-13→09-19 ≥ 11, with session RPM within ±5% of $17.55; revert if paid-and-connected still 0 AND joins < 8 AND patreon_click users/day (mean of daily distinct users over 2026-10-27→2026-11-02) < 4.375 (50% of the 8.75 baseline, mean of daily distinct users 2026-09-08→2026-09-11). Paid-and-connected is the id join (fallback email); the E40 BEFORE of 0 was email-only.
 - Q4 gate (2026-09-22): proceed to renames + $10 tier only if joins ≥ 17/mo pace AND ≥ 1/3 of paid patrons connected (id join); revert copy if cancels > 16/mo pace.
 
 ## Content & distribution pipelines
 
-- Blog posts: 5 in 7d, 21 in 30d · latest: 2026-10-30 sims-4-shoe-rack-cc
-- Pinner: last pin created 2026-11-01 07:00Z (4.6 h ago, Pinterest API) · **17 pins in 24h**, 125 in 7d, 203 in 14d (Pinterest API) · **inventory runway ≈ 2.1 days (31 rows dated through +14d ÷ pinterest-14d 14.5/day; observed 7d 17.9/day, not the divisor; 0 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)** · 1706 stranded before the poster's 14d window, 1737 unposted total, 9,242 posted rows all-time
-  - queue `Post Date` is the scheduled date, not a posting timestamp — newest posted row is dated 2026-11-01; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.
-- 🟡 Pinner writer (Q11): newest writer-attributed row queued 2026-10-30 10:30Z (49.1 h ago) · 0 inserted in 24h, 173 in 7d · runway 2.1d — between 26-72h, watch it — "sims-4-shoe-rack-cc"
+- Blog posts: 5 in 7d, 21 in 30d · latest: 2026-11-04 sims-4-mirror-cc
+- Pinner: last pin created 2026-11-04 14:40Z (0.2 h ago, Pinterest API) · **15 pins in 24h**, 157 in 7d, 216 in 14d (Pinterest API) · **inventory runway ≈ 1.7 days (26 rows dated through +14d ÷ pinterest-14d 15.4/day; observed 7d 22.4/day, not the divisor; 16 still schedulable today) — below the 3-day floor; refill needs the writer plugin (Q11) or an operator-approved revival slice (Tier 2, SD-10)** · 1793 stranded before the poster's 14d window, 1819 unposted total, 9,303 posted rows all-time
+  - queue `Post Date` is the scheduled date, not a posting timestamp — newest posted row is dated 2026-11-04; do not read it as staleness. "Schedulable today" is the residue of a drip-dated allotment, not a buffer — the runway above is.
+- 🟢 Pinner writer (Q11): newest writer-attributed row queued 2026-11-04 11:30Z (3.4 h ago) · 31 inserted in 24h, 230 in 7d · runway 1.7d — "sims-4-mirror-cc"
 ## Long-range health
 
 | Metric | Value | Owner |
 |---|--:|---|
-| Returning-visitor share 7d | 54.2% | Pip |
-| Non-Pinterest share 7d (adjusted) | 16.6% (raw 34.3%) | Pip |
-| Pages/session 7d | 1.62 | Sage |
-| Engagement rate 7d | 73.3% | Sage |
-| Favorites 7d | +1055 | Cass |
-| Download clicks 7d | 523 | Nova |
-| New mods 7d (prior 7d) | 111 from 5 posts + 15 other, 19.2/post (119 from 5 + 13 other, 21.2/post) | Nova |
-| Catalog total | 17,132 | Nova |
-| Capture rate /1k sessions 7d | 1.51 | Cass |
-| Creators onboarded (>=1 submission) | 2 (1 with >=1 approved; 1 house account excluded) | Nova |
-| Submissions pending review | 7 (oldest 29d) | Nova |
-| Creator submissions 7d | 0 | Nova |
-| Creator-flagged sign-ups 7d | 5 (0 scripted-shaped, 5 human-shaped) | Nova |
-| Sessions to creator pages 7d (/creator/*) | 245 organic+AI of 316 (Direct 63) · guard 157.3% site-relative vs 2026-09-23→2026-09-29 PASS (≥95%) · source-matched 122.5% (diagnostic; google 78/58.3, bing 80/68.3, chatgpt 71/66.9, other 16/6.6) | Nova |
+| Returning-visitor share 7d | 54.3% | Pip |
+| Non-Pinterest share 7d (adjusted) | 17.0% (raw 34.2%) | Pip |
+| Pages/session 7d | 1.69 | Sage |
+| Engagement rate 7d | 73.8% | Sage |
+| Favorites 7d | +696 | Cass |
+| Download clicks 7d | 397 | Nova |
+| New mods 7d (prior 7d) | 133 from 4 posts + 26 other, 26.8/post (108 from 5 + 20 other, 17.6/post) | Nova |
+| Catalog total | 17,214 | Nova |
+| Capture rate /1k sessions 7d | 1.64 | Cass |
+| Creators onboarded (>=1 submission) | 2 (2 with >=1 approved; 1 house account excluded) | Nova |
+| Submissions pending review | 3 (oldest 1d) | Nova |
+| Creator submissions 7d | 3 | Nova |
+| Creator-flagged sign-ups 7d | 4 (1 scripted-shaped, 3 human-shaped) | Nova |
+| Sessions to creator pages 7d (/creator/*) | 277 organic+AI of 377 (Direct 89) · guard 188.3% site-relative vs 2026-09-23→2026-09-29 PASS (≥95%) · source-matched 140.7% (diagnostic; google 68/54.8, bing 96/63.9, chatgpt 95/71.8, other 18/6.3) | Nova |
 
 ## Team health
 
-- Run success 14d: **71.4%** (owner: Ops)
-- Run liveness 7d (2026-10-25 → 2026-10-31): **6/7 ran** · 1 MISSED · 0 unknown
-  - MISSED 2026-10-26: no preflight file · no digest on main
-- Merges 7d by owner: Cass=5, Nova=5, Pip=6, Ops=4, Interactive=4, Operator=5, Sage=7, Quinn=4, Rio=4, Rowan=4, manual=1 (49 total)
-- Ops merge share 7d: 8.2% (cap 20%, owner: Ops)
-- Paper-only merges 7d: 7 (owner: Ops)
+- Run success 14d: **64.3%** (owner: Ops)
+- Run liveness 7d (2026-10-28 → 2026-11-03): **6/7 ran** · 1 MISSED · 0 unknown
+  - MISSED 2026-11-03: preflight failed · digest on main is DEGRADED (Quinn did not run)
+- Merges 7d by owner: Operator=1, Quinn=8, Cass=5, Sage=8, Nova=6, Rio=5, Rowan=5, Ops=5, Pip=6, manual=3 (52 total)
+- Ops merge share 7d: 9.6% (cap 20%, owner: Ops)
+- Paper-only merges 7d: 10 (owner: Ops)
 
 
 _Generated by scripts/agents/funnel-scoreboard.ts. Sections fail independently; "unavailable" means the source, not the site._
