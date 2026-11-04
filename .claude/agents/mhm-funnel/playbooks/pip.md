@@ -22,6 +22,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E333 social-draft filter + pending skip
+- Tried: (T0) `NON_CONTENT_PATH_RE` had `signin|login` while the route is `/sign-in/`, so the auth page (228 nonPinterest7d) ranked as a destination; regex now hyphen-optional + `/creators/`, about, legal, with a test that walks `app/` so every new top-level route must be classified (6 of 6 sample paths postable pre-fix). Also skip URLs already in a DRAFT-status batch (`pendingDraftPaths`).
+- Before → after: dry run 11-04 top 8 = 8/8 already pending in unposted batches (15 pending URLs) → 0/8 duplicates, 8 new URLs (sims-4-cc-creators 271, challenges-list 237, poses 201 …).
+- Verdict: MORE DATA (sessions only once the operator approves a post; read 11-14 on the next batch)
+- Next time: a regex allowlist of "non-content" paths drifts from the route tree — scan `app/` in the test, never a hand list.
+
 ## 2026-10-31 — E300 top-up #20 + E301 social batch + #417 red-main fix
 - Tried: E300 top-up #20 (T0, SD-10 floor; ledger 3c264807, artifacts #418): gate 1.23 d (17 ÷ 13.79 pinterest-14d). Ranker at the default --min-sessions 50 gave 5 dests/50 ids; 25 gave 20/145 — the 10-30 lesson held. 21 rows over 6 dates, bound hard_cap_21, 11-01..03 already carried #19's rows. Also fixed red main from #410 (#417, test asserted the page source instead of the helper's value).
 - Before → after: runway 1.23 → 2.76 d (17 → 38 rows); SEO 45 → pass (21/21). Bing corroboration (GA4 10-23→10-29): bing desktop 14,626 sessions / 10,219 users / 79.5% engaged / 1.81 pv/session / 362 s avg vs Google desktop 87.3% / 1.57 / 185 s; landings are real content pages; the only non-traffic is the (not set) landing slice (US 384 sessions / 8 engaged / 0 pageviews, UK 95/1/0 ≈ 3% of Bing).
@@ -46,14 +52,4 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 - Verdict: E258 MORE DATA (read 10-30 by the tool); E209 KILL (lift); E223 KEEP. Lift record now 1 of 4 ≥ site.
 - Next time: a grader's default window is part of the rule — anchor it at the finalized day in code, or two reads of one ledger disagree by more than the effect being graded.
 
-## 2026-10-21
-- Tried: E251 (T0, #357): `scripts/agents/topup-grade.ts` + `-lib` + 12 tests — one grader for every SD-10 top-up (treated set from the tool's undo ledger, hosts + trailing slash folded, 7 d vs prior 7 d, post window same weekdays −7 d clipped at `--end`, rule printed first). Graded E202, re-ran E216. No top-up: tool gate 2.36 d (29 ÷ 12.29 pinterest-14d) ≥ 2.0.
-- Before → after: E202 treated 1,736 vs 1,849 (−6.1%) vs site Pinterest +2.3% (10-13→19 vs 10-06→12) → KILL as lift; tool = hand pull on all 9 dests; cap 7/7/7; read-back 21/21, 0 blog.*. E216: `automated` (1.001 users/sess, 99.4% fingerprint), segment 21,308 = 5.82% of 366,160 (28d; was 4.10%), 7d all +9.8% → ex seg +3.0% → KEEP. Floor lift record: E181 −2.7% vs −1.1%, E188 +5.6% vs +5.0%, E202 −6.1% vs +2.3% — 1 of 3 ≥ site.
-- Verdict: E202 KILL (lift); E216 KEEP; E251 MORE DATA (read 10-27 — E209/E244 graded by the tool)
-- Next time: three grades say revived rows ride the site's Pinterest curve rather than bend it — the floor is inventory insurance; sessions upside needs new destinations (catalog/collection pins), not re-dates.
-
-## 2026-10-20
-- Tried: E244 top-up #16 (T0, SD-10 floor; E209's next leg; apply ledger on main 7fd30bc, artifacts #350): tool gate 1.51 d (18 ÷ 11.93/day pinterest-14d), scoreboard ≈1.5 d on the same basis. 18 sessions-ranked rows 3×10-23 + 7×10-24/25 + 1×10-26 (ranker 10 dests/63 ids, 94 writer rows dropped upstream, 0 in the tool); cross-run cap left 3 slots on 10-23 (E209 holds 4) and skipped 10-21/22. E195 graded KEEP: `--check --stranded 63` 63/63 live.
-- Before → after: runway 1.51 → 3.02 d (18 → 36 rows; bound seven_per_day_cap, stopped at the ~3-day target); SEO 58 → 94 (0/18 → 18/18); read-back 18/18, created_at 2025-06-11..2026-01-27, 1/dest/date (E223 default held). Day-trace: plugin 0 real-dated rows on 10-21..27 — the 14-day horizon is again 100% top-ups (Q28).
-- Verdict: MORE DATA (read 10-27; treated WoW ≥ site WoW, re-pulled)
-- Next time: at ≈12 pins/day the floor fires every ~5 days and the trailing rate is now set by the top-ups themselves, so each refill buys the same 3 days for fewer sessions — only Q28 (plugin dates ahead) changes the slope.
+_Entries 10-20 and 10-21 moved verbatim to `archive/playbook-pip-2026-10.md` on 2026-11-04._

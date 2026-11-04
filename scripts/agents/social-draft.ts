@@ -30,7 +30,9 @@
  * USAGE
  *   MHM_PROJECT_DIR=<worktree> npx tsx scripts/agents/social-draft.ts \
  *     [--date YYYY-MM-DD] [--top 6] [--rank-by nonPinterest7d|nonPinterest28d|tumblr28d|all7d] \
- *     [--platforms short-video,x] [--kinds post,collection] [--dry-run]
+ *     [--platforms short-video,x] [--kinds post,collection] [--dry-run] [--include-pending]
+ *   Destinations already in a batch whose draft status is still DRAFT are skipped
+ *   (E333); --include-pending turns that off.
  *   MHM_PROJECT_DIR=<worktree> npx tsx scripts/agents/social-draft.ts --lint --date YYYY-MM-DD
  *
  * Exit codes: 0 ok · 1 error · 2 refused (posting) / could-not-run.
@@ -50,8 +52,10 @@ import {
   SOCIAL_POSTING_FLAG,
   approvalString,
   draftFilename,
+  dropPending,
   isOptedOut,
   parseOptout,
+  pendingDraftPaths,
   rankDestinations,
   renderBatchTable,
   renderDraft,
@@ -268,7 +272,20 @@ async function main(): Promise<number> {
   const optout = existsSync(OPTOUT_FILE) ? parseOptout(readFileSync(OPTOUT_FILE, 'utf8')) : new Set<string>();
   console.log(`[social-draft] creator opt-out list: ${optout.size} name(s)`);
 
-  const chosen = ranked.slice(0, top);
+  // E333: skip URLs already drafted in a batch the operator has not ruled on.
+  const pendingTexts: string[] = [];
+  if (existsSync(DRAFTS_ROOT)) {
+    for (const b of readdirSync(DRAFTS_ROOT).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x))) {
+      for (const f of readdirSync(join(DRAFTS_ROOT, b)).filter((x) => /^\d{2}-.*\.md$/.test(x))) {
+        pendingTexts.push(readFileSync(join(DRAFTS_ROOT, b, f), 'utf8'));
+      }
+    }
+  }
+  const pending = has('include-pending') ? new Set<string>() : pendingDraftPaths(pendingTexts);
+  const fresh = dropPending(ranked, pending);
+  console.log(`[social-draft] ${pending.size} destination(s) pending in unposted batches${has('include-pending') ? ' (--include-pending: not skipped)' : `; ${ranked.length - fresh.length} skipped`}`);
+
+  const chosen = fresh.slice(0, top);
   const outDir = join(DRAFTS_ROOT, date);
   if (!dryRun) mkdirSync(outDir, { recursive: true });
 
