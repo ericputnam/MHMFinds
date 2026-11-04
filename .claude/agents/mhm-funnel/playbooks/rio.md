@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-04 — E332 yellow = Halloween Saturday volume; #388 deepened sessions (paper)
+- Tried: yellow diagnosis (T0 paper, `reports/funnel/rio-verdict-2026-11-04.md`). MV MCP down → `client.ts` direct (Q32 token, 28 d left) + GA4 pagePath split.
+- Before → after: 3-day $617.97 vs $697.53 (−11.4%); 10-31 alone −$71.78 = 90% of the gap (sess −24.7%, RPM −4.0%); 11-02 +3.4%, RPM +7.6% ratio-of-sums = imp/sess +5.7% × CPM +1.8%; mon-pv/sess 1.21 → 1.39 (+15.4%) after #388, app-page pv 9,774 → 23,935 per 6 d.
+- Verdict: volume, no rollback/ticket; 11-03 partial projects tomorrow's 3-day at +2.4%. MORE DATA (11-05 close; #388 depth leg 11-11).
+- Next time: split a 3-day yellow by day before decomposing it — one holiday day was 90% of the gap; and when imp/mon-pv falls while RPM rises, check pv/session first (new internal links add thin pages, not a rate break).
+
 ## 2026-10-31 — E306 October closes $144 (MISSED); pipe read prints Impact and Amazon as two lines (#416); E271 KEEP
 - Tried: `affiliate-pipe-read.ts` GA4 leg (T0, #416 5b6f1b4c) — `affiliate_click` by date × pagePath, grid = `/` + `/games/*`, else blog block; status rules never read it (test). Verdict file (#420 paper) + 28d decomposition anchor 10-29 from `client.ts` + GA4.
 - Before → after: pipe read one Impact sum → two lines: Impact 20 clicks / 0 actions $0 (confirmed, kill read 11-11) · grid 31 over 32 d (0.97/day) · block 44 on 36 posts over 4 live days (11/day). 28d −3.75% = sessions +0.64% × RPM −4.36%; W1 −$254.58 = 111% of the gap, W4 (34 deploys) +$75.28 / RPM +9.5%; 10-29 rate day (ex-seg RPM +10.4% on top of +7.0% mix). Non-ad $144/mo vs $450 line and my $160–170 band → MISSED both (−1 $3 patron). E271 first print matched the hand read → KEEP.
