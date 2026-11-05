@@ -371,9 +371,24 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Shoes CC',
     heading: 'Sims 4 Shoes CC',
-    metaTitle: 'Sims 4 Shoes CC Finder — Browse 600+ Heels, Sneakers & Boots | MustHaveMods',
+    // Sage, 2026-11-05 (E339, Tier 0 — query-word retitle; browse intent
+    // kept, the legacy /sims-4-shoes-cc/ twin is live). GSC 10-06→11-02:
+    // 238 impr / 5 clk / pos 22.1. The largest named family on the page is
+    // Jordans — "sims 4 jordan shoes" 3 / pos 24.3, "jordans shoes cc" 2 /
+    // 25, "jordan", "jordan shoes cc", "jordans cc" = 8 impr at pos 24–33,
+    // 0 clicks — and sneakers lead the query mix ("sims 4 sneakers cc" 3 /
+    // 19, "sims 4 sneakers" 1 / 10), while the old title led with heels.
+    // The grid supports the order: of the top 48 by downloads (673 SFW
+    // rows, prod 2026-11-05) 4 are Jordans (#3 Retro Jordans Shoes CC, #6,
+    // #12, #44) and the top 8 hold 5 sneakers (ASICS, Nike AF1, Dunks).
+    // Off-type in that 48, handed to Rowan: #9 cmim8zmls019moxy8t9vqudcj
+    // "Shorty French Pedi" (nails), #24 cmijp0gzp00tpoxc8iab4hkwx "Luxury
+    // Custom Closet" (furniture), #30 cmim8zak9016zoxy8zigyk4eq "'Jordan'
+    // Curly Curls" (hair). Baseline search+AI landings 14d (10-22→11-04):
+    // 21 (bing 9 · chatgpt 6 · google 4 · yahoo 2).
+    metaTitle: 'Sims 4 Shoes CC Finder — 600+ Sneakers, Jordans, Heels & Boots | MustHaveMods',
     metaDescription:
-      'Browse 600+ Sims 4 shoes CC in one filterable grid — heels, sneakers, boots, sandals, and kids\' shoes sorted by downloads, with verified download links.',
+      'Browse 600+ Sims 4 shoes CC in one filterable grid — sneakers, Jordans, Nike and New Balance, heels, boots and sandals, sorted by downloads, links checked.',
     tagline: 'Heels, sneakers, boots, and sandals for every sim',
     intro:
       'Shoes are the last thing you pick in CAS and the first thing that ruins an outfit. Base-game Sims 4 footwear is a short list of chunky sandals, two pairs of sneakers that look like the same sneaker, and heels with a mesh that clips through half the community pants CC people actually wear. Once you have a wardrobe built out of downloaded tops and bottoms, EA shoes stop matching anything.\n\nThis collection is every pair of Sims 4 shoes CC in our catalog in one filterable grid — 633 finds as of today. The split is roughly 137 boots, 71 heels, 66 sneakers, and 47 sandals, plus slides, loafers, slippers, and a surprisingly deep bench of toddler and child shoes (86 pairs tagged for kids, which is more than the base game gives you across every age).\n\nThe creators who show up most are the ones who have basically specialised in footwear: Madlen, whose heels and boots are the reason half the Sims fashion screenshots on Tumblr look the way they do, Mermalade for sneakers and everyday shoes, Arltos, Jius-sims, LVNDRCC, and Dissia. Streetwear sneakers — Jordans, Air Force 1s, Converse Run Star Hikes, ASICS Gel-1130s — are their own micro-scene here and consistently sit near the top of the download counts.\n\nA practical note: shoes are the CC category most likely to clip. Alpha-style heels rarely sit right on a maxis-match body preset, and platform boots and wide-leg pants argue with each other constantly. Use the main finder\'s visual-style filter to stay inside one art style, and check the creator\'s notes for a required slider or HQ mod before you install a set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pairs everyone already has installed, or scroll for the single-set releases the big roundups never reach.',
@@ -400,12 +415,31 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     game: 'Sims 4',
     gameSlug: 'sims-4',
     title: 'Male Clothes CC',
-    heading: 'Sims 4 Male Clothes CC',
     // Head-term title: the legacy article /sims-4-male-clothes-cc/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Male Clothes CC — 400+ Outfits & Streetwear | MustHaveMods',
+    //
+    // Sage, 2026-11-05 (E338, Tier 0 — head-term retitle, E330 pattern).
+    // GSC 10-06→11-02: 525 impr / 27 clk / pos 19.2. The words people type
+    // that no on-page field said: "pack(s)" — "sims 4 male clothes pack"
+    // 11 impr / 2 clk / pos 10, "sims 4 cc male clothes pack" 5 / 1 / 8.2,
+    // "male cc packs" 1 / pos 10 (3 of the page's 13 visible clicks) — and
+    // "male cc" / "men" — "sims 4 male cc" 13 / pos 30.2, "sims 4 cc men"
+    // 5 / 26.6, "men clothes", "mens cc". The grid supports both: 410 SFW
+    // rows (prod 2026-11-05), and the top 48 by downloads carry 9 sets /
+    // packs / collections (Men's Winter Clothing Collection #4, KK Basic
+    // Set 32 #6, Sims 4 CC Clothes Pack Collab #9 …). Two hairstyles sit
+    // in that 48 tagged full-body (#7 cmikkd71t008box33oh47jz1b "Mario
+    // Hairstyle", #15 cmikkcp86007yox33xrpjf379 "Barrel Twists") — handed
+    // to Rowan, not retagged here. Baseline search+AI landings 14d
+    // (10-22→11-04): 134 (bing 60 · chatgpt 51 · google 15 · yahoo 7 ·
+    // gemini 1). Rejected the same day: vampire-cc "CC & Mods" — the
+    // "vampire mod(s)" family is ~20 impr at pos 11–73, but 1 of the top 20
+    // grid rows is a gameplay mod, so the word would promise what the page
+    // does not hold.
+    heading: 'Sims 4 Male Clothes CC & Packs',
+    metaTitle: "Sims 4 Male Clothes CC & Packs — 400+ Men's Outfits | MustHaveMods",
     metaDescription:
-      'The best Sims 4 male clothes CC. Streetwear, formal, casual, and everyday outfits for male sims from top creators.',
+      "Sims 4 male CC for men's wardrobes: 400+ tops, jeans, streetwear, full outfits, sneakers and clothing packs, sorted by downloads, links checked.",
     tagline: 'Streetwear, formal, casual, and everything in between',
     intro:
       'Male Sims 4 CC has a reputation problem that isn\'t really its fault: the creator scene skews toward feminine fashion because that\'s where the download counts are, so the male side ends up feeling thinner. It\'s not thinner so much as harder to find. This collection does the hunting.\n\nThe 400+ picks here pull from the creators who actually take male CAS seriously — Darte77, Rona Sims, Sentate\'s male lines, Magnolia-C, and Aharris00britney\'s menswear pieces. Expect streetwear (hoodies, oversized tees, cargo shorts, chunky sneakers), tailored formalwear that doesn\'t look like it was clipped out of the base game, and casual sets built around real outfits instead of "shirt tucked into jeans" for the hundredth time.\n\nThe filter here is composite: any tops, bottoms, dresses, full-body outfits, or shoes tagged for masculine sims. Because gender options in Sims 4 CC are frequently mis-tagged, a handful of "unisex" pieces show up too — which is honestly where some of the best menswear lives.',
@@ -413,7 +447,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['masculine'],
     },
-    expectedCount: 420,
+    expectedCount: 410, // prod count 2026-11-05 (was 420)
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' so the unified clothes hub
     // has an anchored inbound source (hair-cc keeps 4 inbound: skin-details,
     // shoes-cc, y2k-cc, makeup-cc).
