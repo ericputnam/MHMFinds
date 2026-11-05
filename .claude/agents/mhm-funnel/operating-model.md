@@ -55,7 +55,9 @@ decision written to `experiments.md`. Reading the dashboard is not a move.
 - **New experiment IDs come from `npx tsx scripts/agents/next-experiment-id.ts`**,
   never hand-picked. E75 was independently claimed by 5 PRs the same week
   because agents guessed "next number" from a stale read of `experiments.md`;
-  the script reads the file fresh and reserves the next ID atomically.
+  the script reads the file fresh and reserves the next ID atomically (E344: a
+  host-wide log shared by every worktree + open PRs; `--peek` is read-only; Quinn
+  records hand pre-assigned ids with `--hold E<a>-E<b> --owner Quinn`).
 - **Playbook learning.** Each agent appends one dated entry with a metric.
 - **Scorecard.** Quinn appends the weekly block to `scorecard.md`: headline
   metrics vs target, per-agent grade, biggest risk, top-3 bets.

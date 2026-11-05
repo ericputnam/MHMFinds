@@ -96,3 +96,144 @@ describe('next-experiment-id: findAllIds() / nextExperimentId() against the real
     expect(a).toEqual(b)
   })
 })
+
+// ---------------------------------------------------------------------------------------
+// E344 — the script must RESERVE, not just read. On 11-04 parallel agents in sibling
+// worktrees all read the same origin/main and printed the same id (E327 ×4, E329 ×3).
+// The CLI cases below are red against the pre-E344 script: it printed the same id every
+// time and ignored --hold.
+// ---------------------------------------------------------------------------------------
+import { execFile, execFileSync } from 'child_process'
+import * as os from 'os'
+import {
+  extractBranchIds,
+  extractOpenPrIds,
+  readReservations,
+  reserveExperimentIds,
+  peekExperimentId,
+  parseHold,
+  withLock,
+} from '../../scripts/agents/next-experiment-id'
+
+const SCRIPT = path.join(ROOT, 'scripts', 'agents', 'next-experiment-id.ts')
+const TSX = path.join(ROOT, 'node_modules', '.bin', 'tsx')
+
+function tmpLog(): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'exp-id-'))
+  return path.join(dir, 'reservations.jsonl')
+}
+
+function cliEnv(log: string) {
+  return { ...process.env, MHM_EXPERIMENT_RESERVATIONS: log, MHM_EXPERIMENT_IDS_OFFLINE: '1' }
+}
+
+function runCli(log: string, args: string[] = []): string {
+  return execFileSync(TSX, [SCRIPT, ...args], { cwd: ROOT, env: cliEnv(log), encoding: 'utf-8' }).trim()
+}
+
+function runCliAsync(log: string, args: string[] = []): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile(TSX, [SCRIPT, ...args], { cwd: ROOT, env: cliEnv(log), encoding: 'utf-8' }, (err, stdout) =>
+      err ? reject(err) : resolve(String(stdout).trim())
+    )
+  })
+}
+
+describe('next-experiment-id: CLI reserves (red against the pre-E344 script)', () => {
+  it('two sequential calls from the same tree hand out two different ids', () => {
+    const log = tmpLog()
+    const a = runCli(log, ['--owner', 'test-a'])
+    const b = runCli(log, ['--owner', 'test-b'])
+    expect(a).toMatch(/^E\d+$/)
+    expect(b).toMatch(/^E\d+$/)
+    expect(b).not.toBe(a)
+    expect(parseInt(b.slice(1), 10)).toBe(parseInt(a.slice(1), 10) + 1)
+  }, 60_000)
+
+  it('four concurrent calls (the 11-04 shape) hand out four distinct ids', async () => {
+    const log = tmpLog()
+    const out = await Promise.all([0, 1, 2, 3].map((i) => runCliAsync(log, ['--owner', `p${i}`])))
+    expect(new Set(out).size).toBe(4)
+    expect(readReservations(log).rows).toHaveLength(4)
+  }, 90_000)
+
+  it('ids held by hand (--hold E336-E345) are never handed out', () => {
+    const log = tmpLog()
+    const floor = nextExperimentId().next
+    const lo = floor
+    const hi = floor + 9
+    runCli(log, ['--hold', `E${lo}-E${hi}`, '--owner', 'Quinn'])
+    const next = parseInt(runCli(log, ['--owner', 'agent']).slice(1), 10)
+    expect(next).toBe(hi + 1)
+  }, 60_000)
+
+  it('--peek reserves nothing', () => {
+    const log = tmpLog()
+    const a = runCli(log, ['--peek'])
+    const b = runCli(log, ['--peek'])
+    expect(a).toBe(b)
+    expect(readReservations(log).rows).toHaveLength(0)
+  }, 60_000)
+})
+
+describe('next-experiment-id: reservation library', () => {
+  const fixed = () => [{ id: 335, source: 'fixture' }]
+
+  it('reserveExperimentIds hands out consecutive ids and records the owner', () => {
+    const file = tmpLog()
+    expect(reserveExperimentIds({ file, owner: 'Ops', sources: fixed }).ids).toEqual([336])
+    expect(reserveExperimentIds({ file, owner: 'Pip', count: 2, sources: fixed }).ids).toEqual([337, 338])
+    expect(readReservations(file).rows.map((r) => r.owner)).toEqual(['Ops', 'Pip', 'Pip'])
+    expect(peekExperimentId({ file, sources: fixed }).next).toBe(339)
+  })
+
+  it('a hold above the floor raises it; a reservation after a hold of E336–E345 is E346', () => {
+    const file = tmpLog()
+    reserveExperimentIds({ file, owner: 'Quinn', hold: parseHold('E336-E345'), sources: fixed })
+    const r = reserveExperimentIds({ file, owner: 'Ops', sources: fixed })
+    expect(r.ids).toEqual([346])
+  })
+
+  it('a torn/unparseable log line still raises the ceiling (can only skip ids, never repeat one)', () => {
+    const file = tmpLog()
+    fs.writeFileSync(file, '{"id":340,"owner":"x","at":"t","mode":"reserve"}\n{"id":35')
+    // the torn tail has no E-token, so it adds nothing; a hand-edited "E352" line must count
+    fs.appendFileSync(file, '\nhand note: E352 taken by Rio\n')
+    expect(reserveExperimentIds({ file, sources: fixed }).ids).toEqual([353])
+  })
+
+  it('withLock breaks a stale lock and refuses a live one past waitMs', () => {
+    const file = tmpLog()
+    fs.mkdirSync(`${file}.lock`)
+    expect(() => withLock(file, () => 1, { waitMs: 200, staleMs: 60_000 })).toThrow(/held/)
+    const old = new Date(Date.now() - 10 * 60_000)
+    fs.utimesSync(`${file}.lock`, old, old)
+    expect(withLock(file, () => 42, { waitMs: 200, staleMs: 60_000 })).toBe(42)
+    expect(fs.existsSync(`${file}.lock`)).toBe(false)
+  })
+
+  it('parseHold accepts E<n> and E<a>-E<b>, rejects junk and inverted ranges', () => {
+    expect(parseHold('E344')).toEqual([344])
+    expect(parseHold('E336-E338')).toEqual([336, 337, 338])
+    expect(() => parseHold('E340-E336')).toThrow()
+    expect(() => parseHold('banana')).toThrow()
+  })
+})
+
+describe('next-experiment-id: open-PR and branch-name legs', () => {
+  it('extracts ids from PR title, body and head branch', () => {
+    const hits = extractOpenPrIds([
+      { number: 460, title: 'funnel(cass): E341 copy test', body: 'Before: see E290', headRefName: 'funnel/cass/e341-copy' },
+      { number: 461, title: 'no id here', body: '', headRefName: 'funnel/ops/E343_lock' },
+    ])
+    expect(hits.map((h) => h.id).sort((a, b) => a - b)).toEqual([290, 341, 341, 343])
+  })
+
+  it('branch-name ids need a separator on both sides (no years, no sha fragments)', () => {
+    const ids = extractBranchIds(
+      ['funnel/ops/e344-reserve', 'release-2026', 'fix/abc1e23f', 'funnel/watch-2026-10-29', 'e12'],
+      'b'
+    ).map((h) => h.id)
+    expect(ids).toEqual([344, 12])
+  })
+})
