@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-01
+ * Generated on:     2026-11-05
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -142,8 +142,13 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   ],
   "piercings-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2026/01/bodygems2preview-1024x1024.webp",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/03/7ed085cd-a70d-4e41-bda6-37aa0769f57b.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2026/04/nose.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/7ed085cd-a70d-4e41-bda6-37aa0769f57b.jpg",
+  ],
+  "plumbob-overrides": [
+    "https://blog.musthavemods.com/wp-content/uploads/2026/07/TS4_x64-2025-11-22-10-32-18_293-1024x576.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2026/08/hello-kitty-plumbob.gif",
+    "https://blog.musthavemods.com/wp-content/uploads/2026/08/Screenshot-2026-01-15-032956.jpg",
   ],
   "poses": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/07/0841ce0e-e0de-4149-94ac-e71d8db293b5-1.png",
@@ -178,7 +183,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   "wedding-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/09/9df7c217-f0a9-4e68-8fa8-b82712731c5d.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2024/12/42440d83-70fa-4a17-95c3-83090022230c.jpg",
-    "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/alsine-bohemian-wedding-dress-1769634826189-0.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/5d96afe2-9a31-48fb-998d-f3bb18882a27.jpg",
   ],
   "witch-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/06/8626b34c-e572-4611-9c9a-5f1dbadefd90-1.png",

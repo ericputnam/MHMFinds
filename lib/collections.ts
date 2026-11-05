@@ -850,7 +850,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['loading-screen', 'cas-background'],
     },
     expectedCount: 269,
-    related: ['poses', 'cottagecore-cc', 'y2k-cc'],
+    // 2026-11-05 (E343): 'poses' → 'plumbob-overrides' (poses keeps 5
+    // inbound). Loading-screen sets ship matching plumbob recolors, and 11
+    // of the 26 plumbob rows are typed loading-screen.
+    related: ['plumbob-overrides', 'cottagecore-cc', 'y2k-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial
     // "best loading screens" intent, this page owns browse/filter intent.
     // /sims-4-loading-screen/ is live and appears in neither
@@ -1341,7 +1344,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 95,
     // Inbound: poses and body-presets (both ≥2 inbound themselves) link
     // here; see the dated swaps on those entries.
-    related: ['poses', 'loading-screens', 'skin-details'],
+    // 2026-11-05 (E343): 'skin-details' → 'plumbob-overrides' (skin-details
+    // keeps 4 inbound). Both are screen-look swaps a screenshotter installs
+    // together; this page is the second inbound that clears MIN_INBOUND.
+    related: ['poses', 'loading-screens', 'plumbob-overrides'],
     // Differentiated pair: /sims-4-gshade-presets/ keeps the editorial
     // "best presets" intent (202 impressions / 12 clicks at 17.1 over the
     // 28d to 2026-10-24), this page owns browse/filter intent. The sibling
@@ -1498,6 +1504,42 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // browse/filter intent. /sims-4-piercings/ is live (HTTP 200, verified
     // 2026-11-01) and is not in vercel.json.
     blogUrl: '/sims-4-piercings/',
+  },
+  {
+    // Rowan, 2026-11-05 (E343, Tier 0 — registry entry in the existing
+    // pattern). GSC 10-06→11-02: the "plumbob override / replacement" family
+    // (35 queries — "plumbob override sims 4" 70 impr, "sims 4 plumbob
+    // override" 63, "plumbob replacement sims 4" 46, "sims 4 plumbob
+    // replacement" 26, "star plumbob" 11, "2d plumbob" 11) = ≈310
+    // impressions / 15 clicks, 295 of them on the legacy article
+    // /sims-4-plumbob-replacements/ at position 9.1 (5.4% CTR). GA4
+    // 10-29→11-04: that article 156 landing sessions, plus 8 organic landings
+    // on /games/sims-4/?search=plumbob — people already arrive wanting a
+    // browse grid. No page existed; 0 rows carried a plumbob tag (12 of the
+    // 26 are contentType NULL, so no type facet could ever have backed it).
+    // The theme is TITLE-ONLY (lib/plumbobThemeRules.ts, keyword counts and
+    // rejections in its comment); 26 added / 0 stripped on 2026-11-05, every
+    // row read. Inbound: loading-screens and gshade-presets, repointed from
+    // poses and skin-details, which keep 5 and 4.
+    slug: 'plumbob-overrides',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Plumbob Overrides',
+    heading: 'Sims 4 Plumbob Overrides',
+    metaTitle: 'Sims 4 Plumbob Overrides — Browse 25+ Custom Plumbob Replacements | MustHaveMods',
+    metaDescription:
+      'Browse 25+ Sims 4 plumbob overrides and recolors in one grid: 2D, star, Sanrio, animal and loading-screen plumbob replacements that swap the green diamond over your Sim, sorted by downloads.',
+    tagline: 'Custom plumbobs, recolors and loading-screen plumbob swaps',
+    intro:
+      'The plumbob is the one piece of the Sims 4 interface you see in every single frame of play, and the base game gives you exactly one: a green diamond that turns yellow or red with your Sim\'s mood. A plumbob override swaps that diamond for something else — a different colour, a flat 2D version, or a completely different shape floating over your active Sim\'s head — without touching anything else in the game.\n\nThis collection is every plumbob override in our catalog in one grid, and every one of them says plumbob in its own title. That last part is deliberate: a plumbob T-shirt or a plumbob-shaped desk ornament is merch, not a mod, and is left off. The shelf splits two ways. Shape swaps: stars, angel wings, paw prints, fish cakes and leaves, Hello Kitty, My Melody, Pochacco and other Sanrio characters, and one-offs like a golden card from Sultan\'s Game. Recolors: white, baby pink, dark green, Valentine and fruit-themed plumbobs, plus the loading-screen plumbob recolors that creators release alongside a matching loading screen.\n\nTwo practical notes. Plumbob overrides replace the same game asset, so only one works at a time — if you install two, the one that loads last wins, and the usual symptom is the "wrong" one showing up rather than an error. And some overrides only affect the colour of the active Sim\'s plumbob if you change the playeractivecolor values in the [Plumbob] section of Default.ini in your Bin folder; the creator page says when that applies.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the ones people already run, or scroll for the single-file finds the big roundups never reach.',
+    filter: { themesAny: ['plumbob'] },
+    expectedCount: 26,
+    related: ['loading-screens', 'gshade-presets', 'poses'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // plumbob replacements" intent (156 landing sessions / 7d, position 9.1),
+    // this page owns browse intent. /sims-4-plumbob-replacements/ is live
+    // (HTTP 200, verified 2026-11-05) and is not in vercel.json.
+    blogUrl: '/sims-4-plumbob-replacements/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
