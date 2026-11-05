@@ -15,7 +15,7 @@ board-level decisions and true blockers here (see `autonomy.md`, "Operator
 directive 2026-09-12"). Replies given in chat are recorded and executed the same
 day.
 
-**Tier 2 queue (Quinn 11-04):** no operator replies since 11-02 (Q32: done — Rio closes it today). Q34 (10-25 social batch) dropped today unposted under the 7-day rule, moved verbatim to `archive/operator-queue-2026-11.md`. Q37 decides **tomorrow 11-05**; Q35/Q36/Q38/Q39 drop 11-06, Q40 11-07, Q41 11-15. Tier 1: #414 (E305) still HELD — breaker 🟡 today (no Tier 1 merges) and sessions read 78.0% of the ramp. The 11-01 status paragraph is verbatim in the same archive file.
+**Tier 2 queue (Quinn 11-05):** no operator replies since 11-02. **Q37 LAPSED 11-05 on silence** → per B2 killIf, November non-ad runs affiliates + the members post only ($155 floor). Q35/Q36/Q38/Q39 drop 11-06, Q40 11-07, Q41 11-15. Tier 1: #414 (E305) still HELD and the E327 apply (3 Atino00 approvals) held +1 day — breaker 🟡 again (judged day still 11-02) and sessions read 78.0% of the ramp. The 11-04 status line: "no operator replies since 11-02 (Q32: done — Rio closes it today). Q34 dropped, Q37 decides 11-05, #414 HELD."
 
 ## Operator to-do — growth plan 2026-10-24 (`growth-plan.md`)
 Decided in chat 10-24: Dec target 600k sessions; posts on new social channels need your approval until 11-07 and must not read as AI-written.
@@ -45,7 +45,7 @@ Six drafts in `reports/funnel/social/drafts/2026-10-31/` (PR #418): 2 Reddit pos
 ### Q38 · Badge outreach to the top-20 creators by sessions (Nova, E293-b, Tier 2 — outreach in your name; filed 2026-10-30, drops 11-06)
 Nobody has used the badge since #372: GA4 10-23→10-29 shows 0 `creator_badge_copy`, 0 `creator_badge_cta`, 0 `creator-badge` sessions. Proposed: Nova drafts the note for your sign-off, then sends to the top-20 `/creator/*` by sessions at 20/week, offering the badge-page link only (no terms, no money). Reply: `APPROVE E293-b: Nova drafts the badge outreach note for operator sign-off, then sends to top-20 /creator/* by sessions, 20/week`.
 
-### Q37 · November non-ad bet: A or B (Rio, E295, Tier 2 — pricing; filed 2026-10-30 from the 10-29 verdict §c, decide by 11-05)
+### Q37 · November non-ad bet: A or B (Rio, E295, Tier 2 — pricing; filed 2026-10-30 from the 10-29 verdict §c, decide by 11-05) — **LAPSED 2026-11-05 (no reply): November = affiliates + members post only; $155 floor. Re-pitch only with new evidence.**
 A = $3 "skip the wait" perk (+$96/mo at a 0.5% free→$3 assumption on 6,352 free members). B = creator rev-share (no dollar base yet). Reply: `Q37: A` or `Q37: B`. **Rio 11-01 (E315):** $750 for November is +201 $3 patrons or two $300 sponsors; the team's reachable line is $250 (A, with the E294 post by 11-08) / $155 (silence). Silence past 11-05 = November runs affiliates + the members post only.
 
 ### Q41 · Route the piercing articles (982 sess/7d) into E316's page + the 6 hair guides into E311's hub (Rowan/Sage, Tier 2 — `functions.php`; filed 2026-11-01, drops 11-15)

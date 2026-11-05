@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T14:54:09.533Z",
+  "generatedAt": "2026-11-05T11:37:41.678Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -4414,6 +4414,42 @@
         "Pip": 6,
         "manual": 3
       }
+    },
+    {
+      "date": "2026-11-05",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 188.36,
+      "expectedSessions": 11771,
+      "nonAdMonthly": 138,
+      "ownedAdds7d": 137,
+      "pinterestSessions7d": 56476,
+      "returningShare7d": 0.5394286117879719,
+      "nonPinterestShare7d": 0.16540808937622842,
+      "pagesPerSession7d": 1.6858490455625388,
+      "engagementRate7d": 0.7276898048991726,
+      "favorites7d": 510,
+      "downloadClicks7d": 397,
+      "newMods7d": 140,
+      "catalogTotal": 17225,
+      "captureRatePer1k": 1.6128652492288855,
+      "creatorsOnboarded": 2,
+      "creatorSubmissions7d": 3,
+      "runSuccess14d": 0.6428571428571429,
+      "opsMergeShare7d": 0.09836065573770492,
+      "paperOnlyMerges7d": 11,
+      "mergesByOwner7d": {
+        "Quinn": 9,
+        "Cass": 6,
+        "Sage": 10,
+        "Nova": 7,
+        "Rio": 6,
+        "Rowan": 6,
+        "Ops": 6,
+        "Pip": 8,
+        "manual": 3
+      }
     }
   ],
   "events": [
@@ -7481,6 +7517,76 @@
       "kind": "check",
       "label": "mhm-funnel-daily: MISSED 2026-11-03 — Quinn did not run (preflight=OTHER, cli=2.1.280 (Claude Code))",
       "result": "MISSED"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Nova: PR #450 E327 per-batch approval plan + frozen plan for 3 Atino00 submissions (Tier 0)",
+      "commit": "d8cc4ac",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Cass: PR #451 E327 sign-up opt-in checkbox copy A/B",
+      "commit": "d638131",
+      "result": "SUPERSEDED (production already on 4d4f14d, newer)"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Sage: PR #452 E329 COLLECTION_TEMPLATE_LASTMOD → 2026-11-02",
+      "commit": "65517c9",
+      "result": "SUPERSEDED (production already on 82b9023, newer)"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Rowan: PR #456 E328 Atino00 content-type pins (Tier 0)",
+      "commit": "108f5d4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Sage: PR #457 E330 cottagecore-cc CC & Mods retitle",
+      "commit": "a530bee",
+      "result": "SUPERSEDED (production already on 7dcae0f, newer)"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Ops: PR #453 E331 preflight QUOTA kind + never-empty excerpt",
+      "commit": "58e1826",
+      "result": "BUILD ERROR (platform) → READY via 29bd5a5 · PASS"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Rio: PR #455 E332 yellow verdict 2026-11-04 (paper) + Q32 closed",
+      "commit": "c88e2e5",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Pip: PR #454 E333 social-draft drops /sign-in/ + skips pending destinations",
+      "commit": "cdd9f2e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Pip: PR #458 E335 IndexNow pushes every sitemap-nextjs content page",
+      "commit": "b503a8e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-04",
+      "kind": "merge",
+      "label": "Quinn: PR #459 funnel: daily run 2026-11-04",
+      "commit": "00332c0",
+      "result": "PASS"
     }
   ]
 }
