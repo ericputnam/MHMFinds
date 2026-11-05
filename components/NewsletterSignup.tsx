@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
+import {
+  NEWSLETTER_FORM_VIEW_EVENT,
+  NEWSLETTER_FORM_VIEW_THRESHOLD,
+  isFormViewed,
+} from '@/lib/capture/newsletterFormView';
 
 interface NewsletterSignupProps {
   source?: string;
@@ -20,6 +25,31 @@ export function NewsletterSignup({ source = 'footer', variant = 'default' }: New
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  // E341 (Cass): the viewer denominator for this surface. Fires once per
+  // mount when the form is at least half visible; carries the same `source`
+  // the waitlist row will. Observes the <form> only, never an ad anchor.
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const viewFired = useRef(false);
+
+  useEffect(() => {
+    const el = formRef.current;
+    if (!el || viewFired.current || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (viewFired.current || !isFormViewed(entries)) return;
+        viewFired.current = true;
+        observer.disconnect();
+        (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+          'event',
+          NEWSLETTER_FORM_VIEW_EVENT,
+          { source }
+        );
+      },
+      { threshold: NEWSLETTER_FORM_VIEW_THRESHOLD }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [source, status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +96,7 @@ export function NewsletterSignup({ source = 'footer', variant = 'default' }: New
       );
     }
     return (
-      <form onSubmit={handleSubmit} className="emailform">
+      <form ref={formRef} onSubmit={handleSubmit} className="emailform">
         <input
           type="email"
           required
@@ -95,7 +125,7 @@ export function NewsletterSignup({ source = 'footer', variant = 'default' }: New
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
+    <form ref={formRef} onSubmit={handleSubmit} className="w-full">
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Mail
