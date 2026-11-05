@@ -573,3 +573,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-04 07:31 | after-merge | Pip: PR #454 E333 social-draft drops /sign-in/ + skips pending destinations | cdd9f2e | https://mhm-finds-dw5l-a2zimr8i5-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-04 07:36 | after-merge | Pip: PR #458 E335 IndexNow pushes every sitemap-nextjs content page | b503a8e | https://mhm-finds-dw5l-1t8eay4w7-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-04 07:42 | after-merge | Quinn: PR #459 funnel: daily run 2026-11-04 | 00332c0 | https://mhm-finds-dw5l-jefjpeama-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-11-05 03:35 | check | morning-check |  | https://mhm-finds-dw5l-atutuyhn4-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
