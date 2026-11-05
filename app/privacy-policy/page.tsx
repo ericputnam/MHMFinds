@@ -1,11 +1,17 @@
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
+import { shareCard } from '../../lib/seo/shareCard';
+
+const TITLE = 'Privacy Policy - MustHaveMods';
+const DESCRIPTION = 'Privacy Policy for MustHaveMods - Learn how we collect, use, and protect your personal information.';
 
 export const metadata = {
-  title: 'Privacy Policy - MustHaveMods',
-  description: 'Privacy Policy for MustHaveMods - Learn how we collect, use, and protect your personal information.',
+  title: TITLE,
+  description: DESCRIPTION,
   // Without this the page inherits canonical "/" from the root layout.
   alternates: { canonical: '/privacy-policy/' },
+  // E337: and without this it inherits og:url "/" (shares unfurl as the homepage).
+  ...shareCard({ title: TITLE, description: DESCRIPTION, url: 'https://musthavemods.com/privacy-policy/' }),
 };
 
 export default function PrivacyPolicyPage() {

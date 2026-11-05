@@ -20,6 +20,7 @@ import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { NewsletterSignup } from '../../components/NewsletterSignup';
 import { listHubCreators, creatorHref, type CreatorListRow } from '../../lib/creators';
+import { shareCard } from '../../lib/seo/shareCard';
 import { TOP_CREATORS, groupByLetter, letterAnchorId, rankByDownloads } from '../../lib/creatorHub';
 
 // The list moves with every ingest; render per request (CDN-free, one query).
@@ -42,8 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: CANONICAL },
-    openGraph: { title, description, url: CANONICAL, type: 'website' },
-    twitter: { card: 'summary_large_image', title, description },
+    ...shareCard({ title, description, url: CANONICAL }),
   };
 }
 
