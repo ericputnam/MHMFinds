@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import PlayClient from './PlayClient';
+import { shareCard } from '../../lib/seo/shareCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,14 +13,13 @@ export const metadata: Metadata = {
   // og:url) pointing at a redirect is a conflicting signal to Google — the
   // exact failure that kept /games/sims-4/pregnancy-mods/ out of the index.
   alternates: { canonical: 'https://musthavemods.com/play/' },
-  openGraph: {
+  // E337: shareCard adds the og:image / twitter:image this route never had.
+  ...shareCard({
     title: 'MAIN CHARACTER — The Daily Sims 4 CC Styling Game',
     description:
       'Style today\'s scene with real Sims 4 custom content and share your Director\'s Score. A new episode drops every day at midnight ET.',
     url: 'https://musthavemods.com/play/',
-    siteName: 'MustHaveMods',
-    type: 'website',
-  },
+  }),
 };
 
 export default function PlayPage() {

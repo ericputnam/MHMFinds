@@ -17,6 +17,7 @@ import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../
 import { getRelatedCreators } from '../../../lib/creatorHubRelated';
 import { creatorHubLinks } from '../../../lib/creatorHubLinks';
 import { creatorMetaDescription, creatorPageTitle } from '../../../lib/seo/creatorMeta';
+import { shareCard } from '../../../lib/seo/shareCard';
 import CreatorPageClient from './CreatorPageClient';
 
 // Author strings change with every ingest and there are ~540 eligible
@@ -51,8 +52,15 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
     alternates: { canonical },
     // A claimed creator below MIN_MODS_FOR_PAGE gets a page but stays out of the index.
     ...(data.indexable ? {} : { robots: { index: false, follow: true } }),
-    openGraph: { title, description, url: canonical, type: 'profile' },
-    twitter: { card: 'summary_large_image', title, description },
+    // E337: the creator's top mod image is the card (site card if it has none).
+    ...shareCard({
+      title,
+      description,
+      url: canonical,
+      type: 'profile',
+      image: data.mods[0]?.thumbnail || data.mods[0]?.images?.[0] || null,
+      imageAlt: data.mods[0]?.title,
+    }),
   };
 }
 

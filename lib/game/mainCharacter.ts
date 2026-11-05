@@ -360,6 +360,7 @@ export function buildShareText(info: EpisodeInfo, score: ScoreBreakdown, streak:
     `Director's Score: ${score.total}/100 ${stars}`,
   ];
   if (streak > 1) lines.push(`🔥 ${streak}-day streak`);
-  lines.push('musthavemods.com/play');
+  // Trailing slash: /play 308s to /play/, and some unfurlers do not follow it (E337).
+  lines.push('musthavemods.com/play/');
   return lines.join('\n');
 }

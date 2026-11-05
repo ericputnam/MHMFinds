@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getGameFromSlug, GAME_METADATA } from '../../../lib/gameRoutes';
+import { shareCard } from '../../../lib/seo/shareCard';
 import HomePageClient from '../../HomePageClient';
 import { HomeCollections, HomeCollectionStrip } from '../../HomeCollections';
 
@@ -29,15 +30,14 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
   }
 
   const meta = GAME_METADATA[game];
+  const title = meta?.title || `Best ${gameName} Mods | MustHaveMods`;
+  const description = meta?.description || `Discover the best ${gameName} mods and custom content on MustHaveMods.`;
 
   return {
-    title: meta?.title || `Best ${gameName} Mods | MustHaveMods`,
-    description: meta?.description || `Discover the best ${gameName} mods and custom content on MustHaveMods.`,
-    openGraph: {
-      title: meta?.title || `Best ${gameName} Mods | MustHaveMods`,
-      description: meta?.description || `Discover the best ${gameName} mods and custom content on MustHaveMods.`,
-      url: `https://musthavemods.com/games/${game}/`,
-    },
+    title,
+    description,
+    // E337: shareCard adds the og:image this hub never had.
+    ...shareCard({ title, description, url: `https://musthavemods.com/games/${game}/` }),
     alternates: {
       // Trailing slash matches trailingSlash: true in next.config.js
       canonical: `/games/${game}/`,
