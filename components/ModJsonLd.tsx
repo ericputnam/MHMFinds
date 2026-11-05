@@ -47,7 +47,7 @@ function contentDateModified(mod: Mod): { dateModified?: string } {
 export function ModJsonLd({ mod, collections = [] }: ModJsonLdProps) {
   // Trailing slash: matches the canonical in app/mods/[id]/page.tsx.
   const modUrl = modCanonicalUrl(mod.id);
-  const image = mod.thumbnail || mod.images?.[0] || 'https://musthavemods.com/og-image.png';
+  const image = mod.thumbnail || mod.images?.[0] || 'https://musthavemods.com/og-image.jpg';
 
   const softwareSchema = {
     '@context': 'https://schema.org',
