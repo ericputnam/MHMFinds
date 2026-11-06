@@ -18,4 +18,4 @@
  * `__tests__/unit/mod-jsonld-datemodified.test.ts` imports both constants
  * and fails if they drift — bump them together.
  */
-export const HOME_SHELL_LASTMOD = '2026-11-01';
+export const HOME_SHELL_LASTMOD = '2026-11-06';

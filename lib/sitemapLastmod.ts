@@ -17,10 +17,12 @@ import { prisma } from './prisma';
 
 // Homepage shell: SSR shell 2026-09-08 (PR #48); app/page.tsx + HomeCapture
 // 2026-10-26, app/layout.tsx + HomeJsonLd 2026-10-27 (#389), HomeCapture
-// cadence copy "every two weeks" 2026-11-01 (E314). Bump when
+// cadence copy "every two weeks" 2026-11-01 (E314); per-route share card
+// 2026-11-05 (E337, #467 — merged with this guard red); HomeJsonLd FAQ reads
+// CATALOG_FINDS 2026-11-06 (E364). Bump when
 // app-level pages actually change — the git guard below fails if you forget.
 // HOME_SHELL_LASTMOD in lib/seo/siteLastmod.ts restates this; bump both.
-export const APP_LASTMOD = '2026-11-01';
+export const APP_LASTMOD = '2026-11-06';
 
 // /games/[game]/[topic] template — trailing-slash canonical fix 2026-07-03;
 // og:image on every collection page 2026-10-30 (E298, #410); email-box
@@ -39,7 +41,9 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-06';
 // January 2026), so Google had no recrawl signal — /creator/orchiona/ was
 // last crawled 2026-09-24. Bump by hand when the creator template changes;
 // never derive it from "today". Email-box cadence copy 2026-11-01 (E314).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-01';
+// Per-route share card 2026-11-05 (E337, #467 — merged with this guard red);
+// suffix-split creator spellings folded 2026-11-06 (E356, #471). Bumped by E364.
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-06';
 
 /**
  * Which source files each template constant stands for (E303, Sage,

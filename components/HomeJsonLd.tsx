@@ -62,7 +62,7 @@ export function homePageJsonLd() {
             name: 'What is MustHaveMods?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'MustHaveMods is a search engine for game mods and custom content. It indexes over 17,000 verified mods for Sims 4, Stardew Valley, Minecraft, and other games.',
+              text: `MustHaveMods is a search engine for game mods and custom content. It indexes ${CATALOG_FINDS} verified mods for Sims 4, Stardew Valley, Minecraft, and other games.`,
             },
           },
           {
