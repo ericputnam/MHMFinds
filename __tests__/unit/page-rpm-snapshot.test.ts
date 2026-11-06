@@ -5,9 +5,11 @@ import {
   aggregateBuckets,
   bucketFor,
   coveragePct,
+  gradeBucket,
   keepFloor,
   normalizePath,
   renderMd,
+  revenuePerKSiteSessions,
   siteTotalsFromEarnings,
   topPaths,
   unseenRemainder,
@@ -111,6 +113,40 @@ describe('keep floors and coverage', () => {
   });
 });
 
+describe('gradeBucket (E360: keep rule on revenue per 1k site sessions, not page RPM)', () => {
+  // Real Mediavine reads, 2026-10-20→10-26 (before) vs 2026-10-27→11-02 (after the Launcher, #388 / #396).
+  const SITE_BEFORE = 87719;
+  const SITE_AFTER = 83050;
+  it('grades the Launcher homepage unharmed although its page RPM fell 29%', () => {
+    const rpmBefore = (30.82 / 3865) * 1000;
+    const rpmAfter = (37.58 / 6636) * 1000;
+    expect(rpmAfter).toBeLessThan(keepFloor(rpmBefore)!); // the old rule would have said "harmed"
+    const g = gradeBucket({ revenue: 30.82, siteSessions: SITE_BEFORE }, { revenue: 37.58, siteSessions: SITE_AFTER });
+    expect(g.grade).toBe('unharmed');
+    expect(g.after! / g.before!).toBeGreaterThan(1.28);
+  });
+  it('grades the Launcher collection pages unharmed although their page RPM fell 32%', () => {
+    const g = gradeBucket({ revenue: 7.53, siteSessions: SITE_BEFORE }, { revenue: 11.96, siteSessions: SITE_AFTER });
+    expect(g.grade).toBe('unharmed');
+  });
+  it('grades a surface harmed when its RPM holds but its revenue share falls', () => {
+    // same page RPM, half the pageviews, same site sessions: real loss
+    const g = gradeBucket({ revenue: 20, siteSessions: 80000 }, { revenue: 10, siteSessions: 80000 });
+    expect(g.grade).toBe('harmed');
+  });
+  it('compares exact values at the boundary, so exactly −3% passes', () => {
+    const g = gradeBucket({ revenue: 100, siteSessions: 100000 }, { revenue: 97, siteSessions: 100000 });
+    expect(g.grade).toBe('unharmed');
+    const h = gradeBucket({ revenue: 100, siteSessions: 100000 }, { revenue: 96.99, siteSessions: 100000 });
+    expect(h.grade).toBe('harmed');
+  });
+  it('returns unknown, never a verdict, without site sessions', () => {
+    expect(gradeBucket({ revenue: 10, siteSessions: null }, { revenue: 1, siteSessions: 80000 }).grade).toBe('unknown');
+    expect(gradeBucket({ revenue: 10, siteSessions: 80000 }, { revenue: 1, siteSessions: 0 }).grade).toBe('unknown');
+    expect(revenuePerKSiteSessions(10, undefined)).toBeNull();
+  });
+});
+
 describe('renderMd', () => {
   const rep: SnapshotReport = {
     start: '2026-09-08',
@@ -130,6 +166,8 @@ describe('renderMd', () => {
     expect(md).toContain('50.0%'); // PV coverage 1000/2000
     expect(md).toContain('1.0% of site revenue');
     expect(md).toContain('top-150');
+    expect(md).toMatch(/\| \$0\.1250 \| \*\*\$0\.121[23]\*\* \|/); // 10 / 80,000 site sessions × 1000, floor −3%
+    expect(md).toContain('RPM floor (diagnostic)');
   });
   it('prints the unseen remainder as the only obtainable Before for /mods/ and /go/', () => {
     const rem = unseenRemainder(rep);
