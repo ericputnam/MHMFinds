@@ -14,6 +14,7 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../lib/creators';
+import { movedCreatorSlug } from '../../../lib/creatorSlug';
 import { getRelatedCreators } from '../../../lib/creatorHubRelated';
 import { creatorHubLinks } from '../../../lib/creatorHubLinks';
 import { creatorMetaDescription, creatorPageTitle } from '../../../lib/seo/creatorMeta';
@@ -101,7 +102,13 @@ function buildJsonLd(data: CreatorPageData) {
 export default async function CreatorPage({ params }: CreatorPageProps) {
   const { slug } = await params;
   const data = await getCreatorPageData(slug);
-  if (!data) notFound();
+  if (!data) {
+    // E356: a suffix-split spelling whose mods moved to the creator's one page
+    // 308s there instead of 404ing (keeps its landings). Only when no page.
+    const moved = movedCreatorSlug(slug);
+    if (moved) permanentRedirect(creatorHref(moved));
+    notFound();
+  }
   // E293: a non-canonical spelling of a folded creator 308s to its one page.
   if (data.redirectTo) permanentRedirect(creatorHref(data.redirectTo));
 

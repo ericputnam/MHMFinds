@@ -73,6 +73,46 @@ export function creatorRedirectSlug(requested: string, canonical: string, reques
 }
 
 /**
+ * Suffix splits (Nova, E356, 2026-11-06). E293's key drops separators, so
+ * "Sixam CC"/"sixamcc" fold — but "Sixam" vs "SIXAM CC" are two keys and
+ * were two indexable pages. Catalog 2026-11-06: 14 key pairs K / K+suffix
+ * (cc, sims, creations, …) where BOTH clear MIN_MODS_FOR_PAGE. A pair is
+ * listed here only when both keys share a source identity (CurseForge API
+ * project author, Tumblr subdomain or patreon.com/<handle>):
+ *   sixam      → sixam-cc     (CF author "sixamcc" on a "Sixam" row; patreon sixamcc)
+ *   miikocc    → miiko        (miikocc.tumblr on "Miiko"; patreon miikocc)
+ *   guemara    → guemarasims  (CF author "Guemara" on both keys)
+ *   backtrack  → backtrackcc  (CF author "backtrackcc" on "BackTrack"; backtrack-cc.tumblr)
+ *   caiocc     → caio         (caio-cc.tumblr on "Caio"; CF author "Caiocc")
+ *   madlensims → madlen       (madlensims.tumblr on both keys)
+ * The smaller key moves into the larger (by SFW mods). HELD, no shared
+ * identity found (do not add without one): camuflaje/camuflajesims,
+ * ebonix/ebonixsims, harrie/harriecc, jius/jiussims, jomsims/
+ * jomsimscreations, katverse/katversecc, miro/mirosims, serenity/serenitycc.
+ *
+ * Key = creatorKey of the moved spelling; value = the canonical dash-slug it
+ * now lives at. The data half is scripts/agents/creator-split-fold.ts, which
+ * rewrites Mod.author from this same constant; the page half is
+ * movedCreatorSlug(), which 308s only when the slug would otherwise 404 — so
+ * it is inert until the data lands and harmless after a data rollback.
+ */
+export const MOVED_CREATOR_KEYS: Readonly<Record<string, string>> = Object.freeze({
+  sixam: 'sixam-cc',
+  miikocc: 'miiko',
+  guemara: 'guemarasims',
+  backtrack: 'backtrackcc',
+  caiocc: 'caio',
+  madlensims: 'madlen',
+});
+
+/** Where a slug that no longer has a page should 308 to (E356), or null. */
+export function movedCreatorSlug(slug: string): string | null {
+  const target = MOVED_CREATOR_KEYS[creatorKey(slug)];
+  if (!target || authorSlug(target) === slug) return null;
+  return target;
+}
+
+/**
  * The scraper's author fallback produces strings like
  * "Kobe Sweats 135179830" (a title plus a Patreon post id), "75940181"
  * (a bare id) or "" — none of them is a creator. Reject those slugs so

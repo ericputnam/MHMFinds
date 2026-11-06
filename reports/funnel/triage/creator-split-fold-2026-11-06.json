@@ -1,0 +1,483 @@
+{
+  "experiment": "E356",
+  "createdAt": "2026-11-06T11:46:58.140Z",
+  "targets": [
+    {
+      "fromKey": "sixam",
+      "toSlug": "sixam-cc",
+      "spelling": "SIXAM CC",
+      "toKeyMods": 31,
+      "fromKeyMods": 13
+    },
+    {
+      "fromKey": "miikocc",
+      "toSlug": "miiko",
+      "spelling": "Miiko",
+      "toKeyMods": 37,
+      "fromKeyMods": 10
+    },
+    {
+      "fromKey": "guemara",
+      "toSlug": "guemarasims",
+      "spelling": "Guemarasims",
+      "toKeyMods": 29,
+      "fromKeyMods": 20
+    },
+    {
+      "fromKey": "backtrack",
+      "toSlug": "backtrackcc",
+      "spelling": "backtrackcc",
+      "toKeyMods": 17,
+      "fromKeyMods": 14
+    },
+    {
+      "fromKey": "caiocc",
+      "toSlug": "caio",
+      "spelling": "Caio",
+      "toKeyMods": 16,
+      "fromKeyMods": 10
+    },
+    {
+      "fromKey": "madlensims",
+      "toSlug": "madlen",
+      "spelling": "Madlen",
+      "toKeyMods": 103,
+      "fromKeyMods": 5
+    }
+  ],
+  "rows": [
+    {
+      "id": "cmkxfplpm000qoxj3pxjzvzv6",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmkxg3r90001yoxj3tlkya3la",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmijjbbfx0071oxs3zh7xqczp",
+      "fromKey": "miikocc",
+      "prior": "MiikoCC",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmkxyab70002koxhc8o5p6vex",
+      "fromKey": "caiocc",
+      "prior": "Caio-cc",
+      "next": "Caio"
+    },
+    {
+      "id": "cmohdaw9j000eoxbljtqdqgf2",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmkyizamp0123oxhcmh63nsrx",
+      "fromKey": "caiocc",
+      "prior": "Caio-cc",
+      "next": "Caio"
+    },
+    {
+      "id": "cmkxzm4ut006qoxhcr9gngh4d",
+      "fromKey": "miikocc",
+      "prior": "Miiko CC",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmky2kk5000dcoxhc9t0jes42",
+      "fromKey": "miikocc",
+      "prior": "Miiko CC",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmku7i0j20040oxkzklxgkxmr",
+      "fromKey": "miikocc",
+      "prior": "Miiko CC",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmky6ghao00fyoxhc2so12wja",
+      "fromKey": "miikocc",
+      "prior": "MiikoCC",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmikxhp4m0009ox9edk6xystn",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmku0ok4e000woxkzg7bc6ckc",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmky81cci00kfoxhcowvcq50e",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmky843at00kpoxhcnfsp97aw",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmky8cqtd00lfoxhcq34p73gn",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmky923sv00nmoxhctpliubdy",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmkxfikhl0000oxj3fcp957f5",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmim9ltr100bjoxy7qb0pn51z",
+      "fromKey": "sixam",
+      "prior": "SIXAM",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmkts7uza001foxolfmy3mgg3",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmkts95d7001koxoldqlgl3e2",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmky9vjee00q4oxhc5dfkrgm0",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmktsbj9k001roxolb70a29j0",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmky91t9000nloxhcbtgypw1z",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmku61q9s002yoxkzooc65t3g",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmky7xv9q00k3oxhcwgaomd8v",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmky2ml5600djoxhc984ps85b",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmik8z3dt000voxk7337ahy8x",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmikk68jm004tox33b1lyfsqo",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmkynnm6t0176oxhchp301mmb",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmkynoxrf017boxhcv7tv1zsu",
+      "fromKey": "miikocc",
+      "prior": "Miiko CC",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmkycdaaw00vnoxhcsvobymos",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmky6kovz00gcoxhce3uv1c99",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmttzh82b003uoxfezkuqshyq",
+      "fromKey": "miikocc",
+      "prior": "miikocc",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmky8zewg00ndoxhcjk8nu6fn",
+      "fromKey": "sixam",
+      "prior": "Sixam",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmikjwnsj0007ox33v3kqrl87",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmsmb9rxa0044oxeu05zq7bmm",
+      "fromKey": "miikocc",
+      "prior": "Miikocc",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmsmbd1he005uoxeub63bi0rl",
+      "fromKey": "madlensims",
+      "prior": "Madlensims",
+      "next": "Madlen"
+    },
+    {
+      "id": "cmkyj3lnu012foxhc2wgc2i30",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmsmbd69g005yoxeuww68kpi1",
+      "fromKey": "madlensims",
+      "prior": "Madlensims",
+      "next": "Madlen"
+    },
+    {
+      "id": "cmkxxm3j5000doxhcstwa52pf",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmky6604f00f2oxhc9t72rlks",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmky9g0rd00osoxhco3iazlsj",
+      "fromKey": "caiocc",
+      "prior": "Caio-CC",
+      "next": "Caio"
+    },
+    {
+      "id": "cmkynodqt0179oxhc9hhdec7a",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmky9hk8m00oxoxhc71e6bu63",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cml5sh92l0006oxxr6gdr9g0a",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmkycmpci00vxoxhcqntf8usl",
+      "fromKey": "sixam",
+      "prior": "SIXAM",
+      "next": "SIXAM CC"
+    },
+    {
+      "id": "cmijjgaf60093oxs3k7xmytao",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmky6lg6v00gfoxhcqeez6oy7",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmjh4lqll004uoxyvaxp4cllr",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmoivkw38001toxr33idgdm8m",
+      "fromKey": "madlensims",
+      "prior": "Madlensims",
+      "next": "Madlen"
+    },
+    {
+      "id": "cmmvaqxvn008woxzg4h1x8z1q",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmik9y73l00d9oxk7pugguyx2",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmmvaroe700auoxzgmvw3xzag",
+      "fromKey": "madlensims",
+      "prior": "Madlensims",
+      "next": "Madlen"
+    },
+    {
+      "id": "cmkyccwqv00vmoxhczzdn1ve9",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmmvau3ca00f2oxzglubm7640",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmsmctqf700y2oxeubkqo1l8z",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmky6j1n600g7oxhcitq1r04o",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmoivj10z0000oxr3w8fg2rs2",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmv2cn6tt000uoxj22ovaj552",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmijq7dxl01eroxc8cposzunc",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmsmc90qh00mzoxeusawzxl62",
+      "fromKey": "miikocc",
+      "prior": "Miikocc",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmik91i0f0029oxk7bug6tgon",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cml5sh99k0008oxxr78p6jcgg",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmkts8ak3001hoxoldovcmfka",
+      "fromKey": "backtrack",
+      "prior": "BackTrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmv2cn9kb001aoxj2zrhnnlge",
+      "fromKey": "caiocc",
+      "prior": "Caiocc",
+      "next": "Caio"
+    },
+    {
+      "id": "cmijq5zy401dzoxc8kbj4a1os",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmim9fneb006woxqwdwatfo8e",
+      "fromKey": "madlensims",
+      "prior": "madlensims",
+      "next": "Madlen"
+    },
+    {
+      "id": "cmil1cvpm00bzoxeeug9guyps",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmim8rxqz0031oxy8hs5p1ctu",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    },
+    {
+      "id": "cmim8wwsd00s7oxy8kbx1q7bf",
+      "fromKey": "backtrack",
+      "prior": "Backtrack",
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmim9vols000pox9sn3i2291x",
+      "fromKey": "miikocc",
+      "prior": "miikocc",
+      "next": "Miiko"
+    },
+    {
+      "id": "cmil3q1dg00ihoxpzbc8rqsyw",
+      "fromKey": "guemara",
+      "prior": "Guemara",
+      "next": "Guemarasims"
+    }
+  ],
+  "applied": []
+}
