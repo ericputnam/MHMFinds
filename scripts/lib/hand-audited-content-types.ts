@@ -1276,6 +1276,18 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmvxxhul0000boxx8n9vq98dr: { contentType: "decor", why: "E328 \"Elegant boho floor big collections\" — decor, was NULL; desc: \"Elegant boho floor tile collection\", 100+ swatches; floors/walls follow the wallpaper precedent (49 of 60 wallpaper titles are decor)" },
   cmvxxhueg0009oxx8kg0brfpj: { contentType: "decor", why: "E328 \"Cute & kawaii doll wallpaper\" — KEEP decor (no-op pin); desc: \"a sweet and dreamy kawaii wallpaper set\" — the word doll is the motif, not the object" },
   cmvxvtzus0003ox6gqfys2q3v: { contentType: "decor", why: "E328 \"Vintage decor set\" — KEEP decor (no-op pin); Atino00 submission, title is the type" },
+
+  // ── Audited 2026-11-06 (Rowan, E362). The five off-type rows Sage found in
+  //    the male-clothes (E338) and shoes-cc (E339) top 48 on 11-05, plus one
+  //    heels row the E362 heels-theme dry run surfaced in `residential`. Six
+  //    different reasons, so hand pins, not a facet-wide retag (E67 rule).
+  //    Each was read against its own description and source post.
+  cmikkd71t008box33oh47jz1b: { contentType: "hair", why: "E362 \"Mario Hairstyle\" — hair, was full-body (male-clothes #7); desc: \"a gorgeous Sims 4 male urban hair set featuring thick, wavy locs\" (source: sims-4-male-urban-hair)" },
+  cmikkcp86007yox33xrpjf379: { contentType: "hair", why: "E362 \"Barrel Twists\" — hair, was full-body (male-clothes #15); desc: \"thick twists styled into cornrows\" (source: sims-4-male-urban-hair)" },
+  cmim8zak9016zoxy8zigyk4eq: { contentType: "hair", why: "E362 \"'Jordan' Curly Curls\" — hair, was shoes (shoes-cc #30; \"Jordan\" read as the sneaker); desc: \"a long, middle-parted, sexy, curly hairstyle\" (source: sims-4-hair-cc-2024)" },
+  cmim8zmls019moxy8t9vqudcj: { contentType: "nails", why: "E362 \"Shorty French Pedi\" — nails, was shoes (shoes-cc #9); desc: \"a cute French pedi for your toes in five stunning swatches\" — a toenail set, nails-cc territory" },
+  cmijp0gzp00tpoxc8iab4hkwx: { contentType: "furniture", why: "E362 \"Luxury Custom Closet\" — furniture, was shoes (shoes-cc #24); desc: \"9 items, which include dressers, shelves, and wardrobes\" (source: best-sims-4-closet-cc)" },
+  cmim9m9mf00f3oxy7pxfc7yb8: { contentType: "shoes", why: "E362 \"Edgy Sims 4 CC Heels\" — shoes, was residential; desc: \"You can never have too many cc shoes … The black heels\", download is a Patreon shoes post (source: sims-4-grunge-cc)" },
 };
 
 /**

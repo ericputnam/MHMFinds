@@ -402,7 +402,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentType: 'shoes',
     },
     expectedCount: 633,
-    related: ['y2k-cc', 'male-clothes', 'hair-cc'],
+    // 2026-11-06 (E362): 'hair-cc' → 'heels-cc' (hair-cc keeps y2k-cc, eyes-cc, cc).
+    related: ['y2k-cc', 'male-clothes', 'heels-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial
     // "best shoes CC" intent, this page owns browse/filter intent.
     // /sims-4-shoes-cc/ is live and does not 301 (verified 2026-09-13);
@@ -474,7 +475,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     },
     expectedCount: 1601,
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' (see male-clothes note).
-    related: ['male-clothes', 'shoes-cc', 'clothes-cc'],
+    // 2026-11-06 (E362): 'clothes-cc' → 'heels-cc' so the new heels page is
+    // linked from the busiest collection page (clothes-cc keeps male-clothes + cc).
+    related: ['male-clothes', 'shoes-cc', 'heels-cc'],
     // No blogUrl: /sims-4-female-clothes-cc/ 301s here (2026-07-03).
   },
   {
@@ -1574,6 +1577,43 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // this page owns browse intent. /sims-4-plumbob-replacements/ is live
     // (HTTP 200, verified 2026-11-05) and is not in vercel.json.
     blogUrl: '/sims-4-plumbob-replacements/',
+  },
+  {
+    // Rowan, 2026-11-06 (E362, Tier 0 — registry entry in the existing
+    // pattern). A browse page for heels, the sub-type the shoes-cc hub's own
+    // title and meta already promise (E339) but whose 633-row grid buries:
+    // the top 48 by downloads hold 4 heels. Demand: the legacy article
+    // /sims-4-heels-cc/ drew 256 impressions / 12 clicks at position 10.8
+    // (GSC 2026-10-07 → 11-03; "sims 4 heels cc", "high heels", "platform",
+    // "pleaser" and "stripper heels" variants at pos 4.5–26). The theme is
+    // TITLE-ONLY (lib/heelsThemeRules.ts, accepted and rejected words with
+    // counts in its comment); 121 rows tagged / 0 stripped on 2026-11-06,
+    // 118 SFW Sims 4; top 30 by downloads hand-read 30/30 heeled footwear.
+    // Inbound: female-clothes (651 landing sessions 10-23 → 11-05, the
+    // busiest collection page; repointed from clothes-cc, which keeps
+    // male-clothes + cc) and shoes-cc (repointed from hair-cc, which keeps
+    // y2k-cc, eyes-cc and cc). Appended after the contentType pages because
+    // a themesAny entry scores specificity 1, so every heel keeps its shoes /
+    // clothes breadcrumb and gains this one as "Also in".
+    slug: 'heels-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Heels CC',
+    heading: 'Sims 4 Heels CC',
+    metaTitle: 'Sims 4 Heels CC — Browse 110+ Stilettos, Platforms, Pumps & Heeled Boots | MustHaveMods',
+    metaDescription:
+      'Browse 110+ Sims 4 heels CC in one grid: stilettos, platform heels, pumps, wedges, strappy sandals, Mary Janes and heeled boots from Mermalade, Madlen and more, sorted by downloads.',
+    tagline: 'Stilettos, platforms, pumps, wedges and heeled boots',
+    intro:
+      'Heels are the shoe category EA keeps getting wrong. The base game has a handful of pumps with a mesh that clips through flared trousers, a couple of strappy sandals, and nothing that looks like what people actually wear on a night out. That is why heels are one of the most downloaded kinds of Sims 4 CC, and also why they are hard to find: in a general shoes grid they sit between hundreds of sneakers, boots and slippers.\n\nThis collection is only heels: 118 pairs, sorted by downloads, and every one of them says heel, stiletto or pumps in its own title. That rule is deliberate. A dress whose description mentions "the perfect heels to go with it" is not a pair of shoes, and stiletto nails are a nail shape, so neither shows up here. About a fifth of the grid is heeled boots (knee-high, over-the-knee, ankle and cowboy-heel styles). There are a dozen platforms, eight wedges, and a run of Mary Janes, mules, peep-toes and strappy heeled sandals. The rest is classic stilettos and pumps.\n\nMermalade made 23 of these, more than anyone else on the page, with Madlen, LVNDRCC, ShakeProductions and VentaStudio next.\n\nTwo practical notes. Heels are the shoes most likely to clip. An alpha-style stiletto rarely sits flat on a maxis-match body preset, and very high platforms can push a Sim\'s feet through the floor in some animations. Check the creator\'s page for which body or slider a pair was built on. And many of these are swatch-heavy single releases, so sort by downloads for the pairs everyone already has, then scroll for the finds the big roundups never mention.\n\nEverything in this grid is Sims 4 only and filtered to SFW.',
+    filter: { themesAny: ['heels'] },
+    expectedCount: 118,
+    related: ['shoes-cc', 'female-clothes', 'wedding-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // heels" intent (256 impr / 12 clk, pos 10.8, 28d to 11-03); this page
+    // owns browse intent. /sims-4-heels-cc/ is live (HTTP 200, verified
+    // 2026-11-06) and is not in vercel.json.
+    blogUrl: '/sims-4-heels-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
