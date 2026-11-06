@@ -13,6 +13,7 @@ import {
   toFeedItem,
   type FeedModRow,
 } from '@/lib/feeds';
+import { importsName, stripComments } from '../helpers/namedImports';
 
 /**
  * /feeds/mods.json, /feeds/mods.xml and /feeds/{game}/{slug}/ — the "what's
@@ -227,8 +228,11 @@ describe('wiring that would otherwise fail silently', () => {
     // helper actually emits for every registry entry (guard the constant, not
     // a copy of its source text), and that the page still calls the helper.
     const page = read('app/games/[game]/[topic]/page.tsx');
-    expect(page).toMatch(/import \{ collectionMetadata \} from ['"][^'"]*lib\/seo\/collectionMetadata['"]/);
-    expect(page).toContain('return collectionMetadata(collection);');
+    // Ask whether the name is imported, not whether one exact import line
+    // exists: #437 added a second specifier to that import and this went red
+    // on main with the wiring intact (E364).
+    expect(importsName(page, 'collectionMetadata', 'lib/seo/collectionMetadata')).toBe(true);
+    expect(stripComments(page)).toContain('return collectionMetadata(collection);');
 
     expect(SIMS4_COLLECTIONS.length).toBeGreaterThan(10); // vacuity guard
     for (const c of SIMS4_COLLECTIONS) {

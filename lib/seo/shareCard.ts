@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { CATALOG_FINDS } from './catalogCount';
 
 /**
  * Per-route share card: og:title / og:description / og:url / og:image and the
@@ -16,7 +17,7 @@ import type { Metadata } from 'next';
  * collectionMetadata / the mod-detail builder, which carry their own image).
  */
 export const SITE_SHARE_IMAGE = '/og-image.jpg';
-const SITE_SHARE_IMAGE_ALT = 'MustHaveMods: 17,000+ Sims 4 mods and CC';
+const SITE_SHARE_IMAGE_ALT = `MustHaveMods: ${CATALOG_FINDS} Sims 4 mods and CC`;
 
 export interface ShareCardInput {
   title: string;
