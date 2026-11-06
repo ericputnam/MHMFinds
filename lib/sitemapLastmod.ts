@@ -17,19 +17,22 @@ import { prisma } from './prisma';
 
 // Homepage shell: SSR shell 2026-09-08 (PR #48); app/page.tsx + HomeCapture
 // 2026-10-26, app/layout.tsx + HomeJsonLd 2026-10-27 (#389), HomeCapture
-// cadence copy "every two weeks" 2026-11-01 (E314). Bump when
+// cadence copy "every two weeks" 2026-11-01 (E314); og:image share card in
+// the root layout 2026-11-05 (E336 #462 — merged with the E303 guard red,
+// caught 11-06 by E354). Bump when
 // app-level pages actually change — the git guard below fails if you forget.
 // HOME_SHELL_LASTMOD in lib/seo/siteLastmod.ts restates this; bump both.
-export const APP_LASTMOD = '2026-11-01';
+export const APP_LASTMOD = '2026-11-05';
 
 // /games/[game]/[topic] template — trailing-slash canonical fix 2026-07-03;
 // og:image on every collection page 2026-10-30 (E298, #410); email-box
 // cadence copy "every two weeks" 2026-11-01 (E314); BreadcrumbList JSON-LD
 // 2026-11-01 (E312, #437); email capture directly under the grid 2026-11-02
 // (E323, #442 1bec59da — merged with this guard red, so 35 hub URLs
-// advertised 11-01 for a page that changed 11-02; E329 bumped it 11-04).
+// advertised 11-01 for a page that changed 11-02; E329 bumped it 11-04);
+// CollectionPage JSON-LD gains dateModified 2026-11-06 (E354).
 // Bump when the template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-02';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-06';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
@@ -37,8 +40,9 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-02';
 // still dated 526 of 554 entries by their newest mod alone (169 said
 // January 2026), so Google had no recrawl signal — /creator/orchiona/ was
 // last crawled 2026-09-24. Bump by hand when the creator template changes;
-// never derive it from "today". Email-box cadence copy 2026-11-01 (E314).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-01';
+// never derive it from "today". Email-box cadence copy 2026-11-01 (E314);
+// per-creator share card 2026-11-05 (E337 #467, merged with the guard red).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-05';
 
 /**
  * Which source files each template constant stands for (E303, Sage,
