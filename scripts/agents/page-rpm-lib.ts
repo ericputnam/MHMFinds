@@ -172,6 +172,44 @@ export function keepFloor(rpm: number | null, tolerancePct = 3): number | null {
   return r2(rpm * (1 - tolerancePct / 100));
 }
 
+/**
+ * A page type's revenue per 1,000 **site** sessions: what the surface
+ * contributes to session RPM, the number the guardrail actually protects.
+ * Unrounded; round only for print (compare exact values at a gate boundary).
+ *
+ * Why this and not page RPM: a change that adds pageviews to a surface lowers
+ * that surface's page RPM by construction, even when its revenue rises. The
+ * Launcher (#388 home 10-27, #396 collections 10-29) did exactly that —
+ * 10-20→10-26 vs 10-27→11-02: home page RPM $7.97 → $5.66 (−29%) while home
+ * revenue $30.82 → $37.58 and revenue per 1k site sessions $0.351 → $0.452
+ * (+29%); collections $5.43 → $3.67 (−32%) on $7.53 → $11.96 (+68% per 1k
+ * site sessions). A page-RPM floor would have graded both "harmed" (E360).
+ */
+export function revenuePerKSiteSessions(revenue: number, siteSessions: number | null | undefined): number | null {
+  if (!siteSessions || siteSessions <= 0) return null;
+  return (revenue / siteSessions) * 1000;
+}
+
+export type BucketGrade = 'unharmed' | 'harmed' | 'unknown';
+
+/**
+ * One-sided keep rule for an ad-adjacent change on one page type: unharmed if
+ * the bucket's revenue per 1k site sessions after the change is ≥ (1 − tol) ×
+ * before. `unknown` (never a verdict) when either window lacks site sessions.
+ * Page RPM is diagnostic only — see revenuePerKSiteSessions.
+ */
+export function gradeBucket(
+  before: { revenue: number; siteSessions: number | null | undefined },
+  after: { revenue: number; siteSessions: number | null | undefined },
+  tolerancePct = 3,
+): { grade: BucketGrade; before: number | null; after: number | null; floor: number | null } {
+  const b = revenuePerKSiteSessions(before.revenue, before.siteSessions);
+  const a = revenuePerKSiteSessions(after.revenue, after.siteSessions);
+  if (b == null || a == null) return { grade: 'unknown', before: b, after: a, floor: null };
+  const floor = b * (1 - tolerancePct / 100);
+  return { grade: a >= floor ? 'unharmed' : 'harmed', before: b, after: a, floor };
+}
+
 export interface TopPath {
   path: string;
   bucket: PageBucket;
@@ -256,7 +294,7 @@ export function renderMd(rep: SnapshotReport): string {
   const L: string[] = [];
   L.push(`# Page-RPM baseline — ${rep.start} → ${rep.end}`);
   L.push('');
-  L.push(`_Generated ${rep.generatedAt} by \`scripts/agents/page-rpm-snapshot.ts\`. Source: Mediavine \`/reports/pages\` (top-150 paths per query, pulled per day under two sort orders and de-duplicated on day+path) and \`/reports/metrics/earnings\` for site totals. This is the **Before** for any ad-adjacent change on these page types (E55 grid-card decision, /play ad density, /go countdown). Keep rules are one-sided floors: a page type is unharmed if its post-change RPM is ≥ floor._`);
+  L.push(`_Generated ${rep.generatedAt} by \`scripts/agents/page-rpm-snapshot.ts\`. Source: Mediavine \`/reports/pages\` (top-150 paths per query, pulled per day under two sort orders and de-duplicated on day+path) and \`/reports/metrics/earnings\` for site totals. This is the **Before** for any ad-adjacent change on these page types (E55 grid-card decision, /play ad density, /go countdown). Keep rules are one-sided floors on **revenue per 1k site sessions** (\`gradeBucket\`): a page type is unharmed if its post-change contribution is ≥ floor. Page RPM and its floor are diagnostic only — a change that adds pageviews to a surface lowers its page RPM while raising its revenue (E360: the Launcher, home −29% RPM on +29% contribution)._`);
   L.push('');
   if (rep.site) {
     L.push(`**Site (Mediavine, ${rep.start}→${rep.end}):** revenue **${money(rep.site.revenue)}** · pageviews ${num(rep.site.pageviews)} · sessions ${num(rep.site.sessions)} · page RPM **${fmtRpm(rep.site.pageRpm)}** · session RPM ${fmtRpm(rep.site.sessionRpm)}`);
@@ -268,25 +306,29 @@ export function renderMd(rep: SnapshotReport): string {
   L.push('## By page type');
   L.push('');
   const hasGa4 = !!rep.ga4Pageviews;
-  L.push(`| Page type | Paths seen | MV pageviews | Revenue | Page RPM | Imp/pv | Viewability | Rev. coverage | ${hasGa4 ? 'GA4 pageviews | PV coverage | ' : ''}Keep floor (−${rep.tolerancePct}%) |`);
-  L.push(`|---|--:|--:|--:|--:|--:|--:|--:|${hasGa4 ? '--:|--:|' : ''}--:|`);
+  L.push(`| Page type | Paths seen | MV pageviews | Revenue | Page RPM | Imp/pv | Viewability | Rev. coverage | ${hasGa4 ? 'GA4 pageviews | PV coverage | ' : ''}RPM floor (diagnostic) | Rev / 1k site sessions | **Keep floor (−${rep.tolerancePct}%)** |`);
+  L.push(`|---|--:|--:|--:|--:|--:|--:|--:|${hasGa4 ? '--:|--:|' : ''}--:|--:|--:|`);
+  const fmtC = (n: number | null) => (n == null ? '—' : `$${n.toFixed(4)}`);
+  const contrib = (rev: number) => revenuePerKSiteSessions(rev, rep.site?.sessions);
+  const cFloor = (c: number | null) => (c == null ? null : c * (1 - rep.tolerancePct / 100));
   for (const b of BUCKET_ORDER) {
     const t = rep.buckets[b];
     if (t.paths === 0 && !(hasGa4 && rep.ga4Pageviews?.[b])) continue;
     const cov = coveragePct(t.revenue, rep.site?.revenue);
     const ga = hasGa4 ? rep.ga4Pageviews?.[b] : undefined;
     const pvCov = hasGa4 ? coveragePct(t.pageviews, ga) : null;
+    const c = contrib(t.revenue);
     L.push(
       `| ${BUCKET_LABEL[b]} | ${num(t.paths)} | ${num(t.pageviews)} | ${money(t.revenue)} | **${fmtRpm(t.rpm)}** | ${t.impressionsPerPageview ?? '—'} | ${pct(t.viewabilityPct)} | ${pct(cov)} | ` +
         (hasGa4 ? `${ga == null ? '—' : num(ga)} | ${pct(pvCov)} | ` : '') +
-        `${fmtRpm(keepFloor(t.rpm, rep.tolerancePct))} |`,
+        `${fmtRpm(keepFloor(t.rpm, rep.tolerancePct))} | ${fmtC(c)} | **${fmtC(cFloor(c))}** |`,
     );
   }
   const seenRev = r2(BUCKET_ORDER.reduce((a, b) => a + rep.buckets[b].revenue, 0));
   const seenPv = BUCKET_ORDER.reduce((a, b) => a + rep.buckets[b].pageviews, 0);
   const rem = unseenRemainder(rep);
   if (rem) {
-    L.push(`| **Unseen remainder** (site − every path seen; the long tail below the daily top-150 cut, i.e. \`/mods/[id]/\`, \`/go/[modId]/\` and small blog posts) | — | ${num(rem.pageviews)} | ${money(rem.revenue)} | **${fmtRpm(rem.rpm)}** | — | — | ${pct(coveragePct(rem.revenue, rep.site!.revenue))} | ${hasGa4 ? '— | — | ' : ''}${fmtRpm(keepFloor(rem.rpm, rep.tolerancePct))} |`);
+    L.push(`| **Unseen remainder** (site − every path seen; the long tail below the daily top-150 cut, i.e. \`/mods/[id]/\`, \`/go/[modId]/\` and small blog posts) | — | ${num(rem.pageviews)} | ${money(rem.revenue)} | **${fmtRpm(rem.rpm)}** | — | — | ${pct(coveragePct(rem.revenue, rep.site!.revenue))} | ${hasGa4 ? '— | — | ' : ''}${fmtRpm(keepFloor(rem.rpm, rep.tolerancePct))} | ${fmtC(contrib(rem.revenue))} | **${fmtC(cFloor(contrib(rem.revenue)))}** |`);
   }
   L.push('');
   L.push(`- Revenue seen across all buckets: ${money(seenRev)} on ${num(seenPv)} pageviews${rep.site ? ` = ${pct(coveragePct(seenRev, rep.site.revenue))} of site revenue` : ''}.`);
@@ -301,7 +343,7 @@ export function renderMd(rep: SnapshotReport): string {
     L.push(
       `- **\`/mods/[id]/\` and \`/go/[modId]/\` cannot be read from \`/reports/pages\` at all** — no single mod or interstitial path earns enough in a day to enter the top 150. ` +
         `Their Before is (a) the unseen-remainder row above${share != null ? ` — of which they are only ${pct(share)} of pageviews; the rest is the blog long tail` : ''} — and (b) an upper bound of GA4 pv × site page RPM: /mods/ ≤ ${bound('mod')}, /go/ ≤ ${bound('go')} for the window. ` +
-        `A change on those pages is read against the remainder RPM floor **and** the site page RPM floor (${fmtRpm(keepFloor(rep.site!.pageRpm, rep.tolerancePct))}), one-sided, never against a per-path number.`,
+        `A change on those pages is read against the remainder's rev / 1k site sessions floor **and** the site session RPM floor (${fmtRpm(keepFloor(rep.site!.sessionRpm, rep.tolerancePct))}), one-sided, never against a per-path number or a page RPM (pageviews added to a thin page lower page RPM without lowering revenue).`,
     );
   }
   if (hasGa4 && rep.ga4Pageviews?.total && rep.site) {
