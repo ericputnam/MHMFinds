@@ -188,6 +188,14 @@ export interface CreatorPageData {
    * folded creator ("sixamcc" → "sixam-cc"); the page 308s there. Null = serve.
    */
   redirectTo: string | null;
+  /**
+   * E355: newest createdAt over the same rows the page lists (ISO string,
+   * Dates do not cross the RSC boundary), or null. The page's ProfilePage
+   * dateModified is creatorLastmod(this) — the function /sitemap-creators.xml
+   * applies to listCreators().latest, which is MAX(createdAt) over the same
+   * SFW author variants.
+   */
+  latestModCreatedAt: string | null;
 }
 
 /**
@@ -256,7 +264,7 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
         creator: true,
       },
     }),
-    prisma.mod.aggregate({ where, _sum: { downloadCount: true } }),
+    prisma.mod.aggregate({ where, _sum: { downloadCount: true }, _max: { createdAt: true } }),
   ]);
 
   const displayName = (variants[0]?.author ?? slug).trim();
@@ -270,7 +278,14 @@ export async function getCreatorPageData(slug: string): Promise<CreatorPageData 
     profile: pageProfileFrom(profile),
     indexable: gate.indexable,
     redirectTo,
+    latestModCreatedAt: toIsoOrNull(downloadAgg._max?.createdAt),
   };
+}
+
+function toIsoOrNull(d: Date | string | null | undefined): string | null {
+  if (!d) return null;
+  const t = new Date(d);
+  return Number.isNaN(t.getTime()) ? null : t.toISOString();
 }
 
 /**

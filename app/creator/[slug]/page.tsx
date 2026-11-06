@@ -19,6 +19,7 @@ import { getRelatedCreators } from '../../../lib/creatorHubRelated';
 import { creatorHubLinks } from '../../../lib/creatorHubLinks';
 import { creatorMetaDescription, creatorPageTitle } from '../../../lib/seo/creatorMeta';
 import { shareCard } from '../../../lib/seo/shareCard';
+import { creatorLastmod } from '../../../lib/sitemapLastmod';
 import CreatorPageClient from './CreatorPageClient';
 
 // Author strings change with every ingest and there are ~540 eligible
@@ -86,6 +87,8 @@ function buildJsonLd(data: CreatorPageData) {
         '@id': canonical,
         url: canonical,
         name: `${data.displayName} — Sims 4 CC & Mods`,
+        // E355: the same YYYY-MM-DD /sitemap-creators.xml declares for this URL.
+        dateModified: creatorLastmod(data.latestModCreatedAt),
         isPartOf: { '@type': 'WebSite', '@id': `${SITE}/#website`, name: 'MustHaveMods', url: SITE },
         mainEntity: {
           '@type': 'Person',
