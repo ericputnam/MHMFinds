@@ -132,7 +132,7 @@ describe('renderIssue output', () => {
   });
 
   it('numbers the list from 02 and shows the issue number and date', () => {
-    expect(html).toContain('01 &nbsp;&middot;&nbsp; New this week');
+    expect(html).toContain('01 &nbsp;&middot;&nbsp; New since the last issue'); // E358: was "New this week"
     expect(html).toContain('>02<');
     expect(html).toContain(`>0${ISSUE_01.posts.length}<`);
     expect(html).toContain('Issue 01 &nbsp;&middot;&nbsp; September 14, 2026');

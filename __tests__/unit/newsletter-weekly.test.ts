@@ -35,11 +35,13 @@ import {
   computeIssueNumber,
   diversifyByContentType,
   formatDateLabel,
+  ISSUE_WINDOW_DAYS,
   pickCollectionDefinition,
   type ModRow,
   type NewsletterDb,
   type SavedModRow,
 } from '@/lib/services/newsletterWeekly';
+import { renderIssue } from '@/lib/services/newsletterIssue';
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -109,6 +111,28 @@ describe('computeIssueNumber / formatDateLabel', () => {
     expect(computeIssueNumber(new Date('2026-10-22T11:00:00Z'))).toBe(7);
   });
 
+  it('steps every two weeks after issue 07: 08 for 11-03→11-16, 09 from 11-17 (E358, biweekly since E184 KILL 10-29)', () => {
+    // Before E358 the weekly counter read 09 on 11-06, so the issue after 07 would have been
+    // labelled (and UTM-tagged) 09.
+    expect(computeIssueNumber(new Date('2026-10-23T12:00:00Z'))).toBe(7); // run 1 sent
+    expect(computeIssueNumber(new Date('2026-10-25T21:18:00Z'))).toBe(7); // run 2 sent
+    expect(computeIssueNumber(new Date('2026-11-02T23:59:59Z'))).toBe(7);
+    for (const day of ['2026-11-03', '2026-11-06', '2026-11-12', '2026-11-16']) {
+      expect(computeIssueNumber(new Date(`${day}T12:00:00Z`)), day).toBe(8);
+    }
+    expect(computeIssueNumber(new Date('2026-11-17T00:00:00Z'))).toBe(9);
+    expect(computeIssueNumber(new Date('2026-12-01T00:00:00Z'))).toBe(10);
+  });
+
+  it('never skips or repeats a number across the weekly → biweekly switch', () => {
+    let prev = computeIssueNumber(new Date('2026-09-15T00:00:00Z'));
+    for (let t = Date.parse('2026-09-15T00:00:00Z'); t < Date.parse('2027-03-01T00:00:00Z'); t += 3600_000) {
+      const n = computeIssueNumber(new Date(t));
+      expect(n - prev === 0 || n - prev === 1, new Date(t).toISOString()).toBe(true);
+      prev = n;
+    }
+  });
+
   it('never collides with the hand-built issue #1 (2026-09-14)', () => {
     expect(computeIssueNumber(new Date('2026-09-15T00:00:00Z'))).toBeGreaterThanOrEqual(2);
   });
@@ -165,6 +189,39 @@ describe('buildWeeklyIssueData', () => {
     for (const post of issue.posts) {
       expect(post.image.startsWith('https://blog.musthavemods.com')).toBe(true);
     }
+  });
+
+  it('picks from the two weeks an issue covers first, not 7 days (E358)', async () => {
+    const now = new Date('2026-11-06T15:00:00Z');
+    const calls: number[] = [];
+    const db = fakeDb({
+      async findRecentMods({ since }) {
+        calls.push(Math.round((now.getTime() - since.getTime()) / (24 * 60 * 60 * 1000)));
+        return [mod({ id: 'a' }), mod({ id: 'b' }), mod({ id: 'c' })];
+      },
+    });
+    await buildWeeklyIssueData(db, { now });
+    expect(ISSUE_WINDOW_DAYS).toBe(14);
+    expect(calls[0]).toBe(14);
+    expect(calls).not.toContain(7);
+  });
+
+  it('the rendered issue says two weeks and never "this week" / "7 days" (E358)', async () => {
+    const issue = await buildWeeklyIssueData(
+      fakeDb({
+        async findRecentMods() {
+          return [mod({ id: 'a', shortDescription: null }), mod({ id: 'b' })];
+        },
+      }),
+      { now: new Date('2026-11-06T15:00:00Z') }
+    );
+    expect(issue.number).toBe(8);
+    expect(issue.subject).toMatch(/^New on MustHaveMods — \d+ finds from the last two weeks$/);
+    const r = renderIssue(issue, { unsubscribeUrl: 'https://musthavemods.com/api/unsubscribe/?t=x', postalAddress: '' });
+    for (const body of [r.subject, r.html, r.text]) {
+      expect(body).not.toMatch(/this week|7 days|in a week/i);
+    }
+    expect(r.text).toMatch(/two weeks/);
   });
 
   it('widens the lookback window instead of crashing on a slow content week', async () => {

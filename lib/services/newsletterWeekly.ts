@@ -50,7 +50,24 @@ const REPLY_TO = 'simsnews@musthavemods.com';
 export const FIRST_AUTOMATED_ISSUE_WEEK_START = new Date('2026-09-15T00:00:00Z');
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
+/**
+ * E184 was graded KILL weekly → biweekly on 2026-10-29. Issue 07 (content week
+ * from Tue 2026-10-20, sent 10-23/10-25) was the last weekly-numbered issue.
+ * From there one issue spans two weeks, so the counter steps every 14 days.
+ * Before E358 (2026-11-06) the weekly counter kept running and the next send
+ * would have been labelled 09 (and tagged `weekly-issue-09`) after 07.
+ */
+export const LAST_WEEKLY_ISSUE = 7;
+export const BIWEEKLY_ANCHOR = new Date('2026-10-20T00:00:00Z');
+const BIWEEKLY_MS = 2 * WEEK_MS;
+
+/** Days of new catalog an issue covers: the gap between two issues. */
+export const ISSUE_WINDOW_DAYS = 14;
+
 export function computeIssueNumber(now: Date = new Date()): number {
+  if (now.getTime() >= BIWEEKLY_ANCHOR.getTime()) {
+    return LAST_WEEKLY_ISSUE + Math.floor((now.getTime() - BIWEEKLY_ANCHOR.getTime()) / BIWEEKLY_MS);
+  }
   const weeks = Math.floor((now.getTime() - FIRST_AUTOMATED_ISSUE_WEEK_START.getTime()) / WEEK_MS);
   return Math.max(2, weeks + 2);
 }
@@ -144,7 +161,7 @@ function toIssuePost(m: ModRow): IssuePost {
   const blurb =
     truncateBlurb(m.shortDescription) ??
     truncateBlurb(m.description) ??
-    `${humanizeContentType(m.contentType)} added to the catalog this week.`;
+    `${humanizeContentType(m.contentType)} added to the catalog in the last two weeks.`;
   return {
     title: m.title,
     url: `${SITE}/mods/${m.id}/`,
@@ -198,12 +215,13 @@ export function diversifyByContentType<T extends { contentType: string | null }>
  * (`newsletterIssue.ts` throws otherwise — most mod images are hosted on
  * blog.musthavemods.com, but some source hosts (Patreon, TSR, Tumblr CDNs)
  * are not, so this over-fetches and filters rather than trusting the first
- * page). Widens the window (7d → 14d → 21d → 28d) if the last 7 days don't
- * yield enough eligible mods — a slow content week should never crash the
- * send, only reach further back.
+ * page). Starts at ISSUE_WINDOW_DAYS (14 since E358: on a biweekly cadence a
+ * 7-day window left the first week of every gap out of every issue) and widens
+ * (14d → 21d → 28d) if that doesn't yield enough eligible mods — a slow content
+ * fortnight should never crash the send, only reach further back.
  */
 async function pickRecentPosts(db: NewsletterDb, now: Date, need: number): Promise<IssuePost[]> {
-  const windows = [7, 14, 21, 28];
+  const windows = [ISSUE_WINDOW_DAYS, 21, 28];
   for (const days of windows) {
     const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     const candidates = await db.findRecentMods({ since, take: Math.max(need * 5, 25) });
@@ -286,9 +304,9 @@ export async function buildWeeklyIssueData(db: NewsletterDb, opts?: { now?: Date
   return {
     number,
     dateLabel: formatDateLabel(now),
-    subject: `This week on MustHaveMods — ${posts.length} new finds`,
+    subject: `New on MustHaveMods — ${posts.length} finds from the last two weeks`,
     intro:
-      "Here's what's new this week: fresh finds picked from everything added to the catalog in the last 7 days.",
+      "Here's what's new since the last issue: fresh finds picked from everything added to the catalog in the last two weeks.",
     posts: posts.map((p) => ({ ...p, url: withUtm(p.url, campaign) })),
     collection: { ...collection, url: withUtm(collection.url, campaign) },
     saved: saved.map((m) => ({ ...m, url: withUtm(m.url, campaign) })),
