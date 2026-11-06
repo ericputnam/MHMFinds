@@ -41,8 +41,9 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-06';
 // January 2026), so Google had no recrawl signal — /creator/orchiona/ was
 // last crawled 2026-09-24. Bump by hand when the creator template changes;
 // never derive it from "today". Email-box cadence copy 2026-11-01 (E314);
-// per-creator share card 2026-11-05 (E337 #467, merged with the guard red).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-05';
+// per-creator share card 2026-11-05 (E337 #467, merged with the guard red);
+// suffix-split spellings fold into one page 2026-11-06 (E356 #471).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-06';
 
 /**
  * Which source files each template constant stands for (E303, Sage,
