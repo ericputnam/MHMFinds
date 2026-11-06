@@ -136,7 +136,7 @@ function label(text: string): string {
 
 function leadStory(p: IssuePost): string {
   assertImage(p.image, 'lead');
-  return `<tr><td style="${FONT}padding:0 0 10px;font-size:12px;font-weight:700;color:${PINK};letter-spacing:.1em;text-transform:uppercase;">01 &nbsp;&middot;&nbsp; New this week</td></tr>
+  return `<tr><td style="${FONT}padding:0 0 10px;font-size:12px;font-weight:700;color:${PINK};letter-spacing:.1em;text-transform:uppercase;">01 &nbsp;&middot;&nbsp; New since the last issue</td></tr>
 <tr><td><a href="${escapeHtml(p.url)}"><img src="${escapeHtml(p.image)}" width="600" alt="${escapeHtml(p.alt)}" style="display:block;width:100%;height:auto;border:0;"></a></td></tr>
 <tr><td style="padding:16px 0 6px;">
 <a href="${escapeHtml(p.url)}" style="${FONT}font-size:26px;font-weight:800;color:#ffffff;text-decoration:none;line-height:1.2;letter-spacing:-.01em;">${escapeHtml(p.title)}</a>
@@ -193,7 +193,7 @@ export function renderIssueHtml(issue: IssueData, ctx: RenderContext): string {
   const saved = issue.saved.length
     ? `<tr><td style="padding:30px 0 12px;border-top:1px solid ${RULE};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-<td style="${FONT}font-size:12px;font-weight:700;color:${PINK};letter-spacing:.1em;text-transform:uppercase;">Most-saved this week</td>
+<td style="${FONT}font-size:12px;font-weight:700;color:${PINK};letter-spacing:.1em;text-transform:uppercase;">Most-saved</td>
 <td align="right" style="${FONT}font-size:12px;color:${MUTED};">by everyone on the site</td>
 </tr></table></td></tr>
 <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${issue.saved.map(savedCell).join('')}</tr></table></td></tr>
@@ -244,7 +244,7 @@ export function renderIssueText(issue: IssueData, ctx: RenderContext): string {
   const home = ctx.homeUrl ?? `${site}/`;
   const posts = issue.posts.map((p, i) => `${i + 1}. ${p.title}\n   ${p.url}`).join('\n\n');
   const saved = issue.saved.length
-    ? `\n--\n\nMost-saved this week, by everyone on the site\n\n${issue.saved
+    ? `\n--\n\nMost-saved, by everyone on the site\n\n${issue.saved
         .map((m) => `  ${m.name} (${m.category}, ${formatCount(m.saves)} saves)\n  ${m.url}`)
         .join('\n')}\n\nBrowse and filter all ${formatCount(issue.catalogCount)}: ${home}\n`
     : '';
