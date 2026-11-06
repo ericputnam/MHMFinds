@@ -32,6 +32,7 @@ import { prisma } from '../../../../lib/prisma';
 import { getGameFromSlug } from '../../../../lib/gameRoutes';
 import { collectionBreadcrumbJsonLd, collectionMetadata } from '../../../../lib/seo/collectionMetadata';
 import { getCollectionCreators } from '../../../../lib/collectionCreators';
+import { collectionLastmod } from '../../../../lib/sitemapLastmod';
 import CollectionPageClient from './CollectionPageClient';
 import type { Mod } from '../../../../lib/api';
 // INITIAL_PAGE_SIZE (48) fills the viewport and exceeds the Pinterest
@@ -183,11 +184,18 @@ function serializeMods(rawMods: any[]): Mod[] {
  * search surfaces (Perplexity, Bing Copilot, ChatGPT search) ingest
  * to build their result cards. Google may or may not respect this
  * post-HCU — but it costs nothing to emit.
+ *
+ * `dateModified` (E354, Sage, 2026-11-06) is the same YYYY-MM-DD this hub's
+ * <lastmod> carries in /sitemap-nextjs.xml — both come from
+ * collectionLastmod(), so the page and the sitemap cannot disagree about
+ * when the hub last changed. Before this the node had no date at all, so an
+ * answer engine choosing between hubs had no freshness signal on the page.
  */
 function buildJsonLd(
   collection: CollectionDefinition,
   mods: Mod[],
   totalCount: number,
+  dateModified: string,
 ) {
   const canonical = `https://musthavemods.com/games/${collection.gameSlug}/${collection.slug}/`;
 
@@ -212,6 +220,7 @@ function buildJsonLd(
         url: canonical,
         name: collection.heading,
         description: collection.metaDescription,
+        dateModified,
         isPartOf: {
           '@type': 'WebSite',
           '@id': 'https://musthavemods.com/#website',
@@ -240,9 +249,11 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
 
   // The creators block (E302) shares the hub's where-clause and degrades to
   // [] on its own; it must never delay or fail the grid.
-  const [{ mods: rawMods, totalCount, moreLinks }, creators] = await Promise.all([
+  // collectionLastmod never throws (a DB miss falls back to the template date).
+  const [{ mods: rawMods, totalCount, moreLinks }, creators, dateModified] = await Promise.all([
     fetchCollectionMods(collection),
     getCollectionCreators(collection),
+    collectionLastmod(collection.gameSlug, collection.slug),
   ]);
   const mods = serializeMods(rawMods);
 
@@ -260,7 +271,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         .map((c) => ({ href: collectionHref(c), heading: c.heading }))
     : [];
 
-  const jsonLd = buildJsonLd(collection, mods, totalCount);
+  const jsonLd = buildJsonLd(collection, mods, totalCount, dateModified);
 
   return (
     <>

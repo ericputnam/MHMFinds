@@ -30,7 +30,8 @@ export const APP_LASTMOD = '2026-11-06';
 // 2026-11-01 (E312, #437); email capture directly under the grid 2026-11-02
 // (E323, #442 1bec59da — merged with this guard red, so 35 hub URLs
 // advertised 11-01 for a page that changed 11-02; E329 bumped it 11-04);
-// "Share this list" button in the intro header 2026-11-06 (E352).
+// "Share this list" button in the intro header 2026-11-06 (E352);
+// CollectionPage JSON-LD gains dateModified 2026-11-06 (E354).
 // Bump when the template changes.
 export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-06';
 
