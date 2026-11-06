@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-05
+ * Generated on:     2026-11-06
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -100,6 +100,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/10/5Q2Mo7eg-tile-747x1024.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/43e0676f-e7de-40d1-b034-08b3df451c12-1.png",
   ],
+  "heels-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2024/12/2add1d7d-65ae-443d-aa5a-1d3803c0cd40-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2021/09/sims-4-cc-shoes-strappy-leather-heels.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/12/3af19f9a-10c5-464f-a67b-b6ece74dad33-1.png",
+  ],
   "holidays-cc": [
     "https://musthavemods.com/wp-content/uploads/2025/12/w-920h-690-3383266.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/05/6adc521c-fb64-4554-a038-8c7113c48924.jpg",
@@ -136,9 +141,9 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/10/2025-07-28-Kobe-Set-C-1024x768.webp",
   ],
   "nails-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2024/12/baf0b8a4-b923-4013-bb1a-c2eb6ab109aa-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/80205747-8a08-4c3d-9832-98228cfe3420-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/14e70d16-1ec8-4135-aa7b-bd731d8817a8-1.png",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/03/e5ff504c-bf65-4518-bd08-dee185aee51a-1.png",
   ],
   "piercings-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2026/01/bodygems2preview-1024x1024.webp",

@@ -1,0 +1,47 @@
+{
+ "writtenAt": "2026-11-06T11:46:37.477Z",
+ "mode": "apply",
+ "facets": [
+  "full-body",
+  "shoes",
+  "residential"
+ ],
+ "rows": [
+  {
+   "id": "cmikkd71t008box33oh47jz1b",
+   "title": "Mario Hairstyle",
+   "from": "full-body",
+   "to": "hair"
+  },
+  {
+   "id": "cmikkcp86007yox33xrpjf379",
+   "title": "Barrel Twists",
+   "from": "full-body",
+   "to": "hair"
+  },
+  {
+   "id": "cmim8zmls019moxy8t9vqudcj",
+   "title": "Shorty French Pedi",
+   "from": "shoes",
+   "to": "nails"
+  },
+  {
+   "id": "cmijp0gzp00tpoxc8iab4hkwx",
+   "title": "Luxury Custom Closet",
+   "from": "shoes",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim8zak9016zoxy8zigyk4eq",
+   "title": "“Jordan” Curly Curls",
+   "from": "shoes",
+   "to": "hair"
+  },
+  {
+   "id": "cmim9m9mf00f3oxy7pxfc7yb8",
+   "title": "Edgy Sims 4 CC Heels",
+   "from": "residential",
+   "to": "shoes"
+  }
+ ]
+}
