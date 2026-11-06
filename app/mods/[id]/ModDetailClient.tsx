@@ -26,6 +26,7 @@ import { RelatedMods } from '@/components/RelatedMods';
 import { ModContentSections } from '@/components/ModContentSections';
 import { MoreFromCreator } from '@/components/MoreFromCreator';
 import { SaveFindsOffer } from '@/components/SaveFindsOffer';
+import { ShareButton } from '@/components/ShareButton';
 import { ConnectEmailOptIn } from '@/components/ConnectEmailOptIn';
 import {
   MEMBER_OPTIN_EVENTS,
@@ -407,6 +408,19 @@ export default function ModDetailClient({
               onSave={handleSaveFinds}
               favoritesHref={FAVORITES_PATH}
             />
+
+            {/* E352 (Pip, 2026-11-06): reader-to-reader share link
+                (`?via=share`). Same column and same rule as SaveFindsOffer:
+                a sibling of every .mv-ads element, never a child. */}
+            <div className="mb-6">
+              <ShareButton
+                path={`/mods/${mod.id}/`}
+                title={mod.title}
+                contentType="mod"
+                itemId={mod.id}
+                label="Share this mod"
+              />
+            </div>
 
             {/*
               E198 (Cass, 2026-10-13) — one-click weekly-email opt-in for a

@@ -34,6 +34,7 @@ import { LauncherFooter } from '../../../../components/launcher/LauncherFooter';
 import { useGameCounts } from '../../../../components/launcher/useLauncherData';
 import { NewsletterSignup } from '../../../../components/NewsletterSignup';
 import { CollectionMoreLinks } from '../../../../components/CollectionMoreLinks';
+import { ShareButton } from '../../../../components/ShareButton';
 import { Mod } from '../../../../lib/api';
 import { collectionHref, type CollectionDefinition } from '../../../../lib/collections';
 import type { CollectionCreator } from '../../../../lib/collectionCreators';
@@ -162,6 +163,20 @@ export default function CollectionPageClient({
 
             <h1 className="hero-h1">{collection.heading}</h1>
             <p className="hero-sub">{collection.tagline}</p>
+
+            {/* E352 (Pip, 2026-11-06): reader-to-reader share link
+                (`?via=share`). Inside the intro <header>, above the
+                grid/sidebar row — never inside .mv-ads or beside
+                <aside id="secondary">. */}
+            <div style={{ margin: '12px 0' }}>
+              <ShareButton
+                path={collectionHref(collection)}
+                title={collection.heading}
+                contentType="collection"
+                itemId={collection.slug}
+                label="Share this list"
+              />
+            </div>
 
             <div className="coll-intro">
               {/* Split the intro into paragraphs so humanizer-generated
