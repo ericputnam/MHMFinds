@@ -43,7 +43,8 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-06';
 // last crawled 2026-09-24. Bump by hand when the creator template changes;
 // never derive it from "today". Email-box cadence copy 2026-11-01 (E314).
 // Per-route share card 2026-11-05 (E337, #467 — merged with this guard red);
-// suffix-split creator spellings folded 2026-11-06 (E356, #471). Bumped by E364.
+// suffix-split creator spellings folded 2026-11-06 (E356, #471). Bumped by E364;
+// ProfilePage JSON-LD gains dateModified 2026-11-06 (E355).
 export const CREATOR_TEMPLATE_LASTMOD = '2026-11-06';
 
 /**
