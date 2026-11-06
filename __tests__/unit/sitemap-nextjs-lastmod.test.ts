@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { SIMS4_COLLECTIONS } from '@/lib/collections';
-import { COLLECTION_TEMPLATE_LASTMOD } from '@/lib/sitemapLastmod';
+import { APP_LASTMOD, COLLECTION_TEMPLATE_LASTMOD } from '@/lib/sitemapLastmod';
 
 /**
  * /sitemap-nextjs.xml per-collection <lastmod> (E37).
@@ -40,7 +40,11 @@ function entries(xml: string): Array<{ loc: string; lastmod: string }> {
 const DAY_MS = 24 * 3600 * 1000;
 const plusDays = (stamp: string, n: number) => new Date(Date.parse(`${stamp}T00:00:00.000Z`) + n * DAY_MS);
 const stampOf = (d: Date) => d.toISOString().slice(0, 10);
-const HAIR_CREATED = new Date(plusDays(COLLECTION_TEMPLATE_LASTMOD, 2).getTime() + 18 * 3600 * 1000);
+// The homepage row is max(APP_LASTMOD, newest collection), so the fixture must
+// clear BOTH constants or the roll-up assertion breaks the first time
+// APP_LASTMOD is bumped past it (E364, 2026-11-06).
+const NEWEST_TEMPLATE = [APP_LASTMOD, COLLECTION_TEMPLATE_LASTMOD].sort().at(-1) as string;
+const HAIR_CREATED = new Date(plusDays(NEWEST_TEMPLATE, 2).getTime() + 18 * 3600 * 1000);
 const POSES_CREATED = new Date(plusDays(COLLECTION_TEMPLATE_LASTMOD, 1).getTime() + 2 * 3600 * 1000);
 const HAIR_STAMP = stampOf(HAIR_CREATED);
 const OLD_CREATED = new Date('2026-01-25T00:00:00.000Z');
