@@ -99,8 +99,8 @@ describe('scripted-shaped sign-up suppression (E270)', () => {
   const human: SubscriberAccountRow = { email: 'human-synthetic@example.test', source: 'signup-optin', username: 'SimmerJane', isForm: true };
 
   it('the shipped snapshot is hashes only, disjoint from the bounce list, and non-trivial', () => {
-    // 101 at the 10-25 snapshot. A list only ever grows; a truncation fails here.
-    expect(SCRIPTED_SIGNUP_HASHES.length).toBeGreaterThanOrEqual(101);
+    // 101 at the 10-25 snapshot, 103 after E371 (11-07). A list only ever grows; a truncation fails here.
+    expect(SCRIPTED_SIGNUP_HASHES.length).toBeGreaterThanOrEqual(103);
     for (const h of SCRIPTED_SIGNUP_HASHES) expect(h).toMatch(HEX64);
     expect(new Set(SCRIPTED_SIGNUP_HASHES).size).toBe(SCRIPTED_SIGNUP_HASHES.length);
     for (const h of SCRIPTED_SIGNUP_HASHES) expect(EXCLUDED_RECIPIENT_HASHES).not.toContain(h);
