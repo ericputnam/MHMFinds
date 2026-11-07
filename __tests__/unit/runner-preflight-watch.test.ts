@@ -89,7 +89,7 @@ afterEach(() => {
 describe('run-funnel-daily.sh preflight-watch block (E194)', () => {
   it('exists in the runner and is wired: the runner calls it and has a HANG cause', () => {
     expect(block.length).toBeGreaterThan(500);
-    expect(raw).toMatch(/if ! claude_preflight; then/);
+    expect(raw).toMatch(/if ! (claude_preflight|preflight_with_fallback); then/); // E374 wraps it in the QUOTA fallback
     expect(raw).toMatch(/^\s*HANG\)\s+CAUSE=/m);
     expect(block).toMatch(/2>"\$PREFLIGHT_ERR"/);
   });
