@@ -72,6 +72,26 @@ describe('collection guides (E203)', () => {
     expect(sources).toContain('build-cc');
   });
 
+  // E366 (Pip, 2026-11-07): the eight Bing-losing WordPress guides that had
+  // no inbound link from any Next.js page. Each must keep a hub source, or
+  // the experiment's treated set silently shrinks.
+  it('every E366 Bing-losing guide keeps at least one hub source', () => {
+    const E366 = [
+      '/sims-4-sliders/',
+      '/sims-4-reshade/',
+      '/best-sims-4-wedding-cc/',
+      '/sims-4-infant-cc/',
+      '/sims-4-urban-cc/',
+      '/sims-4-cowboy-cc/',
+      '/new-sims-4-mods-2026/',
+      '/black-sims-4-cc/',
+    ];
+    for (const href of E366) {
+      const sources = withGuides.filter((c) => c.guides!.some((g) => g.href === href));
+      expect(sources.length, `${href} has no hub source`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
   it('the hub page and llms-full.txt both render the guides field', () => {
     const page = fs.readFileSync(path.join(ROOT, 'app/games/[game]/[topic]/CollectionPageClient.tsx'), 'utf-8');
     const llms = fs.readFileSync(path.join(ROOT, 'app/llms-full.txt/route.ts'), 'utf-8');
