@@ -691,6 +691,47 @@ preflight_missed_land() {  # $1 day $2 HH:MM $3 kind $4 cli-version $5 auth-line
   return $rc
 }
 # <<< preflight-missed
+# >>> preflight-fallback
+# E374 (2026-11-07): on 11-03 the preflight on claude-fable-5-1 answered HTTP 429 "You're out of usage credits. Switch
+# to another model, or manage usage credits …" (logs/funnel-preflight-2026-11-03.json) and the whole morning was
+# MISSED — 14d run success fell to 64.3%. The quota was per MODEL: the operator set FUNNEL_MODEL=claude-opus-5-5 in the
+# scheduled task that afternoon and every preflight since (11-04 → 11-07) passed. A QUOTA verdict is the one preflight
+# failure a different model can clear, so: when the primary model's preflight is diagnosed QUOTA (and only QUOTA —
+# AUTH/CLI_TOO_OLD/HANG/OTHER are not model-specific and keep failing as before), re-run the preflight on each model in
+# FUNNEL_FALLBACK_MODELS (default "claude-opus-5-5 claude-fable-5-1", the primary skipped) and run Quinn on the first
+# that answers. The primary's preflight output is kept as logs/funnel-preflight-DATE-primary.json. MODEL_FALLBACK_LINE
+# is appended to Quinn's prompt so the digest says it AND Quinn stops routing specialists to the 429'd model (a
+# subagent on that model dies before it starts). FUNNEL_FALLBACK_MODELS="" disables. If every fallback fails, the
+# last attempt's diagnosis stands and PREFLIGHT_FALLBACK_TRIED names what was tried (it goes into the MISSED excerpt).
+# Self-contained with preflight-watch: __tests__/unit/runner-preflight-fallback.test.ts extracts both blocks and runs them.
+FALLBACK_MODELS="${FUNNEL_FALLBACK_MODELS-claude-opus-5-5 claude-fable-5-1}"
+PRIMARY_MODEL="$MODEL"; MODEL_FALLBACK_LINE=""; PREFLIGHT_FALLBACK_TRIED=""
+model_short() { printf '%s' "$1" | sed -nE 's/^claude-([a-z]+)-.*/\1/p'; }   # claude-fable-5-1 → fable (the Agent tool's name)
+preflight_with_fallback() {  # rc 0 some model answered (MODEL is set to it) · 1 none did — read preflight_diagnosis
+  local d kind m
+  claude_preflight && return 0
+  d="$(preflight_diagnosis)"; kind="${d%%|*}"
+  [ "$kind" = QUOTA ] || return 1
+  [ -n "$FALLBACK_MODELS" ] || { log "preflight-fallback: $PRIMARY_MODEL is QUOTA and FUNNEL_FALLBACK_MODELS is empty — no fallback"; return 1; }
+  cp "$PREFLIGHT_OUT" "$PROJECT_DIR/logs/funnel-preflight-$TODAY-primary.json" 2>/dev/null || true
+  for m in $FALLBACK_MODELS; do
+    [ "$m" = "$PRIMARY_MODEL" ] && continue
+    MODEL="$m"
+    log "preflight-fallback: $PRIMARY_MODEL answered QUOTA (${d#*|}) — trying $MODEL (E374)"
+    if claude_preflight; then
+      PREFLIGHT_FALLBACK_TRIED="${PREFLIGHT_FALLBACK_TRIED:+$PREFLIGHT_FALLBACK_TRIED, }$m=ok"
+      MODEL_FALLBACK_LINE="MODEL FALLBACK TODAY (E374): the preflight on \`$PRIMARY_MODEL\` answered QUOTA (HTTP 429, out of usage credits for that model), so you are running on \`$MODEL\`. Route every specialist you would give '$(model_short "$PRIMARY_MODEL")' to '$(model_short "$MODEL")' instead — a subagent on the 429'd model dies before it starts. Put one flag in digest section 1 (\"Quinn ran on $MODEL: $PRIMARY_MODEL out of usage credits — add credits at claude.ai/settings/usage\") and name the real model per specialist in section 4."
+      log "preflight-fallback: $MODEL answered — Quinn runs on $MODEL instead of $PRIMARY_MODEL"
+      return 0
+    fi
+    d="$(preflight_diagnosis)"
+    PREFLIGHT_FALLBACK_TRIED="${PREFLIGHT_FALLBACK_TRIED:+$PREFLIGHT_FALLBACK_TRIED, }$m=${d%%|*}"
+    log "preflight-fallback: $m failed too (${d%%|*})"
+  done
+  MODEL="$PRIMARY_MODEL"
+  return 1
+}
+# <<< preflight-fallback
 token_expiry() {
   security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | python3 -c 'import json,sys,datetime
 try:
@@ -703,9 +744,10 @@ DIGEST="$WT/reports/funnel/digest-$TODAY.md"
 # E264: read the keychain's expiry dates (never the token) before the preflight, every run — the early warning.
 AUTH_LINE="$(auth_expiry)"; log "auth: $AUTH_LINE (warn at refresh_days ≤ $AUTH_WARN_DAYS)"
 AUTH_WARN="$(auth_warn_line "$AUTH_LINE")"; [ -n "$AUTH_WARN" ] && log "$AUTH_WARN"
-if ! claude_preflight; then
+if ! preflight_with_fallback; then
   EXP="$(token_expiry)"
   DIAG="$(preflight_diagnosis)"; DIAG_KIND="${DIAG%%|*}"; DIAG_EXCERPT="${DIAG#*|}"
+  [ -n "$PREFLIGHT_FALLBACK_TRIED" ] && DIAG_EXCERPT="primary $PRIMARY_MODEL=QUOTA; fallback tried: $PREFLIGHT_FALLBACK_TRIED; last: $DIAG_EXCERPT"
   CLI_VER="$(claude --version 2>/dev/null | head -1 || echo unknown)"
   case "$DIAG_KIND" in
     CLI_TOO_OLD) CAUSE="The installed Claude CLI ($CLI_VER) is too old for model \`$MODEL\` (the API answered \`claude_code_version_too_old\`). Auth is fine. **Run \`brew upgrade claude-code@latest\`** (the plain \`claude-code\` cask stops at 2.1.236; Fable needs ≥ 2.1.251)";;
@@ -748,13 +790,16 @@ fi
 # 2026-09-22-0655.md, E91). 2 h is the default (Quinn's longest full run was 51 min); a finite cap is deliberate
 # so a hung subagent can never wedge the scheduled task forever. Guarded by __tests__/unit/funnel-runner-bg-ceiling.test.ts.
 export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS="${FUNNEL_BG_WAIT_CEILING_MS:-7200000}"
+[ -n "$MODEL_FALLBACK_LINE" ] && log "preflight-fallback: appending MODEL FALLBACK line to Quinn's prompt ($PRIMARY_MODEL → $MODEL)"
 log "Running Quinn ($MODEL)… prompt=$PROMPT_FILE bg-wait-ceiling=${CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS}ms"
 GUARD_LINE="CIRCUIT BREAKER TODAY: status=$GUARD_STATUS action=$GUARD_ACTION$( [ -n "$GUARD_ROLLBACK_TO" ] && echo " rollbackTo=$GUARD_ROLLBACK_TO" ) — full report: $GUARD_MD. If the runner rolled back, the ledger row and incident file are already written; you are in incident mode."
 if "${CLAUDE_CLEAN[@]}" claude -p "$(cat "$PROMPT_FILE")
 
 $GUARD_LINE
 
-$AGENT_WT_LINE" \
+$AGENT_WT_LINE${MODEL_FALLBACK_LINE:+
+
+$MODEL_FALLBACK_LINE}" \
     --model "$MODEL" \
     --max-turns "$MAX_TURNS" \
     --permission-mode acceptEdits \
