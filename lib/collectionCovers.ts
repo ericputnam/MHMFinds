@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-06
+ * Generated on:     2026-11-07
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -77,7 +77,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   ],
   "gallery-poses": [
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/female-secondary-sims-4-gallery-poses.jpg",
-    "https://blog.musthavemods.com/wp-content/uploads/2022/03/sims-4-family-gallery-pose-with-baby.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2022/03/family-portrait-gallery-pose-sims-4.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/sims-4-hand-poses-for-cas-1-1024x247.jpg",
   ],
   "goth-cc": [
@@ -104,6 +104,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/12/2add1d7d-65ae-443d-aa5a-1d3803c0cd40-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2021/09/sims-4-cc-shoes-strappy-leather-heels.png",
     "https://blog.musthavemods.com/wp-content/uploads/2024/12/3af19f9a-10c5-464f-a67b-b6ece74dad33-1.png",
+  ],
+  "hello-kitty-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/80205747-8a08-4c3d-9832-98228cfe3420-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/14e70d16-1ec8-4135-aa7b-bd731d8817a8-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/fe71ebbf-4900-4ba7-8387-32996751493d.jpg",
   ],
   "holidays-cc": [
     "https://musthavemods.com/wp-content/uploads/2025/12/w-920h-690-3383266.jpg",
