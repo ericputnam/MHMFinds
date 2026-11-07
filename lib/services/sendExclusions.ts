@@ -209,6 +209,14 @@ export const SCRIPTED_SIGNUP_HASHES: readonly string[] = [
   'f9a67b03eaf4bd053bc6edda8c56524d63801a564aa238fcea7c0893f5e31661', // E270 scripted-shaped signup-optin
   'fbf63e4dcb9832e6f266066a13223f32c8495fda689ab22af5d4e5f1224784bc', // E270 scripted-shaped signup-optin
   'fe2f842d38ba57425b8ad2be45c055f61662d79fadd5eb2f8b126955c6f70b0f', // E270 scripted-shaped signup-optin
+  // 2026-11-07 (Cass, E371): 2 unlisted at the issue-08 pre-send read (315 waitlist rows, 257
+  // signup-optin, 109 scripted-shaped). Both reviewed by shape before listing, every feature the
+  // same as all 101 above: credentials form, "I'm a creator" ticked, 0 favorites, opt-in row
+  // <4 s after the account, same User-Agent prefix as 101/101 listed, dotted Gmail local part
+  // (5 and 7 dots), username 8 and 10 case flips. Account days 11-02 and 11-06 — the 10-12 bot
+  // is still posting the form two weeks after the last snapshot row (10-23).
+  '6bdab6c653073e3dca1c7c7477d1b671ee80b551f4e24dd3f110a17e1a49cb7c', // E270 scripted-shaped signup-optin (11-02)
+  '92d87e73612976be8c2c668771633d99f3db1629dc2feb69b6c94c7868d680d4', // E270 scripted-shaped signup-optin (11-06)
 ];
 
 /** One subscriber row joined to its account, as the classifier needs it. No address leaves this module. */
