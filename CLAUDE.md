@@ -925,36 +925,51 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-02 — rotated to the archive
+### 2026-10-15 → 11-03 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06.
 
-### 2026-11-03 (no merges; the funnel run MISSED)
+### 2026-11-06 (covers merges #469–#477; no compound review ran 11-04 or 11-05)
 
-The 11-02 section was rotated to the archive. Its standing points are still open: always pass
-`--label "PR #N …"` to `deploy-verify.sh`, which defaults to `manual`. #447 still has no correcting
-row after its `TIMEOUT`. The first Vercel build of a merge still ERRORs.
+8 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify. Creator fold, share links, the
+IndexNow `/mods/` kill and the headless write refusal are in the archive (11-06 subsystem entries).
 
-- **A failure classifier must parse the shape its source actually emits (E264 follow-up, open).**
-  On 11-03 the preflight got HTTP 429, *"You're out of usage credits"*. The runner filed it as
-  `preflight=OTHER`, "no excerpt", and the digest told the operator the cause was "neither auth nor
-  version (excerpt: none)". The cause was on stdout the whole time. `claude -p --output-format
-  json` reports an error as `"is_error":true`, `"api_error_status":429` and `"result":"…"`, and
-  stderr was 0 bytes. `preflight_diagnosis` (`run-funnel-daily.sh:604`) only greps the
-  `"error"`/`"message"` keys, so it found nothing. Fix: add a `QUOTA` kind keyed on
-  `api_error_status` 429, and take the excerpt from `.result`. Quota is an operator action, like
-  `AUTH`. A retry cannot clear it. Rule: when a classifier falls through to its catch-all, it must
-  still show the raw tail of what it read. "None" while the file names the cause is worse than no
-  digest at all.
-- **E264 held.** The MISSED row and the degraded digest, scoreboard and guardrail (green) landed on
-  `main` 3 s after the preflight failed. The morning check passed (5xx/15m = 0). Nothing shipped.
-- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`
-  (`/api/creator/submissions`, fifth day).
+- **Grade a change on the unit it changes, not on one it dilutes (E360, #470).** The Launcher
+  (#388, #396) adds pageviews, so impressions per pageview fell by construction: page RPM fell
+  29% on home and 32% on collections. Over the same weeks surface revenue rose 22% / 59% and
+  revenue per 1k site sessions rose 29% / 68%. The page-RPM keep floor graded both "harmed". `gradeBucket()` now puts its one-sided floor on revenue per 1k site
+  sessions (exact compare, `unknown` without sessions); page RPM is diagnostic only. Anything that
+  adds pages, steps or clicks makes every per-pageview metric look worse.
+- **A red guard on `main` does not stop a merge, so it stays red (E364, #472).** #467 and #471
+  merged while `template-lastmod-git-guard` was already red. The ship protocol runs one test file,
+  not the suite. After #471 changed the creator template, three PRs (#472, and #473 twice) each
+  had to bump `CREATOR_TEMPLATE_LASTMOD` again. Rule: the PR that changes a template bumps its
+  `*_TEMPLATE_LASTMOD` in the same PR, and runs the guards on the rebased branch, not only its own
+  test. Ops also found 4 timing flakes under full-suite load: re-run once and name the test, never
+  skip the suite.
+- **A source-level test must parse the structure, not match one exact line (#472).** The feeds
+  and catalog-count import checks broke when #437 added a second specifier to an import. They now
+  parse named imports (`__tests__/helpers/namedImports.ts`). In the same PR, `shareCard.ts` (#467)
+  and `HomeJsonLd` were found hard-coding "17,000+". Both now read `CATALOG_FINDS`, and the test
+  derives its threshold from that constant (≥ half of it is a catalogue claim). Collection "N,000+"
+  copy is checked against its own `expectedCount`.
+- **Changing a cadence means changing every number derived from it (E358, #469).** The newsletter
+  went biweekly on 10-29; the builder stayed weekly. The issue number read 09 (should be 08), picks
+  came from 7 days so week 1 of every gap never reached a reader, the copy said "this week", and the
+  new subject was missing from `CAMPAIGN_SUBJECTS`, so DSNs would not attribute. Grep for the old
+  period everywhere.
+- **The operator queue is not the only channel. Before acting on an item or calling it
+  unanswered, read the rows it would change (E327).** The queue said "no operator replies since
+  11-02", but the operator had approved all 3 submissions by hand in admin on 11-05. Nova's dry
+  run read the 3 rows as not-pending and stopped. Its rollback cannot undo an out-of-band approval.
+- **Still open:** the first Vercel build of a merge still ERRORs on the platform side (#473 and
+  #474 today; both went READY on the ledger commit). The un-nonced per-user fetch in
+  `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`) is also unfixed.
 
 ---
 
-*Last compound review: 2026-11-03*
+*Last compound review: 2026-11-06*
 
 ---
 

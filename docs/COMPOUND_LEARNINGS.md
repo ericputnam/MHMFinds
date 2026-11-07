@@ -2882,6 +2882,50 @@ in the archive under "2026-11-02 — subsystem entries". E313 is closed by #440.
   (fourth day). The 11-02 digest landed via `digest-land.sh` with Team / Insight "not written yet":
   the daily PR did not merge.
 
+### 2026-11-03 — rotated from CLAUDE.md
+
+(Heading in CLAUDE.md was "2026-11-03 (no merges; the funnel run MISSED)".) The QUOTA classifier it
+asked for shipped on 11-04 in #453 (E331).
+
+The 11-02 section was rotated to the archive. Its standing points are still open: always pass
+`--label "PR #N …"` to `deploy-verify.sh`, which defaults to `manual`. #447 still has no correcting
+row after its `TIMEOUT`. The first Vercel build of a merge still ERRORs.
+
+- **A failure classifier must parse the shape its source actually emits (E264 follow-up, open).**
+  On 11-03 the preflight got HTTP 429, *"You're out of usage credits"*. The runner filed it as
+  `preflight=OTHER`, "no excerpt", and the digest told the operator the cause was "neither auth nor
+  version (excerpt: none)". The cause was on stdout the whole time. `claude -p --output-format
+  json` reports an error as `"is_error":true`, `"api_error_status":429` and `"result":"…"`, and
+  stderr was 0 bytes. `preflight_diagnosis` (`run-funnel-daily.sh:604`) only greps the
+  `"error"`/`"message"` keys, so it found nothing. Fix: add a `QUOTA` kind keyed on
+  `api_error_status` 429, and take the excerpt from `.result`. Quota is an operator action, like
+  `AUTH`. A retry cannot clear it. Rule: when a classifier falls through to its catch-all, it must
+  still show the raw tail of what it read. "None" while the file names the cause is worse than no
+  digest at all.
+- **E264 held.** The MISSED row and the degraded digest, scoreboard and guardrail (green) landed on
+  `main` 3 s after the preflight failed. The morning check passed (5xx/15m = 0). Nothing shipped.
+- **Still open:** the un-nonced per-user fetch in `components/admin/CreatorDashboard.tsx:52`
+  (`/api/creator/submissions`, fifth day).
+
+### 2026-11-06 — subsystem entries (written directly to the archive)
+
+- **Merge two entities only when they share a source identity, and redirect the emptied URL
+  (E356, #471).** Six creator spelling pairs were folded because each pair shared a CurseForge
+  author, Tumblr subdomain or Patreon handle. Eight look-alike pairs with no shared identity were
+  held back. An emptied `/creator/` slug returns 308, not 404. One constant (`MOVED_CREATOR_KEYS`)
+  drives both the redirect and the `Mod.author` rewrite, so the two cannot drift.
+- **Tag owned shares with a neutral parameter, not `utm_*` (E352, #475).** `?via=share` keeps the
+  visit's real GA4 source. A `utm_source` would have overwritten it. Placement is guarded by an
+  AST test: no `ShareButton` inside `.mv-ads` or an `<aside>`.
+- **Negative result, recorded so nobody re-proposes it:** IndexNow pushes of `/mods/` pages were
+  killed. Pushed mods got Bing landings 4.3% of the time (n=822), never-pushed mods 6.0%
+  (n=16,384). This is observational, so it does not prove harm, but it shows no lift. Guide
+  pushes (`--guides`) are unaffected.
+- **When a headless session is refused a write, do not route around the refusal.** Writes under
+  `.claude/agents/` were refused mid-run. Quinn wrote every blocked edit verbatim to
+  `reports/funnel/quinn-pending-2026-11-06.md` for the next run to apply, and queued a permission
+  ask. Leaving the edits on disk and unapplied is the right failure mode.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
