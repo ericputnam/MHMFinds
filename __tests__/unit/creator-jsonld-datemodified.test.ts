@@ -39,7 +39,13 @@ vi.mock('../../lib/prisma', () => {
 });
 
 import { getCreatorPageData } from '../../lib/creators';
-import { CREATOR_TEMPLATE_LASTMOD, creatorLastmod } from '../../lib/sitemapLastmod';
+import {
+  CREATOR_TEMPLATE_LASTMOD,
+  creatorDateModified,
+  creatorLastmod,
+  toJsonLdDateTime,
+} from '../../lib/sitemapLastmod';
+import { readdirSync, statSync } from 'fs';
 
 const ROOT = path.resolve(__dirname, '../..');
 const stripComments = (s: string) =>
@@ -89,17 +95,74 @@ describe('E355: the page and the sitemap use the same function', () => {
     expect(read('app/sitemap-creators.xml/route.ts')).toMatch(/creatorLastmod\(r\.latest\)/);
   });
 
-  it('the ProfilePage node emits dateModified: creatorLastmod(data.latestModCreatedAt)', () => {
-    expect(page).toMatch(/import \{ creatorLastmod \} from '\.\.\/\.\.\/\.\.\/lib\/sitemapLastmod';/);
+  it('the ProfilePage node emits dateModified: creatorDateModified(data.latestModCreatedAt)', () => {
+    expect(page).toMatch(/import \{ creatorDateModified \} from '\.\.\/\.\.\/\.\.\/lib\/sitemapLastmod';/);
     const node = page.slice(page.indexOf("'@type': 'ProfilePage'"));
     expect(node.length).toBeGreaterThan(0);
     const body = node.slice(0, node.indexOf('mainEntity'));
-    expect(body).toMatch(/dateModified:\s*creatorLastmod\(data\.latestModCreatedAt\)/);
+    expect(body).toMatch(/dateModified:\s*creatorDateModified\(data\.latestModCreatedAt\)/);
   });
 
   it('the JSON-LD builder never invents a date from "now"', () => {
     const builder = page.slice(page.indexOf('function buildJsonLd'), page.indexOf('export default'));
     expect(builder.length).toBeGreaterThan(100);
     expect(builder).not.toMatch(/new Date\(|toISOString|\d{4}-\d{2}-\d{2}/);
+  });
+});
+
+/**
+ * Search Console, 2026-11-07: "Invalid datetime value for \"dateModified\""
+ * on Profile pages. Google types ProfilePage dateCreated/dateModified as
+ * DateTime; E355 emitted the bare YYYY-MM-DD sitemap stamp. The JSON-LD now
+ * carries the same day as a full ISO 8601 DateTime with an explicit offset.
+ */
+const ISO_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
+describe('ProfilePage dateModified is an ISO 8601 DateTime (Search Console 2026-11-07)', () => {
+  it('creatorDateModified is a full DateTime on the same day as the sitemap lastmod', () => {
+    for (const latest of [null, undefined, '2026-01-29T10:00:00.000Z', new Date('2099-01-02T23:30:00Z')]) {
+      const dt = creatorDateModified(latest);
+      expect(dt).toMatch(ISO_DATETIME);
+      expect(Number.isNaN(Date.parse(dt))).toBe(false);
+      expect(dt.slice(0, 10)).toBe(creatorLastmod(latest));
+    }
+    expect(creatorDateModified(null)).toBe(`${CREATOR_TEMPLATE_LASTMOD}T00:00:00+00:00`);
+  });
+
+  it('toJsonLdDateTime rejects anything that is not a YYYY-MM-DD stamp', () => {
+    expect(toJsonLdDateTime('2026-11-07')).toBe('2026-11-07T00:00:00+00:00');
+    expect(() => toJsonLdDateTime('')).toThrow();
+    expect(() => toJsonLdDateTime('2026-11-07T00:00:00Z')).toThrow();
+  });
+
+  // Every ProfilePage node in app/ and components/, not just this one page:
+  // its dateModified must not be fed by a date-only helper or literal.
+  it('no ProfilePage node in app/ or components/ feeds dateModified a date-only value', () => {
+    const files: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const full = path.join(dir, name);
+        if (statSync(full).isDirectory()) walk(full);
+        else if (/\.(tsx?|jsx?)$/.test(name)) files.push(full);
+      }
+    };
+    walk(path.join(ROOT, 'app'));
+    walk(path.join(ROOT, 'components'));
+    const nodes: Array<{ file: string; body: string }> = [];
+    for (const file of files) {
+      const src = stripComments(readFileSync(file, 'utf8'));
+      let i = src.indexOf("'@type': 'ProfilePage'");
+      while (i !== -1) {
+        nodes.push({ file, body: src.slice(i, i + 600) });
+        i = src.indexOf("'@type': 'ProfilePage'", i + 1);
+      }
+    }
+    expect(nodes.length).toBeGreaterThan(0); // vacuity guard
+    for (const { file, body } of nodes) {
+      const m = body.match(/dateModified:\s*([^,\n]+)/);
+      if (!m) continue;
+      const expr = m[1];
+      expect(expr, path.relative(ROOT, file)).not.toMatch(/Lastmod\(|toDateStamp\(|^['"`]\d{4}-\d{2}-\d{2}['"`]$|split\('T'\)|slice\(0,\s*10\)/);
+    }
   });
 });
