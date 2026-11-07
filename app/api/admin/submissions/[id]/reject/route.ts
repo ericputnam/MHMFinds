@@ -4,6 +4,9 @@ import { requireAdmin } from '@/lib/middleware/auth';
 import { SubmissionRejectSchema, formatZodError } from '@/lib/validation/schemas';
 import { ZodError } from 'zod';
 import { emailNotifier } from '@/lib/services/emailNotifier';
+import { discardUploadForSubmission } from '@/lib/modFiles/lifecycle';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
@@ -57,6 +60,11 @@ export async function POST(
         reviewedBy: auth.user.id,
         reviewNotes: reason,
       },
+    });
+
+    // Delete the bytes of any attached hosted file (never a live one).
+    await discardUploadForSubmission(params.id, auth.user.id).catch((err) => {
+      console.error('[mod-files] discard on reject failed (cron will retry):', (err as Error).message);
     });
 
     if (submission.submitterEmail) {

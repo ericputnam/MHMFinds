@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
+import { findHostedFile } from '@/lib/modFiles/lifecycle';
+import { hostedUploadsEnabled } from '@/lib/modFiles/storage';
+
+/**
+ * Public, non-sensitive facts about a creator-hosted file: never its id,
+ * storage path or hash. The bytes are only reachable through a download
+ * ticket (POST /api/mods/[id]/download-ticket/).
+ */
+async function publicHostedFile(modId: string) {
+  if (!hostedUploadsEnabled()) return null;
+  try {
+    const file = await findHostedFile(modId);
+    if (!file) return null;
+    return {
+      name: file.downloadName,
+      sizeBytes: file.sizeBytes,
+      kind: file.kind,
+      containsScript: file.containsScript,
+    };
+  } catch (err) {
+    // A hosted-file lookup failure must never take the mod page down.
+    console.error('[mod-files] hosted file lookup failed:', (err as Error).message);
+    return null;
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -44,6 +69,7 @@ export async function GET(
       ...mod,
       rating: mod.rating ? Number(mod.rating) : null,
       price: mod.price ? Number(mod.price) : null,
+      hostedFile: await publicHostedFile(id),
     };
 
     return NextResponse.json(serializedMod);

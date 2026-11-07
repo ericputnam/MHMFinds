@@ -3,6 +3,8 @@ import { requireCreator } from '@/lib/auth/creatorAuth';
 import { prisma } from '@/lib/prisma';
 import { getCreatorPageData } from '@/lib/creators';
 import { dashboardBadge, type DashboardBadge } from '@/lib/creatorBadge';
+import { attachUpload, checkAttachableUpload } from '@/lib/modFiles/lifecycle';
+import { CREATOR_UPLOAD_SELECT } from '@/lib/modFiles/requestGuards';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +25,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Optional hosted file (uploaded and verified before this call). Must be
+    // the creator's own, verified, and not attached to anything else.
+    const fileCheck = await checkAttachableUpload(body.uploadId, auth.user.id);
+    if (!fileCheck.ok) {
+      return NextResponse.json({ error: fileCheck.error }, { status: fileCheck.status });
+    }
 
     // Create submission linked to authenticated user
     const submission = await prisma.modSubmission.create({
@@ -69,6 +78,17 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    if (fileCheck.uploadId) {
+      const attached = await attachUpload(fileCheck.uploadId, auth.user.id, submission.id);
+      if (!attached) {
+        await prisma.modSubmission.delete({ where: { id: submission.id } }).catch(() => {});
+        return NextResponse.json(
+          { error: 'That file is already attached to another submission' },
+          { status: 409 }
+        );
+      }
+    }
 
     return NextResponse.json(
       {
@@ -139,6 +159,7 @@ export async function GET(request: NextRequest) {
             rating: true,
           },
         },
+        upload: { select: CREATOR_UPLOAD_SELECT },
       },
     });
 

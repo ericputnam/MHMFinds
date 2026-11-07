@@ -10,6 +10,10 @@
     {
       "path": "/api/cron/commission-sync",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/mod-upload-cleanup",
+      "schedule": "30 4 * * *"
     }
   ],
   "functions": {
@@ -24,6 +28,12 @@
     },
     "app/api/admin/affiliates/earnings/import/route.ts": {
       "maxDuration": 300
+    },
+    "app/api/creator/uploads/[id]/verify/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/admin/submissions/[id]/approve/route.ts": {
+      "maxDuration": 30
     }
   },
   "headers": [

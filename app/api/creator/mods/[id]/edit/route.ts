@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCreator } from '@/lib/auth/creatorAuth';
 import { prisma } from '@/lib/prisma';
+import { attachUpload, checkAttachableUpload } from '@/lib/modFiles/lifecycle';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,12 @@ export async function POST(
 
     const body = await request.json();
 
+    // Optional new version of the hosted file.
+    const fileCheck = await checkAttachableUpload(body.uploadId, auth.user.id);
+    if (!fileCheck.ok) {
+      return NextResponse.json({ error: fileCheck.error }, { status: fileCheck.status });
+    }
+
     // Create new submission for the edit
     const submission = await prisma.modSubmission.create({
       data: {
@@ -108,6 +115,17 @@ export async function POST(
         },
       },
     });
+
+    if (fileCheck.uploadId) {
+      const attached = await attachUpload(fileCheck.uploadId, auth.user.id, submission.id);
+      if (!attached) {
+        await prisma.modSubmission.delete({ where: { id: submission.id } }).catch(() => {});
+        return NextResponse.json(
+          { error: 'That file is already attached to another submission' },
+          { status: 409 }
+        );
+      }
+    }
 
     return NextResponse.json(
       {

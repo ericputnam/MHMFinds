@@ -19,6 +19,30 @@ const nextConfig = {
     outputFileTracingIncludes: {
       '/api/admin/funnel/history': ['./reports/funnel/history.json'],
     },
+    // @vercel/blob >= 2.0.1 depends on undici 6, which uses `#field in obj`
+    // brand checks that Next 14.0's bundled webpack parser cannot read
+    // ("Module parse failed: Unexpected token"). Loading it from node_modules
+    // at runtime on the server avoids the parse; Node supports the syntax.
+    // The browser bundle is unaffected: the package maps undici to its own
+    // undici-browser.js. Private stores (hosted mod files) need >= 2.8.
+    serverComponentsExternalPackages: ['@vercel/blob'],
+  },
+  // The browser bundle and the SSR pass over 'use client' components
+  // (ImageUploadButton, HostedFileUpload) still bundle @vercel/blob/client;
+  // the externals list above does not reach them, and Next 14.0 ignores the
+  // package's object-form `browser` field. Apply that mapping by hand: undici
+  // → dist/undici-browser.js, which is globalThis.fetch (browsers, Node 18+).
+  // Scoped to undici imports *from @vercel/blob only*.
+  webpack: (config, { webpack }) => {
+    const path = require('path');
+    const blobDist = /[\\/]node_modules[\\/]@vercel[\\/]blob[\\/]dist(?:[\\/]|$)/;
+    const shim = path.join(__dirname, 'node_modules/@vercel/blob/dist/undici-browser.js');
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(/^undici$/, (resource) => {
+        if (resource.context && blobDist.test(resource.context)) resource.request = shim;
+      }),
+    );
+    return config;
   },
   images: {
     remotePatterns: [
@@ -68,6 +92,25 @@ const nextConfig = {
           },
         ],
       },
+      // Hosted mod files: per-user, per-ticket and admin responses must never
+      // be stored by the CDN. These come after '/api/:path*' on purpose: when
+      // two entries set the same key, the later one wins. Guarded by
+      // __tests__/unit/mod-files-guards.test.ts.
+      ...[
+        '/api/creator/uploads/:path*',
+        '/api/creator/submissions/:path*',
+        '/api/admin/submissions/:path*',
+        '/api/admin/mod-uploads/:path*',
+        '/api/mods/:id/download-ticket/:path*',
+        '/api/mods/:id/download/:path*',
+        '/api/cron/mod-upload-cleanup/:path*',
+      ].map((source) => ({
+        source,
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store' },
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+        ],
+      })),
     ];
   },
   // Reduce bundle size by not including source maps in production

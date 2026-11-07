@@ -18,6 +18,26 @@ export async function GET(request: NextRequest) {
     const submissions = await prisma.modSubmission.findMany({
       where: { status },
       orderBy: { createdAt: 'desc' },
+      include: {
+        // Review facts for a hosted file. Never the blob path: the admin
+        // downloads through /api/admin/mod-uploads/[id]/review-url/.
+        upload: {
+          select: {
+            id: true,
+            originalName: true,
+            downloadName: true,
+            kind: true,
+            sizeBytes: true,
+            sha256: true,
+            status: true,
+            validationError: true,
+            containsScript: true,
+            inspection: true,
+            blobDeletedAt: true,
+            createdAt: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({ submissions });
