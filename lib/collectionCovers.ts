@@ -30,6 +30,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/662f8614-4c93-4d71-a0f7-db9dca7ea088-1.png",
     "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/1-robin-bedroom-set-1769368650934-0.jpg",
   ],
+  "cas-backgrounds": [
+    "https://images.surferseo.art/dac15196-29a5-4270-80cf-e6ea4088a07f.jpeg",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/01/Screen-Shot-2024-01-04-at-5.18.11-PM-1024x548.png",
+    "https://images.surferseo.art/e07d958d-d39e-42de-ad55-d96366d82540.png",
+  ],
   "cc": [
     "https://images.surferseo.art/8102bc3f-5909-409f-9592-6199434de136.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2021/11/sims-4-3d-eyelashes-ver-5-820x1024.jpg",
@@ -64,6 +69,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/aeb04de5-51fb-4f71-8efa-cb21f2e9893c-1.png",
     "https://musthavemods.com/wp-content/uploads/2025/03/75f8e4ec-1a29-459e-b608-c6b247714fb4-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/9296a107-c166-4536-9738-f8d132bd91d8.jpg",
+  ],
+  "facial-hair-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/05/0fc7bb4a-72b0-4cd9-ac64-b5136b7f6324-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/019bc023-18e5-4257-9cf8-0d2943685d6c.jpg",
+    "https://musthavemods.com/wp-content/uploads/2025/03/2645e7d8-20f6-452d-8bea-3f06be551313.jpg",
   ],
   "female-clothes": [
     "https://images.surferseo.art/6c68d4f0-a4e0-489e-b253-a2f8a939ea74.png",

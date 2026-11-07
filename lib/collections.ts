@@ -281,7 +281,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // skin-details -> kids-cc (2026-09-21): hair is the biggest category
     // inside the kids grid (164 of 686), so this is the strongest topical
     // edge available, and skin-details keeps 5 inbound without it.
-    related: ['kids-cc', 'female-clothes', 'male-clothes'],
+    // Sage, 2026-11-07 (E369: female-clothes -> facial-hair-cc; the old target keeps enough inbound).
+    related: ['kids-cc', 'facial-hair-cc', 'male-clothes'],
     blogUrl: '/sims-4-hairstyles-cc/',
     // E311 (2026-11-01): the hair articles that already rank for this
     // family, GSC 10-02→10-29 clicks / impressions / position:
@@ -299,6 +300,46 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-cc-curly-hair/', label: 'Sims 4 curly hair CC' },
       { href: '/sims-4-black-hair/', label: 'Sims 4 Black hair CC' },
       { href: '/afro-hair-sims-4/', label: 'Sims 4 afro hair CC' },
+    ],
+  },
+  {
+    // Sage, 2026-11-07 (E369, Tier 0 — registry entry in the existing
+    // pattern). `beard` and `facial-hair` (87 SFW rows) were in no collection
+    // except the `cc` hub, which is not a membership, so every one of these
+    // mod pages had no collection breadcrumb at all. Placement is free:
+    // neither type appears in any other entry's filter.
+    //
+    // Demand: GA4 2026-10-23 → 11-05 landing sessions on the facial-hair
+    // articles: /sims-4-facial-hair-cc/ 60 search + 72 social,
+    // /sims-4-male-urban-facial-hair/ 13 search + 135 social. No catalog page
+    // currently answers browse intent for beards.
+    //
+    // Eligibility: all 92 rows read by hand on 11-07; 5 off-type (a skin
+    // pack, two Sim downloads, a commercial lot, a full-body outfit) were
+    // pinned and applied (hand-audited-content-types.ts § E369, ledger
+    // 10d4444d), so 87 rows, 0 adult titles. Inbound: male-clothes and
+    // hair-cc (both repointed from female-clothes, which keeps 4).
+    slug: 'facial-hair-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Beards & Facial Hair',
+    heading: 'Sims 4 Beards & Facial Hair CC',
+    metaTitle: 'Sims 4 Beard & Facial Hair CC — Browse 85+ Beards, Goatees & Stubble | MustHaveMods',
+    metaDescription:
+      'Browse 85+ Sims 4 beard and facial hair CC in one grid: full beards, goatees, stubble, moustaches, curly and braided beards, and beard-and-hair sets, sorted by downloads.',
+    tagline: 'Full beards, goatees, stubble and moustaches',
+    intro:
+      'Facial hair is the part of a male Sim the base game does least with. There are a few beards, a couple of goatees and some stubble, all in the same handful of textures, and they sit on the face like a sticker. Beard CC is how people get a beard that looks grown rather than painted on: thicker meshes, real texture, and shapes the game never shipped.\n\nThis page is only beards and facial hair, 87 of them sorted by downloads. A skin pack, two full Sim downloads, a lot and an outfit used to sit in this facet, and we moved them out, so every card here is something you add in the facial hair slot. The shelf runs from short stubble and heavy stubble to goatees, full beards, long wizard and Viking beards, a Santa beard and a single moustache, plus curly beards and sets that pair a beard with braided locs, twists or cornrows.\n\nIgorStory and MagicHand made nearly a fifth of the page between them, with Seleng, David Mtv2, Veiga Sims and LEXEL S next.\n\nTwo practical notes. Check each creator\'s page for style before you download, because a high-detail alpha beard can look out of place on a smooth maxis match skin. And if a beard looks wrong in the CAS preview, try its other swatches before giving up on it, since colour is usually the problem.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the beards everyone already uses, or scroll for the one-off sets the big roundups miss.',
+    filter: { contentTypeIn: ['beard', 'facial-hair'] },
+    expectedCount: 87,
+    related: ['hair-cc', 'male-clothes', 'skin-details'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // facial hair" intent; this page owns browse intent.
+    // /sims-4-facial-hair-cc/ is live (HTTP 200, verified 2026-11-07) and is
+    // not in vercel.json.
+    blogUrl: '/sims-4-facial-hair-cc/',
+    guides: [
+      { href: '/sims-4-male-urban-facial-hair/', label: 'Sims 4 male urban facial hair' },
     ],
   },
   {
@@ -452,7 +493,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' so the unified clothes hub
     // has an anchored inbound source (hair-cc keeps 4 inbound: skin-details,
     // shoes-cc, y2k-cc, makeup-cc).
-    related: ['female-clothes', 'shoes-cc', 'clothes-cc'],
+    // Sage, 2026-11-07 (E369: female-clothes -> facial-hair-cc; the old target keeps enough inbound).
+    related: ['facial-hair-cc', 'shoes-cc', 'clothes-cc'],
     // No blogUrl: /sims-4-male-clothes-cc/ 301s here (2026-07-03).
   },
   {
@@ -753,7 +795,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-30 (E296): 'pregnancy-mods' → 'gallery-poses' (pregnancy-mods
     // keeps 2 inbound: body-presets, kids-cc). The gallery/CAS sub-page is
     // the narrower answer to the queries this head-term title owns.
-    related: ['gshade-presets', 'wedding-cc', 'gallery-poses'],
+    // Sage, 2026-11-07 (E368: wedding-cc -> cas-backgrounds; the old target keeps enough inbound).
+    related: ['gshade-presets', 'cas-backgrounds', 'gallery-poses'],
     // NOT /sims-4-gallery-poses/ — that article 301s here. The
     // general poses article is the still-live editorial companion.
     blogUrl: '/sims-4-poses/',
@@ -867,10 +910,60 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     blogUrl: '/sims-4-makeup-cc/',
   },
   {
-    // Placement is free here: neither `loading-screen` nor `cas-background`
-    // appears in any other entry's `contentType` / `contentTypeIn`, so
-    // `filterSpecificity()` has nothing to tie-break and all 269 mod detail
-    // pages get a first-ever collection breadcrumb. Appended at the end.
+    // Sage, 2026-11-07 (E368, Tier 0 — registry entry in the existing
+    // pattern). The narrow page inside the loading-screens union, the way
+    // eyes-cc sits inside makeup-cc. It must stay BEFORE loading-screens
+    // (collection-primary-crumb-order.test.ts), or the union keeps the
+    // primary crumb on these 102 mod pages.
+    //
+    // Demand: five live CAS-background articles and no browse page. GA4
+    // 2026-10-23 → 11-05 landing sessions: /sims-4-cas-background-cc/ 457
+    // social + 9 search, /sims-4-cas-mirror-background/ 416 + 38,
+    // /sims-4-cas-background/ 221 + 17, /how-to-change-sims-4-cas-backgrounds/
+    // 13 search, the Valentine and Christmas CAS-background posts 60 + 12.
+    // GSC 10-08 → 11-04: "<colour/season> background cc" queries ≈215
+    // impressions at position 26–78, 82 of them on /sims-4-cas-background-cc/
+    // at 41.1 — a grid sorted by downloads answers that browse intent and an
+    // article cannot. The parent union draws 154 search + 9 AI landings in
+    // the same window.
+    //
+    // Eligibility: all 107 SFW `cas-background` rows read by hand on
+    // 11-07; 5 off-type (4 loading/main-menu screens, 1 nail set) were pinned
+    // and applied (hand-audited-content-types.ts § E368, ledger 10d4444d), so
+    // 102 rows, 0 adult titles. Inbound: poses (repointed from wedding-cc,
+    // which keeps jewelry-cc + heels-cc) and gshade-presets (repointed from
+    // poses, which keeps 5) — the screenshot pages, where a CAS backdrop is
+    // the next thing people swap.
+    slug: 'cas-backgrounds',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'CAS Backgrounds',
+    heading: 'Sims 4 CAS Backgrounds',
+    metaTitle: 'Sims 4 CAS Backgrounds — Browse 100+ CAS Rooms & Backdrops | MustHaveMods',
+    metaDescription:
+      'Browse 100+ Sims 4 CAS backgrounds in one grid: plain studio backdrops, styled CAS rooms with mirrors, Y2K, Sanrio, winter and Valentine sets that replace the grey Create-A-Sim room, sorted by downloads.',
+    tagline: 'Studio backdrops, mirror rooms and seasonal sets for Create-A-Sim',
+    intro:
+      'The CAS background is the room your Sim stands in while you build them, and the base game gives you one: a flat grey-blue void with a soft spotlight. It is fine for judging a skin tone, and it is the reason so many CAS screenshots look unfinished. A CAS background replacement swaps that room for something else, from a clean single-colour studio to a fully furnished bedroom with a mirror on the wall.\n\nThis page is only CAS backgrounds: 102 of them, sorted by downloads. Loading screens and main-menu overrides used to sit in the same pile, and we moved them to the loading screens page, so everything here changes the CAS room and nothing else. The grid splits roughly three ways. Plain backdrops: solid pinks, greens, pastels, black and white, and pattern walls for people who want the Sim and nothing else in frame. Styled rooms: closets, attics, bedrooms, a library, a recording studio, a vinyl store and beaches, several of them with a mirror so you can see the back of an outfit. And themed sets: Y2K, Sanrio, anime, Disney, pride, and a seasonal run of winter and Valentine\'s Day rooms.\n\nEllcrze and PILARLEON23 made nearly a fifth of the page between them, with Katverse and Shasims next.\n\nTwo practical notes. Most CAS backgrounds replace the same game file, so only one works at a time. If you install two, the one that loads last wins. And a busy room with coloured lighting makes a skin overlay or a makeup swatch harder to judge, so a lot of people keep a plain backdrop for building and a styled room for the screenshot.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the rooms people already use, or scroll for the single-file finds.',
+    filter: { contentType: 'cas-background' },
+    expectedCount: 102,
+    related: ['loading-screens', 'gallery-poses', 'gshade-presets'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best CAS
+    // backgrounds" intent; this page owns browse intent.
+    // /sims-4-cas-background-cc/ is live (HTTP 200, verified 2026-11-07) and
+    // is not in vercel.json.
+    blogUrl: '/sims-4-cas-background-cc/',
+    guides: [
+      { href: '/sims-4-cas-mirror-background/', label: 'Sims 4 CAS backgrounds with a mirror' },
+      { href: '/sims-4-cas-background/', label: 'More Sims 4 CAS background picks' },
+      { href: '/how-to-change-sims-4-cas-backgrounds/', label: 'How to change your Sims 4 CAS background' },
+    ],
+  },
+  {
+    // Placement: `cas-background` is also in cas-backgrounds above, the
+    // narrower page, which must stay earlier in the registry so it keeps the
+    // primary crumb on those mods (E368). `loading-screen` appears nowhere
+    // else.
     slug: 'loading-screens',
     game: 'Sims 4',
     gameSlug: 'sims-4',
@@ -1403,7 +1496,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-11-05 (E343): 'skin-details' → 'plumbob-overrides' (skin-details
     // keeps 4 inbound). Both are screen-look swaps a screenshotter installs
     // together; this page is the second inbound that clears MIN_INBOUND.
-    related: ['poses', 'loading-screens', 'plumbob-overrides'],
+    // Sage, 2026-11-07 (E368: poses -> cas-backgrounds; the old target keeps enough inbound).
+    related: ['cas-backgrounds', 'loading-screens', 'plumbob-overrides'],
     // Differentiated pair: /sims-4-gshade-presets/ keeps the editorial
     // "best presets" intent (202 impressions / 12 clicks at 17.1 over the
     // 28d to 2026-10-24), this page owns browse/filter intent. The sibling

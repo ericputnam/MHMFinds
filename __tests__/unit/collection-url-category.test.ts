@@ -37,6 +37,14 @@ import { detectContentTypeFromUrl } from '../../lib/services/mhmScraperUtils';
  */
 const KNOWN_GAPS: Record<string, { urlType: string; why: string }> = {
   // E235: emptied — clutter (was `decor`) and body-presets (was `preset`) fixed.
+  'facial-hair-cc': {
+    urlType: 'hair',
+    why:
+      'Sage E369 (2026-11-07): /sims-4-facial-hair-cc/ maps to `hair` because the URL map matches ' +
+      '"hair" before any beard/facial-hair rule. Changing it moves the ingest fallback for every ' +
+      'facial-hair post and needs its own whole-catalog replay (E235 pattern) — queued for Rowan, ' +
+      'not widened into the hub PR.',
+  },
 };
 
 function typesOf(filter: { contentType?: string; contentTypeIn?: string[] }): string[] {
