@@ -40,6 +40,7 @@ import { collectionHref, type CollectionDefinition } from '../../../../lib/colle
 import type { CollectionCreator } from '../../../../lib/collectionCreators';
 import { creatorHref } from '../../../../lib/creatorSlug';
 import type { ModLink } from '../../../../lib/seo/collectionMoreLinks';
+import { blogTwinLinkText } from '../../../../lib/seo/blogTwinLabel';
 import { GRID_FAVORITE_SOURCES } from '../../../../lib/capture/gridFavorite';
 import { useGridFavoriteCapture } from '../../../../lib/capture/useGridFavoriteCapture';
 
@@ -190,8 +191,10 @@ export default function CollectionPageClient({
               <p className="coll-reading">
                 Related reading:{' '}
                 {collection.blogUrl && (
+                  // E367: descriptive anchor from the twin's slug, not
+                  // "Full article on the blog" on all 34 hubs.
                   <a href={collection.blogUrl} target="_blank" rel="noopener noreferrer">
-                    Full article on the blog →
+                    {blogTwinLinkText(collection.blogUrl)}
                   </a>
                 )}
                 {/* E203: adjacent guides with no hub of their own (first

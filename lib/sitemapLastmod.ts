@@ -31,9 +31,10 @@ export const APP_LASTMOD = '2026-11-06';
 // (E323, #442 1bec59da — merged with this guard red, so 35 hub URLs
 // advertised 11-01 for a page that changed 11-02; E329 bumped it 11-04);
 // "Share this list" button in the intro header 2026-11-06 (E352);
-// CollectionPage JSON-LD gains dateModified 2026-11-06 (E354).
+// CollectionPage JSON-LD gains dateModified 2026-11-06 (E354);
+// descriptive anchor on the blog-twin link 2026-11-07 (E367).
 // Bump when the template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-06';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-07';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
@@ -86,7 +87,12 @@ export const TEMPLATE_LASTMOD_SOURCES: ReadonlyArray<{
   {
     name: 'COLLECTION_TEMPLATE_LASTMOD',
     lastmod: COLLECTION_TEMPLATE_LASTMOD,
-    paths: ['app/games/[game]/[topic]', 'lib/seo/collectionMetadata.ts', 'lib/seo/collectionMoreLinks.ts'],
+    paths: [
+      'app/games/[game]/[topic]',
+      'lib/seo/collectionMetadata.ts',
+      'lib/seo/collectionMoreLinks.ts',
+      'lib/seo/blogTwinLabel.ts',
+    ],
   },
   {
     name: 'CREATOR_TEMPLATE_LASTMOD',
