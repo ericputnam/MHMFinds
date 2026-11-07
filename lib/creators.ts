@@ -191,7 +191,8 @@ export interface CreatorPageData {
   /**
    * E355: newest createdAt over the same rows the page lists (ISO string,
    * Dates do not cross the RSC boundary), or null. The page's ProfilePage
-   * dateModified is creatorLastmod(this) — the function /sitemap-creators.xml
+   * dateModified is creatorDateModified(this), the DateTime form of
+   * creatorLastmod(this) — the function /sitemap-creators.xml
    * applies to listCreators().latest, which is MAX(createdAt) over the same
    * SFW author variants.
    */

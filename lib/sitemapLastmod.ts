@@ -45,8 +45,10 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-07';
 // never derive it from "today". Email-box cadence copy 2026-11-01 (E314).
 // Per-route share card 2026-11-05 (E337, #467 — merged with this guard red);
 // suffix-split creator spellings folded 2026-11-06 (E356, #471). Bumped by E364;
-// ProfilePage JSON-LD gains dateModified 2026-11-06 (E355).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-06';
+// ProfilePage JSON-LD gains dateModified 2026-11-06 (E355); that dateModified
+// becomes a full ISO 8601 DateTime 2026-11-07 (Search Console "Invalid
+// datetime value for dateModified" on Profile pages).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-07';
 
 /**
  * Which source files each template constant stands for (E303, Sage,
@@ -120,6 +122,27 @@ export const TEMPLATE_LASTMOD_SOURCES: ReadonlyArray<{
 export function creatorLastmod(latest: Date | string | null | undefined): string {
   const newest = latest ? toDateStamp(new Date(latest)) : null;
   return laterOf(CREATOR_TEMPLATE_LASTMOD, newest);
+}
+
+/**
+ * ProfilePage JSON-LD `dateModified` for /creator/[slug]/: the same day
+ * creatorLastmod() gives /sitemap-creators.xml, as a full ISO 8601 DateTime
+ * (midnight UTC, explicit offset).
+ *
+ * Google types ProfilePage dateCreated/dateModified as DateTime, not Date.
+ * E355 emitted the bare YYYY-MM-DD stamp, and on 2026-11-07 Search Console
+ * reported "Invalid datetime value for \"dateModified\"" on Profile pages.
+ * The sitemap keeps the date-only stamp (W3C Datetime allows it there); only
+ * the JSON-LD needs the time part, and the day is unchanged so the two still agree.
+ */
+export function creatorDateModified(latest: Date | string | null | undefined): string {
+  return toJsonLdDateTime(creatorLastmod(latest));
+}
+
+/** YYYY-MM-DD stamp → ISO 8601 DateTime at 00:00:00 UTC ("2026-11-07T00:00:00+00:00"). */
+export function toJsonLdDateTime(stamp: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(stamp)) throw new Error(`not a YYYY-MM-DD stamp: ${stamp}`);
+  return `${stamp}T00:00:00+00:00`;
 }
 
 /** YYYY-MM-DD in UTC. */
