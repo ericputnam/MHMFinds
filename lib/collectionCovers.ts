@@ -115,6 +115,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2021/09/sims-4-cc-shoes-strappy-leather-heels.png",
     "https://blog.musthavemods.com/wp-content/uploads/2024/12/3af19f9a-10c5-464f-a67b-b6ece74dad33-1.png",
   ],
+  "hello-kitty-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/80205747-8a08-4c3d-9832-98228cfe3420-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/14e70d16-1ec8-4135-aa7b-bd731d8817a8-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/fe71ebbf-4900-4ba7-8387-32996751493d.jpg",
+  ],
   "holidays-cc": [
     "https://musthavemods.com/wp-content/uploads/2025/12/w-920h-690-3383266.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/05/6adc521c-fb64-4554-a038-8c7113c48924.jpg",

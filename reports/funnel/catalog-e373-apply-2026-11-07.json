@@ -1,0 +1,55 @@
+{
+ "writtenAt": "2026-11-07T11:45:31.612Z",
+ "mode": "apply",
+ "facets": [
+  "full-body",
+  "gameplay-mod",
+  "skin",
+  "tops",
+  "null"
+ ],
+ "rows": [
+  {
+   "id": "cmil19n1w00awoxeehz3k2swv",
+   "title": "Hello Kitty Vanity",
+   "from": "full-body",
+   "to": "furniture"
+  },
+  {
+   "id": "cmkygcc0900yaoxhck170zeon",
+   "title": "ACPC Sanrio Plushies Set",
+   "from": "full-body",
+   "to": "decor"
+  },
+  {
+   "id": "cmil19bzj00aroxeefathhvyw",
+   "title": "Hello Kitty Swimsuit",
+   "from": "skin",
+   "to": "full-body"
+  },
+  {
+   "id": "cmim8zmpw019ooxy8oqut3tui",
+   "title": "Sanrio Klaws",
+   "from": "tops",
+   "to": "nails"
+  },
+  {
+   "id": "cmil18pk200agoxeezpqpt8od",
+   "title": "My Melody and Sweet Piano Bag",
+   "from": "gameplay-mod",
+   "to": "accessories"
+  },
+  {
+   "id": "cmw38p51j2n5axjdzvyersmw4",
+   "title": "Cute and kawaii doll collection",
+   "from": null,
+   "to": "decor"
+  },
+  {
+   "id": "cmsmbkz1600a6oxeuec8c1igj",
+   "title": "Cinnamoroll & Mocha Recolor Pajama Set",
+   "from": null,
+   "to": "full-body"
+  }
+ ]
+}

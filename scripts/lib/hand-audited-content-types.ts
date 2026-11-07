@@ -1306,6 +1306,20 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmsmc6y4x00m0oxeuzhd606xj: { contentType: null, why: "E369 \"Erik Sim Download\" — NULL, was beard; a Sim download (sims-4-male-sim-download); E207 Sim -> NULL" },
   cmsmcuiib00yioxeuh962c57w: { contentType: "commercial", why: "E369 \"His & Hers Salon and Barber\" — commercial, was beard; desc: \"a fully furnished community lot\" (source: sims-4-salon-cc)" },
   cmsmci7qw00s4oxeuu6e8m4op: { contentType: "full-body", why: "E369 \"Jack Sparrow- Pirates of the Caribbean\" — full-body, was facial-hair; desc: \"custom outfit includes … hair, facial hair, layered pirate clothing\" (source: sims-4-pirate-cc)" },
+
+  // ── Audited 2026-11-07 (Rowan, E373). Six off-type / NULL rows in the
+  //    29-row hello-kitty-cc grid, every row of which was read for the sanrio
+  //    theme, plus the Atino00 kawaii doll row Quinn flagged after E328 (NULL
+  //    breaks E328's keep rule). Six different reasons → hand pins (E67 rule).
+  //    Each decided from the title, then the row's own description. The 4
+  //    plumbob/phone-override NULLs in the same grid are left NULL on purpose:
+  //    no content type fits a UI override (E343).
+  cmw38p51j2n5axjdzvyersmw4: { contentType: "decor", why: "E373 \"Cute and kawaii doll collection\" — decor, was NULL; CurseForge build-buy (/sims4/build-buy/), desc: \"this adorable collection of decorative dolls\"; same set as the E328 decor pins" },
+  cmil19n1w00awoxeehz3k2swv: { contentType: "furniture", why: "E373 \"Hello Kitty Vanity\" — furniture, was full-body; desc: \"one of the best makeup vanities … a mirror shaped like Hello Kitty, a desk, and a chair\" (source: sims-4-hello-kitty-cc)" },
+  cmil18pk200agoxeezpqpt8od: { contentType: "accessories", why: "E373 \"My Melody and Sweet Piano Bag\" — accessories, was gameplay-mod; desc: \"this bag … You can wear it on the left and right hand\"" },
+  cmil19bzj00aroxeefathhvyw: { contentType: "full-body", why: "E373 \"Hello Kitty Swimsuit\" — full-body, was skin (\"showing off some skin\" in the desc); desc: a swimsuit in 10 swatches" },
+  cmim8zmpw019ooxy8oqut3tui: { contentType: "nails", why: "E373 \"Sanrio Klaws\" — nails, was tops; desc: \"these are long claws with cute designs … these nails may not be everyone's style\"" },
+  cmkygcc0900yaoxhck170zeon: { contentType: "decor", why: "E373 \"ACPC Sanrio Plushies Set\" — decor, was full-body; simdertalia's Animal Crossing Pocket Camp item conversions, \"8 items\", plushies are objects" },
 };
 
 /**

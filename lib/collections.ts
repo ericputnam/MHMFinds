@@ -1100,7 +1100,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentType: 'nails',
     },
     expectedCount: 145,
-    related: ['makeup-cc', 'jewelry-cc', 'skin-details'],
+    // 2026-11-07 (E373): 'skin-details' → 'hello-kitty-cc' (skin-details
+    // keeps 3 inbound). Hello Kitty / Sanrio nail sets are the most
+    // downloaded rows on that page (4 of its 29).
+    related: ['makeup-cc', 'jewelry-cc', 'hello-kitty-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best nails
     // cc" intent, this page owns browse/filter intent. /sims-4-nails-cc/ is
     // live (HTTP 200, no redirect, verified 2026-09-20) and appears in neither
@@ -1691,7 +1694,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'The plumbob is the one piece of the Sims 4 interface you see in every single frame of play, and the base game gives you exactly one: a green diamond that turns yellow or red with your Sim\'s mood. A plumbob override swaps that diamond for something else — a different colour, a flat 2D version, or a completely different shape floating over your active Sim\'s head — without touching anything else in the game.\n\nThis collection is every plumbob override in our catalog in one grid, and every one of them says plumbob in its own title. That last part is deliberate: a plumbob T-shirt or a plumbob-shaped desk ornament is merch, not a mod, and is left off. The shelf splits two ways. Shape swaps: stars, angel wings, paw prints, fish cakes and leaves, Hello Kitty, My Melody, Pochacco and other Sanrio characters, and one-offs like a golden card from Sultan\'s Game. Recolors: white, baby pink, dark green, Valentine and fruit-themed plumbobs, plus the loading-screen plumbob recolors that creators release alongside a matching loading screen.\n\nTwo practical notes. Plumbob overrides replace the same game asset, so only one works at a time — if you install two, the one that loads last wins, and the usual symptom is the "wrong" one showing up rather than an error. And some overrides only affect the colour of the active Sim\'s plumbob if you change the playeractivecolor values in the [Plumbob] section of Default.ini in your Bin folder; the creator page says when that applies.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the ones people already run, or scroll for the single-file finds the big roundups never reach.',
     filter: { themesAny: ['plumbob'] },
     expectedCount: 26,
-    related: ['loading-screens', 'gshade-presets', 'poses'],
+    // 2026-11-07 (E373): 'poses' → 'hello-kitty-cc' (poses keeps 5
+    // inbound). 5 of the 26 plumbobs are Sanrio (Hello Kitty, My Melody,
+    // Pochacco, Sanrio ramen bowl) and all of them are on that page too.
+    related: ['loading-screens', 'gshade-presets', 'hello-kitty-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // plumbob replacements" intent (156 landing sessions / 7d, position 9.1),
     // this page owns browse intent. /sims-4-plumbob-replacements/ is live
@@ -1734,6 +1740,37 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // owns browse intent. /sims-4-heels-cc/ is live (HTTP 200, verified
     // 2026-11-06) and is not in vercel.json.
     blogUrl: '/sims-4-heels-cc/',
+  },
+  {
+    // Rowan, 2026-11-07 (E373, Tier 0 — registry entry in the existing
+    // pattern). GSC 10-07→11-04: the legacy article /sims-4-hello-kitty-cc/
+    // drew 1,230 impressions / 18 clicks at position 7.9 (1.5% CTR) on the
+    // "hello kitty sims 4 cc" / "sims 4 sanrio cc" family. No browse page
+    // existed; 0 rows carried a Sanrio tag and the 29 rows sit in 13 content
+    // types, so no type facet could back it. The theme is TITLE-ONLY
+    // (lib/sanrioThemeRules.ts, keyword counts and rejections in its
+    // comment); 29 added / 0 stripped on 2026-11-07, every row read.
+    // Inbound: nails-cc (was skin-details, keeps 3) and plumbob-overrides
+    // (was poses, keeps 5) — 4 of the 29 are nail sets and 4 are plumbobs.
+    slug: 'hello-kitty-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Hello Kitty CC',
+    heading: 'Sims 4 Hello Kitty & Sanrio CC',
+    metaTitle: 'Sims 4 Hello Kitty CC — Browse 25+ Sanrio Clothes, Nails, Decor & Plumbobs | MustHaveMods',
+    metaDescription:
+      'Browse 25+ Sims 4 Hello Kitty and Sanrio CC in one grid: My Melody, Cinnamoroll, Pompompurin and Pochacco nails, outfits, vanities, posters, CAS backgrounds and plumbob overrides, sorted by downloads.',
+    tagline: 'Hello Kitty, My Melody, Cinnamoroll and the rest of the Sanrio crew',
+    intro:
+      'Hello Kitty CC is one of those niches every Sims player either ignores completely or collects obsessively. The base game has nothing Sanrio in it, so every bow-wearing vanity, pastel fridge and Cinnamoroll pajama set in a Sims 4 save comes from a custom content creator, and they are scattered across dozens of Patreon posts, Tumblr pages and nail-set roundups.\n\nThis collection puts them in one grid. Every item here names Hello Kitty, Sanrio or a Sanrio character in its own title: My Melody, Cinnamoroll, Pompompurin, Pochacco and friends. That rule is deliberate. A generic cat-ear headband or a "kitty" print dress is not Hello Kitty, and "kawaii" is an aesthetic, not the brand, so neither shows up here. If you want the wider pastel look, the Y2K page is the next stop.\n\nThe shelf splits three ways. Build/buy: a Hello Kitty makeup vanity with a matching chair, a desk set with a PC, mirror and plush head, a fridge, posters, a My Melody wallpaper and a set of Sanrio plushies. CAS: Hello Kitty and Sanrio nail sets (the most downloaded items on the page), sweaters, tops, a swimsuit, jeans, bucket hats, bags, Pompompurin and Cinnamoroll sleepwear, plus Sanrio-themed CAS backgrounds for your Create-a-Sim screen. Interface: Hello Kitty, My Melody, Pochacco and Sanrio ramen-bowl plumbob overrides, and a My Melody phone override.\n\nTwo practical notes. Plumbob overrides replace the same game file, so only one works at a time; pick a favourite. And most of these are single releases from small creators, so sort by downloads to see what other players already use, then scroll for the one-off finds.\n\nEverything in this grid is Sims 4 only and filtered to SFW.',
+    filter: { themesAny: ['sanrio'] },
+    expectedCount: 29,
+    related: ['plumbob-overrides', 'nails-cc', 'y2k-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // Hello Kitty CC" intent (1,230 impr / 18 clk, pos 7.9, 28d to 11-04);
+    // this page owns browse intent. /sims-4-hello-kitty-cc/ is live (HTTP
+    // 200, verified 2026-11-07) and is not in vercel.json.
+    blogUrl: '/sims-4-hello-kitty-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
