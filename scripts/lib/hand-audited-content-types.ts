@@ -1288,6 +1288,24 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmim8zmls019moxy8t9vqudcj: { contentType: "nails", why: "E362 \"Shorty French Pedi\" — nails, was shoes (shoes-cc #9); desc: \"a cute French pedi for your toes in five stunning swatches\" — a toenail set, nails-cc territory" },
   cmijp0gzp00tpoxc8iab4hkwx: { contentType: "furniture", why: "E362 \"Luxury Custom Closet\" — furniture, was shoes (shoes-cc #24); desc: \"9 items, which include dressers, shelves, and wardrobes\" (source: best-sims-4-closet-cc)" },
   cmim9m9mf00f3oxy7pxfc7yb8: { contentType: "shoes", why: "E362 \"Edgy Sims 4 CC Heels\" — shoes, was residential; desc: \"You can never have too many cc shoes … The black heels\", download is a Patreon shoes post (source: sims-4-grunge-cc)" },
+
+  // ── Audited 2026-11-07 (Sage, E368/E369). Every row of the two new hubs'
+  //    facets was read by hand before the pages shipped: all 107
+  //    `cas-background` rows and all 92 `beard` + `facial-hair` rows. These
+  //    are the off-type ones, each against its own description. Kept on
+  //    purpose: "Realistic CAS Room Lighting" (a lighting overlay made for
+  //    CAS rooms, a fair find on the backgrounds page), "Intro" (desc: "an
+  //    elegant beard pack"), and the hair-plus-beard combo sets.
+  cmmvarujo00bzoxzglhj0z6ij: { contentType: "loading-screen", why: "E368 \"2-Rose Themed Intro/Loading/Main Menu Screens\" — loading-screen, was cas-background; desc: \"Intro, Loading, and Main Menu Screens pack\" (source: sims-4-valentines-cas-backgrounds)" },
+  cmmvarulo00c0oxzg10xorwjg: { contentType: "loading-screen", why: "E368 \"Valentine’s Day TS4 Loading Screen\" — loading-screen, was cas-background; title is the type (source: sims-4-valentines-cas-backgrounds)" },
+  cmmvartw700btoxzgq59m778o: { contentType: "loading-screen", why: "E368 \"Valentine’s Main Menu Override\" — loading-screen, was cas-background; desc: \"replacement that gives your Sims 4 start screen\" — main-menu screens sit with loading screens (same loading-screens hub)" },
+  cmttzhexo004soxfe3jjlyh71: { contentType: "loading-screen", why: "E368 \"Valentine Plumbobs\" — loading-screen, was cas-background; desc: \"loading screen replacements\"; 10 of the 26 plumbob rows are already loading-screen" },
+  cmim9r2bs001xox56jprvmpjy: { contentType: "nails", why: "E368 \"Sims 4 Pride Nails\" — nails, was cas-background; desc: \"these pride nails … 14 swatches\" (source: sims-4-nails-cc)" },
+  cmmvaq02q006loxzgf42xtjml: { contentType: "skin", why: "E369 \"Class of Melanin (Male Version) Skin Pack v2\" — skin, was facial-hair (#3 by downloads); desc: \"a standout skin detail pack … overlays\" (source: black-sims-4-cc)" },
+  cmsmc6dgk00lloxeudlvilok5: { contentType: null, why: "E369 \"Ryder Sim\" — NULL, was facial-hair; a Sim download (sims-4-male-sim-download); E207 Sim -> NULL" },
+  cmsmc6y4x00m0oxeuzhd606xj: { contentType: null, why: "E369 \"Erik Sim Download\" — NULL, was beard; a Sim download (sims-4-male-sim-download); E207 Sim -> NULL" },
+  cmsmcuiib00yioxeuh962c57w: { contentType: "commercial", why: "E369 \"His & Hers Salon and Barber\" — commercial, was beard; desc: \"a fully furnished community lot\" (source: sims-4-salon-cc)" },
+  cmsmci7qw00s4oxeuu6e8m4op: { contentType: "full-body", why: "E369 \"Jack Sparrow- Pirates of the Caribbean\" — full-body, was facial-hair; desc: \"custom outfit includes … hair, facial hair, layered pirate clothing\" (source: sims-4-pirate-cc)" },
 };
 
 /**

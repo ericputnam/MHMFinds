@@ -1,0 +1,71 @@
+{
+ "writtenAt": "2026-11-07T11:46:30.689Z",
+ "mode": "apply",
+ "facets": [
+  "cas-background",
+  "beard",
+  "facial-hair"
+ ],
+ "rows": [
+  {
+   "id": "cmmvaq02q006loxzgf42xtjml",
+   "title": "Class of Melanin (Male Version) Skin Pack v2",
+   "from": "facial-hair",
+   "to": "skin"
+  },
+  {
+   "id": "cmsmci7qw00s4oxeuu6e8m4op",
+   "title": "Jack Sparrow- Pirates of the Caribbean",
+   "from": "facial-hair",
+   "to": "full-body"
+  },
+  {
+   "id": "cmmvarujo00bzoxzglhj0z6ij",
+   "title": "2-Rose Themed Intro/Loading/Main Menu Screens",
+   "from": "cas-background",
+   "to": "loading-screen"
+  },
+  {
+   "id": "cmsmc6dgk00lloxeudlvilok5",
+   "title": "Ryder Sim",
+   "from": "facial-hair",
+   "to": null
+  },
+  {
+   "id": "cmsmc6y4x00m0oxeuzhd606xj",
+   "title": "Erik Sim Download",
+   "from": "beard",
+   "to": null
+  },
+  {
+   "id": "cmsmcuiib00yioxeuh962c57w",
+   "title": "His & Hers Salon and Barber",
+   "from": "beard",
+   "to": "commercial"
+  },
+  {
+   "id": "cmim9r2bs001xox56jprvmpjy",
+   "title": "Sims 4 Pride Nails",
+   "from": "cas-background",
+   "to": "nails"
+  },
+  {
+   "id": "cmmvartw700btoxzgq59m778o",
+   "title": "Valentine’s Main Menu Override",
+   "from": "cas-background",
+   "to": "loading-screen"
+  },
+  {
+   "id": "cmmvarulo00c0oxzg10xorwjg",
+   "title": "Valentine’s Day TS4 Loading Screen",
+   "from": "cas-background",
+   "to": "loading-screen"
+  },
+  {
+   "id": "cmttzhexo004soxfe3jjlyh71",
+   "title": "Valentine Plumbobs",
+   "from": "cas-background",
+   "to": "loading-screen"
+  }
+ ]
+}
