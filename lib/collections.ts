@@ -525,6 +525,14 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-02); /sims-4-clothes-cc/ and /sims-4-cc-clothes-packs/ are
     // also live listicles and were left alone.
     blogUrl: '/sims-4-cc-clothes/',
+    // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
+    // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
+    // GA4) 10-09→10-22 → 10-23→11-05: /sims-4-urban-cc/ 85 → 63,
+    // /sims-4-cowboy-cc/ 37 → 28 (both mostly clothing roundups).
+    guides: [
+      { href: '/sims-4-urban-cc/', label: 'Sims 4 urban CC for city sims' },
+      { href: '/sims-4-cowboy-cc/', label: 'Sims 4 cowboy and ranch CC' },
+    ],
   },
   {
     slug: 'furniture-cc',
@@ -604,6 +612,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-male-body-presets-cc/', label: 'Sims 4 male body presets' },
       { href: '/sims-4-plus-size-body-presets/', label: 'Sims 4 plus-size body presets' },
       { href: '/sims-4-athletic-body-presets/', label: 'Sims 4 athletic body presets' },
+      // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
+      // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
+      // GA4) 10-09→10-22 → 10-23→11-05: /sims-4-sliders/ 159 → 9.
+      { href: '/sims-4-sliders/', label: 'Sims 4 sliders for body, height and face' },
     ],
   },
   {
@@ -1055,6 +1067,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // articles together take ~1,836 impressions and 12 clicks at positions
     // 21.9-52.3, so there is demand and nothing here to cannibalise.
     blogUrl: '/sims-4-kids-cc/',
+    // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
+    // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
+    // GA4) 10-09→10-22 → 10-23→11-05: /sims-4-infant-cc/ 217 → 180.
+    guides: [{ href: '/sims-4-infant-cc/', label: 'Sims 4 infant CC: clothes, cribs and accessories' }],
   },
   {
     // Appended last on purpose: a `themesAny` entry scores specificity 1 in
@@ -1392,6 +1408,11 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // family; the type carries one blogUrl, so the GShade post — the larger
     // of the two — is the twin.
     blogUrl: '/sims-4-gshade-presets/',
+    // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
+    // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
+    // GA4) 10-09→10-22 → 10-23→11-05: /sims-4-reshade/ 442 → 442 (the other half of
+    // the family named in the comment above).
+    guides: [{ href: '/sims-4-reshade/', label: 'Best Sims 4 ReShade presets' }],
   },
   {
     // Rowan, 2026-10-30 (E289, Tier 0 — registry entry in the existing
@@ -1422,6 +1443,11 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 118,
     related: ['female-clothes', 'jewelry-cc', 'poses'],
     blogUrl: '/sims-4-wedding-cc/',
+    // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
+    // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
+    // GA4) 10-09→10-22 → 10-23→11-05: /best-sims-4-wedding-cc/ 205 → 189, while the
+    // blogUrl twin above gets 1 → 1 — Bing ranks this one for the head term.
+    guides: [{ href: '/best-sims-4-wedding-cc/', label: 'Best Sims 4 wedding dresses and wedding CC' }],
   },
   {
     // Rowan, 2026-10-30 (E296, Tier 0 — registry entry in the existing
@@ -1705,6 +1731,14 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // editorial picks intent; this page owns browse/filter intent. Live 200,
     // self-canonical, not redirected (checked 2026-10-11).
     blogUrl: '/sims-4-cc/',
+    // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
+    // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
+    // GA4) 10-09→10-22 → 10-23→11-05: /new-sims-4-mods-2026/ 1,621 → 1,256
+    // (the largest single Bing loss on the site), /black-sims-4-cc/ 412 → 374.
+    guides: [
+      { href: '/new-sims-4-mods-2026/', label: 'Best new Sims 4 mods of 2026' },
+      { href: '/black-sims-4-cc/', label: 'Best Black Sims 4 CC' },
+    ],
   },
 ];
 
