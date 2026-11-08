@@ -616,3 +616,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-07 07:08 | after-merge | Sage: PR #483 E368 cas-backgrounds + E369 facial-hair-cc hubs | c3332fa | https://mhm-finds-dw5l-ojywd7be0-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-07 07:32 | after-merge | Nova: PR #486 E370 Patreon author backfill | c83d8f7 | https://mhm-finds-dw5l-5xgpdfkuh-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-08 17:43 | check | morning-check |  | https://mhm-finds-dw5l-aeg26o7s2-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-11-08 18:09 | after-merge | manual | 1bf6bbc | https://mhm-finds-dw5l-p0zdci7xy-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
