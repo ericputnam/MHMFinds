@@ -2926,6 +2926,69 @@ row after its `TIMEOUT`. The first Vercel build of a merge still ERRORs.
   `reports/funnel/quinn-pending-2026-11-06.md` for the next run to apply, and queued a permission
   ask. Leaving the edits on disk and unapplied is the right failure mode.
 
+### 2026-11-06 — rotated from CLAUDE.md
+
+(covers merges #469–#477; no compound review ran 11-04 or 11-05)
+
+8 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify. Creator fold, share links, the
+IndexNow `/mods/` kill and the headless write refusal are in the archive (11-06 subsystem entries).
+
+- **Grade a change on the unit it changes, not on one it dilutes (E360, #470).** The Launcher
+  (#388, #396) adds pageviews, so impressions per pageview fell by construction: page RPM fell
+  29% on home and 32% on collections. Over the same weeks surface revenue rose 22% / 59% and
+  revenue per 1k site sessions rose 29% / 68%. The page-RPM keep floor graded both "harmed". `gradeBucket()` now puts its one-sided floor on revenue per 1k site
+  sessions (exact compare, `unknown` without sessions); page RPM is diagnostic only. Anything that
+  adds pages, steps or clicks makes every per-pageview metric look worse.
+- **A red guard on `main` does not stop a merge, so it stays red (E364, #472).** #467 and #471
+  merged while `template-lastmod-git-guard` was already red. The ship protocol runs one test file,
+  not the suite. After #471 changed the creator template, three PRs (#472, and #473 twice) each
+  had to bump `CREATOR_TEMPLATE_LASTMOD` again. Rule: the PR that changes a template bumps its
+  `*_TEMPLATE_LASTMOD` in the same PR, and runs the guards on the rebased branch, not only its own
+  test. Ops also found 4 timing flakes under full-suite load: re-run once and name the test, never
+  skip the suite.
+- **A source-level test must parse the structure, not match one exact line (#472).** The feeds
+  and catalog-count import checks broke when #437 added a second specifier to an import. They now
+  parse named imports (`__tests__/helpers/namedImports.ts`). In the same PR, `shareCard.ts` (#467)
+  and `HomeJsonLd` were found hard-coding "17,000+". Both now read `CATALOG_FINDS`, and the test
+  derives its threshold from that constant (≥ half of it is a catalogue claim). Collection "N,000+"
+  copy is checked against its own `expectedCount`.
+- **Changing a cadence means changing every number derived from it (E358, #469).** The newsletter
+  went biweekly on 10-29; the builder stayed weekly. The issue number read 09 (should be 08), picks
+  came from 7 days so week 1 of every gap never reached a reader, the copy said "this week", and the
+  new subject was missing from `CAMPAIGN_SUBJECTS`, so DSNs would not attribute. Grep for the old
+  period everywhere.
+- **The operator queue is not the only channel. Before acting on an item or calling it
+  unanswered, read the rows it would change (E327).** The queue said "no operator replies since
+  11-02", but the operator had approved all 3 submissions by hand in admin on 11-05. Nova's dry
+  run read the 3 rows as not-pending and stopped. Its rollback cannot undo an out-of-band approval.
+- **Still open:** the first Vercel build of a merge still ERRORs on the platform side (#473 and
+  #474 today; both went READY on the ledger commit). The un-nonced per-user fetch in
+  `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`) is also unfixed.
+
+### 2026-11-07 — subsystem entries (written directly to the archive)
+
+- **Backfill from a third party's public API on a frozen plan, and stop on the first signal it
+  does not want you (E370, #486).** `patreon-author-backfill.ts` reads `/api/posts/<id>?include=
+  campaign` with an honest UA and stops on any 429 or a blanket 401/403. It never touches a real
+  author, skips `is_nsfw` campaigns (500 rows), and cuts tagline names at " | ". A slug-lossy name
+  falls back to the vanity. A name that matches an unrelated vanity's page is skipped as ambiguous
+  (28). Frozen plan: 3,050 rows, 791 authors, 208 pages grown, 159 new. The plan JSON is committed,
+  so the apply is reproducible.
+- **A new theme follows the title-only pattern and records its rejections (E373, #482).**
+  `lib/sanrioThemeRules.ts` rejected bare `kitty` (8), bare `melody` (3) and `kawaii` (18). Applied
+  29 added / 0 stripped, every row read. Legacy `/sims-4-hello-kitty-cc/` drew 1,230 impr / 18 clk
+  at pos 7.9 with no browse page behind it.
+- **Bing losses sat on pages with no Next.js inbound link (E366, #481).** Bing-index sessions on 8
+  WordPress guides fell 3,178 → 2,541 per 14d (−20.0%), and none of them had a link from a Next.js
+  page. Each was added to the `guides` of the hub that owns the neighbouring query. The new test
+  was red on the pre-fix registry (8 of 8). The 34 hub twins fell −8.0% over the same window (E367).
+- **A one-day CPM dip with no deploy in the window is not a rollback signal (E372, #479).** 11-04
+  CPM fell 4.9% and 11-05 recovered +2.1%. The 7-day −7.5% was Halloween-weekend volume. E342
+  KEEP.
+- **New hubs that collide with an ingest mapping get a `KNOWN_GAP`, not a widened PR (E369,
+  #483).** `facial-hair-cc`'s blogUrl maps to `hair` in the URL map. It was recorded and left
+  for its own item.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

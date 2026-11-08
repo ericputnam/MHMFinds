@@ -925,51 +925,47 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-03 — rotated to the archive
+### 2026-10-15 → 11-06 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07.
 
-### 2026-11-06 (covers merges #469–#477; no compound review ran 11-04 or 11-05)
+### 2026-11-07 (covers merges #478–#486)
 
-8 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify. Creator fold, share links, the
-IndexNow `/mods/` kill and the headless write refusal are in the archive (11-06 subsystem entries).
+9 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify, and no first-build platform ERROR (it hit
+#473/#474 on 11-06). The Patreon author backfill, the hello-kitty hub, the Bing hub links and the
+Rio CPM verdict are in the archive (11-07 subsystem entries).
 
-- **Grade a change on the unit it changes, not on one it dilutes (E360, #470).** The Launcher
-  (#388, #396) adds pageviews, so impressions per pageview fell by construction: page RPM fell
-  29% on home and 32% on collections. Over the same weeks surface revenue rose 22% / 59% and
-  revenue per 1k site sessions rose 29% / 68%. The page-RPM keep floor graded both "harmed". `gradeBucket()` now puts its one-sided floor on revenue per 1k site
-  sessions (exact compare, `unknown` without sessions); page RPM is diagnostic only. Anything that
-  adds pages, steps or clicks makes every per-pageview metric look worse.
-- **A red guard on `main` does not stop a merge, so it stays red (E364, #472).** #467 and #471
-  merged while `template-lastmod-git-guard` was already red. The ship protocol runs one test file,
-  not the suite. After #471 changed the creator template, three PRs (#472, and #473 twice) each
-  had to bump `CREATOR_TEMPLATE_LASTMOD` again. Rule: the PR that changes a template bumps its
-  `*_TEMPLATE_LASTMOD` in the same PR, and runs the guards on the rebased branch, not only its own
-  test. Ops also found 4 timing flakes under full-suite load: re-run once and name the test, never
-  skip the suite.
-- **A source-level test must parse the structure, not match one exact line (#472).** The feeds
-  and catalog-count import checks broke when #437 added a second specifier to an import. They now
-  parse named imports (`__tests__/helpers/namedImports.ts`). In the same PR, `shareCard.ts` (#467)
-  and `HomeJsonLd` were found hard-coding "17,000+". Both now read `CATALOG_FINDS`, and the test
-  derives its threshold from that constant (≥ half of it is a catalogue claim). Collection "N,000+"
-  copy is checked against its own `expectedCount`.
-- **Changing a cadence means changing every number derived from it (E358, #469).** The newsletter
-  went biweekly on 10-29; the builder stayed weekly. The issue number read 09 (should be 08), picks
-  came from 7 days so week 1 of every gap never reached a reader, the copy said "this week", and the
-  new subject was missing from `CAMPAIGN_SUBJECTS`, so DSNs would not attribute. Grep for the old
-  period everywhere.
-- **The operator queue is not the only channel. Before acting on an item or calling it
-  unanswered, read the rows it would change (E327).** The queue said "no operator replies since
-  11-02", but the operator had approved all 3 submissions by hand in admin on 11-05. Nova's dry
-  run read the 3 rows as not-pending and stopped. Its rollback cannot undo an out-of-band approval.
-- **Still open:** the first Vercel build of a merge still ERRORs on the platform side (#473 and
-  #474 today; both went READY on the ledger commit). The un-nonced per-user fetch in
-  `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`) is also unfixed.
+- **`tsx` does not type-check, so an `--apply` can write what `tsc` would reject (E373, #482).**
+  Rowan added a pin to `HAND_AUDITED_CONTENT_TYPES` for a row that already had an E214 `null` pin,
+  then ran `--apply`. In JS a duplicate object key means the last one wins, so the DB took
+  `full-body` over the deliberate `null`. Only the later `type-check` caught it (TS1117), and the
+  row needed a correcting apply plus a restore file. Rule: before you pin a row, grep the registry
+  for its id. Run `npm run type-check` **before** any `--apply` that reads a registry you just
+  edited, not after.
+- **Check a schema.org property's type, not just its name (#485).** E355 (#476) gave ProfilePage
+  `dateModified` the date-only sitemap stamp. Google types that field as `DateTime`, and Search
+  Console flagged every profile the next day. A sitemap `lastmod` (date OK) and a JSON-LD
+  `DateTime` can share a source day but need different formats, so each gets its own helper
+  (`creatorDateModified()`). The guard walks `app/` and `components/` for any ProfilePage fed a
+  date-only value. The PR also bumped `CREATOR_TEMPLATE_LASTMOD`, so the 11-06 rule held.
+- **Derive a repeated label from the data, never one hand-written string (E367, #484).** All 34
+  hubs linked their blog twin with the same anchor, "Full article on the blog". The anchor now
+  comes from the twin's slug (`lib/seo/blogTwinLabel.ts`), so a new hub cannot get the generic
+  text back.
+- **One quota error must not MISS the whole run (E374, #480).** On 11-03 one model's 429
+  ("out of usage credits") killed the morning. The preflight now retries on
+  `FUNNEL_FALLBACK_MODELS`, but **only** when the failure is classified as QUOTA. Auth or network
+  failures are never retried, because a retry would hide them. Quinn's prompt carries a MODEL
+  FALLBACK line, so specialists are not routed back to the 429'd model and the digest says so.
+- **Still open:** the ledger mixes time zones. `deploy-verify.sh` writes local time, but the
+  hand-written E373 apply rows were stamped in UTC (`11:45`, five hours "after" the 06:56 merge
+  they rode). Write ledger rows in the ledger's own clock. Also still open: the un-nonced per-user
+  fetch in `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`).
 
 ---
 
-*Last compound review: 2026-11-06*
+*Last compound review: 2026-11-07*
 
 ---
 
