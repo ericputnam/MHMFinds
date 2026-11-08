@@ -168,3 +168,7 @@ __pycache__/
 
 # Rendered short-video slides/mp4 (short-video-frames.ts) — large binaries, rebuilt from drafts
 reports/funnel/social/assets/
+
+# Local video-queue test WP (throwaway test logins)
+scripts/staging/video-queue-local/.local-test.env
+scripts/staging/video-queue-local/.env

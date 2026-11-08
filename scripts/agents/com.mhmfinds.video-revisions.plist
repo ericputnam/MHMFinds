@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mhmfinds.video-revisions</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/eputnam/java_projects/MHMFinds/scripts/agents/run-video-queue.sh</string>
+        <string>--revisions</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/eputnam/java_projects/MHMFinds</string>
+
+    <!-- Every day at 21:00 (local time; the Mac is on ET). Not loaded by default:
+         launchctl load ~/Library/LaunchAgents/com.mhmfinds.video-revisions.plist after copying it there. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>21</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/video-queue-revisions.launchd.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/video-queue-revisions.launchd.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/eputnam</string>
+    </dict>
+</dict>
+</plist>
