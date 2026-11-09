@@ -332,7 +332,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Facial hair is the part of a male Sim the base game does least with. There are a few beards, a couple of goatees and some stubble, all in the same handful of textures, and they sit on the face like a sticker. Beard CC is how people get a beard that looks grown rather than painted on: thicker meshes, real texture, and shapes the game never shipped.\n\nThis page is only beards and facial hair, 87 of them sorted by downloads. A skin pack, two full Sim downloads, a lot and an outfit used to sit in this facet, and we moved them out, so every card here is something you add in the facial hair slot. The shelf runs from short stubble and heavy stubble to goatees, full beards, long wizard and Viking beards, a Santa beard and a single moustache, plus curly beards and sets that pair a beard with braided locs, twists or cornrows.\n\nIgorStory and MagicHand made nearly a fifth of the page between them, with Seleng, David Mtv2, Veiga Sims and LEXEL S next.\n\nTwo practical notes. Check each creator\'s page for style before you download, because a high-detail alpha beard can look out of place on a smooth maxis match skin. And if a beard looks wrong in the CAS preview, try its other swatches before giving up on it, since colour is usually the problem.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the beards everyone already uses, or scroll for the one-off sets the big roundups miss.',
     filter: { contentTypeIn: ['beard', 'facial-hair'] },
     expectedCount: 87,
-    related: ['hair-cc', 'male-clothes', 'skin-details'],
+    // Sage, 2026-11-09 (E377): 'skin-details' → 'eyebrows-cc' (male brows
+    // sit next to beards in CAS, and skin-details keeps its other inbound edges).
+    related: ['hair-cc', 'male-clothes', 'eyebrows-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // facial hair" intent; this page owns browse intent.
     // /sims-4-facial-hair-cc/ is live (HTTP 200, verified 2026-11-07) and is
@@ -803,6 +805,50 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     blogUrl: '/sims-4-poses/',
   },
   {
+    // Sage, 2026-11-09 (E377, Tier 0 — registry entry in the existing
+    // pattern). The narrow page inside the eyes-cc union, the way
+    // facial-hair-cc and cas-backgrounds sit inside theirs. It must stay
+    // BEFORE eyes-cc and makeup-cc (collection-primary-crumb-order.test.ts),
+    // or the union keeps the primary crumb on these 127 mod pages.
+    //
+    // Demand: GA4 2026-10-26 → 11-08 landing sessions on the brow articles:
+    // /sims-4-eyebrows-cc/ 79 search + 1,202 social, /sims-4-male-eyebrows-cc/
+    // 62 search + 32 social, /sims-4-eyebrows/ 3 search. The eyes-cc union
+    // drew 12 search + 2 AI in the same window, so nobody is searching for
+    // "eyes, brows and lashes" as one page. Brows are the deepest shelf in it.
+    //
+    // Eligibility: all 130 SFW `eyebrows` rows read on 11-09; 126 name a brow
+    // in the title. Three Caroll Design makeup-and-genetics sets were pinned
+    // to `makeup` and applied (hand-audited-content-types.ts § E377, rollback
+    // reports/funnel/catalog-e377-apply-2026-11-09.json), so 127 rows, 0
+    // adult titles. Inbound: eyes-cc (repointed from hair-cc) and
+    // facial-hair-cc (repointed from skin-details). Male brows sit next to
+    // beards in CAS.
+    slug: 'eyebrows-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Eyebrows CC',
+    heading: 'Sims 4 Eyebrows CC',
+    metaTitle: 'Sims 4 Eyebrows CC — Browse 125+ Brows, Natural to Bushy | MustHaveMods',
+    metaDescription:
+      'Browse 125+ Sims 4 eyebrows CC in one grid: natural and brushed brows, thin arched sets, male and bushy brows, maxis match and alpha, sorted by downloads.',
+    tagline: 'Natural, arched, bushy and male brows in one grid',
+    intro:
+      "Brows do more to a Sim's face than almost anything else in CAS, and the base game gives you very little to work with: a short list of shapes, most of them thin, all in the same flat texture. Eyebrow CC is the quickest way to make a Sim look like a person rather than a default: fuller brows with visible hairs, softer arches, heavier brows for male Sims, and shades that actually match the hair.\n\nThis page is only eyebrows, 127 of them sorted by downloads. Three makeup sets that happened to include a brow swatch used to sit here, and we moved them to the makeup page, so every card is something you add in the eyebrow slot. Expect natural and brushed brows that work on almost any Sim, thin arched sets for harder makeup looks, bushy and masculine sets for male Sims, and a few maxis match sets for people who keep their CAS cartoony.\n\nMagicHand made close to one in five of the brows on this page, with Seleng, Sims3Melancholic, TwistedCat and Msqsims next.\n\nTwo practical notes. Most brow CC comes in a dozen or more shades, so check the swatches before deciding a set doesn't match your Sim's hair. And realistic brows can look busy on a smooth maxis match skin, so read each creator's page for the style before you download.\n\nEverything here is Sims 4 only and filtered to SFW. Sort by downloads for the brows half the community already has, or scroll for single sets the big roundups missed. If you're building a whole face, the eyes and makeup pages are the next two stops.",
+    filter: { contentType: 'eyebrows' },
+    expectedCount: 127,
+    related: ['eyes-cc', 'makeup-cc', 'facial-hair-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // eyebrows" intent, and this page owns browse intent.
+    // /sims-4-eyebrows-cc/ is live (HTTP 200, verified 2026-11-09) and is
+    // not in vercel.json.
+    blogUrl: '/sims-4-eyebrows-cc/',
+    guides: [
+      { href: '/sims-4-male-eyebrows-cc/', label: 'Sims 4 male eyebrows CC' },
+      { href: '/sims-4-eyebrows/', label: 'Best Sims 4 eyebrows for your CC folder' },
+    ],
+  },
+  {
     // Sage, 2026-10-18 (E231, Tier 1 — new structural page). The next
     // category hub after build-cc (E171) and cc (E182). Decision rule,
     // printed before the read: rank bare-term families with no
@@ -857,7 +903,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // Inbound edges come from makeup-cc and skin-details (both swapped a
     // hair-cc edge for this page — hair-cc keeps 4). Outbound returns one
     // to hair-cc so the swap is net-neutral on the hair hub.
-    related: ['makeup-cc', 'skin-details', 'hair-cc'],
+    // Sage, 2026-11-09 (E377): 'hair-cc' → 'eyebrows-cc', the brows-only
+    // page inside this union (hair-cc keeps its other inbound edges).
+    related: ['makeup-cc', 'skin-details', 'eyebrows-cc'],
     // Differentiated pair: "34+ Best Sims 4 Eyes CC" keeps the editorial
     // picks intent, this page owns browse/filter intent. Live 200,
     // self-canonical, not redirected (checked 2026-10-18); position 16–39

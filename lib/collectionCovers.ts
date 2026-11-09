@@ -65,6 +65,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/85f1c6c5-24fb-4536-b912-8cfe01f6d098.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/06/8626b34c-e572-4611-9c9a-5f1dbadefd90-1.png",
   ],
+  "eyebrows-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/9296a107-c166-4536-9738-f8d132bd91d8.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/f291cf95-57aa-4bc8-89ff-b7a7e2a12875.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2022/04/venus-sim-4-eyebrows.jpg",
+  ],
   "eyes-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/aeb04de5-51fb-4f71-8efa-cb21f2e9893c-1.png",
     "https://musthavemods.com/wp-content/uploads/2025/03/75f8e4ec-1a29-459e-b608-c6b247714fb4-1.png",
