@@ -111,6 +111,17 @@ if [ "$rc" -ne 0 ]; then
   exit 1
 fi
 
+# Revisions run nightly; most nights nothing is marked "changes requested", so don't start Claude.
+if [ "$NAME" = "revisions" ]; then
+  PENDING="$(npx tsx scripts/agents/video-queue.ts revisions 2>>"$LOG_FILE" \
+    | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).videos.length)}catch{console.log("?")}})')"
+  if [ "$PENDING" = "0" ]; then
+    log "no videos marked changes requested; nothing to do"
+    exit 0
+  fi
+  log "videos marked changes requested: $PENDING"
+fi
+
 # ---------------------------------------------------------------- claude
 CLAUDE_CLEAN=(env -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH -u CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH
   -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_TOKEN

@@ -7,7 +7,7 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/eputnam/java_projects/MHMFinds/scripts/agents/run-video-queue.sh</string>
+        <string>/Users/eputnam/.mhm-video-queue/bin/launch-video-queue.sh</string>
         <string>--weekly</string>
     </array>
 

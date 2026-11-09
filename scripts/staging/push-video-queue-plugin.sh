@@ -11,7 +11,7 @@ set -euo pipefail
 # It NEVER touches the theme or functions.php. The plugin keeps its data in WP posts/meta and its
 # video files outside the web root, so replacing the plugin folder loses nothing.
 #
-# The first push only uploads the folder. Activate the plugin once in WP admin (Plugins), then
+# The first push only uploads the folder. Activate the plugin once (WP admin → Plugins, or `wp plugin activate mhm-video-queue` over SSH), then
 # create the Video Reviewer and Video Bot users (docs/VIDEO_QUEUE.md).
 
 SSH_KEY="$HOME/.ssh/bigscoots_staging"
@@ -107,12 +107,26 @@ echo "==> Linting on the server, then swapping in..."
 "${SSH[@]}" "set -e; for f in \$(find '$REMOTE_DIR.new' -name '*.php'); do php -l \"\$f\" >/dev/null; done; rm -rf '$REMOTE_DIR.old'; if [ -d '$REMOTE_DIR' ]; then mv '$REMOTE_DIR' '$REMOTE_DIR.old'; fi; mv '$REMOTE_DIR.new' '$REMOTE_DIR'; rm -rf '$REMOTE_DIR.old'"
 
 echo "==> Checking the blog still answers..."
-CODE=$(curl -s -o /dev/null -w '%{http_code}' "https://blog.musthavemods.com/wp-login.php" || true)
-echo "    wp-login.php -> HTTP $CODE"
-if [ "$CODE" != "200" ]; then
+# Not wp-login.php: the wps-hide-login plugin makes it 404 on purpose.
+# The cache-buster makes PHP render the page instead of the page cache.
+BLOG="https://blog.musthavemods.com"
+http_code() { curl -s -o /dev/null -w '%{http_code}' "$1" || true; }
+HOME_CODE=$(http_code "$BLOG/?mhm_vq_check=$(date +%s)")
+API_CODE=$(http_code "$BLOG/wp-json/")
+# The plugin's route needs the bot's login: 401 = plugin loaded, 404 = not active yet.
+ROUTE_CODE=$(http_code "$BLOG/wp-json/mhm-video-queue/v1/videos")
+echo "    home -> $HOME_CODE · /wp-json/ -> $API_CODE · plugin route -> $ROUTE_CODE"
+if [ "$HOME_CODE" != "200" ] || [ "$API_CODE" != "200" ] || [[ "$ROUTE_CODE" != "401" && "$ROUTE_CODE" != "404" ]]; then
   echo "    WARNING: unexpected status. Roll back with:"
-  echo "      ssh ... \"rm -rf '$REMOTE_DIR' && cp -a '${BACKUP:-<no backup on first install>}' '$REMOTE_DIR'\""
+  if [ -n "${BACKUP:-}" ]; then
+    echo "      ${SSH[*]} \"rm -rf '$REMOTE_DIR' && cp -a '$BACKUP' '$REMOTE_DIR'\""
+  else
+    echo "      ${SSH[*]} \"cd '$WP_ROOT' && wp plugin deactivate mhm-video-queue; rm -rf '$REMOTE_DIR'\""
+  fi
   exit 4
+fi
+if [ "$ROUTE_CODE" = "404" ]; then
+  echo "    (plugin route not registered: the plugin isn't active)"
 fi
 
 if [ "$FIRST" -eq 1 ]; then
