@@ -1,4 +1,4 @@
-# Video Queue (phase 1)
+# Video Queue
 
 Three short videos a week, made on the operator's Mac, reviewed in WordPress, posted after approval.
 
@@ -15,9 +15,10 @@ Three short videos a week, made on the operator's Mac, reviewed in WordPress, po
  run-video-queue.sh --revisions   re-makes "changes requested" videos and re-uploads them
 ```
 
-Phase 2 (not built yet) adds the poster: approved videos go out at their slot through the YouTube
-and TikTok APIs once each platform's audit passes. Until then an approved video sits in the queue as
-"Approved — ready to post" and gets posted by hand (docs/SHORT_VIDEO_RUNBOOK.md).
+Once a slot time has passed, WordPress posts approved videos to YouTube (as a Short) and TikTok
+(see "Posting"). Nothing is posted until an administrator connects an account under Videos → Posting.
+On a platform that isn't connected, an approved video waits as "Approved — ready to post" and can be
+posted by hand (docs/SHORT_VIDEO_RUNBOOK.md, then `video-queue.ts posted`).
 
 ## Roles and accounts (WordPress)
 
@@ -37,20 +38,25 @@ MHM_WP_VIDEO_USER=video-bot
 MHM_WP_VIDEO_APP_PASSWORD=[YOUR_APP_PASSWORD_HERE]
 ```
 
-No YouTube, TikTok or Meta tokens are ever stored in WordPress.
+YouTube and TikTok tokens are stored in WordPress, sealed (libsodium secretbox, key derived from the
+site's `SECURE_AUTH` salt, or from `MHM_VQ_KEY` if wp-config.php defines it) in options that don't autoload. The OAuth client secrets are
+sealed the same way. Neither is ever written into a page, a REST response or a log, and neither ever
+reaches the Mac. Changing the WordPress salts makes them unreadable, so both platforms then need
+Connect again. No Meta tokens are stored.
 
 ## Video statuses
 
 ```
-uploading ──finalize──► pending_review ──Approve──► approved ──(phase 2 poster / manual)──► posted
+uploading ──finalize──► pending_review ──Approve──► approved ──(poster / manual)──► posted
      ▲                     │      ▲                    │
      │                     │      └──── Unapprove ─────┘
      │                     ├──Request changes (note)──► changes_requested ──bot re-render──► uploading
      │                     └──Reject──► rejected
 ```
 
-Reviewers never see `uploading`. Only the bot moves `changes_requested → uploading → pending_review`
-and `approved → posted`.
+Reviewers never see `uploading`. Only the bot and the poster move `changes_requested → uploading →
+pending_review` and `approved → posted`. If the stored video file no longer matches the hash it was
+approved with, the poster sends the video back to `pending_review` and emails the alert address.
 
 ## REST API — namespace `mhm-video-queue/v1`
 
@@ -94,6 +100,13 @@ replaces the stored files (the previous revision is kept as `*.r<N>`), bumps `re
 (nothing waiting, no reviewers, already sent in the last 6 hours, or `wp_mail` failed; a failed send doesn't
 start the 6-hour lock). The site needs working outgoing mail (an SMTP plugin) for this to reach the writer.
 
+`POST /post-due` (no body) → runs the poster now, same as WP-cron → `{ "summary": "1 posted, 1 processing." }`
+(or `"Nothing due."`, `"another run is in progress"`, `"no platform switched on"`).
+
+`GET /oauth/youtube` and `GET /oauth/tiktok` are the OAuth redirect URIs. They are public because the
+platform redirects the browser there. They only accept a `state` that this site issued in the last 10
+minutes and the same browser's cookie, and the user who clicked Connect must still be an administrator.
+
 ```jsonc
 // VideoInput (bot → WP)
 { "title": "black sims cc I keep in every save",     // internal title, plain text
@@ -122,6 +135,73 @@ new `captions` only when making a new video, or when the revision note asked for
 credits inside her captions (the YouTube "Credits:" block and the TikTok "Credits:" line) and leaves
 the rest of her text alone (`mergeCredits`), so every mod in the video stays credited.
 
+## Posting (phase 2)
+
+Settings live under Videos → Posting (administrators only). Each platform has its own switch. A platform is
+used only when it is switched on and connected. Switching it off stops new posts straight away.
+
+**When.** WP-cron runs the poster every 5 minutes. WP-cron fires only when someone visits the blog, so the
+Mac also calls `POST /post-due` every 15 minutes (`video-post-due.sh`). A lock (option `mhm_vq_post_lock`,
+released after 15 minutes if a run dies) keeps the two from overlapping. Each run starts at most 3 new
+uploads and posts the earliest slots first.
+
+**State per video and platform** (meta `_mhm_post_state`, shown on the Queue card):
+
+```
+queued → posting → posted                              YouTube
+queued → posting → processing → inbox | posted         TikTok
+      ↘ retry (once, network-type errors) ↘ failed      either one
+```
+
+- `posting` is written before the first network call. A `posting` older than 30 minutes means the run died
+  mid-upload. It becomes `failed` and is marked *uncertain*, because the platform may already have the
+  video. Uncertain failures are never retried automatically. Someone checks the channel, then clicks
+  Retry on the Queue card. Unapprove + Approve doesn't reset them either.
+- A platform that reached `posted` or `inbox` is never posted again for that video, even after editing
+  captions or unapproving and approving again.
+- TikTok `processing` is checked on each run. After 2 hours it becomes `failed` (uncertain).
+- When every switched-on platform is `posted` or `inbox`, the video becomes `posted` and the links go in
+  `post_urls`. If only some have finished, the card says "Approved — partly posted". If one failed, it says
+  "Approved — needs attention".
+- A due video on a platform that is switched on but not connected waits, and the alert address gets one
+  email per platform per day.
+
+**Emails** (Alert email setting, default the site admin): a failure, an uncertain upload, a changed file,
+a platform not connected, and each TikTok inbox draft (with the caption to paste). They need working
+outgoing mail (an SMTP plugin) on the blog.
+
+**YouTube.** Uploaded with the Data API v3 resumable upload, in 8 MiB chunks, category Gaming, not made for
+kids. Vertical and under 60 seconds, so YouTube lists it as a Short. Visibility comes from the setting
+(start with Private). Until the Google Cloud project passes YouTube's API audit, YouTube makes every
+upload private whatever the setting. The Queue card says so when that happens.
+
+**TikTok.** Two modes:
+
+- *Draft in the TikTok app* (default; scope `video.upload`). The video goes to the account's TikTok inbox and
+  someone finishes the post in the app. Works before TikTok's audit. Counts as done once it's in the inbox.
+- *Post directly* (adds `video.publish`; needs Connect again). When approving, the reviewer picks who can see
+  it and whether to allow comments, duets and stitches, and declares promotional or branded content, as
+  TikTok's Content Sharing Guidelines require. Options the creator account has turned off are greyed out.
+  Branded content can't be "Only me". Until the app passes TikTok's Direct Post audit, TikTok only accepts
+  private ("Only me") posts.
+
+### Setting up the accounts (once)
+
+1. **YouTube.** In Google Cloud, create a project. Enable *YouTube Data API v3*. Set up the OAuth consent
+   screen (External; add the channel owner as a test user while the app is in Testing). Create an OAuth
+   client of type *Web application* and add the Redirect URI shown on the Posting page. Paste the client
+   ID and secret into the Posting page and save. Click Connect and sign in as the channel's Google account.
+   To post publicly, apply for the YouTube API audit (Google's "YouTube API Services – Audit and Quota
+   Extension" form).
+2. **TikTok.** At developers.tiktok.com, create an app. Add *Login Kit* (Redirect URI from the Posting page)
+   and *Content Posting API*, with scopes `user.info.basic` and `video.upload`, plus `video.publish` for direct
+   posting. Paste the client key and secret, save, then Connect as the MustHaveMods TikTok account. For
+   public direct posts, submit the app for TikTok's audit.
+3. Test privately first. Use YouTube visibility Private and TikTok draft mode. Approve one video with a slot
+   in the past, run `video-queue.ts post-due`, and check the channel and the TikTok inbox.
+4. **Test** on the Posting page refreshes the token and reads the account name. **Disconnect** revokes the
+   token at the platform and deletes it from WordPress.
+
 ## Files
 
 Stored outside the web root: `dirname(ABSPATH)/mhm-video-queue/<id>/video.mp4|cover.jpg`
@@ -136,24 +216,29 @@ search.
 
 | File | What it does |
 |---|---|
-| `scripts/agents/video-queue.ts` | CLI: `ideas`, `idea` (mark used/declined), `resolve`, `search`, `draft`, `check`, `push [--replace ID [--with-captions]]`, `revisions`, `notify`, `slots`, `posted --id N [--youtube URL] [--tiktok URL]` (record a manual post). Exit 0 ok, 1 failed check/error, 2 couldn't run (env, auth, WP unreachable) |
+| `scripts/agents/video-queue.ts` | CLI: `ideas`, `idea` (mark used/declined), `resolve`, `search`, `draft`, `check`, `push [--replace ID [--with-captions]]`, `revisions`, `notify`, `slots`, `posted --id N [--youtube URL] [--tiktok URL]` (record a manual post), `post-due` (run the poster now). Exit 0 ok, 1 failed check/error, 2 couldn't run (env, auth, WP unreachable) |
 | `scripts/agents/video-queue-lib.ts` | pure helpers (slots, captions, link rules, checks); unit-tested |
 | `scripts/agents/video-queue-prompt.md` | what headless Claude does on `--weekly` and `--revisions` |
 | `scripts/agents/run-video-queue.sh` | launchd entry: clean worktree from origin/main, state dir, claude -p, log |
 | `scripts/agents/launch-video-queue.sh` | what launchd runs: fetches origin/main and runs its `run-video-queue.sh`, so the main checkout can be on any branch |
 | `scripts/agents/com.mhmfinds.video-weekly.plist` / `com.mhmfinds.video-revisions.plist` | schedules |
+| `scripts/agents/video-post-due.sh` + `com.mhmfinds.video-post-due.plist` | the 15-minute poster catch-up. It reads the bot credentials from `.env.local` and passes them to curl on stdin |
 
 Installing the schedules (once; repeat the `cp` lines after the launcher or plists change):
 
 ```bash
 mkdir -p ~/.mhm-video-queue/bin
 cp scripts/agents/launch-video-queue.sh ~/.mhm-video-queue/bin/ && chmod +x ~/.mhm-video-queue/bin/launch-video-queue.sh
-cp scripts/agents/com.mhmfinds.video-{weekly,revisions}.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mhmfinds.video-weekly.plist
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mhmfinds.video-revisions.plist
+cp scripts/agents/video-post-due.sh ~/.mhm-video-queue/bin/ && chmod +x ~/.mhm-video-queue/bin/video-post-due.sh
+cp scripts/agents/com.mhmfinds.video-{weekly,revisions,post-due}.plist ~/Library/LaunchAgents/
+for j in weekly revisions post-due; do
+  launchctl bootout gui/$(id -u)/com.mhmfinds.video-$j 2>/dev/null || true   # bootstrap fails if already loaded
+  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mhmfinds.video-$j.plist
+done
 ```
 
-Stop them with `launchctl bootout gui/$(id -u)/com.mhmfinds.video-weekly` (and `…video-revisions`).
+Stop one with `launchctl bootout gui/$(id -u)/com.mhmfinds.video-weekly` (or `…video-revisions`, `…video-post-due`).
+Load `video-post-due` only once a platform is connected. Until then every run just says "no platform switched on".
 
 State that must survive between runs (drafts, rendered assets) lives in
 `~/.mhm-video-queue/state/reports/funnel/social/…` (`MHM_PROJECT_DIR`), not in a git checkout.
@@ -178,6 +263,12 @@ WP admin, then create the two users (see "Roles and accounts").
 bind-mounted. `setup.sh` creates an admin, a Video Reviewer and a Video Bot with an Application Password,
 and writes them to `.local-test.env` (gitignored, chmod 600). Point the CLI at it by sourcing that file
 before running `video-queue.ts`; real `.env.local` values are not overridden by dotenv.
+(`MHM_ENV_FILE=…/.local-test.env scripts/agents/video-post-due.sh` does the same for the catch-up.)
+
+`mock-apis.php` (mounted as a must-use plugin, local only) answers every Google and TikTok call with canned
+responses, so connecting and posting can be tested without real accounts. It also captures outgoing mail.
+Its failure switches (init 500, a dropped chunk, a TikTok FAILED, an expired refresh token…) are in the
+file header.
 
 ## Checks that refuse an upload
 

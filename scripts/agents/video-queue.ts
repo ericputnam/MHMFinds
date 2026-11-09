@@ -14,7 +14,8 @@
  *   push       --date D --file NN-short-video-x.md [--slot ISO] [--replace VIDEO_ID [--with-captions]] [--idea N]
  *   revisions                                              videos marked "changes requested", with notes
  *   notify     --message "…"
- *   posted     --id N [--youtube URL] [--tiktok URL]           operator, after posting by hand (phase 1)
+ *   posted     --id N [--youtube URL] [--tiktok URL]           operator, after posting by hand
+ *   post-due                                               run the WordPress poster now (same as the 15-minute catch-up)
  *   slots      [--n 3] [--offline]
  *
  * Env (from .env.local): MHM_WP_VIDEO_URL, MHM_WP_VIDEO_USER, MHM_WP_VIDEO_APP_PASSWORD. The password is
@@ -674,7 +675,7 @@ async function cmdNotify(): Promise<number> {
   return 0;
 }
 
-/** Operator use while posting by hand (phase 1): record where an approved video went live. */
+/** Operator use after posting by hand (a platform that isn't connected): record where an approved video went live. */
 async function cmdPosted(): Promise<number> {
   const id = needInt('id');
   const post_urls: Record<string, string> = {};
@@ -687,6 +688,12 @@ async function cmdPosted(): Promise<number> {
   }
   if (!Object.keys(post_urls).length) throw new Error('give --youtube and/or --tiktok');
   emit(await wpRequest('POST', `/videos/${id}`, { status: 'posted', post_urls }));
+  return 0;
+}
+
+/** Run the poster in WordPress now. It posts approved videos whose slot has passed on connected platforms. */
+async function cmdPostDue(): Promise<number> {
+  emit(await wpRequest<{ summary: string }>('POST', '/post-due'));
   return 0;
 }
 
@@ -709,6 +716,7 @@ const COMMANDS: Record<string, () => Promise<number>> = {
   revisions: cmdRevisions,
   notify: cmdNotify,
   posted: cmdPosted,
+  'post-due': cmdPostDue,
   slots: cmdSlots,
 };
 

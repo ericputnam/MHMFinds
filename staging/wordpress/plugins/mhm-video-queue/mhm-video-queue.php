@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MHM Video Queue
  * Description: Review queue for MustHaveMods short videos (made on the operator's Mac) and an ideas box for the writer. Private: nothing here is public, in the media library, the sitemap or search.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: MustHaveMods
  * Requires at least: 6.2
  * Requires PHP: 7.4
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MHM_VQ_VERSION', '1.0.0');
+define('MHM_VQ_VERSION', '1.1.0');
 define('MHM_VQ_CAP_REVIEW', 'mhm_review_videos');
 define('MHM_VQ_CAP_BOT', 'mhm_manage_video_queue');
 define('MHM_VQ_CPT_VIDEO', 'mhm_video');
@@ -24,6 +24,15 @@ define('MHM_VQ_NS', 'mhm-video-queue/v1');
 define('MHM_VQ_MAX_CHUNK', 1048576);          // 1 MiB per upload chunk
 define('MHM_VQ_MAX_VIDEO', 200 * 1048576);    // 200 MiB
 define('MHM_VQ_MAX_COVER', 8 * 1048576);      // 8 MiB
+
+// Phase 2: posting to YouTube and TikTok (Videos → Posting). Nothing posts until a platform is switched on and connected.
+require_once __DIR__ . '/includes/secrets.php';
+require_once __DIR__ . '/includes/http.php';
+require_once __DIR__ . '/includes/settings.php';
+require_once __DIR__ . '/includes/youtube.php';
+require_once __DIR__ . '/includes/tiktok.php';
+require_once __DIR__ . '/includes/poster.php';
+register_deactivation_hook(__FILE__, 'mhm_vq_post_deactivate');
 
 function mhm_vq_statuses() {
     return array(
@@ -840,7 +849,15 @@ function mhm_vq_handle_review() {
             if (!file_exists("$dir/video.mp4")) {
                 mhm_vq_back(array('mhm_vq_msg' => 'nofile'));
             }
+            if (mhm_vq_tiktok_direct()) {
+                $tt = mhm_vq_tt_opts_from_post(wp_unslash($_POST));
+                if (!is_array($tt)) {
+                    mhm_vq_back(array('mhm_vq_msg' => $tt) + array('mhm_vq_open' => $id));
+                }
+                mhm_vq_set_meta_json($id, '_mhm_tiktok_opts', $tt);
+            }
             update_post_meta($id, '_mhm_approved_hash', hash_file('sha256', "$dir/video.mp4"));
+            mhm_vq_post_reset_on_approve($id);
             update_post_meta($id, '_mhm_approved_by', get_current_user_id());
             mhm_vq_set_status($id, 'approved', $note);
             mhm_vq_back(array('mhm_vq_msg' => 'approved'));
@@ -998,6 +1015,10 @@ function mhm_vq_notice() {
         'added'      => array('success', 'Idea added. The next weekly run will read it.'),
         'withdrawn'  => array('success', 'Idea removed.'),
         'needtheme'  => array('error', 'Add a theme for the idea.'),
+        'retry'      => array('success', 'It will be tried again on the next posting run (within 5 minutes).'),
+        'ttprivacy'  => array('error', 'Pick who can see it on TikTok, then approve again.'),
+        'ttcommercial' => array('error', 'You ticked that the video promotes something. Pick "Your brand", "Branded content" or both, then approve again.'),
+        'ttbranded'  => array('error', 'Branded content can\'t be posted as "Only me" on TikTok. Pick another privacy setting.'),
     );
     $k = isset($_GET['mhm_vq_msg']) ? sanitize_key(wp_unslash($_GET['mhm_vq_msg'])) : '';
     if (isset($msgs[$k])) {
@@ -1064,6 +1085,12 @@ function mhm_vq_render_queue() {
     echo '</div>';
 }
 
+/** TikTok is on, in direct mode, and connected: the Approve form must collect TikTok's required choices. */
+function mhm_vq_tiktok_direct() {
+    $s = mhm_vq_settings();
+    return !empty($s['tiktok_enabled']) && $s['tiktok_mode'] === 'direct' && mhm_vq_is_connected('tiktok');
+}
+
 function mhm_vq_render_card($v, $labels, $open) {
     $id = (int) $v['id'];
     $s = $v['status'];
@@ -1082,8 +1109,21 @@ function mhm_vq_render_card($v, $labels, $open) {
     $hook = esc_html($v['hook'] ?: $v['title']);
     $hook = preg_replace('/\*([^*]+)\*/', '<span style="color:#EC4899">$1</span>', $hook);
     printf('<h2>%s</h2>', $hook);
+    $badge = $labels[$s] ?? $s;
+    $badge_class = $s;
+    if ($s === 'approved') {
+        $states = wp_list_pluck(mhm_vq_post_state($id), 'state');
+        if (in_array('failed', $states, true)) {
+            $badge = 'Approved — needs attention';
+            $badge_class = 'changes_requested';
+        } elseif (array_intersect($states, array('posted', 'inbox'))) {
+            $badge = 'Approved — partly posted';
+        } elseif (array_intersect($states, array('posting', 'processing'))) {
+            $badge = 'Approved — posting now';
+        }
+    }
     printf('<p class="mhm-vq-meta"><span class="mhm-vq-badge %s">%s</span> &middot; %s &middot; version %d%s</p>',
-        esc_attr($s), esc_html($labels[$s] ?? $s), esc_html(mhm_vq_fmt_slot($v['slot'])), (int) $v['revision'],
+        esc_attr($badge_class), esc_html($badge), esc_html(mhm_vq_fmt_slot($v['slot'])), (int) $v['revision'],
         $v['duration_s'] ? ' &middot; ' . esc_html(number_format((float) $v['duration_s'], 1)) . ' s' : '');
     if ($v['target_url']) {
         printf('<p>Sends viewers to <a href="%1$s" target="_blank" rel="noopener">%1$s</a></p>', esc_url($v['target_url']));
@@ -1109,7 +1149,10 @@ function mhm_vq_render_card($v, $labels, $open) {
     if ($s === 'changes_requested' && $v['change_note']) {
         echo '<p><strong>Your note:</strong> ' . esc_html($v['change_note']) . '</p>';
     }
-    if ($s === 'posted') {
+    $has_state = (bool) mhm_vq_post_state($id);
+    if ($s === 'approved' || ($s === 'posted' && $has_state)) {
+        mhm_vq_render_platform_status($id, $s);
+    } elseif ($s === 'posted') {
         foreach ((array) $v['post_urls'] as $plat => $u) {
             if ($u) {
                 printf('<p>%s: <a href="%2$s" target="_blank" rel="noopener">%2$s</a></p>', esc_html(ucfirst($plat)), esc_url($u));
@@ -1127,6 +1170,23 @@ function mhm_vq_render_card($v, $labels, $open) {
         $id, esc_textarea($cap['youtube_description'] ?? ''), $ro);
     printf('<label for="tt-%1$d">TikTok caption</label><textarea id="tt-%1$d" name="captions[tiktok]" rows="6"%3$s>%2$s</textarea>',
         $id, esc_textarea($cap['tiktok'] ?? ''), $ro);
+
+    if ($s === 'pending_review' && mhm_vq_tiktok_direct()) {
+        mhm_vq_render_tiktok_choices($v);
+    } elseif ($s === 'approved' && mhm_vq_tiktok_direct()) {
+        $o = mhm_vq_tt_opts($id);
+        if ($o['privacy_level'] !== '') {
+            $allow = array();
+            foreach (array('comment' => 'comments', 'duet' => 'duet', 'stitch' => 'stitch') as $k => $w) {
+                if ($o['allow_' . $k]) {
+                    $allow[] = $w;
+                }
+            }
+            $brand = array_filter(array($o['brand_organic'] ? 'your brand' : '', $o['brand_content'] ? 'branded content' : ''));
+            printf('<p class="mhm-vq-meta">TikTok: %s; allows %s%s.</p>', esc_html(mhm_vq_tt_privacy_label($o['privacy_level'])),
+                esc_html($allow ? implode(', ', $allow) : 'nothing'), $brand ? '; discloses ' . esc_html(implode(' and ', $brand)) : '');
+        }
+    }
 
     if ($s === 'pending_review') {
         $note_open = $open === $id ? ' open' : '';
