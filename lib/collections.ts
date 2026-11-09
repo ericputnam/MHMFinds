@@ -199,6 +199,17 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // witch-cc keeps 2 inbound (cottagecore-cc, halloween-cc).
     related: ['clutter', 'halloween-cc', 'christmas-cc'],
     blogUrl: '/sims-4-holiday-mods/',
+    // E375 (Pip, 2026-11-09): seasonal WordPress guides with no inbound link
+    // from any Next.js page, linked from the hub Google/Bing already rank for
+    // the neighbouring query, two weeks ahead of the Thanksgiving→Christmas
+    // peak. Treated set: 13 guides, organic search landings (GA4) 10-25→11-07
+    // = 191 (site organic 41,575); same window last year 183, and 282 in
+    // 11-10→11-23 last year. Test: collection-guides.test.ts (E375 block).
+    guides: [
+      { href: '/sims-4-thanksgiving-cc/', label: 'Sims 4 Thanksgiving CC and decor' },
+      { href: '/sims-4-holiday-ideas/', label: 'Sims 4 holiday ideas for your sims' },
+      { href: '/sims-4-holiday-traditions/', label: 'Sims 4 holiday traditions guide' },
+    ],
   },
   {
     slug: 'clutter',
@@ -574,6 +585,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     guides: [
       { href: '/sims-4-urban-cc/', label: 'Sims 4 urban CC for city sims' },
       { href: '/sims-4-cowboy-cc/', label: 'Sims 4 cowboy and ranch CC' },
+      // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+      { href: '/sims-4-winter-clothes-cc/', label: 'Sims 4 winter clothes CC' },
     ],
   },
   {
@@ -957,6 +970,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-cas-mirror-background/', label: 'Sims 4 CAS backgrounds with a mirror' },
       { href: '/sims-4-cas-background/', label: 'More Sims 4 CAS background picks' },
       { href: '/how-to-change-sims-4-cas-backgrounds/', label: 'How to change your Sims 4 CAS background' },
+      // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+      { href: '/sims-4-christmas-cas-background/', label: 'Sims 4 Christmas CAS backgrounds' },
     ],
   },
   {
@@ -1003,6 +1018,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // It holds 620 impressions / 2 clicks at position 55.7 over the 28d
     // to 2026-09-11, so there is nothing here to cannibalise.
     blogUrl: '/sims-4-loading-screen/',
+    // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+    guides: [{ href: '/sims-4-winter-loading-screens/', label: 'Sims 4 winter loading screens' }],
   },
   {
     // Placement is free: neither `jewelry` nor `watches` appears in any other
@@ -1112,6 +1129,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // nothing here to cannibalise. (/sims-4-cc-nails/, 72 impressions at
     // position 36.1, is the second article in the cluster and also live.)
     blogUrl: '/sims-4-nails-cc/',
+    // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+    guides: [{ href: '/sims-4-christmas-nails-cc/', label: 'Sims 4 Christmas nails CC' }],
   },
   {
     // Appended last on purpose. This is the registry's first `ageGroupsAny`
@@ -1627,6 +1646,15 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // browse/filter intent. /sims-4-christmas-cc/ is live (HTTP 200,
     // verified 2026-10-31) and is not in vercel.json.
     blogUrl: '/sims-4-christmas-cc/',
+    // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+    guides: [
+      { href: '/sims-4-christmas-tree-cc/', label: 'Sims 4 Christmas tree CC' },
+      { href: '/sims-4-christmas-decor-cc/', label: 'Sims 4 Christmas decor CC' },
+      { href: '/sims-4-christmas-clothes-cc/', label: 'Sims 4 Christmas clothes CC' },
+      { href: '/sims-4-christmas-houses/', label: 'Sims 4 Christmas houses and lots' },
+      { href: '/sims-4-christmas-poses/', label: 'Sims 4 Christmas poses' },
+      { href: '/sims-4-santa-cc/', label: 'Sims 4 Santa CC and outfits' },
+    ],
   },
   {
     // Rowan, 2026-11-01 (E316, Tier 0 — registry entry in the existing
