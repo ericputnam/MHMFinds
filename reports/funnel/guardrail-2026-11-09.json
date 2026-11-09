@@ -1,0 +1,1441 @@
+{
+  "status": "green",
+  "action": "none",
+  "actionDetail": null,
+  "vercelCoverage": {
+    "state": "COMPLETE",
+    "rows": 180,
+    "pages": 9,
+    "oldestMs": 1793643040530,
+    "windowStartMs": 1793682000000,
+    "exhausted": false,
+    "stoppedBy": null,
+    "line": "vercel coverage: COMPLETE (180 rows over 9 pages, oldest 2026-11-02T18:10Z ≤ window start 2026-11-03T05:00Z)",
+    "inWindow": "yes"
+  },
+  "rollbackBound": {
+    "inWindowCount": 75,
+    "rollbackTargetMs": 1793670011177,
+    "windowStartMs": 1793682000000,
+    "maxInWindowDeploys": 24,
+    "maxTargetAgeHours": 48,
+    "line": "rollback bound: in-window production deploys 75 (≤24 to auto-rollback) · target 3.3 h before window start (≤48 h) → withheld: in-window deploys 75 exceed rollback bound 24"
+  },
+  "day": "2026-11-06",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 210.2975,
+    "sessions": 11703.75,
+    "rpm": 17.9925
+  },
+  "actualDay": {
+    "date": "2026-11-06",
+    "revenue": 225.96,
+    "sessions": 11556,
+    "rpm": 19.55
+  },
+  "window3": {
+    "actualRevenue": 604.75,
+    "expectedRevenue": 595.9200000000001,
+    "actualSessions": 33375,
+    "expectedSessions": 35097.75,
+    "actualRpm": 18.119850187265918,
+    "expectedRpm": 17.018075909379494
+  },
+  "rollbackTo": null,
+  "rollbackCandidate": "https://mhm-finds-dw5l-12v4azxhd-ericputnams-projects.vercel.app",
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-11-09T11:37:07.255Z",
+      "ref": "7895670",
+      "text": "ERROR funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-2cduhfmpn-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-09T03:31:39.133Z",
+      "ref": "c59a644",
+      "text": "READY chore: compound learnings from 2026-11-08 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-qak5rsivj-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-09T00:17:37.443Z",
+      "ref": "6d06235",
+      "text": "READY fix(video-queue): launchd launcher, revisions early exit, push health check (#488) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-9j1ble53z-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-09T00:15:39.081Z",
+      "ref": "6d06235",
+      "text": "ERROR fix(video-queue): launchd launcher, revisions early exit, push health check (#488) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-q4v9u319m-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-08T23:13:35.356Z",
+      "ref": "b88a666",
+      "text": "READY funnel(ledger): after-merge: manual [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-c6qro7lrd-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-08T23:09:47.572Z",
+      "ref": "1bf6bbc",
+      "text": "READY feat(video-queue): phase 1, WordPress review queue + weekly/nightly video jobs (#487) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-p0zdci7xy-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-08T22:45:39.149Z",
+      "ref": "797b528",
+      "text": "READY funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-7btxqlrdz-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-08T03:31:25.206Z",
+      "ref": "d3e5a6d",
+      "text": "READY chore: compound learnings from 2026-11-07 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-aeg26o7s2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:36:01.465Z",
+      "ref": "71f234d",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #486 E370 Patreon author backfill [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-lvsw4817h-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:32:25.433Z",
+      "ref": "c83d8f7",
+      "text": "READY funnel(nova): E370 Patreon author backfill — 3,050 unattributed mods onto creator pages (T [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-5xgpdfkuh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:28:06.523Z",
+      "ref": "ba28bb2",
+      "text": "READY fix(seo): ProfilePage dateModified as an ISO 8601 DateTime (#485) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-b63ebt0r6-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:12:34.185Z",
+      "ref": "78e0f24",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #483 E368 cas-backgrounds + E369 facial-hair-cc hubs [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-6hxil5h0c-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:08:43.192Z",
+      "ref": "c3332fa",
+      "text": "READY funnel(sage): E368 cas-backgrounds + E369 facial-hair-cc hubs (Tier 0) (#483) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ojywd7be0-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:06:08.642Z",
+      "ref": "0a49b8b",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #479 verdict 11-07 — 11-04 one-day CPM dip, E342 KEEP [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-kvh0k8etz-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:04:28.896Z",
+      "ref": "276fed4",
+      "text": "READY funnel(rio): verdict 11-07 — 11-04 one-day CPM dip (−4.9%), 11-05 rate +2.1%, 7d −7.5% is  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-gifimqtcp-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:03:42.132Z",
+      "ref": "2ed6085",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #484 E367 hub blog-twin anchor names the twin [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-gfyfpvl3f-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:00:28.206Z",
+      "ref": "d42b8a4",
+      "text": "READY funnel(pip): E367 hub -> blog twin link names the twin instead of \"Full article on the blo [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-oenj4s3yk-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T12:00:18.414Z",
+      "ref": "db077a2",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #482 E373 hello-kitty-cc collection page [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-c9ax589mk-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:56:26.033Z",
+      "ref": "58b58bc",
+      "text": "READY catalog: /games/sims-4/hello-kitty-cc/ on a title-only sanrio theme + 7 content-type pins  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-9xx6blp01-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:55:37.646Z",
+      "ref": "bca4ef0",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #481 E366 hub links to the 8 Bing-losing guides [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-hh56lnqd3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:52:20.514Z",
+      "ref": "6a517db",
+      "text": "READY funnel(pip): E366 hub links to the 8 Bing-losing guides with no Next.js inbound link (Tier [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-1egolc438-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:51:54.242Z",
+      "ref": "d153e79",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #480 E374 preflight model fallback on QUOTA [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fh8p6cidd-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:49:02.820Z",
+      "ref": "d5d2923",
+      "text": "READY funnel(ledger): Rowan: E373 pin correction [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-3r7vrvwsw-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:48:30.373Z",
+      "ref": "b4c8e7b",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #478 E371 list the 2 unlisted scripted-shaped subscr [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-k3vt7jzp2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:48:18.811Z",
+      "ref": "7fa9786",
+      "text": "READY funnel(ops): E374 preflight falls back to another model on QUOTA (429) instead of MISSING  [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-7jbzqnui1-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:46:49.683Z",
+      "ref": "10d4444",
+      "text": "READY funnel(ledger): Sage: E368/E369 hub off-type pins apply [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-r6hxlkr55-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:45:49.956Z",
+      "ref": "28203c3",
+      "text": "READY funnel(ledger): Rowan: E373 content-type pins apply [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fiec30b10-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:45:47.745Z",
+      "ref": "78e3753",
+      "text": "READY funnel(ledger): Rowan: E373 sanrio theme apply [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ehpgg2dmg-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:44:12.558Z",
+      "ref": "e76f989",
+      "text": "READY funnel(cass): E371 list the 2 unlisted scripted-shaped subscribers before newsletter-08 (T [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-1nrlcbjhf-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T11:37:51.983Z",
+      "ref": "3eb116f",
+      "text": "READY funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-eg1229wiu-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-07T03:32:31.077Z",
+      "ref": "02cf5fe",
+      "text": "READY chore: compound learnings from 2026-11-06",
+      "url": "https://mhm-finds-dw5l-1earsciup-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:41:34.239Z",
+      "ref": "5fd27f7",
+      "text": "READY funnel(ledger): after-merge: Quinn: PR #477 funnel: daily run 2026-11-06",
+      "url": "https://mhm-finds-dw5l-jzown17i3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:37:54.943Z",
+      "ref": "e75a09e",
+      "text": "READY funnel: daily run 2026-11-06 (#477)",
+      "url": "https://mhm-finds-dw5l-cgw2v5n4c-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:29:11.560Z",
+      "ref": "eb2ae36",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #476 E355 creator ProfilePage dateModified",
+      "url": "https://mhm-finds-dw5l-6mdh6eqvh-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:25:17.478Z",
+      "ref": "7d12e92",
+      "text": "READY funnel(sage): E355 creator ProfilePage JSON-LD carries dateModified = sitemap lastmod (Tie",
+      "url": "https://mhm-finds-dw5l-52rn01zvk-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:24:49.875Z",
+      "ref": "089ec41",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #473 E354 hub CollectionPage dateModified",
+      "url": "https://mhm-finds-dw5l-oj5eomqud-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:21:12.172Z",
+      "ref": "abf463e",
+      "text": "READY funnel(ledger): build-watch: Sage: PR #473 E354 hub CollectionPage dateModified",
+      "url": "https://mhm-finds-dw5l-5l0ymivoy-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:20:33.783Z",
+      "ref": "067ce9c",
+      "text": "ERROR funnel(sage): E354 hub CollectionPage dateModified = sitemap lastmod (Tier 0) (#473)",
+      "url": "https://mhm-finds-dw5l-7wl58pzcq-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:12:20.388Z",
+      "ref": "d4cfae0",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #472 E364 green the suite on main (catalog-count, fee",
+      "url": "https://mhm-finds-dw5l-pw9krz4g4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:08:22.570Z",
+      "ref": "c0ba58e",
+      "text": "READY ops: green the suite on main — catalog-count, feeds, template-lastmod (E364, Tier 0) (#472",
+      "url": "https://mhm-finds-dw5l-fxliij80e-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:07:58.775Z",
+      "ref": "ae701f7",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #475 funnel(pip): E352 share link on mod + collection",
+      "url": "https://mhm-finds-dw5l-e7n0g06b2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:04:46.388Z",
+      "ref": "9895312",
+      "text": "READY funnel(ledger): Nova: E356 apply 72 Mod.author rows",
+      "url": "https://mhm-finds-dw5l-6scr818js-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:04:07.582Z",
+      "ref": "8b9d5b4",
+      "text": "READY funnel(pip): E352 share link on mod + collection pages (?via=share, GA4 share) (#475)",
+      "url": "https://mhm-finds-dw5l-fgp2n6o6v-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:03:40.554Z",
+      "ref": "c14804d",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #471 E356 fold 6 suffix-split creator spellings into",
+      "url": "https://mhm-finds-dw5l-djdd3185m-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T12:00:24.697Z",
+      "ref": "98be44c",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #474 E362 /games/sims-4/heels-cc/ title-only heels ",
+      "url": "https://mhm-finds-dw5l-6i8614dbi-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:59:48.750Z",
+      "ref": "0a5b98b",
+      "text": "READY funnel(nova): fold 6 suffix-split creator spellings into one page (E356) (#471)",
+      "url": "https://mhm-finds-dw5l-4ua8jzs5b-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:56:24.964Z",
+      "ref": "6c0dde8",
+      "text": "READY funnel(ledger): build-watch: Rowan: PR #474 E362 /games/sims-4/heels-cc/ title-only heels ",
+      "url": "https://mhm-finds-dw5l-fii9ghonj-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:55:46.983Z",
+      "ref": "22f99a9",
+      "text": "ERROR catalog: /games/sims-4/heels-cc/ on a title-only heels theme + 6 hub off-type pins (E362, ",
+      "url": "https://mhm-finds-dw5l-fjvhhwhq7-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:55:27.247Z",
+      "ref": "3ac7376",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #470 E360 page-type keep rule on revenue per 1k site ",
+      "url": "https://mhm-finds-dw5l-14z3lo5pv-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:52:35.679Z",
+      "ref": "e9e2a37",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #469 E358 biweekly issue builder + issue-08 draft (T",
+      "url": "https://mhm-finds-dw5l-o0wu4z9f5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:51:44.031Z",
+      "ref": "b43976d",
+      "text": "READY funnel(rio): page-type keep rule grades revenue per 1k site sessions, not page RPM (E360) ",
+      "url": "https://mhm-finds-dw5l-4zuxukfqd-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:46:55.597Z",
+      "ref": "5b41c33",
+      "text": "READY funnel(cass): E358 biweekly issue builder (number, 14-day window, copy) + issue-08 draft (",
+      "url": "https://mhm-finds-dw5l-3t5bm21wg-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:46:48.972Z",
+      "ref": "341b39c",
+      "text": "READY funnel(ledger): Rowan: E362 apply 6 hand-audited content-type pins",
+      "url": "https://mhm-finds-dw5l-clk2nnar6-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:46:13.889Z",
+      "ref": "8ebdeff",
+      "text": "READY funnel(ledger): Rowan: E362 apply heels theme 121 rows",
+      "url": "https://mhm-finds-dw5l-93t5kxmmm-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:43:07.661Z",
+      "ref": "73e22f5",
+      "text": "READY funnel(ledger): Nova: E327 apply superseded by operator hand-approval",
+      "url": "https://mhm-finds-dw5l-iyemxhz6q-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-06T11:38:35.441Z",
+      "ref": "3593e7d",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-lo501mf2x-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:27:08.890Z",
+      "ref": "4afbeb2",
+      "text": "READY funnel(ledger): after-merge: Quinn: PR #468 funnel: daily run 2026-11-05",
+      "url": "https://mhm-finds-dw5l-9bq1o7bdd-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:23:17.266Z",
+      "ref": "7338326",
+      "text": "READY funnel(ledger): build-watch: Quinn: PR #468 funnel: daily run 2026-11-05",
+      "url": "https://mhm-finds-dw5l-hds9xbqs6-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:22:49.997Z",
+      "ref": "f5769bf",
+      "text": "ERROR funnel: daily run 2026-11-05 (#468)",
+      "url": "https://mhm-finds-dw5l-q5d55r5c2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:19:47.065Z",
+      "ref": "0321b4a",
+      "text": "READY funnel(ledger): Nova: E340 apply 470 Mod.author rows",
+      "url": "https://mhm-finds-dw5l-rewon1zyv-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:15:58.039Z",
+      "ref": "c713e3c",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #466 E340 CurseForge author backfill for 470 unattri",
+      "url": "https://mhm-finds-dw5l-1hvsh44v8-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:12:18.621Z",
+      "ref": "aa14fc2",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #465 E338/E339 male-clothes + shoes-cc retitles",
+      "url": "https://mhm-finds-dw5l-d686xydwj-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:12:04.683Z",
+      "ref": "5f30660",
+      "text": "READY funnel(nova): CurseForge author backfill for 470 unattributed mods (E340) (#466)",
+      "url": "https://mhm-finds-dw5l-pb5b1zce7-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:08:00.186Z",
+      "ref": "352f2a1",
+      "text": "READY funnel(sage): male-clothes \"CC & Packs\" + shoes-cc Jordans/sneakers retitle (E338, E339) (",
+      "url": "https://mhm-finds-dw5l-8jv4hrdw1-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:07:50.542Z",
+      "ref": "f230007",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #467 E337 every indexable route ships its own share c",
+      "url": "https://mhm-finds-dw5l-capj6vr0f-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:04:31.966Z",
+      "ref": "33679e1",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #462 E336 commit the missing /og-image.jpg share card",
+      "url": "https://mhm-finds-dw5l-edbq0n3k7-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T12:03:52.891Z",
+      "ref": "02bd8dc",
+      "text": "READY funnel(pip): every indexable route ships its own share card (E337) (#467)",
+      "url": "https://mhm-finds-dw5l-m1oxprhzv-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:59:54.489Z",
+      "ref": "523f29a",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #464 E343 /games/sims-4/plumbob-overrides/ on a tit",
+      "url": "https://mhm-finds-dw5l-681eadohq-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:59:34.517Z",
+      "ref": "db4d385",
+      "text": "READY funnel(pip): commit the missing /og-image.jpg share card + scanner (E336) (#462)",
+      "url": "https://mhm-finds-dw5l-fapq2sfdf-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:55:33.311Z",
+      "ref": "265157c",
+      "text": "READY catalog: /games/sims-4/plumbob-overrides/ on a title-only plumbob theme (E343, Tier 0) (#4",
+      "url": "https://mhm-finds-dw5l-i1h0ds2mc-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:55:17.494Z",
+      "ref": "fd1d44d",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #463 E341 newsletter_form_view denominator on every ",
+      "url": "https://mhm-finds-dw5l-ankut2kh0-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:51:28.262Z",
+      "ref": "d3df24a",
+      "text": "READY funnel(cass): newsletter_form_view denominator on every NewsletterSignup (E341) (#463)",
+      "url": "https://mhm-finds-dw5l-15v0oaou4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:51:16.062Z",
+      "ref": "089a3ea",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #461 E344 next-experiment-id reserves (host-wide log ",
+      "url": "https://mhm-finds-dw5l-gqa06w1wn-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:47:24.825Z",
+      "ref": "1ca92ad",
+      "text": "READY funnel(ops): E344 next-experiment-id reserves — host-wide log + open PRs + --hold (Tier 0)",
+      "url": "https://mhm-finds-dw5l-7kkiop9q9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:45:15.344Z",
+      "ref": "d273368",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #460 verdict 11-05 (E342)",
+      "url": "https://mhm-finds-dw5l-iuwtchc2v-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:44:31.234Z",
+      "ref": "1e97b16",
+      "text": "READY funnel(ledger): Rowan: E343 plumbob theme apply",
+      "url": "https://mhm-finds-dw5l-3kjqb3h24-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:43:13.101Z",
+      "ref": "1763a71",
+      "text": "ERROR funnel(rio): verdict 11-05 — judged day held on Mediavine 11-03 sessions lag; yellow still",
+      "url": "https://mhm-finds-dw5l-mfqbxrr2u-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-05T11:37:07.317Z",
+      "ref": "3ac8328",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-cx3yafi1f-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:46:51.170Z",
+      "ref": "81c8833",
+      "text": "READY funnel(ledger): after-merge: Quinn: PR #459 funnel: daily run 2026-11-04",
+      "url": "https://mhm-finds-dw5l-atutuyhn4-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:42:34.719Z",
+      "ref": "00332c0",
+      "text": "READY funnel: daily run 2026-11-04 (#459)",
+      "url": "https://mhm-finds-dw5l-jefjpeama-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:40:22.465Z",
+      "ref": "954763e",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #458 E335 IndexNow pushes every sitemap-nextjs conten",
+      "url": "https://mhm-finds-dw5l-qm5xam25l-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:36:17.664Z",
+      "ref": "b503a8e",
+      "text": "READY funnel(pip): IndexNow pushes every sitemap-nextjs content page (E335) (#458)",
+      "url": "https://mhm-finds-dw5l-1t8eay4w7-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:34:59.564Z",
+      "ref": "ce20a38",
+      "text": "READY funnel(ledger): after-merge: Pip: PR #454 E333 social-draft drops /sign-in/ + skips pendin",
+      "url": "https://mhm-finds-dw5l-g56vpu82e-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:30:59.357Z",
+      "ref": "cdd9f2e",
+      "text": "READY funnel(pip): social-draft drops /sign-in/ + skips pending destinations (E333) (#454)",
+      "url": "https://mhm-finds-dw5l-a2zimr8i5-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:28:16.996Z",
+      "ref": "4331965",
+      "text": "READY funnel(ledger): after-merge: Rio: PR #455 E332 yellow verdict 2026-11-04 (paper) + Q32 clo",
+      "url": "https://mhm-finds-dw5l-6pq2tmk4r-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:26:45.484Z",
+      "ref": "8181dcd",
+      "text": "READY funnel(ledger): after-merge: Ops: PR #453 E331 preflight QUOTA kind + never-empty excerpt",
+      "url": "https://mhm-finds-dw5l-4vgfju0pr-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:26:09.864Z",
+      "ref": "c88e2e5",
+      "text": "READY funnel(rio): E332 yellow verdict 2026-11-04 — Halloween Saturday volume (90% of 3-day gap)",
+      "url": "https://mhm-finds-dw5l-2s961ed56-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:22:46.216Z",
+      "ref": "29bd5a5",
+      "text": "READY funnel(ledger): build-watch: Ops: PR #453 E331 preflight QUOTA kind + never-empty excerpt",
+      "url": "https://mhm-finds-dw5l-aiikfosqg-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:22:03.840Z",
+      "ref": "58e1826",
+      "text": "ERROR funnel(ops): preflight QUOTA kind + never-empty excerpt (E331) (#453)",
+      "url": "https://mhm-finds-dw5l-ro12ziffu-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:21:35.976Z",
+      "ref": "f5bf99f",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #457 E330 cottagecore-cc CC & Mods retitle",
+      "url": "https://mhm-finds-dw5l-j7dcm8bw9-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:17:38.742Z",
+      "ref": "7dcae0f",
+      "text": "READY funnel(ledger): after-merge: Rowan: PR #456 E328 Atino00 content-type pins (Tier 0)",
+      "url": "https://mhm-finds-dw5l-6dgwclg73-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:17:29.814Z",
+      "ref": "a530bee",
+      "text": "READY funnel(sage): E330 cottagecore-cc head-term retitle \"CC & Mods\" + browse-intent test green",
+      "url": "https://mhm-finds-dw5l-rbpa0ijb6-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:13:45.478Z",
+      "ref": "b23f2b7",
+      "text": "READY funnel(ledger): after-merge: Sage: PR #452 E329 COLLECTION_TEMPLATE_LASTMOD → 2026-11-02",
+      "url": "https://mhm-finds-dw5l-84izwt3dq-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:13:27.415Z",
+      "ref": "108f5d4",
+      "text": "READY funnel(rowan): E328 hand-audited content-type pins for the 7 Atino00 submission mods (Tier",
+      "url": "https://mhm-finds-dw5l-j33fs6875-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:09:35.779Z",
+      "ref": "82b9023",
+      "text": "READY funnel(ledger): after-merge: Cass: PR #451 E327 sign-up opt-in checkbox copy A/B",
+      "url": "https://mhm-finds-dw5l-optgf3uh2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:09:25.398Z",
+      "ref": "65517c9",
+      "text": "READY funnel(sage): E329 COLLECTION_TEMPLATE_LASTMOD → 2026-11-02 (#442 changed the hub template",
+      "url": "https://mhm-finds-dw5l-1hgx8zc8k-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:05:24.618Z",
+      "ref": "4d4f14d",
+      "text": "READY funnel(ledger): after-merge: Nova: PR #450 E327 per-batch approval plan + frozen plan for ",
+      "url": "https://mhm-finds-dw5l-msahb3sii-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:05:17.411Z",
+      "ref": "d638131",
+      "text": "READY funnel(cass): E327 sign-up opt-in checkbox copy A/B (Tier 0) (#451)",
+      "url": "https://mhm-finds-dw5l-e0azmjsla-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:02:24.946Z",
+      "ref": "6088736",
+      "text": "READY funnel(ledger): Rowan: E328 apply (Atino00 content-type pins)",
+      "url": "https://mhm-finds-dw5l-4wmx604q2-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T15:00:55.345Z",
+      "ref": "d8cc4ac",
+      "text": "READY funnel(nova): E327 per-batch approval plan (--plan=) + frozen plan for 3 Atino00 submissio",
+      "url": "https://mhm-finds-dw5l-5uhqj57ja-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T14:53:33.057Z",
+      "ref": "6fc912e",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-9vc1xqhks-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-04T03:31:29.113Z",
+      "ref": "c5d9b34",
+      "text": "READY chore: compound learnings from 2026-11-03",
+      "url": "https://mhm-finds-dw5l-426hfky48-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-03T11:38:14.728Z",
+      "ref": "89ecfc5",
+      "text": "READY funnel(ledger): degraded digest 2026-11-03 landed by runner (Quinn did not run — MISSED re",
+      "url": "https://mhm-finds-dw5l-reppabfxw-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-03T11:38:11.431Z",
+      "ref": "c84ebf6",
+      "text": "READY funnel(ledger): MISSED 2026-11-03 preflight=OTHER",
+      "url": "https://mhm-finds-dw5l-30dk5c9o3-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-03T11:37:16.552Z",
+      "ref": "1579421",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-6jyk6tg79-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-08T22:31:35-05:00",
+      "ref": "c59a6448",
+      "text": "chore: compound learnings from 2026-11-08"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-08T19:15:36-05:00",
+      "ref": "6d06235f",
+      "text": "fix(video-queue): launchd launcher, revisions early exit, push health check (#488)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-08T18:13:32-05:00",
+      "ref": "b88a6668",
+      "text": "funnel(ledger): after-merge: manual"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-08T18:09:44-05:00",
+      "ref": "1bf6bbc5",
+      "text": "feat(video-queue): phase 1, WordPress review queue + weekly/nightly video jobs (#487)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-08T17:45:35-05:00",
+      "ref": "797b5284",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T22:31:21-05:00",
+      "ref": "d3e5a6d4",
+      "text": "chore: compound learnings from 2026-11-07"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:35:57-05:00",
+      "ref": "71f234d4",
+      "text": "funnel(ledger): after-merge: Nova: PR #486 E370 Patreon author backfill"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:32:22-05:00",
+      "ref": "c83d8f74",
+      "text": "funnel(nova): E370 Patreon author backfill — 3,050 unattributed mods onto creator pages (T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T12:28:03Z",
+      "ref": "ba28bb29",
+      "text": "fix(seo): ProfilePage dateModified as an ISO 8601 DateTime (#485)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:12:30-05:00",
+      "ref": "78e0f245",
+      "text": "funnel(ledger): after-merge: Sage: PR #483 E368 cas-backgrounds + E369 facial-hair-cc hubs"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:08:40-05:00",
+      "ref": "c3332fa0",
+      "text": "funnel(sage): E368 cas-backgrounds + E369 facial-hair-cc hubs (Tier 0) (#483)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:06:05-05:00",
+      "ref": "0a49b8b1",
+      "text": "funnel(ledger): after-merge: Rio: PR #479 verdict 11-07 — 11-04 one-day CPM dip, E342 KEEP"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:04:26-05:00",
+      "ref": "276fed49",
+      "text": "funnel(rio): verdict 11-07 — 11-04 one-day CPM dip (−4.9%), 11-05 rate +2.1%, 7d −7.5% is "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:03:38-05:00",
+      "ref": "2ed60851",
+      "text": "funnel(ledger): after-merge: Pip: PR #484 E367 hub blog-twin anchor names the twin"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:00:24-05:00",
+      "ref": "d42b8a40",
+      "text": "funnel(pip): E367 hub -> blog twin link names the twin instead of \"Full article on the blo"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T07:00:14-05:00",
+      "ref": "db077a22",
+      "text": "funnel(ledger): after-merge: Rowan: PR #482 E373 hello-kitty-cc collection page"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:56:22-05:00",
+      "ref": "58b58bce",
+      "text": "catalog: /games/sims-4/hello-kitty-cc/ on a title-only sanrio theme + 7 content-type pins "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:55:34-05:00",
+      "ref": "bca4ef0a",
+      "text": "funnel(ledger): after-merge: Pip: PR #481 E366 hub links to the 8 Bing-losing guides"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:52:17-05:00",
+      "ref": "6a517db3",
+      "text": "funnel(pip): E366 hub links to the 8 Bing-losing guides with no Next.js inbound link (Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:51:51-05:00",
+      "ref": "d153e794",
+      "text": "funnel(ledger): after-merge: Ops: PR #480 E374 preflight model fallback on QUOTA"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:48:59-05:00",
+      "ref": "d5d29239",
+      "text": "funnel(ledger): Rowan: E373 pin correction"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:48:27-05:00",
+      "ref": "b4c8e7b6",
+      "text": "funnel(ledger): after-merge: Cass: PR #478 E371 list the 2 unlisted scripted-shaped subscr"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:48:15-05:00",
+      "ref": "7fa97869",
+      "text": "funnel(ops): E374 preflight falls back to another model on QUOTA (429) instead of MISSING "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:46:46-05:00",
+      "ref": "10d4444d",
+      "text": "funnel(ledger): Sage: E368/E369 hub off-type pins apply"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:45:46-05:00",
+      "ref": "28203c34",
+      "text": "funnel(ledger): Rowan: E373 content-type pins apply"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:45:44-05:00",
+      "ref": "78e37534",
+      "text": "funnel(ledger): Rowan: E373 sanrio theme apply"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:44:09-05:00",
+      "ref": "e76f989a",
+      "text": "funnel(cass): E371 list the 2 unlisted scripted-shaped subscribers before newsletter-08 (T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-07T06:37:48-05:00",
+      "ref": "3eb116f0",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T22:32:25-05:00",
+      "ref": "02cf5fe0",
+      "text": "chore: compound learnings from 2026-11-06"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:41:30-05:00",
+      "ref": "5fd27f75",
+      "text": "funnel(ledger): after-merge: Quinn: PR #477 funnel: daily run 2026-11-06"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:37:51-05:00",
+      "ref": "e75a09e9",
+      "text": "funnel: daily run 2026-11-06 (#477)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:28:58-05:00",
+      "ref": "eb2ae365",
+      "text": "funnel(ledger): after-merge: Sage: PR #476 E355 creator ProfilePage dateModified"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:25:14-05:00",
+      "ref": "7d12e925",
+      "text": "funnel(sage): E355 creator ProfilePage JSON-LD carries dateModified = sitemap lastmod (Tie"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:24:46-05:00",
+      "ref": "089ec416",
+      "text": "funnel(ledger): after-merge: Sage: PR #473 E354 hub CollectionPage dateModified"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:21:08-05:00",
+      "ref": "abf463ed",
+      "text": "funnel(ledger): build-watch: Sage: PR #473 E354 hub CollectionPage dateModified"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:20:30-05:00",
+      "ref": "067ce9cc",
+      "text": "funnel(sage): E354 hub CollectionPage dateModified = sitemap lastmod (Tier 0) (#473)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:12:16-05:00",
+      "ref": "d4cfae04",
+      "text": "funnel(ledger): after-merge: Ops: PR #472 E364 green the suite on main (catalog-count, fee"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:08:19-05:00",
+      "ref": "c0ba58e5",
+      "text": "ops: green the suite on main — catalog-count, feeds, template-lastmod (E364, Tier 0) (#472"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:07:55-05:00",
+      "ref": "ae701f76",
+      "text": "funnel(ledger): after-merge: Pip: PR #475 funnel(pip): E352 share link on mod + collection"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:04:43-05:00",
+      "ref": "9895312e",
+      "text": "funnel(ledger): Nova: E356 apply 72 Mod.author rows"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:04:04-05:00",
+      "ref": "8b9d5b43",
+      "text": "funnel(pip): E352 share link on mod + collection pages (?via=share, GA4 share) (#475)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:03:36-05:00",
+      "ref": "c14804d8",
+      "text": "funnel(ledger): after-merge: Nova: PR #471 E356 fold 6 suffix-split creator spellings into"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T07:00:17-05:00",
+      "ref": "98be44c9",
+      "text": "funnel(ledger): after-merge: Rowan: PR #474 E362 /games/sims-4/heels-cc/ title-only heels "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:59:45-05:00",
+      "ref": "0a5b98b5",
+      "text": "funnel(nova): fold 6 suffix-split creator spellings into one page (E356) (#471)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:56:21-05:00",
+      "ref": "6c0dde8d",
+      "text": "funnel(ledger): build-watch: Rowan: PR #474 E362 /games/sims-4/heels-cc/ title-only heels "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:55:43-05:00",
+      "ref": "22f99a9c",
+      "text": "catalog: /games/sims-4/heels-cc/ on a title-only heels theme + 6 hub off-type pins (E362, "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:55:24-05:00",
+      "ref": "3ac7376c",
+      "text": "funnel(ledger): after-merge: Rio: PR #470 E360 page-type keep rule on revenue per 1k site "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:52:31-05:00",
+      "ref": "e9e2a377",
+      "text": "funnel(ledger): after-merge: Cass: PR #469 E358 biweekly issue builder + issue-08 draft (T"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:51:40-05:00",
+      "ref": "b43976d9",
+      "text": "funnel(rio): page-type keep rule grades revenue per 1k site sessions, not page RPM (E360) "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:46:50-05:00",
+      "ref": "5b41c332",
+      "text": "funnel(cass): E358 biweekly issue builder (number, 14-day window, copy) + issue-08 draft ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:46:45-05:00",
+      "ref": "341b39c1",
+      "text": "funnel(ledger): Rowan: E362 apply 6 hand-audited content-type pins"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:46:10-05:00",
+      "ref": "8ebdeffa",
+      "text": "funnel(ledger): Rowan: E362 apply heels theme 121 rows"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:43:04-05:00",
+      "ref": "73e22f51",
+      "text": "funnel(ledger): Nova: E327 apply superseded by operator hand-approval"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-06T06:38:31-05:00",
+      "ref": "3593e7dd",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:27:05-08:00",
+      "ref": "4afbeb2a",
+      "text": "funnel(ledger): after-merge: Quinn: PR #468 funnel: daily run 2026-11-05"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:23:13-08:00",
+      "ref": "73383263",
+      "text": "funnel(ledger): build-watch: Quinn: PR #468 funnel: daily run 2026-11-05"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T07:22:45-05:00",
+      "ref": "f5769bfb",
+      "text": "funnel: daily run 2026-11-05 (#468)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:19:42-08:00",
+      "ref": "0321b4ac",
+      "text": "funnel(ledger): Nova: E340 apply 470 Mod.author rows"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:15:53-08:00",
+      "ref": "c713e3cd",
+      "text": "funnel(ledger): after-merge: Nova: PR #466 E340 CurseForge author backfill for 470 unattri"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:12:14-08:00",
+      "ref": "aa14fc2c",
+      "text": "funnel(ledger): after-merge: Sage: PR #465 E338/E339 male-clothes + shoes-cc retitles"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T07:12:01-05:00",
+      "ref": "5f306609",
+      "text": "funnel(nova): CurseForge author backfill for 470 unattributed mods (E340) (#466)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T07:07:57-05:00",
+      "ref": "352f2a1d",
+      "text": "funnel(sage): male-clothes \"CC & Packs\" + shoes-cc Jordans/sneakers retitle (E338, E339) ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:07:46-08:00",
+      "ref": "f230007e",
+      "text": "funnel(ledger): after-merge: Pip: PR #467 E337 every indexable route ships its own share c"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T04:04:27-08:00",
+      "ref": "33679e15",
+      "text": "funnel(ledger): after-merge: Pip: PR #462 E336 commit the missing /og-image.jpg share card"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T07:03:46-05:00",
+      "ref": "02bd8dcb",
+      "text": "funnel(pip): every indexable route ships its own share card (E337) (#467)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T03:59:50-08:00",
+      "ref": "523f29ae",
+      "text": "funnel(ledger): after-merge: Rowan: PR #464 E343 /games/sims-4/plumbob-overrides/ on a tit"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T06:59:31-05:00",
+      "ref": "db4d3855",
+      "text": "funnel(pip): commit the missing /og-image.jpg share card + scanner (E336) (#462)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T06:55:29-05:00",
+      "ref": "265157ca",
+      "text": "catalog: /games/sims-4/plumbob-overrides/ on a title-only plumbob theme (E343, Tier 0) (#4"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T03:55:13-08:00",
+      "ref": "fd1d44d2",
+      "text": "funnel(ledger): after-merge: Cass: PR #463 E341 newsletter_form_view denominator on every "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T06:51:24-05:00",
+      "ref": "d3df24a9",
+      "text": "funnel(cass): newsletter_form_view denominator on every NewsletterSignup (E341) (#463)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T03:51:12-08:00",
+      "ref": "089a3eac",
+      "text": "funnel(ledger): after-merge: Ops: PR #461 E344 next-experiment-id reserves (host-wide log "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T06:47:21-05:00",
+      "ref": "1ca92ad0",
+      "text": "funnel(ops): E344 next-experiment-id reserves — host-wide log + open PRs + --hold (Tier 0)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T03:45:10-08:00",
+      "ref": "d2733683",
+      "text": "funnel(ledger): after-merge: Rio: PR #460 verdict 11-05 (E342)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T03:44:27-08:00",
+      "ref": "1e97b16c",
+      "text": "funnel(ledger): Rowan: E343 plumbob theme apply"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T06:43:10-05:00",
+      "ref": "1763a71a",
+      "text": "funnel(rio): verdict 11-05 — judged day held on Mediavine 11-03 sessions lag; yellow still"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-05T03:37:02-08:00",
+      "ref": "3ac83287",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:46:46-08:00",
+      "ref": "81c88335",
+      "text": "funnel(ledger): after-merge: Quinn: PR #459 funnel: daily run 2026-11-04"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:42:31-05:00",
+      "ref": "00332c03",
+      "text": "funnel: daily run 2026-11-04 (#459)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:40:17-08:00",
+      "ref": "954763e8",
+      "text": "funnel(ledger): after-merge: Pip: PR #458 E335 IndexNow pushes every sitemap-nextjs conten"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:36:13-05:00",
+      "ref": "b503a8ec",
+      "text": "funnel(pip): IndexNow pushes every sitemap-nextjs content page (E335) (#458)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:34:53-08:00",
+      "ref": "ce20a38c",
+      "text": "funnel(ledger): after-merge: Pip: PR #454 E333 social-draft drops /sign-in/ + skips pendin"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:30:55-05:00",
+      "ref": "cdd9f2e7",
+      "text": "funnel(pip): social-draft drops /sign-in/ + skips pending destinations (E333) (#454)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:28:12-08:00",
+      "ref": "4331965d",
+      "text": "funnel(ledger): after-merge: Rio: PR #455 E332 yellow verdict 2026-11-04 (paper) + Q32 clo"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:26:39-08:00",
+      "ref": "8181dcd4",
+      "text": "funnel(ledger): after-merge: Ops: PR #453 E331 preflight QUOTA kind + never-empty excerpt"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:26:06-05:00",
+      "ref": "c88e2e57",
+      "text": "funnel(rio): E332 yellow verdict 2026-11-04 — Halloween Saturday volume (90% of 3-day gap)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:22:42-08:00",
+      "ref": "29bd5a51",
+      "text": "funnel(ledger): build-watch: Ops: PR #453 E331 preflight QUOTA kind + never-empty excerpt"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:22:00-05:00",
+      "ref": "58e18265",
+      "text": "funnel(ops): preflight QUOTA kind + never-empty excerpt (E331) (#453)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:21:31-08:00",
+      "ref": "f5bf99f3",
+      "text": "funnel(ledger): after-merge: Sage: PR #457 E330 cottagecore-cc CC & Mods retitle"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:17:34-08:00",
+      "ref": "7dcae0fc",
+      "text": "funnel(ledger): after-merge: Rowan: PR #456 E328 Atino00 content-type pins (Tier 0)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:17:26-05:00",
+      "ref": "a530bee4",
+      "text": "funnel(sage): E330 cottagecore-cc head-term retitle \"CC & Mods\" + browse-intent test green"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:13:41-08:00",
+      "ref": "b23f2b7f",
+      "text": "funnel(ledger): after-merge: Sage: PR #452 E329 COLLECTION_TEMPLATE_LASTMOD → 2026-11-02"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:13:23-05:00",
+      "ref": "108f5d4d",
+      "text": "funnel(rowan): E328 hand-audited content-type pins for the 7 Atino00 submission mods (Tier"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:09:25-08:00",
+      "ref": "82b90230",
+      "text": "funnel(ledger): after-merge: Cass: PR #451 E327 sign-up opt-in checkbox copy A/B"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:09:19-05:00",
+      "ref": "65517c9a",
+      "text": "funnel(sage): E329 COLLECTION_TEMPLATE_LASTMOD → 2026-11-02 (#442 changed the hub template"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:05:19-08:00",
+      "ref": "4d4f14d1",
+      "text": "funnel(ledger): after-merge: Nova: PR #450 E327 per-batch approval plan + frozen plan for "
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:05:14-05:00",
+      "ref": "d6381314",
+      "text": "funnel(cass): E327 sign-up opt-in checkbox copy A/B (Tier 0) (#451)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T07:02:21-08:00",
+      "ref": "60887367",
+      "text": "funnel(ledger): Rowan: E328 apply (Atino00 content-type pins)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T10:00:51-05:00",
+      "ref": "d8cc4acb",
+      "text": "funnel(nova): E327 per-batch approval plan (--plan=) + frozen plan for 3 Atino00 submissio"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-04T06:53:28-08:00",
+      "ref": "6fc912eb",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-03T22:31:17-05:00",
+      "ref": "c5d9b344",
+      "text": "chore: compound learnings from 2026-11-03"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-03T06:38:11-05:00",
+      "ref": "89ecfc50",
+      "text": "funnel(ledger): degraded digest 2026-11-03 landed by runner (Quinn did not run — MISSED re"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-03T06:38:08-05:00",
+      "ref": "c84ebf67",
+      "text": "funnel(ledger): MISSED 2026-11-03 preflight=OTHER"
+    }
+  ],
+  "health": {
+    "date": "2026/11/09",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $225.96 (7.4%), RPM 19.55 (8.7%), sessions -1.3% vs same weekday, prior 4 weeks · 3-day revenue 1.5%"
+  ],
+  "sessionsExSegment": {
+    "rule": {
+      "experiment": "E216",
+      "country": "Singapore",
+      "source": "(direct)"
+    },
+    "day": "2026-11-06",
+    "priorDays": [
+      "2026-10-30",
+      "2026-10-23",
+      "2026-10-16",
+      "2026-10-09"
+    ],
+    "raw": {
+      "actual": 11502,
+      "expected": 11816.5
+    },
+    "segment": {
+      "actual": 267,
+      "expected": 295,
+      "shareActual": 0.023213354199269693,
+      "shareExpected": 0.0249650911860534
+    },
+    "exSegment": {
+      "actual": 11235,
+      "expected": 11521.5
+    }
+  },
+  "sessionsExSegmentLine": "sessions ex Singapore (direct) (E216, GA4): raw 11,502 vs 11,817 (-2.7%) → ex-segment 11,235 vs 11,522 (-2.5%) · segment 267 = 2.32% of the day (controls 2.50%, 4 same weekdays)",
+  "sessionsExSegmentRpm": {
+    "actual": 20.11214953271028,
+    "expected": 18.25261467690839,
+    "mixPredictedRpmDelta": 0.0017965889948643454,
+    "exSegmentRpmDelta": 0.10187772484752067,
+    "read": "rate"
+  },
+  "sessionsExSegmentRpmLine": "ex-segment RPM (E216; Mediavine revenue ÷ GA4 sessions ex Singapore (direct)): $20.11 vs $18.25 (+10.2%) · mix alone predicts raw RPM +0.2% → rate (mix band ±1%)"
+}
