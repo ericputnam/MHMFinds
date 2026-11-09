@@ -32,9 +32,10 @@ export const APP_LASTMOD = '2026-11-06';
 // advertised 11-01 for a page that changed 11-02; E329 bumped it 11-04);
 // "Share this list" button in the intro header 2026-11-06 (E352);
 // CollectionPage JSON-LD gains dateModified 2026-11-06 (E354);
-// descriptive anchor on the blog-twin link 2026-11-07 (E367).
+// descriptive anchor on the blog-twin link 2026-11-07 (E367);
+// "create a free account" link in the email block 2026-11-09 (E380).
 // Bump when the template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-07';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-09';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
