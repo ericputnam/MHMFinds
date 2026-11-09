@@ -22,6 +22,7 @@ import { GALLERY_POSE_THEME, isGalleryPoseTitle } from '../galleryPoseThemeRules
 import { PLUMBOB_THEME, isPlumbobTitle } from '../plumbobThemeRules';
 import { HEELS_THEME, isHeelsTitle } from '../heelsThemeRules';
 import { SANRIO_THEME, isSanrioTitle } from '../sanrioThemeRules';
+import { HEADWEAR_THEME, isHeadwearTitle } from '../headwearThemeRules';
 import { CHRISTMAS_THEME, isChristmasTitle } from '../christmasThemeRules';
 import { PIERCING_THEME, isPiercingTitle } from '../piercingThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
@@ -1172,6 +1173,13 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Headwear theme — title only, whole words (E382; see lib/headwearThemeRules.ts).
+  if (isHeadwearTitle(title) && !detectedThemes.includes(HEADWEAR_THEME)) {
+    detectedThemes.push(HEADWEAR_THEME);
+    allMatchedKeywords.push(HEADWEAR_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Sanrio theme — title only, whole words (E373; see lib/sanrioThemeRules.ts).
   if (isSanrioTitle(title) && !detectedThemes.includes(SANRIO_THEME)) {
     detectedThemes.push(SANRIO_THEME);
@@ -1289,5 +1297,5 @@ export function getSupportedRoomThemes(): string[] {
   // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
   // a theme to its own rule file silently drops it from this list (bedroom
   // was missing here from #170 until 2026-09-25).
-  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME, PLUMBOB_THEME, HEELS_THEME, SANRIO_THEME].sort();
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME, PLUMBOB_THEME, HEELS_THEME, SANRIO_THEME, HEADWEAR_THEME].sort();
 }

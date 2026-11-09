@@ -494,7 +494,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // has an anchored inbound source (hair-cc keeps 4 inbound: skin-details,
     // shoes-cc, y2k-cc, makeup-cc).
     // Sage, 2026-11-07 (E369: female-clothes -> facial-hair-cc; the old target keeps enough inbound).
-    related: ['facial-hair-cc', 'shoes-cc', 'clothes-cc'],
+    // 2026-11-09 (E382): 'shoes-cc' → 'hats-cc' (shoes-cc keeps female-clothes + heels-cc).
+    related: ['facial-hair-cc', 'hats-cc', 'clothes-cc'],
     // No blogUrl: /sims-4-male-clothes-cc/ 301s here (2026-07-03).
   },
   {
@@ -1045,7 +1046,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-11-01 (E316): 'makeup-cc' → 'piercings-cc' (makeup-cc keeps
     // nails-cc and more; the 82-piercing shelf described above now has its
     // own page).
-    related: ['tattoos', 'wedding-cc', 'piercings-cc'],
+    // 2026-11-09 (E382): 'tattoos' → 'hats-cc' (tattoos keeps skin-details + piercings-cc).
+    related: ['hats-cc', 'wedding-cc', 'piercings-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // jewelry cc" intent, this page owns browse/filter intent.
     // /sims-4-jewelry-cc/ is live (HTTP 200, no redirect, verified
@@ -1771,6 +1773,42 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // this page owns browse intent. /sims-4-hello-kitty-cc/ is live (HTTP
     // 200, verified 2026-11-07) and is not in vercel.json.
     blogUrl: '/sims-4-hello-kitty-cc/',
+  },
+  {
+    // Rowan, 2026-11-09 (E382, Tier 0 — registry entry in the existing
+    // pattern). A browse page for hats. The `hats` CONTENT TYPE cannot back
+    // it: 276 rows, only 64.5% with a hat word in the title, and 10 of its
+    // top 24 are not hats (a Coach bag at #2, map replacements, hairstyles).
+    // The theme is TITLE-ONLY (lib/headwearThemeRules.ts, accepted, excluded
+    // and rejected words with counts in its comment); 153 rows tagged / 0
+    // stripped on 2026-11-09, 152 SFW Sims 4, every ADD row read.
+    // Demand: the legacy article /sims-4-hats-cc/ drew 201 impressions / 4
+    // clicks at position 11.7 (GSC 2026-10-09 → 11-05) and 281 GA4 landing
+    // sessions 2026-10-26 → 11-08.
+    // Inbound: male-clothes (739 landing sessions 10-26 → 11-08; repointed
+    // from shoes-cc, which keeps female-clothes + heels-cc) and jewelry-cc
+    // (repointed from tattoos, which keeps skin-details + piercings-cc).
+    // Appended after the contentType pages because a themesAny entry scores
+    // specificity 1, so every hat keeps its own breadcrumb.
+    slug: 'hats-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Hats CC',
+    heading: 'Sims 4 Hats CC',
+    metaTitle: 'Sims 4 Hats CC — Browse 150+ Caps, Beanies, Cowboy Hats & Bonnets | MustHaveMods',
+    metaDescription:
+      'Browse 150+ Sims 4 hats CC in one grid: baseball and trucker caps, beanies, cowboy and witch hats, bucket hats, silk bonnets and snapbacks, sorted by downloads.',
+    tagline: 'Caps, beanies, cowboy hats, witch hats and bonnets',
+    intro:
+      'Hats are the accessory the base game forgets. Create a Sim has a few baseball caps, a beanie or two and whatever a pack happened to ship with, which is why a cowboy hat for a ranch save or a silk bonnet for a bedtime routine almost always means a trip to a creator\'s Patreon or Tumblr. And hats are hard to find once you go looking, because a general accessories list buries them between bags, glasses and earrings.\n\nThis collection is only headwear: 152 finds, sorted by downloads, and every one of them says hat, cap, beanie, bonnet, snapback, visor, helmet, bandana or headwear in its own title. That rule is deliberate. A dress whose description mentions \"a matching hat\" is not a hat, a lamp called Lamp Of Many Hats is a lamp, and crowns and tiaras are jewelry, so none of them show up here. When the hat is one piece of a costume or an outfit set, it stays off the page too.\n\nCaps are the deepest shelf at 29 (baseball, trucker, snapback, flat and skull caps), followed by 23 cowboy and western hats, 13 witch hats, 12 beanies, 7 bucket hats and 7 sleep and silk bonnets. Nine are made for toddlers, children or infants, and the rest of the grid is one-off sun hats, newsboys, fur hats, novelty animal hats and a few riding helmets. The most downloaded item is a Nike skull cap.\n\nTwo practical notes. Most hats hide part of the hair, and a hat built on one hairline can clip through a long or voluminous style, so check the creator\'s page for a hat-compatible hair or a hair-hider version. And hats occupy one CAS slot, so a hat and a hair accessory from a different creator can fight over the same space.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the hats everyone already has, then scroll for the single releases the big roundups never mention.',
+    filter: { themesAny: ['headwear'] },
+    expectedCount: 152,
+    related: ['male-clothes', 'jewelry-cc', 'witch-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // hats" intent (201 impr / 4 clk, pos 11.7, 28d to 11-05); this page
+    // owns browse intent. /sims-4-hats-cc/ is live (HTTP 200, verified
+    // 2026-11-09) and is not in vercel.json.
+    blogUrl: '/sims-4-hats-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
