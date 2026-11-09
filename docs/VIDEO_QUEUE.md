@@ -140,7 +140,20 @@ search.
 | `scripts/agents/video-queue-lib.ts` | pure helpers (slots, captions, link rules, checks); unit-tested |
 | `scripts/agents/video-queue-prompt.md` | what headless Claude does on `--weekly` and `--revisions` |
 | `scripts/agents/run-video-queue.sh` | launchd entry: clean worktree from origin/main, state dir, claude -p, log |
+| `scripts/agents/launch-video-queue.sh` | what launchd runs: fetches origin/main and runs its `run-video-queue.sh`, so the main checkout can be on any branch |
 | `scripts/agents/com.mhmfinds.video-weekly.plist` / `com.mhmfinds.video-revisions.plist` | schedules |
+
+Installing the schedules (once; repeat the `cp` lines after the launcher or plists change):
+
+```bash
+mkdir -p ~/.mhm-video-queue/bin
+cp scripts/agents/launch-video-queue.sh ~/.mhm-video-queue/bin/ && chmod +x ~/.mhm-video-queue/bin/launch-video-queue.sh
+cp scripts/agents/com.mhmfinds.video-{weekly,revisions}.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mhmfinds.video-weekly.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mhmfinds.video-revisions.plist
+```
+
+Stop them with `launchctl bootout gui/$(id -u)/com.mhmfinds.video-weekly` (and `…video-revisions`).
 
 State that must survive between runs (drafts, rendered assets) lives in
 `~/.mhm-video-queue/state/reports/funnel/social/…` (`MHM_PROJECT_DIR`), not in a git checkout.
