@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mhmfinds.video-post-due</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/eputnam/.mhm-video-queue/bin/video-post-due.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/eputnam/java_projects/MHMFinds</string>
+
+    <!-- Every 15 minutes, and once at load. WordPress also posts from WP-cron; this covers quiet hours
+         when nobody visits the blog. See docs/VIDEO_QUEUE.md for install steps. -->
+    <key>StartInterval</key>
+    <integer>900</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/video-post-due.launchd.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/eputnam/java_projects/MHMFinds/logs/video-post-due.launchd.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/eputnam</string>
+    </dict>
+</dict>
+</plist>

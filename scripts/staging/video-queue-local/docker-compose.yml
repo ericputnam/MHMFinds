@@ -29,6 +29,7 @@ services:
       - html:/var/www/html
       - store:/var/www/mhm-video-queue
       - ../../../staging/wordpress/plugins/mhm-video-queue:/var/www/html/wp-content/plugins/mhm-video-queue:ro
+      - ./mock-apis.php:/var/www/html/wp-content/mu-plugins/mhm-vq-mock-apis.php:ro   # fake YouTube/TikTok, local only
   cli:
     image: wordpress:cli-php8.2
     profiles: [cli]
@@ -43,4 +44,5 @@ services:
       - html:/var/www/html
       - store:/var/www/mhm-video-queue
       - ../../../staging/wordpress/plugins/mhm-video-queue:/var/www/html/wp-content/plugins/mhm-video-queue:ro
+      - ./mock-apis.php:/var/www/html/wp-content/mu-plugins/mhm-vq-mock-apis.php:ro   # fake YouTube/TikTok, local only
 volumes: {db: {}, html: {}, store: {}}
