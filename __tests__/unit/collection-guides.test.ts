@@ -117,6 +117,27 @@ describe('collection guides (E203)', () => {
     }
   });
 
+  // E376 (Pip, 2026-11-09): the ten organic-losing WordPress guides with no
+  // Next.js inbound link. Same rule as E366/E375.
+  it('every E376 organic-losing guide keeps at least one hub source', () => {
+    const E376 = [
+      '/sims-4-build-cheats/',
+      '/sims-4-career-mods/',
+      '/sims-4-romance-mods/',
+      '/sims-4-health-mods/',
+      '/sims-4-drama-mods/',
+      '/sims-4-skin-details/',
+      '/sims-4-nursery-cc/',
+      '/sims-4-school-mods/',
+      '/sims-4-school-uniforms-cc/',
+      '/sims-4-urban-hair-cc/',
+    ];
+    for (const href of E376) {
+      const sources = withGuides.filter((c) => c.guides!.some((g) => g.href === href));
+      expect(sources.length, `${href} has no hub source`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
   it('the hub page and llms-full.txt both render the guides field', () => {
     const page = fs.readFileSync(path.join(ROOT, 'app/games/[game]/[topic]/CollectionPageClient.tsx'), 'utf-8');
     const llms = fs.readFileSync(path.join(ROOT, 'app/llms-full.txt/route.ts'), 'utf-8');
