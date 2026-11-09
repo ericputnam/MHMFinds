@@ -92,6 +92,31 @@ describe('collection guides (E203)', () => {
     }
   });
 
+  // E375 (Pip, 2026-11-09): thirteen seasonal WordPress guides that had no
+  // inbound link from any Next.js page before the holiday peak. Same rule as
+  // E366: each keeps a hub source, or the treated set silently shrinks.
+  it('every E375 seasonal guide keeps at least one hub source', () => {
+    const E375 = [
+      '/sims-4-christmas-tree-cc/',
+      '/sims-4-christmas-clothes-cc/',
+      '/sims-4-christmas-decor-cc/',
+      '/sims-4-christmas-houses/',
+      '/sims-4-christmas-poses/',
+      '/sims-4-santa-cc/',
+      '/sims-4-thanksgiving-cc/',
+      '/sims-4-holiday-ideas/',
+      '/sims-4-holiday-traditions/',
+      '/sims-4-winter-loading-screens/',
+      '/sims-4-christmas-cas-background/',
+      '/sims-4-christmas-nails-cc/',
+      '/sims-4-winter-clothes-cc/',
+    ];
+    for (const href of E375) {
+      const sources = withGuides.filter((c) => c.guides!.some((g) => g.href === href));
+      expect(sources.length, `${href} has no hub source`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
   it('the hub page and llms-full.txt both render the guides field', () => {
     const page = fs.readFileSync(path.join(ROOT, 'app/games/[game]/[topic]/CollectionPageClient.tsx'), 'utf-8');
     const llms = fs.readFileSync(path.join(ROOT, 'app/llms-full.txt/route.ts'), 'utf-8');
