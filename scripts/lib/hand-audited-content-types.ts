@@ -1320,6 +1320,18 @@ export const HAND_AUDITED_CONTENT_TYPES: Record<string, HandAuditedContentType> 
   cmil19bzj00aroxeefathhvyw: { contentType: "full-body", why: "E373 \"Hello Kitty Swimsuit\" — full-body, was skin (\"showing off some skin\" in the desc); desc: a swimsuit in 10 swatches" },
   cmim8zmpw019ooxy8oqut3tui: { contentType: "nails", why: "E373 \"Sanrio Klaws\" — nails, was tops; desc: \"these are long claws with cute designs … these nails may not be everyone's style\"" },
   cmkygcc0900yaoxhck170zeon: { contentType: "decor", why: "E373 \"ACPC Sanrio Plushies Set\" — decor, was full-body; simdertalia's Animal Crossing Pocket Camp item conversions, \"8 items\", plushies are objects" },
+
+  // ── Audited 2026-11-09 (Sage, E377). All 130 SFW Sims 4 `eyebrows` rows
+  //    were read before the eyebrows-cc hub shipped: 126 name a brow in the
+  //    title. Of the other 4, three are Caroll Design makeup-and-genetics
+  //    sets: brows plus eyeshadow, face paint and lip gloss, titled as
+  //    makeup. They move to `makeup` and stay on makeup-cc. Kept on purpose:
+  //    "Alloy Pack" (desc: "four eyebrow styles, two labret piercings, and a
+  //    pair of … glasses"). Most of that set is brows, so it is a fair find on
+  //    a brows page.
+  cmky1qgk000apoxhc3krpxao5: { contentType: "makeup", why: "E377 \"Female Genetics & Makeup Set\" — makeup, was eyebrows; desc: \"Female eye genetics and makeup … brows … skinny wing\" (Caroll Design), a makeup set titled as one" },
+  cmkyo1s38018eoxhcng2jrpzv: { contentType: "makeup", why: "E377 \"1 Paranormal Makeup & Genetics\" — makeup, was eyebrows; desc: \"set contains eyebrows, face paint eyes, face contour, eyeshadow and lip gloss\" (Caroll Design)" },
+  cmky26c8s00c6oxhcd2llhz7p: { contentType: "makeup", why: "E377 \"2 Maxis Match Makeup & Genetics\" — makeup, was eyebrows; desc: \"Maxis Match makeup and genetics set … face paint eye set\" (Caroll Design)" },
 };
 
 /**

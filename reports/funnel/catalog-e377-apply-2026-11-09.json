@@ -1,0 +1,27 @@
+{
+ "writtenAt": "2026-11-09T11:47:51.017Z",
+ "mode": "apply",
+ "facets": [
+  "eyebrows"
+ ],
+ "rows": [
+  {
+   "id": "cmky1qgk000apoxhc3krpxao5",
+   "title": "Female Genetics & Makeup Set",
+   "from": "eyebrows",
+   "to": "makeup"
+  },
+  {
+   "id": "cmkyo1s38018eoxhcng2jrpzv",
+   "title": "1 Paranormal Makeup & Genetics",
+   "from": "eyebrows",
+   "to": "makeup"
+  },
+  {
+   "id": "cmky26c8s00c6oxhcd2llhz7p",
+   "title": "2 Maxis Match Makeup & Genetics",
+   "from": "eyebrows",
+   "to": "makeup"
+  }
+ ]
+}
