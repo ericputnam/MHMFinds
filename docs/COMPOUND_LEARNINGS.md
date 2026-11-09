@@ -2989,6 +2989,55 @@ IndexNow `/mods/` kill and the headless write refusal are in the archive (11-06 
   #483).** `facial-hair-cc`'s blogUrl maps to `hair` in the URL map. It was recorded and left
   for its own item.
 
+
+### 2026-11-07 — rotated from CLAUDE.md
+
+(covers merges #478–#486)
+
+9 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify, and no first-build platform ERROR (it hit
+#473/#474 on 11-06). The Patreon author backfill, the hello-kitty hub, the Bing hub links and the
+Rio CPM verdict are in the archive (11-07 subsystem entries).
+
+- **`tsx` does not type-check, so an `--apply` can write what `tsc` would reject (E373, #482).**
+  Rowan added a pin to `HAND_AUDITED_CONTENT_TYPES` for a row that already had an E214 `null` pin,
+  then ran `--apply`. In JS a duplicate object key means the last one wins, so the DB took
+  `full-body` over the deliberate `null`. Only the later `type-check` caught it (TS1117), and the
+  row needed a correcting apply plus a restore file. Rule: before you pin a row, grep the registry
+  for its id. Run `npm run type-check` **before** any `--apply` that reads a registry you just
+  edited, not after.
+- **Check a schema.org property's type, not just its name (#485).** E355 (#476) gave ProfilePage
+  `dateModified` the date-only sitemap stamp. Google types that field as `DateTime`, and Search
+  Console flagged every profile the next day. A sitemap `lastmod` (date OK) and a JSON-LD
+  `DateTime` can share a source day but need different formats, so each gets its own helper
+  (`creatorDateModified()`). The guard walks `app/` and `components/` for any ProfilePage fed a
+  date-only value. The PR also bumped `CREATOR_TEMPLATE_LASTMOD`, so the 11-06 rule held.
+- **Derive a repeated label from the data, never one hand-written string (E367, #484).** All 34
+  hubs linked their blog twin with the same anchor, "Full article on the blog". The anchor now
+  comes from the twin's slug (`lib/seo/blogTwinLabel.ts`), so a new hub cannot get the generic
+  text back.
+- **One quota error must not MISS the whole run (E374, #480).** On 11-03 one model's 429
+  ("out of usage credits") killed the morning. The preflight now retries on
+  `FUNNEL_FALLBACK_MODELS`, but **only** when the failure is classified as QUOTA. Auth or network
+  failures are never retried, because a retry would hide them. Quinn's prompt carries a MODEL
+  FALLBACK line, so specialists are not routed back to the 429'd model and the digest says so.
+- **Still open:** the ledger mixes time zones. `deploy-verify.sh` writes local time, but the
+  hand-written E373 apply rows were stamped in UTC (`11:45`, five hours "after" the 06:56 merge
+  they rode). Write ledger rows in the ledger's own clock. Also still open: the un-nonced per-user
+  fetch in `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`).
+
+### 2026-11-08 — subsystem entries (written directly to the archive)
+
+- **Video queue phase 1 (#487, #488).** The `mhm-video-queue` WP plugin gives the writer a queue
+  (approve / request changes with a note / reject / unapprove) and an ideas page. It adds Video
+  Reviewer and Video Bot roles and an authenticated REST API with chunked upload, finalized only
+  after a sha256 match. Files live outside the web root and are streamed with Range support. On
+  the Mac side, `scripts/agents/video-queue.ts` runs a weekly job (Sun 10:00) and a nightly
+  revisions job (21:00). Checks refuse placeholder creators ("Simfileshare", "Updated File"),
+  NSFW, opt-outs, broken images, the wrong size or length, and banned phrasing. Revisions keep
+  the writer's caption edits and rebuild only the credits inside them (`mergeCredits`).
+  `docs/VIDEO_QUEUE.md` has the install and stop steps. The plugin was installed and activated on
+  prod at 18:20.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

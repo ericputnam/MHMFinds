@@ -925,47 +925,50 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-06 — rotated to the archive
+### 2026-10-15 → 11-07 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08.
 
-### 2026-11-07 (covers merges #478–#486)
+### 2026-11-08 (covers merges #487–#488)
 
-9 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify, and no first-build platform ERROR (it hit
-#473/#474 on 11-06). The Patreon author backfill, the hello-kitty hub, the Bing hub links and the
-Rio CPM verdict are in the archive (11-07 subsystem entries).
+2 PRs merged (both operator-session video-queue work), 0 rollbacks, 5xx/15m = 0 on the verify. No
+funnel PRs. Video-queue design details are in the archive (11-08 subsystem entries).
 
-- **`tsx` does not type-check, so an `--apply` can write what `tsc` would reject (E373, #482).**
-  Rowan added a pin to `HAND_AUDITED_CONTENT_TYPES` for a row that already had an E214 `null` pin,
-  then ran `--apply`. In JS a duplicate object key means the last one wins, so the DB took
-  `full-body` over the deliberate `null`. Only the later `type-check` caught it (TS1117), and the
-  row needed a correcting apply plus a restore file. Rule: before you pin a row, grep the registry
-  for its id. Run `npm run type-check` **before** any `--apply` that reads a registry you just
-  edited, not after.
-- **Check a schema.org property's type, not just its name (#485).** E355 (#476) gave ProfilePage
-  `dateModified` the date-only sitemap stamp. Google types that field as `DateTime`, and Search
-  Console flagged every profile the next day. A sitemap `lastmod` (date OK) and a JSON-LD
-  `DateTime` can share a source day but need different formats, so each gets its own helper
-  (`creatorDateModified()`). The guard walks `app/` and `components/` for any ProfilePage fed a
-  date-only value. The PR also bumped `CREATOR_TEMPLATE_LASTMOD`, so the 11-06 rule held.
-- **Derive a repeated label from the data, never one hand-written string (E367, #484).** All 34
-  hubs linked their blog twin with the same anchor, "Full article on the blog". The anchor now
-  comes from the twin's slug (`lib/seo/blogTwinLabel.ts`), so a new hub cannot get the generic
-  text back.
-- **One quota error must not MISS the whole run (E374, #480).** On 11-03 one model's 429
-  ("out of usage credits") killed the morning. The preflight now retries on
-  `FUNNEL_FALLBACK_MODELS`, but **only** when the failure is classified as QUOTA. Auth or network
-  failures are never retried, because a retry would hide them. Quinn's prompt carries a MODEL
-  FALLBACK line, so specialists are not routed back to the 429'd model and the digest says so.
-- **Still open:** the ledger mixes time zones. `deploy-verify.sh` writes local time, but the
-  hand-written E373 apply rows were stamped in UTC (`11:45`, five hours "after" the 06:56 merge
-  they rode). Write ledger rows in the ledger's own clock. Also still open: the un-nonced per-user
-  fetch in `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`).
-
+- **A scheduled job must not run a file out of a working checkout (#488).** Both video-queue
+  plists pointed at `run-video-queue.sh` in the main checkout. That checkout was on a branch where
+  the file did not exist, so whichever branch the operator had checked out decided what ran.
+  Now launchd runs a small launcher from `~/.mhm-video-queue/bin/` that does `git fetch` and runs
+  `git show origin/main:<runner>` from a temp file. The runner then builds its own worktree of
+  `origin/main`. The first live run (11-08 21:23) ran at `6d06235f` and exited cleanly. Any new
+  launchd/cron entry follows this pattern.
+- **Probe a URL the site is meant to serve, and name the expected code for each state (#488).**
+  The plugin push script checked `wp-login.php`, which `wps-hide-login` 404s on purpose, so every
+  push read as broken. It now checks three URLs: home with a cache-buster (forces PHP, not the
+  page cache) = 200, `/wp-json/` = 200, and the plugin route = 401 (loaded) or 404 (not yet
+  active).
+- **Check for work before you start the expensive agent (#488).** The nightly revisions job asks
+  the CLI how many videos are marked "changes requested" and exits at 0 (most nights) without
+  starting Claude. A parse failure prints `?` and the job runs anyway. A cheap pre-check
+  that cannot be read must fail toward doing the work, never toward silence.
+- **New WordPress server code goes in its own plugin, not `functions.php` (#487).** The video
+  queue is a separate plugin with its own push script. That script lints on the server, then swaps
+  folders (`.new` → live) and keeps a backup. Its data lives in posts/meta and its files sit
+  outside the web root, so replacing the folder loses nothing. That avoids the scp-overwrite
+  class that wiped the Mediavine sidebar.
+- **Still open — two silent days, no MISSED row for either.** The 11-07 run got through Quinn
+  (06:38 → 07:40), then the runner log stops at `cleanup: waiting…` and never logs `released`. The
+  11-07 scoreboard, digest and `history.json` never reached `main`; the last daily-run commit is
+  #477 (11-06). On 11-08 the morning run never started (the Mac was asleep; `pmset` shows only a
+  05:02 DarkWake). The only 11-08 ledger row is `check: morning-check` at 17:43, written by a
+  `FUNNEL_DRY_RUN=1` run, so it looks like a normal morning.
+  The runner writes its own MISSED row, so a run that never started leaves no record.
+  Also, the last six guardrail lines in the log all **withheld** auto-rollback (in-window deploys 75–128 vs
+  the bound of 24 from #255). At the current deploy rate the RED rollback path cannot fire. Still
+  open from 11-07: ledger time zones, and the un-nonced fetch in `CreatorDashboard.tsx:52`.
 ---
 
-*Last compound review: 2026-11-07*
+*Last compound review: 2026-11-08*
 
 ---
 
