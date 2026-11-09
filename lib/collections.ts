@@ -169,7 +169,18 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // E203 (2026-10-14): the hospital-lots guide is where pregnancy
     // visitors go to give birth (Pandasama's hospital lot + childbirth
     // mod are its top queries). See the `guides` doc on the type.
-    guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
+    // E376 (Pip, 2026-11-09): the ten WordPress guides that lost the most
+    // organic search landings (GA4, all engines) with no inbound link from
+    // any Next.js page: 10-11→10-24 3,231 → 10-25→11-07 2,811 (−13.0%)
+    // while site organic went 41,898 → 41,575 (−0.8%). The life-sim gameplay
+    // guides sit here, the only gameplay hub. Test: collection-guides.test.ts.
+    guides: [
+      { href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' },
+      { href: '/sims-4-health-mods/', label: 'Sims 4 health and illness mods' },
+      { href: '/sims-4-romance-mods/', label: 'Sims 4 romance and dating mods' },
+      { href: '/sims-4-drama-mods/', label: 'Sims 4 drama and storytelling mods' },
+      { href: '/sims-4-career-mods/', label: 'Sims 4 career mods' },
+    ],
   },
   {
     slug: 'holidays-cc',
@@ -311,6 +322,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-cc-curly-hair/', label: 'Sims 4 curly hair CC' },
       { href: '/sims-4-black-hair/', label: 'Sims 4 Black hair CC' },
       { href: '/afro-hair-sims-4/', label: 'Sims 4 afro hair CC' },
+      // E376 (Pip, 2026-11-09): organic-losing guide with no Next.js inbound link; see the pregnancy-mods comment.
+      { href: '/sims-4-urban-hair-cc/', label: 'Sims 4 urban hair CC' },
     ],
   },
   {
@@ -411,6 +424,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // NOT /sims-4-cc-skin-details/ — that article 301s here. The
     // skin-overlay article is the still-live editorial companion.
     blogUrl: '/sims-4-skin-overlay/',
+    // E376 (Pip, 2026-11-09): organic-losing guide with no Next.js inbound link; see the pregnancy-mods comment.
+    guides: [{ href: '/sims-4-skin-details/', label: 'More Sims 4 skin details: freckles, moles and blush' }],
   },
   {
     // Deliberately placed BEFORE male-clothes / female-clothes. Both of
@@ -1235,7 +1250,13 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
     // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
     // GA4) 10-09→10-22 → 10-23→11-05: /sims-4-infant-cc/ 217 → 180.
-    guides: [{ href: '/sims-4-infant-cc/', label: 'Sims 4 infant CC: clothes, cribs and accessories' }],
+    guides: [
+      { href: '/sims-4-infant-cc/', label: 'Sims 4 infant CC: clothes, cribs and accessories' },
+      // E376 (Pip, 2026-11-09): organic-losing guides with no Next.js inbound link; see the pregnancy-mods comment.
+      { href: '/sims-4-nursery-cc/', label: 'Sims 4 nursery CC' },
+      { href: '/sims-4-school-uniforms-cc/', label: 'Sims 4 school uniforms CC' },
+      { href: '/sims-4-school-mods/', label: 'Sims 4 school mods' },
+    ],
   },
   {
     // Appended last on purpose: a `themesAny` entry scores specificity 1 in
@@ -1509,7 +1530,11 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // this grid" — this is where they are. "sims 4 hospital build cc" is on
     // the competitor list this hub was built from (pos 6.2 on the blog.*
     // twin before the host split). See the `guides` doc on the type.
-    guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
+    guides: [
+      { href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' },
+      // E376 (Pip, 2026-11-09): organic-losing guide with no Next.js inbound link; see the pregnancy-mods comment.
+      { href: '/sims-4-build-cheats/', label: 'Sims 4 build mode cheats' },
+    ],
   },
   {
     // Rowan, 2026-10-25 (E272, Tier 0 — new entry in the existing registry
