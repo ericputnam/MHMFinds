@@ -3038,6 +3038,80 @@ Rio CPM verdict are in the archive (11-07 subsystem entries).
   `docs/VIDEO_QUEUE.md` has the install and stop steps. The plugin was installed and activated on
   prod at 18:20.
 
+### 2026-11-08 — rotated from CLAUDE.md
+
+(covers merges #487–#488)
+
+2 PRs merged (both operator-session video-queue work), 0 rollbacks, 5xx/15m = 0 on the verify. No
+funnel PRs. Video-queue design details are in the archive (11-08 subsystem entries).
+
+- **A scheduled job must not run a file out of a working checkout (#488).** Both video-queue
+  plists pointed at `run-video-queue.sh` in the main checkout. That checkout was on a branch where
+  the file did not exist, so whichever branch the operator had checked out decided what ran.
+  Now launchd runs a small launcher from `~/.mhm-video-queue/bin/` that does `git fetch` and runs
+  `git show origin/main:<runner>` from a temp file. The runner then builds its own worktree of
+  `origin/main`. The first live run (11-08 21:23) ran at `6d06235f` and exited cleanly. Any new
+  launchd/cron entry follows this pattern.
+- **Probe a URL the site is meant to serve, and name the expected code for each state (#488).**
+  The plugin push script checked `wp-login.php`, which `wps-hide-login` 404s on purpose, so every
+  push read as broken. It now checks three URLs: home with a cache-buster (forces PHP, not the
+  page cache) = 200, `/wp-json/` = 200, and the plugin route = 401 (loaded) or 404 (not yet
+  active).
+- **Check for work before you start the expensive agent (#488).** The nightly revisions job asks
+  the CLI how many videos are marked "changes requested" and exits at 0 (most nights) without
+  starting Claude. A parse failure prints `?` and the job runs anyway. A cheap pre-check
+  that cannot be read must fail toward doing the work, never toward silence.
+- **New WordPress server code goes in its own plugin, not `functions.php` (#487).** The video
+  queue is a separate plugin with its own push script. That script lints on the server, then swaps
+  folders (`.new` → live) and keeps a backup. Its data lives in posts/meta and its files sit
+  outside the web root, so replacing the folder loses nothing. That avoids the scp-overwrite
+  class that wiped the Mediavine sidebar.
+- **Still open — two silent days, no MISSED row for either.** The 11-07 run got through Quinn
+  (06:38 → 07:40), then the runner log stops at `cleanup: waiting…` and never logs `released`. The
+  11-07 scoreboard, digest and `history.json` never reached `main`; the last daily-run commit is
+  #477 (11-06). On 11-08 the morning run never started (the Mac was asleep; `pmset` shows only a
+  05:02 DarkWake). The only 11-08 ledger row is `check: morning-check` at 17:43, written by a
+  `FUNNEL_DRY_RUN=1` run, so it looks like a normal morning.
+  The runner writes its own MISSED row, so a run that never started leaves no record.
+  Also, the last six guardrail lines in the log all **withheld** auto-rollback (in-window deploys 75–128 vs
+  the bound of 24 from #255). At the current deploy rate the RED rollback path cannot fire. Still
+  open from 11-07: ledger time zones, and the un-nonced fetch in `CreatorDashboard.tsx:52`.
+
+### 2026-11-09 — subsystem entries (written directly to the archive)
+
+- **Video queue phase 2 (#489).** Approved videos post to YouTube (Shorts) and TikTok once their
+  slot passes. WP-cron runs every 5 min, and the Mac runs `POST /post-due` every 15 min as a
+  catch-up. Nothing posts until an admin connects an account under Videos → Posting. The
+  defaults are YouTube Private and TikTok inbox draft. Tokens are sealed with libsodium in
+  options that don't autoload, and never reach HTML, REST, logs or the Mac. The OAuth callback
+  requires a state issued in the last 10 min plus the same browser's cookie. A lock prevents
+  overlapping runs. `posting` is written before any network call. A platform that has posted is
+  never posted again for that video. Network errors get one retry. A file changed after approval
+  goes back to review. Every failure emails the alert address. TikTok direct mode needs the
+  disclosure/consent controls on the Approve form, validated on the server. Operator steps
+  (OAuth apps, launchd `com.mhmfinds.video-post-due`, SMTP) are in `docs/VIDEO_QUEUE.md`.
+- **Hubs (#493, #494).** `hats-cc`: 152 cards on the title-only `headwear` theme
+  (`lib/headwearThemeRules.ts`). 153 rows added, rollback CSV
+  `reports/funnel/headwear-theme-retag-2026-11-09.csv`. Rejected keywords with counts are kept
+  in the rule's comment: crown 47, tiara 10, headband 15, hood 5, veil 18. `eyebrows-cc`: 127
+  brows inside the eyes-cc union, with 3 Caroll Design makeup sets pinned to `makeup` in
+  `hand-audited-content-types.ts` § E377. It sits before eyes-cc/makeup-cc so it becomes the
+  primary crumb. Both read 11-23.
+- **Internal links to WordPress guides (#495, #497).** 13 holiday guides and the 10 top-120
+  organic landings with the largest 14d loss had no inbound link from any Next.js page. They
+  were added to hub `guides`. Each has a test that keeps every treated href on a hub (red on
+  origin/main). The keep-if is site-adjusted and seasonal-adjusted (×1.54 from last year).
+  Reads 11-24.
+- **Seasonal homepage pill (#496).** `lib/seasonalHub.ts` maps UTC date windows to hubs
+  (christmas-cc Nov 1–Dec 31, halloween-cc Oct). `HomeCollectionStrip` leads with the in-season
+  hub. This works because `app/page.tsx` is force-dynamic. On a static page the pill would freeze
+  at build time.
+- **Rio E381 (#492).** The 7d −7.8% split into ex-segment sessions −8.05% × RPM +0.30%. The
+  10-31/11-01 weekend was 99.8% of the gap. Weekday-matched RPM was +3.7%. Closed as volume,
+  re-read 11-11.
+- **Cass E380 (#490).** The hub email block had 974 viewers and 0 sign-ups in 7d. It gained the
+  home strip's "create a free account" link (`account_cta_click{collection-page}`). Reads 11-23.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

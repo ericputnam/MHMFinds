@@ -925,50 +925,51 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-07 — rotated to the archive
+### 2026-10-15 → 11-08 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09.
 
-### 2026-11-08 (covers merges #487–#488)
+### 2026-11-09 (covers merges #489–#499)
 
-2 PRs merged (both operator-session video-queue work), 0 rollbacks, 5xx/15m = 0 on the verify. No
-funnel PRs. Video-queue design details are in the archive (11-08 subsystem entries).
+10 PRs merged (8 funnel, the video-queue phase 2 plugin, the daily-run PR), 0 rollbacks, every
+after-merge verify PASS. Hub, retag, seasonal and video-queue details are in the archive (11-09
+subsystem entries).
 
-- **A scheduled job must not run a file out of a working checkout (#488).** Both video-queue
-  plists pointed at `run-video-queue.sh` in the main checkout. That checkout was on a branch where
-  the file did not exist, so whichever branch the operator had checked out decided what ran.
-  Now launchd runs a small launcher from `~/.mhm-video-queue/bin/` that does `git fetch` and runs
-  `git show origin/main:<runner>` from a temp file. The runner then builds its own worktree of
-  `origin/main`. The first live run (11-08 21:23) ran at `6d06235f` and exited cleanly. Any new
-  launchd/cron entry follows this pattern.
-- **Probe a URL the site is meant to serve, and name the expected code for each state (#488).**
-  The plugin push script checked `wp-login.php`, which `wps-hide-login` 404s on purpose, so every
-  push read as broken. It now checks three URLs: home with a cache-buster (forces PHP, not the
-  page cache) = 200, `/wp-json/` = 200, and the plugin route = 401 (loaded) or 404 (not yet
-  active).
-- **Check for work before you start the expensive agent (#488).** The nightly revisions job asks
-  the CLI how many videos are marked "changes requested" and exits at 0 (most nights) without
-  starting Claude. A parse failure prints `?` and the job runs anyway. A cheap pre-check
-  that cannot be read must fail toward doing the work, never toward silence.
-- **New WordPress server code goes in its own plugin, not `functions.php` (#487).** The video
-  queue is a separate plugin with its own push script. That script lints on the server, then swaps
-  folders (`.new` → live) and keeps a backup. Its data lives in posts/meta and its files sit
-  outside the web root, so replacing the folder loses nothing. That avoids the scp-overwrite
-  class that wiped the Mediavine sidebar.
-- **Still open — two silent days, no MISSED row for either.** The 11-07 run got through Quinn
-  (06:38 → 07:40), then the runner log stops at `cleanup: waiting…` and never logs `released`. The
-  11-07 scoreboard, digest and `history.json` never reached `main`; the last daily-run commit is
-  #477 (11-06). On 11-08 the morning run never started (the Mac was asleep; `pmset` shows only a
-  05:02 DarkWake). The only 11-08 ledger row is `check: morning-check` at 17:43, written by a
-  `FUNNEL_DRY_RUN=1` run, so it looks like a normal morning.
-  The runner writes its own MISSED row, so a run that never started leaves no record.
-  Also, the last six guardrail lines in the log all **withheld** auto-rollback (in-window deploys 75–128 vs
-  the bound of 24 from #255). At the current deploy rate the RED rollback path cannot fire. Still
-  open from 11-07: ledger time zones, and the un-nonced fetch in `CreatorDashboard.tsx:52`.
+- **A build must not depend on the network (#491).** `next/font/google` fetches from
+  fonts.gstatic.com during `next build`. It timed out 5 times in 5 days (#468, #473, #474,
+  6d06235, 7895670) and each time looked like a broken PR. The launcher fonts are now
+  `next/font/local` woff2 files in `components/launcher/fonts/`.
+  `__tests__/unit/no-google-fonts-at-build.test.ts` fails if `next/font/google` comes back.
+  If a Vercel BUILD ERROR follows a PR that never touched the app, read
+  `vercel inspect <url> --logs` for `ETIMEDOUT`/`FetchError` before you blame the change.
+- **A rollback artifact is written once, by the run that changes data (#493).** The heels-shaped
+  retag scripts rewrote their rollback CSV on every run, so a no-op read-back run replaced the
+  real before-state with an empty diff. `retag-headwear-theme.ts` skips the write when nothing
+  changes. Any other retag script copied from heels still has this bug. Fix it before its next `--apply`.
+- **Record "started" before the side effect and "done" after it. A job that writes only "done"
+  reads as "never ran" when it dies.** Two runs did that this week: the 11-07 funnel run wrote
+  its digest and then died at cleanup, and the E370 apply wrote 2,423 of 3,050 rows and then
+  died before its `applied` flag. Both looked like "did not run" for two days. Only reading back
+  the worktree files and the DB rows found them (recovered in #499 and ledger `c56ea9d4`). The
+  video poster (#489) does this right: it writes `posting` before any upload, and a run that dies
+  leaves a "failed (uncertain)" row that needs a manual Retry, never a second upload. Before you
+  call something "did not run", read back what it would have produced.
+- **Never name a GA4 event parameter `source`.** GA4 reserves it. Each event that sends it
+  starts a fake session: 361 in 11-01→11-07 (222 from home-hero), all counted as "other" in
+  the non-Pinterest headline. Queued for the operator: register the `ui_source` custom dimension,
+  then rename the param in the `app/layout.tsx` gtag snippet. Register the dimension first, or
+  the rename breaks the existing reads. Check new event params against GA4's reserved names.
+- **Name a theme so it can't be confused with a content type (#493).** The hat theme is
+  `headwear`, not `hats`, because the `hats` content type is only 64.5% hats (a "Vintage Coach
+  Bag" was card #2). The theme is title-only, like every room theme. It is kept out of
+  `FACET_VALUES.themes`, and a test checks that.
+- **Still open:** Quinn's `.claude/agents/` writes were refused for the third run in a row (Q43),
+  so three pending registry files are waiting on the operator. 11-03 and 11-08 were MISSED
+  because the Mac was asleep.
 ---
 
-*Last compound review: 2026-11-08*
+*Last compound review: 2026-11-09*
 
 ---
 
