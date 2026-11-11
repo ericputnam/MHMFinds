@@ -28,7 +28,6 @@ Active suites:
 - `__tests__/integration/api/submit-mod.test.ts`
 - `__tests__/integration/api/admin-users.test.ts`
 - `__tests__/integration/api/admin-categories.test.ts`
-- `__tests__/integration/api/auth-clear-session.test.ts`
 - `__tests__/integration/api/affiliates-routes.test.ts`
 - `__tests__/unit/cache.test.ts`
 - `__tests__/unit/cache-tiers.test.ts`
@@ -58,7 +57,7 @@ High value gaps still missing from smoke tests:
 ## Parallel Sub-Agent Backlog
 Use these as independent tracks:
 
-1. `agent-tests-auth`: Add smoke coverage for `/api/auth/clear-session` and session edge cases.
+1. `agent-tests-auth`: Add smoke coverage for session edge cases. (`/api/auth/clear-session` was removed 2026-11-11: a GET that cleared the session cookies.)
 2. `agent-tests-admin-users`: Add smoke tests for `/api/admin/users` paging/filtering.
 3. `agent-tests-categories`: Add admin category route tests (`GET/POST/PUT/DELETE`).
 4. `agent-tests-affiliates`: Add affiliate API tests including click tracking and malformed payloads.
