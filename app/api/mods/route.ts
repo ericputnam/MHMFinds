@@ -357,11 +357,10 @@ export async function GET(request: NextRequest) {
       // Get all mods matching search to calculate facets
       prisma.mod.findMany({
         where: facetWhere,
+        // Only the columns counted in JS below. category / categoryId / gameVersion /
+        // source used to be fetched for every verified mod too, but those facets come
+        // from the groupBy queries in this same Promise.all.
         select: {
-          category: true,
-          categoryId: true,
-          gameVersion: true,
-          source: true,
           tags: true,
           isFree: true,
           price: true,
@@ -424,36 +423,40 @@ export async function GET(request: NextRequest) {
       } as any),
     ]);
 
-    // Calculate tag counts
+    // Tag, price and rating facets in ONE pass over the rows (this used to be a tag
+    // loop plus nine separate full-array filters).
     const tagCounts: Record<string, number> = {};
-    allMods.forEach(mod => {
+    const priceRanges = { free: 0, under5: 0, '5to10': 0, '10to20': 0, over20: 0 };
+    const ratingRanges = { '4plus': 0, '3plus': 0, '2plus': 0, under2: 0 };
+    for (const mod of allMods) {
       mod.tags?.forEach(tag => {
         tagCounts[tag] = (tagCounts[tag] || 0) + 1;
       });
-    });
+
+      if (mod.isFree) {
+        priceRanges.free++;
+      } else if (mod.price) {
+        const price = Number(mod.price);
+        if (price < 5) priceRanges.under5++;
+        else if (price < 10) priceRanges['5to10']++;
+        else if (price < 20) priceRanges['10to20']++;
+        else if (price >= 20) priceRanges.over20++;
+      }
+
+      if (mod.rating) {
+        const rating = Number(mod.rating);
+        if (rating >= 4.0) ratingRanges['4plus']++;
+        else if (rating >= 3.0) ratingRanges['3plus']++;
+        else if (rating >= 2.0) ratingRanges['2plus']++;
+        else if (rating < 2.0) ratingRanges.under2++;
+      }
+    }
 
     // Get top 20 tags
     const topTags = Object.entries(tagCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 20)
       .map(([tag, count]) => ({ tag, count }));
-
-    // Calculate price range counts
-    const priceRanges = {
-      free: allMods.filter(m => m.isFree).length,
-      under5: allMods.filter(m => !m.isFree && m.price && Number(m.price) < 5).length,
-      '5to10': allMods.filter(m => !m.isFree && m.price && Number(m.price) >= 5 && Number(m.price) < 10).length,
-      '10to20': allMods.filter(m => !m.isFree && m.price && Number(m.price) >= 10 && Number(m.price) < 20).length,
-      over20: allMods.filter(m => !m.isFree && m.price && Number(m.price) >= 20).length,
-    };
-
-    // Calculate rating counts
-    const ratingRanges = {
-      '4plus': allMods.filter(m => m.rating && Number(m.rating) >= 4.0).length,
-      '3plus': allMods.filter(m => m.rating && Number(m.rating) >= 3.0 && Number(m.rating) < 4.0).length,
-      '2plus': allMods.filter(m => m.rating && Number(m.rating) >= 2.0 && Number(m.rating) < 3.0).length,
-      under2: allMods.filter(m => m.rating && Number(m.rating) < 2.0).length,
-    };
 
     const totalPages = Math.ceil(total / limit);
 
