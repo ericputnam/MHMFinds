@@ -67,7 +67,15 @@ export async function POST(request: NextRequest) {
 
     if (modId) {
       // Re-index specific mod
-      await aiSearchService.updateSearchIndex(modId);
+      // updateSearchIndex swallows its own errors; this route used to answer
+      // "success" whether or not anything was indexed.
+      const ok = await aiSearchService.updateSearchIndex(modId);
+      if (!ok) {
+        return NextResponse.json(
+          { success: false, error: `Could not re-index mod ${modId} (see server logs)` },
+          { status: 500 }
+        );
+      }
       return NextResponse.json({
         success: true,
         message: `Re-indexed mod ${modId}`,
@@ -90,7 +98,9 @@ export async function POST(request: NextRequest) {
       const { successes: indexed, failures: failed } = await processBatched(
         modsWithoutIndex,
         async (mod) => {
-          await aiSearchService.updateSearchIndex(mod.id);
+          const ok = await aiSearchService.updateSearchIndex(mod.id);
+          // Throw so processBatched counts it under `failures` — it was always "indexed".
+          if (!ok) throw new Error(`index failed for ${mod.id}`);
           console.log(`Indexed: ${mod.title}`);
         },
         (processed, total) => {
