@@ -48,7 +48,7 @@ export default function ForecastsPage() {
 
   const fetchForecasts = async () => {
     try {
-      const response = await fetch('/api/monetization/forecasts');
+      const response = await fetch('/api/monetization/forecasts/');
       const data = await response.json();
       setForecasts(data.forecasts || []);
       setAccuracy(data.accuracy || null);
@@ -62,7 +62,7 @@ export default function ForecastsPage() {
   const generateForecasts = async () => {
     setGenerating(true);
     try {
-      await fetch('/api/monetization/forecasts/generate', {
+      await fetch('/api/monetization/forecasts/generate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ months: horizon }),

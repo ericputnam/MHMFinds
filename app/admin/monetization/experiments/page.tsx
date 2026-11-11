@@ -65,7 +65,7 @@ export default function ExperimentsDashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await fetch('/api/monetization/experiments');
+      const response = await fetch('/api/monetization/experiments/');
       const json = await response.json();
       setData(json);
     } catch (error) {
@@ -82,7 +82,7 @@ export default function ExperimentsDashboard() {
   const handleAction = async (action: string, experimentId: string, extra?: Record<string, string>) => {
     setActionLoading(experimentId);
     try {
-      const response = await fetch('/api/monetization/experiments', {
+      const response = await fetch('/api/monetization/experiments/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, experimentId, ...extra }),

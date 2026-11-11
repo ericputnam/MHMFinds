@@ -128,7 +128,7 @@ export default function EditModPage() {
   useEffect(() => {
     const fetchFacets = async () => {
       try {
-        const response = await fetch('/api/admin/facets');
+        const response = await fetch('/api/admin/facets/');
         if (response.ok) {
           const data = await response.json();
           setFacetDefinitions(data.grouped || {});
@@ -145,7 +145,7 @@ export default function EditModPage() {
     const fetchMod = async () => {
       try {
         setFetching(true);
-        const response = await fetch(`/api/admin/mods/${modId}`);
+        const response = await fetch(`/api/admin/mods/${modId}/`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch mod');
@@ -213,7 +213,7 @@ export default function EditModPage() {
         visualStyle: formData.visualStyle || null,
       };
 
-      const response = await fetch(`/api/admin/mods/${modId}`, {
+      const response = await fetch(`/api/admin/mods/${modId}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modData),

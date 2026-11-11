@@ -62,7 +62,7 @@ export default function AnalyticsDashboard() {
   const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/analytics?period=${period}`);
+      const response = await fetch(`/api/admin/analytics/?period=${period}`);
       if (!response.ok) {
         throw new Error('Failed to fetch analytics');
       }

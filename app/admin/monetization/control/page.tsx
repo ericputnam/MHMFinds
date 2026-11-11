@@ -102,7 +102,7 @@ export default function AgentControlPage() {
 
   const fetchJobInfo = async () => {
     try {
-      const response = await fetch('/api/monetization/agent/status');
+      const response = await fetch('/api/monetization/agent/status/');
       const data = await response.json();
 
       setJobs(JOB_CONFIGS.map(config => ({
@@ -131,7 +131,7 @@ export default function AgentControlPage() {
     });
 
     try {
-      const response = await fetch('/api/monetization/agent/run', {
+      const response = await fetch('/api/monetization/agent/run/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jobType }),

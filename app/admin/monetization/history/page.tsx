@@ -63,7 +63,7 @@ export default function HistoryPage() {
       if (filterType !== 'all') params.set('type', filterType);
       if (filterStatus !== 'all') params.set('status', filterStatus);
 
-      const response = await fetch(`/api/monetization/history?${params}`);
+      const response = await fetch(`/api/monetization/history/?${params}`);
       const data = await response.json();
 
       setRuns(data.runs || []);

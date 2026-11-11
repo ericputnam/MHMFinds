@@ -102,7 +102,7 @@ export default function LearningPage() {
 
   const fetchLearningData = async () => {
     try {
-      const response = await fetch('/api/monetization/learning');
+      const response = await fetch('/api/monetization/learning/');
       const data = await response.json();
       setOpportunities(data.opportunities || []);
       setStats(data.stats || null);

@@ -68,7 +68,7 @@ export default function SubmissionsPage() {
 
     try {
       setProcessing(submission.id);
-      const response = await fetch(`/api/admin/submissions/${submission.id}/approve`, {
+      const response = await fetch(`/api/admin/submissions/${submission.id}/approve/`, {
         method: 'POST',
       });
 
@@ -93,7 +93,7 @@ export default function SubmissionsPage() {
 
     try {
       setProcessing(id);
-      await fetch(`/api/admin/submissions/${id}/reject`, {
+      await fetch(`/api/admin/submissions/${id}/reject/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
