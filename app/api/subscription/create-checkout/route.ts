@@ -39,8 +39,10 @@ export async function POST(request: NextRequest) {
     const checkoutSession = await StripeService.createCheckoutSession({
       customerId,
       priceId,
-      successUrl: `${process.env.NEXTAUTH_URL}/account/subscription?success=true`,
-      cancelUrl: `${process.env.NEXTAUTH_URL}/pricing?canceled=true`,
+      successUrl: `${process.env.NEXTAUTH_URL}/account/subscription/?success=true`,
+      // /pricing does not exist (it fell through to a WordPress 404). Checkout is
+      // started from the premium sign-in view, so a cancel returns there.
+      cancelUrl: `${process.env.NEXTAUTH_URL}/sign-in/?mode=premium&canceled=true`,
       userId: session.user.id
     });
 

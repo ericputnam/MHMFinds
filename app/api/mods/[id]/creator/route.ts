@@ -26,6 +26,9 @@ export async function GET(
       where: {
         author: currentMod.author,
         id: { not: id },
+        // Same visibility rule as the list route: never surface unverified or NSFW mods.
+        isVerified: true,
+        isNSFW: false,
       },
       select: {
         id: true,

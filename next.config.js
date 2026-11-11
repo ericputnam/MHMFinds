@@ -68,6 +68,23 @@ const nextConfig = {
           },
         ],
       },
+      // Per-user / session-dependent API responses must never sit in a shared cache.
+      // The blanket rule above overrides a route's own `no-store` (#219), so these
+      // later entries override it back for every path whose answer depends on who asks.
+      ...[
+        '/api/account/:path*',
+        '/api/admin/:path*',
+        '/api/auth/:path*',
+        '/api/creator/:path*',
+        '/api/monetization/:path*',
+        '/api/subscription/:path*',
+        '/api/cron/:path*',
+        '/api/webhooks/:path*',
+        '/api/mods/:id/favorite',
+      ].map((source) => ({
+        source,
+        headers: [{ key: 'Cache-Control', value: 'private, no-store' }],
+      })),
     ];
   },
   // Reduce bundle size by not including source maps in production

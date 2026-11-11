@@ -56,6 +56,20 @@ const MHM_PROXY_HEADER_VALUE = 'nextjs-edge';
  * Determine if a pathname should be proxied to WordPress.
  * Returns the full WordPress URL, or null for Next.js routes.
  */
+/**
+ * Keep only the cookies WordPress itself sets (login, settings, comment author,
+ * password-protected posts). Everything else — notably the NextAuth session
+ * token and CSRF cookies — belongs to the Next.js app and must not leave it.
+ */
+export function wordpressCookies(header: string | null): string {
+  if (!header) return '';
+  return header
+    .split(';')
+    .map((part) => part.trim())
+    .filter((part) => /^(wordpress_|wp-|wp_|comment_)/i.test(part))
+    .join('; ');
+}
+
 function getWordPressUrl(pathname: string): string | null {
   // Root is the Next.js homepage
   if (pathname === '/' || pathname === '') return null;
@@ -167,7 +181,9 @@ async function proxyAndRewriteWordPress(
     // direct/bot visitor — see the Q13 comment above the constant definition.
     [MHM_PROXY_HEADER]: MHM_PROXY_HEADER_VALUE,
   };
-  const cookie = request.headers.get('cookie');
+  // Forward only WordPress's own cookies. The whole Cookie header used to go to the
+  // blog origin, which included the visitor's NextAuth session token.
+  const cookie = wordpressCookies(request.headers.get('cookie'));
   if (cookie) forwardHeaders['Cookie'] = cookie;
   const xForwardedFor = request.headers.get('x-forwarded-for') || request.ip;
   if (xForwardedFor) forwardHeaders['X-Forwarded-For'] = xForwardedFor;

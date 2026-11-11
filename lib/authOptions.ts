@@ -170,7 +170,16 @@ export const authOptions: NextAuthOptions = {
         try {
           const membership = await fetchPatreonMembership(account.access_token);
           if (membership) {
-            const isPremium = qualifiesForMembership(membership);
+            let isPremium = qualifiesForMembership(membership);
+            if (!isPremium) {
+              // `User.isPremium` is shared with Stripe. A non-patron who pays through
+              // Stripe must keep premium — only Patreon-derived premium is revoked here.
+              const stripeSub = await prisma.subscription.findUnique({
+                where: { userId: token.id as string },
+                select: { isPremium: true, stripeSubscriptionId: true },
+              });
+              if (stripeSub?.isPremium && stripeSub.stripeSubscriptionId) isPremium = true;
+            }
             await prisma.user.update({
               where: { id: token.id as string },
               data: { isPremium },
