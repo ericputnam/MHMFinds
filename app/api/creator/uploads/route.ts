@@ -11,7 +11,11 @@ import {
 import { sanitizeDownloadName } from '@/lib/modFiles/filename';
 import { newUploadId, quarantinePath } from '@/lib/modFiles/paths';
 import { CREATOR_UPLOAD_SELECT, isSameOrigin } from '@/lib/modFiles/requestGuards';
-import { hostedUploadsDisabledResponse, hostedUploadsEnabled } from '@/lib/modFiles/storage';
+import {
+  hostedUploadsDisabledResponse,
+  hostedUploadsEnabled,
+  presignQuarantineUpload,
+} from '@/lib/modFiles/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,9 +34,11 @@ export async function GET() {
 
 /**
  * POST /api/creator/uploads/  { filename, size }
- * Reserve a quarantine slot for one file. The server picks the storage path;
- * the browser then uploads the bytes straight to that path (token route) and
- * asks the server to check them (verify route).
+ * Reserve a quarantine slot for one file. The server picks the storage key
+ * and returns a 15-minute upload link signed for that key, that exact size,
+ * the opaque content type and create-only. The browser PUTs the bytes
+ * straight to the private bucket (the 100 MB file never passes through a
+ * serverless function), then asks the server to check them (verify route).
  */
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) {
@@ -107,5 +113,19 @@ export async function POST(request: NextRequest) {
     select: CREATOR_UPLOAD_SELECT,
   });
 
-  return NextResponse.json({ upload, pathname }, { status: 201, headers: NO_STORE });
+  let uploadUrl: string;
+  try {
+    uploadUrl = await presignQuarantineUpload(pathname, userId, id, size);
+  } catch (err) {
+    console.error('[mod-files] upload link failed:', (err as Error).name);
+    await prisma.modUpload
+      .update({ where: { id }, data: { status: 'expired', validationError: 'Upload link could not be created' } })
+      .catch(() => undefined);
+    return NextResponse.json({ error: 'Could not start the upload' }, { status: 502, headers: NO_STORE });
+  }
+
+  return NextResponse.json(
+    { upload, uploadUrl },
+    { status: 201, headers: NO_STORE },
+  );
 }

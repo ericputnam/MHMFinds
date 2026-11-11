@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { upload as blobUpload } from '@vercel/blob/client';
 import { AlertTriangle, CheckCircle2, FileArchive, Loader2, Upload, X } from 'lucide-react';
 import {
   MAX_MOD_FILE_BYTES,
@@ -46,8 +45,37 @@ async function readError(res: Response, fallback: string): Promise<string> {
 }
 
 /**
+ * PUT the file to the presigned link with progress (fetch has no upload
+ * progress). The two headers are part of the signature: the opaque content
+ * type, and create-only so a used link cannot overwrite a checked file.
+ * No cookies or credentials are sent to the storage host.
+ */
+function putToStorage(url: string, file: File, onProgress: (percent: number) => void): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.withCredentials = false;
+    xhr.setRequestHeader('Content-Type', MOD_FILE_CONTENT_TYPE);
+    xhr.setRequestHeader('If-None-Match', '*');
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else if (xhr.status === 412) reject(new Error('This upload slot was already used. Choose the file again.'));
+      else if (xhr.status === 403) reject(new Error('The upload link expired. Choose the file again.'));
+      else reject(new Error('The upload did not finish. Try again.'));
+    };
+    xhr.onerror = () => reject(new Error('The upload was interrupted. Check your connection and try again.'));
+    xhr.onabort = () => reject(new Error('The upload was cancelled.'));
+    xhr.send(file);
+  });
+}
+
+/**
  * "Host the file on MustHaveMods" field for the creator submission form.
- * Flow: reserve a slot → upload straight to the private store → ask the server
+ * Flow: reserve a slot (get a signed upload link) → PUT straight to the private
+ * bucket → ask the server
  * to check the bytes. The submission can only reference a file that passed.
  * Renders nothing while the feature is switched off.
  */
@@ -96,17 +124,12 @@ export function HostedFileUpload({ onChange, disabled }: Props) {
         body: JSON.stringify({ filename: file.name, size: file.size }),
       });
       if (!reserve.ok) throw new Error(await readError(reserve, 'Could not start the upload.'));
-      const { upload: slot, pathname } = (await reserve.json()) as { upload: HostedUploadSummary; pathname: string };
+      const { upload: slot, uploadUrl } = (await reserve.json()) as { upload: HostedUploadSummary; uploadUrl: string };
+      if (typeof uploadUrl !== 'string' || !uploadUrl.startsWith('https://')) {
+        throw new Error('Could not start the upload.');
+      }
 
-      await blobUpload(pathname, file, {
-        access: 'private',
-        handleUploadUrl: '/api/creator/uploads/token/',
-        clientPayload: slot.id,
-        contentType: MOD_FILE_CONTENT_TYPE,
-        multipart: file.size > 8 * 1024 * 1024,
-        onUploadProgress: ({ percentage }) =>
-          setPhase({ step: 'uploading', name: file.name, percent: Math.round(percentage) }),
-      });
+      await putToStorage(uploadUrl, file, (percent) => setPhase({ step: 'uploading', name: file.name, percent }));
 
       setPhase({ step: 'checking', name: file.name });
       const verify = await fetch(`/api/creator/uploads/${encodeURIComponent(slot.id)}/verify/`, { method: 'POST' });

@@ -25,14 +25,15 @@ export const MOD_UPLOAD_BYTES_PER_DAY = 1024 * 1024 * 1024;
 /** A pending row must receive its bytes within this window. */
 export const PENDING_UPLOAD_TTL_MS = 60 * 60 * 1000;
 
-/** Client-upload token lifetime. */
-export const CLIENT_TOKEN_TTL_MS = 30 * 60 * 1000;
+/** How long a presigned upload link can be started. The signature is checked
+ *  when the PUT begins, so a slow 100 MB upload that started in time finishes. */
+export const UPLOAD_URL_TTL_MS = 15 * 60 * 1000;
 
 /** Wait before a download ticket becomes usable (mirrors the /go countdown). */
 export const DOWNLOAD_WAIT_MS = 9_000;
 /** How long a download ticket stays usable once valid. */
 export const DOWNLOAD_TICKET_TTL_MS = 15 * 60 * 1000;
-/** How long a presigned blob URL lives. Short on purpose: it is a bearer link. */
+/** How long a presigned download URL lives. Short on purpose: it is a bearer link. */
 export const PRESIGNED_URL_TTL_MS = 5 * 60 * 1000;
 
 export const MOD_FILE_ACCEPT_ATTR = '.package,.ts4script,.zip';

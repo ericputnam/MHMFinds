@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'File not stored' }, { status: 404, headers: NO_STORE });
     }
 
-    const url = await presignAdminReview(upload.blobPathname);
+    const url = await presignAdminReview(upload.blobPathname, upload.downloadName);
     return NextResponse.json({ url, filename: upload.downloadName, expiresInSeconds: 300 }, { headers: NO_STORE });
   } catch (error) {
     console.error('[mod-files] review link failed:', (error as Error).name);

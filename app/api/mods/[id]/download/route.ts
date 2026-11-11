@@ -15,7 +15,7 @@ const HEADERS = {
 /**
  * GET /api/mods/[id]/download/?ticket=…
  * Releases a hosted mod file: checks the ticket from the /go countdown,
- * checks the file is still approved, then redirects to a private-store link
+ * checks the file is still approved, then redirects to a short-lived presigned R2 link
  * that expires in 5 minutes.
  *
  * Read-only on purpose (GET must never mutate): the download is counted by
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   const upload = await prisma.modUpload.findUnique({
     where: { id: check.payload.u },
-    select: { status: true, modId: true, blobPathname: true },
+    select: { status: true, modId: true, blobPathname: true, downloadName: true },
   });
   if (!upload || upload.status !== 'approved' || upload.modId !== params.id || !isApprovedPath(upload.blobPathname)) {
     return notAvailable(404, 'This file is no longer available');
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   let url: string;
   try {
-    url = await presignPublicDownload(upload.blobPathname);
+    url = await presignPublicDownload(upload.blobPathname, upload.downloadName);
   } catch (err) {
     console.error('[mod-files] presign failed:', (err as Error).name);
     return notAvailable(502, 'Download temporarily unavailable');

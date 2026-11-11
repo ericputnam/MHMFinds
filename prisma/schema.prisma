@@ -475,7 +475,7 @@ model ModSubmission {
   @@map("mod_submissions")
 }
 
-// A creator-uploaded mod file hosted in the PRIVATE mod-files Blob store.
+// A creator-uploaded mod file hosted in the PRIVATE mod-files R2 bucket.
 // Lifecycle: pending_upload -> verified -> approved (or rejected / superseded /
 // removed / expired). Blob pathnames are server-minted (lib/modFiles/paths.ts)
 // and never exposed to the public; downloads go through a signed ticket and a
@@ -491,6 +491,7 @@ model ModUpload {
   kind            String // package | ts4script | zip
   sizeBytes       Int?
   sha256          String?
+  blobEtag        String? // ETag of the exact object verify checked; promotion is conditional on it
   containsScript  Boolean   @default(false)
   status          String    @default("pending_upload") // pending_upload, verified, rejected, approved, superseded, removed, expired
   validationError String?

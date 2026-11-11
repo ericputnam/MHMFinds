@@ -13,7 +13,7 @@
  */
 import { prisma } from '@/lib/prisma';
 import { approvedPath, isApprovedPath, isUploadId } from './paths';
-import { deleteBlob, promoteBlob } from './storage';
+import { BlobChangedError, deleteBlob, promoteBlob } from './storage';
 
 export type AttachCheck =
   | { ok: true; uploadId: string }
@@ -71,7 +71,7 @@ export type ApprovalPrep =
 export async function prepareUploadForApproval(submissionId: string, adminId: string): Promise<ApprovalPrep> {
   const upload = await prisma.modUpload.findUnique({
     where: { submissionId },
-    select: { id: true, status: true, modId: true, blobPathname: true, downloadName: true },
+    select: { id: true, status: true, modId: true, blobPathname: true, downloadName: true, blobEtag: true },
   });
   if (!upload) return { ok: true, uploadId: null };
 
@@ -85,8 +85,18 @@ export async function prepareUploadForApproval(submissionId: string, adminId: st
     };
   }
 
+  if (!upload.blobEtag) {
+    return { ok: false, error: 'The attached file has no verification record. Ask the creator to re-upload.' };
+  }
   const dest = approvedPath(upload.id, upload.downloadName);
-  await promoteBlob(upload.blobPathname, dest);
+  try {
+    await promoteBlob(upload.blobPathname, dest, upload.blobEtag);
+  } catch (err) {
+    if (err instanceof BlobChangedError) {
+      return { ok: false, error: 'The stored file changed after it was checked. Reject this submission.' };
+    }
+    throw err;
+  }
   const res = await prisma.modUpload.updateMany({
     where: { id: upload.id, status: 'verified' },
     data: { status: 'approved', blobPathname: dest, reviewedBy: adminId, reviewedAt: new Date() },

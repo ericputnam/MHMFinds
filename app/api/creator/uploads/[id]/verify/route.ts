@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: message, upload }, { status: 400, headers: NO_STORE });
   };
 
-  let buf: Buffer | null;
+  let read: { bytes: Buffer; etag: string } | null;
   try {
     const size = await blobSize(row.blobPathname);
     if (size === null) {
@@ -72,17 +72,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       );
     }
     if (size > MAX_MOD_FILE_BYTES) return reject('The file is larger than 100 MB.');
-    buf = await readBlobCapped(row.blobPathname, MAX_MOD_FILE_BYTES);
+    read = await readBlobCapped(row.blobPathname, MAX_MOD_FILE_BYTES);
   } catch (err) {
     if (err instanceof BlobTooLargeError) return reject('The file is larger than 100 MB.');
     console.error('[mod-files] verify read failed:', (err as Error).message);
     return NextResponse.json({ error: 'Could not read the uploaded file. Try again.' }, { status: 502, headers: NO_STORE });
   }
-  if (!buf) {
+  if (!read) {
     return NextResponse.json({ error: 'The file has not finished uploading yet' }, { status: 409, headers: NO_STORE });
   }
 
-  const result = validateModFileBytes(buf, row.kind as ModFileKind);
+  const result = validateModFileBytes(read.bytes, row.kind as ModFileKind);
   if (!result.ok) return reject(`This file was not accepted: ${result.error}.`);
 
   const { inspection } = result;
@@ -92,6 +92,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       status: 'verified',
       sizeBytes: inspection.sizeBytes,
       sha256: inspection.sha256,
+      // Promotion copies only this exact object (see promoteBlob).
+      blobEtag: read.etag,
       containsScript: inspection.containsScript,
       inspection: inspection.summary as unknown as Prisma.InputJsonValue,
       validationError: null,

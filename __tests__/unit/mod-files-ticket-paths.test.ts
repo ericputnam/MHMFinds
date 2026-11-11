@@ -16,7 +16,6 @@ import {
   quarantinePath,
 } from '@/lib/modFiles/paths';
 import { sanitizeDownloadName } from '@/lib/modFiles/filename';
-import { hostedUploadsEnabled, modFilesToken } from '@/lib/modFiles/storage';
 import { DOWNLOAD_TICKET_TTL_MS, DOWNLOAD_WAIT_MS, kindFromFilename } from '@/lib/modFiles/constants';
 
 const SECRET = 'x'.repeat(48);
@@ -159,30 +158,5 @@ describe('sanitizeDownloadName', () => {
         expect(name.split('.').length).toBe(2);
       }
     }
-  });
-});
-
-describe('feature switch', () => {
-  const token = 'vercel_blob_rw_abc_123';
-  it('is off unless the private-store token and a strong secret are both set', () => {
-    expect(hostedUploadsEnabled({} as NodeJS.ProcessEnv)).toBe(false);
-    expect(hostedUploadsEnabled({ MOD_FILES_BLOB_READ_WRITE_TOKEN: token } as unknown as NodeJS.ProcessEnv)).toBe(false);
-    expect(
-      hostedUploadsEnabled({ MOD_FILES_BLOB_READ_WRITE_TOKEN: token, NEXTAUTH_SECRET: 'short' } as unknown as NodeJS.ProcessEnv),
-    ).toBe(false);
-    expect(
-      hostedUploadsEnabled({ MOD_FILES_BLOB_READ_WRITE_TOKEN: token, NEXTAUTH_SECRET: SECRET } as unknown as NodeJS.ProcessEnv),
-    ).toBe(true);
-  });
-
-  it('never falls back to the public image store token', () => {
-    const env = { BLOB_READ_WRITE_TOKEN: token, NEXTAUTH_SECRET: SECRET } as unknown as NodeJS.ProcessEnv;
-    expect(modFilesToken(env)).toBeNull();
-    expect(hostedUploadsEnabled(env)).toBe(false);
-  });
-
-  it('ignores a token with stray whitespace or the wrong shape', () => {
-    expect(modFilesToken({ MOD_FILES_BLOB_READ_WRITE_TOKEN: `${token}\n` } as unknown as NodeJS.ProcessEnv)).toBe(token);
-    expect(modFilesToken({ MOD_FILES_BLOB_READ_WRITE_TOKEN: 'not-a-token' } as unknown as NodeJS.ProcessEnv)).toBeNull();
   });
 });

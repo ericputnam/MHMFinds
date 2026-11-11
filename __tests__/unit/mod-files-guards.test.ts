@@ -6,7 +6,7 @@
  *   - every state-changing route checks the request origin
  *   - the cron fails closed, and the download GET never writes
  *   - the funnel's approve script can never approve a hosted file
- *   - nothing reads the public image store's token
+ *   - nothing reads the public image store's token; uploads are signed PUTs
  *   - every route is exempt from the CDN's public /api cache
  *   - no log line carries a ticket, token or signed link
  *   - public and creator-facing responses never carry the storage path
@@ -47,7 +47,7 @@ function handlers(src: string): string[] {
 
 describe('hosted mod files — route guards', () => {
   it('finds the feature (vacuity guard)', () => {
-    expect(featureRoutes.length).toBeGreaterThanOrEqual(8);
+    expect(featureRoutes.length).toBeGreaterThanOrEqual(7);
     expect(adminRoutes.length).toBeGreaterThanOrEqual(2);
     expect(libFiles.length).toBeGreaterThanOrEqual(8);
   });
@@ -103,7 +103,7 @@ describe('hosted mod files — route guards', () => {
 
   it('every blob delete/read goes through the managed-path check', () => {
     const storage = read('lib/modFiles/storage.ts');
-    for (const fn of ['blobSize', 'readBlobCapped', 'promoteBlob', 'deleteBlob']) {
+    for (const fn of ['presignQuarantineUpload', 'blobSize', 'readBlobCapped', 'promoteBlob', 'deleteBlob', 'presignAdminReview']) {
       const start = storage.indexOf(`export async function ${fn}`);
       expect(start, fn).toBeGreaterThan(-1);
       const body = storage.slice(start, storage.indexOf('\n}\n', start));
@@ -136,16 +136,33 @@ describe('hosted mod files — automation and secrets', () => {
     const files = [...libFiles, ...featureRoutes, 'components/creator/HostedFileUpload.tsx'];
     for (const file of files) {
       const src = read(file);
-      const bare = src.replace(/MOD_FILES_BLOB_READ_WRITE_TOKEN/g, '');
-      expect(bare, file).not.toMatch(/BLOB_READ_WRITE_TOKEN/);
+      expect(src, file).not.toMatch(/BLOB_READ_WRITE_TOKEN/);
+      expect(src, file).not.toMatch(/@vercel\/blob/);
+      // The S3 client must get explicit R2 keys, never the AWS default chain.
+      expect(src, file).not.toMatch(/process\.env\.AWS_/);
     }
+    const storage = read('lib/modFiles/storage.ts');
+    expect(storage).toMatch(/credentials:\s*\{\s*accessKeyId:\s*cfg\.accessKeyId/);
   });
 
-  it('the creator upload is private and stored as opaque bytes', () => {
+  it('the creator upload is a create-only PUT of opaque bytes, without cookies', () => {
     const src = read('components/creator/HostedFileUpload.tsx');
-    expect(src).toMatch(/access:\s*['"]private['"]/);
-    expect(src).toMatch(/contentType:\s*MOD_FILE_CONTENT_TYPE/);
-    expect(src).not.toMatch(/access:\s*['"]public['"]/);
+    expect(src).toMatch(/setRequestHeader\(\s*['"]Content-Type['"],\s*MOD_FILE_CONTENT_TYPE\s*\)/);
+    expect(src).toMatch(/setRequestHeader\(\s*['"]If-None-Match['"],\s*['"]\*['"]\s*\)/);
+    expect(src).toMatch(/withCredentials\s*=\s*false/);
+    const storage = read('lib/modFiles/storage.ts');
+    const start = storage.indexOf('export async function presignQuarantineUpload');
+    const body = storage.slice(start, storage.indexOf('\n}\n', start));
+    expect(body).toMatch(/IfNoneMatch:\s*['"]\*['"]/);
+    expect(body).toMatch(/ContentLength:\s*sizeBytes/);
+    expect(body).toMatch(/isQuarantinePathFor\(/);
+  });
+
+  it('promotion is pinned to the ETag verify recorded', () => {
+    const storage = read('lib/modFiles/storage.ts');
+    expect(storage).toMatch(/CopySourceIfMatch:/);
+    expect(read('app/api/creator/uploads/[id]/verify/route.ts')).toMatch(/blobEtag:\s*read\.etag/);
+    expect(read('lib/modFiles/lifecycle.ts')).toMatch(/promoteBlob\([^)]*upload\.blobEtag\)/);
   });
 
   it('no log line carries a ticket, token, or signed link', () => {
