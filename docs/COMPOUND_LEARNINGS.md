@@ -3112,6 +3112,79 @@ funnel PRs. Video-queue design details are in the archive (11-08 subsystem entri
 - **Cass E380 (#490).** The hub email block had 974 viewers and 0 sign-ups in 7d. It gained the
   home strip's "create a free account" link (`account_cta_click{collection-page}`). Reads 11-23.
 
+### 2026-11-09 — rotated from CLAUDE.md
+
+10 PRs merged (8 funnel, the video-queue phase 2 plugin, the daily-run PR), 0 rollbacks, every
+after-merge verify PASS. Hub, retag, seasonal and video-queue details are in the archive (11-09
+subsystem entries).
+
+- **A build must not depend on the network (#491).** `next/font/google` fetches from
+  fonts.gstatic.com during `next build`. It timed out 5 times in 5 days (#468, #473, #474,
+  6d06235, 7895670) and each time looked like a broken PR. The launcher fonts are now
+  `next/font/local` woff2 files in `components/launcher/fonts/`.
+  `__tests__/unit/no-google-fonts-at-build.test.ts` fails if `next/font/google` comes back.
+  If a Vercel BUILD ERROR follows a PR that never touched the app, read
+  `vercel inspect <url> --logs` for `ETIMEDOUT`/`FetchError` before you blame the change.
+- **A rollback artifact is written once, by the run that changes data (#493).** The heels-shaped
+  retag scripts rewrote their rollback CSV on every run, so a no-op read-back run replaced the
+  real before-state with an empty diff. `retag-headwear-theme.ts` skips the write when nothing
+  changes. Any other retag script copied from heels still has this bug. Fix it before its next `--apply`.
+- **Record "started" before the side effect and "done" after it. A job that writes only "done"
+  reads as "never ran" when it dies.** Two runs did that this week: the 11-07 funnel run wrote
+  its digest and then died at cleanup, and the E370 apply wrote 2,423 of 3,050 rows and then
+  died before its `applied` flag. Both looked like "did not run" for two days. Only reading back
+  the worktree files and the DB rows found them (recovered in #499 and ledger `c56ea9d4`). The
+  video poster (#489) does this right: it writes `posting` before any upload, and a run that dies
+  leaves a "failed (uncertain)" row that needs a manual Retry, never a second upload. Before you
+  call something "did not run", read back what it would have produced.
+- **Never name a GA4 event parameter `source`.** GA4 reserves it. Each event that sends it
+  starts a fake session: 361 in 11-01→11-07 (222 from home-hero), all counted as "other" in
+  the non-Pinterest headline. Queued for the operator: register the `ui_source` custom dimension,
+  then rename the param in the `app/layout.tsx` gtag snippet. Register the dimension first, or
+  the rename breaks the existing reads. Check new event params against GA4's reserved names.
+- **Name a theme so it can't be confused with a content type (#493).** The hat theme is
+  `headwear`, not `hats`, because the `hats` content type is only 64.5% hats (a "Vintage Coach
+  Bag" was card #2). The theme is title-only, like every room theme. It is kept out of
+  `FACET_VALUES.themes`, and a test checks that.
+- **Still open:** Quinn's `.claude/agents/` writes were refused for the third run in a row (Q43),
+  so three pending registry files are waiting on the operator. 11-03 and 11-08 were MISSED
+  because the Mac was asleep.
+
+### 2026-11-10 — subsystem entries (written directly to the archive)
+
+- **Shell: try GNU `stat -c %Y` before BSD `stat -f %m`.** On Linux, `stat -f` prints
+  filesystem info and exits non-zero, so `a || b` captures two values and the arithmetic fails
+  (rc 127). `merge-gate.sh` already used the GNU-first order. The runner's lock checks now match (072a9d91).
+- **Audit sweep (97ee5083, 91483615, #502).** Other fixes not called out in CLAUDE.md:
+  - Grid favorites. `lib/capture/useGridFavoriteIds.ts` loads the signed-in visitor's saved
+    mods. A duplicate save is now treated as "saved", so a favorite can be removed from a grid.
+    Favorites DELETE of a missing row is a no-op, not a 500.
+  - Downloads from a grid are counted once, at the `/go` interstitial, not twice.
+  - Related and more-from-creator lists apply the verified + non-NSFW filter.
+  - Rejecting a submission requires it to be pending.
+  - Experiments capture their baseline on start. Nothing else called `captureBaseline`, so
+    every `evaluateExperiment` threw "No baseline RPM captured".
+  - `privacyAggregator` read hardcoded default delays, so `content:stealth` and
+    `content:conservative` ran at the default pace. It now reads `getPrivacyConfig()` at call
+    time. Its import dedupes on `sourceId` only when one exists.
+  - `subscription.updated` tolerates a missing period end, unknown statuses and unknown
+    subscriptions.
+  - The checkout cancel URL now points at a page that exists.
+  - Analytics UA parsing checks Edge/Opera before Chrome and Android/iOS before Linux/macOS.
+  - 13 GET routes that read the session or `request.url` gained `force-dynamic`.
+  - `next.config.js` now sends `private, no-store` for `/api/account`, `/api/admin`,
+    `/api/auth`, `/api/creator`, `/api/monetization`, `/api/subscription`, `/api/cron`,
+    `/api/webhooks` and `/api/mods/:id/favorite`. These later header entries override the
+    blanket `s-maxage=60`. A new per-user API path needs an entry here.
+  - `create-admin.ts` has no default password and never prints one. `manage-env.sh` prints
+    variable names only.
+  - Removed: 21 finished one-off scripts, 35 uncalled exports in `lib/`,
+    `components/Hero.tsx`, `FacetedSidebar` and `admin/CreatorDashboard`. Check git history
+    before you rebuild any of them.
+  - Never return a default the data lacks. The mod page showed a 4.5 rating for unrated
+    mods, and the monetization learning page showed `implementedAt` as "now". A missing value
+    renders as missing.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

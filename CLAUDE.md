@@ -775,7 +775,7 @@ run died with `Prompt is too long`.
 - **`next.config.js` stamps every `/api/*` response `public, s-maxage=60`** and overrides a route's
   own `no-store` (seen under `next start`, #219). A per-user GET (favorites, session state) must not
   depend on its own header. Add a per-request nonce, or exempt the path in `next.config.js`
-  (Tier 2). Check `x-vercel-cache` after deploy.
+  (Tier 2; since #502 the exempt list is in `next.config.js`). Check `x-vercel-cache` after deploy.
 - **A secret check fails closed.** `if (secret && header !== …)` lets every request through
   when the env var is unset — "works" in tests, open in production. Write `if (!secret || …)`
   and a test with the var unset (#226).
@@ -925,51 +925,53 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-08 — rotated to the archive
+### 2026-10-15 → 11-09 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10.
 
-### 2026-11-09 (covers merges #489–#499)
+### 2026-11-10 (covers #502 and three direct-to-`main` audit commits)
 
-10 PRs merged (8 funnel, the video-queue phase 2 plugin, the daily-run PR), 0 rollbacks, every
-after-merge verify PASS. Hub, retag, seasonal and video-queue details are in the archive (11-09
-subsystem entries).
+A project audit landed as 97ee5083 (bugs, secrets), 91483615 (4,128 dead lines removed) and
+#502 (security, payments, catalog), plus runner fix 072a9d91. No funnel merges, 0 rollbacks.
+Subsystem details are in the archive (11-10).
 
-- **A build must not depend on the network (#491).** `next/font/google` fetches from
-  fonts.gstatic.com during `next build`. It timed out 5 times in 5 days (#468, #473, #474,
-  6d06235, 7895670) and each time looked like a broken PR. The launcher fonts are now
-  `next/font/local` woff2 files in `components/launcher/fonts/`.
-  `__tests__/unit/no-google-fonts-at-build.test.ts` fails if `next/font/google` comes back.
-  If a Vercel BUILD ERROR follows a PR that never touched the app, read
-  `vercel inspect <url> --logs` for `ETIMEDOUT`/`FetchError` before you blame the change.
-- **A rollback artifact is written once, by the run that changes data (#493).** The heels-shaped
-  retag scripts rewrote their rollback CSV on every run, so a no-op read-back run replaced the
-  real before-state with an empty diff. `retag-headwear-theme.ts` skips the write when nothing
-  changes. Any other retag script copied from heels still has this bug. Fix it before its next `--apply`.
-- **Record "started" before the side effect and "done" after it. A job that writes only "done"
-  reads as "never ran" when it dies.** Two runs did that this week: the 11-07 funnel run wrote
-  its digest and then died at cleanup, and the E370 apply wrote 2,423 of 3,050 rows and then
-  died before its `applied` flag. Both looked like "did not run" for two days. Only reading back
-  the worktree files and the DB rows found them (recovered in #499 and ledger `c56ea9d4`). The
-  video poster (#489) does this right: it writes `posting` before any upload, and a run that dies
-  leaves a "failed (uncertain)" row that needs a manual Retry, never a second upload. Before you
-  call something "did not run", read back what it would have produced.
-- **Never name a GA4 event parameter `source`.** GA4 reserves it. Each event that sends it
-  starts a fake session: 361 in 11-01→11-07 (222 from home-hero), all counted as "other" in
-  the non-Pinterest headline. Queued for the operator: register the `ui_source` custom dimension,
-  then rename the param in the `app/layout.tsx` gtag snippet. Register the dimension first, or
-  the rename breaks the existing reads. Check new event params against GA4's reserved names.
-- **Name a theme so it can't be confused with a content type (#493).** The hat theme is
-  `headwear`, not `hats`, because the `hats` content type is only 64.5% hats (a "Vintage Coach
-  Bag" was card #2). The theme is title-only, like every room theme. It is kept out of
-  `FACET_VALUES.themes`, and a test checks that.
-- **Still open:** Quinn's `.claude/agents/` writes were refused for the third run in a row (Q43),
-  so three pending registry files are waiting on the operator. 11-03 and 11-08 were MISSED
-  because the Mac was asleep.
+- **A standing rule stops nothing until a scanner enforces it.** CLAUDE.md has said "a secret
+  check fails closed" since #226 (09-30), but `cron/commission-sync` and `cron/monetization-agent`
+  still had `if (cronSecret && …)` six weeks later. The #219 bullet named the `s-maxage=60`
+  problem, and no path was exempted until #502. `__tests__/unit/audit-bug-fixes.test.ts` covers
+  only the routes it names. When you write a rule here, grep the tree for its pattern in the same
+  PR. Add a scanner when the pattern can come back.
+- **Fire-and-forget is wrong in a serverless webhook.** The Stripe webhook returned 200 and ran
+  `processWebhookEvent(event).catch(…)` without awaiting it. The function can freeze once the
+  response is sent, and Stripe never retries a 200, so a paid checkout could silently never
+  become premium. Await the work and return 500 on failure so the sender retries (the handler
+  must be idempotent).
+- **A flag that two writers share needs each writer to check the other.** `User.isPremium` is
+  set by both Stripe and Patreon. On every sign-in by a non-patron, the Patreon sign-in callback
+  wrote `isPremium = false` and cleared Stripe-paid premium. A writer may only revoke what it
+  granted.
+- **A proxy forwards an allowlist of cookies, never the whole `Cookie` header.** The WordPress
+  proxy in `middleware.ts` sent the visitor's NextAuth session token to the blog origin.
+  `wordpressCookies()` now keeps only `wordpress_` / `wp-` / `wp_` / `comment_` cookies.
+- **Rank before you page.** `/api/creators/rankings` took the first 50 profiles by `createdAt`
+  and sorted only those, so `/top-creators` showed the 50 *oldest* creators in favorites order.
+  Sort the whole population, then slice. Clamp `limit` (1..100) on every paged read.
+- **Don't assign `where.OR` in a Prisma filter builder.** A second assignment replaces the
+  first. The unisex gender filter in `/api/mods` replaced the search clause, so the search box
+  was ignored whenever "unisex" was selected. Add each `OR` group to `where.AND`.
+- **JSON-LD bodies go through `serializeJsonLd()` (`lib/jsonLd.ts`).** Plain `JSON.stringify`
+  leaves `<` as-is, so a scraped title containing `</script>` closes the tag. (`app/layout.tsx`
+  is the one raw exception: static constants only.)
+- **A client-supplied attribution field must never be able to carry a consent marker.**
+  `/api/waitlist` accepted any `source`, including `CONFIRM_SOURCE`, the re-permission marker
+  that only `/api/subscribe/confirm` may write. An anonymous POST could therefore forge a
+  confirmed consent.
+- **Closed:** the 11-09 rollback-CSV bug. All 11 `retag-*-theme.ts` scripts now skip a no-op write.
+
 ---
 
-*Last compound review: 2026-11-09*
+*Last compound review: 2026-11-10*
 
 ---
 
