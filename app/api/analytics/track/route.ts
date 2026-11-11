@@ -9,6 +9,9 @@ import { AnalyticsEventType } from '@prisma/client';
  * Track analytics events (page views, searches, clicks, etc.)
  * Public endpoint - works for both authenticated and anonymous users
  */
+/** One counted download per visitor per mod inside this window. */
+const DOWNLOAD_DEDUPE_WINDOW_MS = 10 * 60 * 1000;
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -43,6 +46,28 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-real-ip') ||
       undefined;
 
+    // This endpoint is public and feeds Mod.downloadCount, which drives the popularity
+    // sort. Count one download per visitor per mod per window: a repeat click (or a loop
+    // replaying the request) is still logged as an event but does not move the counter.
+    let repeatDownload = false;
+    if (modId && eventType === 'DOWNLOAD_CLICK' && (sessionId || ipAddress)) {
+      try {
+        const earlier = await prisma.analyticsEvent.findFirst({
+          where: {
+            eventType: 'DOWNLOAD_CLICK',
+            modId,
+            createdAt: { gte: new Date(Date.now() - DOWNLOAD_DEDUPE_WINDOW_MS) },
+            ...(sessionId ? { sessionId } : { ipAddress }),
+          },
+          select: { id: true },
+        });
+        repeatDownload = earlier !== null;
+      } catch (err) {
+        // Could not tell: count it, as before.
+        console.error('Download dedupe lookup failed:', err);
+      }
+    }
+
     // Parse user agent for device type, browser, OS (basic detection)
     const deviceType = getDeviceType(userAgent);
     const browser = getBrowser(userAgent);
@@ -74,7 +99,7 @@ export async function POST(request: NextRequest) {
     // Keep the denormalized Mod counters in sync with analytics events so
     // the admin dashboard, mod cards, and sort-by-popularity all agree.
     // Fire-and-forget — counter increments should never block the response.
-    if (modId && eventType === 'DOWNLOAD_CLICK') {
+    if (modId && eventType === 'DOWNLOAD_CLICK' && !repeatDownload) {
       prisma.mod
         .update({
           where: { id: modId },
