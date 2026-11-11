@@ -74,7 +74,7 @@ export default function QueuePage() {
 
   const fetchQueue = async () => {
     try {
-      const response = await fetch('/api/monetization/queue');
+      const response = await fetch('/api/monetization/queue/');
       const data = await response.json();
       setOpportunities(data.opportunities || []);
       setStats(data.stats || null);
@@ -88,7 +88,7 @@ export default function QueuePage() {
   const approveOpportunity = async (id: string) => {
     setProcessing(prev => new Set([...Array.from(prev), id]));
     try {
-      await fetch('/api/monetization/queue', {
+      await fetch('/api/monetization/queue/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ opportunityId: id, action: 'approve' }),
@@ -113,7 +113,7 @@ export default function QueuePage() {
   const rejectOpportunity = async (id: string, reason?: string) => {
     setProcessing(prev => new Set([...Array.from(prev), id]));
     try {
-      await fetch('/api/monetization/queue', {
+      await fetch('/api/monetization/queue/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ opportunityId: id, action: 'reject', reason }),

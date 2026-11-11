@@ -183,7 +183,7 @@ export default function FunnelDashboardPage() {
     else setLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch('/api/admin/funnel/history', { cache: 'no-store' });
+      const response = await fetch('/api/admin/funnel/history/', { cache: 'no-store' });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
         setErrorMessage(body?.error || `Failed to load funnel history (${response.status})`);

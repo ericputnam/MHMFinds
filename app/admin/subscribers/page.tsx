@@ -28,7 +28,7 @@ export default function AdminSubscribersPage() {
 
   const fetchSubscribers = async () => {
     try {
-      const response = await fetch('/api/admin/waitlist');
+      const response = await fetch('/api/admin/waitlist/');
       const data = await response.json();
       setEntries(data.entries || []);
       setStats(data.stats);

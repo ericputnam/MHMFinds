@@ -100,7 +100,7 @@ export default function ModsManagementPage() {
   useEffect(() => {
     const fetchFacets = async () => {
       try {
-        const response = await fetch('/api/admin/facets');
+        const response = await fetch('/api/admin/facets/');
         if (response.ok) {
           const data = await response.json();
           setFacetDefs(data.grouped || {});
@@ -138,7 +138,7 @@ export default function ModsManagementPage() {
         ...(filterMissingFacets && { missingFacets: 'true' }),
       });
 
-      const response = await fetch(`/api/admin/mods?${params}`);
+      const response = await fetch(`/api/admin/mods/?${params}`);
       const data = await response.json();
       setMods(data.mods || []);
       setTotalPages(data.totalPages || 1);
@@ -177,7 +177,7 @@ export default function ModsManagementPage() {
     if (!confirm(`Delete ${selectedMods.size} selected mods?`)) return;
 
     try {
-      await fetch('/api/admin/mods/bulk', {
+      await fetch('/api/admin/mods/bulk/', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: Array.from(selectedMods) }),
@@ -191,7 +191,7 @@ export default function ModsManagementPage() {
 
   const handleBulkUpdate = async (updates: Partial<Mod>) => {
     try {
-      await fetch('/api/admin/mods/bulk', {
+      await fetch('/api/admin/mods/bulk/', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -208,7 +208,7 @@ export default function ModsManagementPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await fetch(`/api/admin/mods/${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/mods/${id}/`, { method: 'DELETE' });
       fetchMods();
       setShowDeleteConfirm(false);
       setModToDelete(null);
@@ -225,7 +225,7 @@ export default function ModsManagementPage() {
     );
 
     try {
-      const response = await fetch(`/api/admin/mods/${modId}`, {
+      const response = await fetch(`/api/admin/mods/${modId}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value }),
@@ -275,7 +275,7 @@ export default function ModsManagementPage() {
         };
       }
 
-      const response = await fetch('/api/admin/mods/bulk-facets', {
+      const response = await fetch('/api/admin/mods/bulk-facets/', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

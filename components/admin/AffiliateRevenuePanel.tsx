@@ -95,7 +95,7 @@ export function AffiliateRevenuePanel() {
   const fetchEarnings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/affiliates/earnings?days=${days}`);
+      const res = await fetch(`/api/admin/affiliates/earnings/?days=${days}`);
       if (res.ok) {
         setData(await res.json());
       } else {
@@ -116,7 +116,7 @@ export function AffiliateRevenuePanel() {
     setSyncing(true);
     setMessage(null);
     try {
-      const res = await fetch('/api/admin/affiliates/earnings/sync', { method: 'POST' });
+      const res = await fetch('/api/admin/affiliates/earnings/sync/', { method: 'POST' });
       const result = await res.json();
       if (result.success) {
         const skipped = result.networksSkipped?.length
@@ -145,7 +145,7 @@ export function AffiliateRevenuePanel() {
     setMessage(null);
     try {
       const csv = await file.text();
-      const res = await fetch('/api/admin/affiliates/earnings/import', {
+      const res = await fetch('/api/admin/affiliates/earnings/import/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ csv }),

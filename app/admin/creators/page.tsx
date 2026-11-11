@@ -31,7 +31,7 @@ export default function CreatorsPage() {
     try {
       setLoading(true);
       const params = searchQuery ? `?search=${searchQuery}` : '';
-      const response = await fetch(`/api/admin/creators${params}`);
+      const response = await fetch(`/api/admin/creators/${params}`);
       const data = await response.json();
       setCreators(data.creators || []);
     } catch (error) {
@@ -47,7 +47,7 @@ export default function CreatorsPage() {
 
   const handleUpdate = async (creator: Creator) => {
     try {
-      await fetch(`/api/admin/creators/${creator.id}`, {
+      await fetch(`/api/admin/creators/${creator.id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -69,7 +69,7 @@ export default function CreatorsPage() {
     if (!confirm('Delete this creator profile?')) return;
 
     try {
-      await fetch(`/api/admin/creators/${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/creators/${id}/`, { method: 'DELETE' });
       fetchCreators();
     } catch (error) {
       console.error('Delete failed:', error);
