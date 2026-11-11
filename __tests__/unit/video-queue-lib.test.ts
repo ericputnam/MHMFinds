@@ -4,6 +4,7 @@ import {
   mergeCredits,
   creditsChanged,
   buildCaptions,
+  canonicalPagePath,
   checkVideo,
   isPlaceholderCreator,
   classifyLink,
@@ -14,6 +15,7 @@ import {
   parseCaptionBlock,
   plainHook,
   slotDate,
+  targetStatusProblem,
   type CreatorHandlesFile,
   type SceneInput,
   type VideoMeta,
@@ -304,5 +306,48 @@ describe('creditsChanged', () => {
     const a = [{ mod: 'A', creator: 'x' }, { mod: 'B', creator: 'y' }];
     expect(creditsChanged(a, [{ mod: 'b', creator: 'Y' }, { mod: 'a', creator: 'X' }])).toBe(false);
     expect(creditsChanged(a, [{ mod: 'A', creator: 'x' }, { mod: 'C', creator: 'z' }])).toBe(true);
+  });
+});
+
+// E386 (Pip, 2026-11-11): the 11-09 weekly job drafted video 43631 with target
+// https://musthavemods.com/christmas-cc/ (HTTP 404). `collectionFor()` accepted the bare slug
+// as hub shorthand, so the mods were right and the link was not, and the writer approved it.
+describe('E386 target URLs land', () => {
+  it('canonicalPagePath maps every collection bare slug to its hub path (real registry)', async () => {
+    const { SIMS4_COLLECTIONS, collectionHref } = await import('../../lib/collections');
+    const cols = SIMS4_COLLECTIONS.map((c) => ({ slug: c.slug, href: collectionHref(c) }));
+    expect(cols.length).toBeGreaterThan(30); // vacuity guard
+    expect(canonicalPagePath('/christmas-cc/', cols)).toBe('/games/sims-4/christmas-cc/');
+    for (const c of cols) {
+      expect(canonicalPagePath(`/${c.slug}/`, cols), c.slug).toBe(c.href);
+      expect(canonicalPagePath(c.href, cols), c.slug).toBe(c.href);
+    }
+    // WordPress articles and other pages pass through untouched.
+    expect(canonicalPagePath('/sims-4-chandelier-cc/', cols)).toBe('/sims-4-chandelier-cc/');
+    expect(canonicalPagePath('/best-sims-4-realistic-mods/', cols)).toBe('/best-sims-4-realistic-mods/');
+  });
+
+  it('targetStatusProblem passes only a 200', () => {
+    const u = 'https://musthavemods.com/christmas-cc/';
+    expect(targetStatusProblem(u, { status: 200 })).toBeNull();
+    expect(targetStatusProblem(u, { status: 404 })).toMatch(/HTTP 404, not 200/);
+    expect(targetStatusProblem(u, { status: 410 })).toMatch(/HTTP 410/);
+    expect(targetStatusProblem(u, { status: 500 })).toMatch(/HTTP 500/);
+    expect(targetStatusProblem(u, { status: 308, location: '/games/sims-4/christmas-cc/' })).toMatch(/redirects \(HTTP 308 → \/games\/sims-4\/christmas-cc\/\); use the final URL/);
+    expect(targetStatusProblem(u, 'unreachable')).toMatch(/could not verify/);
+  });
+
+  it('video-queue.ts uses both: draft canonicalizes, check probes the live target', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const src = fs
+      .readFileSync(path.resolve(__dirname, '../../scripts/agents/video-queue.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const draft = src.slice(src.indexOf('async function cmdDraft'), src.indexOf('function ffprobe'));
+    expect(draft).toMatch(/canonicalPagePath\(c\.path/);
+    const check = src.slice(src.indexOf('async function runCheck'));
+    expect(check).toMatch(/targetStatusProblem\(d\.targetUrl, await probeTarget\(d\.targetUrl\)\)/);
+    expect(src).toMatch(/redirect: 'manual'/);
   });
 });
