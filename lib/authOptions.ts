@@ -14,6 +14,9 @@ import {
   PATREON_USERINFO_URL,
 } from "@/lib/membership";
 
+/** How long a session token may carry roles before they are re-read from the database. */
+export const ROLE_REFRESH_MS = 5 * 60 * 1000;
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
@@ -159,6 +162,32 @@ export const authOptions: NextAuthOptions = {
         token.isCreator = user.isCreator;
         token.isPremium = user.isPremium;
         token.isAdmin = user.isAdmin;
+        token.rolesCheckedAt = Date.now();
+      }
+
+      // Roles used to be frozen into the token for its whole 30-day life: a revoked
+      // admin kept admin, and a new premium member stayed non-premium until they signed
+      // in again. Re-read them from the database at most every ROLE_REFRESH_MS. A failed
+      // read keeps the current values — it must never sign anyone out.
+      if (
+        !user &&
+        token.id &&
+        (typeof token.rolesCheckedAt !== 'number' || Date.now() - token.rolesCheckedAt > ROLE_REFRESH_MS)
+      ) {
+        try {
+          const fresh = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { isAdmin: true, isPremium: true, isCreator: true },
+          });
+          if (fresh) {
+            token.isAdmin = fresh.isAdmin;
+            token.isPremium = fresh.isPremium;
+            token.isCreator = fresh.isCreator;
+          }
+          token.rolesCheckedAt = Date.now();
+        } catch (error) {
+          console.error('[auth] role refresh failed; keeping the roles in the token:', error);
+        }
       }
 
       // Membership via Patreon OAuth: on a Patreon sign-in, ask Patreon whether
@@ -209,6 +238,22 @@ export const authOptions: NextAuthOptions = {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
+
+        // Patreon links to an existing account by email
+        // (allowDangerousEmailAccountLinking). If that account's address was never
+        // verified, its password was set by someone who never proved they own the
+        // address — possibly a squatter waiting for the real owner to connect Patreon.
+        // Patreon has now proven ownership: drop the unproven password and stamp the
+        // address verified. The owner can set a password through "forgot password".
+        if (account?.provider === 'patreon' && existingUser && !existingUser.emailVerified) {
+          await prisma.account.deleteMany({
+            where: { userId: existingUser.id, provider: 'credentials' },
+          });
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { emailVerified: new Date() },
+          });
+        }
 
         if (!existingUser) {
           await prisma.user.create({
