@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const readline = require('readline');
 
 // Colors for console output
@@ -27,6 +27,42 @@ const log = {
   warning: (msg) => console.log(`${colors.yellow}${msg}${colors.reset}`),
   info: (msg) => console.log(`${colors.blue}${msg}${colors.reset}`),
 };
+
+/**
+ * Run the Vercel CLI WITHOUT a shell, passing the value on stdin.
+ *
+ * This used to be `echo "${value}" | vercel env add …` through a shell, so a value
+ * containing `$`, a backtick, `"` or `\` was expanded or mangled before Vercel saw it —
+ * a database password with a `$` in it was silently stored wrong.
+ * Returns true on success, false on any failure. Never prints the value.
+ */
+function vercel(args, input, run = execFileSync) {
+  try {
+    run('vercel', args, { input, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Upload one variable. Returns:
+ *   'uploaded'             added (it did not exist)
+ *   'updated'              existed: removed, then re-added
+ *   'failed'               could not add, and nothing was removed
+ *   'removed-not-restored' removed, then BOTH re-add attempts failed — the variable is
+ *                          now absent from Vercel. The caller must say so loudly; this
+ *                          case used to be counted as an ordinary "failed".
+ */
+function uploadVar(key, value, environment, run = execFileSync) {
+  const add = () => vercel(['env', 'add', key, environment], value, run);
+  if (add()) return 'uploaded';
+
+  // `env add` fails when the variable already exists. Replace it.
+  if (!vercel(['env', 'rm', key, environment, '-y'], undefined, run)) return 'failed';
+  if (add() || add()) return 'updated';
+  return 'removed-not-restored';
+}
 
 // Parse .env file
 function parseEnvFile(filePath) {
@@ -157,6 +193,7 @@ async function main() {
   let successCount = 0;
   let errorCount = 0;
   let skipCount = 0;
+  const removedNotRestored = [];
 
   for (const [key, value] of Object.entries(envVars)) {
     // Skip placeholders
@@ -166,25 +203,18 @@ async function main() {
       continue;
     }
 
-    // Upload to Vercel
-    try {
-      // Try to add the variable
-      const addResult = exec(`echo "${value}" | vercel env add ${key} ${environment}`);
-
-      if (addResult === null) {
-        // Variable might already exist, try to remove and re-add
-        exec(`vercel env rm ${key} ${environment} -y`);
-        const retryResult = exec(`echo "${value}" | vercel env add ${key} ${environment}`);
-
-        if (retryResult === null) {
-          throw new Error('Failed to upload');
-        }
-        log.success(`✓ Updated: ${key}`);
-      } else {
-        log.success(`✓ Uploaded: ${key}`);
-      }
+    const outcome = uploadVar(key, value, environment);
+    if (outcome === 'uploaded') {
+      log.success(`✓ Uploaded: ${key}`);
       successCount++;
-    } catch (error) {
+    } else if (outcome === 'updated') {
+      log.success(`✓ Updated: ${key}`);
+      successCount++;
+    } else if (outcome === 'removed-not-restored') {
+      log.error(`✗ REMOVED AND NOT RE-ADDED: ${key}`);
+      removedNotRestored.push(key);
+      errorCount++;
+    } else {
       log.error(`✗ Failed: ${key}`);
       errorCount++;
     }
@@ -198,6 +228,12 @@ async function main() {
   log.warning(`Skipped: ${skipCount} variables (placeholders)`);
   log.error(`Errors: ${errorCount} variables`);
   console.log('');
+
+  if (removedNotRestored.length > 0) {
+    log.error(`\n⛔ ${removedNotRestored.length} variable(s) were REMOVED from ${environment} and could not be re-added:`);
+    for (const key of removedNotRestored) log.error(`   - ${key}`);
+    log.error('They are NOT set in Vercel right now. Add them in the dashboard before the next deploy.\n');
+  }
 
   if (errorCount > 0) {
     log.warning('⚠️  Some variables failed to upload. Please upload them manually in Vercel Dashboard.');
@@ -219,8 +255,12 @@ async function main() {
   console.log('');
 }
 
-// Run
-main().catch((error) => {
-  log.error(`Error: ${error.message}`);
-  process.exit(1);
-});
+module.exports = { parseEnvFile, uploadVar };
+
+// Run only when executed directly (the tests require() this file).
+if (require.main === module) {
+  main().catch((error) => {
+    log.error(`Error: ${error.message}`);
+    process.exit(1);
+  });
+}
