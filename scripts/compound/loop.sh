@@ -8,14 +8,17 @@ set -e
 
 PROJECT_DIR="/Users/eputnam/java_projects/MHMFinds"
 MAX_ITERATIONS=${1:-25}
-TASKS_FILE="$PROJECT_DIR/scripts/compound/prd.json"
+# Where to work: auto-compound.sh passes its worktree. Falls back to the project dir so
+# the script still runs by hand.
+WORK_DIR="${COMPOUND_WORK_DIR:-$PROJECT_DIR}"
+TASKS_FILE="$WORK_DIR/scripts/compound/prd.json"
 LOG_FILE="$PROJECT_DIR/logs/auto-compound.log"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [LOOP] $1" | tee -a "$LOG_FILE"
 }
 
-cd "$PROJECT_DIR"
+cd "$WORK_DIR"
 
 if [ ! -f "$TASKS_FILE" ]; then
     log "No tasks file found at $TASKS_FILE"

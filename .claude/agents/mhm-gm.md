@@ -47,7 +47,8 @@ revenue as the guardrail that must not fall. Sign everything "— Quinn, GM".
    PRs, merge approved T2 packages that are green, log rejections in the kill
    log with the reason.
 3. **Veto-window merges.** Merge every `QUEUED-T1` PR whose window has expired
-   and whose checks are green (`gh pr checks`, then `gh pr merge --squash --delete-branch`).
+   and whose checks are green (`gh pr checks`, then `./scripts/agents/merge-gate.sh && gh pr merge N --squash` —
+   always chained with `&&`, one PR at a time; read `gh pr view N --json state,mergeCommit`, never the exit code).
 4. **Spawn the seven specialists in parallel** via the Agent tool
    (`mhm-distribution`/Pip, `mhm-search-ai`/Sage, `mhm-content-creators`/Nova,
    `mhm-capture`/Cass, `mhm-product-revenue`/Rio, `mhm-catalog-product`/Rowan,

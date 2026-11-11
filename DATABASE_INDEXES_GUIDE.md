@@ -21,10 +21,10 @@ Your Prisma schema has **24 performance indexes** optimized for:
 # Make sure your .env has the correct DATABASE_URL
 # This should point to your Vercel Prisma database
 
-./scripts/deploy-migrations.sh
+npm run db:deploy
 ```
 
-The script will:
+`prisma migrate deploy` (which is what `npm run db:deploy` runs) applies every pending migration. The old helper script that did the following was removed (it read `.env`, not `.env.local`, and had no error handling):
 1. ✓ Verify database connection
 2. ✓ Show current migration status
 3. ✓ Generate Prisma Client
@@ -151,7 +151,7 @@ You need to redeploy migrations when:
    npx prisma migrate dev --name add_new_index
 
    # Deploy to production
-   ./scripts/deploy-migrations.sh
+   npm run db:deploy
    ```
 
 2. **Modifying existing indexes**
@@ -160,13 +160,13 @@ You need to redeploy migrations when:
    npx prisma migrate dev --name update_index
 
    # Deploy to production
-   ./scripts/deploy-migrations.sh
+   npm run db:deploy
    ```
 
 3. **After pulling schema changes**
    ```bash
    git pull
-   ./scripts/deploy-migrations.sh
+   npm run db:deploy
    ```
 
 ---
