@@ -1,0 +1,365 @@
+{
+  "experiment": "E340",
+  "createdAt": "2026-11-11T11:43:53.056Z",
+  "rows": [
+    {
+      "id": "cmw6buw7i000pox7hoccc5c2o",
+      "title": "Skincare Set",
+      "action": "set",
+      "slug": "skincare-set",
+      "projectId": 1390919,
+      "prior": null,
+      "next": "zayin3"
+    },
+    {
+      "id": "cmw6buv9x000aox7hf82zjsgw",
+      "title": "SeaSim Skincare Set",
+      "action": "set",
+      "slug": "seasim-skincare-set-simlish",
+      "projectId": 865051,
+      "prior": null,
+      "next": "platinumluxesims"
+    },
+    {
+      "id": "cmw6buvd2000box7hh45g5a5h",
+      "title": "Everyday Beauty Skincare & Clutter Set",
+      "action": "set",
+      "slug": "kaziecc-everyday-beauty-set",
+      "projectId": 1157437,
+      "prior": null,
+      "next": "Kaziecc"
+    },
+    {
+      "id": "cmw6buvld000fox7hnecnjj6m",
+      "title": "Luminous Beauty – Makeup & Skincare Bathroom Clutter",
+      "action": "set",
+      "slug": "kaziecc-luminous-beauty",
+      "projectId": 1101418,
+      "prior": null,
+      "next": "Kaziecc"
+    },
+    {
+      "id": "cmw6buvpo000hox7hldsjixh5",
+      "title": "Skincare Cosmetics Moonlight",
+      "action": "set",
+      "slug": "sweetcc-skincare-cosmetics-moonlight",
+      "projectId": 1377113,
+      "prior": null,
+      "next": "Sweetcc"
+    },
+    {
+      "id": "cmw6buvu6000jox7h7ggyss3v",
+      "title": "Feel Skincare Clutter Set – Bathroom & Vanity CC",
+      "action": "set",
+      "slug": "kaziecc-feel-skincare-clutter",
+      "projectId": 1036776,
+      "prior": null,
+      "next": "Kaziecc"
+    },
+    {
+      "id": "cmw6buvyf000lox7hqr08u92s",
+      "title": "Realistic Skincare",
+      "action": "set",
+      "slug": "sweetcc-realistic-skincare",
+      "projectId": 1349802,
+      "prior": null,
+      "next": "Sweetcc"
+    },
+    {
+      "id": "cmw6buw0p000mox7hb5ujkt78",
+      "title": "Skincare Collection – 5 Pieces",
+      "action": "set",
+      "slug": "kaziecc-skincare-collection",
+      "projectId": 1356780,
+      "prior": null,
+      "next": "Kaziecc"
+    },
+    {
+      "id": "cmw6buw2z000nox7h12mcy781",
+      "title": "Cute Skincare Products",
+      "action": "set",
+      "slug": "em-cute-skincare-products",
+      "projectId": 1059755,
+      "prior": null,
+      "next": "Emdoescc"
+    },
+    {
+      "id": "cmw6buw58000oox7hd1gymea5",
+      "title": "Skincare Essentials",
+      "action": "set",
+      "slug": "skincare-essentials",
+      "projectId": 1396041,
+      "prior": null,
+      "next": "Snotra902"
+    },
+    {
+      "id": "cmw6buw9p000qox7hkwivw81p",
+      "title": "Simlish Skincare Haul Set",
+      "action": "set",
+      "slug": "simlish-skincare-haul-set",
+      "projectId": 1512634,
+      "prior": null,
+      "next": "SnootySims"
+    },
+    {
+      "id": "cmw4wfpnj0002ox2qbhq7eg0a",
+      "title": "My Heel Perfume",
+      "action": "set",
+      "slug": "my-heel-perfume",
+      "projectId": 1481783,
+      "prior": null,
+      "next": "herasims4"
+    },
+    {
+      "id": "cmw4wfptd0004ox2qicoh3cot",
+      "title": "Perfume Clutter Set – Perfume Bottles and Boxes",
+      "action": "set",
+      "slug": "kaziecc-parfumclutter-v2",
+      "projectId": 1504224,
+      "prior": null,
+      "next": "Kaziecc"
+    },
+    {
+      "id": "cmw4wfqb8000box2q5zwc976o",
+      "title": "Perfume Tray",
+      "action": "set",
+      "slug": "perfume-tray",
+      "projectId": 1364430,
+      "prior": null,
+      "next": "ninisims"
+    },
+    {
+      "id": "cmw4wfqdh000cox2qzp9k1lmp",
+      "title": "Y2K Perfumes Clutter",
+      "action": "set",
+      "slug": "zha-na-y2k-perfumes-clutter-bsg",
+      "projectId": 1705854,
+      "prior": null,
+      "next": "zha_na_sims"
+    },
+    {
+      "id": "cmw4wfqg5000dox2qdb5ookcm",
+      "title": "Loretta Perfume and Seeds",
+      "action": "set",
+      "slug": "loretta-perfume-and-seeds",
+      "projectId": 1723718,
+      "prior": null,
+      "next": "SIMcredible"
+    },
+    {
+      "id": "cmw4wfqin000eox2qat5bcdwa",
+      "title": "Sugar Perfume Set",
+      "action": "set",
+      "slug": "sugar-perfume-set",
+      "projectId": 1317668,
+      "prior": null,
+      "next": "SimderTalia"
+    },
+    {
+      "id": "cmw4wfql2000fox2qi0hknd5a",
+      "title": "Perfumes Set",
+      "action": "set",
+      "slug": "perfumes-set",
+      "projectId": 1107897,
+      "prior": null,
+      "next": "SimderTalia"
+    },
+    {
+      "id": "cmw4wfqnd000gox2q7xgftn3r",
+      "title": "Daisy Love Set",
+      "action": "set",
+      "slug": "daisy-love-set",
+      "projectId": 1489324,
+      "prior": null,
+      "next": "herasims4"
+    },
+    {
+      "id": "cmw4wfqrw000iox2qb7gfzyin",
+      "title": "Loco Lux Set",
+      "action": "set",
+      "slug": "loco-lux-set",
+      "projectId": 1244353,
+      "prior": null,
+      "next": "herasims4"
+    },
+    {
+      "id": "cmw6butnj0000ox7h8zcufzyp",
+      "title": "Aesthetic Skincare",
+      "action": "set",
+      "slug": "aesthetic-skincare",
+      "projectId": 1581965,
+      "prior": null,
+      "next": "LylerSim"
+    },
+    {
+      "id": "cmwam6jua000ooxa67r53154e",
+      "title": "Crushed Velvet Curtains V1",
+      "action": "set",
+      "slug": "crushed-velvet-curtains-v1",
+      "projectId": 965143,
+      "prior": null,
+      "next": "platinumluxesims"
+    },
+    {
+      "id": "cmwam6jzu000qoxa6szif893n",
+      "title": "Lace Curtains",
+      "action": "set",
+      "slug": "lace-curtains",
+      "projectId": 705285,
+      "prior": null,
+      "next": "pocci"
+    },
+    {
+      "id": "cmwc1mwof0002ox5rsw04agpd",
+      "title": "Ribbon Heels",
+      "action": "set",
+      "slug": "ribbon-heels",
+      "projectId": 1530105,
+      "prior": null,
+      "next": "ohmybunnny"
+    },
+    {
+      "id": "cmwc1mww70005ox5rmmftaxqp",
+      "title": "Vatican Heels",
+      "action": "set",
+      "slug": "vatican-heels",
+      "projectId": 1687571,
+      "prior": null,
+      "next": "daftvu"
+    },
+    {
+      "id": "cmwc1mxa1000cox5rcuol537q",
+      "title": "Eve Fur Heels",
+      "action": "set",
+      "slug": "eve-fur-heels",
+      "projectId": 956224,
+      "prior": null,
+      "next": "backtrackcc"
+    },
+    {
+      "id": "cmwc1mxh6000fox5rczx5b8n5",
+      "title": "Alba High Heels",
+      "action": "set",
+      "slug": "alba-high-heels-caiocc",
+      "projectId": 1284966,
+      "prior": null,
+      "next": "Caio"
+    },
+    {
+      "id": "cmwam6hsw0001oxa6kg36qlh0",
+      "title": "Olivia Drape Curtains",
+      "action": "set",
+      "slug": "olivia-drape-curtains",
+      "projectId": 1699266,
+      "prior": null,
+      "next": "Snotra902"
+    },
+    {
+      "id": "cmwam6i4d0005oxa6e1xshgty",
+      "title": "Cottage Curtains",
+      "action": "set",
+      "slug": "cottage-curtains",
+      "projectId": 1703959,
+      "prior": null,
+      "next": "Snotra902"
+    },
+    {
+      "id": "cmwam6ip0000doxa6b68w258t",
+      "title": "Lovely Layered Curtains",
+      "action": "set",
+      "slug": "lovely-layered-curtains",
+      "projectId": 1287221,
+      "prior": null,
+      "next": "Snotra902"
+    },
+    {
+      "id": "cmwam6iu1000foxa60arhaybn",
+      "title": "Tartan Curtains",
+      "action": "set",
+      "slug": "tartan-curtains",
+      "projectId": 1707935,
+      "prior": null,
+      "next": "Sppatchett"
+    },
+    {
+      "id": "cmwam6j7c000hoxa60kywudi1",
+      "title": "Wild Instinct Curtains",
+      "action": "set",
+      "slug": "wild-instinct-curtains",
+      "projectId": 1642769,
+      "prior": null,
+      "next": "TheTemplarForge"
+    },
+    {
+      "id": "cmwam6jfx000ioxa6dnb9rmi8",
+      "title": "Bow Tie Curtains",
+      "action": "set",
+      "slug": "bow-tie-curtains",
+      "projectId": 1709531,
+      "prior": null,
+      "next": "Snotra902"
+    },
+    {
+      "id": "cmwam6jia000joxa6j89o1qzd",
+      "title": "Bow Curtains",
+      "action": "set",
+      "slug": "bow-curtains",
+      "projectId": 873448,
+      "prior": null,
+      "next": "lin_dian"
+    },
+    {
+      "id": "cmwam6jn5000loxa686p20eu4",
+      "title": "Simple Fabric Curtains",
+      "action": "set",
+      "slug": "simple-fabric-curtains",
+      "projectId": 1283866,
+      "prior": null,
+      "next": "Snotra902"
+    },
+    {
+      "id": "cmwam6jrv000noxa6hl5qap58",
+      "title": "Coquette Cottage Curtains",
+      "action": "set",
+      "slug": "coquette-cottage-curtains",
+      "projectId": 1638714,
+      "prior": null,
+      "next": "CozyPixels01"
+    },
+    {
+      "id": "cmwam6k71000toxa68f1eo62g",
+      "title": "Leora Curtains",
+      "action": "set",
+      "slug": "leora-curtains",
+      "projectId": 1731367,
+      "prior": null,
+      "next": "Snotra902"
+    }
+  ],
+  "skipped": {
+    "multi-author": 3,
+    "not-found": 5,
+    "author-unusable": 1
+  },
+  "impact": {
+    "distinctAuthors": 22,
+    "pagesGrown": 9,
+    "pagesNew": 1,
+    "modsOntoPages": 24,
+    "grownSlugs": [
+      "backtrackcc",
+      "caio",
+      "herasims4",
+      "lin-dian",
+      "platinumluxesims",
+      "simcredible",
+      "simdertalia",
+      "snootysims",
+      "snotra902"
+    ],
+    "newSlugs": [
+      "kaziecc"
+    ]
+  },
+  "applied": []
+}

@@ -25,7 +25,7 @@ if (process.env.DIRECT_DATABASE_URL && /^prisma(\+postgres)?:\/\//.test(process.
 import { PrismaClient } from '@prisma/client';
 import { authorSlug, creatorKey } from '../../lib/creatorSlug';
 import { MIN_MODS_FOR_PAGE } from '../../lib/creators';
-import { CURSEFORGE_SIMS4_GAME_ID } from './approve-submissions-lib';
+import { lookupCurseForgeAuthor } from '../../lib/services/curseforgeIngestAuthor';
 import {
   MAX_BACKFILL_ROWS,
   type AuthorLookup,
@@ -43,7 +43,6 @@ import {
 } from './curseforge-author-backfill-lib';
 
 const TRIAGE_DIR = resolve(process.cwd(), 'reports/funnel/triage');
-const LOOKUP_TIMEOUT_MS = 15_000;
 const LOOKUP_GAP_MS = 120;
 
 interface PlanFile {
@@ -57,22 +56,9 @@ interface PlanFile {
   rolledBack?: string[];
 }
 
+// E390: one lookup for the backfill and the ingest (lib/services/curseforgeIngestAuthor.ts).
 async function lookupSlug(slug: string, key: string): Promise<AuthorLookup> {
-  const url = `https://api.curseforge.com/v1/mods/search?gameId=${CURSEFORGE_SIMS4_GAME_ID}&slug=${encodeURIComponent(slug)}`;
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), LOOKUP_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, { headers: { 'x-api-key': key, Accept: 'application/json' }, signal: ctl.signal });
-    if (!res.ok) return { kind: 'unreachable', detail: `HTTP ${res.status}` };
-    const body = (await res.json()) as { data?: Array<{ id: number; slug: string; authors?: Array<{ name: string }> }> };
-    const hit = (body.data ?? []).find((m) => m.slug === slug);
-    if (!hit) return { kind: 'not-found' };
-    return { kind: 'found', projectId: hit.id, authors: (hit.authors ?? []).map((a) => a.name) };
-  } catch (error) {
-    return { kind: 'unreachable', detail: String((error as Error)?.message ?? error).slice(0, 80) };
-  } finally {
-    clearTimeout(timer);
-  }
+  return lookupCurseForgeAuthor(slug, key);
 }
 
 async function readSfw(prisma: PrismaClient): Promise<BackfillRow[]> {
