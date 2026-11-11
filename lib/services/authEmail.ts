@@ -106,14 +106,6 @@ export async function consumePasswordToken(
   return peeked;
 }
 
-/** Compare two tokens without leaking length/prefix through timing. */
-export function tokensMatch(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
 function layout(heading: string, body: string, ctaUrl: string, ctaLabel: string, footnote: string): string {
   return `
 <!DOCTYPE html>

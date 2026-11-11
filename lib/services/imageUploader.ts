@@ -49,45 +49,6 @@ export async function uploadImageToBlob(
 }
 
 /**
- * Upload multiple images and return their Blob URLs.
- * Filters out any failed uploads.
- */
-export async function uploadImagesToBlob(
-  imageUrls: string[],
-  options?: {
-    folder?: string;
-    filenamePrefix?: string;
-    maxImages?: number;
-  }
-): Promise<string[]> {
-  const urls = imageUrls.slice(0, options?.maxImages || 10); // Limit images
-  const blobUrls: string[] = [];
-
-  for (let i = 0; i < urls.length; i++) {
-    const url = urls[i];
-    const filename = options?.filenamePrefix
-      ? `${options.filenamePrefix}-${i}`
-      : undefined;
-
-    const blobUrl = await uploadImageToBlob(url, {
-      folder: options?.folder,
-      filename,
-    });
-
-    if (blobUrl) {
-      blobUrls.push(blobUrl);
-    }
-
-    // Small delay between uploads to be nice to the source server
-    if (i < urls.length - 1) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
-
-  return blobUrls;
-}
-
-/**
  * Get file extension from content type
  */
 function getExtensionFromContentType(contentType: string): string {
@@ -102,25 +63,6 @@ function getExtensionFromContentType(contentType: string): string {
   };
 
   return typeMap[contentType.split(';')[0]] || 'jpg';
-}
-
-/**
- * Check if a URL is from an allowed external source (not WM/wewantmods.com)
- */
-export function isExternalImageUrl(url: string): boolean {
-  if (!url) return false;
-
-  const blockedDomains = [
-    'wewantmods.com',
-    'localhost',
-  ];
-
-  try {
-    const urlObj = new URL(url);
-    return !blockedDomains.some((domain) => urlObj.hostname.includes(domain));
-  } catch {
-    return false;
-  }
 }
 
 /**

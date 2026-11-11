@@ -64,19 +64,3 @@ export const actionHandlers: Partial<Record<ActionType, ActionHandler>> = {
   UPDATE_META_DESCRIPTION: new UpdateMetaDescriptionHandler(),
   ADD_TO_COLLECTION: new AddToCollectionHandler(),
 };
-
-/**
- * Get execution tier for an action type
- */
-export function getExecutionTier(actionType: ActionType): 1 | 2 | 3 {
-  const handler = actionHandlers[actionType];
-  return handler?.tier ?? 3;
-}
-
-/**
- * Check if action type is auto-executable
- */
-export function isAutoExecutable(actionType: ActionType): boolean {
-  const handler = actionHandlers[actionType];
-  return handler?.tier === 1;
-}

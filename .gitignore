@@ -19,7 +19,6 @@ dist/
 .env.*.local
 .env.production
 .env.vercel.*
-# push-env-to-vercel.ts writes each secret to .env.tmp.<KEY> while it runs
 .env.tmp.*
 
 # Vercel

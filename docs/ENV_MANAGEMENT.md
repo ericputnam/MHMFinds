@@ -19,8 +19,8 @@ MHMFinds/
 ├── .env.example           # Template with documentation
 ├── .env.production        # Production values (gitignored)
 └── scripts/
-    ├── sync-env-to-vercel.js   # Node.js script to upload to Vercel
-    └── sync-env-to-vercel.sh   # Bash script (alternative)
+    └── sync-env-to-vercel.js   # Node.js script to upload to Vercel
+
 ```
 
 **IMPORTANT:** Both `.env` and `.env.production` are gitignored. Never commit these files!

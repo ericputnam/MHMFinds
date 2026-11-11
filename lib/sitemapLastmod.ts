@@ -82,7 +82,6 @@ export const TEMPLATE_LASTMOD_SOURCES: ReadonlyArray<{
     paths: [
       'app/page.tsx',
       'app/layout.tsx',
-      'components/Hero.tsx',
       'components/HomeCapture.tsx',
       'components/HomeJsonLd.tsx',
     ],

@@ -588,19 +588,6 @@ export class AgentOrchestrator {
       recentJobs,
     };
   }
-
-  /**
-   * Get last run time for a specific job type
-   */
-  async getLastRunTime(runType: AgentRunType): Promise<Date | null> {
-    const lastRun = await prisma.agentRun.findFirst({
-      where: { runType, status: 'COMPLETED' },
-      orderBy: { startedAt: 'desc' },
-      select: { startedAt: true },
-    });
-
-    return lastRun?.startedAt ?? null;
-  }
 }
 
 // Export singleton instance
