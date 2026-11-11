@@ -501,7 +501,11 @@ export class AISearchService {
     return reasons.length > 0 ? reasons.join(', ') : 'Relevant result';
   }
 
-  async updateSearchIndex(modId: string): Promise<void> {
+  /**
+   * Never throws (callers save a mod first and must not fail on indexing), but reports
+   * the outcome: `true` when the index row was written, `false` when it was not.
+   */
+  async updateSearchIndex(modId: string): Promise<boolean> {
     try {
       const mod = await prisma.mod.findUnique({
         where: { id: modId },
@@ -528,8 +532,10 @@ export class AISearchService {
           embedding,
         },
       });
+      return true;
     } catch (error) {
       console.error('Error updating search index:', error);
+      return false;
     }
   }
 }
