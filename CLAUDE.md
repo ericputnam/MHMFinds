@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ❌ Private keys, certificates, or encryption keys
 - ❌ OAuth client secrets
 - ❌ Webhook secrets
-- ❌ Any `.env*` files except `.env.example`
+- ❌ Any `.env*` files (the committed template is `env.example`, placeholders only)
 
 ### Required Actions:
 1. **Use placeholders in documentation**: Replace actual credentials with `[YOUR_KEY_HERE]` or `your-key-here`
@@ -27,12 +27,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    *.pem
    secrets/
    ```
-3. **Use `.env.example`**: Only commit example files with placeholders, never actual values
+3. **Use `env.example`**: the only env template; placeholders only, never actual values
 4. **Before committing**: Always review changes for exposed credentials
 5. **If exposed**: Immediately rotate credentials and remove from git history
 
 ### Safe Patterns:
-✅ `.env.example` with placeholders
+✅ `env.example` with placeholders
 ✅ Documentation with `[PLACEHOLDER]` values
 ✅ Instructions to "copy from .env.local"
 ✅ Links to credential providers (e.g., "Get from Stripe Dashboard")
@@ -422,18 +422,16 @@ If you add a new server-side feature anywhere that has a "push from local overwr
 
 ---
 
-## IMPORTANT: newapp_musthavemods Folder
+## IMPORTANT: the `newapp/` folder
 
-**The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
+**`/newapp` is a standalone Vite/React prototype, not part of the site.** It is excluded from
+`tsconfig.json` and never built or deployed. (This section used to name `/newapp_musthavemods`
+and component designs such as `ModDetailsModal`; neither exists.)
 
-- This folder contains a Vite/React proof-of-concept app showing the desired look and feel for UI components
-- **DO NOT** migrate the main Next.js app to use this Vite app
-- **DO NOT** try to run or start the newapp_musthavemods dev server
-- **INSTEAD**: Look at the component designs (ModDetailsModal, ModCard, etc.) in newapp_musthavemods as inspiration and apply the same visual design to the main Next.js app components
-- Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes)
-- Only adopt the UI/UX patterns, styling, and layout from newapp_musthavemods
+- **DO NOT** migrate the Next.js app to it, run its dev server, or develop in it.
+- Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes).
 
-**Main development should ALWAYS happen in the root Next.js project, not in newapp_musthavemods.**
+**Main development ALWAYS happens in the root Next.js project.**
 
 ## Project Overview
 
@@ -485,11 +483,9 @@ The Vercel build command is: `npx prisma generate && next build`
 
 ### Content Aggregation
 ```bash
-npm run content:aggregate      # Run standard content aggregation
 npm run content:privacy        # Run privacy-enhanced aggregation (default settings)
 npm run content:stealth        # Run stealth mode aggregation (max privacy)
 npm run content:conservative   # Run conservative aggregation (slowest, safest)
-npm run content:test           # Test privacy aggregator without database writes
 ```
 
 ### Data Quality & Cleanup
@@ -548,11 +544,9 @@ npx tsx scripts/fix-null-content-types.ts --apply --verbose
   - `/api/auth/[...nextauth]` - NextAuth.js authentication handler
   - `/api/mods` - Mod CRUD endpoints
 - `/mods/[id]` - Dynamic mod detail pages
-- Multiple test pages for development (test/, working-test/, simple-main/, etc.)
 
 **`/lib`** - Core business logic and utilities
 - `/services` - Service layer containing business logic
-  - `contentAggregator.ts` - Standard web scraping service for CurseForge, Patreon
   - `privacyAggregator.ts` - Privacy-enhanced scraping with proxy support, user agent rotation, and anti-detection features
   - `mhmScraper.ts` - MustHaveMods.com scraper with content detection and URL freshness tracking
   - `contentTypeDetector.ts` - Intelligent content type detection (hair, furniture, makeup, etc.) with confidence levels
@@ -580,9 +574,7 @@ npx tsx scripts/fix-null-content-types.ts --apply --verbose
 - `SearchIndex` - Stores OpenAI embeddings (Float[]) and full-text vectors for AI search
 - `ContentSource` and `ScrapingJob` - Track content aggregation sources and jobs
 
-**Content Aggregation**: Two aggregator implementations:
-1. `contentAggregator.ts` - Basic scraping with cheerio/axios
-2. `privacyAggregator.ts` - Advanced scraping with proxy rotation, user agent spoofing, request timing randomization, and session management
+**Content Aggregation**: `privacyAggregator.ts` — scraping with proxy rotation, user agent spoofing, request timing randomization, and session management. Its pace comes from `lib/config/privacy.ts` (`PRIVACY_LEVEL`).
 
 **AI Search**: OpenAI embeddings (text-embedding-3-small) stored in SearchIndex.embedding field. AISearchService provides:
 - Semantic search with cosine similarity
@@ -639,13 +631,11 @@ Required for development (see env.example):
 
 **⚠️ DATABASE_URL vs DIRECT_DATABASE_URL**: These are often confused. `DATABASE_URL` should be the Accelerate URL (starts with `prisma+postgres://`) for caching. `DIRECT_DATABASE_URL` should be the direct postgres connection for migrations.
 
-Optional but mentioned in env.example:
-- Redis, Elasticsearch, AWS S3, SendGrid (not currently implemented)
+Optional (see env.example):
+- `REDIS_URL` + `REDIS_TOKEN` (Upstash, `https://` only), `SENDGRID_API_KEY` (fallback when SMTP is unset)
 - `PRIVACY_LEVEL` - Set to "stealth" or "conservative" for content aggregation
 
 ## Testing and Development
-
-Multiple test pages exist in `/app` for rapid UI prototyping. These should be consolidated or removed before production deployment.
 
 When adding new mods via aggregation, call `aiSearchService.updateSearchIndex(modId)` to generate embeddings for AI search functionality.
 
