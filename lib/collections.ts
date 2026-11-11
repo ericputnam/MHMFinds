@@ -517,13 +517,14 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['masculine'],
     },
-    expectedCount: 410, // prod count 2026-11-05 (was 420)
+    expectedCount: 404, // prod count 2026-11-11, after the E388/E389 pins (was 410)
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' so the unified clothes hub
     // has an anchored inbound source (hair-cc keeps 4 inbound: skin-details,
     // shoes-cc, y2k-cc, makeup-cc).
     // Sage, 2026-11-07 (E369: female-clothes -> facial-hair-cc; the old target keeps enough inbound).
     // 2026-11-09 (E382): 'shoes-cc' → 'hats-cc' (shoes-cc keeps female-clothes + heels-cc).
-    related: ['facial-hair-cc', 'hats-cc', 'clothes-cc'],
+    // 2026-11-11 (E389): 'facial-hair-cc' → 'bottoms-cc' (facial-hair-cc keeps hair-cc + eyebrows-cc).
+    related: ['bottoms-cc', 'hats-cc', 'clothes-cc'],
     // No blogUrl: /sims-4-male-clothes-cc/ 301s here (2026-07-03).
   },
   {
@@ -544,12 +545,97 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['feminine'],
     },
-    expectedCount: 1601,
+    expectedCount: 1600, // prod count 2026-11-11, after the E388/E389 pins
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' (see male-clothes note).
     // 2026-11-06 (E362): 'clothes-cc' → 'heels-cc' so the new heels page is
     // linked from the busiest collection page (clothes-cc keeps male-clothes + cc).
-    related: ['male-clothes', 'shoes-cc', 'heels-cc'],
+    // 2026-11-11 (E388): 'male-clothes' → 'dresses-cc' (male-clothes keeps 5).
+    related: ['dresses-cc', 'shoes-cc', 'heels-cc'],
     // No blogUrl: /sims-4-female-clothes-cc/ 301s here (2026-07-03).
+  },
+  {
+    // Sage, 2026-11-11 (E388, Tier 0 — registry entry in the existing
+    // pattern). `dresses` (608 SFW rows after the audit) had no page of its
+    // own. 222 of the rows carry no gender tag, so they never reach
+    // female-clothes, and their only crumb was the clothes-cc union.
+    //
+    // Placement: AFTER female-clothes and male-clothes, so a gender-tagged
+    // dress keeps the gendered page as its primary crumb, and BEFORE
+    // clothes-cc, the union that contains it
+    // (collection-primary-crumb-order.test.ts).
+    //
+    // Demand: GA4 2026-10-14 → 11-10 organic + referral landings on the
+    // legacy dress articles: /sims-4-dress-cc/ 228, /sims-4-gown-cc/ 85,
+    // /sims-4-wedding-dress/ 24. No catalog page answered browse intent.
+    //
+    // Eligibility: all 682 rows were read by hand on 11-11. 74 were off-type
+    // (33 shoes, then accessories, jewelry, hair, swimsuits) and were pinned
+    // and applied (hand-audited-content-types.ts § E388, ledger 5a2a53b1),
+    // which leaves 608. Inbound: female-clothes (was male-clothes, keeps 5),
+    // wedding-cc (was poses, keeps 3) and bottoms-cc.
+    slug: 'dresses-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Dresses CC',
+    heading: 'Sims 4 Dress CC',
+    metaTitle: 'Sims 4 Dress CC — Browse 600+ Gowns, Mini, Maxi & Wedding Dresses | MustHaveMods',
+    metaDescription:
+      'Browse 600+ Sims 4 dress CC in one grid: gowns, mini and maxi dresses, wedding dresses, ruffled and maternity styles from RIMINGS, Madlen, Sentate and more, sorted by downloads.',
+    tagline: 'Gowns, minis, maxis and wedding dresses',
+    intro:
+      'Dresses are where the base game shows its age fastest. There are a few sundresses, a few formal gowns, and a wedding dress or two, and most of them look stiff next to anything the community has made since. Dress CC is how people get a gown with a real silhouette, a mini that sits right, or a wedding dress that is not the one every other Sim gets married in.\n\nThis page is only dresses: 608 of them, sorted by downloads. We read every row before it went live. About one in ten of the old dress listings were shoes, tights, wings, jewelry or hairstyles whose descriptions said "dress your Sim", and we moved them out. So every card here is a dress, or a set or collection built around dresses. The grid has more than 40 gowns, about 25 wedding dresses, mini and maxi dresses, ruffled and coquette styles, and a few maternity collections.\n\nThe creators with the most dresses on the page are Madlen, RIMINGS, Mably Store, Joan Campbell Beauty, Sentate and Camuflaje. Camuflaje\'s knit, wedding and maternity collections are near the top of the download counts.\n\nTwo practical notes. Long gowns and full skirts are the dresses most likely to clip through a Sim\'s legs in walk and sit animations, so check the creator\'s preview pictures before you install a big set. Also, about a third of these dresses have no gender tag at all. That is why they never appeared in the female clothes grid, and it is also why some of them work on any frame.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the dresses everyone already has, or scroll for the single releases the big roundups miss.',
+    filter: { contentType: 'dresses' },
+    expectedCount: 608,
+    related: ['female-clothes', 'bottoms-cc', 'wedding-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // dress CC" intent; this page owns browse intent. /sims-4-dress-cc/,
+    // /sims-4-gown-cc/ and /sims-4-wedding-dress/ are live (HTTP 200,
+    // verified 2026-11-11) and are not in vercel.json.
+    blogUrl: '/sims-4-dress-cc/',
+    guides: [
+      { href: '/sims-4-gown-cc/', label: 'Sims 4 gown CC' },
+      { href: '/sims-4-wedding-dress/', label: 'Sims 4 wedding dress CC' },
+    ],
+  },
+  {
+    // Sage, 2026-11-11 (E389, Tier 0 — same pattern and placement as
+    // dresses-cc above). `bottoms` (396 SFW rows after the audit) had no page
+    // of its own. 111 of the rows carry no gender tag.
+    //
+    // Demand: GA4 2026-10-14 → 11-10 organic + referral landings on the
+    // legacy bottoms articles: /sims-4-jeans-cc-female/ 62,
+    // /sims-4-male-jeans-cc/ 45, /sims-4-male-shorts-cc/ 34,
+    // /sims-4-skirt-cc/ 32.
+    //
+    // Eligibility: all 443 rows were read by hand on 11-11. 48 were off-type
+    // (21 shoes, then belts, socks, tattoos) and were pinned and applied
+    // (hand-audited-content-types.ts § E389, ledger ed0a7134). One dresses row
+    // (Sugar Wide Leg Pants) moved in, so the page has 396 rows. Inbound:
+    // male-clothes (was facial-hair-cc, which keeps 2), y2k-cc (was
+    // loading-screens, keeps 3) and dresses-cc.
+    slug: 'bottoms-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Bottoms CC',
+    heading: 'Sims 4 Pants, Jeans, Skirts & Shorts CC',
+    metaTitle: 'Sims 4 Bottoms CC — Browse 390+ Jeans, Pants, Skirts & Shorts | MustHaveMods',
+    metaDescription:
+      'Browse 390+ Sims 4 bottoms CC in one grid: jeans, pants, skirts, shorts and leggings for male and female Sims, from Pinkzombiecupcakes, Trillyke and more, sorted by downloads.',
+    tagline: 'Jeans, pants, skirts and shorts',
+    intro:
+      'Bottoms are the part of the base-game wardrobe people notice last and complain about longest. Every Sim ends up in the same few pairs of jeans, and the skirts and shorts come in a handful of cuts. Bottoms CC fixes that: different rises and fits, real denim washes, cargo pants, pleated and mini skirts, and shorts that are not just cut-off jeans.\n\nThis page is only bottoms: 396 of them, sorted by downloads. We read every row before it went live. About one in ten of the old listings were shoes, belts, socks or tattoos, and we moved them out. So every card here goes in the bottoms slot, or is a set that includes a pair. Jeans are the biggest group with over 100 pairs. There are more than 50 skirts, about 50 pairs of shorts, and a long run of pants, from wide-leg and cargo to sweatpants.\n\nAbout half the grid is tagged for female Sims, around 75 pieces are tagged for male Sims, and more than a hundred have no gender tag. Untagged pieces never show up on the gendered clothes pages. Pinkzombiecupcakes, Trillyke, Solistair and RIMINGS made the most of them.\n\nOne practical note. Bottoms are the clothes most likely to clip with tops and shoes, especially high-waisted jeans under a cropped top or flared pants over boots. Check the creator\'s preview pictures for the body they built on before you install a big set.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the jeans everyone already uses, or scroll for the single releases the big roundups miss.',
+    filter: { contentType: 'bottoms' },
+    expectedCount: 396,
+    related: ['dresses-cc', 'clothes-cc', 'male-clothes'],
+    // Differentiated pair: the legacy listicles keep the editorial intent;
+    // this page owns browse intent. All four articles are live (HTTP 200,
+    // verified 2026-11-11) and are not in vercel.json.
+    blogUrl: '/sims-4-jeans-cc-female/',
+    guides: [
+      { href: '/sims-4-male-jeans-cc/', label: 'Sims 4 male jeans CC' },
+      { href: '/sims-4-male-shorts-cc/', label: 'Sims 4 male shorts CC' },
+      { href: '/sims-4-skirt-cc/', label: 'Sims 4 skirt CC' },
+    ],
   },
   {
     // Deliberately placed AFTER shoes-cc / male-clothes / female-clothes.
@@ -571,14 +657,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Clothes CC',
     heading: 'Sims 4 Clothes CC',
-    metaTitle: 'Sims 4 Clothes CC Finder — Browse 3,600+ Tops, Dresses & Outfits | MustHaveMods',
+    metaTitle: 'Sims 4 Clothes CC Finder — Browse 3,500+ Tops, Dresses & Outfits | MustHaveMods',
     metaDescription:
-      'Browse 3,600+ Sims 4 clothes CC in one filterable grid — tops, bottoms, dresses, and full outfits for every sim, sorted by downloads with verified download links.',
+      'Browse 3,500+ Sims 4 clothes CC in one filterable grid — tops, bottoms, dresses, and full outfits for every sim, sorted by downloads with verified download links.',
     tagline: 'Tops, bottoms, dresses, and full outfits for every sim',
     intro:
-      'Clothes are the reason most people install their first piece of Sims 4 CC. The base-game wardrobe runs out fast: a few dozen tops, the same three pairs of jeans in four washes, and formalwear that reads as 2014 the moment you put it next to anything the community has made since. Expansion packs add outfits, but they add them in the pack\'s theme, so you end up with a sim who owns a full snowboarding kit and nothing to wear to a Tuesday.\n\nThis collection is every piece of Sims 4 clothes CC in our catalog in one grid — 3,665 finds as of today. Roughly 1,500 are full-body outfits and sets, 1,050 are tops, 675 are dresses, and 440 are bottoms. Shoes have their own collection, so this page stays focused on what goes on the body rather than the feet.\n\nIt is deliberately ungendered. We also keep separate female and male clothes pages, and if you are dressing one specific sim those are the faster route. But a large slice of the best clothing CC — oversized tees, tracksuits, graphic hoodies, denim, knitwear — is made for whichever frame you put it on, and creators tag those pieces inconsistently or not at all. Around 640 of the finds here carry no gender tag, which means they never showed up on either gendered page. They show up here.\n\nThe names that recur most are the ones who have effectively made clothing their whole output: Madlen, Trillyke, Dissia, Talarian, Busra Tr, DanSimsFantasy, McLayneSims, Garfiel, and Mermalade. Streetwear sets and Y2K pieces sit near the top of the download counts; further down you hit the single-release dresses and tops from smaller creators that the big roundup posts never reach.\n\nOne practical note: clothes CC is where the alpha-versus-maxis-match split matters most, because a photoreal denim jacket on a clay-hair sim looks wrong in a way a photoreal rug does not. Use the main finder\'s visual-style filter to stay inside one art style, and check creator notes for required body presets or sliders before you install a full set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pieces half the community already wears, or scroll for the ones nobody has written up yet.',
+      'Clothes are the reason most people install their first piece of Sims 4 CC. The base-game wardrobe runs out fast: a few dozen tops, the same three pairs of jeans in four washes, and formalwear that reads as 2014 the moment you put it next to anything the community has made since. Expansion packs add outfits, but they add them in the pack\'s theme, so you end up with a sim who owns a full snowboarding kit and nothing to wear to a Tuesday.\n\nThis collection is every piece of Sims 4 clothes CC in our catalog in one grid — 3,594 finds as of today. Roughly 1,500 are full-body outfits and sets, 1,080 are tops, 610 are dresses, and 400 are bottoms. Shoes have their own collection, so this page stays focused on what goes on the body rather than the feet.\n\nIt is deliberately ungendered. We also keep separate female and male clothes pages, and if you are dressing one specific sim those are the faster route. But a large slice of the best clothing CC — oversized tees, tracksuits, graphic hoodies, denim, knitwear — is made for whichever frame you put it on, and creators tag those pieces inconsistently or not at all. Around 640 of the finds here carry no gender tag, which means they never showed up on either gendered page. They show up here.\n\nThe names that recur most are the ones who have effectively made clothing their whole output: Madlen, Trillyke, Dissia, Talarian, Busra Tr, DanSimsFantasy, McLayneSims, Garfiel, and Mermalade. Streetwear sets and Y2K pieces sit near the top of the download counts; further down you hit the single-release dresses and tops from smaller creators that the big roundup posts never reach.\n\nOne practical note: clothes CC is where the alpha-versus-maxis-match split matters most, because a photoreal denim jacket on a clay-hair sim looks wrong in a way a photoreal rug does not. Use the main finder\'s visual-style filter to stay inside one art style, and check creator notes for required body presets or sliders before you install a full set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pieces half the community already wears, or scroll for the ones nobody has written up yet.',
     filter: {
-      // tops (1,054) + bottoms (439) + dresses (675) + full-body (1,497) =
+      // 2026-11-11 (E388/E389): tops 1,083 + bottoms 396 + dresses 608 +
+      // full-body 1,507 = 3,594 after the dress/bottoms off-type pins.
+      // Original count: tops (1,054) + bottoms (439) + dresses (675) + full-body (1,497) =
       // 3,665 SFW Sims 4 mods, verified against prod 2026-10-02 (3,664 of
       // them isVerified). Spot-checked: the top 15 by downloads and a
       // 15-row sample from the middle of the grid are all genuinely
@@ -586,7 +674,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       // the union with shoes would be 4,315.
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body'],
     },
-    expectedCount: 3665,
+    expectedCount: 3594, // prod count 2026-11-11, after the E388/E389 pins (was 3,665)
     // 2026-10-11 (E182): 'shoes-cc' → 'cc', the second anchored inbound
     // source for the CC hub (shoes-cc keeps 2: male-clothes, female-clothes).
     related: ['female-clothes', 'male-clothes', 'cc'],
@@ -761,7 +849,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Y2K came back everywhere at once — TikTok, the runways, and the Sims CC scene, where creators had been quietly making low-rise jeans and baby tees for years before the revival made them cool again. Base-game Sims 4 has essentially nothing from this era; the game skipped from generic-modern to generic-modern.\n\nThis collection pulls together 140+ Y2K picks: the fashion staples (low-rise everything, cropped baby tees, velour sets, cargo skirts, platform sandals), the accessories that sell the look (butterfly clips, tinted sunglasses, chunky rings, shoulder bags), and the hair — face-framing highlights, crimped textures, and the tiny-clips-everywhere styles that scream 2003.\n\nY2K works best layered with the female-clothes and hair collections for the full wardrobe rebuild. As always: Sims 4 only, links checked, NSFW filtered out.',
     filter: { themesAny: ['y2k'] },
     expectedCount: 147,
-    related: ['loading-screens', 'hair-cc', 'makeup-cc'],
+    // 2026-11-11 (E389): 'loading-screens' → 'bottoms-cc' (low-rise and wide Y2K jeans; loading-screens keeps 3).
+    related: ['bottoms-cc', 'hair-cc', 'makeup-cc'],
     // Un-redirected 2026-09 alongside pregnancy-mods: the legacy article
     // ranks pos 10.2 on the blog subdomain (20 clicks/28d) vs this page
     // at pos 29.8 (4 clicks). DIFFERENTIATED pair.
@@ -1638,7 +1727,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'My Wedding Stories gave the game a proper ceremony: the arch, the vows, the cake cutting. What it did not give you is much to wear. There is a small rack of gowns, a couple of suits, and one bouquet, so every wedding in your save starts to look like the same wedding.\n\nThis collection is the wedding day as the community builds it. There are wedding dresses from sleek satin sheaths to cathedral-length gowns with veils, suits and tuxedos for the groom, bridesmaid dresses, and engagement and wedding rings. The build side has arches, wedding cakes, decor sets and whole ready-made venues, from a rustic barn to a beach ceremony. Storytellers get the pose packs: first look, the kiss, group portraits, and the bridal party.\n\nEvery mod here was picked because its own title says it is wedding CC. Nothing gets in because a blog post happened to mention a wedding. Everything is filtered to Sims 4, link-checked and SFW. Sort by downloads for the sets everyone already uses, or scroll for the smaller finds.',
     filter: { themesAny: ['wedding'] },
     expectedCount: 118,
-    related: ['female-clothes', 'jewelry-cc', 'poses'],
+    // 2026-11-11 (E388): 'poses' → 'dresses-cc' (poses keeps 3).
+    related: ['female-clothes', 'jewelry-cc', 'dresses-cc'],
     blogUrl: '/sims-4-wedding-cc/',
     // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
     // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,

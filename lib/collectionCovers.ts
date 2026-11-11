@@ -25,6 +25,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/08/7e95e10e-a0b2-47d3-bff2-77cc474d23f6.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/01/10c4713f-ad25-4c2d-8030-507380693d8d-1.png",
   ],
+  "bottoms-cc": [
+    "https://images.surferseo.art/094e3696-eff6-4a92-9196-b9058f69e984.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/03/9abfc353-b7c3-497e-81f2-a5b659ffff96-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/10/image-9.jpg",
+  ],
   "build-cc": [
     "https://musthavemods.com/wp-content/uploads/2024/11/image-50.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/662f8614-4c93-4d71-a0f7-db9dca7ea088-1.png",
@@ -64,6 +69,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/08/ec97cee6-f59d-4e2d-825f-4fa2156e2f66.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/85f1c6c5-24fb-4536-b912-8cfe01f6d098.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/06/8626b34c-e572-4611-9c9a-5f1dbadefd90-1.png",
+  ],
+  "dresses-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/09/J1-8-873x1024.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/06/541dc47f-296f-4e89-afec-06229498924c-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/06/678cc0cb-a396-4c2d-857c-1223bb8bbc31-1.png",
   ],
   "eyebrows-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/9296a107-c166-4536-9738-f8d132bd91d8.jpg",
