@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T11:37:45.310Z",
+  "generatedAt": "2026-11-11T11:38:56.428Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -4489,38 +4489,48 @@
     },
     {
       "date": "2026-11-07",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 299.05,
+      "sessions": 14775,
+      "rpm": 20.24,
       "expectedRevenue": 250.36,
       "expectedSessions": 14044,
-      "nonAdMonthly": 138,
-      "ownedAdds7d": null,
-      "pinterestSessions7d": null,
-      "returningShare7d": null,
-      "nonPinterestShare7d": null,
-      "pagesPerSession7d": null,
-      "engagementRate7d": null,
-      "favorites7d": null,
-      "downloadClicks7d": null,
-      "newMods7d": null,
-      "catalogTotal": null,
-      "captureRatePer1k": null,
-      "creatorsOnboarded": null,
-      "creatorSubmissions7d": null,
-      "runSuccess14d": null,
-      "opsMergeShare7d": null,
-      "paperOnlyMerges7d": null,
-      "mergesByOwner7d": null
+      "nonAdMonthly": 139,
+      "ownedAdds7d": 164,
+      "pinterestSessions7d": 54137,
+      "returningShare7d": 0.5245481488679429,
+      "nonPinterestShare7d": 0.17326634393659424,
+      "pagesPerSession7d": 1.753876792675078,
+      "engagementRate7d": 0.7368759790647124,
+      "favorites7d": 677,
+      "downloadClicks7d": 341,
+      "newMods7d": 147,
+      "catalogTotal": 17279,
+      "captureRatePer1k": 1.989760015529834,
+      "creatorsOnboarded": 3,
+      "creatorSubmissions7d": 4,
+      "runSuccess14d": 0.6428571428571429,
+      "opsMergeShare7d": 0.10416666666666667,
+      "paperOnlyMerges7d": 6,
+      "mergesByOwner7d": {
+        "Quinn": 7,
+        "Rio": 4,
+        "Cass": 5,
+        "Pip": 7,
+        "Nova": 6,
+        "Ops": 5,
+        "Rowan": 4,
+        "Sage": 7,
+        "manual": 3
+      }
     },
     {
       "date": "2026-11-08",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 304.7,
+      "sessions": 15282,
+      "rpm": 19.93,
       "expectedRevenue": 261.41,
       "expectedSessions": 15125,
-      "nonAdMonthly": 138,
+      "nonAdMonthly": 139,
       "ownedAdds7d": null,
       "pinterestSessions7d": null,
       "returningShare7d": null,
@@ -4574,6 +4584,70 @@
         "Pip": 7,
         "Quinn": 3,
         "Operator": 1
+      }
+    },
+    {
+      "date": "2026-11-10",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 192.2,
+      "expectedSessions": 11838,
+      "nonAdMonthly": 139,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-11-11",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 192.67,
+      "expectedSessions": 11705,
+      "nonAdMonthly": 179,
+      "ownedAdds7d": 191,
+      "pinterestSessions7d": 57245,
+      "returningShare7d": 0.5181122996464516,
+      "nonPinterestShare7d": 0.1799885403237359,
+      "pagesPerSession7d": 1.7768645183446854,
+      "engagementRate7d": 0.7430026901722855,
+      "favorites7d": 1436,
+      "downloadClicks7d": 405,
+      "newMods7d": 184,
+      "catalogTotal": 17338,
+      "captureRatePer1k": 2.1641097690860884,
+      "creatorsOnboarded": 3,
+      "creatorSubmissions7d": 1,
+      "runSuccess14d": 0.7857142857142857,
+      "opsMergeShare7d": 0.10416666666666667,
+      "paperOnlyMerges7d": 4,
+      "mergesByOwner7d": {
+        "Nova": 4,
+        "Cass": 5,
+        "Sage": 8,
+        "Rowan": 5,
+        "Ops": 5,
+        "Rio": 5,
+        "Pip": 9,
+        "Quinn": 4,
+        "Operator": 1,
+        "manual": 1,
+        "PR": 1
       }
     }
   ],
@@ -7914,6 +7988,76 @@
       "kind": "incident",
       "label": "Incident: build ERROR",
       "commit": "6d06235"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Cass: PR #490 E380 account link in the collection-hub email block (Tier 0)",
+      "commit": "bc90be0",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Ops: PR #491 self-host launcher fonts, no build-time gstatic fetch (E383)",
+      "commit": "3599bdf",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Rowan: PR #493 hats-cc on a title-only headwear theme (E382)",
+      "commit": "3599bdf",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Sage: PR #494 E377 eyebrows-cc hub",
+      "commit": "a6232f1",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Rio: PR #492 E381 verdict 11-09 — 7d −7.8% Halloween-weekend volume",
+      "commit": "a2bf55a",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Sage: PR #496 E378 in-season hub leads homepage hero strip",
+      "commit": "e655cd4",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Pip: PR #495 E375 hub links to 13 seasonal holiday guides",
+      "commit": "1ee4265",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Pip: PR #497 E376 hub links to the 10 organic-losing guides",
+      "commit": "8de94f8",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "PR 489 video queue phase 2 (interactive)",
+      "commit": "7b42714",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "merge",
+      "label": "Quinn: PR #499 funnel: daily run 2026-11-09",
+      "commit": "ebd02ff",
+      "result": "PASS"
     }
   ]
 }
