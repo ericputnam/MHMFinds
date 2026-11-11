@@ -632,7 +632,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-04 (E171): 'decor-cc' → 'build-cc' so the build hub has an
     // anchored inbound source (decor-cc keeps 4 inbound: clutter,
     // kitchen-cc, bathroom-cc, build-cc).
-    related: ['bedroom-cc', 'kitchen-cc', 'build-cc'],
+    // 2026-11-11 (E393): 'build-cc' → 'victorian-cc' (build-cc keeps
+    // bedroom-cc, bathroom-cc and cc; /sims-4-victorian-furniture-cc/ is the
+    // largest of the three Victorian legacy articles by landings).
+    related: ['bedroom-cc', 'kitchen-cc', 'victorian-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -715,7 +718,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // christmas-cc, holidays-cc and witch-cc; nails-cc stays because it has
     // only one other inbound link; goth-cc is the 119-sessions/7d sibling
     // that sends the new page its first-week traffic).
-    related: ['vampire-cc', 'piercings-cc', 'nails-cc'],
+    // 2026-11-11 (E393): 'nails-cc' → 'victorian-cc' (nails-cc keeps
+    // makeup-cc + hello-kitty-cc; "Modern Victorian Gothic" is the largest
+    // creator set on the new page, so goth is its closest sibling).
+    related: ['vampire-cc', 'piercings-cc', 'victorian-cc'],
   },
   {
     slug: 'cottagecore-cc',
@@ -1910,6 +1916,41 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // owns browse intent. /sims-4-hats-cc/ is live (HTTP 200, verified
     // 2026-11-09) and is not in vercel.json.
     blogUrl: '/sims-4-hats-cc/',
+  },
+  {
+    // Rowan, 2026-11-11 (E393, Tier 0 — registry entry in the existing
+    // pattern). A browse page for Victorian-era CC. No content type or AI
+    // theme covered it; the theme is TITLE-ONLY (lib/victorianThemeRules.ts,
+    // accepted and rejected words with counts in its comment). 44 rows
+    // tagged / 0 stripped on 2026-11-11, 44 SFW Sims 4, every ADD row read.
+    // Demand: three legacy articles with no browse page. GSC 2026-10-12 →
+    // 11-08: /sims-4-victorian-cc/ 232 impr / 4 clk (pos 10.9),
+    // /sims-4-victorian-furniture-cc/ 83 / 2 (pos 10.2),
+    // /sims-4-victorian-house/ 28 / 1. GA4 landing sessions 10-28 → 11-10:
+    // 102 + 137 + 34.
+    // Inbound: goth-cc (repointed from nails-cc) and furniture-cc (repointed
+    // from build-cc).
+    // Appended after the contentType pages because a themesAny entry scores
+    // specificity 1, so every Victorian mod keeps its own breadcrumb.
+    slug: 'victorian-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Victorian CC',
+    heading: 'Sims 4 Victorian CC',
+    metaTitle: 'Sims 4 Victorian CC — Browse 40+ Gowns, Gothic Furniture & Manors | MustHaveMods',
+    metaDescription:
+      'Browse 40+ Sims 4 Victorian CC finds in one grid: gowns and suit jackets, gothic bedroom and parlor furniture, paintings, lace gloves, and Victorian houses and manors, sorted by downloads.',
+    tagline: 'Gowns, gothic furniture, manors and lace gloves',
+    intro:
+      'Victorian is the era Sims 4 keeps almost getting right. The base game and its packs give you a few ornate pieces here and there, a gothic manor in Forgotten Hollow, a dress that is close but not quite, and nothing that adds up to a whole household from the 1800s. That is why a Victorian save, whether it is a period legacy, a haunted manor or a modern gothic townhouse, ends up built almost entirely out of custom content.\n\nThis page is every find in our catalog whose title says Victorian, in one grid sorted by downloads. It spans the whole game rather than one CAS slot. On the build side there are furniture sets and single pieces (an obsidian bedroom, a loveseat, a fireplace, a working washstand, a range for the kitchen), paintings and portraits for the walls, and a long shelf of houses, manors and lots to drop straight into a world. On the CAS side there are gowns and dresses, suit jackets for adults and boys, lace gloves, a necklace, a hair-and-hat set, nails, shoes and makeup, and even a dress for your cat.\n\nA few of the biggest sets come in matching pieces. The Modern Victorian Gothic releases run across bedroom furniture, a fireplace, clothing, nails, shoes and a crown, so you can dress the sim and furnish the room from one creator. Houses and lots usually need the packs listed on their download page, so check those before you place one.\n\nIf you want Regency rather than Victorian (Bridgerton gowns, empire waists, 1810s ballrooms), that is a different era with its own CC and it is not mixed in here. Everything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+    filter: { themesAny: ['victorian'] },
+    expectedCount: 44,
+    related: ['goth-cc', 'furniture-cc', 'witch-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // Victorian CC" intent (232 impr / 4 clk, pos 10.9, GSC 10-12 → 11-08);
+    // this page owns browse intent. /sims-4-victorian-cc/ is live (HTTP 200,
+    // verified 2026-11-11) and is not in vercel.json.
+    blogUrl: '/sims-4-victorian-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
