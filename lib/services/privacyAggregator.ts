@@ -1421,7 +1421,9 @@ export class PrivacyAggregator {
           where: {
             OR: [
               { sourceUrl: mod.sourceUrl },
-              { sourceId: mod.sourceId, source: mod.source },
+              // Only match on sourceId when there is one. Prisma drops an undefined key, which
+              // would leave `{ source }` alone and match ANY existing mod from the same source.
+              ...(mod.sourceId ? [{ sourceId: mod.sourceId, source: mod.source }] : []),
             ],
           },
         });

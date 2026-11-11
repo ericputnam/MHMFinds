@@ -10,6 +10,9 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { revenueForecaster } from '@/lib/services/revenueForecaster';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/monetization/forecasts
  *

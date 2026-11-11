@@ -43,7 +43,7 @@ npm run admin:create
 
 **Initial Credentials:**
 - Username: `adminuser45` (from ADMIN_USERNAME env var)
-- Password: `5GbHE%X9c%#tIg4i` (from ADMIN_PASSWORD env var)
+- Password: `[YOUR_ADMIN_PASSWORD]` (from ADMIN_PASSWORD env var)
 - Email: `adminuser45@admin.local`
 
 **⚠️ CRITICAL: Change password immediately after first login!**

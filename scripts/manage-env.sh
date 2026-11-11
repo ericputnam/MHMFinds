@@ -77,11 +77,12 @@ generate_secret() {
 show_diff() {
     echo -e "${YELLOW}Environment Differences:${NC}"
     echo ""
-    echo "Local .env file:"
-    grep -E "^[A-Z_]+=.*" .env | head -5
+    # Names only: this used to print raw KEY=value lines, i.e. secrets, to the terminal.
+    echo "Local .env file (variable names only):"
+    grep -E "^[A-Z_]+=.*" .env | cut -d= -f1 | head -5
     echo ""
-    echo "Production .env.production file:"
-    grep -E "^[A-Z_]+=.*" .env.production | head -5
+    echo "Production .env.production file (variable names only):"
+    grep -E "^[A-Z_]+=.*" .env.production | cut -d= -f1 | head -5
     echo ""
     echo -e "${YELLOW}Note: Full comparison requires manual review${NC}"
 }

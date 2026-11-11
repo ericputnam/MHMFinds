@@ -5,6 +5,9 @@ import { authOptions } from '@/lib/authOptions';
 import { CacheService } from '../../../lib/cache';
 import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 // Extend the session user type to include the id
 declare module "next-auth" {
   interface Session {
@@ -24,8 +27,9 @@ declare module "next-auth" {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    // Clamp paging: an unbounded ?limit= would run a full-catalog findMany with includes.
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10) || 20));
     const search = searchParams.get('search');
     const category = searchParams.get('category'); // OLD: flat category string
     const categoryId = searchParams.get('categoryId'); // NEW: hierarchical category ID
@@ -194,9 +198,14 @@ export async function GET(request: NextRequest) {
           ];
         } else if (genders[0] === 'unisex') {
           // Unisex = has both masculine AND feminine, OR has 'unisex' tag
-          where.OR = [
-            { genderOptions: { hasEvery: ['masculine', 'feminine'] } },
-            { genderOptions: { has: 'unisex' } }
+          // Goes under AND: assigning where.OR here would replace the search clause above.
+          where.AND = [
+            {
+              OR: [
+                { genderOptions: { hasEvery: ['masculine', 'feminine'] } },
+                { genderOptions: { has: 'unisex' } }
+              ]
+            }
           ];
         }
       } else {
@@ -204,9 +213,6 @@ export async function GET(request: NextRequest) {
         where.genderOptions = { hasSome: genders };
       }
     }
-
-    // Debug: log the where clause
-    console.log('[API] WHERE clause:', JSON.stringify(where, null, 2));
 
     // Build order by clause - prioritize mods with creators
     const orderBy: any = {};

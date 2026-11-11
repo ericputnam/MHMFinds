@@ -369,6 +369,7 @@ export class ActionQueue {
       title: string;
       opportunityType: OpportunityType;
       estimatedRevenueImpact: Prisma.Decimal | null;
+      implementedAt: Date | null;
       actions: {
         actionType: ActionType;
         measuredImpact: Prisma.Decimal | null;
@@ -386,6 +387,7 @@ export class ActionQueue {
         title: true,
         opportunityType: true,
         estimatedRevenueImpact: true,
+        implementedAt: true,
         actions: {
           select: {
             actionType: true,

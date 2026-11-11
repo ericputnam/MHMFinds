@@ -53,7 +53,7 @@ export default function FavoritesClient({ initialMods, total }: FavoritesClientP
               You have not saved any mods yet. Tap the heart on any mod to keep it here.
             </p>
             <Link
-              href="/mods/"
+              href="/"
               className="inline-block bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Browse mods

@@ -220,8 +220,6 @@ export default function FacetDefinitionsPage() {
         isActive: facet.isActive,
       };
 
-      console.log('[Taxonomy] Updating facet:', facet.id, payload);
-
       const response = await fetch(`/api/admin/facets/${facet.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -229,7 +227,6 @@ export default function FacetDefinitionsPage() {
       });
 
       const data = await response.json();
-      console.log('[Taxonomy] Update response:', response.status, data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to update facet');

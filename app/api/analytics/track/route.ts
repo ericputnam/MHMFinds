@@ -105,21 +105,23 @@ function getDeviceType(userAgent?: string): string | undefined {
 function getBrowser(userAgent?: string): string | undefined {
   if (!userAgent) return undefined;
 
-  if (userAgent.includes('Chrome')) return 'Chrome';
+  // Order matters: Edge and Opera UAs also contain "Chrome", and Chrome UAs contain "Safari".
+  if (/Edg(e|A|iOS)?\//.test(userAgent)) return 'Edge';
+  if (/OPR\/|Opera/.test(userAgent)) return 'Opera';
+  if (userAgent.includes('Firefox') || userAgent.includes('FxiOS')) return 'Firefox';
+  if (userAgent.includes('Chrome') || userAgent.includes('CriOS')) return 'Chrome';
   if (userAgent.includes('Safari')) return 'Safari';
-  if (userAgent.includes('Firefox')) return 'Firefox';
-  if (userAgent.includes('Edge')) return 'Edge';
-  if (userAgent.includes('Opera')) return 'Opera';
   return 'Other';
 }
 
 function getOS(userAgent?: string): string | undefined {
   if (!userAgent) return undefined;
 
+  // Order matters: Android UAs contain "Linux", and iPhone/iPad UAs contain "like Mac OS X".
   if (userAgent.includes('Windows')) return 'Windows';
+  if (userAgent.includes('Android')) return 'Android';
+  if (/iPhone|iPad|iPod/.test(userAgent)) return 'iOS';
   if (userAgent.includes('Mac OS')) return 'macOS';
   if (userAgent.includes('Linux')) return 'Linux';
-  if (userAgent.includes('Android')) return 'Android';
-  if (userAgent.includes('iOS')) return 'iOS';
   return 'Other';
 }

@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 // GET - Get a single facet definition
 export async function GET(
   request: NextRequest,

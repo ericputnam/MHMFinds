@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { AgentRunType } from '@prisma/client';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const session = await getServerSession(authOptions);
 

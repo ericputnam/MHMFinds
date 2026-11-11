@@ -12,7 +12,7 @@ You'll be automatically redirected to: **http://localhost:3000/admin/login**
 
 ```
 Email: adminuser45@admin.local
-Password: 5GbHE%X9c%#tIg4i
+Password: [YOUR_ADMIN_PASSWORD]
 ```
 
 ### 3. After Login

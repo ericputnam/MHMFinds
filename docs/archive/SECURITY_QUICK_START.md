@@ -22,7 +22,7 @@ Add to your `.env` file:
 
 ```bash
 ADMIN_USERNAME="adminuser45"
-ADMIN_PASSWORD="5GbHE%X9c%#tIg4i"
+ADMIN_PASSWORD="[YOUR_ADMIN_PASSWORD]"
 ```
 
 **⚠️ IMPORTANT:** Change these after first login!
@@ -43,7 +43,7 @@ You should see:
 
 📝 Login credentials:
    Username: adminuser45
-   Password: 5GbHE%X9c%#tIg4i
+   Password: [YOUR_ADMIN_PASSWORD]
    Email: adminuser45@admin.local
 
 ⚠️  IMPORTANT: Change the password after first login!

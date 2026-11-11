@@ -17,6 +17,7 @@
  * See tasks/prd-revenue-pivot/PRD-revenue-pivot.md for full strategy.
  */
 
+import { serializeJsonLd } from '@/lib/jsonLd';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -278,7 +279,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       {/* JSON-LD for AI search surfaces (Perplexity, Bing Copilot, ChatGPT) */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       <CollectionPageClient

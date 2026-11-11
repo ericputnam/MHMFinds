@@ -15,6 +15,7 @@
  * Google reaches every leaf without the sitemap.
  */
 
+import { serializeJsonLd } from '@/lib/jsonLd';
 import type { Metadata } from 'next';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
@@ -78,7 +79,7 @@ export default async function CreatorHubPage() {
 
   return (
     <div className="min-h-screen bg-mhm-dark text-slate-200 flex flex-col font-sans selection:bg-sims-pink/30 selection:text-white">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <Navbar />
 
       <main className="flex-grow">

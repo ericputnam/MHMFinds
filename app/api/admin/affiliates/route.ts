@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 // GET /api/admin/affiliates - Get all offers including inactive (admin only)
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);

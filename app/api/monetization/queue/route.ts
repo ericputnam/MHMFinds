@@ -10,6 +10,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { actionQueue } from '@/lib/services/actionQueue';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/monetization/queue
  *
