@@ -79,7 +79,11 @@ export async function POST(request: NextRequest) {
           isAdmin: false,
           isPremium: false,
           isCreator: isCreator || false,
-          emailVerified: new Date(), // Auto-verify for credentials signup
+          // NOT verified: nobody has proven they own this address yet. It is stamped
+          // when ownership is proven — a password-reset link (reset-password route) or
+          // a Patreon sign-in with the same email (authOptions signIn callback). The
+          // old auto-stamp made a squatted address indistinguishable from a real one.
+          emailVerified: null,
         }
       });
 
