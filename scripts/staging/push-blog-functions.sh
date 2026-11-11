@@ -54,12 +54,16 @@ fi
 echo "    OK"
 
 # 2. Critical marker check
+# Match markers in CODE only. A plain grep also matched comments, so a feature whose
+# function had been deleted still "passed" as long as some comment named it (the
+# staging file carried mhm_catalog_mod_links in a comment only until 2026-11-11).
+code_only() { grep -vE '^[[:space:]]*(\*|/\*|//|#)' "$1"; }
 echo "==> Verifying critical feature markers in local file..."
 MISSING=()
 for entry in "${CRITICAL_MARKERS[@]}"; do
   pattern="${entry%%|*}"
   name="${entry##*|}"
-  if ! grep -q "$pattern" "$LOCAL_FILE"; then
+  if ! code_only "$LOCAL_FILE" | grep -q "$pattern"; then
     MISSING+=("    [MISSING] $name  (pattern: $pattern)")
   fi
 done
