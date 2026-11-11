@@ -8,12 +8,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 
-const prismaMock = vi.hoisted(() => ({
-  user: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
-  account: { deleteMany: vi.fn() },
-  subscription: { findUnique: vi.fn() },
-  collection: { create: vi.fn() },
-}));
+const prismaMock = vi.hoisted(() => {
+  const tx = {
+    user: { create: vi.fn() },
+    collection: { create: vi.fn() },
+    subscription: { create: vi.fn() },
+  };
+  return {
+    tx,
+    user: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
+    account: { deleteMany: vi.fn() },
+    subscription: { findUnique: vi.fn() },
+    collection: { create: vi.fn() },
+    $transaction: vi.fn(async (fn: any) => fn(tx)),
+  };
+});
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock, default: prismaMock }));
 vi.mock('@auth/prisma-adapter', () => ({ PrismaAdapter: () => ({}) }));
 
@@ -93,5 +102,35 @@ describe('Patreon link to an unverified account drops the unproven password', ()
       .replace(/\/\/.*$/gm, '');
     expect(src).toContain('emailVerified: null');
     expect(src).not.toMatch(/emailVerified:\s*new Date\(\)/);
+  });
+});
+
+describe('first OAuth sign-in creates a complete account', () => {
+  beforeEach(() => {
+    prismaMock.$transaction.mockImplementation(async (fn: any) => fn(prismaMock.tx));
+    prismaMock.tx.user.create.mockResolvedValue({ id: 'new-1' });
+  });
+
+  it('a taken username gets a suffix instead of failing the sign-in (P2002)', async () => {
+    prismaMock.user.findUnique.mockImplementation(async (args: any) =>
+      args.where.email ? null : { id: 'someone-else' },
+    );
+    await expect(signIn({ user: { email: 'alex@example.com' }, account: { provider: 'patreon' } })).resolves.toBe(true);
+    const { username } = prismaMock.tx.user.create.mock.calls[0][0].data;
+    expect(username).toMatch(/^alex-[0-9a-f]{6}$/);
+  });
+
+  it('a free username is used as-is, and the Favorites collection and Subscription row are created', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    await signIn({ user: { email: 'robin@example.com', name: 'Robin' }, account: { provider: 'patreon' } });
+    const data = prismaMock.tx.user.create.mock.calls[0][0].data;
+    expect(data.username).toBe('robin');
+    expect(data.emailVerified).toBeInstanceOf(Date);
+    expect(prismaMock.tx.collection.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ userId: 'new-1', name: 'Favorites' }),
+    });
+    expect(prismaMock.tx.subscription.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ userId: 'new-1', clickLimit: 5, status: 'ACTIVE' }),
+    });
   });
 });
