@@ -44,6 +44,7 @@ import {
   type CreatorHandlesFile,
   type SceneInput,
   buildCaptions,
+  canonicalPagePath,
   checkVideo,
   classifyLink,
   extractLinks,
@@ -55,6 +56,7 @@ import {
   isPlaceholderCreator,
   mergeCredits,
   creditsChanged,
+  targetStatusProblem,
   type Captions,
 } from './video-queue-lib';
 
@@ -239,6 +241,21 @@ async function collectionFor(path: string) {
   return SIMS4_COLLECTIONS.find((c) => collectionHref(c) === path || `/${c.slug}/` === path) ?? null;
 }
 
+async function collectionPaths(): Promise<Array<{ slug: string; href: string }>> {
+  const { SIMS4_COLLECTIONS, collectionHref } = await import('../../lib/collections');
+  return SIMS4_COLLECTIONS.map((c) => ({ slug: c.slug, href: collectionHref(c) }));
+}
+
+/** E386: one GET of the public target, redirects not followed. Never throws. */
+async function probeTarget(url: string): Promise<{ status: number; location: string | null } | 'unreachable'> {
+  try {
+    const r = await fetch(url, { method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(20_000), headers: { 'user-agent': 'mhm-video-queue-check/1.0' } });
+    return { status: r.status, location: r.headers.get('location') };
+  } catch {
+    return 'unreachable';
+  }
+}
+
 /** Mods shown on one of our pages: a collection's facet query, else the mods scraped from that article. */
 async function modsForPage(path: string, optout: Set<string>, take = 8): Promise<ModRow[]> {
   const prisma = await db();
@@ -385,7 +402,8 @@ async function cmdDraft(): Promise<number> {
   const date = checkDate(arg('date') ?? todayNy());
   const c = classifyLink(need('target'));
   if (!c.ok) throw new Error(`--target rejected: ${c.reason}`);
-  const path = c.kind === 'page' ? c.path : c.kind === 'mod' ? `/mods/${c.id}/` : `/mods/${c.id}/`;
+  // E386: a collection's bare slug (`/christmas-cc/`) picks the right mods but is a 404 as a link.
+  const path = c.kind === 'page' ? canonicalPagePath(c.path, await collectionPaths()) : `/mods/${c.id}/`;
   const ideaId = arg('idea') ? needInt('idea') : null;
   const optout = loadOptout();
 
@@ -536,6 +554,11 @@ async function runCheck(date: string, file: string, campaignDate: string): Promi
       optout,
     }),
   );
+  // E386: the link in both captions must land. Video 43631 was approved with a 404 target.
+  if (/^https:\/\/musthavemods\.com\//.test(d.targetUrl)) {
+    const live = targetStatusProblem(d.targetUrl, await probeTarget(d.targetUrl));
+    if (live) problems.push(live);
+  }
   if (d.platform !== 'short-video') problems.push(`draft platform is ${d.platform || '(none)'}, not short-video`);
   const ideaMatch = md.match(/^video_queue_idea:\s*(\d+)\s*$/m);
   const draftRef = `${date}/${file}`;

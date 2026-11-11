@@ -116,6 +116,44 @@ export function classifyLink(raw: string): LinkClass {
   return { ok: true, kind: 'page', path, url };
 }
 
+/**
+ * E386 (Pip, 2026-11-11): the public path for a page target.
+ *
+ * `collectionFor()` in video-queue.ts accepts a collection's bare slug (`/christmas-cc/`) as
+ * shorthand for its hub, so the 11-09 weekly job drafted video 43631 with the right mods and
+ * `target_url: https://musthavemods.com/christmas-cc/`, an HTTP 404. The writer approved it, and
+ * that URL (with UTM tags) is in its YouTube description and TikTok caption. A shorthand that
+ * resolves the mods must also resolve the link, so a matched collection always becomes its hub path.
+ */
+export function canonicalPagePath(
+  path: string,
+  collections: ReadonlyArray<{ slug: string; href: string }>,
+): string {
+  for (const c of collections) {
+    if (path === c.href) return path;
+    if (path === `/${c.slug}/`) return c.href;
+  }
+  return path;
+}
+
+/**
+ * E386: grades one live fetch of the target URL (redirects not followed). Only a 200 passes.
+ * A 3xx is a problem too: the caption should carry the final URL so the UTM tags survive and
+ * nobody depends on a redirect staying in place. `unreachable` is reported as "could not
+ * verify", not as broken. It still blocks the upload, because refusing to push is the safe side.
+ */
+export function targetStatusProblem(
+  targetUrl: string,
+  result: { status: number; location?: string | null } | 'unreachable',
+): string | null {
+  if (result === 'unreachable') return `could not verify target URL ${targetUrl} (network error or timeout); not pushed, retry`;
+  if (result.status === 200) return null;
+  if (result.status >= 300 && result.status < 400) {
+    return `target URL ${targetUrl} redirects (HTTP ${result.status} → ${result.location ?? '?'}); use the final URL`;
+  }
+  return `target URL ${targetUrl} returns HTTP ${result.status}, not 200`;
+}
+
 /** Pulls http(s) links out of free text (one idea's "links" box can hold anything). */
 export function extractLinks(text: string): string[] {
   const out: string[] = [];
