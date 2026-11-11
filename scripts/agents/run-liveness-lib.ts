@@ -36,10 +36,22 @@
  * the digest lands with the next daily PR, or the runner's digest-land step), not MISSED.
  * A 0-byte/failed/absent preflight, a missing runner start or a DEGRADED digest still
  * make the day MISSED whatever the ledger says.
+ *
+ * OFF-DAY (E394, 2026-11-11): since the operator's 2026-11-07 cadence change Quinn and the specialists run
+ * every other day (`funnel-cadence-lib.ts`); the other mornings run the guard only (morning check,
+ * scoreboard, history, circuit breaker) and stop before the preflight, so they have no preflight file and no
+ * digest on main BY DESIGN. The grader did not know the cadence and printed "MISSED 2026-11-08 / 2026-11-10:
+ * no preflight file · no digest on main" — a 🔴 flag and two misses for mornings that did exactly what was
+ * scheduled. An off day is now graded on what is scheduled for it: a `[DATE …] Circuit breaker: status=` line
+ * in funnel-daily.log = OFF-DAY (guard ran, not counted as ran or missed); no such line = MISSED ("guard did
+ * not run"); log unreadable = UNKNOWN. An off day that nevertheless has a full RAN grade (operator ran the
+ * loop by hand) stays RAN.
  */
 
+import { isAgentDay as cadenceIsAgentDay } from './funnel-cadence-lib';
+
 export type PreflightState = 'ok' | 'failed' | 'empty' | 'absent' | 'unknown';
-export type DayVerdict = 'RAN' | 'RAN-UNLANDED' | 'MISSED' | 'UNKNOWN';
+export type DayVerdict = 'RAN' | 'RAN-UNLANDED' | 'OFF-DAY' | 'MISSED' | 'UNKNOWN';
 
 export interface DayEvidence {
   preflight: PreflightState;
@@ -51,6 +63,10 @@ export interface DayEvidence {
   afterMergeRows?: number;
   /** E222: funnel-daily.log has a `[DATE …] Quinn finished.` or `digest: Quinn's file digest accepted` line; null = log unreadable. */
   quinnFinished?: boolean | null;
+  /** E394: true = a guard-only off day under the every-other-day cadence (absent = agent day). */
+  offDay?: boolean;
+  /** E394: HH:MM of the first `[DATE …] Circuit breaker: status=` line; null = no such line (or log unreadable). */
+  guardRanAt?: string | null;
 }
 
 export interface DayLiveness {
@@ -66,6 +82,8 @@ export interface RunLiveness {
   ran: number;
   /** E222: ran (ledger rows / Quinn finished) but the digest is not on main — not counted in `missed`. */
   unlanded: number;
+  /** E394: guard-only off days whose guard ran — not counted in `ran` or `missed`. */
+  offDays: number;
   missed: number;
   unknown: number;
 }
@@ -123,11 +141,35 @@ export function afterMergeRowsByDate(changelogText: string): Map<string, number>
   return out;
 }
 
+/** date -> HH:MM of the first line-start `[DATE hh:mm:ss] Circuit breaker: status=` line (the guard's last step). */
+export function guardRanTimes(logText: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const re = /^\[(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}):\d{2}\] Circuit breaker: status=/gm;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(logText)) !== null) if (!out.has(m[1])) out.set(m[1], m[2]);
+  return out;
+}
+
 export function isDegradedDigest(text: string): boolean {
   return /DEGRADED: Quinn did not run/.test(text);
 }
 
 export function gradeDay(date: string, ev: DayEvidence): DayLiveness {
+  const asAgentDay = gradeAgentDay(date, ev);
+  if (!ev.offDay || asAgentDay.verdict === 'RAN') return asAgentDay;
+  // E394: an off day is graded on the guard, the only thing scheduled for it.
+  if (ev.runnerStarted === null) {
+    return { date, verdict: 'UNKNOWN', reasons: ['off day (guard only) — logs/ unreadable, guard not checked'], evidence: ev };
+  }
+  if (ev.guardRanAt) {
+    return { date, verdict: 'OFF-DAY', reasons: [`off day (guard only) — guard ran, circuit breaker ${ev.guardRanAt}; specialists not scheduled`], evidence: ev };
+  }
+  const reasons = ['off day: guard did not run (no circuit-breaker line)'];
+  if (ev.runnerStarted === false) reasons.push('no runner start in funnel-daily.log');
+  return { date, verdict: 'MISSED', reasons, evidence: ev };
+}
+
+function gradeAgentDay(date: string, ev: DayEvidence): DayLiveness {
   const reasons: string[] = [];
   if (ev.runnerStarted === false) reasons.push('no runner start in funnel-daily.log');
   if (ev.preflight === 'absent') reasons.push('no preflight file');
@@ -162,6 +204,8 @@ export interface RunLivenessInputs {
   digestsOnMain: Map<string, string>;
   /** E222: reports/funnel/changelog.md text from the main tree, or null/absent when unreadable (rows = 0). */
   changelogText?: string | null;
+  /** E394: cadence predicate (default: funnel-cadence-lib's isAgentDay). Off days are graded on the guard. */
+  isAgentDay?: (iso: string) => boolean;
 }
 
 export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
@@ -170,6 +214,8 @@ export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
   const started = inp.logText == null ? null : runnerStartDates(inp.logText);
   const finished = inp.logText == null || !inp.logDirReadable ? null : quinnFinishedDates(inp.logText);
   const rowsByDate = afterMergeRowsByDate(inp.changelogText ?? '');
+  const guards = inp.logText == null || !inp.logDirReadable ? null : guardRanTimes(inp.logText);
+  const agentDay = inp.isAgentDay ?? cadenceIsAgentDay;
   const days = dates.map((d) => {
     const digest = inp.digestsOnMain.get(d);
     return gradeDay(d, {
@@ -179,6 +225,8 @@ export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
       digestDegraded: digest != null && isDegradedDigest(digest),
       afterMergeRows: rowsByDate.get(d) ?? 0,
       quinnFinished: finished == null ? null : finished.has(d),
+      offDay: !agentDay(d),
+      guardRanAt: guards == null ? null : guards.get(d) ?? null,
     });
   });
   return {
@@ -186,6 +234,7 @@ export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
     days,
     ran: days.filter((d) => d.verdict === 'RAN').length,
     unlanded: days.filter((d) => d.verdict === 'RAN-UNLANDED').length,
+    offDays: days.filter((d) => d.verdict === 'OFF-DAY').length,
     missed: days.filter((d) => d.verdict === 'MISSED').length,
     unknown: days.filter((d) => d.verdict === 'UNKNOWN').length,
   };
@@ -194,7 +243,7 @@ export function assessRunLiveness(inp: RunLivenessInputs): RunLiveness {
 /** Markdown lines for the scoreboard's "Team health" section: one summary line, then one MISSED/UNKNOWN line per day. */
 export function formatRunLiveness(r: RunLiveness): string[] {
   const lines = [
-    `- Run liveness ${r.window.days}d (${r.window.from} → ${r.window.to}): **${r.ran}/${r.window.days} ran**${r.unlanded ? ` · ${r.unlanded} 🟡 RAN-UNLANDED` : ''} · ${r.missed} MISSED · ${r.unknown} unknown`,
+    `- Run liveness ${r.window.days}d (${r.window.from} → ${r.window.to}): **${r.offDays ? `${r.ran}/${r.window.days - r.offDays} agent days ran` : `${r.ran}/${r.window.days} ran`}**${r.unlanded ? ` · ${r.unlanded} 🟡 RAN-UNLANDED` : ''}${r.offDays ? ` · ${r.offDays} off-day (guard ran)` : ''} · ${r.missed} MISSED · ${r.unknown} unknown`,
   ];
   for (const d of r.days) {
     if (d.verdict !== 'RAN') lines.push(`  - ${d.verdict === 'RAN-UNLANDED' ? '🟡 ' : ''}${d.verdict} ${d.date}: ${d.reasons.join(' · ')}`);

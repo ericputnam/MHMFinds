@@ -50,6 +50,7 @@ import {
 } from './pinner-liveness-lib';
 import { redactError } from './operator-did-probe-lib';
 import { assessRunLiveness, formatRunLiveness, type RunLiveness } from './run-liveness-lib';
+import { isAgentDay } from './funnel-cadence-lib';
 import { captureRatePer1kSessions, nonPinterestShare } from '../../lib/funnel/captureMath';
 import { computeRunSuccessShare, computeTeamStats, parseChangelogRows } from '../../lib/funnel/changelogStats';
 import { resolveMetricOwners } from '../../lib/funnel/metricOwners';
@@ -691,7 +692,8 @@ async function pullTeam(): Promise<TeamData> {
       if (m) datesWithRun.add(m[1]);
     }
   }
-  const runSuccess14d = computeRunSuccessShare(datesWithRun, iso(new Date()), 14);
+  // E394: off days (guard only, every-other-day cadence since 2026-11-07) are not scheduled runs.
+  const runSuccess14d = computeRunSuccessShare(datesWithRun, iso(new Date()), 14, isAgentDay);
 
   return {
     runSuccess14d,
