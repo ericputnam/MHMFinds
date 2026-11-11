@@ -86,6 +86,16 @@
       "permanent": true
     },
     {
+      "source": "/christmas-cc",
+      "destination": "/games/sims-4/christmas-cc/",
+      "permanent": true
+    },
+    {
+      "source": "/christmas-cc/",
+      "destination": "/games/sims-4/christmas-cc/",
+      "permanent": true
+    },
+    {
       "source": "/home",
       "destination": "/",
       "permanent": true
