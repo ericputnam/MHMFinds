@@ -39,7 +39,7 @@ export function scan(isIncluded: (rel: string) => boolean): { calls: number; off
       const rel = relative(ROOT, file);
       if (!isIncluded(rel)) continue;
       const src = readFileSync(file, 'utf8');
-      for (const m of src.matchAll(CALL)) {
+      for (const m of Array.from(src.matchAll(CALL))) {
         calls++;
         if (!pathPart(m[2]).endsWith('/')) offenders.push(`${rel}: ${m[2]}`);
       }
