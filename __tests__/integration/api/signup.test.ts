@@ -266,7 +266,7 @@ describe('POST /api/auth/signup', () => {
       expect(json.message).toContain('Invalid email')
     })
 
-    it('should reject password shorter than 6 characters', async () => {
+    it('should reject password shorter than 8 characters', async () => {
       const signupData = {
         email: 'test@example.com',
         password: '12345',
@@ -282,7 +282,7 @@ describe('POST /api/auth/signup', () => {
       const json = await response.json()
 
       expect(response.status).toBe(400)
-      expect(json.message).toContain('at least 6 characters')
+      expect(json.message).toContain('at least 8 characters')
     })
 
     it('should reject duplicate email', async () => {

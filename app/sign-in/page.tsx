@@ -391,12 +391,12 @@ export default function SignInPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={8}
                       placeholder="••••••••"
                       className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all hover:bg-white/10"
                     />
                     {mode === 'signup' && (
-                      <p className="mt-2 text-xs text-slate-500">Minimum 6 characters</p>
+                      <p className="mt-2 text-xs text-slate-500">Minimum 8 characters</p>
                     )}
                   </div>
 

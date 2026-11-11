@@ -6,6 +6,7 @@ import PatreonProvider from "next-auth/providers/patreon";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import {
   fetchPatreonMembership,
   isPatreonProviderConfigured,
@@ -13,6 +14,13 @@ import {
   PATREON_SCOPE,
   PATREON_USERINFO_URL,
 } from "@/lib/membership";
+
+/** Constant-time string comparison (hash first so lengths never leak or throw). */
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest();
+  const hb = createHash('sha256').update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
 
 /** How long a session token may carry roles before they are re-read from the database. */
 export const ROLE_REFRESH_MS = 5 * 60 * 1000;
@@ -64,7 +72,7 @@ export const authOptions: NextAuthOptions = {
         const adminEmail = `${adminUsername}@admin.local`;
         const adminPassword = process.env.ADMIN_PASSWORD;
 
-        if (credentials.email === adminEmail && adminPassword && credentials.password === adminPassword) {
+        if (credentials.email === adminEmail && adminPassword && safeEqual(credentials.password, adminPassword)) {
           // Admin login with environment variables
           let adminUser = await prisma.user.findUnique({
             where: { email: adminEmail }
@@ -256,13 +264,33 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!existingUser) {
-          await prisma.user.create({
-            data: {
-              email: user.email,
-              username: user.email.split('@')[0], // Generate username from email
-              displayName: user.name || user.email.split('@')[0],
-              avatar: user.image,
-            },
+          // `username` is unique. The email local-part alone collided with any existing
+          // account of the same name ("alex@x.com" vs an existing user "alex"), which
+          // threw P2002 and failed that person's first sign-in outright.
+          const base = user.email.split('@')[0];
+          const taken = await prisma.user.findUnique({ where: { username: base }, select: { id: true } });
+          const username = taken ? `${base}-${randomBytes(3).toString('hex')}` : base;
+
+          // The adapter's `createUser` event never fires for these users (the row already
+          // exists by the time the adapter looks), so the Favorites collection and the
+          // Subscription row that event creates are made here, in one transaction.
+          await prisma.$transaction(async (tx) => {
+            const created = await tx.user.create({
+              data: {
+                email: user.email,
+                username,
+                displayName: user.name || base,
+                avatar: user.image,
+                // An OAuth provider has verified this address; a bare row has not.
+                ...(account?.provider && account.provider !== 'credentials' ? { emailVerified: new Date() } : {}),
+              },
+            });
+            await tx.collection.create({
+              data: { userId: created.id, name: 'Favorites', description: 'Your favorite mods', isPublic: false },
+            });
+            await tx.subscription.create({
+              data: { userId: created.id, isPremium: false, clickLimit: 5, lifetimeClicksUsed: 0, status: 'ACTIVE' },
+            });
           });
         }
       }
