@@ -66,7 +66,7 @@ npm run db:deploy
 
 ## Environment Variables
 
-See `.env.example` for the full list.
+See `env.example` for the full list.
 
 ### Required
 

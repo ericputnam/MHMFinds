@@ -34,20 +34,19 @@ ModVault is a next-generation Sims mod discovery platform that revolutionizes ho
 ## 🏗️ Technical Architecture
 
 ### Frontend
-- **React/Next.js**: Modern, performant web application
+- **Next.js 14 (App Router) / React 18**: Modern, performant web application
 - **Tailwind CSS**: Rapid UI development with consistent design system
 - **TypeScript**: Type-safe development for better code quality
 
 ### Backend
-- **Node.js/Express**: Scalable API server
-- **PostgreSQL**: Primary database for user data and metadata
-- **Redis**: Caching and session management
-- **Elasticsearch**: Full-text search and faceted filtering
+- **Next.js API routes** (`app/api`): there is no separate API server
+- **PostgreSQL via Prisma**, with Prisma Accelerate for query caching
+- **NextAuth.js** (JWT sessions; credentials and Patreon sign-in)
+- **Upstash Redis** (optional): response caching in `lib/cache.ts`
+- **Vercel**: hosting, cron and Blob storage; the blog is WordPress, proxied through `middleware.ts`
 
 ### AI/ML Infrastructure
-- **Vector Database**: Pinecone or Weaviate for semantic search
-- **Embedding Models**: OpenAI or local models for content vectorization
-- **RAG Pipeline**: Retrieval-augmented generation for intelligent responses
+- **OpenAI embeddings** (`text-embedding-3-small`) stored in Postgres (`SearchIndex.embedding`); there is no separate vector database or search cluster
 
 ### Content Aggregation
 - **Web Scrapers**: Puppeteer/Playwright for dynamic content extraction
@@ -151,21 +150,19 @@ ModVault is a next-generation Sims mod discovery platform that revolutionizes ho
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL 14+
-- Redis 6+
-- Python 3.9+ (for ML components)
+- A PostgreSQL database (see `DATABASE_URL` / `DIRECT_DATABASE_URL` in `env.example`)
 
 ### Quick Start
 ```bash
 # Clone repository
 git clone <repository-url>
-cd ModVault
+cd MHMFinds
 
 # Install dependencies
 npm install
 
 # Set up environment variables
-cp .env.example .env
+cp env.example .env.local
 
 # Start development server
 npm run dev
@@ -190,11 +187,7 @@ npm run dev
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+See [`CLAUDE.md`](CLAUDE.md) and [`AGENTS.md`](AGENTS.md) for the working rules of this repository, and [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for day-to-day commands.
 
 ---
 
