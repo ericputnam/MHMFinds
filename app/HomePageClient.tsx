@@ -182,7 +182,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
           break;
       }
 
-      const response = await fetch(`/api/mods?${apiParams.toString()}`);
+      const response = await fetch(`/api/mods/?${apiParams.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -268,7 +268,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
           : [...prev, modId]
       );
 
-      const response = await fetch(`/api/mods/${modId}/favorite`, {
+      const response = await fetch(`/api/mods/${modId}/favorite/`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: {
           'Content-Type': 'application/json',

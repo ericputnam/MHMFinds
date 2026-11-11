@@ -21,7 +21,7 @@ export function useFacetOptions(gameVersion = '') {
   useEffect(() => {
     let cancelled = false;
     const qs = gameVersion ? `?${new URLSearchParams({ gameVersion })}` : '';
-    fetch(`/api/facets${qs}`)
+    fetch(`/api/facets/${qs}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data) => {
         if (cancelled) return;
@@ -55,7 +55,7 @@ export function useGameCounts() {
         const qs = new URLSearchParams({ limit: '1' });
         if (g.value) qs.set('gameVersion', g.value);
         try {
-          const r = await fetch(`/api/mods?${qs.toString()}`);
+          const r = await fetch(`/api/mods/?${qs.toString()}`);
           if (!r.ok) return [g.value, undefined] as const;
           const d = await r.json();
           const total = d?.pagination?.total;

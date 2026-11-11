@@ -119,14 +119,14 @@ describe('ModDetailClient behavior', () => {
     await userEvent.click(favoriteButton);
     expect(await screen.findByRole('button', { name: /favorited/i })).toBeInTheDocument();
     expect(global.fetch).toHaveBeenCalledWith(
-      '/api/mods/mod-1/favorite',
+      '/api/mods/mod-1/favorite/',
       expect.objectContaining({ method: 'POST' }),
     );
 
     await userEvent.click(screen.getByRole('button', { name: /favorited/i }));
     expect(await screen.findByRole('button', { name: /add to favorites/i })).toBeInTheDocument();
     expect(global.fetch).toHaveBeenCalledWith(
-      '/api/mods/mod-1/favorite',
+      '/api/mods/mod-1/favorite/',
       expect.objectContaining({ method: 'DELETE' }),
     );
 

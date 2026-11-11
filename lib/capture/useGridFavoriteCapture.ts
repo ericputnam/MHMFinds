@@ -43,7 +43,7 @@ export function useGridFavoriteCapture(
     window.history.replaceState(window.history.state, '', stripGridResumeMarker(pathname, search, hash));
     (async () => {
       try {
-        const response = await fetch(`/api/mods/${encodeURIComponent(modId)}/favorite`, {
+        const response = await fetch(`/api/mods/${encodeURIComponent(modId)}/favorite/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });

@@ -37,18 +37,18 @@ describe('sign-up newsletter opt-in (E86)', () => {
   it('posts to the waitlist only when ticked, with its own source', () => {
     expect(page).toMatch(/const SIGNUP_OPTIN_SOURCE = 'signup-optin'/);
     const gate = page.indexOf('if (wantsNewsletter)');
-    const post = page.indexOf("fetch('/api/waitlist'");
+    const post = page.indexOf("fetch('/api/waitlist/'");
     expect(gate).toBeGreaterThan(0);
     expect(post).toBeGreaterThan(gate);
     expect(page.slice(post, post + 300)).toContain('source: SIGNUP_OPTIN_SOURCE');
   });
 
   it('runs after the account exists and before auto sign-in, inside a try', () => {
-    const signupPost = page.indexOf("fetch('/api/auth/signup'");
+    const signupPost = page.indexOf("fetch('/api/auth/signup/'");
     const ok = page.indexOf('if (!response.ok)', signupPost);
     const gate = page.indexOf('if (wantsNewsletter)', signupPost);
     const innerTry = page.indexOf('try {', gate);
-    const post = page.indexOf("fetch('/api/waitlist'", signupPost);
+    const post = page.indexOf("fetch('/api/waitlist/'", signupPost);
     const autoSignIn = page.indexOf("signIn('credentials'", signupPost);
     expect(signupPost).toBeGreaterThan(0);
     expect(gate).toBeGreaterThan(ok);
@@ -58,7 +58,7 @@ describe('sign-up newsletter opt-in (E86)', () => {
   });
 
   it('fires the GA4 conversion only for a new row', () => {
-    const post = page.indexOf("fetch('/api/waitlist'");
+    const post = page.indexOf("fetch('/api/waitlist/'");
     const evt = page.indexOf("'newsletter_signup'", post);
     expect(evt).toBeGreaterThan(post);
     expect(page.slice(post, evt)).toMatch(/!optInData\?\.alreadyExists/);

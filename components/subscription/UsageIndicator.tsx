@@ -49,7 +49,7 @@ export function UsageIndicator() {
 
   const fetchUsage = async () => {
     try {
-      const response = await fetch('/api/subscription/check-limit', {
+      const response = await fetch('/api/subscription/check-limit/', {
         method: 'POST'
       });
       const data = await response.json();
@@ -73,7 +73,7 @@ export function UsageIndicator() {
 
   const handleManageSubscription = async () => {
     try {
-      const response = await fetch('/api/subscription/portal', {
+      const response = await fetch('/api/subscription/portal/', {
         method: 'POST',
       });
 

@@ -46,7 +46,7 @@ const trackEvent = async (params: TrackEventParams): Promise<void> => {
   try {
     const sessionId = getSessionId();
 
-    await fetch('/api/analytics/track', {
+    await fetch('/api/analytics/track/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ export const usePageTracking = () => {
       const blob = new Blob([JSON.stringify(data)], {
         type: 'application/json',
       });
-      navigator.sendBeacon('/api/analytics/track', blob);
+      navigator.sendBeacon('/api/analytics/track/', blob);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);

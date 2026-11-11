@@ -59,7 +59,7 @@ export function NewsletterSignup({ source = 'footer', variant = 'default' }: New
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/waitlist', {
+      const response = await fetch('/api/waitlist/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source }),
