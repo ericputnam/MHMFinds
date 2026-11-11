@@ -58,7 +58,7 @@ describe('arm attribution and copy', () => {
     }
     expect(page).toMatch(/const SIGNUP_OPTIN_SOURCE = 'signup-optin'/);
     // The arm label must never reach the waitlist POST body.
-    const post = page.indexOf("fetch('/api/waitlist'");
+    const post = page.indexOf("fetch('/api/waitlist/'");
     expect(page.slice(post, post + 300)).toContain('source: SIGNUP_OPTIN_SOURCE');
     expect(page.slice(post, post + 300)).not.toContain('armLabel');
   });

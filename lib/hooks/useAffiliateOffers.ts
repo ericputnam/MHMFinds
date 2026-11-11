@@ -47,7 +47,7 @@ export function useAffiliateOffers(options: UseAffiliateOffersOptions = {}) {
         params.set('_t', Date.now().toString());
         if (category) params.set('category', category);
 
-        const response = await fetch(`/api/affiliates?${params}`, {
+        const response = await fetch(`/api/affiliates/?${params}`, {
           cache: 'no-store',
         });
         if (response.ok) {

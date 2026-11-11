@@ -65,7 +65,7 @@ export default function PlayClient() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/game/daily')
+    fetch('/api/game/daily/')
       .then((res) => {
         if (!res.ok) throw new Error('bad response');
         return res.json();

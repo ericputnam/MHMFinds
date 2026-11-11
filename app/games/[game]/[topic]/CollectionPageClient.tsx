@@ -128,7 +128,7 @@ export default function CollectionPageClient({
     );
 
     try {
-      const response = await fetch(`/api/mods/${modId}/favorite`, {
+      const response = await fetch(`/api/mods/${modId}/favorite/`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

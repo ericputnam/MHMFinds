@@ -143,7 +143,7 @@ export default function SignInPage() {
 
     try {
       // Create account via API
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/signup/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, username, isCreator }),
@@ -186,7 +186,7 @@ export default function SignInPage() {
       // Attributed on its own waitlist.source so the scoreboard counts it.
       if (wantsNewsletter) {
         try {
-          const optIn = await fetch('/api/waitlist', {
+          const optIn = await fetch('/api/waitlist/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, source: SIGNUP_OPTIN_SOURCE }),
@@ -254,7 +254,7 @@ export default function SignInPage() {
 
     try {
       const tier = pricingTiers[selectedTier as keyof typeof pricingTiers];
-      const response = await fetch('/api/subscription/create-checkout', {
+      const response = await fetch('/api/subscription/create-checkout/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId: tier.priceId }),

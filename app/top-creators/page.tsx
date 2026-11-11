@@ -32,7 +32,7 @@ export default function CreatorsPage() {
   const fetchCreators = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/creators/rankings');
+      const response = await fetch('/api/creators/rankings/');
 
       if (!response.ok) {
         throw new Error('Failed to fetch creators');

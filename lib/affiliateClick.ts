@@ -29,7 +29,7 @@ export async function trackAndOpenAffiliateLink(context: AffiliateClickContext):
 
   let targetUrl = context.fallbackUrl;
   try {
-    const res = await fetch('/api/affiliates/click', {
+    const res = await fetch('/api/affiliates/click/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

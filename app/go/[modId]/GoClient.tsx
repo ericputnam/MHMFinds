@@ -136,13 +136,13 @@ export default function GoClient() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const modResponse = await fetch(`/api/mods/${params.modId}`);
+        const modResponse = await fetch(`/api/mods/${params.modId}/`);
         if (modResponse.ok) {
           const modData = await modResponse.json();
           setMod(modData);
 
           // Fetch related mods in parallel once we have mod data
-          fetch(`/api/mods/${params.modId}/related`)
+          fetch(`/api/mods/${params.modId}/related/`)
             .then((res) => (res.ok ? res.json() : []))
             .then((data) => setRelatedMods(data.slice(0, 4)))
             .catch(() => {});

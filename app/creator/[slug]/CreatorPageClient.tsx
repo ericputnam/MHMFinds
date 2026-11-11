@@ -51,7 +51,7 @@ export default function CreatorPageClient({ data, related = [], hubs = [] }: Cre
       isFavorited ? prev.filter((id) => id !== modId) : [...prev, modId],
     );
     try {
-      const response = await fetch(`/api/mods/${modId}/favorite`, {
+      const response = await fetch(`/api/mods/${modId}/favorite/`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

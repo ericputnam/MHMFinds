@@ -36,7 +36,7 @@ export function ProtectedDownloadButton({
 
     // Track for subscription rate limiting (authenticated users only)
     if (status === 'authenticated') {
-      fetch('/api/subscription/track-click', {
+      fetch('/api/subscription/track-click/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ modId })
