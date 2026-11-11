@@ -634,3 +634,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-09 07:16 | after-merge | PR 489 video queue phase 2 (interactive) | 7b42714 | https://mhm-finds-dw5l-7s8ji2h69-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-09 07:21 | after-merge | Quinn: PR #499 funnel: daily run 2026-11-09 | ebd02ff | https://mhm-finds-dw5l-a9zfzwtpz-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-10 06:36 | check | morning-check |  | https://mhm-finds-dw5l-okxihy1fm-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-11-11 06:36 | check | morning-check |  | https://mhm-finds-dw5l-qo08kavmp-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
