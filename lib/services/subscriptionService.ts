@@ -101,14 +101,9 @@ export class SubscriptionService {
       timeout: 15000, // Transaction can run for up to 15s
     });
 
-    // Update mod download count asynchronously (non-blocking, non-critical)
-    prisma.mod.update({
-      where: { id: modId },
-      data: { downloadCount: { increment: 1 } }
-    }).catch(error => {
-      console.error('Failed to update mod download count:', error);
-      // Don't throw - this is non-critical
-    });
+    // Mod.downloadCount is NOT incremented here. /api/analytics/track owns that counter
+    // (one DOWNLOAD_CLICK per proceed on /go). Incrementing in both places counted every
+    // signed-in grid download twice.
 
     return {
       success: true,

@@ -99,15 +99,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add to waitlist
-    await prisma.waitlist.create({
-      data: {
-        email: email.toLowerCase(),
-        source: source,
-        ipAddress: ip,
-        userAgent: userAgent,
-      },
-    });
+    // Add to waitlist. Two requests for the same new address can both pass the check
+    // above; the loser hits the unique index (P2002). That is "already on the list",
+    // not a 500.
+    try {
+      await prisma.waitlist.create({
+        data: {
+          email: email.toLowerCase(),
+          source: source,
+          ipAddress: ip,
+          userAgent: userAgent,
+        },
+      });
+    } catch (createError: any) {
+      if (createError?.code !== 'P2002') throw createError;
+      return NextResponse.json(
+        { success: true, message: "You're already on the waitlist!", alreadyExists: true },
+        { status: 200 }
+      );
+    }
 
     return NextResponse.json(
       {

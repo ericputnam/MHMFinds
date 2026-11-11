@@ -1,6 +1,7 @@
 import { put } from '@vercel/blob';
 import axios from 'axios';
 import { needsRehost } from '@/lib/imageUpload';
+import { MAX_UPLOAD_IMAGE_BYTES } from '@/lib/imageUpload';
 
 /**
  * Downloads an image from a URL and uploads it to Vercel Blob storage.
@@ -23,10 +24,22 @@ export async function uploadImageToBlob(
         'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
       },
       validateStatus: (status) => status < 400,
+      // Same ceiling as direct uploads (lib/imageUpload.ts): never buffer an
+      // arbitrarily large remote file into memory.
+      maxContentLength: MAX_UPLOAD_IMAGE_BYTES,
+      maxBodyLength: MAX_UPLOAD_IMAGE_BYTES,
     });
 
     // Determine content type
-    const contentType = response.headers['content-type'] || 'image/jpeg';
+    const contentType = String(response.headers['content-type'] || 'image/jpeg').split(';')[0].trim().toLowerCase();
+
+    // Re-hosting puts the file on OUR public blob origin. Only raster images: SVG can
+    // carry script and is deliberately banned for direct uploads too, and a non-image
+    // response (an HTML error page, say) must not be stored as a thumbnail.
+    if (!contentType.startsWith('image/') || contentType === 'image/svg+xml') {
+      console.error(`   ❌ Refusing to re-host ${imageUrl}: content type ${contentType}`);
+      return null;
+    }
 
     // Generate filename
     const extension = getExtensionFromContentType(contentType);
