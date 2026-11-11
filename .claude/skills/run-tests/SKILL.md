@@ -35,12 +35,6 @@ npm run test:coverage
 ```
 Use when: "run tests with coverage", "check test coverage", "coverage report"
 
-**UI Mode**:
-```bash
-npm run test:ui
-```
-Use when: "run tests with UI", "open test UI"
-
 ### 2. Execute Tests
 
 Run the appropriate npm command based on the mode selected.

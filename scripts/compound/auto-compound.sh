@@ -53,35 +53,47 @@ mkdir -p "$HOME/.mhm-worktrees"
 git worktree prune
 git worktree add --detach "$WT" origin/main || { log "worktree add failed"; exit 1; }
 trap 'cd "$PROJECT_DIR" && git worktree remove --force "$WT" >/dev/null 2>&1; git worktree prune >/dev/null 2>&1' EXIT
-[ -f "$PROJECT_DIR/.env.local" ] && ln -sf "$PROJECT_DIR/.env.local" "$WT/.env.local"
-[ -d "$PROJECT_DIR/node_modules" ] && ln -s "$PROJECT_DIR/node_modules" "$WT/node_modules"
+# CLAUDE.md "One git worktree per agent": COPY .env.local (never symlink it — a script that
+# rotates a secret would write through the link into the operator's file) and give the
+# worktree its OWN node_modules (a symlink lets `npm ci` here rewrite the operator's tree).
+[ -f "$PROJECT_DIR/.env.local" ] && cp "$PROJECT_DIR/.env.local" "$WT/.env.local"
 cd "$WT"
+npm ci --no-audit --no-fund >>"$LOG_FILE" 2>&1 || { log "npm ci failed in $WT"; status_row "failed: npm ci" "" "" 0; exit 1; }
 
-# Find the latest prioritized report
-LATEST_REPORT=$(ls -t reports/*.md 2>/dev/null | head -1)
+# Find the priority report to act on.
+#
+# This used to be `ls -t reports/*.md | head -1`. In a fresh worktree every file has the
+# same mtime, so that picked an ARBITRARY report out of reports/ (GSC analyses, ad
+# viewability investigations, months old) and would have had Claude implement it
+# unattended. And when reports/ had no .md at all it wrote a generic sample ("fix failing
+# tests, refactor complex functions") and acted on that.
+#
+# Now: only an explicit reports/priorities-YYYY-MM-DD.md counts, the newest by the date in
+# its NAME, and only if that date is within COMPOUND_REPORT_MAX_AGE_DAYS (default 7). No
+# such report is a no-op with a status row — never a guess.
+MAX_AGE_DAYS="${COMPOUND_REPORT_MAX_AGE_DAYS:-7}"
+LATEST_REPORT="$(ls reports/priorities-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].md 2>/dev/null | sort | tail -1)"
 
 if [ -z "$LATEST_REPORT" ]; then
-    log "No priority reports found in reports/. Creating sample report..."
-    cat > reports/priorities-$(date +%Y-%m-%d).md << 'EOF'
-# Priority Report
+    log "No reports/priorities-YYYY-MM-DD.md found. Nothing to do."
+    status_row "no-op: no priorities report" "" "" 0
+    exit 2
+fi
 
-## High Priority
-1. [ ] Fix any failing tests
-2. [ ] Address any TypeScript errors
-3. [ ] Review and update documentation
-
-## Medium Priority
-1. [ ] Improve test coverage
-2. [ ] Refactor complex functions
-3. [ ] Add missing error handling
-
-## Low Priority
-1. [ ] Code cleanup and formatting
-2. [ ] Update dependencies
-3. [ ] Performance optimizations
-EOF
-    LATEST_REPORT="reports/priorities-$(date +%Y-%m-%d).md"
-    log "Created sample report: $LATEST_REPORT"
+REPORT_DATE="$(basename "$LATEST_REPORT" .md | sed 's/^priorities-//')"
+REPORT_AGE_DAYS="$(python3 - "$REPORT_DATE" <<'PY'
+import sys, datetime
+try:
+    d = datetime.date.fromisoformat(sys.argv[1])
+    print((datetime.date.today() - d).days)
+except Exception:
+    print(-1)
+PY
+)"
+if [ "$REPORT_AGE_DAYS" -lt 0 ] || [ "$REPORT_AGE_DAYS" -gt "$MAX_AGE_DAYS" ]; then
+    log "Newest priorities report $LATEST_REPORT is ${REPORT_AGE_DAYS}d old (limit ${MAX_AGE_DAYS}d). Not acting on a stale report."
+    status_row "no-op: stale priorities report" "" "" 0
+    exit 2
 fi
 
 log "Using report: $LATEST_REPORT"
@@ -148,7 +160,11 @@ Break the PRD into small, atomic tasks that can be completed one at a time." --d
 
 # Run the execution loop
 log "Starting execution loop..."
-"$PROJECT_DIR/scripts/compound/loop.sh" 25
+# The loop must read and write THIS worktree's prd.json (the one Claude just wrote above)
+# and run Claude here. It used to cd to $PROJECT_DIR and read the operator tree's tracked
+# copy, where every task is already "completed", so it logged "All tasks complete" and did
+# nothing — or would have committed in the operator's tree.
+COMPOUND_WORK_DIR="$WT" "$PROJECT_DIR/scripts/compound/loop.sh" 25
 
 # Check whether tonight's run actually produced anything durable. A working-tree diff
 # check is not enough: every task in loop.sh's prompt instructs Claude to commit its own

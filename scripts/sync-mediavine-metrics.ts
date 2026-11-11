@@ -2,10 +2,10 @@
  * Sync Mediavine Revenue
  *
  * Usage:
- *   npm run agent:mediavine-sync [date]           - Sync single day via browser automation
- *   npm run agent:mediavine-sync --days=7        - Sync last 7 days via browser automation
- *   npm run agent:mediavine-sync csv <path>      - Import from manually downloaded CSV
- *   npm run agent:mediavine-sync today           - Get today's estimated revenue
+ *   npx tsx scripts/sync-mediavine-metrics.ts [date]           - Sync single day via browser automation
+ *   npx tsx scripts/sync-mediavine-metrics.ts --days=7        - Sync last 7 days via browser automation
+ *   npm run agent:mediavine-csv -- <path>      - Import from manually downloaded CSV
+ *   npx tsx scripts/sync-mediavine-metrics.ts today           - Get today's estimated revenue
  *
  * Environment Variables Required (for browser automation):
  * - MEDIAVINE_EMAIL: Your Mediavine dashboard email
@@ -26,8 +26,8 @@ async function main() {
   if (command === 'csv') {
     const csvPath = args[1];
     if (!csvPath) {
-      console.error('Usage: npm run agent:mediavine-sync csv <path-to-csv>');
-      console.error('Example: npm run agent:mediavine-sync csv /tmp/mediavine.csv');
+      console.error('Usage: npm run agent:mediavine-csv -- <path-to-csv>');
+      console.error('Example: npm run agent:mediavine-csv -- /tmp/mediavine.csv');
       process.exit(1);
     }
 
@@ -120,7 +120,7 @@ function checkEnvVars() {
     console.error('   - MEDIAVINE_PASSWORD');
     console.error('   - MEDIAVINE_TOTP_SECRET (for 2FA)');
     console.error('\nFor manual import without browser automation, use:');
-    console.error('   npm run agent:mediavine-sync csv /path/to/mediavine.csv');
+    console.error('   npm run agent:mediavine-csv -- /path/to/mediavine.csv');
     process.exit(1);
   }
 }
