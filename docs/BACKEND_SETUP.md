@@ -48,7 +48,7 @@ npm install -g prisma
 Copy the environment template and configure your values:
 
 ```bash
-cp env.example .env
+cp env.example .env.local
 ```
 
 Edit `.env` with your actual values:
