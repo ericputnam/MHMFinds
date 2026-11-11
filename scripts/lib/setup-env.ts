@@ -19,8 +19,19 @@ import * as path from 'path';
 
 // Load environment variables from .env files
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+const hadDatabaseUrl = Boolean(process.env.DATABASE_URL || process.env.DIRECT_DATABASE_URL);
 dotenv.config({ path: path.resolve(process.cwd(), '.env.production') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+// dotenv never overrides, so .env.production only supplies what .env.local (and the
+// shell) left unset. When that includes the database URL, this script is about to run
+// against PRODUCTION — say so, once, before anything connects. It used to be silent.
+if (!hadDatabaseUrl && (process.env.DATABASE_URL || process.env.DIRECT_DATABASE_URL)) {
+  console.warn(
+    '[setup-env] WARNING: no database URL in .env.local or the environment — using the one from ' +
+      '.env.production / .env. This script will run against that database (likely PRODUCTION).'
+  );
+}
 
 // CRITICAL: Scripts cannot use Prisma Accelerate (prisma+postgres:// URLs)
 // Override DATABASE_URL with DIRECT_DATABASE_URL for direct database access
