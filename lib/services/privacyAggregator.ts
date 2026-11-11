@@ -1,3 +1,4 @@
+import { getPrivacyConfig } from '@/lib/config/privacy';
 import { prisma } from '@/lib/prisma';
 import { pinnedIsNSFW } from '../../scripts/lib/hand-audited-content-types';
 import axios, { AxiosInstance } from 'axios';
@@ -39,10 +40,13 @@ export class PrivacyAggregator {
   private lastRequestTime = 0;
 
   // Advanced privacy settings
-  private readonly minDelay = 3000; // 3-8 seconds between requests
-  private readonly maxDelay = 8000;
-  private readonly maxRequestsPerSession = 50; // Rotate after 50 requests
-  private readonly sessionTimeout = 30 * 60 * 1000; // 30 minutes
+  // Timing comes from lib/config/privacy (PRIVACY_LEVEL = default | stealth | conservative).
+  // These used to be hardcoded to the default values, so `content:stealth` and
+  // `content:conservative` ran at exactly the default pace. Read at call time, not import time.
+  private get minDelay() { return getPrivacyConfig().minDelay; }
+  private get maxDelay() { return getPrivacyConfig().maxDelay; }
+  private get maxRequestsPerSession() { return getPrivacyConfig().maxRequestsPerSession; }
+  private get sessionTimeout() { return getPrivacyConfig().sessionTimeout; }
 
   // Rotating user agents (updated regularly)
   private readonly userAgents = [

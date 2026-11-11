@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StripeService } from '@/lib/services/stripeService';
 import { SubscriptionService } from '@/lib/services/subscriptionService';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
@@ -22,10 +24,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  // Process webhook asynchronously to return 200 quickly
-  processWebhookEvent(event).catch(err => {
+  // Await the work. A floating promise can be frozen with the serverless function
+  // once the response is sent, and Stripe never retries a 200 — a paid checkout
+  // would silently never become premium. A 500 makes Stripe retry.
+  try {
+    await processWebhookEvent(event);
+  } catch (err) {
     console.error('Webhook processing error:', err);
-  });
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
+  }
 
   return NextResponse.json({ received: true });
 }

@@ -10,7 +10,8 @@ export const maxDuration = 300; // 5 minutes max for cron job
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Fail closed: with CRON_SECRET unset this endpoint must refuse, not run for anyone.
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

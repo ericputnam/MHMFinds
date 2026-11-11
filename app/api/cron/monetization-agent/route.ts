@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { agentOrchestrator } from '@/lib/services/agentOrchestrator';
 
+export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes max for cron job
 
 export async function GET(request: NextRequest) {
@@ -17,8 +18,8 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
-  // If CRON_SECRET is set, require authorization
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Fail closed: with CRON_SECRET unset this endpoint must refuse, not run for anyone.
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     console.error('Unauthorized cron request - invalid or missing authorization');
     return NextResponse.json(
       { error: 'Unauthorized' },

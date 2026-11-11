@@ -171,6 +171,14 @@ export class ExperimentManager {
       throw new Error(`Cannot start experiment: status is ${experiment.status}`);
     }
 
+    // Nothing else calls captureBaseline, so an experiment started straight from
+    // PROPOSED had no baselineRpm and evaluateExperiment could only ever throw
+    // "No baseline RPM captured". Capture it here; if there is not enough data
+    // this throws and the experiment stays PROPOSED rather than running blind.
+    if (experiment.status === 'PROPOSED') {
+      await this.captureBaseline(experimentId);
+    }
+
     // Revenue guard rail: check if revenue hasn't already dropped significantly
     const revenueOk = await this.checkRevenueGuardRail();
     if (!revenueOk) {
