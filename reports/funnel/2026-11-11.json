@@ -1,0 +1,761 @@
+{
+  "date": "2026-11-11",
+  "headline": {
+    "ownedAdds7d": 191,
+    "ownedTargetWeekly": 300,
+    "nonAdRevenueMonthlyGross": 179,
+    "nonAdTarget": 750,
+    "mediavine28d": 6053.38,
+    "mediavine28dPrev": 5796.84
+  },
+  "flags": [
+    "🟡 Pinner: queue empty — 0 unposted rows dated within the poster's window or the next 14 days (pinterest-14d 19.4/day); cadence now depends entirely on new rows landing — 1936 unposted rows are stranded before the poster's 14d window",
+    "🔴 Loop MISSED 2 of the last 7 mornings: 2026-11-10, 2026-11-08 — see Team health (E187)"
+  ],
+  "ga4": {
+    "ok": true,
+    "data": {
+      "window": "2026-11-03→2026-11-09 vs 2026-10-27→2026-11-02",
+      "sessions7d": 88258,
+      "sessionsPrev7d": 85598,
+      "byChannel7d": {
+        "pinterest": 57245,
+        "bing_organic": 14491,
+        "direct": 5498,
+        "google_organic": 3469,
+        "other_search": 2272,
+        "ai_referral": 939,
+        "tumblr": 1275,
+        "other": 2888,
+        "reddit": 181
+      },
+      "byChannelPrev7d": {
+        "pinterest": 56359,
+        "bing_organic": 13957,
+        "direct": 5392,
+        "google_organic": 2959,
+        "other_search": 2135,
+        "ai_referral": 858,
+        "tumblr": 1312,
+        "other": 2478,
+        "reddit": 148
+      },
+      "aiReferral7d": 939,
+      "aiReferralPrev7d": 858,
+      "captureEvents7d": {
+        "newsletter_form_view": 11176,
+        "patreon_click": 118,
+        "favorite": 104,
+        "affiliate_click": 70,
+        "sign_up": 45,
+        "patreon_click_after_wait": 37,
+        "newsletter_signup": 32,
+        "favorite_signin_redirect": 21,
+        "favorite_after_signin": 6,
+        "member_skip_countdown": 3
+      },
+      "captureUsers7d": {
+        "newsletter_form_view": 3430,
+        "patreon_click": 101,
+        "favorite": 32,
+        "affiliate_click": 66,
+        "sign_up": 45,
+        "patreon_click_after_wait": 32,
+        "newsletter_signup": 28,
+        "favorite_signin_redirect": 21,
+        "favorite_after_signin": 6,
+        "member_skip_countdown": 1
+      },
+      "patreonClickUsersPerDay7d": 14.43,
+      "patreonClick7d": {
+        "days": 7,
+        "users": 101,
+        "perDay": 14.43,
+        "window": "2026-11-03→2026-11-09"
+      },
+      "patreonClickBaselineReread": {
+        "days": 4,
+        "users": 35,
+        "perDay": 8.75,
+        "window": "2026-09-08→2026-09-11"
+      },
+      "patreonClickUsersByDay": {
+        "2026-11-08": 23,
+        "2026-11-01": 18,
+        "2026-11-06": 17,
+        "2026-11-09": 17,
+        "2026-10-11": 14,
+        "2026-10-25": 14,
+        "2026-10-29": 14,
+        "2026-09-08": 13,
+        "2026-09-09": 13,
+        "2026-10-12": 13,
+        "2026-10-18": 13,
+        "2026-11-07": 13,
+        "2026-11-02": 12,
+        "2026-11-05": 12,
+        "2026-09-26": 11,
+        "2026-10-13": 11,
+        "2026-10-15": 11,
+        "2026-11-03": 11,
+        "2026-10-08": 10,
+        "2026-10-14": 10,
+        "2026-10-16": 10,
+        "2026-10-17": 10,
+        "2026-10-21": 10,
+        "2026-10-31": 10,
+        "2026-09-12": 9,
+        "2026-09-19": 9,
+        "2026-09-21": 9,
+        "2026-09-25": 9,
+        "2026-09-27": 9,
+        "2026-09-28": 9,
+        "2026-09-30": 9,
+        "2026-10-10": 9,
+        "2026-10-27": 9,
+        "2026-10-30": 9,
+        "2026-10-07": 8,
+        "2026-10-19": 8,
+        "2026-10-22": 8,
+        "2026-10-24": 8,
+        "2026-10-28": 8,
+        "2026-11-04": 8,
+        "2026-09-20": 7,
+        "2026-09-24": 7,
+        "2026-09-29": 7,
+        "2026-10-01": 7,
+        "2026-10-02": 7,
+        "2026-10-06": 7,
+        "2026-10-09": 7,
+        "2026-10-26": 7,
+        "2026-09-11": 6,
+        "2026-10-04": 6,
+        "2026-10-05": 6,
+        "2026-09-18": 5,
+        "2026-09-22": 5,
+        "2026-09-23": 5,
+        "2026-10-03": 5,
+        "2026-10-23": 5,
+        "2026-09-16": 4,
+        "2026-09-10": 3,
+        "2026-09-13": 3,
+        "2026-09-14": 3,
+        "2026-10-20": 3
+      },
+      "notSetLanding7d": 3957,
+      "returningShare7d": 0.5181122996464516,
+      "pagesPerSession7d": 1.7768645183446854,
+      "engagementRate7d": 0.7430026901722855,
+      "creatorLandings7d": {
+        "all": 533,
+        "organicAi": 311,
+        "direct": 213,
+        "siteOrganicAi": 22525,
+        "ratio": 2.0179802912588705,
+        "guard": "pass",
+        "sourceMatched": {
+          "actual": 311,
+          "expected": 215.4228777761191,
+          "ratio": 1.4436721076728471,
+          "byBucket": {
+            "google": {
+              "actual": 64,
+              "expected": 64.28652886671418
+            },
+            "bing": {
+              "actual": 100,
+              "expected": 66.17953099222248
+            },
+            "chatgpt": {
+              "actual": 123,
+              "expected": 78.73887240356083
+            },
+            "other": {
+              "actual": 24,
+              "expected": 6.217945513621594
+            }
+          }
+        }
+      },
+      "directExSegment7d": {
+        "rule": {
+          "experiment": "E216",
+          "country": "Singapore",
+          "source": "(direct)"
+        },
+        "direct": {
+          "curr": 5498,
+          "prev": 5392
+        },
+        "segment": {
+          "curr": 2310,
+          "prev": 2243
+        },
+        "exSegment": {
+          "curr": 3188,
+          "prev": 3149
+        }
+      },
+      "segmentDaily": {
+        "site": {
+          "2026-10-17": 16860,
+          "2026-10-18": 16467,
+          "2026-11-08": 15715,
+          "2026-10-25": 15574,
+          "2026-10-04": 15548,
+          "2026-10-11": 15424,
+          "2026-11-07": 14635,
+          "2026-10-03": 14558,
+          "2026-10-24": 14321,
+          "2026-10-12": 13880,
+          "2026-11-01": 13858,
+          "2026-10-10": 13739,
+          "2026-10-19": 13472,
+          "2026-10-15": 13022,
+          "2026-10-14": 12688,
+          "2026-10-27": 12506,
+          "2026-10-16": 12332,
+          "2026-09-28": 12284,
+          "2026-10-13": 12071,
+          "2026-10-26": 12052,
+          "2026-09-29": 12023,
+          "2026-11-02": 11939,
+          "2026-10-02": 11874,
+          "2026-10-23": 11849,
+          "2026-10-09": 11804,
+          "2026-10-28": 11774,
+          "2026-11-09": 11695,
+          "2026-11-03": 11562,
+          "2026-10-08": 11550,
+          "2026-10-20": 11528,
+          "2026-10-05": 11519,
+          "2026-11-06": 11502,
+          "2026-10-22": 11488,
+          "2026-10-29": 11436,
+          "2026-10-31": 11402,
+          "2026-10-30": 11281,
+          "2026-09-30": 11224,
+          "2026-10-21": 11160,
+          "2026-11-04": 10999,
+          "2026-10-06": 10949,
+          "2026-10-01": 10909,
+          "2026-10-07": 10893,
+          "2026-11-05": 10675
+        },
+        "segment": {
+          "2026-10-15": 2074,
+          "2026-10-17": 1888,
+          "2026-10-14": 1845,
+          "2026-10-18": 1748,
+          "2026-10-12": 1600,
+          "2026-10-19": 1533,
+          "2026-10-08": 1063,
+          "2026-10-13": 829,
+          "2026-11-07": 658,
+          "2026-10-11": 595,
+          "2026-10-16": 520,
+          "2026-10-27": 516,
+          "2026-11-08": 471,
+          "2026-10-01": 425,
+          "2026-10-10": 415,
+          "2026-10-31": 394,
+          "2026-10-04": 352,
+          "2026-10-03": 350,
+          "2026-10-20": 337,
+          "2026-09-30": 314,
+          "2026-10-28": 312,
+          "2026-11-01": 309,
+          "2026-10-05": 299,
+          "2026-11-02": 298,
+          "2026-10-22": 297,
+          "2026-11-09": 280,
+          "2026-11-06": 267,
+          "2026-09-29": 264,
+          "2026-10-25": 257,
+          "2026-11-03": 257,
+          "2026-10-26": 250,
+          "2026-10-23": 228,
+          "2026-10-02": 222,
+          "2026-10-09": 222,
+          "2026-10-07": 220,
+          "2026-10-30": 210,
+          "2026-11-04": 210,
+          "2026-10-29": 202,
+          "2026-10-06": 193,
+          "2026-09-28": 190,
+          "2026-11-05": 172,
+          "2026-10-24": 163,
+          "2026-10-21": 139
+        }
+      },
+      "segmentError": null
+    }
+  },
+  "gsc": {
+    "ok": true,
+    "data": {
+      "window": "2026-10-12→2026-11-08",
+      "clicks28d": 3278,
+      "clicksPrev28d": 2868,
+      "impressions28d": 97217
+    }
+  },
+  "mediavine": {
+    "ok": true,
+    "data": {
+      "latestDay": "2026-11-08",
+      "revenue7d": 1607.47,
+      "revenuePrev7d": 1434.52,
+      "rpm7d": 18.49,
+      "rpmPrev7d": 17.23,
+      "sessions7d": 86919,
+      "revenue28d": 6053.38,
+      "revenuePrev28d": 5796.84,
+      "rpm28d": 17.01,
+      "health": {
+        "date": "2026/11/11",
+        "ads_txt": "ok",
+        "privacy_policy": "ok"
+      },
+      "tokenDaysLeft": 22
+    }
+  },
+  "headlineExSegment28d": {
+    "rule": {
+      "experiment": "E216",
+      "country": "Singapore",
+      "source": "(direct)"
+    },
+    "start": "2026-10-10",
+    "end": "2026-11-06",
+    "days": 28,
+    "sessions": 355333,
+    "line": 359020,
+    "ratio": 0.9897303771377639,
+    "exSegmentSessions": 337559.90233272844,
+    "exSegmentRatio": 0.940225899205416,
+    "segmentShareGa4": 0.05006150854254177
+  },
+  "db": {
+    "ok": true,
+    "data": {
+      "users": 2566,
+      "users7d": 150,
+      "users30d": 594,
+      "subscribers": 339,
+      "subscribers7d": 41,
+      "subscribers30d": 238,
+      "subscribersBySource": {
+        "collection-page": 5,
+        "footer": 20,
+        "go-interstitial": 6,
+        "home-hero": 22,
+        "sign-in": 1,
+        "creator-page": 1,
+        "signup-optin": 271,
+        "re-permission": 2,
+        "mod-detail-optin": 3,
+        "patreon-connect-optin": 8
+      },
+      "favorites": 27476,
+      "favorites7d": 1436,
+      "downloadClicks7d": 405,
+      "downloadClicks30d": 1676,
+      "affiliateClicks7d": 14,
+      "affiliateClicks30d": 56,
+      "affiliateEarnings30d": 0,
+      "creatorProfiles": 22,
+      "modSubmissions": 15,
+      "mods": 17338,
+      "collections": 2537,
+      "newMods7d": 184,
+      "newModsPrior7d": 98,
+      "catalogInflow": {
+        "newMods7d": 184,
+        "newModsPrior7d": 98,
+        "posts7d": 6,
+        "postsPrior7d": 4,
+        "other7d": 21,
+        "otherPrior7d": 26,
+        "perPost7d": 27.166666666666668,
+        "perPostPrior7d": 18
+      },
+      "submissions7d": 1,
+      "creatorsOnboarded": 3,
+      "creatorsOnboardedApproved": 2,
+      "creatorsHouseExcluded": 1,
+      "submissionsPendingReview": 1,
+      "oldestPendingSubmissionDays": 5,
+      "signupQuality": {
+        "signups7d": 150,
+        "form7d": 62,
+        "creatorFlagged7d": 5,
+        "scripted7d": 1,
+        "scriptedFlagged7d": 1,
+        "scriptedOptedIn7d": 1,
+        "humanFlagged7d": 4
+      },
+      "optInRows7d": 26
+    }
+  },
+  "patreon": {
+    "ok": true,
+    "data": {
+      "paidPatrons": 69,
+      "freeMembers": 6658,
+      "tiers": [
+        {
+          "amountUsd": 0,
+          "patrons": 6658,
+          "title": "Free",
+          "free": true
+        },
+        {
+          "amountUsd": 1,
+          "patrons": 18,
+          "title": "Espresso Shot",
+          "free": false
+        },
+        {
+          "amountUsd": 3,
+          "patrons": 47,
+          "title": "Cappuccino",
+          "free": false
+        },
+        {
+          "amountUsd": 5,
+          "patrons": 4,
+          "title": "Large Latte",
+          "free": false
+        }
+      ],
+      "grossMonthlyUsd": 179
+    }
+  },
+  "patreonApi": {
+    "ok": true,
+    "data": {
+      "paid": 54,
+      "free": 6448,
+      "former": 256,
+      "grossMonthlyUsd": 138.5,
+      "paidByAmount": {
+        "$1": 16,
+        "$3": 35,
+        "$8": 1,
+        "$5": 2
+      },
+      "joins7d": 2,
+      "cancels7d": 1,
+      "joinsSinceAnchor": 25,
+      "joinsSinceAnchorAtPerkTier": 12,
+      "cancelsSinceAnchor": 25,
+      "perkTierJoins7d": 1,
+      "perkTierJoinsPerDay7d": 0.14,
+      "paidAndConnected": 4,
+      "paidAndConnectedById": 4,
+      "paidAndConnectedByEmail": 4,
+      "linkedWithPatreonId": 465,
+      "paidWithUserId": 54,
+      "connectedAccounts": 465,
+      "premiumUsers": 3,
+      "anchor": "2026-09-08",
+      "window": "2026-11-04→2026-11-11"
+    }
+  },
+  "wordpress": {
+    "ok": true,
+    "data": {
+      "posts30d": 21,
+      "posts7d": 6,
+      "latestPost": "2026-11-11 sims-4-chandelier-cc"
+    }
+  },
+  "pinner": {
+    "ok": true,
+    "data": {
+      "lastPostedDate": "2026-11-10",
+      "lastPinCreatedAt": "2026-11-11T09:10:34.000Z",
+      "pinsCreated24h": 26,
+      "pinsCreated7d": 117,
+      "pinsSampled": 297,
+      "liveness": {
+        "level": "ok",
+        "source": "pinterest",
+        "hoursSince": 2.5,
+        "message": "last pin created 2026-11-11 09:10Z (2.5 h ago, Pinterest API)"
+      },
+      "pinterestError": null,
+      "postedLast7d": 118,
+      "postedTotal": 9406,
+      "unpostedBacklog": 1936,
+      "drainableBacklog": 0,
+      "strandedBacklog": 1936,
+      "inventoryRows": 0,
+      "pinsCreated14d": 272,
+      "postedRowsDated14d": 269,
+      "runway": {
+        "level": "empty",
+        "inventoryRows": 0,
+        "dailyRate": 19.428571428571427,
+        "rateBasis": "pinterest-14d",
+        "runwayDays": 0,
+        "message": "queue empty — 0 unposted rows dated within the poster's window or the next 14 days (pinterest-14d 19.4/day); cadence now depends entirely on new rows landing"
+      },
+      "lastWriterInsertAt": "2026-11-11T11:30:21.122693+00:00",
+      "lastWriterInsertLabel": "sims-4-chandelier-cc",
+      "writerInserted24h": 31,
+      "writerInserted7d": 220,
+      "writerLiveness": {
+        "level": "ok",
+        "hoursSinceLastInsert": 0.1,
+        "message": "newest writer-attributed row queued 2026-11-11 11:30Z (0.1 h ago) · 31 inserted in 24h, 220 in 7d · runway 0d"
+      }
+    }
+  },
+  "longRange": {
+    "returningShare7d": 0.5181122996464516,
+    "nonPinterestShare7d": 0.1799885403237359,
+    "nonPinterestShareRaw7d": 0.35139024224432913
+  },
+  "engagement": {
+    "pagesPerSession7d": 1.7768645183446854,
+    "engagementRate7d": 0.7430026901722855,
+    "favorites7d": 1436,
+    "downloadClicks7d": 405
+  },
+  "catalog": {
+    "newMods7d": 184,
+    "newModsPrior7d": 98,
+    "posts7d": 6,
+    "postsPrior7d": 4,
+    "total": 17338
+  },
+  "capture": {
+    "ratePer1kSessions7d": 2.1641097690860884
+  },
+  "creators": {
+    "onboarded": 3,
+    "onboardedApproved": 2,
+    "houseExcluded": 1,
+    "submissions7d": 1,
+    "pendingReview": 1,
+    "oldestPendingDays": 5,
+    "landings7d": {
+      "all": 533,
+      "organicAi": 311,
+      "direct": 213,
+      "siteOrganicAi": 22525,
+      "ratio": 2.0179802912588705,
+      "guard": "pass",
+      "sourceMatched": {
+        "actual": 311,
+        "expected": 215.4228777761191,
+        "ratio": 1.4436721076728471,
+        "byBucket": {
+          "google": {
+            "actual": 64,
+            "expected": 64.28652886671418
+          },
+          "bing": {
+            "actual": 100,
+            "expected": 66.17953099222248
+          },
+          "chatgpt": {
+            "actual": 123,
+            "expected": 78.73887240356083
+          },
+          "other": {
+            "actual": 24,
+            "expected": 6.217945513621594
+          }
+        }
+      }
+    },
+    "signups7d": {
+      "signups7d": 150,
+      "form7d": 62,
+      "creatorFlagged7d": 5,
+      "scripted7d": 1,
+      "scriptedFlagged7d": 1,
+      "scriptedOptedIn7d": 1,
+      "humanFlagged7d": 4,
+      "optInRows7d": 26
+    }
+  },
+  "team": {
+    "ok": true,
+    "data": {
+      "runSuccess14d": 0.7857142857142857,
+      "mergesByOwner7d": {
+        "Nova": 4,
+        "Cass": 5,
+        "Sage": 8,
+        "Rowan": 5,
+        "Ops": 5,
+        "Rio": 5,
+        "Pip": 9,
+        "Quinn": 4,
+        "Operator": 1,
+        "manual": 1,
+        "PR": 1
+      },
+      "totalMerges7d": 48,
+      "opsMergeShare7d": 0.10416666666666667,
+      "paperOnlyMerges7d": 4,
+      "runLiveness": {
+        "window": {
+          "from": "2026-11-04",
+          "to": "2026-11-10",
+          "days": 7
+        },
+        "days": [
+          {
+            "date": "2026-11-10",
+            "verdict": "MISSED",
+            "reasons": [
+              "no preflight file",
+              "no digest on main"
+            ],
+            "evidence": {
+              "preflight": "absent",
+              "runnerStarted": true,
+              "digestOnMain": false,
+              "digestDegraded": false,
+              "afterMergeRows": 0,
+              "quinnFinished": false
+            }
+          },
+          {
+            "date": "2026-11-09",
+            "verdict": "RAN",
+            "reasons": [],
+            "evidence": {
+              "preflight": "ok",
+              "runnerStarted": true,
+              "digestOnMain": true,
+              "digestDegraded": false,
+              "afterMergeRows": 10,
+              "quinnFinished": true
+            }
+          },
+          {
+            "date": "2026-11-08",
+            "verdict": "MISSED",
+            "reasons": [
+              "no preflight file",
+              "no digest on main"
+            ],
+            "evidence": {
+              "preflight": "absent",
+              "runnerStarted": true,
+              "digestOnMain": false,
+              "digestDegraded": false,
+              "afterMergeRows": 2,
+              "quinnFinished": false
+            }
+          },
+          {
+            "date": "2026-11-07",
+            "verdict": "RAN",
+            "reasons": [],
+            "evidence": {
+              "preflight": "ok",
+              "runnerStarted": true,
+              "digestOnMain": true,
+              "digestDegraded": false,
+              "afterMergeRows": 8,
+              "quinnFinished": false
+            }
+          },
+          {
+            "date": "2026-11-06",
+            "verdict": "RAN",
+            "reasons": [],
+            "evidence": {
+              "preflight": "ok",
+              "runnerStarted": true,
+              "digestOnMain": true,
+              "digestDegraded": false,
+              "afterMergeRows": 9,
+              "quinnFinished": true
+            }
+          },
+          {
+            "date": "2026-11-05",
+            "verdict": "RAN",
+            "reasons": [],
+            "evidence": {
+              "preflight": "ok",
+              "runnerStarted": true,
+              "digestOnMain": true,
+              "digestDegraded": false,
+              "afterMergeRows": 9,
+              "quinnFinished": true
+            }
+          },
+          {
+            "date": "2026-11-04",
+            "verdict": "RAN",
+            "reasons": [],
+            "evidence": {
+              "preflight": "ok",
+              "runnerStarted": true,
+              "digestOnMain": true,
+              "digestDegraded": false,
+              "afterMergeRows": 10,
+              "quinnFinished": true
+            }
+          }
+        ],
+        "ran": 5,
+        "unlanded": 0,
+        "missed": 2,
+        "unknown": 0
+      }
+    }
+  },
+  "owners": {
+    "revenue": "Rio",
+    "sessions": "Pip",
+    "rpm": "Rio",
+    "ownedAdds7d": "Cass",
+    "pinterestSessions7d": "Pip",
+    "nonAdMonthly": "Rio",
+    "returningShare7d": "Pip",
+    "nonPinterestShare7d": "Pip",
+    "pagesPerSession7d": "Sage",
+    "engagementRate7d": "Sage",
+    "favorites7d": "Cass",
+    "downloadClicks7d": "Nova",
+    "newMods7d": "Nova",
+    "catalogTotal": "Nova",
+    "captureRatePer1k": "Cass",
+    "creatorsOnboarded": "Nova",
+    "creatorSubmissions7d": "Nova",
+    "runSuccess14d": "Ops",
+    "opsMergeShare7d": "Ops",
+    "paperOnlyMerges7d": "Ops",
+    "mergesByOwner7d": "Quinn",
+    "_comment": "Which specialist owns each scoreboard metric, restructure 2026-09-22.",
+    "sessions28d": "Pip",
+    "nonPinterestSessions": "Pip",
+    "pinterestSessions": "Pip",
+    "bingOrganic": "Pip",
+    "direct": "Pip",
+    "notSetLandingPage": "Pip",
+    "organicSessions": "Sage",
+    "aiReferralSessions": "Sage",
+    "returningVisitorSharePct": "Rowan",
+    "engagementRatePct": "Rowan",
+    "favoritesWeekly": "Rowan",
+    "catalogFreshness": "Rowan",
+    "ownedAudienceNetAdds": "Cass",
+    "captureRatePer1kSessions": "Cass",
+    "nonAdRevenueMonthly": "Rio",
+    "mediavineRevenueGuardrail": "Rio",
+    "runSuccessRate": "Ops",
+    "ledgerCompleteness": "Ops",
+    "contextBudgetGreen": "Ops"
+  }
+}
