@@ -159,7 +159,14 @@ export async function syncAllNetworks(trigger: 'cron' | 'manual'): Promise<SyncR
     }
   }
 
-  await recomputeOfferRollups(touchedOfferIds);
+  // A throw here used to escape before the run row was closed, leaving it at
+  // status 'running' forever. Record it as an error on the run instead.
+  try {
+    await recomputeOfferRollups(touchedOfferIds);
+  } catch (error) {
+    errors.rollups = error instanceof Error ? error.message : String(error);
+    console.error('[commission-sync] offer rollup recompute failed:', error);
+  }
 
   const failedCount = Object.keys(errors).length;
   const status: SyncResult['status'] =

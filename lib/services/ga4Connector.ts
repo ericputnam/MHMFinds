@@ -356,6 +356,9 @@ export class GA4Connector {
     channel: string,
     source: keyof typeof TRAFFIC_CHANNELS
   ): boolean {
+    // An empty channel must match nothing. `keyword.includes('')` is true for every
+    // keyword, so a row with no channel was credited to whichever source was tested first.
+    if (!channel) return false;
     return TRAFFIC_CHANNELS[source].some(
       (keyword) =>
         channel.includes(keyword) || keyword.includes(channel)
