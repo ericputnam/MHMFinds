@@ -650,3 +650,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-11 07:13 | after-merge | Nova: PR #510 E390 record applied ids in the CurseForge author plan | f08cd32 | https://mhm-finds-dw5l-pkstgyn72-ericputnams-projects.vercel.app | PAPER PASS | paper-only merge (no build-relevant paths); production https://mhm-finds-dw5l-pkstgyn72-ericputnams-projects.vercel.app checked · 5xx/15m=0  |
 | 2026-11-11 07:18 | after-merge | Quinn: PR #512 funnel: daily run 2026-11-11 | fa1fd43 | https://mhm-finds-dw5l-ngthgar04-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-11 19:02 | after-merge | operator / PR #533 | f140b96 | https://mhm-finds-dw5l-i5kprztyr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-11-11 19:24 | after-merge | operator / PR #534 | ec3fb08 | https://mhm-finds-dw5l-8o8ecqzlo-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
