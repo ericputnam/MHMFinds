@@ -107,6 +107,7 @@ export default function CreatorSubmitPage() {
         onSubmit={handleSubmit}
         submitLabel={isAdmin ? 'Create Mod' : 'Submit for Review'}
         showAdminFields={isAdmin}
+        allowHostedFile={!isAdmin}
       />
     </div>
   );

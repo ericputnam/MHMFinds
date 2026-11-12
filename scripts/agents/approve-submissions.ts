@@ -81,7 +81,9 @@ interface PlanFile {
 
 async function readRows(prisma: PrismaClient, ids: string[] | null): Promise<SubmissionRow[]> {
   const subs = await prisma.modSubmission.findMany({
-    where: ids ? { id: { in: ids } } : { status: 'pending' },
+    // A submission carrying a hosted file is never approved here: its file
+    // must be reviewed by a human in /admin/submissions (malware check).
+    where: ids ? { id: { in: ids }, upload: { is: null } } : { status: 'pending', upload: { is: null } },
     orderBy: { createdAt: 'asc' },
     select: {
       id: true,
@@ -339,6 +341,11 @@ async function main(): Promise<number> {
       const sub = await prisma.modSubmission.findUnique({ where: { id: row.submissionId } });
       if (!sub || sub.status !== 'pending' || sub.isEdit) {
         console.log(`  ${row.submissionId}: no longer pending — skipped`);
+        continue;
+      }
+      const hostedFile = await prisma.modUpload.findUnique({ where: { submissionId: row.submissionId }, select: { id: true } });
+      if (hostedFile) {
+        console.log(`  ${row.submissionId}: has a hosted file — skipped (approve in /admin/submissions only)`);
         continue;
       }
       // Same best-effort rehost as the route (Patreon-hosted images only).

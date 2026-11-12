@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/middleware/auth';
 import { newModDataFromSubmission, planApprovalProfile } from '@/lib/submissionApprovalProfile';
 import { rehostModImages } from '@/lib/services/imageUploader';
+import { finalizeUploadApproval, prepareUploadForApproval } from '@/lib/modFiles/lifecycle';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,6 +62,9 @@ export async function POST(
           },
         },
         approvedMod: true,
+        // Only whether a hosted file is attached; its details are re-read
+        // (and its status re-checked) inside prepareUploadForApproval.
+        upload: { select: { id: true } },
       },
     });
 
@@ -73,6 +77,15 @@ export async function POST(
         { error: 'Submission already processed' },
         { status: 400 }
       );
+    }
+
+    // Hosted file: move it out of quarantine before the mod is written.
+    // Idempotent, so a retry after a failure further down is safe.
+    const filePrep = submission.upload
+      ? await prepareUploadForApproval(submission.id, auth.user.id)
+      : ({ ok: true, uploadId: null } as const);
+    if (!filePrep.ok) {
+      return NextResponse.json({ error: filePrep.error }, { status: 400 });
     }
 
     // Patreon image addresses expire and don't render — copy them to Blob.
@@ -142,6 +155,10 @@ export async function POST(
       mod = await prisma.mod.create({
         data: modData,
       });
+    }
+
+    if (filePrep.uploadId) {
+      await finalizeUploadApproval(filePrep.uploadId, mod.id);
     }
 
     // Update submission status and link to approved mod

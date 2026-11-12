@@ -55,6 +55,7 @@ model User {
   subscription   Subscription?
   downloadClicks DownloadClick[]
   submissions    ModSubmission[]
+  modUploads     ModUpload[]
   notificationPreferences NotificationPreferences?
   notificationLogs NotificationLog[]
 
@@ -183,6 +184,7 @@ model Mod {
   searchIndex    SearchIndex?
   downloadClicks DownloadClick[]
   submissions    ModSubmission[]
+  uploads        ModUpload[]
   monetizationOpportunities MonetizationOpportunity[]
 
   // Performance indexes for high-traffic queries
@@ -464,12 +466,51 @@ model ModSubmission {
   // Relations
   user        User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   approvedMod Mod?  @relation(fields: [approvedModId], references: [id], onDelete: SetNull)
+  upload      ModUpload?
 
   @@index([status, createdAt(sort: Desc)], name: "pending_submissions")
   @@index([submitterEmail], name: "submission_tracking")
   @@index([userId, status], name: "creator_submissions")
   @@index([approvedModId], name: "mod_edits")
   @@map("mod_submissions")
+}
+
+// A creator-uploaded mod file hosted in the PRIVATE mod-files R2 bucket.
+// Lifecycle: pending_upload -> verified -> approved (or rejected / superseded /
+// removed / expired). Blob pathnames are server-minted (lib/modFiles/paths.ts)
+// and never exposed to the public; downloads go through a signed ticket and a
+// short-lived presigned URL (app/api/mods/[id]/download).
+model ModUpload {
+  id              String    @id @default(cuid())
+  uploaderId      String
+  submissionId    String?   @unique
+  modId           String?
+  blobPathname    String    @unique
+  originalName    String
+  downloadName    String
+  kind            String // package | ts4script | zip
+  sizeBytes       Int?
+  sha256          String?
+  blobEtag        String? // ETag of the exact object verify checked; promotion is conditional on it
+  containsScript  Boolean   @default(false)
+  status          String    @default("pending_upload") // pending_upload, verified, rejected, approved, superseded, removed, expired
+  validationError String?
+  inspection      Json?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  blobDeletedAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  uploader   User           @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  submission ModSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  mod        Mod?           @relation(fields: [modId], references: [id], onDelete: SetNull)
+
+  @@index([uploaderId, createdAt])
+  @@index([modId, status])
+  @@index([sha256])
+  @@index([status, createdAt])
+  @@map("mod_uploads")
 }
 
 model AdminAuditLog {

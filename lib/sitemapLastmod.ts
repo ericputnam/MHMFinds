@@ -48,8 +48,9 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-09';
 // suffix-split creator spellings folded 2026-11-06 (E356, #471). Bumped by E364;
 // ProfilePage JSON-LD gains dateModified 2026-11-06 (E355); that dateModified
 // becomes a full ISO 8601 DateTime 2026-11-07 (Search Console "Invalid
-// datetime value for dateModified" on Profile pages).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-07';
+// datetime value for dateModified" on Profile pages). Bumped 2026-11-11 for the
+// creator-hosted mod file upload (components/creator/HostedFileUpload.tsx).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-11';
 
 /**
  * Which source files each template constant stands for (E303, Sage,

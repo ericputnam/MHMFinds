@@ -85,6 +85,25 @@ const nextConfig = {
         source,
         headers: [{ key: 'Cache-Control', value: 'private, no-store' }],
       })),
+      // Hosted mod files: per-user, per-ticket and admin responses must never
+      // be stored by the CDN. These come after '/api/:path*' on purpose: when
+      // two entries set the same key, the later one wins. Guarded by
+      // __tests__/unit/mod-files-guards.test.ts.
+      ...[
+        '/api/creator/uploads/:path*',
+        '/api/creator/submissions/:path*',
+        '/api/admin/submissions/:path*',
+        '/api/admin/mod-uploads/:path*',
+        '/api/mods/:id/download-ticket/:path*',
+        '/api/mods/:id/download/:path*',
+        '/api/cron/mod-upload-cleanup/:path*',
+      ].map((source) => ({
+        source,
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store' },
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+        ],
+      })),
     ];
   },
   // Reduce bundle size by not including source maps in production

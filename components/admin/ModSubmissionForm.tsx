@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
+import { HostedFileUpload } from '@/components/creator/HostedFileUpload';
 import {
   Save,
   Loader2,
@@ -32,6 +33,8 @@ export interface ModFormData {
   isNSFW: boolean;
   isFeatured: boolean;
   isVerified: boolean;
+  /** Verified hosted file to attach (creator submissions only). */
+  uploadId?: string | null;
 }
 
 const CATEGORIES = [
@@ -63,6 +66,9 @@ interface ModSubmissionFormProps {
   onSubmit: (data: ModFormData) => Promise<void>;
   submitLabel?: string;
   showAdminFields?: boolean;
+  /** Show the "host the file on MustHaveMods" field. Only for endpoints that
+   *  accept `uploadId` (creator submissions). */
+  allowHostedFile?: boolean;
 }
 
 export function ModSubmissionForm({
@@ -70,6 +76,7 @@ export function ModSubmissionForm({
   onSubmit,
   submitLabel = 'Submit',
   showAdminFields = true,
+  allowHostedFile = false,
 }: ModSubmissionFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -115,6 +122,9 @@ export function ModSubmissionForm({
       // Validate required fields
       if (!formData.title.trim()) {
         throw new Error('Title is required');
+      }
+      if (!formData.downloadUrl.trim() && !formData.uploadId) {
+        throw new Error('Add a download link or upload the mod file');
       }
 
       await onSubmit(formData);
@@ -329,16 +339,28 @@ export function ModSubmissionForm({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <h2 className="text-xl font-bold text-white mb-6">URLs and Media</h2>
           <div className="space-y-4">
+            {allowHostedFile && (
+              <HostedFileUpload
+                disabled={loading}
+                onChange={(uploadId) => setFormData((prev) => ({ ...prev, uploadId }))}
+              />
+            )}
+
             {/* Download URL */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Download URL <span className="text-red-500">*</span>
+                Download URL{' '}
+                {formData.uploadId ? (
+                  <span className="font-normal text-slate-500">(optional when the file is hosted here)</span>
+                ) : (
+                  <span className="text-red-500">*</span>
+                )}
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required
+                  required={!formData.uploadId}
                   value={formData.downloadUrl}
                   onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
@@ -350,13 +372,18 @@ export function ModSubmissionForm({
             {/* Source URL */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Blog or Source URL <span className="text-red-500">*</span>
+                Blog or Source URL{' '}
+                {formData.uploadId ? (
+                  <span className="font-normal text-slate-500">(optional)</span>
+                ) : (
+                  <span className="text-red-500">*</span>
+                )}
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required
+                  required={!formData.uploadId}
                   value={formData.sourceUrl}
                   onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"

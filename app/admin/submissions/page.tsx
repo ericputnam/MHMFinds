@@ -12,7 +12,30 @@ import {
   Package,
   Loader2,
   Edit,
+  FileArchive,
 } from 'lucide-react';
+import { HostedFileReview, type AdminHostedUpload } from '@/components/admin/HostedFileReview';
+import { formatBytes } from '@/lib/modFiles/constants';
+
+/** Creator view of their own hosted file (CREATOR_UPLOAD_SELECT). */
+interface CreatorHostedUpload {
+  id: string;
+  downloadName: string;
+  kind: string;
+  sizeBytes: number;
+  status: string;
+  validationError: string | null;
+  containsScript: boolean;
+}
+
+const CREATOR_UPLOAD_STATUS: Record<string, string> = {
+  verified: 'waiting for review',
+  approved: 'live on your mod page',
+  rejected: 'not approved',
+  removed: 'taken down',
+  superseded: 'replaced by a newer file',
+  expired: 'expired',
+};
 
 interface ModSubmission {
   id: string;
@@ -31,6 +54,8 @@ interface ModSubmission {
     title: string;
     downloadCount: number;
   };
+  /** Admin endpoint: full review shape. Creator endpoint: their own summary. */
+  upload?: (AdminHostedUpload | CreatorHostedUpload) | null;
 }
 
 export default function SubmissionsPage() {
@@ -47,8 +72,8 @@ export default function SubmissionsPage() {
       setLoading(true);
       // Use different endpoints based on role
       const endpoint = isAdmin
-        ? `/api/admin/submissions?status=${filter}`
-        : `/api/creator/submissions?status=${filter}`;
+        ? `/api/admin/submissions/?status=${filter}`
+        : `/api/creator/submissions/?status=${filter}`;
       const response = await fetch(endpoint);
       const data = await response.json();
       setSubmissions(data.submissions || []);
@@ -213,17 +238,36 @@ export default function SubmissionsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4 text-slate-400" />
-                    <a
-                      href={submission.modUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sims-blue hover:text-sims-pink transition-colors text-sm truncate"
-                    >
-                      {submission.modUrl}
-                    </a>
-                  </div>
+                  {submission.modUrl && (
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-slate-400" />
+                      <a
+                        href={submission.modUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sims-blue hover:text-sims-pink transition-colors text-sm truncate"
+                      >
+                        {submission.modUrl}
+                      </a>
+                    </div>
+                  )}
+
+                  {submission.upload && isAdmin && 'sha256' in submission.upload && (
+                    <HostedFileReview upload={submission.upload} onChanged={fetchSubmissions} />
+                  )}
+                  {submission.upload && !isAdmin && (
+                    <p className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
+                      <FileArchive className="h-4 w-4 text-sims-pink" />
+                      <span className="break-all">{submission.upload.downloadName}</span>
+                      <span>
+                        · {formatBytes(submission.upload.sizeBytes)} ·{' '}
+                        {CREATOR_UPLOAD_STATUS[submission.upload.status] ?? submission.upload.status}
+                      </span>
+                      {submission.upload.validationError && submission.upload.status !== 'approved' && (
+                        <span className="text-red-400">({submission.upload.validationError})</span>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 {/* Actions - Only shown for admins on pending submissions */}

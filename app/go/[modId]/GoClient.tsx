@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Download, ArrowLeft, Loader2, Clock, Info, Package, Crown } from 'lucide-react';
+import { Download, ArrowLeft, Loader2, Clock, Info, Package, Crown, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { formatBytes } from '@/lib/modFiles/constants';
 import { useSession, signIn } from 'next-auth/react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
@@ -38,6 +39,20 @@ interface Mod {
   creator?: {
     handle: string;
   };
+  /** A creator-uploaded file served from MustHaveMods (null when there is none). */
+  hostedFile?: {
+    name: string;
+    sizeBytes: number;
+    kind: string;
+    containsScript: boolean;
+  } | null;
+}
+
+/** A signed, time-locked download ticket from POST /api/mods/[id]/download-ticket/. */
+interface HostedTicket {
+  ticket: string;
+  readyAt: number;
+  expiresAt: number;
 }
 
 interface RelatedMod {
@@ -59,6 +74,15 @@ export default function GoClient() {
   const [canProceed, setCanProceed] = useState(false);
   const [relatedMods, setRelatedMods] = useState<RelatedMod[]>([]);
   const { trackDownload } = useDownloadTracking();
+
+  // Creator-hosted files. The server hands out a ticket that only becomes
+  // valid after the same wait as the countdown below (members: no wait), so
+  // the countdown is enforced server-side too. Any ticket failure falls back
+  // to the mod's external link, if it has one.
+  const [hostedTicket, setHostedTicket] = useState<HostedTicket | null>(null);
+  const [hostedTicketReady, setHostedTicketReady] = useState(false);
+  const [hostedFailed, setHostedFailed] = useState(false);
+  const [hostedStarted, setHostedStarted] = useState(false);
 
   // Membership via Patreon OAuth (B2, Rio 2026-09-07). `membershipOn` is a
   // build-time constant from NEXT_PUBLIC_MEMBERSHIP_ENABLED; with the flag
@@ -191,6 +215,42 @@ export default function GoClient() {
   // by the time Mediavine runs its first DOM scan, the mv-ads wrapper,
   // the video slot, and the sticky <aside> are already in the DOM.
 
+  const requestHostedTicket = useCallback(async (modId: string) => {
+    setHostedTicketReady(false);
+    try {
+      const res = await fetch(`/api/mods/${encodeURIComponent(modId)}/download-ticket/`, {
+        method: 'POST',
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error(`ticket ${res.status}`);
+      const data = (await res.json()) as { ticket?: unknown; waitMs?: unknown; expiresInMs?: unknown };
+      if (typeof data.ticket !== 'string' || typeof data.waitMs !== 'number' || typeof data.expiresInMs !== 'number') {
+        throw new Error('ticket shape');
+      }
+      const now = Date.now();
+      setHostedTicket({ ticket: data.ticket, readyAt: now + data.waitMs, expiresAt: now + data.expiresInMs });
+    } catch {
+      setHostedTicket(null);
+      setHostedFailed(true);
+    }
+  }, []);
+
+  const hostedModId = mod?.hostedFile ? mod.id : null;
+  useEffect(() => {
+    if (hostedModId) void requestHostedTicket(hostedModId);
+  }, [hostedModId, requestHostedTicket]);
+
+  useEffect(() => {
+    if (!hostedTicket) return;
+    // +250 ms of slack so a slightly fast client clock never hits "too early".
+    const t = setTimeout(() => setHostedTicketReady(true), Math.max(0, hostedTicket.readyAt - Date.now()) + 250);
+    return () => clearTimeout(t);
+  }, [hostedTicket]);
+
+  const useHostedFile = !!mod?.hostedFile && !hostedFailed;
+  const externalUrl = mod ? mod.downloadUrl || mod.sourceUrl : null;
+  const downloadReady = canProceed && !!mod && (!useHostedFile || (!!hostedTicket && hostedTicketReady));
+
   // Countdown timer — members skip it (the B2 "no countdown" perk)
   useEffect(() => {
     if (loading) return;
@@ -233,6 +293,24 @@ export default function GoClient() {
   const handleProceed = useCallback(() => {
     if (!mod) return;
 
+    if (useHostedFile && hostedTicket) {
+      // Tickets last 15 minutes. An idle tab gets a fresh one (and the wait again).
+      if (Date.now() > hostedTicket.expiresAt - 5_000) {
+        setHostedTicket(null);
+        void requestHostedTicket(mod.id);
+        return;
+      }
+      trackDownload(mod.id);
+      gtag('event', 'hosted_download_start', { mod_id: String(mod.id) });
+      setHostedStarted(true);
+      // The download route answers with a redirect to an attachment, so the
+      // browser saves the file and this page (and its ads) stays put.
+      window.location.assign(
+        `/api/mods/${encodeURIComponent(mod.id)}/download/?ticket=${encodeURIComponent(hostedTicket.ticket)}`,
+      );
+      return;
+    }
+
     const targetUrl = mod.downloadUrl || mod.sourceUrl;
     if (targetUrl) {
       // Track the download click before navigating away (fire-and-forget)
@@ -241,7 +319,7 @@ export default function GoClient() {
       // Redirect back to mod page or home
       router.push(`/mods/${mod.id}/`);
     }
-  }, [mod, router, trackDownload]);
+  }, [mod, router, trackDownload, useHostedFile, hostedTicket, requestHostedTicket]);
 
   // Hard error: mod fetch finished but no mod returned. This is a real
   // not-found state, so it's fine to bail out of the layout entirely —
@@ -322,9 +400,21 @@ export default function GoClient() {
                     )}
                     <div className="flex-1">
                       <h1 className="text-2xl font-bold text-white mb-2">{mod.title}</h1>
-                      <p className="text-slate-400">
-                        Your download from {mod.source} will begin shortly
-                      </p>
+                      {useHostedFile && mod.hostedFile ? (
+                        <p className="text-slate-400">
+                          <span className="inline-flex items-center gap-1 text-emerald-400">
+                            <ShieldCheck className="h-4 w-4" /> Hosted on MustHaveMods
+                          </span>
+                          {' · '}
+                          <span className="break-all">{mod.hostedFile.name}</span>
+                          {' · '}
+                          {formatBytes(mod.hostedFile.sizeBytes)}
+                        </p>
+                      ) : (
+                        <p className="text-slate-400">
+                          Your download from {mod.source} will begin shortly
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
@@ -338,13 +428,25 @@ export default function GoClient() {
                     Member perk: no countdown
                   </p>
                 )}
-                {canProceed && mod ? (
+                {useHostedFile && mod?.hostedFile?.containsScript && (
+                  <p className="mb-3 flex items-start gap-1.5 text-xs text-amber-300">
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                    This download includes a script mod (.ts4script). Turn on Script Mods in the game&apos;s
+                    Game Options, and only install script mods from creators you trust.
+                  </p>
+                )}
+                {hostedFailed && mod?.hostedFile && !externalUrl && (
+                  <p className="mb-3 text-sm text-red-400">
+                    This download is temporarily unavailable. Please try again in a few minutes.
+                  </p>
+                )}
+                {downloadReady && mod ? (
                   <button
                     onClick={handleProceed}
                     className="w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-sims-pink hover:bg-sims-pink/80 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:shadow-xl"
                   >
                     <Download className="h-6 w-6" />
-                    Continue to Download
+                    {useHostedFile ? (hostedStarted ? 'Download again' : 'Download now') : 'Continue to Download'}
                   </button>
                 ) : (
                   <div>
@@ -417,6 +519,12 @@ export default function GoClient() {
                   Same placement rule: inside the mod card, a sibling of the
                   mv-ads wrapper below, never inside it or the aside (SD-3).
                 */}
+                {hostedStarted && (
+                  <p className="mt-3 text-sm text-emerald-400 text-center">
+                    Your download has started. Check your downloads folder, then move the file into
+                    Documents/Electronic Arts/The Sims 4/Mods.
+                  </p>
+                )}
                 {canProceed && mod && membershipOn && !isMember && !showPostConnect && (
                   <p className="mt-3 text-xs text-slate-500 text-center">
                     Patrons skip this wait next time.{' '}
