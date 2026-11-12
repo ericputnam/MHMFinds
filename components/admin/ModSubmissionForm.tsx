@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
-import { HostedFileUpload } from '@/components/creator/HostedFileUpload';
+import { HostedFileUpload, useHostedUploadsEnabled } from '@/components/creator/HostedFileUpload';
+import { hostedGameOf } from '@/lib/modFiles/constants';
 import {
   Save,
   Loader2,
@@ -11,6 +12,7 @@ import {
   Plus,
   X,
   Link as LinkIcon,
+  FileArchive,
 } from 'lucide-react';
 
 export interface ModFormData {
@@ -82,6 +84,8 @@ export function ModSubmissionForm({
   const [error, setError] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [imageInput, setImageInput] = useState('');
+  /** Where players get the mod: a file hosted here, or links elsewhere. */
+  const [delivery, setDelivery] = useState<'file' | 'link'>('link');
 
   const [formData, setFormData] = useState<ModFormData>({
     title: '',
@@ -106,6 +110,22 @@ export function ModSubmissionForm({
     ...initialData,
   });
 
+  const hostingEnabled = useHostedUploadsEnabled(!allowHostedFile);
+  const canHost = allowHostedFile && hostingEnabled === true && hostedGameOf(formData.gameVersion) !== null;
+  const fileMode = canHost && delivery === 'file';
+
+  // Default to "Upload the file" once hosting is known to be on. Only the
+  // first time: after that the creator's own choice sticks.
+  const [deliveryTouched, setDeliveryTouched] = useState(false);
+  useEffect(() => {
+    if (hostingEnabled === true && allowHostedFile && !deliveryTouched) setDelivery('file');
+  }, [hostingEnabled, allowHostedFile, deliveryTouched]);
+
+  const chooseDelivery = (next: 'file' | 'link') => {
+    setDeliveryTouched(true);
+    setDelivery(next);
+  };
+
   // Update form data when initialData changes
   useEffect(() => {
     if (initialData) {
@@ -123,11 +143,15 @@ export function ModSubmissionForm({
       if (!formData.title.trim()) {
         throw new Error('Title is required');
       }
-      if (!formData.downloadUrl.trim() && !formData.uploadId) {
-        throw new Error('Add a download link or upload the mod file');
+      if (fileMode) {
+        if (!formData.uploadId) throw new Error('Upload the mod file, or switch to "Link to it"');
+      } else if (!formData.downloadUrl.trim() && !formData.sourceUrl.trim()) {
+        throw new Error('Add a download link or a blog/source page');
       }
 
-      await onSubmit(formData);
+      // A file left over from "Upload the file" is not sent once the creator
+      // switched to links, so the server never attaches a file they set aside.
+      await onSubmit(fileMode ? formData : { ...formData, uploadId: null });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit');
     } finally {
@@ -339,58 +363,93 @@ export function ModSubmissionForm({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <h2 className="text-xl font-bold text-white mb-6">URLs and Media</h2>
           <div className="space-y-4">
-            {allowHostedFile && (
-              <HostedFileUpload
-                disabled={loading}
-                publishesOnSubmit={showAdminFields}
-                onChange={(uploadId) => setFormData((prev) => ({ ...prev, uploadId }))}
-              />
+            {canHost && (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-slate-300">
+                  How do players get the mod? <span className="text-red-500">*</span>
+                </p>
+                <div role="radiogroup" aria-label="How players get the mod" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {(
+                    [
+                      { value: 'file', label: 'Upload the file', hint: 'Players download it from MustHaveMods', Icon: FileArchive },
+                      { value: 'link', label: 'Link to it', hint: 'Players go to your download or blog page', Icon: LinkIcon },
+                    ] as const
+                  ).map(({ value, label, hint, Icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={delivery === value}
+                      disabled={loading}
+                      onClick={() => chooseDelivery(value)}
+                      className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors disabled:opacity-50 ${
+                        delivery === value
+                          ? 'border-sims-pink bg-sims-pink/10'
+                          : 'border-slate-700 bg-slate-800 hover:border-slate-500'
+                      }`}
+                    >
+                      <Icon className={`mt-0.5 h-5 w-5 flex-shrink-0 ${delivery === value ? 'text-sims-pink' : 'text-slate-400'}`} />
+                      <span>
+                        <span className="block text-sm font-semibold text-white">{label}</span>
+                        <span className="block text-xs text-slate-400">{hint}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
-            {/* Download URL */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Download URL{' '}
-                {formData.uploadId ? (
-                  <span className="font-normal text-slate-500">(optional when the file is hosted here)</span>
-                ) : (
-                  <span className="text-red-500">*</span>
-                )}
-              </label>
-              <div className="relative">
-                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input
-                  type="url"
-                  required={!formData.uploadId}
-                  value={formData.downloadUrl}
-                  onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
-                  placeholder="https://example.com/download"
+            {/* Kept mounted in link mode so a checked file survives a toggle back. */}
+            {allowHostedFile && (
+              <div hidden={!fileMode}>
+                <HostedFileUpload
+                  enabled={canHost}
+                  gameVersion={formData.gameVersion}
+                  disabled={loading}
+                  publishesOnSubmit={showAdminFields}
+                  onChange={(uploadId) => setFormData((prev) => ({ ...prev, uploadId }))}
                 />
               </div>
-            </div>
+            )}
 
-            {/* Source URL */}
+            {/* Download URL: link mode only */}
+            {!fileMode && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Download URL</label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input
+                    type="url"
+                    value={formData.downloadUrl}
+                    onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
+                    placeholder="https://example.com/download"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Source URL: needed in link mode unless there is a download link; credit only in file mode */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
                 Blog or Source URL{' '}
-                {formData.uploadId ? (
-                  <span className="font-normal text-slate-500">(optional)</span>
-                ) : (
-                  <span className="text-red-500">*</span>
-                )}
+                <span className="font-normal text-slate-500">{fileMode ? '(optional credit)' : ''}</span>
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required={!formData.uploadId}
                   value={formData.sourceUrl}
                   onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
                   placeholder="https://patreon.com/post/..."
                 />
               </div>
+              {!fileMode && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Add a download link, a blog or source page, or both. At least one is required.
+                </p>
+              )}
             </div>
 
             {/* Thumbnail */}

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import {
   MAX_MOD_FILE_BYTES,
   MOD_FILE_KINDS,
+  kindListText,
   MOD_UPLOAD_BYTES_PER_DAY,
   MOD_UPLOADS_PER_DAY,
   kindFromFilename,
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
   const kind = kindFromFilename(filename);
   if (!kind) {
     return NextResponse.json(
-      { error: 'Only .package, .ts4script and .zip files can be uploaded' },
+      { error: `Only ${kindListText(null)} files can be uploaded` },
       { status: 400, headers: NO_STORE },
     );
   }

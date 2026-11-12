@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       }
       if (!hostedUploadsEnabled()) return hostedUploadsDisabledResponse();
     }
-    const filePrep = await publishOwnUpload(body.uploadId, session.user.id);
+    const filePrep = await publishOwnUpload(body.uploadId, session.user.id, body.gameVersion || 'Sims 4');
     if (!filePrep.ok) {
       return NextResponse.json({ error: filePrep.error }, { status: filePrep.status });
     }

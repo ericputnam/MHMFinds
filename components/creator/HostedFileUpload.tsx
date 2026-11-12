@@ -3,11 +3,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, FileArchive, Loader2, Upload, X } from 'lucide-react';
 import {
+  HOSTED_GAME_LABEL,
   MAX_MOD_FILE_BYTES,
-  MOD_FILE_ACCEPT_ATTR,
   MOD_FILE_CONTENT_TYPE,
+  acceptAttrFor,
+  fileGameOf,
   formatBytes,
+  hostedGameOf,
   kindFromFilename,
+  kindListText,
+  kindsForGame,
+  type HostedGame,
 } from '@/lib/modFiles/constants';
 
 /** What the creator sees about their uploaded file. Mirrors CREATOR_UPLOAD_SELECT. */
@@ -20,6 +26,36 @@ export interface HostedUploadSummary {
   status: string;
   validationError: string | null;
   containsScript: boolean;
+  /** Set by the verify route. Older responses lack it; fileGameOf() fills the gap. */
+  game?: HostedGame;
+}
+
+/**
+ * Whether hosted uploads are switched on. `null` while loading. Pass
+ * `skip` when a parent already knows the answer, so the page asks once.
+ */
+export function useHostedUploadsEnabled(skip = false): boolean | null {
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (skip) return;
+    let cancelled = false;
+    fetch('/api/creator/uploads/', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : { enabled: false }))
+      .then((d) => !cancelled && setEnabled(d?.enabled === true))
+      .catch(() => !cancelled && setEnabled(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [skip]);
+  return enabled;
+}
+
+/** Badge text for a file that runs code: a Sims script mod, a Java mod or Bedrock scripts. */
+export function runsCodeLabel(kind: string): string {
+  if (kind === 'ts4script') return 'Contains a script mod';
+  if (kind === 'jar') return 'Java mod: runs code';
+  if (kind === 'package' || kind === 'zip') return 'Contains a script mod';
+  return 'Contains scripts that run code';
 }
 
 type Phase =
@@ -37,6 +73,10 @@ interface Props {
   publishesOnSubmit?: boolean;
   /** Admin edit form: the mod already has a hosted file, and this one replaces it on save. */
   replacesExisting?: boolean;
+  /** The mod's game. Picks which file types are accepted and how they are described. */
+  gameVersion?: string;
+  /** Hosting switch already fetched by the parent. When omitted, this component asks. */
+  enabled?: boolean | null;
 }
 
 async function readError(res: Response, fallback: string): Promise<string> {
@@ -84,23 +124,31 @@ function putToStorage(url: string, file: File, onProgress: (percent: number) => 
  * to check the bytes. The submission can only reference a file that passed.
  * Renders nothing while the feature is switched off.
  */
-export function HostedFileUpload({ onChange, disabled, publishesOnSubmit = false, replacesExisting = false }: Props) {
-  const [enabled, setEnabled] = useState<boolean | null>(null);
+export function HostedFileUpload({
+  onChange,
+  disabled,
+  publishesOnSubmit = false,
+  replacesExisting = false,
+  gameVersion,
+  enabled: enabledProp,
+}: Props) {
+  const fetched = useHostedUploadsEnabled(enabledProp !== undefined);
+  const enabled = enabledProp !== undefined ? enabledProp : fetched;
   const [phase, setPhase] = useState<Phase>({ step: 'idle' });
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/creator/uploads/', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : { enabled: false }))
-      .then((d) => !cancelled && setEnabled(d?.enabled === true))
-      .catch(() => !cancelled && setEnabled(false));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // No gameVersion (older callers) means Sims 4, the only game hosted before Minecraft.
+  const game: HostedGame | null = gameVersion === undefined ? 'sims4' : hostedGameOf(gameVersion);
 
   if (!enabled) return null;
+
+  if (!game) {
+    return (
+      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-sm text-slate-400">
+        Files can only be hosted for Sims 4 and Minecraft mods. Choose one of those games, or link to the file
+        instead.
+      </div>
+    );
+  }
 
   const busy = phase.step === 'uploading' || phase.step === 'checking';
 
@@ -112,8 +160,12 @@ export function HostedFileUpload({ onChange, disabled, publishesOnSubmit = false
 
   const handleFile = async (file: File) => {
     onChange(null);
-    if (!kindFromFilename(file.name)) {
-      setPhase({ step: 'error', message: 'Only .package, .ts4script or .zip files can be hosted.' });
+    const kind = kindFromFilename(file.name);
+    if (!kind || !kindsForGame(game).includes(kind)) {
+      setPhase({
+        step: 'error',
+        message: `${HOSTED_GAME_LABEL[game]} mods can be hosted as ${kindListText(game)} files.`,
+      });
       return;
     }
     if (file.size <= 0 || file.size > MAX_MOD_FILE_BYTES) {
@@ -159,7 +211,7 @@ export function HostedFileUpload({ onChange, disabled, publishesOnSubmit = false
             {replacesExisting ? 'Upload a new version (optional)' : 'Host the file on MustHaveMods (optional)'}
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            Upload your .package, .ts4script or .zip (up to {formatBytes(MAX_MOD_FILE_BYTES)}) and players download it
+            Upload your {kindListText(game)} (up to {formatBytes(MAX_MOD_FILE_BYTES)}) and players download it
             straight from your mod page.{' '}
             {replacesExisting
               ? 'We check the file, and it replaces the current hosted file when you save.'
@@ -205,7 +257,14 @@ export function HostedFileUpload({ onChange, disabled, publishesOnSubmit = false
               </span>
               {phase.upload.containsScript && (
                 <span className="flex items-center gap-1 text-xs text-amber-400">
-                  <AlertTriangle className="h-3.5 w-3.5" /> Contains a script mod (players will be told)
+                  <AlertTriangle className="h-3.5 w-3.5" /> {runsCodeLabel(phase.upload.kind)} (players will be told)
+                </span>
+              )}
+              {fileGameOf(phase.upload.kind, { game: phase.upload.game }) !== game && (
+                <span className="flex w-full items-center gap-1 text-xs text-red-400">
+                  <AlertTriangle className="h-3.5 w-3.5" /> This is a{' '}
+                  {HOSTED_GAME_LABEL[fileGameOf(phase.upload.kind, { game: phase.upload.game })]} file, but the mod is
+                  set to {HOSTED_GAME_LABEL[game]}. Change the game or upload another file.
                 </span>
               )}
               <button
@@ -237,7 +296,7 @@ export function HostedFileUpload({ onChange, disabled, publishesOnSubmit = false
           <input
             ref={inputRef}
             type="file"
-            accept={MOD_FILE_ACCEPT_ATTR}
+            accept={acceptAttrFor(game)}
             className="hidden"
             disabled={disabled || busy}
             onChange={(e) => {

@@ -116,7 +116,7 @@ describe('hosted mod files — automation and secrets', () => {
   it('admin approval promotes an attached file before the mod is written, then links it', () => {
     const src = read('app/api/admin/submissions/[id]/approve/route.ts');
     expect(src).toMatch(/upload:\s*\{\s*select:\s*\{\s*id:\s*true\s*\}\s*\}/);
-    const prep = src.indexOf('prepareUploadForApproval(submission.id');
+    const prep = src.search(/prepareUploadForApproval\(\s*submission\.id/);
     const write = Math.min(
       ...['prisma.mod.update(', 'prisma.mod.create('].map((k) => src.indexOf(k)).filter((i) => i > -1),
     );
@@ -131,7 +131,7 @@ describe('hosted mod files — automation and secrets', () => {
     const post = src.slice(src.indexOf('export async function POST'));
     const auth = post.indexOf('session?.user?.isAdmin');
     const origin = post.indexOf('isSameOrigin(request)');
-    const publish = post.indexOf('publishOwnUpload(body.uploadId, session.user.id)');
+    const publish = post.search(/publishOwnUpload\(body\.uploadId, session\.user\.id\b/);
     const write = post.indexOf('prisma.mod.create(');
     const link = post.indexOf('finalizeUploadApproval(filePrep.uploadId, mod.id)');
     expect(auth).toBeGreaterThan(-1);
@@ -149,7 +149,7 @@ describe('hosted mod files — automation and secrets', () => {
     const patch = src.slice(src.indexOf('export async function PATCH'), src.indexOf('export async function DELETE'));
     const auth = patch.indexOf('session?.user?.isAdmin');
     const origin = patch.indexOf('isSameOrigin(request)');
-    const publish = patch.indexOf('publishOwnUpload(body.uploadId, session.user.id)');
+    const publish = patch.search(/publishOwnUpload\(body\.uploadId, session\.user\.id\b/);
     const link = patch.indexOf('finalizeUploadApproval(filePrep.uploadId, params.id)');
     const write = patch.indexOf('prisma.mod.update(');
     expect(auth).toBeGreaterThan(-1);
@@ -160,6 +160,27 @@ describe('hosted mod files — automation and secrets', () => {
     expect(patch).toMatch(/if\s*\(\s*!filePrep\.ok\s*\)/);
     // A file that lost the race returns before the mod is touched.
     expect(patch.slice(link, write)).toMatch(/status:\s*409/);
+  });
+
+  it('every route that attaches or publishes a hosted file passes the mod\'s game', () => {
+    // A Minecraft .jar must never be attached to a Sims 4 mod (or the reverse).
+    // lifecycle.ts skips the game check when the argument is missing, so a new
+    // call site without it would silently accept a file for the wrong game.
+    const calls = /\b(checkAttachableUpload|publishOwnUpload|prepareUploadForApproval)\(([^;]*?)\)\s*[;:]/g;
+    const routes = walk('app/api').filter((f) => f.endsWith('route.ts'));
+    let found = 0;
+    for (const file of routes) {
+      const src = stripComments(read(file));
+      for (const m of Array.from(src.matchAll(calls))) {
+        found += 1;
+        const args = m[2].split(',').map((a) => a.trim()).filter(Boolean);
+        expect(args.length, `${file}: ${m[1]}(${m[2]})`).toBeGreaterThanOrEqual(3);
+        expect(args[2], `${file}: ${m[1]}`).toMatch(/gameVersion/);
+      }
+    }
+    // Vacuity guard: the five known call sites (creator submit and edit, admin
+    // create and edit, admin approve).
+    expect(found).toBeGreaterThanOrEqual(5);
   });
 
   it('the funnel approve script can never approve a submission with a hosted file', () => {

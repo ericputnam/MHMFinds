@@ -31,6 +31,27 @@ interface InspectionSummary {
   nested?: { name: string; entries: string[] }[];
   dbpfVersion?: string;
   resourceCount?: number;
+  codeFileCount?: number;
+  game?: string;
+  minecraft?: {
+    loader?: string | null;
+    modId?: string | null;
+    name?: string | null;
+    version?: string | null;
+    minecraftVersion?: string | null;
+    packFormat?: number | null;
+    packTypes?: string[];
+  };
+}
+
+function runsCodeWarning(kind: string): string {
+  if (kind === 'jar') {
+    return 'This is a Minecraft Java mod. Every .jar mod runs Java code with full access to the player\'s computer. Check the creator, scan the file, and look up the SHA-256 below before approving.';
+  }
+  if (kind === 'mcpack' || kind === 'mcaddon' || kind === 'mcworld' || kind === 'mctemplate') {
+    return 'Contains Bedrock scripts (JavaScript). They run inside the game. Check the creator and scan the file before approving.';
+  }
+  return "Contains a script mod (Python). Script mods run code on players' computers. Check the creator and scan the file before approving.";
 }
 
 function asSummary(value: unknown): InspectionSummary | null {
@@ -118,8 +139,7 @@ export function HostedFileReview({ upload, onChanged }: { upload: AdminHostedUpl
       {upload.containsScript && (
         <p className="mt-3 flex items-start gap-2 rounded border border-amber-500/30 bg-amber-500/10 p-2 text-amber-300">
           <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
-          Contains a script mod (Python). Script mods run code on players&apos; computers. Check the creator and scan
-          the file before approving.
+          {runsCodeWarning(upload.kind)}
         </p>
       )}
       {upload.validationError && (
@@ -152,8 +172,26 @@ export function HostedFileReview({ upload, onChanged }: { upload: AdminHostedUpl
             {typeof summary.entryCount === 'number' && ` · ${summary.entryCount} entries`}
             {typeof summary.packageCount === 'number' && ` · ${summary.packageCount} .package`}
             {typeof summary.scriptCount === 'number' && ` · ${summary.scriptCount} script`}
+            {typeof summary.codeFileCount === 'number' && summary.codeFileCount > 0 && ` · ${summary.codeFileCount} code files`}
             {typeof summary.totalUncompressed === 'number' && ` · ${formatBytes(summary.totalUncompressed)} unpacked`}
           </p>
+          {summary.minecraft && (
+            <p className="mt-1">
+              {[
+                summary.minecraft.name && `Name: ${summary.minecraft.name}`,
+                summary.minecraft.modId && `id: ${summary.minecraft.modId}`,
+                summary.minecraft.version && `version ${summary.minecraft.version}`,
+                summary.minecraft.loader && `loader: ${summary.minecraft.loader}`,
+                summary.minecraft.minecraftVersion && `Minecraft ${summary.minecraft.minecraftVersion}`,
+                typeof summary.minecraft.packFormat === 'number' && `pack format ${summary.minecraft.packFormat}`,
+                Array.isArray(summary.minecraft.packTypes) && summary.minecraft.packTypes.length > 0 &&
+                  `contains: ${summary.minecraft.packTypes.join(', ')}`,
+              ]
+                .filter(Boolean)
+                .map(String)
+                .join(' · ')}
+            </p>
+          )}
           {Array.isArray(summary.entries) && summary.entries.length > 0 && (
             <details className="mt-2">
               <summary className="cursor-pointer text-slate-300">Files inside ({summary.entries.length}{summary.entriesTruncated ? '+' : ''})</summary>

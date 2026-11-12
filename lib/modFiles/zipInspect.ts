@@ -15,6 +15,8 @@
  *     and bidi characters, Windows reserved names, over-long or over-deep paths
  *   - a Unicode-path extra field (0x7075) whose name differs from the header
  *   - extensions outside a Sims-only allowlist, nested archives
+ *     (Minecraft jars and packs reuse `openZip` with their own allowlists:
+ *     see minecraft.ts)
  *   - more than 2,000 entries, >1 GB declared uncompressed, high ratios
  *
  * Rejection is always the safe answer: a creator can re-zip; a player who
@@ -339,20 +341,14 @@ function parseZip(buf: Buffer): RawEntry[] | ZipRejection {
   return entries;
 }
 
-function inspectEntries(
-  buf: Buffer,
-  entries: RawEntry[],
-  profile: ZipProfile,
-  depth: number,
-): ZipResult {
-  const allowed = profile === 'ts4script' ? TS4SCRIPT_EXTENSIONS : MOD_ZIP_EXTENSIONS;
+/**
+ * Checks every archive format shares, whatever its contents: safe paths, no
+ * duplicate names (case- and Unicode-insensitive), the expanded-size cap and
+ * the compression-ratio cap. Runs before any allowlist.
+ */
+function checkCommonEntries(entries: RawEntry[]): { ok: true; totalUncompressed: number } | ZipRejection {
   const seen = new Set<string>();
   let total = 0;
-  let packageCount = 0;
-  let scriptCount = 0;
-  let pythonCount = 0;
-  const nested: { name: string; entries: string[] }[] = [];
-
   for (const e of entries) {
     const pathError = checkEntryPath(e.name);
     if (pathError) return reject(`${pathError} ("${e.name.slice(0, 80)}")`);
@@ -366,7 +362,69 @@ function inspectEntries(
     if (e.size > ZIP_LIMITS.ratioCheckAbove && e.size / Math.max(1, e.compressedSize) > ZIP_LIMITS.maxRatio) {
       return reject('the zip contains a file with a suspicious compression ratio');
     }
+  }
+  return { ok: true, totalUncompressed: total };
+}
 
+/** One entry of an opened archive. `read` inflates it (capped); `peek` reads its first bytes. */
+export interface OpenedZipEntry extends ZipEntrySummary {
+  read(maxBytes: number): Buffer | null;
+  peek(n: number): Buffer | null;
+}
+
+export interface OpenedZip {
+  ok: true;
+  entries: OpenedZipEntry[];
+  totalUncompressed: number;
+}
+
+/**
+ * Parse an archive with every structural and path check above, for callers
+ * that apply their own content rules (Minecraft jars and packs). Nothing is
+ * inflated until a caller asks for one entry.
+ */
+export function openZip(buf: Buffer): OpenedZip | ZipRejection {
+  const parsed = parseZip(buf);
+  if (!Array.isArray(parsed)) return parsed;
+  const common = checkCommonEntries(parsed);
+  if (!common.ok) return common;
+  return {
+    ok: true,
+    totalUncompressed: common.totalUncompressed,
+    entries: parsed.map((e) => ({
+      name: e.name,
+      size: e.size,
+      compressedSize: e.compressedSize,
+      isDirectory: e.isDirectory,
+      read: (maxBytes: number) => inflateEntry(buf, e, maxBytes),
+      peek: (n: number) => peekEntry(buf, e, n),
+    })),
+  };
+}
+
+/** Lower-cased extension of an entry's last path segment, or ''. */
+export const entryExtension = ext;
+
+/** macOS Finder metadata (never loaded by any game). */
+export const isFinderMetadata = isMacMetadata;
+
+function inspectEntries(
+  buf: Buffer,
+  entries: RawEntry[],
+  profile: ZipProfile,
+  depth: number,
+): ZipResult {
+  const allowed = profile === 'ts4script' ? TS4SCRIPT_EXTENSIONS : MOD_ZIP_EXTENSIONS;
+  let packageCount = 0;
+  let scriptCount = 0;
+  let pythonCount = 0;
+  const nested: { name: string; entries: string[] }[] = [];
+
+  const common = checkCommonEntries(entries);
+  if (!common.ok) return common;
+  const total = common.totalUncompressed;
+
+  for (const e of entries) {
     if (e.isDirectory) continue;
     if (profile === 'mod-zip' && isMacMetadata(e.name)) continue;
 
