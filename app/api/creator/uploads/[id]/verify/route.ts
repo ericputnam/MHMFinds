@@ -95,10 +95,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       // Promotion copies only this exact object (see promoteBlob).
       blobEtag: read.etag,
       containsScript: inspection.containsScript,
-      inspection: inspection.summary as unknown as Prisma.InputJsonValue,
+      // `game` lives in the stored JSON: a .zip can be either game (fileGameOf).
+      inspection: { ...inspection.summary, game: inspection.game } as unknown as Prisma.InputJsonValue,
       validationError: null,
     },
   });
   const upload = await prisma.modUpload.findUnique({ where: { id: row.id }, select: CREATOR_UPLOAD_SELECT });
-  return NextResponse.json({ upload }, { status: updated.count === 1 ? 200 : 409, headers: NO_STORE });
+  return NextResponse.json(
+    { upload: upload && { ...upload, game: inspection.game } },
+    { status: updated.count === 1 ? 200 : 409, headers: NO_STORE },
+  );
 }

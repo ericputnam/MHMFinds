@@ -65,6 +65,17 @@ interface RelatedMod {
   price: string | null;
 }
 
+/** Install note for a hosted file that runs code on the player's computer. */
+function runsCodeHint(kind: string): string {
+  if (kind === 'jar') {
+    return 'This is a Minecraft Java mod: it runs code on your computer. Put it in your .minecraft/mods folder, use the mod loader it was made for (Fabric, Quilt, Forge or NeoForge), and only install mods from creators you trust.';
+  }
+  if (kind === 'mcpack' || kind === 'mcaddon' || kind === 'mcworld' || kind === 'mctemplate') {
+    return 'This Minecraft Bedrock download includes scripts that run in your game. Only install add-ons from creators you trust.';
+  }
+  return "This download includes a script mod (.ts4script). Turn on Script Mods in the game's Game Options, and only install script mods from creators you trust.";
+}
+
 export default function GoClient() {
   const params = useParams();
   const router = useRouter();
@@ -431,8 +442,7 @@ export default function GoClient() {
                 {useHostedFile && mod?.hostedFile?.containsScript && (
                   <p className="mb-3 flex items-start gap-1.5 text-xs text-amber-300">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-                    This download includes a script mod (.ts4script). Turn on Script Mods in the game&apos;s
-                    Game Options, and only install script mods from creators you trust.
+                    {runsCodeHint(mod.hostedFile.kind)}
                   </p>
                 )}
                 {hostedFailed && mod?.hostedFile && !externalUrl && (

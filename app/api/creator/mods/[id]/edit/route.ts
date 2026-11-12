@@ -57,7 +57,7 @@ export async function POST(
     const body = await request.json();
 
     // Optional new version of the hosted file.
-    const fileCheck = await checkAttachableUpload(body.uploadId, auth.user.id);
+    const fileCheck = await checkAttachableUpload(body.uploadId, auth.user.id, body.gameVersion || mod.gameVersion);
     if (!fileCheck.ok) {
       return NextResponse.json({ error: fileCheck.error }, { status: fileCheck.status });
     }

@@ -82,7 +82,11 @@ export async function POST(
     // Hosted file: move it out of quarantine before the mod is written.
     // Idempotent, so a retry after a failure further down is safe.
     const filePrep = submission.upload
-      ? await prepareUploadForApproval(submission.id, auth.user.id)
+      ? await prepareUploadForApproval(
+          submission.id,
+          auth.user.id,
+          submission.gameVersion || submission.approvedMod?.gameVersion || 'Sims 4',
+        )
       : ({ ok: true, uploadId: null } as const);
     if (!filePrep.ok) {
       return NextResponse.json({ error: filePrep.error }, { status: 400 });

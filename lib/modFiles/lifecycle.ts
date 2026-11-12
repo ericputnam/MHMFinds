@@ -13,7 +13,30 @@
  */
 import { prisma } from '@/lib/prisma';
 import { approvedPath, isApprovedPath, isUploadId } from './paths';
+import { fileGameOf, hostedGameOf, HOSTED_GAME_LABEL } from './constants';
 import { BlobChangedError, deleteBlob, promoteBlob } from './storage';
+
+/**
+ * A hosted file must be for the mod's game: a Minecraft jar on a Sims 4 mod
+ * (or the reverse) would hand players a file that does nothing, or worse.
+ * `gameVersion` undefined skips the check (callers that do not know it).
+ */
+export function gameMismatchError(
+  kind: string,
+  inspection: unknown,
+  gameVersion: string | null | undefined,
+): string | null {
+  if (gameVersion === undefined) return null;
+  const want = hostedGameOf(gameVersion);
+  if (!want) {
+    return 'Files can only be hosted for Sims 4 and Minecraft mods. Choose one of those games, or link to the file instead.';
+  }
+  const have = fileGameOf(kind, inspection);
+  if (have !== want) {
+    return `That is a ${HOSTED_GAME_LABEL[have]} file, but this mod is for ${HOSTED_GAME_LABEL[want]}. Change the game or upload a ${HOSTED_GAME_LABEL[want]} file.`;
+  }
+  return null;
+}
 
 export type AttachCheck =
   | { ok: true; uploadId: string }
@@ -27,12 +50,13 @@ export type AttachCheck =
 export async function checkAttachableUpload(
   uploadId: unknown,
   userId: string,
+  gameVersion?: string | null,
 ): Promise<AttachCheck | { ok: true; uploadId: null }> {
   if (uploadId === undefined || uploadId === null || uploadId === '') return { ok: true, uploadId: null };
   if (!isUploadId(uploadId)) return { ok: false, status: 400, error: 'Invalid uploaded file reference' };
   const row = await prisma.modUpload.findUnique({
     where: { id: uploadId },
-    select: { uploaderId: true, status: true, submissionId: true },
+    select: { uploaderId: true, status: true, submissionId: true, kind: true, inspection: true },
   });
   if (!row || row.uploaderId !== userId) {
     return { ok: false, status: 404, error: 'Uploaded file not found' };
@@ -43,6 +67,8 @@ export async function checkAttachableUpload(
   if (row.submissionId) {
     return { ok: false, status: 409, error: 'That file is already attached to another submission' };
   }
+  const mismatch = gameMismatchError(row.kind, row.inspection, gameVersion);
+  if (mismatch) return { ok: false, status: 400, error: mismatch };
   return { ok: true, uploadId };
 }
 
@@ -68,12 +94,27 @@ export type ApprovalPrep =
  * Idempotent — a retry after a failed mod write finds the row already
  * `approved` with no modId and skips the copy.
  */
-export async function prepareUploadForApproval(submissionId: string, adminId: string): Promise<ApprovalPrep> {
+export async function prepareUploadForApproval(
+  submissionId: string,
+  adminId: string,
+  gameVersion?: string | null,
+): Promise<ApprovalPrep> {
   const upload = await prisma.modUpload.findUnique({
     where: { submissionId },
-    select: { id: true, status: true, modId: true, blobPathname: true, downloadName: true, blobEtag: true },
+    select: {
+      id: true,
+      status: true,
+      modId: true,
+      blobPathname: true,
+      downloadName: true,
+      blobEtag: true,
+      kind: true,
+      inspection: true,
+    },
   });
   if (!upload) return { ok: true, uploadId: null };
+  const mismatch = gameMismatchError(upload.kind, upload.inspection, gameVersion);
+  if (mismatch) return { ok: false, error: mismatch };
 
   if (upload.status === 'approved' && !upload.modId && isApprovedPath(upload.blobPathname)) {
     return { ok: true, uploadId: upload.id };
@@ -118,7 +159,11 @@ export type PublishCheck =
  * retry after a failed mod write finds the row already `approved` with no
  * modId and skips the copy. Absent / empty → ok with no upload.
  */
-export async function publishOwnUpload(uploadId: unknown, adminId: string): Promise<PublishCheck> {
+export async function publishOwnUpload(
+  uploadId: unknown,
+  adminId: string,
+  gameVersion?: string | null,
+): Promise<PublishCheck> {
   if (uploadId === undefined || uploadId === null || uploadId === '') return { ok: true, uploadId: null };
   if (!isUploadId(uploadId)) return { ok: false, status: 400, error: 'Invalid uploaded file reference' };
   const upload = await prisma.modUpload.findUnique({
@@ -132,6 +177,8 @@ export async function publishOwnUpload(uploadId: unknown, adminId: string): Prom
       blobDeletedAt: true,
       downloadName: true,
       blobEtag: true,
+      kind: true,
+      inspection: true,
     },
   });
   if (!upload || upload.uploaderId !== adminId) {
@@ -140,6 +187,8 @@ export async function publishOwnUpload(uploadId: unknown, adminId: string): Prom
   if (upload.submissionId) {
     return { ok: false, status: 409, error: 'That file is attached to a submission. Approve the submission instead.' };
   }
+  const mismatch = gameMismatchError(upload.kind, upload.inspection, gameVersion);
+  if (mismatch) return { ok: false, status: 400, error: mismatch };
   if (
     upload.status === 'approved' &&
     !upload.modId &&

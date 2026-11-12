@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Optional hosted file (uploaded and verified before this call). Must be
     // the creator's own, verified, and not attached to anything else.
-    const fileCheck = await checkAttachableUpload(body.uploadId, auth.user.id);
+    const fileCheck = await checkAttachableUpload(body.uploadId, auth.user.id, body.gameVersion || 'Sims 4');
     if (!fileCheck.ok) {
       return NextResponse.json({ error: fileCheck.error }, { status: fileCheck.status });
     }

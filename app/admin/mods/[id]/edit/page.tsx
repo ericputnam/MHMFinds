@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
-import { HostedFileUpload } from '@/components/creator/HostedFileUpload';
+import { HostedFileUpload, runsCodeLabel } from '@/components/creator/HostedFileUpload';
 import { formatBytes } from '@/lib/modFiles/constants';
 import {
   ArrowLeft,
@@ -55,6 +55,7 @@ interface HostedFile {
   id: string;
   downloadName: string;
   sizeBytes: number;
+  kind?: string;
   containsScript: boolean;
 }
 
@@ -216,7 +217,9 @@ export default function EditModPage() {
     if (!hostedFile) return;
     const fallback = formData.downloadUrl.trim()
       ? 'The mod will use its download URL instead.'
-      : 'This mod has no download URL, so it will have no download until you add one.';
+      : formData.sourceUrl.trim()
+        ? 'The mod has no download URL, so players will be sent to its blog/source page.'
+        : 'This mod has no download or source URL, so it will have no download until you add one.';
     if (!window.confirm(`Remove ${hostedFile.downloadName}? The file is deleted and cannot be restored. ${fallback}`)) {
       return;
     }
@@ -250,8 +253,8 @@ export default function EditModPage() {
       if (!formData.title.trim()) {
         throw new Error('Title is required');
       }
-      if (!formData.downloadUrl.trim() && !formData.uploadId && !hostedFile) {
-        throw new Error('Add a download URL or upload the mod file');
+      if (!formData.downloadUrl.trim() && !formData.sourceUrl.trim() && !formData.uploadId && !hostedFile) {
+        throw new Error('Upload the mod file, or add a download link or a blog/source page');
       }
 
       // Prepare data for API
@@ -751,7 +754,7 @@ export default function EditModPage() {
                   <p className="text-sm font-semibold text-white">Hosted file</p>
                   <p className="mt-1 text-sm text-slate-300">
                     {hostedFile.downloadName} · {formatBytes(hostedFile.sizeBytes)}
-                    {hostedFile.containsScript ? ' · contains script files' : ''}
+                    {hostedFile.containsScript ? ` · ${runsCodeLabel(hostedFile.kind ?? '').toLowerCase()}` : ''}
                   </p>
                   {formData.uploadId && (
                     <p className="mt-1 text-xs text-amber-300">Replaced by your new upload when you save.</p>
@@ -768,6 +771,7 @@ export default function EditModPage() {
               </div>
             )}
             <HostedFileUpload
+              gameVersion={formData.gameVersion}
               disabled={loading || removingFile}
               publishesOnSubmit
               replacesExisting={!!hostedFile}
@@ -780,15 +784,12 @@ export default function EditModPage() {
                 Download URL{' '}
                 {formData.uploadId || hostedFile ? (
                   <span className="font-normal text-slate-500">(optional when the file is hosted here)</span>
-                ) : (
-                  <span className="text-red-500">*</span>
-                )}
+                ) : null}
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required={!formData.uploadId && !hostedFile}
                   value={formData.downloadUrl}
                   onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
@@ -802,22 +803,24 @@ export default function EditModPage() {
               <label className="block text-sm font-semibold text-slate-300 mb-2">
                 Blog or Source URL{' '}
                 {formData.uploadId || hostedFile ? (
-                  <span className="font-normal text-slate-500">(optional)</span>
-                ) : (
-                  <span className="text-red-500">*</span>
-                )}
+                  <span className="font-normal text-slate-500">(optional credit)</span>
+                ) : null}
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required={!formData.uploadId && !hostedFile}
                   value={formData.sourceUrl}
                   onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
                   placeholder="https://patreon.com/post/..."
                 />
               </div>
+              {!formData.uploadId && !hostedFile && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Without a hosted file, add a download link, a blog or source page, or both.
+                </p>
+              )}
             </div>
 
             {/* Thumbnail */}

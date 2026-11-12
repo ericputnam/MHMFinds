@@ -63,9 +63,9 @@ export async function PATCH(
     if (wantsHostedFile) {
       if (!isSameOrigin(request)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       if (!hostedUploadsEnabled()) return hostedUploadsDisabledResponse();
-      const exists = await prisma.mod.findUnique({ where: { id: params.id }, select: { id: true } });
+      const exists = await prisma.mod.findUnique({ where: { id: params.id }, select: { id: true, gameVersion: true } });
       if (!exists) return NextResponse.json({ error: 'Mod not found' }, { status: 404 });
-      const filePrep = await publishOwnUpload(body.uploadId, session.user.id);
+      const filePrep = await publishOwnUpload(body.uploadId, session.user.id, body.gameVersion || exists.gameVersion);
       if (!filePrep.ok) return NextResponse.json({ error: filePrep.error }, { status: filePrep.status });
       if (filePrep.uploadId && !(await finalizeUploadApproval(filePrep.uploadId, params.id))) {
         return NextResponse.json({ error: 'That file was just used for another mod.' }, { status: 409 });
