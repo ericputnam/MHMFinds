@@ -208,14 +208,18 @@ describe('hosted mod files — CDN cache exemption', () => {
     const routes = [...featureRoutes, ...extraPerUser];
     for (const file of routes) {
       const url = `/${path.dirname(file).replace(/^app\//, '')}/`.replace(/\[[^\]]+\]/g, 'x');
-      const match = noStore.find((r) => {
+      const matches = (r: { source: string }) => {
         const prefix = r.source.replace(/:path\*$/, '').replace(/:[A-Za-z]+/g, '[^/]+');
         return new RegExp(`^${prefix.replace(/\//g, '\\/')}`).test(url);
-      });
+      };
+      const match = noStore.find(matches);
       expect(match, `${file} (${url}) has no no-store header rule`).toBeTruthy();
       expect(match!.i, `${file} rule must come after /api/:path*`).toBeGreaterThan(apiIdx);
-      expect(match!.headers).toContainEqual({ key: 'Cache-Control', value: 'private, no-store' });
-      expect(match!.headers).toContainEqual({ key: 'Referrer-Policy', value: 'no-referrer' });
+      // Next.js applies every matching rule in order; a later rule wins per key.
+      const effective = new Map<string, string>();
+      for (const r of rules) if (matches(r)) for (const h of r.headers) effective.set(h.key, h.value);
+      expect(effective.get('Cache-Control'), file).toBe('private, no-store');
+      expect(effective.get('Referrer-Policy'), file).toBe('no-referrer');
     }
   });
 });

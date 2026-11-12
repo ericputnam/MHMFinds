@@ -357,9 +357,9 @@ This document summarizes the complete production deployment strategy for MHMFind
 2. **Set up local environment:**
    ```bash
    # Copy environment template
-   cp .env.example .env
+   cp env.example .env.local
 
-   # Fill in required values (see .env.example comments)
+   # Fill in required values (see env.example comments)
 
    # Install dependencies
    npm install

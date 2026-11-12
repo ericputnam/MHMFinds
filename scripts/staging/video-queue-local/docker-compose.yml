@@ -1,0 +1,48 @@
+# Local WordPress for testing the MHM Video Queue plugin. Test data only; nothing here talks to prod.
+#   ./scripts/staging/video-queue-local/setup.sh      # makes .env (random DB passwords), starts it,
+#                                                     # installs WP, activates the plugin, makes test users
+# Site: http://localhost:8089   (WP_ENVIRONMENT_TYPE=local so Application Passwords work over http)
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: wp
+      MARIADB_USER: wp
+      MARIADB_PASSWORD: ${VQ_DB_PASS:?run setup.sh first}
+      MARIADB_ROOT_PASSWORD: ${VQ_DB_ROOT_PASS:?run setup.sh first}
+    volumes: [db:/var/lib/mysql]
+  wp:
+    image: wordpress:6-php8.2-apache
+    depends_on: [db]
+    ports: ["8089:80"]
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: ${VQ_DB_PASS:?run setup.sh first}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'local');
+        define('WP_DEBUG', true);
+        define('WP_DEBUG_LOG', true);
+        define('WP_DEBUG_DISPLAY', false);
+    volumes:
+      - html:/var/www/html
+      - store:/var/www/mhm-video-queue
+      - ../../../staging/wordpress/plugins/mhm-video-queue:/var/www/html/wp-content/plugins/mhm-video-queue:ro
+      - ./mock-apis.php:/var/www/html/wp-content/mu-plugins/mhm-vq-mock-apis.php:ro   # fake YouTube/TikTok, local only
+  cli:
+    image: wordpress:cli-php8.2
+    profiles: [cli]
+    user: "33:33"
+    depends_on: [db]
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: ${VQ_DB_PASS:?run setup.sh first}
+    volumes:
+      - html:/var/www/html
+      - store:/var/www/mhm-video-queue
+      - ../../../staging/wordpress/plugins/mhm-video-queue:/var/www/html/wp-content/plugins/mhm-video-queue:ro
+      - ./mock-apis.php:/var/www/html/wp-content/mu-plugins/mhm-vq-mock-apis.php:ro   # fake YouTube/TikTok, local only
+volumes: {db: {}, html: {}, store: {}}

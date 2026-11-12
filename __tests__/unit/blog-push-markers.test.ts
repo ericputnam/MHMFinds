@@ -43,14 +43,30 @@ describe('functions.php push-script CRITICAL_MARKERS', () => {
     expect([...prod].sort()).toEqual([...staging].sort());
   });
 
-  it('every prod marker is present in the prod functions.php', () => {
-    const php = read('staging/wordpress/kadence-child-prod/functions.php');
+  // Same filter as code_only() in the push scripts: a marker named only in a comment
+  // does not count. The staging file passed on a comment alone until 2026-11-11.
+  const codeOnly = (php: string) =>
+    php
+      .split('\n')
+      .filter((l) => !/^\s*(\*|\/\*|\/\/|#)/.test(l))
+      .join('\n');
+
+  it('every prod marker is present in the prod functions.php code (comments do not count)', () => {
+    const php = codeOnly(read('staging/wordpress/kadence-child-prod/functions.php'));
     for (const m of prod) expect(php, m).toContain(m);
   });
 
-  it('every staging marker is present in the staging functions.php', () => {
-    const php = read('staging/wordpress/kadence-child/functions.php');
+  it('every staging marker is present in the staging functions.php code (comments do not count)', () => {
+    const php = codeOnly(read('staging/wordpress/kadence-child/functions.php'));
     for (const m of staging) expect(php, m).toContain(m);
+  });
+
+  it('both push scripts check markers against code only', () => {
+    for (const script of [PROD, STAGING]) {
+      const src = read(script);
+      expect(src, script).toContain('code_only "$LOCAL_FILE" | grep -q "$pattern"');
+      expect(src, script).not.toContain('if ! grep -q "$pattern" "$LOCAL_FILE"');
+    }
   });
 
   it('the live-HTML sidebar check looks for the pack block', () => {

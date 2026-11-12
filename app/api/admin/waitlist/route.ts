@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const authResult = await requireAdmin(request);
   if (authResult instanceof NextResponse) {

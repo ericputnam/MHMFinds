@@ -17,6 +17,11 @@ import {
   normalizePostUrl,
   type SitemapPostEntry,
 } from './mhmScraperUtils';
+import {
+  lookupCurseForgeAuthor,
+  resolveCurseForgeIngestAuthor,
+  type SpellingRow,
+} from './curseforgeIngestAuthor';
 
 // CSV file path for tracking scraped URLs
 const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'mhm-scraped-urls.csv');
@@ -55,6 +60,8 @@ export class MustHaveModsScraper {
     modsSkipped: 0,
     modsUpdated: 0,
     errors: 0,
+    curseforgeAuthors: 0,
+    curseforgeAuthorSkips: 0,
   };
 
   constructor() {
@@ -167,6 +174,8 @@ export class MustHaveModsScraper {
       modsSkipped: 0,
       modsUpdated: 0,
       errors: 0,
+      curseforgeAuthors: 0,
+      curseforgeAuthorSkips: 0,
     };
   }
 
@@ -1454,6 +1463,33 @@ export class MustHaveModsScraper {
           continue;
         }
 
+        // E390 (2026-11-11): a new SFW CurseForge row with no usable author asks the
+        // CurseForge API, under E340's backfill rules (exact slug, one author, usable
+        // name, suffix spelling folded onto an existing page). 38/96 CurseForge rows
+        // created 10-28 -> 11-11 were NULL-author and reached no creator page.
+        // A dry run makes the lookup too, so the preview shows the author it would write.
+        let author = mod.author;
+        if (!mod.isNSFW) {
+          const cf = await resolveCurseForgeIngestAuthor(mod, {
+            apiKey: process.env.CURSEFORGE_API_KEY,
+            lookup: (slug, key) => lookupCurseForgeAuthor(slug, key),
+            spellings: (keys) => prisma.$queryRaw<SpellingRow[]>`
+              SELECT regexp_replace(lower(author), '[^a-z0-9]+', '', 'g') AS ckey, author, COUNT(*)::int AS n
+              FROM mods
+              WHERE author IS NOT NULL AND "isNSFW" = false
+                AND regexp_replace(lower(author), '[^a-z0-9]+', '', 'g') = ANY(${keys})
+              GROUP BY 1, 2`,
+          });
+          if (cf.kind === 'set') {
+            author = cf.author;
+            this.stats.curseforgeAuthors++;
+            console.log(`      ✅ CurseForge author (${cf.slug}): ${cf.author}${cf.folded ? ' (existing page spelling)' : ''}`);
+          } else if (cf.reason !== 'has-author' && cf.reason !== 'no-curseforge-slug') {
+            this.stats.curseforgeAuthorSkips++;
+            console.log(`      ⏭️  CurseForge author skipped (${cf.reason})`);
+          }
+        }
+
         // Create new mod with detected content type
         if (!dryRun) await prisma.mod.create({
           data: {
@@ -1469,7 +1505,7 @@ export class MustHaveModsScraper {
             downloadUrl: mod.downloadUrl,
             sourceUrl: mod.sourceUrl,
             source: mod.source,
-            author: mod.author,
+            author,
             isFree: mod.isFree,
             isNSFW: mod.isNSFW,
             gameVersion: mod.game || 'Sims 4',
@@ -1685,6 +1721,11 @@ export class MustHaveModsScraper {
     console.log(`✅ Mods ${dryRun ? 'that would be imported' : 'imported'} (new): ${this.stats.modsImported}`);
     console.log(`🔄 Mods ${dryRun ? 'that would be updated' : 'updated'}: ${this.stats.modsUpdated}`);
     console.log(`⏭️  Mods skipped (complete): ${this.stats.modsSkipped}`);
+    // E390: one line every run, so "the lookup never fired" is visible in the ingest log.
+    console.log(
+      `👤 CurseForge authors at ingest: set ${this.stats.curseforgeAuthors}, skipped ${this.stats.curseforgeAuthorSkips}` +
+        (process.env.CURSEFORGE_API_KEY ? '' : ' (CURSEFORGE_API_KEY unset — lookup off)'),
+    );
     if (this.stats.errors > 0) {
       console.log(`❌ Errors: ${this.stats.errors}`);
     }

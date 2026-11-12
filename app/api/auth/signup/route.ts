@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { validatePassword } from '@/lib/auth/credentials';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,12 +25,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate password length
-    if (password.length < 6) {
-      return NextResponse.json(
-        { message: 'Password must be at least 6 characters' },
-        { status: 400 }
-      );
+    // Same rule as password reset (lib/auth/credentials.ts). Signup used to accept 6
+    // characters while reset required 8.
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return NextResponse.json({ message: passwordError }, { status: 400 });
     }
 
     // Validate username (alphanumeric, underscore, hyphen, 3-20 chars)
@@ -79,7 +79,11 @@ export async function POST(request: NextRequest) {
           isAdmin: false,
           isPremium: false,
           isCreator: isCreator || false,
-          emailVerified: new Date(), // Auto-verify for credentials signup
+          // NOT verified: nobody has proven they own this address yet. It is stamped
+          // when ownership is proven — a password-reset link (reset-password route) or
+          // a Patreon sign-in with the same email (authOptions signIn callback). The
+          // old auto-stamp made a squatted address indistinguishable from a real one.
+          emailVerified: null,
         }
       });
 

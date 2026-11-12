@@ -7,6 +7,7 @@ import { ZodError } from 'zod';
 import { verifyTurnstileToken } from '@/lib/services/turnstile';
 import { emailNotifier } from '@/lib/services/emailNotifier';
 import { CLAIM_SOURCE, parseClaimSlug, pendingProfileHandle } from '@/lib/creatorClaim';
+import { escapeHtml } from '@/lib/escapeHtml';
 
 // getServerSession reads request headers; never let this route be
 // evaluated statically.
@@ -200,10 +201,10 @@ export async function POST(request: NextRequest) {
       const html = `
         <p>A new mod submission is waiting for review.</p>
         <ul>
-          <li><strong>Name:</strong> ${submission.modName}</li>
-          <li><strong>Category:</strong> ${submission.category}</li>
-          <li><strong>URL:</strong> ${submission.modUrl}</li>
-          <li><strong>Submitter:</strong> ${submission.submitterName} (${submission.submitterEmail})</li>
+          <li><strong>Name:</strong> ${escapeHtml(submission.modName)}</li>
+          <li><strong>Category:</strong> ${escapeHtml(submission.category)}</li>
+          <li><strong>URL:</strong> ${escapeHtml(submission.modUrl)}</li>
+          <li><strong>Submitter:</strong> ${escapeHtml(submission.submitterName)} (${escapeHtml(submission.submitterEmail)})</li>
           ${claimedSlug ? `<li><strong>Claims creator page:</strong> https://musthavemods.com/creator/${claimedSlug}/${userId ? ' (signed-in account, profile created)' : ' (anonymous — ask them to sign in to link it)'}</li>` : ''}
         </ul>
       `;

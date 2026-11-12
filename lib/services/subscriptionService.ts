@@ -101,14 +101,9 @@ export class SubscriptionService {
       timeout: 15000, // Transaction can run for up to 15s
     });
 
-    // Update mod download count asynchronously (non-blocking, non-critical)
-    prisma.mod.update({
-      where: { id: modId },
-      data: { downloadCount: { increment: 1 } }
-    }).catch(error => {
-      console.error('Failed to update mod download count:', error);
-      // Don't throw - this is non-critical
-    });
+    // Mod.downloadCount is NOT incremented here. /api/analytics/track owns that counter
+    // (one DOWNLOAD_CLICK per proceed on /go). Incrementing in both places counted every
+    // signed-in grid download twice.
 
     return {
       success: true,
@@ -302,14 +297,43 @@ export class SubscriptionService {
    * Handle subscription updates (renewals, changes)
    */
   static async handleSubscriptionUpdated(subscription: any) {
-    await prisma.subscription.update({
+    const item = subscription.items?.data?.[0];
+
+    // Newer Stripe API versions moved current_period_end from the subscription
+    // to its items. Only write the date when one is actually present — an
+    // Invalid Date makes Prisma throw and the webhook fail forever.
+    const periodEnd = subscription.current_period_end ?? item?.current_period_end;
+    const stripeCurrentPeriodEnd =
+      typeof periodEnd === 'number' && Number.isFinite(periodEnd) ? new Date(periodEnd * 1000) : undefined;
+
+    // Stripe has statuses our enum does not (unpaid, paused, incomplete_expired).
+    // Unknown ones leave the stored status alone instead of failing the update.
+    const STATUS_MAP: Record<string, 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'INCOMPLETE' | 'TRIALING'> = {
+      active: 'ACTIVE',
+      trialing: 'TRIALING',
+      past_due: 'PAST_DUE',
+      unpaid: 'PAST_DUE',
+      incomplete: 'INCOMPLETE',
+      incomplete_expired: 'CANCELED',
+      canceled: 'CANCELED',
+    };
+    const status = STATUS_MAP[String(subscription.status)];
+
+    // updateMany: an event for a subscription we have no row for is logged, not a 500
+    // (Stripe would retry it for days).
+    const result = await prisma.subscription.updateMany({
       where: { stripeSubscriptionId: subscription.id },
       data: {
-        stripePriceId: subscription.items.data[0].price.id,
-        stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        status: subscription.status.toUpperCase(),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end
+        ...(item?.price?.id ? { stripePriceId: item.price.id } : {}),
+        ...(stripeCurrentPeriodEnd ? { stripeCurrentPeriodEnd } : {}),
+        ...(status ? { status } : {}),
+        ...(typeof subscription.cancel_at_period_end === 'boolean'
+          ? { cancelAtPeriodEnd: subscription.cancel_at_period_end }
+          : {}),
       }
     });
+    if (result.count === 0) {
+      console.error(`Subscription ${subscription.id} not found in database (update ignored)`);
+    }
   }
 }

@@ -158,7 +158,7 @@ export default function ModDetailClient({
   /** POST the favorite. 400 "Already favorited" counts as saved (idempotent). */
   const addFavorite = useCallback(
     async (source: string): Promise<'saved' | 'unauthorized' | 'error'> => {
-      const response = await fetch(`/api/mods/${mod.id}/favorite`, {
+      const response = await fetch(`/api/mods/${mod.id}/favorite/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -182,7 +182,7 @@ export default function ModDetailClient({
     setFavoritePending(true);
     try {
       if (isFavorited) {
-        const response = await fetch(`/api/mods/${mod.id}/favorite`, {
+        const response = await fetch(`/api/mods/${mod.id}/favorite/`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -581,7 +581,7 @@ export default function ModDetailClient({
                   <div className="flex items-center justify-center gap-1 text-yellow-400 mb-1">
                     <Star size={18} className="fill-current" />
                     <span className="font-bold text-lg text-white">
-                      {typeof mod.rating === 'number' ? mod.rating.toFixed(1) : '4.5'}
+                      {typeof mod.rating === 'number' ? mod.rating.toFixed(1) : '—'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">{mod.ratingCount || 0} ratings</p>

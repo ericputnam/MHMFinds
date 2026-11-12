@@ -42,7 +42,9 @@ import {
   stillTimes,
 } from './short-video-motion-lib';
 
-const ROOT = resolve(__dirname, '..', '..');
+// Drafts and renders live under MHM_PROJECT_DIR when set (the video-queue job keeps them in a
+// persistent state dir, not a throwaway worktree); otherwise under this checkout.
+const ROOT = process.env.MHM_PROJECT_DIR?.trim() ? resolve(process.env.MHM_PROJECT_DIR.trim()) : resolve(__dirname, '..', '..');
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);

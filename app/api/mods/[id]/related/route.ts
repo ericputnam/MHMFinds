@@ -30,6 +30,9 @@ export async function GET(
         category: currentMod.category,
         gameVersion: currentMod.gameVersion || 'Sims 4',
         id: { not: id },
+        // Same visibility rule as the list route: never surface unverified or NSFW mods.
+        isVerified: true,
+        isNSFW: false,
       },
       select: {
         id: true,

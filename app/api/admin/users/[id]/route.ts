@@ -67,6 +67,17 @@ export async function PATCH(
         console.log(`✅ User ${user.email} promoted to ${isPromotingToAdmin ? 'admin' : 'premium'} - subscription upgraded to unlimited`);
       }
 
+      // Revoking premium must also downgrade the Subscription row. It used to stay
+      // `isPremium: true, clickLimit: -1`, so the two records disagreed forever.
+      // An admin keeps unlimited access, and a Stripe-paid subscription is left alone
+      // (cancel it in Stripe; the webhook downgrades the row).
+      if (body.isPremium === false && !user.isAdmin) {
+        await tx.subscription.updateMany({
+          where: { userId: params.id, stripeSubscriptionId: null },
+          data: { isPremium: false, clickLimit: 5 },
+        });
+      }
+
       return user;
     });
 
@@ -85,6 +96,12 @@ export async function DELETE(
     const session = await getServerSession(authOptions);
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Deleting your own account cascades to everything you own and can leave the
+    // site with no admin at all.
+    if (session.user.id === params.id) {
+      return NextResponse.json({ error: 'You cannot delete your own account' }, { status: 400 });
     }
 
     await prisma.user.delete({

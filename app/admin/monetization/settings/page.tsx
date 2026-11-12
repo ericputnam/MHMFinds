@@ -54,7 +54,7 @@ export default function SettingsPage() {
 
   const fetchConfigStatus = async () => {
     try {
-      const response = await fetch('/api/monetization/config/status');
+      const response = await fetch('/api/monetization/config/status/');
       const data = await response.json();
       setConfigs(data.configs);
     } catch (error) {
@@ -67,7 +67,7 @@ export default function SettingsPage() {
   const testConnection = async (apiKey: string) => {
     setTesting(apiKey);
     try {
-      const response = await fetch('/api/monetization/config/test', {
+      const response = await fetch('/api/monetization/config/test/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api: apiKey }),

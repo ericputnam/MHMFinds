@@ -156,7 +156,7 @@ export default function FacetDefinitionsPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/admin/facets');
+      const response = await fetch('/api/admin/facets/');
       if (!response.ok) {
         throw new Error('Failed to fetch facets');
       }
@@ -174,7 +174,7 @@ export default function FacetDefinitionsPage() {
   const handleCreate = async () => {
     try {
       setError(null);
-      const response = await fetch('/api/admin/facets', {
+      const response = await fetch('/api/admin/facets/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,16 +220,13 @@ export default function FacetDefinitionsPage() {
         isActive: facet.isActive,
       };
 
-      console.log('[Taxonomy] Updating facet:', facet.id, payload);
-
-      const response = await fetch(`/api/admin/facets/${facet.id}`, {
+      const response = await fetch(`/api/admin/facets/${facet.id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      console.log('[Taxonomy] Update response:', response.status, data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to update facet');
@@ -246,7 +243,7 @@ export default function FacetDefinitionsPage() {
   const handleToggleActive = async (facet: FacetDefinition) => {
     try {
       setError(null);
-      const response = await fetch(`/api/admin/facets/${facet.id}`, {
+      const response = await fetch(`/api/admin/facets/${facet.id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !facet.isActive }),
@@ -273,7 +270,7 @@ export default function FacetDefinitionsPage() {
 
     try {
       setError(null);
-      const response = await fetch(`/api/admin/facets/${facet.id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/admin/facets/${facet.id}/`, { method: 'DELETE' });
 
       if (!response.ok) {
         const data = await response.json();

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { SIMS4_COLLECTIONS } from '../lib/collections';
 import { Icon } from '../components/launcher/Icon';
 import { collectionCovers } from '../lib/collectionCovers';
+import { seasonalHubSlug } from '../lib/seasonalHub';
 
 /**
  * Server component: the homepage's "browse by collection" block.
@@ -51,7 +52,11 @@ const QUICK = ['hair-cc', 'clothes-cc', 'build-cc', 'makeup-cc', 'poses', 'kids-
 export function HomeCollectionStrip() {
   const links = homeCollectionLinks();
   const bySlug = new Map(links.map((l) => [l.slug, l]));
-  const quick = QUICK.map((s) => bySlug.get(s)).filter((l): l is NonNullable<typeof l> => !!l);
+  // E378: the in-season hub (Christmas in Nov–Dec, Halloween in Oct) leads the
+  // strip. lib/seasonalHub.ts has the windows and the demand numbers.
+  const season = seasonalHubSlug();
+  const slugs = season && !QUICK.includes(season) ? [season, ...QUICK] : QUICK;
+  const quick = slugs.map((s) => bySlug.get(s)).filter((l): l is NonNullable<typeof l> => !!l);
   const short = (h: string) => h.replace(/^Sims 4 /, '').replace(/ CC$/, '');
   return (
     <nav className="hero-colls" aria-label="Popular collections">

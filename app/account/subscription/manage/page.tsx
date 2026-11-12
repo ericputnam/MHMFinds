@@ -24,7 +24,7 @@ export default function ManageSubscriptionPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/subscription/portal', {
+      const response = await fetch('/api/subscription/portal/', {
         method: 'POST',
       });
 

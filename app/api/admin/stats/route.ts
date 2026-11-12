@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin, logAdminAction, getRequestMetadata } from '@/lib/auth/adminAuth';
 import { CACHE_TIERS, getCacheOptions } from '@/lib/cache-tiers';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/admin/stats
  * Get dashboard statistics for admin panel

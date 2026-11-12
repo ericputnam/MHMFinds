@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { CONFIRM_SOURCE } from '@/lib/services/subscribeConfirm';
 
 // Rate limiting map (in-memory - for production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -55,7 +56,12 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { email, source = 'sign-in' } = body;
+    const { email } = body;
+    // `source` is attribution only and comes from the client. The one value it may never
+    // carry is the re-permission consent marker — that row is written solely by the
+    // confirmed-link endpoint (/api/subscribe/confirm), never by an anonymous POST.
+    const requested = typeof body.source === 'string' ? body.source.trim().slice(0, 64) : '';
+    const source = requested && requested !== CONFIRM_SOURCE ? requested : 'sign-in';
 
     // Basic validation
     if (!email || typeof email !== 'string') {
@@ -93,15 +99,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add to waitlist
-    await prisma.waitlist.create({
-      data: {
-        email: email.toLowerCase(),
-        source: source,
-        ipAddress: ip,
-        userAgent: userAgent,
-      },
-    });
+    // Add to waitlist. Two requests for the same new address can both pass the check
+    // above; the loser hits the unique index (P2002). That is "already on the list",
+    // not a 500.
+    try {
+      await prisma.waitlist.create({
+        data: {
+          email: email.toLowerCase(),
+          source: source,
+          ipAddress: ip,
+          userAgent: userAgent,
+        },
+      });
+    } catch (createError: any) {
+      if (createError?.code !== 'P2002') throw createError;
+      return NextResponse.json(
+        { success: true, message: "You're already on the waitlist!", alreadyExists: true },
+        { status: 200 }
+      );
+    }
 
     return NextResponse.json(
       {

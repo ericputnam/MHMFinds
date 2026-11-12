@@ -68,6 +68,12 @@ async function main() {
     console.log('--- STRIP');
     for (const { r } of stripped) console.log(`  - ${r.downloadCount}\t${r.contentType}\t${r.gameVersion}${r.isNSFW ? ' NSFW' : ''}\t${r.title}`);
 
+    // A no-op run (e.g. the read-back after --apply) must never overwrite the rollback
+    // file of the run that did change rows (2026-11-09, #493 — see retag-headwear-theme.ts).
+    if (changes.length === 0) {
+      console.log('no changes — backup not written (an earlier run\'s rollback file is left intact).');
+      return;
+    }
     // Rollback artifact: every changed row's before/after themes. Written on the
     // dry run too, so the plan can be committed and reviewed before --apply, and
     // rewritten BEFORE the first write so a crash mid-apply still leaves the record.

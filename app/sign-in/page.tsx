@@ -143,7 +143,7 @@ export default function SignInPage() {
 
     try {
       // Create account via API
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/signup/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, username, isCreator }),
@@ -186,7 +186,7 @@ export default function SignInPage() {
       // Attributed on its own waitlist.source so the scoreboard counts it.
       if (wantsNewsletter) {
         try {
-          const optIn = await fetch('/api/waitlist', {
+          const optIn = await fetch('/api/waitlist/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, source: SIGNUP_OPTIN_SOURCE }),
@@ -254,7 +254,7 @@ export default function SignInPage() {
 
     try {
       const tier = pricingTiers[selectedTier as keyof typeof pricingTiers];
-      const response = await fetch('/api/subscription/create-checkout', {
+      const response = await fetch('/api/subscription/create-checkout/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId: tier.priceId }),
@@ -391,12 +391,12 @@ export default function SignInPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={8}
                       placeholder="••••••••"
                       className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent transition-all hover:bg-white/10"
                     />
                     {mode === 'signup' && (
-                      <p className="mt-2 text-xs text-slate-500">Minimum 6 characters</p>
+                      <p className="mt-2 text-xs text-slate-500">Minimum 8 characters</p>
                     )}
                   </div>
 

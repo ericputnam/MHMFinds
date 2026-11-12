@@ -130,7 +130,7 @@ export default function SubmitModPage() {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('/api/submit-mod', {
+      const response = await fetch('/api/submit-mod/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

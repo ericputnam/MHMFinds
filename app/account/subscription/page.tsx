@@ -30,7 +30,7 @@ export default function SubscriptionPage() {
 
   const fetchSubscription = async () => {
     try {
-      const response = await fetch('/api/subscription/check-limit', {
+      const response = await fetch('/api/subscription/check-limit/', {
         method: 'POST',
       });
       const data = await response.json();

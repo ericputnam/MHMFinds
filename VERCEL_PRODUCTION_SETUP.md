@@ -27,7 +27,7 @@ DEBUG=""
 
 # Admin Credentials
 ADMIN_USERNAME="adminuser45"
-ADMIN_PASSWORD="5GbHE%X9c%#tIg4i"
+ADMIN_PASSWORD="[YOUR_ADMIN_PASSWORD]"
 ```
 
 ### ⚠️ STRIPE PRODUCTION KEYS - Get Live Keys First:

@@ -115,7 +115,7 @@ function walk(dir: string, out: string[] = []): string[] {
 
 describe('class scanner: no favorite 401 ends in an alert', () => {
   const files = [...walk(join(ROOT, 'app')), ...walk(join(ROOT, 'components'))];
-  const favoriteFiles = files.filter((f) => /\/favorite`/.test(readFileSync(f, 'utf8')));
+  const favoriteFiles = files.filter((f) => /\/favorite\/?`/.test(readFileSync(f, 'utf8')));
 
   it('vacuity guard: the scan found the favorite callers', () => {
     expect(files.length).toBeGreaterThan(100);

@@ -44,6 +44,7 @@ import { LauncherBelow } from '../components/launcher/LauncherBelow';
 import { useFacetOptions, useGameCounts } from '../components/launcher/useLauncherData';
 import { GRID_FAVORITE_SOURCES } from '../lib/capture/gridFavorite';
 import { useGridFavoriteCapture } from '../lib/capture/useGridFavoriteCapture';
+import { useGridFavoriteIds, isAlreadyFavorited } from '../lib/capture/useGridFavoriteIds';
 
 interface HomePageClientProps {
   /**
@@ -93,6 +94,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
   const [contentType, setContentType] = useState(initialContentType);
   const [visualStyle, setVisualStyle] = useState(initialVisualStyle);
   const [favorites, setFavorites] = useState<string[]>([]);
+  useGridFavoriteIds(setFavorites); // signed-in: fill the hearts of mods already saved
   // E279: a signed-out heart tap goes to the save-intent sign-up and the
   // save completes on return (lib/capture/gridFavorite.ts).
   const { onUnauthorized } = useGridFavoriteCapture(routeGame ? GRID_FAVORITE_SOURCES.game : GRID_FAVORITE_SOURCES.home, (savedId) =>
@@ -180,7 +182,7 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
           break;
       }
 
-      const response = await fetch(`/api/mods?${apiParams.toString()}`);
+      const response = await fetch(`/api/mods/?${apiParams.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -266,14 +268,16 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
           : [...prev, modId]
       );
 
-      const response = await fetch(`/api/mods/${modId}/favorite`, {
+      const response = await fetch(`/api/mods/${modId}/favorite/`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      if (!response.ok) {
+      if (isAlreadyFavorited(isFavorited ? 'DELETE' : 'POST', response.status)) {
+        // Already saved server-side: the optimistic fill is the truth, keep it.
+      } else if (!response.ok) {
         // Revert optimistic update on error
         setFavorites(prev =>
           isFavorited

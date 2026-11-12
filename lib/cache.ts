@@ -162,87 +162,6 @@ export class CacheService {
   }
 
   /**
-   * Cache wrapper for individual mod details
-   */
-  static async getModDetail(modId: string): Promise<any | null> {
-    const cacheKey = `mod:${modId}`;
-    return await this.get(cacheKey);
-  }
-
-  static async setModDetail(modId: string, data: any): Promise<void> {
-    const cacheKey = `mod:${modId}`;
-    await this.set(cacheKey, data, this.TTL.MOD_DETAIL);
-  }
-
-  /**
-   * Cache wrapper for creator profiles
-   */
-  static async getCreatorProfile(creatorId: string): Promise<any | null> {
-    const cacheKey = `creator:${creatorId}`;
-    return await this.get(cacheKey);
-  }
-
-  static async setCreatorProfile(creatorId: string, data: any): Promise<void> {
-    const cacheKey = `creator:${creatorId}`;
-    await this.set(cacheKey, data, this.TTL.CREATOR_PROFILE);
-  }
-
-  /**
-   * Cache wrapper for search results
-   * Uses deterministic key generation for consistent cache hits
-   */
-  static async getSearchResults(query: string, filters: Record<string, any>): Promise<any | null> {
-    const cacheKey = this.generateDeterministicKey(`search:${query}`, filters);
-    return await this.get(cacheKey);
-  }
-
-  static async setSearchResults(query: string, filters: Record<string, any>, data: any): Promise<void> {
-    const cacheKey = this.generateDeterministicKey(`search:${query}`, filters);
-    await this.set(cacheKey, data, this.TTL.SEARCH_RESULTS);
-  }
-
-  /**
-   * Cache wrapper for facets (categories, tags, etc.)
-   * Uses longer TTL since facets are expensive to compute
-   */
-  static async getFacets(): Promise<any | null> {
-    const cacheKey = 'facets:all';
-    return await this.get(cacheKey);
-  }
-
-  static async setFacets(data: any): Promise<void> {
-    const cacheKey = 'facets:all';
-    await this.set(cacheKey, data, this.TTL.FACETS);
-  }
-
-  /**
-   * Cache wrapper for global facets (pre-computed, expensive)
-   * Used for facets that don't change with search filters
-   */
-  static async getGlobalFacets(): Promise<any | null> {
-    const cacheKey = 'facets:global';
-    return await this.get(cacheKey);
-  }
-
-  static async setGlobalFacets(data: any): Promise<void> {
-    const cacheKey = 'facets:global';
-    await this.set(cacheKey, data, this.TTL.FACETS_GLOBAL);
-  }
-
-  /**
-   * Cache wrapper for game-specific facets
-   */
-  static async getGameFacets(gameVersion: string): Promise<any | null> {
-    const cacheKey = `facets:game:${gameVersion}`;
-    return await this.get(cacheKey);
-  }
-
-  static async setGameFacets(gameVersion: string, data: any): Promise<void> {
-    const cacheKey = `facets:game:${gameVersion}`;
-    await this.set(cacheKey, data, this.TTL.FACETS);
-  }
-
-  /**
    * Cache wrapper for categories by game version
    */
   static async getGameCategories(gameVersion: string): Promise<string[] | null> {
@@ -268,15 +187,6 @@ export class CacheService {
   }
 
   /**
-   * Invalidate all caches related to a creator
-   * Call this when a creator profile is updated
-   */
-  static async invalidateCreator(creatorId: string): Promise<void> {
-    await this.del(`creator:${creatorId}`);
-    await this.invalidatePattern('mods:list:*');
-  }
-
-  /**
    * Clear all cache (use with caution)
    */
   static async clearAll(): Promise<void> {
@@ -288,26 +198,6 @@ export class CacheService {
       await redis.flushdb();
     } catch (error) {
       console.error('Cache clear error:', error);
-    }
-  }
-
-  /**
-   * Get cache statistics (for monitoring)
-   */
-  static async getStats(): Promise<{ isAvailable: boolean; keys?: number }> {
-    if (!redis) {
-      return { isAvailable: false };
-    }
-
-    try {
-      const keys = await redis.keys('*');
-      return {
-        isAvailable: true,
-        keys: keys.length,
-      };
-    } catch (error) {
-      console.error('Cache stats error:', error);
-      return { isAvailable: false };
     }
   }
 }

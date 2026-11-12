@@ -32,9 +32,10 @@ export const APP_LASTMOD = '2026-11-06';
 // advertised 11-01 for a page that changed 11-02; E329 bumped it 11-04);
 // "Share this list" button in the intro header 2026-11-06 (E352);
 // CollectionPage JSON-LD gains dateModified 2026-11-06 (E354);
-// descriptive anchor on the blog-twin link 2026-11-07 (E367).
+// descriptive anchor on the blog-twin link 2026-11-07 (E367);
+// "create a free account" link in the email block 2026-11-09 (E380).
 // Bump when the template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-07';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-09';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
@@ -47,8 +48,9 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-07';
 // suffix-split creator spellings folded 2026-11-06 (E356, #471). Bumped by E364;
 // ProfilePage JSON-LD gains dateModified 2026-11-06 (E355); that dateModified
 // becomes a full ISO 8601 DateTime 2026-11-07 (Search Console "Invalid
-// datetime value for dateModified" on Profile pages).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-07';
+// datetime value for dateModified" on Profile pages). Bumped 2026-11-11 for the
+// creator-hosted mod file upload (components/creator/HostedFileUpload.tsx).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-11';
 
 /**
  * Which source files each template constant stands for (E303, Sage,
@@ -81,7 +83,6 @@ export const TEMPLATE_LASTMOD_SOURCES: ReadonlyArray<{
     paths: [
       'app/page.tsx',
       'app/layout.tsx',
-      'components/Hero.tsx',
       'components/HomeCapture.tsx',
       'components/HomeJsonLd.tsx',
     ],

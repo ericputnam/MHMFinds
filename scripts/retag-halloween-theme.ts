@@ -70,6 +70,12 @@ async function main() {
       console.log('\nDRY RUN — nothing written. Re-run with --apply.');
       return;
     }
+    // A no-op run (e.g. the read-back after --apply) must never overwrite the rollback
+    // file of the run that did change rows (2026-11-09, #493 — see retag-headwear-theme.ts).
+    if (changes.length === 0) {
+      console.log('no changes — backup not written (an earlier run\'s rollback file is left intact).');
+      return;
+    }
     // Rollback artifact: every changed row's before/after themes, written
     // BEFORE the first write so a crash mid-apply still leaves the record.
     const backup = `reports/catalog/halloween-theme-retag-${new Date().toISOString().slice(0, 10)}.csv`;

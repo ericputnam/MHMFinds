@@ -67,13 +67,3 @@ export async function verifyTurnstileToken(
     };
   }
 }
-
-/**
- * Check if Turnstile is properly configured
- */
-export function isTurnstileConfigured(): boolean {
-  return !!(
-    process.env.TURNSTILE_SECRET_KEY &&
-    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-  );
-}

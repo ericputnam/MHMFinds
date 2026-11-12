@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ❌ Private keys, certificates, or encryption keys
 - ❌ OAuth client secrets
 - ❌ Webhook secrets
-- ❌ Any `.env*` files except `.env.example`
+- ❌ Any `.env*` files (the committed template is `env.example`, placeholders only)
 
 ### Required Actions:
 1. **Use placeholders in documentation**: Replace actual credentials with `[YOUR_KEY_HERE]` or `your-key-here`
@@ -27,12 +27,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    *.pem
    secrets/
    ```
-3. **Use `.env.example`**: Only commit example files with placeholders, never actual values
+3. **Use `env.example`**: the only env template; placeholders only, never actual values
 4. **Before committing**: Always review changes for exposed credentials
 5. **If exposed**: Immediately rotate credentials and remove from git history
 
 ### Safe Patterns:
-✅ `.env.example` with placeholders
+✅ `env.example` with placeholders
 ✅ Documentation with `[PLACEHOLDER]` values
 ✅ Instructions to "copy from .env.local"
 ✅ Links to credential providers (e.g., "Get from Stripe Dashboard")
@@ -422,18 +422,16 @@ If you add a new server-side feature anywhere that has a "push from local overwr
 
 ---
 
-## IMPORTANT: newapp_musthavemods Folder
+## IMPORTANT: the `newapp/` folder
 
-**The `/newapp_musthavemods` folder is a DESIGN REFERENCE ONLY.**
+**`/newapp` is a standalone Vite/React prototype, not part of the site.** It is excluded from
+`tsconfig.json` and never built or deployed. (This section used to name `/newapp_musthavemods`
+and component designs such as `ModDetailsModal`; neither exists.)
 
-- This folder contains a Vite/React proof-of-concept app showing the desired look and feel for UI components
-- **DO NOT** migrate the main Next.js app to use this Vite app
-- **DO NOT** try to run or start the newapp_musthavemods dev server
-- **INSTEAD**: Look at the component designs (ModDetailsModal, ModCard, etc.) in newapp_musthavemods as inspiration and apply the same visual design to the main Next.js app components
-- Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes)
-- Only adopt the UI/UX patterns, styling, and layout from newapp_musthavemods
+- **DO NOT** migrate the Next.js app to it, run its dev server, or develop in it.
+- Keep all existing backend functionality (PostgreSQL, Prisma, Next.js API routes).
 
-**Main development should ALWAYS happen in the root Next.js project, not in newapp_musthavemods.**
+**Main development ALWAYS happens in the root Next.js project.**
 
 ## Project Overview
 
@@ -485,11 +483,9 @@ The Vercel build command is: `npx prisma generate && next build`
 
 ### Content Aggregation
 ```bash
-npm run content:aggregate      # Run standard content aggregation
 npm run content:privacy        # Run privacy-enhanced aggregation (default settings)
 npm run content:stealth        # Run stealth mode aggregation (max privacy)
 npm run content:conservative   # Run conservative aggregation (slowest, safest)
-npm run content:test           # Test privacy aggregator without database writes
 ```
 
 ### Data Quality & Cleanup
@@ -548,11 +544,9 @@ npx tsx scripts/fix-null-content-types.ts --apply --verbose
   - `/api/auth/[...nextauth]` - NextAuth.js authentication handler
   - `/api/mods` - Mod CRUD endpoints
 - `/mods/[id]` - Dynamic mod detail pages
-- Multiple test pages for development (test/, working-test/, simple-main/, etc.)
 
 **`/lib`** - Core business logic and utilities
 - `/services` - Service layer containing business logic
-  - `contentAggregator.ts` - Standard web scraping service for CurseForge, Patreon
   - `privacyAggregator.ts` - Privacy-enhanced scraping with proxy support, user agent rotation, and anti-detection features
   - `mhmScraper.ts` - MustHaveMods.com scraper with content detection and URL freshness tracking
   - `contentTypeDetector.ts` - Intelligent content type detection (hair, furniture, makeup, etc.) with confidence levels
@@ -580,9 +574,7 @@ npx tsx scripts/fix-null-content-types.ts --apply --verbose
 - `SearchIndex` - Stores OpenAI embeddings (Float[]) and full-text vectors for AI search
 - `ContentSource` and `ScrapingJob` - Track content aggregation sources and jobs
 
-**Content Aggregation**: Two aggregator implementations:
-1. `contentAggregator.ts` - Basic scraping with cheerio/axios
-2. `privacyAggregator.ts` - Advanced scraping with proxy rotation, user agent spoofing, request timing randomization, and session management
+**Content Aggregation**: `privacyAggregator.ts` — scraping with proxy rotation, user agent spoofing, request timing randomization, and session management. Its pace comes from `lib/config/privacy.ts` (`PRIVACY_LEVEL`).
 
 **AI Search**: OpenAI embeddings (text-embedding-3-small) stored in SearchIndex.embedding field. AISearchService provides:
 - Semantic search with cosine similarity
@@ -639,13 +631,11 @@ Required for development (see env.example):
 
 **⚠️ DATABASE_URL vs DIRECT_DATABASE_URL**: These are often confused. `DATABASE_URL` should be the Accelerate URL (starts with `prisma+postgres://`) for caching. `DIRECT_DATABASE_URL` should be the direct postgres connection for migrations.
 
-Optional but mentioned in env.example:
-- Redis, Elasticsearch, AWS S3, SendGrid (not currently implemented)
+Optional (see env.example):
+- `REDIS_URL` + `REDIS_TOKEN` (Upstash, `https://` only), `SENDGRID_API_KEY` (fallback when SMTP is unset)
 - `PRIVACY_LEVEL` - Set to "stealth" or "conservative" for content aggregation
 
 ## Testing and Development
-
-Multiple test pages exist in `/app` for rapid UI prototyping. These should be consolidated or removed before production deployment.
 
 When adding new mods via aggregation, call `aiSearchService.updateSearchIndex(modId)` to generate embeddings for AI search functionality.
 
@@ -775,7 +765,7 @@ run died with `Prompt is too long`.
 - **`next.config.js` stamps every `/api/*` response `public, s-maxage=60`** and overrides a route's
   own `no-store` (seen under `next start`, #219). A per-user GET (favorites, session state) must not
   depend on its own header. Add a per-request nonce, or exempt the path in `next.config.js`
-  (Tier 2). Check `x-vercel-cache` after deploy.
+  (Tier 2; since #502 the exempt list is in `next.config.js`). Check `x-vercel-cache` after deploy.
 - **A secret check fails closed.** `if (secret && header !== …)` lets every request through
   when the env var is unset — "works" in tests, open in production. Write `if (!secret || …)`
   and a test with the var unset (#226).
@@ -925,51 +915,53 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-03 — rotated to the archive
+### 2026-10-15 → 11-09 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10.
 
-### 2026-11-06 (covers merges #469–#477; no compound review ran 11-04 or 11-05)
+### 2026-11-10 (covers #502 and three direct-to-`main` audit commits)
 
-8 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify. Creator fold, share links, the
-IndexNow `/mods/` kill and the headless write refusal are in the archive (11-06 subsystem entries).
+A project audit landed as 97ee5083 (bugs, secrets), 91483615 (4,128 dead lines removed) and
+#502 (security, payments, catalog), plus runner fix 072a9d91. No funnel merges, 0 rollbacks.
+Subsystem details are in the archive (11-10).
 
-- **Grade a change on the unit it changes, not on one it dilutes (E360, #470).** The Launcher
-  (#388, #396) adds pageviews, so impressions per pageview fell by construction: page RPM fell
-  29% on home and 32% on collections. Over the same weeks surface revenue rose 22% / 59% and
-  revenue per 1k site sessions rose 29% / 68%. The page-RPM keep floor graded both "harmed". `gradeBucket()` now puts its one-sided floor on revenue per 1k site
-  sessions (exact compare, `unknown` without sessions); page RPM is diagnostic only. Anything that
-  adds pages, steps or clicks makes every per-pageview metric look worse.
-- **A red guard on `main` does not stop a merge, so it stays red (E364, #472).** #467 and #471
-  merged while `template-lastmod-git-guard` was already red. The ship protocol runs one test file,
-  not the suite. After #471 changed the creator template, three PRs (#472, and #473 twice) each
-  had to bump `CREATOR_TEMPLATE_LASTMOD` again. Rule: the PR that changes a template bumps its
-  `*_TEMPLATE_LASTMOD` in the same PR, and runs the guards on the rebased branch, not only its own
-  test. Ops also found 4 timing flakes under full-suite load: re-run once and name the test, never
-  skip the suite.
-- **A source-level test must parse the structure, not match one exact line (#472).** The feeds
-  and catalog-count import checks broke when #437 added a second specifier to an import. They now
-  parse named imports (`__tests__/helpers/namedImports.ts`). In the same PR, `shareCard.ts` (#467)
-  and `HomeJsonLd` were found hard-coding "17,000+". Both now read `CATALOG_FINDS`, and the test
-  derives its threshold from that constant (≥ half of it is a catalogue claim). Collection "N,000+"
-  copy is checked against its own `expectedCount`.
-- **Changing a cadence means changing every number derived from it (E358, #469).** The newsletter
-  went biweekly on 10-29; the builder stayed weekly. The issue number read 09 (should be 08), picks
-  came from 7 days so week 1 of every gap never reached a reader, the copy said "this week", and the
-  new subject was missing from `CAMPAIGN_SUBJECTS`, so DSNs would not attribute. Grep for the old
-  period everywhere.
-- **The operator queue is not the only channel. Before acting on an item or calling it
-  unanswered, read the rows it would change (E327).** The queue said "no operator replies since
-  11-02", but the operator had approved all 3 submissions by hand in admin on 11-05. Nova's dry
-  run read the 3 rows as not-pending and stopped. Its rollback cannot undo an out-of-band approval.
-- **Still open:** the first Vercel build of a merge still ERRORs on the platform side (#473 and
-  #474 today; both went READY on the ledger commit). The un-nonced per-user fetch in
-  `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`) is also unfixed.
+- **A standing rule stops nothing until a scanner enforces it.** CLAUDE.md has said "a secret
+  check fails closed" since #226 (09-30), but `cron/commission-sync` and `cron/monetization-agent`
+  still had `if (cronSecret && …)` six weeks later. The #219 bullet named the `s-maxage=60`
+  problem, and no path was exempted until #502. `__tests__/unit/audit-bug-fixes.test.ts` covers
+  only the routes it names. When you write a rule here, grep the tree for its pattern in the same
+  PR. Add a scanner when the pattern can come back.
+- **Fire-and-forget is wrong in a serverless webhook.** The Stripe webhook returned 200 and ran
+  `processWebhookEvent(event).catch(…)` without awaiting it. The function can freeze once the
+  response is sent, and Stripe never retries a 200, so a paid checkout could silently never
+  become premium. Await the work and return 500 on failure so the sender retries (the handler
+  must be idempotent).
+- **A flag that two writers share needs each writer to check the other.** `User.isPremium` is
+  set by both Stripe and Patreon. On every sign-in by a non-patron, the Patreon sign-in callback
+  wrote `isPremium = false` and cleared Stripe-paid premium. A writer may only revoke what it
+  granted.
+- **A proxy forwards an allowlist of cookies, never the whole `Cookie` header.** The WordPress
+  proxy in `middleware.ts` sent the visitor's NextAuth session token to the blog origin.
+  `wordpressCookies()` now keeps only `wordpress_` / `wp-` / `wp_` / `comment_` cookies.
+- **Rank before you page.** `/api/creators/rankings` took the first 50 profiles by `createdAt`
+  and sorted only those, so `/top-creators` showed the 50 *oldest* creators in favorites order.
+  Sort the whole population, then slice. Clamp `limit` (1..100) on every paged read.
+- **Don't assign `where.OR` in a Prisma filter builder.** A second assignment replaces the
+  first. The unisex gender filter in `/api/mods` replaced the search clause, so the search box
+  was ignored whenever "unisex" was selected. Add each `OR` group to `where.AND`.
+- **JSON-LD bodies go through `serializeJsonLd()` (`lib/jsonLd.ts`).** Plain `JSON.stringify`
+  leaves `<` as-is, so a scraped title containing `</script>` closes the tag. (`app/layout.tsx`
+  is the one raw exception: static constants only.)
+- **A client-supplied attribution field must never be able to carry a consent marker.**
+  `/api/waitlist` accepted any `source`, including `CONFIRM_SOURCE`, the re-permission marker
+  that only `/api/subscribe/confirm` may write. An anonymous POST could therefore forge a
+  confirmed consent.
+- **Closed:** the 11-09 rollback-CSV bug. All 11 `retag-*-theme.ts` scripts now skip a no-op write.
 
 ---
 
-*Last compound review: 2026-11-06*
+*Last compound review: 2026-11-10*
 
 ---
 

@@ -2926,6 +2926,265 @@ row after its `TIMEOUT`. The first Vercel build of a merge still ERRORs.
   `reports/funnel/quinn-pending-2026-11-06.md` for the next run to apply, and queued a permission
   ask. Leaving the edits on disk and unapplied is the right failure mode.
 
+### 2026-11-06 — rotated from CLAUDE.md
+
+(covers merges #469–#477; no compound review ran 11-04 or 11-05)
+
+8 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify. Creator fold, share links, the
+IndexNow `/mods/` kill and the headless write refusal are in the archive (11-06 subsystem entries).
+
+- **Grade a change on the unit it changes, not on one it dilutes (E360, #470).** The Launcher
+  (#388, #396) adds pageviews, so impressions per pageview fell by construction: page RPM fell
+  29% on home and 32% on collections. Over the same weeks surface revenue rose 22% / 59% and
+  revenue per 1k site sessions rose 29% / 68%. The page-RPM keep floor graded both "harmed". `gradeBucket()` now puts its one-sided floor on revenue per 1k site
+  sessions (exact compare, `unknown` without sessions); page RPM is diagnostic only. Anything that
+  adds pages, steps or clicks makes every per-pageview metric look worse.
+- **A red guard on `main` does not stop a merge, so it stays red (E364, #472).** #467 and #471
+  merged while `template-lastmod-git-guard` was already red. The ship protocol runs one test file,
+  not the suite. After #471 changed the creator template, three PRs (#472, and #473 twice) each
+  had to bump `CREATOR_TEMPLATE_LASTMOD` again. Rule: the PR that changes a template bumps its
+  `*_TEMPLATE_LASTMOD` in the same PR, and runs the guards on the rebased branch, not only its own
+  test. Ops also found 4 timing flakes under full-suite load: re-run once and name the test, never
+  skip the suite.
+- **A source-level test must parse the structure, not match one exact line (#472).** The feeds
+  and catalog-count import checks broke when #437 added a second specifier to an import. They now
+  parse named imports (`__tests__/helpers/namedImports.ts`). In the same PR, `shareCard.ts` (#467)
+  and `HomeJsonLd` were found hard-coding "17,000+". Both now read `CATALOG_FINDS`, and the test
+  derives its threshold from that constant (≥ half of it is a catalogue claim). Collection "N,000+"
+  copy is checked against its own `expectedCount`.
+- **Changing a cadence means changing every number derived from it (E358, #469).** The newsletter
+  went biweekly on 10-29; the builder stayed weekly. The issue number read 09 (should be 08), picks
+  came from 7 days so week 1 of every gap never reached a reader, the copy said "this week", and the
+  new subject was missing from `CAMPAIGN_SUBJECTS`, so DSNs would not attribute. Grep for the old
+  period everywhere.
+- **The operator queue is not the only channel. Before acting on an item or calling it
+  unanswered, read the rows it would change (E327).** The queue said "no operator replies since
+  11-02", but the operator had approved all 3 submissions by hand in admin on 11-05. Nova's dry
+  run read the 3 rows as not-pending and stopped. Its rollback cannot undo an out-of-band approval.
+- **Still open:** the first Vercel build of a merge still ERRORs on the platform side (#473 and
+  #474 today; both went READY on the ledger commit). The un-nonced per-user fetch in
+  `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`) is also unfixed.
+
+### 2026-11-07 — subsystem entries (written directly to the archive)
+
+- **Backfill from a third party's public API on a frozen plan, and stop on the first signal it
+  does not want you (E370, #486).** `patreon-author-backfill.ts` reads `/api/posts/<id>?include=
+  campaign` with an honest UA and stops on any 429 or a blanket 401/403. It never touches a real
+  author, skips `is_nsfw` campaigns (500 rows), and cuts tagline names at " | ". A slug-lossy name
+  falls back to the vanity. A name that matches an unrelated vanity's page is skipped as ambiguous
+  (28). Frozen plan: 3,050 rows, 791 authors, 208 pages grown, 159 new. The plan JSON is committed,
+  so the apply is reproducible.
+- **A new theme follows the title-only pattern and records its rejections (E373, #482).**
+  `lib/sanrioThemeRules.ts` rejected bare `kitty` (8), bare `melody` (3) and `kawaii` (18). Applied
+  29 added / 0 stripped, every row read. Legacy `/sims-4-hello-kitty-cc/` drew 1,230 impr / 18 clk
+  at pos 7.9 with no browse page behind it.
+- **Bing losses sat on pages with no Next.js inbound link (E366, #481).** Bing-index sessions on 8
+  WordPress guides fell 3,178 → 2,541 per 14d (−20.0%), and none of them had a link from a Next.js
+  page. Each was added to the `guides` of the hub that owns the neighbouring query. The new test
+  was red on the pre-fix registry (8 of 8). The 34 hub twins fell −8.0% over the same window (E367).
+- **A one-day CPM dip with no deploy in the window is not a rollback signal (E372, #479).** 11-04
+  CPM fell 4.9% and 11-05 recovered +2.1%. The 7-day −7.5% was Halloween-weekend volume. E342
+  KEEP.
+- **New hubs that collide with an ingest mapping get a `KNOWN_GAP`, not a widened PR (E369,
+  #483).** `facial-hair-cc`'s blogUrl maps to `hair` in the URL map. It was recorded and left
+  for its own item.
+
+
+### 2026-11-07 — rotated from CLAUDE.md
+
+(covers merges #478–#486)
+
+9 PRs merged, 0 rollbacks, 5xx/15m = 0 on every verify, and no first-build platform ERROR (it hit
+#473/#474 on 11-06). The Patreon author backfill, the hello-kitty hub, the Bing hub links and the
+Rio CPM verdict are in the archive (11-07 subsystem entries).
+
+- **`tsx` does not type-check, so an `--apply` can write what `tsc` would reject (E373, #482).**
+  Rowan added a pin to `HAND_AUDITED_CONTENT_TYPES` for a row that already had an E214 `null` pin,
+  then ran `--apply`. In JS a duplicate object key means the last one wins, so the DB took
+  `full-body` over the deliberate `null`. Only the later `type-check` caught it (TS1117), and the
+  row needed a correcting apply plus a restore file. Rule: before you pin a row, grep the registry
+  for its id. Run `npm run type-check` **before** any `--apply` that reads a registry you just
+  edited, not after.
+- **Check a schema.org property's type, not just its name (#485).** E355 (#476) gave ProfilePage
+  `dateModified` the date-only sitemap stamp. Google types that field as `DateTime`, and Search
+  Console flagged every profile the next day. A sitemap `lastmod` (date OK) and a JSON-LD
+  `DateTime` can share a source day but need different formats, so each gets its own helper
+  (`creatorDateModified()`). The guard walks `app/` and `components/` for any ProfilePage fed a
+  date-only value. The PR also bumped `CREATOR_TEMPLATE_LASTMOD`, so the 11-06 rule held.
+- **Derive a repeated label from the data, never one hand-written string (E367, #484).** All 34
+  hubs linked their blog twin with the same anchor, "Full article on the blog". The anchor now
+  comes from the twin's slug (`lib/seo/blogTwinLabel.ts`), so a new hub cannot get the generic
+  text back.
+- **One quota error must not MISS the whole run (E374, #480).** On 11-03 one model's 429
+  ("out of usage credits") killed the morning. The preflight now retries on
+  `FUNNEL_FALLBACK_MODELS`, but **only** when the failure is classified as QUOTA. Auth or network
+  failures are never retried, because a retry would hide them. Quinn's prompt carries a MODEL
+  FALLBACK line, so specialists are not routed back to the 429'd model and the digest says so.
+- **Still open:** the ledger mixes time zones. `deploy-verify.sh` writes local time, but the
+  hand-written E373 apply rows were stamped in UTC (`11:45`, five hours "after" the 06:56 merge
+  they rode). Write ledger rows in the ledger's own clock. Also still open: the un-nonced per-user
+  fetch in `components/admin/CreatorDashboard.tsx:52` (`/api/creator/submissions`).
+
+### 2026-11-08 — subsystem entries (written directly to the archive)
+
+- **Video queue phase 1 (#487, #488).** The `mhm-video-queue` WP plugin gives the writer a queue
+  (approve / request changes with a note / reject / unapprove) and an ideas page. It adds Video
+  Reviewer and Video Bot roles and an authenticated REST API with chunked upload, finalized only
+  after a sha256 match. Files live outside the web root and are streamed with Range support. On
+  the Mac side, `scripts/agents/video-queue.ts` runs a weekly job (Sun 10:00) and a nightly
+  revisions job (21:00). Checks refuse placeholder creators ("Simfileshare", "Updated File"),
+  NSFW, opt-outs, broken images, the wrong size or length, and banned phrasing. Revisions keep
+  the writer's caption edits and rebuild only the credits inside them (`mergeCredits`).
+  `docs/VIDEO_QUEUE.md` has the install and stop steps. The plugin was installed and activated on
+  prod at 18:20.
+
+### 2026-11-08 — rotated from CLAUDE.md
+
+(covers merges #487–#488)
+
+2 PRs merged (both operator-session video-queue work), 0 rollbacks, 5xx/15m = 0 on the verify. No
+funnel PRs. Video-queue design details are in the archive (11-08 subsystem entries).
+
+- **A scheduled job must not run a file out of a working checkout (#488).** Both video-queue
+  plists pointed at `run-video-queue.sh` in the main checkout. That checkout was on a branch where
+  the file did not exist, so whichever branch the operator had checked out decided what ran.
+  Now launchd runs a small launcher from `~/.mhm-video-queue/bin/` that does `git fetch` and runs
+  `git show origin/main:<runner>` from a temp file. The runner then builds its own worktree of
+  `origin/main`. The first live run (11-08 21:23) ran at `6d06235f` and exited cleanly. Any new
+  launchd/cron entry follows this pattern.
+- **Probe a URL the site is meant to serve, and name the expected code for each state (#488).**
+  The plugin push script checked `wp-login.php`, which `wps-hide-login` 404s on purpose, so every
+  push read as broken. It now checks three URLs: home with a cache-buster (forces PHP, not the
+  page cache) = 200, `/wp-json/` = 200, and the plugin route = 401 (loaded) or 404 (not yet
+  active).
+- **Check for work before you start the expensive agent (#488).** The nightly revisions job asks
+  the CLI how many videos are marked "changes requested" and exits at 0 (most nights) without
+  starting Claude. A parse failure prints `?` and the job runs anyway. A cheap pre-check
+  that cannot be read must fail toward doing the work, never toward silence.
+- **New WordPress server code goes in its own plugin, not `functions.php` (#487).** The video
+  queue is a separate plugin with its own push script. That script lints on the server, then swaps
+  folders (`.new` → live) and keeps a backup. Its data lives in posts/meta and its files sit
+  outside the web root, so replacing the folder loses nothing. That avoids the scp-overwrite
+  class that wiped the Mediavine sidebar.
+- **Still open — two silent days, no MISSED row for either.** The 11-07 run got through Quinn
+  (06:38 → 07:40), then the runner log stops at `cleanup: waiting…` and never logs `released`. The
+  11-07 scoreboard, digest and `history.json` never reached `main`; the last daily-run commit is
+  #477 (11-06). On 11-08 the morning run never started (the Mac was asleep; `pmset` shows only a
+  05:02 DarkWake). The only 11-08 ledger row is `check: morning-check` at 17:43, written by a
+  `FUNNEL_DRY_RUN=1` run, so it looks like a normal morning.
+  The runner writes its own MISSED row, so a run that never started leaves no record.
+  Also, the last six guardrail lines in the log all **withheld** auto-rollback (in-window deploys 75–128 vs
+  the bound of 24 from #255). At the current deploy rate the RED rollback path cannot fire. Still
+  open from 11-07: ledger time zones, and the un-nonced fetch in `CreatorDashboard.tsx:52`.
+
+### 2026-11-09 — subsystem entries (written directly to the archive)
+
+- **Video queue phase 2 (#489).** Approved videos post to YouTube (Shorts) and TikTok once their
+  slot passes. WP-cron runs every 5 min, and the Mac runs `POST /post-due` every 15 min as a
+  catch-up. Nothing posts until an admin connects an account under Videos → Posting. The
+  defaults are YouTube Private and TikTok inbox draft. Tokens are sealed with libsodium in
+  options that don't autoload, and never reach HTML, REST, logs or the Mac. The OAuth callback
+  requires a state issued in the last 10 min plus the same browser's cookie. A lock prevents
+  overlapping runs. `posting` is written before any network call. A platform that has posted is
+  never posted again for that video. Network errors get one retry. A file changed after approval
+  goes back to review. Every failure emails the alert address. TikTok direct mode needs the
+  disclosure/consent controls on the Approve form, validated on the server. Operator steps
+  (OAuth apps, launchd `com.mhmfinds.video-post-due`, SMTP) are in `docs/VIDEO_QUEUE.md`.
+- **Hubs (#493, #494).** `hats-cc`: 152 cards on the title-only `headwear` theme
+  (`lib/headwearThemeRules.ts`). 153 rows added, rollback CSV
+  `reports/funnel/headwear-theme-retag-2026-11-09.csv`. Rejected keywords with counts are kept
+  in the rule's comment: crown 47, tiara 10, headband 15, hood 5, veil 18. `eyebrows-cc`: 127
+  brows inside the eyes-cc union, with 3 Caroll Design makeup sets pinned to `makeup` in
+  `hand-audited-content-types.ts` § E377. It sits before eyes-cc/makeup-cc so it becomes the
+  primary crumb. Both read 11-23.
+- **Internal links to WordPress guides (#495, #497).** 13 holiday guides and the 10 top-120
+  organic landings with the largest 14d loss had no inbound link from any Next.js page. They
+  were added to hub `guides`. Each has a test that keeps every treated href on a hub (red on
+  origin/main). The keep-if is site-adjusted and seasonal-adjusted (×1.54 from last year).
+  Reads 11-24.
+- **Seasonal homepage pill (#496).** `lib/seasonalHub.ts` maps UTC date windows to hubs
+  (christmas-cc Nov 1–Dec 31, halloween-cc Oct). `HomeCollectionStrip` leads with the in-season
+  hub. This works because `app/page.tsx` is force-dynamic. On a static page the pill would freeze
+  at build time.
+- **Rio E381 (#492).** The 7d −7.8% split into ex-segment sessions −8.05% × RPM +0.30%. The
+  10-31/11-01 weekend was 99.8% of the gap. Weekday-matched RPM was +3.7%. Closed as volume,
+  re-read 11-11.
+- **Cass E380 (#490).** The hub email block had 974 viewers and 0 sign-ups in 7d. It gained the
+  home strip's "create a free account" link (`account_cta_click{collection-page}`). Reads 11-23.
+
+### 2026-11-09 — rotated from CLAUDE.md
+
+10 PRs merged (8 funnel, the video-queue phase 2 plugin, the daily-run PR), 0 rollbacks, every
+after-merge verify PASS. Hub, retag, seasonal and video-queue details are in the archive (11-09
+subsystem entries).
+
+- **A build must not depend on the network (#491).** `next/font/google` fetches from
+  fonts.gstatic.com during `next build`. It timed out 5 times in 5 days (#468, #473, #474,
+  6d06235, 7895670) and each time looked like a broken PR. The launcher fonts are now
+  `next/font/local` woff2 files in `components/launcher/fonts/`.
+  `__tests__/unit/no-google-fonts-at-build.test.ts` fails if `next/font/google` comes back.
+  If a Vercel BUILD ERROR follows a PR that never touched the app, read
+  `vercel inspect <url> --logs` for `ETIMEDOUT`/`FetchError` before you blame the change.
+- **A rollback artifact is written once, by the run that changes data (#493).** The heels-shaped
+  retag scripts rewrote their rollback CSV on every run, so a no-op read-back run replaced the
+  real before-state with an empty diff. `retag-headwear-theme.ts` skips the write when nothing
+  changes. Any other retag script copied from heels still has this bug. Fix it before its next `--apply`.
+- **Record "started" before the side effect and "done" after it. A job that writes only "done"
+  reads as "never ran" when it dies.** Two runs did that this week: the 11-07 funnel run wrote
+  its digest and then died at cleanup, and the E370 apply wrote 2,423 of 3,050 rows and then
+  died before its `applied` flag. Both looked like "did not run" for two days. Only reading back
+  the worktree files and the DB rows found them (recovered in #499 and ledger `c56ea9d4`). The
+  video poster (#489) does this right: it writes `posting` before any upload, and a run that dies
+  leaves a "failed (uncertain)" row that needs a manual Retry, never a second upload. Before you
+  call something "did not run", read back what it would have produced.
+- **Never name a GA4 event parameter `source`.** GA4 reserves it. Each event that sends it
+  starts a fake session: 361 in 11-01→11-07 (222 from home-hero), all counted as "other" in
+  the non-Pinterest headline. Queued for the operator: register the `ui_source` custom dimension,
+  then rename the param in the `app/layout.tsx` gtag snippet. Register the dimension first, or
+  the rename breaks the existing reads. Check new event params against GA4's reserved names.
+- **Name a theme so it can't be confused with a content type (#493).** The hat theme is
+  `headwear`, not `hats`, because the `hats` content type is only 64.5% hats (a "Vintage Coach
+  Bag" was card #2). The theme is title-only, like every room theme. It is kept out of
+  `FACET_VALUES.themes`, and a test checks that.
+- **Still open:** Quinn's `.claude/agents/` writes were refused for the third run in a row (Q43),
+  so three pending registry files are waiting on the operator. 11-03 and 11-08 were MISSED
+  because the Mac was asleep.
+
+### 2026-11-10 — subsystem entries (written directly to the archive)
+
+- **Shell: try GNU `stat -c %Y` before BSD `stat -f %m`.** On Linux, `stat -f` prints
+  filesystem info and exits non-zero, so `a || b` captures two values and the arithmetic fails
+  (rc 127). `merge-gate.sh` already used the GNU-first order. The runner's lock checks now match (072a9d91).
+- **Audit sweep (97ee5083, 91483615, #502).** Other fixes not called out in CLAUDE.md:
+  - Grid favorites. `lib/capture/useGridFavoriteIds.ts` loads the signed-in visitor's saved
+    mods. A duplicate save is now treated as "saved", so a favorite can be removed from a grid.
+    Favorites DELETE of a missing row is a no-op, not a 500.
+  - Downloads from a grid are counted once, at the `/go` interstitial, not twice.
+  - Related and more-from-creator lists apply the verified + non-NSFW filter.
+  - Rejecting a submission requires it to be pending.
+  - Experiments capture their baseline on start. Nothing else called `captureBaseline`, so
+    every `evaluateExperiment` threw "No baseline RPM captured".
+  - `privacyAggregator` read hardcoded default delays, so `content:stealth` and
+    `content:conservative` ran at the default pace. It now reads `getPrivacyConfig()` at call
+    time. Its import dedupes on `sourceId` only when one exists.
+  - `subscription.updated` tolerates a missing period end, unknown statuses and unknown
+    subscriptions.
+  - The checkout cancel URL now points at a page that exists.
+  - Analytics UA parsing checks Edge/Opera before Chrome and Android/iOS before Linux/macOS.
+  - 13 GET routes that read the session or `request.url` gained `force-dynamic`.
+  - `next.config.js` now sends `private, no-store` for `/api/account`, `/api/admin`,
+    `/api/auth`, `/api/creator`, `/api/monetization`, `/api/subscription`, `/api/cron`,
+    `/api/webhooks` and `/api/mods/:id/favorite`. These later header entries override the
+    blanket `s-maxage=60`. A new per-user API path needs an entry here.
+  - `create-admin.ts` has no default password and never prints one. `manage-env.sh` prints
+    variable names only.
+  - Removed: 21 finished one-off scripts, 35 uncalled exports in `lib/`,
+    `components/Hero.tsx`, `FacetedSidebar` and `admin/CreatorDashboard`. Check git history
+    before you rebuild any of them.
+  - Never return a default the data lacks. The mod page showed a 4.5 rating for unrated
+    mods, and the monetization learning page showed `implementedAt` as "now". A missing value
+    renders as missing.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

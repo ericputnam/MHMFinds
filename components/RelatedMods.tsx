@@ -31,7 +31,7 @@ export function RelatedMods({ modId, category, gameVersion }: RelatedModsProps) 
     const fetchRelated = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/mods/${modId}/related`);
+        const response = await fetch(`/api/mods/${modId}/related/`);
         if (!response.ok) return;
         const data = await response.json();
         setMods(data);

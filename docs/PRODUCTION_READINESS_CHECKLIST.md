@@ -264,7 +264,7 @@ This checklist ensures MHMFinds is secure, performant, and ready for production 
   - See: `VERCEL_DEPLOYMENT.md#vercel-configuration`
 
 - [ ] 🔴 **Configure all environment variables in Vercel** (1-2 hours)
-  - Use `.env.example` as reference
+  - Use `env.example` as reference
   - Set for Production, Preview, Development environments
   - Double-check all secrets are correct
 

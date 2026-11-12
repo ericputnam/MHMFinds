@@ -1,3 +1,4 @@
+import { serializeJsonLd } from '@/lib/jsonLd';
 import { Suspense } from 'react';
 import HomePageClient from './HomePageClient';
 import { HomeCollections, HomeCollectionStrip, homeCollectionLinks } from './HomeCollections';
@@ -42,7 +43,7 @@ function CollectionsJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemList) }}
     />
   );
 }

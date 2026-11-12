@@ -14,7 +14,12 @@ import bcrypt from 'bcryptjs';
  */
 async function createAdminUser() {
   const username = process.env.ADMIN_USERNAME || 'adminuser45';
-  const password = process.env.ADMIN_PASSWORD || '5GbHE%X9c%#tIg4i';
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password) {
+    // No fallback: a default password in source is a committed secret.
+    console.error('ADMIN_PASSWORD is not set. Run: ADMIN_PASSWORD=... npm run admin:create');
+    process.exit(1);
+  }
   const email = `${username}@admin.local`;
 
   console.log('🔧 Admin User Setup');
@@ -90,7 +95,7 @@ async function createAdminUser() {
     console.log('✅ Admin user created successfully!');
     console.log('\n📝 Login credentials:');
     console.log(`   Username: ${username}`);
-    console.log(`   Password: ${password}`);
+    console.log('   Password: (the ADMIN_PASSWORD you supplied — not printed)');
     console.log(`   Email: ${email}`);
     console.log('\n⚠️  IMPORTANT: Change the password after first login!');
     console.log('🔗 Admin dashboard: http://localhost:3000/admin');

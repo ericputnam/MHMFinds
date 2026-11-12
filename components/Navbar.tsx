@@ -41,7 +41,7 @@ export const Navbar: React.FC = () => {
 
   const handleManageSubscription = async () => {
     try {
-      const response = await fetch('/api/subscription/portal', {
+      const response = await fetch('/api/subscription/portal/', {
         method: 'POST',
       });
 

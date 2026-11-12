@@ -22,6 +22,8 @@ import { GALLERY_POSE_THEME, isGalleryPoseTitle } from '../galleryPoseThemeRules
 import { PLUMBOB_THEME, isPlumbobTitle } from '../plumbobThemeRules';
 import { HEELS_THEME, isHeelsTitle } from '../heelsThemeRules';
 import { SANRIO_THEME, isSanrioTitle } from '../sanrioThemeRules';
+import { HEADWEAR_THEME, isHeadwearTitle } from '../headwearThemeRules';
+import { VICTORIAN_THEME, isVictorianTitle } from '../victorianThemeRules';
 import { CHRISTMAS_THEME, isChristmasTitle } from '../christmasThemeRules';
 import { PIERCING_THEME, isPiercingTitle } from '../piercingThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
@@ -1172,6 +1174,20 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Headwear theme — title only, whole words (E382; see lib/headwearThemeRules.ts).
+  if (isHeadwearTitle(title) && !detectedThemes.includes(HEADWEAR_THEME)) {
+    detectedThemes.push(HEADWEAR_THEME);
+    allMatchedKeywords.push(HEADWEAR_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
+  // Victorian theme — title only, whole words (E393; see lib/victorianThemeRules.ts).
+  if (isVictorianTitle(title) && !detectedThemes.includes(VICTORIAN_THEME)) {
+    detectedThemes.push(VICTORIAN_THEME);
+    allMatchedKeywords.push(VICTORIAN_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Sanrio theme — title only, whole words (E373; see lib/sanrioThemeRules.ts).
   if (isSanrioTitle(title) && !detectedThemes.includes(SANRIO_THEME)) {
     detectedThemes.push(SANRIO_THEME);
@@ -1199,89 +1215,6 @@ export function detectRoomThemesWithConfidence(
   };
 }
 
-// ============================================
-// BATCH PROCESSING UTILITIES
-// ============================================
-
-/**
- * Batch detect content types for multiple mods
- *
- * @param mods - Array of mods with title and optional description
- * @returns Array of detection results
- */
-export function batchDetectContentTypes(
-  mods: Array<{ id: string; title: string; description?: string | null }>
-): Array<{ id: string; result: DetectionResult }> {
-  return mods.map(mod => ({
-    id: mod.id,
-    result: detectContentTypeWithConfidence(mod.title, mod.description || undefined),
-  }));
-}
-
-/**
- * Batch detect room themes for multiple mods
- *
- * @param mods - Array of mods with title and optional description
- * @returns Array of room theme results
- */
-export function batchDetectRoomThemes(
-  mods: Array<{ id: string; title: string; description?: string | null }>
-): Array<{ id: string; result: RoomThemeResult }> {
-  return mods.map(mod => ({
-    id: mod.id,
-    result: detectRoomThemesWithConfidence(mod.title, mod.description || undefined),
-  }));
-}
-
-// ============================================
-// VALIDATION HELPERS
-// ============================================
-
-/**
- * Check if a suggested content type differs from the current one
- * and should be considered for update
- *
- * @param currentType - Current content type
- * @param suggestedType - Suggested content type from detection
- * @param confidence - Confidence level of the suggestion
- * @returns Whether the update should be applied
- */
-export function shouldUpdateContentType(
-  currentType: string | null | undefined,
-  suggestedType: string | undefined,
-  confidence: ConfidenceLevel
-): boolean {
-  // Don't update if no suggestion
-  if (!suggestedType) {
-    return false;
-  }
-
-  // Always update if current is null
-  if (!currentType) {
-    return confidence !== 'low';
-  }
-
-  // Don't update if same
-  if (currentType === suggestedType) {
-    return false;
-  }
-
-  // Only update with high confidence if current type exists
-  // This prevents overwriting valid categorizations with uncertain ones
-  return confidence === 'high';
-}
-
-/**
- * Get all valid content types that this detector supports
- */
-export function getSupportedContentTypes(): string[] {
-  const types = new Set<string>();
-  for (const rule of CONTENT_TYPE_RULES) {
-    types.add(rule.contentType);
-  }
-  return Array.from(types).sort();
-}
-
 /**
  * Get all valid room themes that this detector supports
  */
@@ -1289,5 +1222,5 @@ export function getSupportedRoomThemes(): string[] {
   // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
   // a theme to its own rule file silently drops it from this list (bedroom
   // was missing here from #170 until 2026-09-25).
-  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME, PLUMBOB_THEME, HEELS_THEME, SANRIO_THEME].sort();
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME, PLUMBOB_THEME, HEELS_THEME, SANRIO_THEME, HEADWEAR_THEME, VICTORIAN_THEME].sort();
 }

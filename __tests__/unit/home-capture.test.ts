@@ -82,7 +82,7 @@ describe('HomeCapture — attribution', () => {
     // The signup handler is the one that POSTs /api/auth/signup; the sign-in
     // handler earlier in the file also calls signIn('credentials'), so every
     // index is taken from the signup POST forward.
-    const signupPost = signIn.indexOf("fetch('/api/auth/signup'");
+    const signupPost = signIn.indexOf("fetch('/api/auth/signup/'");
     expect(signupPost).toBeGreaterThan(0);
     const ok = signIn.indexOf('if (!response.ok)', signupPost);
     const evt = signIn.indexOf("'sign_up'", signupPost);

@@ -46,7 +46,7 @@ export default function UsersPage() {
         ...(searchQuery && { search: searchQuery }),
       });
 
-      const response = await fetch(`/api/admin/users?${params}`);
+      const response = await fetch(`/api/admin/users/?${params}`);
       const data = await response.json();
       setUsers(data.users || []);
       setTotalPages(data.totalPages || 1);
@@ -59,7 +59,7 @@ export default function UsersPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/users/stats');
+      const response = await fetch('/api/admin/users/stats/');
       const data = await response.json();
       setStats(data);
     } catch (error) {
@@ -79,7 +79,7 @@ export default function UsersPage() {
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
 
-      const response = await fetch(`/api/admin/users/export?${params}`);
+      const response = await fetch(`/api/admin/users/export/?${params}`);
       const blob = await response.blob();
 
       // Create download link
@@ -101,7 +101,7 @@ export default function UsersPage() {
 
   const handleUpdate = async (user: User) => {
     try {
-      await fetch(`/api/admin/users/${user.id}`, {
+      await fetch(`/api/admin/users/${user.id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -121,7 +121,7 @@ export default function UsersPage() {
     if (!confirm('Delete this user? This action cannot be undone.')) return;
 
     try {
-      await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/users/${id}/`, { method: 'DELETE' });
       fetchUsers();
     } catch (error) {
       console.error('Delete failed:', error);

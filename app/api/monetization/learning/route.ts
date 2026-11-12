@@ -5,6 +5,9 @@ import { actionQueue } from '@/lib/services/actionQueue';
 import { agentLearning } from '@/lib/services/agentLearning';
 import { impactTracker } from '@/lib/services/impactTracker';
 
+// Reads the session / request URL, so it can never be statically rendered.
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const session = await getServerSession(authOptions);
 
@@ -44,7 +47,7 @@ export async function GET() {
         title: opp.title,
         opportunityType: opp.opportunityType,
         estimatedRevenueImpact: estimated,
-        implementedAt: new Date().toISOString(),
+        implementedAt: opp.implementedAt ? opp.implementedAt.toISOString() : null,
         actions: opp.actions.map(a => ({
           actionType: a.actionType,
           measuredImpact: a.measuredImpact ? Number(a.measuredImpact) : null,

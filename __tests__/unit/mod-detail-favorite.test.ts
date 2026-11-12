@@ -91,7 +91,7 @@ describe('ModDetailClient — favorite button is wired to the API', () => {
   });
 
   it('POSTs and DELETEs /api/mods/[id]/favorite', () => {
-    expect(src).toMatch(/fetch\(`\/api\/mods\/\$\{mod\.id\}\/favorite`/);
+    expect(src).toMatch(/fetch\(`\/api\/mods\/\$\{mod\.id\}\/favorite\/`/);
     expect(src).toMatch(/method:\s*['"]POST['"]/);
     expect(src).toMatch(/method:\s*['"]DELETE['"]/);
   });

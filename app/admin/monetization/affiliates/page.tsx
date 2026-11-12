@@ -120,11 +120,11 @@ export default function AffiliatesAdminPage() {
 
   const fetchOffers = async () => {
     try {
-      const response = await fetch('/api/affiliates?limit=100');
+      const response = await fetch('/api/affiliates/?limit=100');
       const data = await response.json();
 
       // Also fetch inactive offers for admin view
-      const allResponse = await fetch('/api/admin/affiliates');
+      const allResponse = await fetch('/api/admin/affiliates/');
       if (allResponse.ok) {
         const allData = await allResponse.json();
         setOffers(allData.offers || []);
@@ -180,7 +180,7 @@ export default function AffiliatesAdminPage() {
     if (!confirm('Are you sure you want to delete this affiliate offer?')) return;
 
     try {
-      const response = await fetch(`/api/affiliates/${id}`, {
+      const response = await fetch(`/api/affiliates/${id}/`, {
         method: 'DELETE',
       });
 
@@ -203,7 +203,7 @@ export default function AffiliatesAdminPage() {
     );
 
     try {
-      const response = await fetch(`/api/affiliates/${offer.id}`, {
+      const response = await fetch(`/api/affiliates/${offer.id}/`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: newIsActive }),

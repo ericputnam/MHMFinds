@@ -15,7 +15,7 @@ export default function NewModPage() {
       price: formData.isFree ? null : formData.price ? parseFloat(formData.price) : null,
     };
 
-    const response = await fetch('/api/admin/mods', {
+    const response = await fetch('/api/admin/mods/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(modData),

@@ -54,7 +54,7 @@ export function AffiliateRecommendations({ modId, themes, sourceType = 'mod_page
 
       try {
         setLoading(true);
-        const response = await fetch('/api/affiliates/match', {
+        const response = await fetch('/api/affiliates/match/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

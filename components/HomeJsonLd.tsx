@@ -1,3 +1,4 @@
+import { serializeJsonLd } from '@/lib/jsonLd';
 import { HOME_SHELL_LASTMOD } from '@/lib/seo/siteLastmod';
 import { CATALOG_FINDS } from '@/lib/seo/catalogCount';
 
@@ -91,7 +92,7 @@ export function HomeJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(homePageJsonLd()) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(homePageJsonLd()) }}
     />
   );
 }

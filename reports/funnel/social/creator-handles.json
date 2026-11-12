@@ -1,0 +1,19 @@
+{
+  "_readme": "Confirmed creator handles for video credits (docs/SHORT_VIDEO_RUNBOOK.md \"Tagging creators\"). Only add a row when the creator links the account from a page they control. Read by scripts/agents/video-queue.ts.",
+  "creators": [
+    {
+      "creator": "TBZSimz",
+      "tiktok": "@tbzsimz",
+      "youtube": "@tbzsimz",
+      "confirmed_from": "flow.page/tbzsimz links both",
+      "date": "2026-11-03"
+    },
+    {
+      "creator": "redheadsims",
+      "tiktok": "@redheadsimscc",
+      "youtube": "@RedheadSimsCC",
+      "confirmed_from": "linktr.ee/redheadsims lists the YouTube; the TikTok bio links that Linktree",
+      "date": "2026-11-03"
+    }
+  ]
+}

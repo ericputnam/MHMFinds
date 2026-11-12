@@ -25,6 +25,7 @@ import { badgeHref } from '../../../lib/creatorBadge';
 import { CreatorClaimCard } from '../../../components/creator/CreatorClaimCard';
 import { GRID_FAVORITE_SOURCES } from '../../../lib/capture/gridFavorite';
 import { useGridFavoriteCapture } from '../../../lib/capture/useGridFavoriteCapture';
+import { useGridFavoriteIds, isAlreadyFavorited } from '../../../lib/capture/useGridFavoriteIds';
 
 interface CreatorPageClientProps {
   data: CreatorPageData;
@@ -37,6 +38,7 @@ interface CreatorPageClientProps {
 export default function CreatorPageClient({ data, related = [], hubs = [] }: CreatorPageClientProps) {
   const [mods] = useState<Mod[]>(data.mods);
   const [favorites, setFavorites] = useState<string[]>([]);
+  useGridFavoriteIds(setFavorites); // signed-in: fill the hearts of mods already saved
   // E279: a signed-out heart tap goes to the save-intent sign-up and the
   // save completes on return (lib/capture/gridFavorite.ts).
   const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.creator, (savedId) =>
@@ -49,11 +51,12 @@ export default function CreatorPageClient({ data, related = [], hubs = [] }: Cre
       isFavorited ? prev.filter((id) => id !== modId) : [...prev, modId],
     );
     try {
-      const response = await fetch(`/api/mods/${modId}/favorite`, {
+      const response = await fetch(`/api/mods/${modId}/favorite/`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!response.ok) {
+      // 400 on POST = already saved server-side: keep the optimistic fill.
+      if (!response.ok && !isAlreadyFavorited(isFavorited ? 'DELETE' : 'POST', response.status)) {
         setFavorites((prev) =>
           isFavorited ? [...prev, modId] : prev.filter((id) => id !== modId),
         );

@@ -22,7 +22,7 @@ interface ImplementedOpportunity {
   title: string;
   opportunityType: string;
   estimatedRevenueImpact: number | null;
-  implementedAt: string;
+  implementedAt: string | null;
   actions: {
     actionType: string;
     measuredImpact: number | null;
@@ -102,7 +102,7 @@ export default function LearningPage() {
 
   const fetchLearningData = async () => {
     try {
-      const response = await fetch('/api/monetization/learning');
+      const response = await fetch('/api/monetization/learning/');
       const data = await response.json();
       setOpportunities(data.opportunities || []);
       setStats(data.stats || null);
@@ -365,7 +365,7 @@ export default function LearningPage() {
                       <div className="col-span-2">
                         <div className="font-medium text-white truncate">{opp.title}</div>
                         <div className="text-xs text-slate-500">
-                          Implemented {new Date(opp.implementedAt).toLocaleDateString()}
+                          Implemented {opp.implementedAt ? new Date(opp.implementedAt).toLocaleDateString() : 'date not recorded'}
                         </div>
                       </div>
                       <div className="text-sm text-slate-400">

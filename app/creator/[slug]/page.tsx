@@ -11,6 +11,7 @@
  * with the creator's mods, download totals and their real off-site link.
  */
 
+import { serializeJsonLd } from '@/lib/jsonLd';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../lib/creators';
@@ -124,7 +125,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   const jsonLd = buildJsonLd(data);
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <CreatorPageClient data={data} related={related} hubs={hubs} />
     </>
   );

@@ -16,11 +16,11 @@ This guide explains how to manage environment variables for MHMFinds across loca
 ```
 MHMFinds/
 ├── .env                    # Local development (gitignored)
-├── .env.example           # Template with documentation
+├── env.example            # Template with documentation (the only one)
 ├── .env.production        # Production values (gitignored)
 └── scripts/
-    ├── sync-env-to-vercel.js   # Node.js script to upload to Vercel
-    └── sync-env-to-vercel.sh   # Bash script (alternative)
+    └── sync-env-to-vercel.js   # Node.js script to upload to Vercel
+
 ```
 
 **IMPORTANT:** Both `.env` and `.env.production` are gitignored. Never commit these files!
@@ -433,7 +433,7 @@ vercel env add REDIS_URL production
 ### 1. Never Commit Secrets
 - ✅ `.env` is in `.gitignore`
 - ✅ `.env.production` is in `.gitignore`
-- ✅ Only commit `.env.example` (with placeholders)
+- ✅ Only commit `env.example` (with placeholders)
 
 ### 2. Use Different Secrets in Production
 - ✅ Different `NEXTAUTH_SECRET`
@@ -442,7 +442,7 @@ vercel env add REDIS_URL production
 - ✅ Different Turnstile keys (real, not test)
 
 ### 3. Document Your Variables
-- Keep `.env.example` up to date with all variables
+- Keep `env.example` up to date with all variables
 - Add comments explaining what each variable is for
 - Document how to obtain API keys
 
@@ -487,7 +487,7 @@ openssl rand -hex 32     # For CRON_SECRET
 
 - Local development: `.env`
 - Production values: `.env.production`
-- Template/documentation: `.env.example`
+- Template/documentation: `env.example`
 - Upload script: `scripts/sync-env-to-vercel.js`
 
 ### Important URLs

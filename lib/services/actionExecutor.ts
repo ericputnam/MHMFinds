@@ -436,15 +436,6 @@ export class ActionExecutor {
   }
 
   /**
-   * Reset the circuit breaker (admin action)
-   */
-  resetCircuitBreaker(): void {
-    this.circuitBreakerOpen = false;
-    this.recentFailures = [];
-    console.log('✅ Circuit breaker has been reset');
-  }
-
-  /**
    * Record execution in the log
    */
   private async recordExecution(

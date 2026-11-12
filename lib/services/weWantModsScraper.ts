@@ -434,21 +434,6 @@ export function mapUrlCategoryToContentType(urlCategory: string | undefined): Ca
 }
 
 /**
- * Get all unmapped categories encountered during this session.
- * Useful for identifying new categories to add to the map.
- */
-export function getUnmappedCategories(): string[] {
-  return Array.from(unmappedCategories);
-}
-
-/**
- * Clear the unmapped categories set (useful for testing)
- */
-export function clearUnmappedCategories(): void {
-  unmappedCategories.clear();
-}
-
-/**
  * Extract the category segment from a WM (wewantmods.com) URL.
  * URL structure: wewantmods.com/sims4/{category}/{item-slug}
  *

@@ -1,0 +1,453 @@
+{
+ "writtenAt": "2026-11-11T11:47:40.607Z",
+ "mode": "apply",
+ "facets": [
+  "dresses"
+ ],
+ "rows": [
+  {
+   "id": "cmil32fbd0098oxpzad9p6fzq",
+   "title": "Aura Stockings",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8zpu0019roxy8vgw7dgf9",
+   "title": "Black Cat 4’s",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmijqj585001uox8o84qac5a5",
+   "title": "Myori Hair",
+   "from": "dresses",
+   "to": "hair"
+  },
+  {
+   "id": "cmim8wy1f00sroxy8uqd17am0",
+   "title": "Kiki Bikini",
+   "from": "dresses",
+   "to": "full-body"
+  },
+  {
+   "id": "cmim9ncui00j4oxy7tn0cm7in",
+   "title": "Barbie CC Kids Room Stuff Pack",
+   "from": "dresses",
+   "to": "furniture"
+  },
+  {
+   "id": "cmmvaqdxb007hoxzg1uz1d8dw",
+   "title": "Agnes Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8s4pd0049oxy8leaqiatn",
+   "title": "Versace Sandals",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmkxxsjcl000yoxhc1uv85tek",
+   "title": "Melanique Maxis Match Genetics",
+   "from": "dresses",
+   "to": null
+  },
+  {
+   "id": "cmikk5c8d004cox33njw8o19c",
+   "title": "Tempo Heel Sandals",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmijnvl5j00kaoxc8tez8uv9f",
+   "title": "Heat Mule Heels",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmijo7nwk00p2oxc8rlvc1q1n",
+   "title": "Glitter Bow Stilettos S594",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8vbzx00hsoxy89maxn7b7",
+   "title": "Deadly Toddlers",
+   "from": "dresses",
+   "to": null
+  },
+  {
+   "id": "cmijl2n1u005aoxc8oc2anixp",
+   "title": "Senior Trip Mod",
+   "from": "dresses",
+   "to": "gameplay-mod"
+  },
+  {
+   "id": "cmim8zb4z0178oxy8qmilo06q",
+   "title": "Imani Hair",
+   "from": "dresses",
+   "to": "hair"
+  },
+  {
+   "id": "cmijpt5s7017zoxc8jak3s6ia",
+   "title": "Flos Fairy Wings",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmsmb2in8000hoxeu92kiqnnr",
+   "title": "Female Apron Accessory",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8zlny0197oxy8sjgb9b2e",
+   "title": "Tiffany Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaoua2002hoxzg8fd44k0y",
+   "title": "Cambridge Lovers Knot Necklace v2",
+   "from": "dresses",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmim8y0de00zvoxy8ndjbkwf0",
+   "title": "Tights Jessica",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmkxze8e50063oxhcthamrlwt",
+   "title": "Maxis Match Skin N28",
+   "from": "dresses",
+   "to": "skin"
+  },
+  {
+   "id": "cmmvaouq2002moxzg6c3hhs1y",
+   "title": "Faith of the Seven Necklace",
+   "from": "dresses",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmijo5djw00o9oxc8l2y4o346",
+   "title": "Black Toe Stiletto S566",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zrfs01ajoxy8miygmw65",
+   "title": "Simple Mary Jane",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmikd8uy8001poxbhn167dp6p",
+   "title": "Syla Swimsuit",
+   "from": "dresses",
+   "to": "full-body"
+  },
+  {
+   "id": "cmky2onab00dqoxhc6vqfy8yr",
+   "title": "N29  Skin Maxis Match",
+   "from": "dresses",
+   "to": "skin"
+  },
+  {
+   "id": "cmmvapswo005woxzgasqwza85",
+   "title": "Maxis Match Sneakers for Kids & Toddlers",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmd0n11011voxeuxacpi7lx",
+   "title": "Elastic Sweatband",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmjh4kz08001joxyvgkqfykux",
+   "title": "Toddler Leather Shiny Flats With Flower",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaro7000aroxzgs4km81kh",
+   "title": "Ivory Constellation Earrings",
+   "from": "dresses",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmil1cpg400bwoxeejat4z5k2",
+   "title": "Cute Tights",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmil1aluo00b7oxeelli838mj",
+   "title": "Ripped Stockings",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmmvaqeay007noxzgp8fcz43l",
+   "title": "Boots N02 Kids",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmcnoml00uvoxeuy1wxn8ze",
+   "title": "Dirty Tank Top",
+   "from": "dresses",
+   "to": "tops"
+  },
+  {
+   "id": "cmsmcof7f00v5oxeu1angr7iy",
+   "title": "Sugar Wide Leg Pants",
+   "from": "dresses",
+   "to": "bottoms"
+  },
+  {
+   "id": "cmsmbc14m005eoxeua4lywi6x",
+   "title": "Child Mary Jane Heels",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1at7f00bcoxeefds6jdah",
+   "title": "Helgatisha Fishnet Tights Set 2",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmsmbrq5000duoxeurzdja74m",
+   "title": "Royal Earrings Set",
+   "from": "dresses",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmsmc6bbc00lkoxeua1wu02ar",
+   "title": "Min-Jun Sim",
+   "from": "dresses",
+   "to": null
+  },
+  {
+   "id": "cmijpshja017ioxc8fmirnu0h",
+   "title": "Fairy Wings",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim8wy3v00ssoxy8d7feuffp",
+   "title": "Camuflaje’s Summer in Mykonos – Swimsuit iv",
+   "from": "dresses",
+   "to": "full-body"
+  },
+  {
+   "id": "cmikkej42008wox33akd086am",
+   "title": "Toddler Sandals With Flower Pattern",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmikknapq00dtox33kl3aqc34",
+   "title": "Espadrilles Wedges",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil17u9n00a8oxeewpmeuzss",
+   "title": "Print Sandals",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8zatq0173oxy85ieop6wb",
+   "title": "Claire Hairstyle",
+   "from": "dresses",
+   "to": "hair"
+  },
+  {
+   "id": "cmim8xvtr00z0oxy8oqr947r1",
+   "title": "Ryan Gosling Hairstyle",
+   "from": "dresses",
+   "to": "hair"
+  },
+  {
+   "id": "cmim924xn01pioxy8eqnc9z05",
+   "title": "Bloom Hair",
+   "from": "dresses",
+   "to": "hair"
+  },
+  {
+   "id": "cmmvarom600ayoxzgtcifkfgv",
+   "title": "Flatform Without Strap",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1aggk00b4oxeevzvv2v07",
+   "title": "Stocking Set",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmikknm3y00e2ox33mouvovd1",
+   "title": "Wedge Heel Slippers",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmbmvpq00b3oxeuf167t26r",
+   "title": "High Heel Cowboy Shoes",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvarog700avoxzgf62mo7jn",
+   "title": "Pearl Strap Stiletto Heel",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmikkmw3x00diox33f3bo4d1b",
+   "title": "Micaella Heels",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmil1n6au00gtoxee6htw0ht1",
+   "title": "Lunar Acc Belt",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmik9vepx00bkoxk7qic4cilc",
+   "title": "Pearl Necklace",
+   "from": "dresses",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmsmbkuv700a3oxeu5t06t0u6",
+   "title": "Heart Heels",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmb2qs7000noxeu7sw3nee1",
+   "title": "Decades of Aprons",
+   "from": "dresses",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijqm0yw003dox8ofy3fxua7",
+   "title": "Sleek Low Bun",
+   "from": "dresses",
+   "to": "hair"
+  },
+  {
+   "id": "cmikixjwc007uoxna54e0hq2a",
+   "title": "Crazy Funky Dress Crew Socks",
+   "from": "dresses",
+   "to": null
+  },
+  {
+   "id": "cmsmbc29q005foxeulg9fisxb",
+   "title": "Mermalade Seaside Stroll Strappy Sandals",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmbdpwl006doxeugovxn2qs",
+   "title": "Shoes KP1G – Toddler",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmijkz548004xoxc89a2wsrr8",
+   "title": "Gata High Heels",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8x5ye00tqoxy8zwu4vuj9",
+   "title": "Toddler Swimsuit",
+   "from": "dresses",
+   "to": "full-body"
+  },
+  {
+   "id": "cmikdb4vy002toxbhadlxtgur",
+   "title": "Barbie Sim",
+   "from": "dresses",
+   "to": null
+  },
+  {
+   "id": "cmijmxs37008toxc8svme2187",
+   "title": "Twine and Succulent Witch Hats",
+   "from": "dresses",
+   "to": "hats"
+  },
+  {
+   "id": "cmijp0q5400tvoxc8pcrcue02",
+   "title": "Modern Luxury Dressing Room Part 2",
+   "from": "dresses",
+   "to": "furniture"
+  },
+  {
+   "id": "cmsmbmrg300b0oxeuw0gk2ai5",
+   "title": "Cowboy Carter Tour: Stuart Weitzman",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaqdg30079oxzgsftlwx3g",
+   "title": "Suede Whisper Boots Set",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaqdme007coxzgvbkrxzft",
+   "title": "Doc Knee High Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaqdqo007eoxzgaf1bks35",
+   "title": "Countdown Thigh Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaqdsx007foxzgh6p2j94i",
+   "title": "Purple Flower Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaqdv0007goxzg2lptbeij",
+   "title": "Bowline Knee-High Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvaqeqt007poxzg1fylko68",
+   "title": "Leather Boots Womenswear",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmbmz4000b6oxeukde46yad",
+   "title": "Cowboy Boots",
+   "from": "dresses",
+   "to": "shoes"
+  },
+  {
+   "id": "cmmvarca8009voxzgfdciju9v",
+   "title": "Pink Gemstone Diamond Dangle Earrings",
+   "from": "dresses",
+   "to": "jewelry"
+  }
+ ]
+}

@@ -30,12 +30,13 @@ export function ProtectedDownloadButton({
     e.preventDefault();
     e.stopPropagation();
 
-    // Track download in analytics for ALL users (authenticated + anonymous)
-    trackDownload(modId);
+    // The interstitial (/go/[modId]) records the download when the visitor proceeds.
+    // Tracking here as well counted every grid download twice.
+    if (!useInterstitial) trackDownload(modId);
 
     // Track for subscription rate limiting (authenticated users only)
     if (status === 'authenticated') {
-      fetch('/api/subscription/track-click', {
+      fetch('/api/subscription/track-click/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ modId })

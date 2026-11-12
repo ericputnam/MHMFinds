@@ -129,12 +129,11 @@ export async function DELETE(
     const modId = params.id;
 
     // Delete favorite
-    await prisma.favorite.delete({
+    // deleteMany: removing a favorite that is already gone is a no-op, not a 500 (P2025).
+    await prisma.favorite.deleteMany({
       where: {
-        userId_modId: {
-          userId: session.user.id,
-          modId: modId,
-        },
+        userId: session.user.id,
+        modId: modId,
       },
     });
 

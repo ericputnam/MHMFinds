@@ -222,92 +222,6 @@ export class ActionQueue {
   }
 
   /**
-   * Get approved actions ready for execution
-   */
-  async getApprovedActions(): Promise<
-    {
-      id: string;
-      actionType: ActionType;
-      actionData: Prisma.JsonValue;
-      opportunity: {
-        id: string;
-        title: string;
-        pageUrl: string | null;
-        modId: string | null;
-      };
-    }[]
-  > {
-    return prisma.monetizationAction.findMany({
-      where: {
-        status: 'APPROVED',
-        executedAt: null,
-      },
-      select: {
-        id: true,
-        actionType: true,
-        actionData: true,
-        opportunity: {
-          select: {
-            id: true,
-            title: true,
-            pageUrl: true,
-            modId: true,
-          },
-        },
-      },
-    });
-  }
-
-  /**
-   * Mark an action as executed with pre/post metrics
-   */
-  async markActionExecuted(
-    id: string,
-    preMetrics?: Prisma.InputJsonValue,
-    postMetrics?: Prisma.InputJsonValue
-  ): Promise<void> {
-    await prisma.$transaction(async (tx) => {
-      // Update the action
-      await tx.monetizationAction.update({
-        where: { id },
-        data: {
-          status: 'EXECUTED',
-          executedAt: new Date(),
-          preExecutionMetrics: preMetrics,
-          postExecutionMetrics: postMetrics,
-        },
-      });
-
-      // Get the opportunity
-      const action = await tx.monetizationAction.findUnique({
-        where: { id },
-        select: { opportunityId: true },
-      });
-
-      if (action) {
-        // Check if all actions are executed
-        const pendingActions = await tx.monetizationAction.count({
-          where: {
-            opportunityId: action.opportunityId,
-            status: { not: 'EXECUTED' },
-          },
-        });
-
-        // If all actions executed, mark opportunity as implemented
-        if (pendingActions === 0) {
-          await tx.monetizationOpportunity.update({
-            where: { id: action.opportunityId },
-            data: {
-              status: 'IMPLEMENTED',
-              implementedAt: new Date(),
-            },
-          });
-        }
-      }
-    });
-  }
-
-  /**
    * Get queue statistics
    */
   async getQueueStats(): Promise<QueueStats> {
@@ -369,6 +283,7 @@ export class ActionQueue {
       title: string;
       opportunityType: OpportunityType;
       estimatedRevenueImpact: Prisma.Decimal | null;
+      implementedAt: Date | null;
       actions: {
         actionType: ActionType;
         measuredImpact: Prisma.Decimal | null;
@@ -386,6 +301,7 @@ export class ActionQueue {
         title: true,
         opportunityType: true,
         estimatedRevenueImpact: true,
+        implementedAt: true,
         actions: {
           select: {
             actionType: true,

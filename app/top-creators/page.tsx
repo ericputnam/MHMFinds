@@ -32,7 +32,7 @@ export default function CreatorsPage() {
   const fetchCreators = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/creators/rankings');
+      const response = await fetch('/api/creators/rankings/');
 
       if (!response.ok) {
         throw new Error('Failed to fetch creators');
@@ -241,7 +241,7 @@ export default function CreatorsPage() {
                           {/* Actions */}
                           <div className="mt-4 flex gap-3">
                             <a
-                              href={`/?creator=${creator.handle}`}
+                              href={`/?creator=${encodeURIComponent(creator.handle)}`}
                               className="bg-sims-pink hover:bg-sims-pink/90 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 text-sm"
                             >
                               View Mods

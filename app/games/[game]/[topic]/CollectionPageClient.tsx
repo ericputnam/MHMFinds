@@ -43,6 +43,12 @@ import type { ModLink } from '../../../../lib/seo/collectionMoreLinks';
 import { blogTwinLinkText } from '../../../../lib/seo/blogTwinLabel';
 import { GRID_FAVORITE_SOURCES } from '../../../../lib/capture/gridFavorite';
 import { useGridFavoriteCapture } from '../../../../lib/capture/useGridFavoriteCapture';
+import { useGridFavoriteIds, isAlreadyFavorited } from '../../../../lib/capture/useGridFavoriteIds';
+import {
+  COLLECTION_ACCOUNT_CTA_EVENT,
+  COLLECTION_CAPTURE_SOURCE,
+  collectionAccountHref,
+} from '../../../../lib/capture/collectionAccountOffer';
 
 interface CollectionPageClientProps {
   collection: CollectionDefinition;
@@ -79,6 +85,7 @@ export default function CollectionPageClient({
   const gameCounts = useGameCounts();
   const [mods] = useState<Mod[]>(initialMods);
   const [favorites, setFavorites] = useState<string[]>([]);
+  useGridFavoriteIds(setFavorites); // signed-in: fill the hearts of mods already saved
   // E279: a signed-out heart tap goes to the save-intent sign-up and the
   // save completes on return (lib/capture/gridFavorite.ts).
   const { onUnauthorized } = useGridFavoriteCapture(GRID_FAVORITE_SOURCES.collection, (savedId) =>
@@ -103,6 +110,15 @@ export default function CollectionPageClient({
 
   const goToGame = useCallback(() => router.push(gamePath), [router, gamePath]);
 
+  // E380: the click side of the hub's account offer (analytics only).
+  const handleAccountCtaClick = () => {
+    (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
+      'event',
+      COLLECTION_ACCOUNT_CTA_EVENT,
+      { source: COLLECTION_CAPTURE_SOURCE },
+    );
+  };
+
   const handleFavorite = async (modId: string) => {
     const isFavorited = favorites.includes(modId);
 
@@ -112,11 +128,12 @@ export default function CollectionPageClient({
     );
 
     try {
-      const response = await fetch(`/api/mods/${modId}/favorite`, {
+      const response = await fetch(`/api/mods/${modId}/favorite/`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!response.ok) {
+      // 400 on POST = already saved server-side: keep the optimistic fill.
+      if (!response.ok && !isAlreadyFavorited(isFavorited ? 'DELETE' : 'POST', response.status)) {
         // Rollback
         setFavorites((prev) =>
           isFavorited ? [...prev, modId] : prev.filter((id) => id !== modId),
@@ -271,7 +288,16 @@ export default function CollectionPageClient({
                 </h2>
                 <p className="ef-copy">
                   Get the freshest {collection.title.toLowerCase()} drops delivered straight to your inbox — no spam,
-                  unsubscribe anytime.
+                  unsubscribe anytime. Or{' '}
+                  {/* E380: the account alternative the home strip already
+                      carries (4 clicks → 4 sign-ups 11-02→11-08). */}
+                  <Link
+                    href={collectionAccountHref(collectionHref(collection))}
+                    onClick={handleAccountCtaClick}
+                  >
+                    create a free account
+                  </Link>{' '}
+                  to save finds as you browse.
                 </p>
                 <NewsletterSignup source="collection-page" variant="strip" />
               </div>

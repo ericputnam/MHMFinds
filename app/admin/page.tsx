@@ -46,7 +46,7 @@ function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/stats');
+      const response = await fetch('/api/admin/stats/');
       if (!response.ok) {
         const error = await response.json();
         console.error('Failed to fetch stats:', error);

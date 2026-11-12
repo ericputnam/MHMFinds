@@ -40,6 +40,7 @@ describe('API /api/admin/submissions/[id]/reject', () => {
       id: 'submission-1',
       modName: 'Test Mod',
       submitterEmail: 'creator@example.com',
+      status: 'pending',
     } as any);
 
     mockPrismaClient.modSubmission.update.mockResolvedValue({ id: 'submission-1' } as any);

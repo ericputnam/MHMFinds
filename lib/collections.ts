@@ -169,7 +169,18 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // E203 (2026-10-14): the hospital-lots guide is where pregnancy
     // visitors go to give birth (Pandasama's hospital lot + childbirth
     // mod are its top queries). See the `guides` doc on the type.
-    guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
+    // E376 (Pip, 2026-11-09): the ten WordPress guides that lost the most
+    // organic search landings (GA4, all engines) with no inbound link from
+    // any Next.js page: 10-11→10-24 3,231 → 10-25→11-07 2,811 (−13.0%)
+    // while site organic went 41,898 → 41,575 (−0.8%). The life-sim gameplay
+    // guides sit here, the only gameplay hub. Test: collection-guides.test.ts.
+    guides: [
+      { href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' },
+      { href: '/sims-4-health-mods/', label: 'Sims 4 health and illness mods' },
+      { href: '/sims-4-romance-mods/', label: 'Sims 4 romance and dating mods' },
+      { href: '/sims-4-drama-mods/', label: 'Sims 4 drama and storytelling mods' },
+      { href: '/sims-4-career-mods/', label: 'Sims 4 career mods' },
+    ],
   },
   {
     slug: 'holidays-cc',
@@ -199,6 +210,17 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // witch-cc keeps 2 inbound (cottagecore-cc, halloween-cc).
     related: ['clutter', 'halloween-cc', 'christmas-cc'],
     blogUrl: '/sims-4-holiday-mods/',
+    // E375 (Pip, 2026-11-09): seasonal WordPress guides with no inbound link
+    // from any Next.js page, linked from the hub Google/Bing already rank for
+    // the neighbouring query, two weeks ahead of the Thanksgiving→Christmas
+    // peak. Treated set: 13 guides, organic search landings (GA4) 10-25→11-07
+    // = 191 (site organic 41,575); same window last year 183, and 282 in
+    // 11-10→11-23 last year. Test: collection-guides.test.ts (E375 block).
+    guides: [
+      { href: '/sims-4-thanksgiving-cc/', label: 'Sims 4 Thanksgiving CC and decor' },
+      { href: '/sims-4-holiday-ideas/', label: 'Sims 4 holiday ideas for your sims' },
+      { href: '/sims-4-holiday-traditions/', label: 'Sims 4 holiday traditions guide' },
+    ],
   },
   {
     slug: 'clutter',
@@ -300,6 +322,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-cc-curly-hair/', label: 'Sims 4 curly hair CC' },
       { href: '/sims-4-black-hair/', label: 'Sims 4 Black hair CC' },
       { href: '/afro-hair-sims-4/', label: 'Sims 4 afro hair CC' },
+      // E376 (Pip, 2026-11-09): organic-losing guide with no Next.js inbound link; see the pregnancy-mods comment.
+      { href: '/sims-4-urban-hair-cc/', label: 'Sims 4 urban hair CC' },
     ],
   },
   {
@@ -332,7 +356,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Facial hair is the part of a male Sim the base game does least with. There are a few beards, a couple of goatees and some stubble, all in the same handful of textures, and they sit on the face like a sticker. Beard CC is how people get a beard that looks grown rather than painted on: thicker meshes, real texture, and shapes the game never shipped.\n\nThis page is only beards and facial hair, 87 of them sorted by downloads. A skin pack, two full Sim downloads, a lot and an outfit used to sit in this facet, and we moved them out, so every card here is something you add in the facial hair slot. The shelf runs from short stubble and heavy stubble to goatees, full beards, long wizard and Viking beards, a Santa beard and a single moustache, plus curly beards and sets that pair a beard with braided locs, twists or cornrows.\n\nIgorStory and MagicHand made nearly a fifth of the page between them, with Seleng, David Mtv2, Veiga Sims and LEXEL S next.\n\nTwo practical notes. Check each creator\'s page for style before you download, because a high-detail alpha beard can look out of place on a smooth maxis match skin. And if a beard looks wrong in the CAS preview, try its other swatches before giving up on it, since colour is usually the problem.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the beards everyone already uses, or scroll for the one-off sets the big roundups miss.',
     filter: { contentTypeIn: ['beard', 'facial-hair'] },
     expectedCount: 87,
-    related: ['hair-cc', 'male-clothes', 'skin-details'],
+    // Sage, 2026-11-09 (E377): 'skin-details' → 'eyebrows-cc' (male brows
+    // sit next to beards in CAS, and skin-details keeps its other inbound edges).
+    related: ['hair-cc', 'male-clothes', 'eyebrows-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // facial hair" intent; this page owns browse intent.
     // /sims-4-facial-hair-cc/ is live (HTTP 200, verified 2026-11-07) and is
@@ -398,6 +424,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // NOT /sims-4-cc-skin-details/ — that article 301s here. The
     // skin-overlay article is the still-live editorial companion.
     blogUrl: '/sims-4-skin-overlay/',
+    // E376 (Pip, 2026-11-09): organic-losing guide with no Next.js inbound link; see the pregnancy-mods comment.
+    guides: [{ href: '/sims-4-skin-details/', label: 'More Sims 4 skin details: freckles, moles and blush' }],
   },
   {
     // Deliberately placed BEFORE male-clothes / female-clothes. Both of
@@ -489,12 +517,14 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['masculine'],
     },
-    expectedCount: 410, // prod count 2026-11-05 (was 420)
+    expectedCount: 404, // prod count 2026-11-11, after the E388/E389 pins (was 410)
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' so the unified clothes hub
     // has an anchored inbound source (hair-cc keeps 4 inbound: skin-details,
     // shoes-cc, y2k-cc, makeup-cc).
     // Sage, 2026-11-07 (E369: female-clothes -> facial-hair-cc; the old target keeps enough inbound).
-    related: ['facial-hair-cc', 'shoes-cc', 'clothes-cc'],
+    // 2026-11-09 (E382): 'shoes-cc' → 'hats-cc' (shoes-cc keeps female-clothes + heels-cc).
+    // 2026-11-11 (E389): 'facial-hair-cc' → 'bottoms-cc' (facial-hair-cc keeps hair-cc + eyebrows-cc).
+    related: ['bottoms-cc', 'hats-cc', 'clothes-cc'],
     // No blogUrl: /sims-4-male-clothes-cc/ 301s here (2026-07-03).
   },
   {
@@ -515,12 +545,97 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['feminine'],
     },
-    expectedCount: 1601,
+    expectedCount: 1600, // prod count 2026-11-11, after the E388/E389 pins
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' (see male-clothes note).
     // 2026-11-06 (E362): 'clothes-cc' → 'heels-cc' so the new heels page is
     // linked from the busiest collection page (clothes-cc keeps male-clothes + cc).
-    related: ['male-clothes', 'shoes-cc', 'heels-cc'],
+    // 2026-11-11 (E388): 'male-clothes' → 'dresses-cc' (male-clothes keeps 5).
+    related: ['dresses-cc', 'shoes-cc', 'heels-cc'],
     // No blogUrl: /sims-4-female-clothes-cc/ 301s here (2026-07-03).
+  },
+  {
+    // Sage, 2026-11-11 (E388, Tier 0 — registry entry in the existing
+    // pattern). `dresses` (608 SFW rows after the audit) had no page of its
+    // own. 222 of the rows carry no gender tag, so they never reach
+    // female-clothes, and their only crumb was the clothes-cc union.
+    //
+    // Placement: AFTER female-clothes and male-clothes, so a gender-tagged
+    // dress keeps the gendered page as its primary crumb, and BEFORE
+    // clothes-cc, the union that contains it
+    // (collection-primary-crumb-order.test.ts).
+    //
+    // Demand: GA4 2026-10-14 → 11-10 organic + referral landings on the
+    // legacy dress articles: /sims-4-dress-cc/ 228, /sims-4-gown-cc/ 85,
+    // /sims-4-wedding-dress/ 24. No catalog page answered browse intent.
+    //
+    // Eligibility: all 682 rows were read by hand on 11-11. 74 were off-type
+    // (33 shoes, then accessories, jewelry, hair, swimsuits) and were pinned
+    // and applied (hand-audited-content-types.ts § E388, ledger 5a2a53b1),
+    // which leaves 608. Inbound: female-clothes (was male-clothes, keeps 5),
+    // wedding-cc (was poses, keeps 3) and bottoms-cc.
+    slug: 'dresses-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Dresses CC',
+    heading: 'Sims 4 Dress CC',
+    metaTitle: 'Sims 4 Dress CC — Browse 600+ Gowns, Mini, Maxi & Wedding Dresses | MustHaveMods',
+    metaDescription:
+      'Browse 600+ Sims 4 dress CC in one grid: gowns, mini and maxi dresses, wedding dresses, ruffled and maternity styles from RIMINGS, Madlen, Sentate and more, sorted by downloads.',
+    tagline: 'Gowns, minis, maxis and wedding dresses',
+    intro:
+      'Dresses are where the base game shows its age fastest. There are a few sundresses, a few formal gowns, and a wedding dress or two, and most of them look stiff next to anything the community has made since. Dress CC is how people get a gown with a real silhouette, a mini that sits right, or a wedding dress that is not the one every other Sim gets married in.\n\nThis page is only dresses: 608 of them, sorted by downloads. We read every row before it went live. About one in ten of the old dress listings were shoes, tights, wings, jewelry or hairstyles whose descriptions said "dress your Sim", and we moved them out. So every card here is a dress, or a set or collection built around dresses. The grid has more than 40 gowns, about 25 wedding dresses, mini and maxi dresses, ruffled and coquette styles, and a few maternity collections.\n\nThe creators with the most dresses on the page are Madlen, RIMINGS, Mably Store, Joan Campbell Beauty, Sentate and Camuflaje. Camuflaje\'s knit, wedding and maternity collections are near the top of the download counts.\n\nTwo practical notes. Long gowns and full skirts are the dresses most likely to clip through a Sim\'s legs in walk and sit animations, so check the creator\'s preview pictures before you install a big set. Also, about a third of these dresses have no gender tag at all. That is why they never appeared in the female clothes grid, and it is also why some of them work on any frame.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the dresses everyone already has, or scroll for the single releases the big roundups miss.',
+    filter: { contentType: 'dresses' },
+    expectedCount: 608,
+    related: ['female-clothes', 'bottoms-cc', 'wedding-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // dress CC" intent; this page owns browse intent. /sims-4-dress-cc/,
+    // /sims-4-gown-cc/ and /sims-4-wedding-dress/ are live (HTTP 200,
+    // verified 2026-11-11) and are not in vercel.json.
+    blogUrl: '/sims-4-dress-cc/',
+    guides: [
+      { href: '/sims-4-gown-cc/', label: 'Sims 4 gown CC' },
+      { href: '/sims-4-wedding-dress/', label: 'Sims 4 wedding dress CC' },
+    ],
+  },
+  {
+    // Sage, 2026-11-11 (E389, Tier 0 — same pattern and placement as
+    // dresses-cc above). `bottoms` (396 SFW rows after the audit) had no page
+    // of its own. 111 of the rows carry no gender tag.
+    //
+    // Demand: GA4 2026-10-14 → 11-10 organic + referral landings on the
+    // legacy bottoms articles: /sims-4-jeans-cc-female/ 62,
+    // /sims-4-male-jeans-cc/ 45, /sims-4-male-shorts-cc/ 34,
+    // /sims-4-skirt-cc/ 32.
+    //
+    // Eligibility: all 443 rows were read by hand on 11-11. 48 were off-type
+    // (21 shoes, then belts, socks, tattoos) and were pinned and applied
+    // (hand-audited-content-types.ts § E389, ledger ed0a7134). One dresses row
+    // (Sugar Wide Leg Pants) moved in, so the page has 396 rows. Inbound:
+    // male-clothes (was facial-hair-cc, which keeps 2), y2k-cc (was
+    // loading-screens, keeps 3) and dresses-cc.
+    slug: 'bottoms-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Bottoms CC',
+    heading: 'Sims 4 Pants, Jeans, Skirts & Shorts CC',
+    metaTitle: 'Sims 4 Bottoms CC — Browse 390+ Jeans, Pants, Skirts & Shorts | MustHaveMods',
+    metaDescription:
+      'Browse 390+ Sims 4 bottoms CC in one grid: jeans, pants, skirts, shorts and leggings for male and female Sims, from Pinkzombiecupcakes, Trillyke and more, sorted by downloads.',
+    tagline: 'Jeans, pants, skirts and shorts',
+    intro:
+      'Bottoms are the part of the base-game wardrobe people notice last and complain about longest. Every Sim ends up in the same few pairs of jeans, and the skirts and shorts come in a handful of cuts. Bottoms CC fixes that: different rises and fits, real denim washes, cargo pants, pleated and mini skirts, and shorts that are not just cut-off jeans.\n\nThis page is only bottoms: 396 of them, sorted by downloads. We read every row before it went live. About one in ten of the old listings were shoes, belts, socks or tattoos, and we moved them out. So every card here goes in the bottoms slot, or is a set that includes a pair. Jeans are the biggest group with over 100 pairs. There are more than 50 skirts, about 50 pairs of shorts, and a long run of pants, from wide-leg and cargo to sweatpants.\n\nAbout half the grid is tagged for female Sims, around 75 pieces are tagged for male Sims, and more than a hundred have no gender tag. Untagged pieces never show up on the gendered clothes pages. Pinkzombiecupcakes, Trillyke, Solistair and RIMINGS made the most of them.\n\nOne practical note. Bottoms are the clothes most likely to clip with tops and shoes, especially high-waisted jeans under a cropped top or flared pants over boots. Check the creator\'s preview pictures for the body they built on before you install a big set.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the jeans everyone already uses, or scroll for the single releases the big roundups miss.',
+    filter: { contentType: 'bottoms' },
+    expectedCount: 396,
+    related: ['dresses-cc', 'clothes-cc', 'male-clothes'],
+    // Differentiated pair: the legacy listicles keep the editorial intent;
+    // this page owns browse intent. All four articles are live (HTTP 200,
+    // verified 2026-11-11) and are not in vercel.json.
+    blogUrl: '/sims-4-jeans-cc-female/',
+    guides: [
+      { href: '/sims-4-male-jeans-cc/', label: 'Sims 4 male jeans CC' },
+      { href: '/sims-4-male-shorts-cc/', label: 'Sims 4 male shorts CC' },
+      { href: '/sims-4-skirt-cc/', label: 'Sims 4 skirt CC' },
+    ],
   },
   {
     // Deliberately placed AFTER shoes-cc / male-clothes / female-clothes.
@@ -542,14 +657,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Clothes CC',
     heading: 'Sims 4 Clothes CC',
-    metaTitle: 'Sims 4 Clothes CC Finder — Browse 3,600+ Tops, Dresses & Outfits | MustHaveMods',
+    metaTitle: 'Sims 4 Clothes CC Finder — Browse 3,500+ Tops, Dresses & Outfits | MustHaveMods',
     metaDescription:
-      'Browse 3,600+ Sims 4 clothes CC in one filterable grid — tops, bottoms, dresses, and full outfits for every sim, sorted by downloads with verified download links.',
+      'Browse 3,500+ Sims 4 clothes CC in one filterable grid — tops, bottoms, dresses, and full outfits for every sim, sorted by downloads with verified download links.',
     tagline: 'Tops, bottoms, dresses, and full outfits for every sim',
     intro:
-      'Clothes are the reason most people install their first piece of Sims 4 CC. The base-game wardrobe runs out fast: a few dozen tops, the same three pairs of jeans in four washes, and formalwear that reads as 2014 the moment you put it next to anything the community has made since. Expansion packs add outfits, but they add them in the pack\'s theme, so you end up with a sim who owns a full snowboarding kit and nothing to wear to a Tuesday.\n\nThis collection is every piece of Sims 4 clothes CC in our catalog in one grid — 3,665 finds as of today. Roughly 1,500 are full-body outfits and sets, 1,050 are tops, 675 are dresses, and 440 are bottoms. Shoes have their own collection, so this page stays focused on what goes on the body rather than the feet.\n\nIt is deliberately ungendered. We also keep separate female and male clothes pages, and if you are dressing one specific sim those are the faster route. But a large slice of the best clothing CC — oversized tees, tracksuits, graphic hoodies, denim, knitwear — is made for whichever frame you put it on, and creators tag those pieces inconsistently or not at all. Around 640 of the finds here carry no gender tag, which means they never showed up on either gendered page. They show up here.\n\nThe names that recur most are the ones who have effectively made clothing their whole output: Madlen, Trillyke, Dissia, Talarian, Busra Tr, DanSimsFantasy, McLayneSims, Garfiel, and Mermalade. Streetwear sets and Y2K pieces sit near the top of the download counts; further down you hit the single-release dresses and tops from smaller creators that the big roundup posts never reach.\n\nOne practical note: clothes CC is where the alpha-versus-maxis-match split matters most, because a photoreal denim jacket on a clay-hair sim looks wrong in a way a photoreal rug does not. Use the main finder\'s visual-style filter to stay inside one art style, and check creator notes for required body presets or sliders before you install a full set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pieces half the community already wears, or scroll for the ones nobody has written up yet.',
+      'Clothes are the reason most people install their first piece of Sims 4 CC. The base-game wardrobe runs out fast: a few dozen tops, the same three pairs of jeans in four washes, and formalwear that reads as 2014 the moment you put it next to anything the community has made since. Expansion packs add outfits, but they add them in the pack\'s theme, so you end up with a sim who owns a full snowboarding kit and nothing to wear to a Tuesday.\n\nThis collection is every piece of Sims 4 clothes CC in our catalog in one grid — 3,594 finds as of today. Roughly 1,500 are full-body outfits and sets, 1,080 are tops, 610 are dresses, and 400 are bottoms. Shoes have their own collection, so this page stays focused on what goes on the body rather than the feet.\n\nIt is deliberately ungendered. We also keep separate female and male clothes pages, and if you are dressing one specific sim those are the faster route. But a large slice of the best clothing CC — oversized tees, tracksuits, graphic hoodies, denim, knitwear — is made for whichever frame you put it on, and creators tag those pieces inconsistently or not at all. Around 640 of the finds here carry no gender tag, which means they never showed up on either gendered page. They show up here.\n\nThe names that recur most are the ones who have effectively made clothing their whole output: Madlen, Trillyke, Dissia, Talarian, Busra Tr, DanSimsFantasy, McLayneSims, Garfiel, and Mermalade. Streetwear sets and Y2K pieces sit near the top of the download counts; further down you hit the single-release dresses and tops from smaller creators that the big roundup posts never reach.\n\nOne practical note: clothes CC is where the alpha-versus-maxis-match split matters most, because a photoreal denim jacket on a clay-hair sim looks wrong in a way a photoreal rug does not. Use the main finder\'s visual-style filter to stay inside one art style, and check creator notes for required body presets or sliders before you install a full set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pieces half the community already wears, or scroll for the ones nobody has written up yet.',
     filter: {
-      // tops (1,054) + bottoms (439) + dresses (675) + full-body (1,497) =
+      // 2026-11-11 (E388/E389): tops 1,083 + bottoms 396 + dresses 608 +
+      // full-body 1,507 = 3,594 after the dress/bottoms off-type pins.
+      // Original count: tops (1,054) + bottoms (439) + dresses (675) + full-body (1,497) =
       // 3,665 SFW Sims 4 mods, verified against prod 2026-10-02 (3,664 of
       // them isVerified). Spot-checked: the top 15 by downloads and a
       // 15-row sample from the middle of the grid are all genuinely
@@ -557,7 +674,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       // the union with shoes would be 4,315.
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body'],
     },
-    expectedCount: 3665,
+    expectedCount: 3594, // prod count 2026-11-11, after the E388/E389 pins (was 3,665)
     // 2026-10-11 (E182): 'shoes-cc' → 'cc', the second anchored inbound
     // source for the CC hub (shoes-cc keeps 2: male-clothes, female-clothes).
     related: ['female-clothes', 'male-clothes', 'cc'],
@@ -574,6 +691,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     guides: [
       { href: '/sims-4-urban-cc/', label: 'Sims 4 urban CC for city sims' },
       { href: '/sims-4-cowboy-cc/', label: 'Sims 4 cowboy and ranch CC' },
+      // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+      { href: '/sims-4-winter-clothes-cc/', label: 'Sims 4 winter clothes CC' },
     ],
   },
   {
@@ -601,7 +720,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-10-04 (E171): 'decor-cc' → 'build-cc' so the build hub has an
     // anchored inbound source (decor-cc keeps 4 inbound: clutter,
     // kitchen-cc, bathroom-cc, build-cc).
-    related: ['bedroom-cc', 'kitchen-cc', 'build-cc'],
+    // 2026-11-11 (E393): 'build-cc' → 'victorian-cc' (build-cc keeps
+    // bedroom-cc, bathroom-cc and cc; /sims-4-victorian-furniture-cc/ is the
+    // largest of the three Victorian legacy articles by landings).
+    related: ['bedroom-cc', 'kitchen-cc', 'victorian-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -684,7 +806,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // christmas-cc, holidays-cc and witch-cc; nails-cc stays because it has
     // only one other inbound link; goth-cc is the 119-sessions/7d sibling
     // that sends the new page its first-week traffic).
-    related: ['vampire-cc', 'piercings-cc', 'nails-cc'],
+    // 2026-11-11 (E393): 'nails-cc' → 'victorian-cc' (nails-cc keeps
+    // makeup-cc + hello-kitty-cc; "Modern Victorian Gothic" is the largest
+    // creator set on the new page, so goth is its closest sibling).
+    related: ['vampire-cc', 'piercings-cc', 'victorian-cc'],
   },
   {
     slug: 'cottagecore-cc',
@@ -724,7 +849,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Y2K came back everywhere at once — TikTok, the runways, and the Sims CC scene, where creators had been quietly making low-rise jeans and baby tees for years before the revival made them cool again. Base-game Sims 4 has essentially nothing from this era; the game skipped from generic-modern to generic-modern.\n\nThis collection pulls together 140+ Y2K picks: the fashion staples (low-rise everything, cropped baby tees, velour sets, cargo skirts, platform sandals), the accessories that sell the look (butterfly clips, tinted sunglasses, chunky rings, shoulder bags), and the hair — face-framing highlights, crimped textures, and the tiny-clips-everywhere styles that scream 2003.\n\nY2K works best layered with the female-clothes and hair collections for the full wardrobe rebuild. As always: Sims 4 only, links checked, NSFW filtered out.',
     filter: { themesAny: ['y2k'] },
     expectedCount: 147,
-    related: ['loading-screens', 'hair-cc', 'makeup-cc'],
+    // 2026-11-11 (E389): 'loading-screens' → 'bottoms-cc' (low-rise and wide Y2K jeans; loading-screens keeps 3).
+    related: ['bottoms-cc', 'hair-cc', 'makeup-cc'],
     // Un-redirected 2026-09 alongside pregnancy-mods: the legacy article
     // ranks pos 10.2 on the blog subdomain (20 clicks/28d) vs this page
     // at pos 29.8 (4 clicks). DIFFERENTIATED pair.
@@ -802,6 +928,50 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     blogUrl: '/sims-4-poses/',
   },
   {
+    // Sage, 2026-11-09 (E377, Tier 0 — registry entry in the existing
+    // pattern). The narrow page inside the eyes-cc union, the way
+    // facial-hair-cc and cas-backgrounds sit inside theirs. It must stay
+    // BEFORE eyes-cc and makeup-cc (collection-primary-crumb-order.test.ts),
+    // or the union keeps the primary crumb on these 127 mod pages.
+    //
+    // Demand: GA4 2026-10-26 → 11-08 landing sessions on the brow articles:
+    // /sims-4-eyebrows-cc/ 79 search + 1,202 social, /sims-4-male-eyebrows-cc/
+    // 62 search + 32 social, /sims-4-eyebrows/ 3 search. The eyes-cc union
+    // drew 12 search + 2 AI in the same window, so nobody is searching for
+    // "eyes, brows and lashes" as one page. Brows are the deepest shelf in it.
+    //
+    // Eligibility: all 130 SFW `eyebrows` rows read on 11-09; 126 name a brow
+    // in the title. Three Caroll Design makeup-and-genetics sets were pinned
+    // to `makeup` and applied (hand-audited-content-types.ts § E377, rollback
+    // reports/funnel/catalog-e377-apply-2026-11-09.json), so 127 rows, 0
+    // adult titles. Inbound: eyes-cc (repointed from hair-cc) and
+    // facial-hair-cc (repointed from skin-details). Male brows sit next to
+    // beards in CAS.
+    slug: 'eyebrows-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Eyebrows CC',
+    heading: 'Sims 4 Eyebrows CC',
+    metaTitle: 'Sims 4 Eyebrows CC — Browse 125+ Brows, Natural to Bushy | MustHaveMods',
+    metaDescription:
+      'Browse 125+ Sims 4 eyebrows CC in one grid: natural and brushed brows, thin arched sets, male and bushy brows, maxis match and alpha, sorted by downloads.',
+    tagline: 'Natural, arched, bushy and male brows in one grid',
+    intro:
+      "Brows do more to a Sim's face than almost anything else in CAS, and the base game gives you very little to work with: a short list of shapes, most of them thin, all in the same flat texture. Eyebrow CC is the quickest way to make a Sim look like a person rather than a default: fuller brows with visible hairs, softer arches, heavier brows for male Sims, and shades that actually match the hair.\n\nThis page is only eyebrows, 127 of them sorted by downloads. Three makeup sets that happened to include a brow swatch used to sit here, and we moved them to the makeup page, so every card is something you add in the eyebrow slot. Expect natural and brushed brows that work on almost any Sim, thin arched sets for harder makeup looks, bushy and masculine sets for male Sims, and a few maxis match sets for people who keep their CAS cartoony.\n\nMagicHand made close to one in five of the brows on this page, with Seleng, Sims3Melancholic, TwistedCat and Msqsims next.\n\nTwo practical notes. Most brow CC comes in a dozen or more shades, so check the swatches before deciding a set doesn't match your Sim's hair. And realistic brows can look busy on a smooth maxis match skin, so read each creator's page for the style before you download.\n\nEverything here is Sims 4 only and filtered to SFW. Sort by downloads for the brows half the community already has, or scroll for single sets the big roundups missed. If you're building a whole face, the eyes and makeup pages are the next two stops.",
+    filter: { contentType: 'eyebrows' },
+    expectedCount: 127,
+    related: ['eyes-cc', 'makeup-cc', 'facial-hair-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // eyebrows" intent, and this page owns browse intent.
+    // /sims-4-eyebrows-cc/ is live (HTTP 200, verified 2026-11-09) and is
+    // not in vercel.json.
+    blogUrl: '/sims-4-eyebrows-cc/',
+    guides: [
+      { href: '/sims-4-male-eyebrows-cc/', label: 'Sims 4 male eyebrows CC' },
+      { href: '/sims-4-eyebrows/', label: 'Best Sims 4 eyebrows for your CC folder' },
+    ],
+  },
+  {
     // Sage, 2026-10-18 (E231, Tier 1 — new structural page). The next
     // category hub after build-cc (E171) and cc (E182). Decision rule,
     // printed before the read: rank bare-term families with no
@@ -856,7 +1026,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // Inbound edges come from makeup-cc and skin-details (both swapped a
     // hair-cc edge for this page — hair-cc keeps 4). Outbound returns one
     // to hair-cc so the swap is net-neutral on the hair hub.
-    related: ['makeup-cc', 'skin-details', 'hair-cc'],
+    // Sage, 2026-11-09 (E377): 'hair-cc' → 'eyebrows-cc', the brows-only
+    // page inside this union (hair-cc keeps its other inbound edges).
+    related: ['makeup-cc', 'skin-details', 'eyebrows-cc'],
     // Differentiated pair: "34+ Best Sims 4 Eyes CC" keeps the editorial
     // picks intent, this page owns browse/filter intent. Live 200,
     // self-canonical, not redirected (checked 2026-10-18); position 16–39
@@ -957,6 +1129,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-cas-mirror-background/', label: 'Sims 4 CAS backgrounds with a mirror' },
       { href: '/sims-4-cas-background/', label: 'More Sims 4 CAS background picks' },
       { href: '/how-to-change-sims-4-cas-backgrounds/', label: 'How to change your Sims 4 CAS background' },
+      // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+      { href: '/sims-4-christmas-cas-background/', label: 'Sims 4 Christmas CAS backgrounds' },
     ],
   },
   {
@@ -1003,6 +1177,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // It holds 620 impressions / 2 clicks at position 55.7 over the 28d
     // to 2026-09-11, so there is nothing here to cannibalise.
     blogUrl: '/sims-4-loading-screen/',
+    // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+    guides: [{ href: '/sims-4-winter-loading-screens/', label: 'Sims 4 winter loading screens' }],
   },
   {
     // Placement is free: neither `jewelry` nor `watches` appears in any other
@@ -1045,7 +1221,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-11-01 (E316): 'makeup-cc' → 'piercings-cc' (makeup-cc keeps
     // nails-cc and more; the 82-piercing shelf described above now has its
     // own page).
-    related: ['tattoos', 'wedding-cc', 'piercings-cc'],
+    // 2026-11-09 (E382): 'tattoos' → 'hats-cc' (tattoos keeps skin-details + piercings-cc).
+    related: ['hats-cc', 'wedding-cc', 'piercings-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // jewelry cc" intent, this page owns browse/filter intent.
     // /sims-4-jewelry-cc/ is live (HTTP 200, no redirect, verified
@@ -1112,6 +1289,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // nothing here to cannibalise. (/sims-4-cc-nails/, 72 impressions at
     // position 36.1, is the second article in the cluster and also live.)
     blogUrl: '/sims-4-nails-cc/',
+    // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+    guides: [{ href: '/sims-4-christmas-nails-cc/', label: 'Sims 4 Christmas nails CC' }],
   },
   {
     // Appended last on purpose. This is the registry's first `ageGroupsAny`
@@ -1166,7 +1345,13 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
     // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
     // GA4) 10-09→10-22 → 10-23→11-05: /sims-4-infant-cc/ 217 → 180.
-    guides: [{ href: '/sims-4-infant-cc/', label: 'Sims 4 infant CC: clothes, cribs and accessories' }],
+    guides: [
+      { href: '/sims-4-infant-cc/', label: 'Sims 4 infant CC: clothes, cribs and accessories' },
+      // E376 (Pip, 2026-11-09): organic-losing guides with no Next.js inbound link; see the pregnancy-mods comment.
+      { href: '/sims-4-nursery-cc/', label: 'Sims 4 nursery CC' },
+      { href: '/sims-4-school-uniforms-cc/', label: 'Sims 4 school uniforms CC' },
+      { href: '/sims-4-school-mods/', label: 'Sims 4 school mods' },
+    ],
   },
   {
     // Appended last on purpose: a `themesAny` entry scores specificity 1 in
@@ -1440,7 +1625,11 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // this grid" — this is where they are. "sims 4 hospital build cc" is on
     // the competitor list this hub was built from (pos 6.2 on the blog.*
     // twin before the host split). See the `guides` doc on the type.
-    guides: [{ href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' }],
+    guides: [
+      { href: '/sims-4-hospital-lots/', label: 'Sims 4 hospital lots and builds' },
+      // E376 (Pip, 2026-11-09): organic-losing guide with no Next.js inbound link; see the pregnancy-mods comment.
+      { href: '/sims-4-build-cheats/', label: 'Sims 4 build mode cheats' },
+    ],
   },
   {
     // Rowan, 2026-10-25 (E272, Tier 0 — new entry in the existing registry
@@ -1538,7 +1727,8 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'My Wedding Stories gave the game a proper ceremony: the arch, the vows, the cake cutting. What it did not give you is much to wear. There is a small rack of gowns, a couple of suits, and one bouquet, so every wedding in your save starts to look like the same wedding.\n\nThis collection is the wedding day as the community builds it. There are wedding dresses from sleek satin sheaths to cathedral-length gowns with veils, suits and tuxedos for the groom, bridesmaid dresses, and engagement and wedding rings. The build side has arches, wedding cakes, decor sets and whole ready-made venues, from a rustic barn to a beach ceremony. Storytellers get the pose packs: first look, the kiss, group portraits, and the bridal party.\n\nEvery mod here was picked because its own title says it is wedding CC. Nothing gets in because a blog post happened to mention a wedding. Everything is filtered to Sims 4, link-checked and SFW. Sort by downloads for the sets everyone already uses, or scroll for the smaller finds.',
     filter: { themesAny: ['wedding'] },
     expectedCount: 118,
-    related: ['female-clothes', 'jewelry-cc', 'poses'],
+    // 2026-11-11 (E388): 'poses' → 'dresses-cc' (poses keeps 3).
+    related: ['female-clothes', 'jewelry-cc', 'dresses-cc'],
     blogUrl: '/sims-4-wedding-cc/',
     // E366 (Pip, 2026-11-07): Bing-losing guide with no inbound link from any
     // Next.js page. Bing-index sessions (bing/yahoo/ddg/ecosia/brave organic,
@@ -1627,6 +1817,15 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // browse/filter intent. /sims-4-christmas-cc/ is live (HTTP 200,
     // verified 2026-10-31) and is not in vercel.json.
     blogUrl: '/sims-4-christmas-cc/',
+    // E375 (Pip, 2026-11-09): seasonal guide, see the holidays-cc comment.
+    guides: [
+      { href: '/sims-4-christmas-tree-cc/', label: 'Sims 4 Christmas tree CC' },
+      { href: '/sims-4-christmas-decor-cc/', label: 'Sims 4 Christmas decor CC' },
+      { href: '/sims-4-christmas-clothes-cc/', label: 'Sims 4 Christmas clothes CC' },
+      { href: '/sims-4-christmas-houses/', label: 'Sims 4 Christmas houses and lots' },
+      { href: '/sims-4-christmas-poses/', label: 'Sims 4 Christmas poses' },
+      { href: '/sims-4-santa-cc/', label: 'Sims 4 Santa CC and outfits' },
+    ],
   },
   {
     // Rowan, 2026-11-01 (E316, Tier 0 — registry entry in the existing
@@ -1771,6 +1970,77 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // this page owns browse intent. /sims-4-hello-kitty-cc/ is live (HTTP
     // 200, verified 2026-11-07) and is not in vercel.json.
     blogUrl: '/sims-4-hello-kitty-cc/',
+  },
+  {
+    // Rowan, 2026-11-09 (E382, Tier 0 — registry entry in the existing
+    // pattern). A browse page for hats. The `hats` CONTENT TYPE cannot back
+    // it: 276 rows, only 64.5% with a hat word in the title, and 10 of its
+    // top 24 are not hats (a Coach bag at #2, map replacements, hairstyles).
+    // The theme is TITLE-ONLY (lib/headwearThemeRules.ts, accepted, excluded
+    // and rejected words with counts in its comment); 153 rows tagged / 0
+    // stripped on 2026-11-09, 152 SFW Sims 4, every ADD row read.
+    // Demand: the legacy article /sims-4-hats-cc/ drew 201 impressions / 4
+    // clicks at position 11.7 (GSC 2026-10-09 → 11-05) and 281 GA4 landing
+    // sessions 2026-10-26 → 11-08.
+    // Inbound: male-clothes (739 landing sessions 10-26 → 11-08; repointed
+    // from shoes-cc, which keeps female-clothes + heels-cc) and jewelry-cc
+    // (repointed from tattoos, which keeps skin-details + piercings-cc).
+    // Appended after the contentType pages because a themesAny entry scores
+    // specificity 1, so every hat keeps its own breadcrumb.
+    slug: 'hats-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Hats CC',
+    heading: 'Sims 4 Hats CC',
+    metaTitle: 'Sims 4 Hats CC — Browse 150+ Caps, Beanies, Cowboy Hats & Bonnets | MustHaveMods',
+    metaDescription:
+      'Browse 150+ Sims 4 hats CC in one grid: baseball and trucker caps, beanies, cowboy and witch hats, bucket hats, silk bonnets and snapbacks, sorted by downloads.',
+    tagline: 'Caps, beanies, cowboy hats, witch hats and bonnets',
+    intro:
+      'Hats are the accessory the base game forgets. Create a Sim has a few baseball caps, a beanie or two and whatever a pack happened to ship with, which is why a cowboy hat for a ranch save or a silk bonnet for a bedtime routine almost always means a trip to a creator\'s Patreon or Tumblr. And hats are hard to find once you go looking, because a general accessories list buries them between bags, glasses and earrings.\n\nThis collection is only headwear: 152 finds, sorted by downloads, and every one of them says hat, cap, beanie, bonnet, snapback, visor, helmet, bandana or headwear in its own title. That rule is deliberate. A dress whose description mentions \"a matching hat\" is not a hat, a lamp called Lamp Of Many Hats is a lamp, and crowns and tiaras are jewelry, so none of them show up here. When the hat is one piece of a costume or an outfit set, it stays off the page too.\n\nCaps are the deepest shelf at 29 (baseball, trucker, snapback, flat and skull caps), followed by 23 cowboy and western hats, 13 witch hats, 12 beanies, 7 bucket hats and 7 sleep and silk bonnets. Nine are made for toddlers, children or infants, and the rest of the grid is one-off sun hats, newsboys, fur hats, novelty animal hats and a few riding helmets. The most downloaded item is a Nike skull cap.\n\nTwo practical notes. Most hats hide part of the hair, and a hat built on one hairline can clip through a long or voluminous style, so check the creator\'s page for a hat-compatible hair or a hair-hider version. And hats occupy one CAS slot, so a hat and a hair accessory from a different creator can fight over the same space.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the hats everyone already has, then scroll for the single releases the big roundups never mention.',
+    filter: { themesAny: ['headwear'] },
+    expectedCount: 152,
+    related: ['male-clothes', 'jewelry-cc', 'witch-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // hats" intent (201 impr / 4 clk, pos 11.7, 28d to 11-05); this page
+    // owns browse intent. /sims-4-hats-cc/ is live (HTTP 200, verified
+    // 2026-11-09) and is not in vercel.json.
+    blogUrl: '/sims-4-hats-cc/',
+  },
+  {
+    // Rowan, 2026-11-11 (E393, Tier 0 — registry entry in the existing
+    // pattern). A browse page for Victorian-era CC. No content type or AI
+    // theme covered it; the theme is TITLE-ONLY (lib/victorianThemeRules.ts,
+    // accepted and rejected words with counts in its comment). 44 rows
+    // tagged / 0 stripped on 2026-11-11, 44 SFW Sims 4, every ADD row read.
+    // Demand: three legacy articles with no browse page. GSC 2026-10-12 →
+    // 11-08: /sims-4-victorian-cc/ 232 impr / 4 clk (pos 10.9),
+    // /sims-4-victorian-furniture-cc/ 83 / 2 (pos 10.2),
+    // /sims-4-victorian-house/ 28 / 1. GA4 landing sessions 10-28 → 11-10:
+    // 102 + 137 + 34.
+    // Inbound: goth-cc (repointed from nails-cc) and furniture-cc (repointed
+    // from build-cc).
+    // Appended after the contentType pages because a themesAny entry scores
+    // specificity 1, so every Victorian mod keeps its own breadcrumb.
+    slug: 'victorian-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Victorian CC',
+    heading: 'Sims 4 Victorian CC',
+    metaTitle: 'Sims 4 Victorian CC — Browse 40+ Gowns, Gothic Furniture & Manors | MustHaveMods',
+    metaDescription:
+      'Browse 40+ Sims 4 Victorian CC finds in one grid: gowns and suit jackets, gothic bedroom and parlor furniture, paintings, lace gloves, and Victorian houses and manors, sorted by downloads.',
+    tagline: 'Gowns, gothic furniture, manors and lace gloves',
+    intro:
+      'Victorian is the era Sims 4 keeps almost getting right. The base game and its packs give you a few ornate pieces here and there, a gothic manor in Forgotten Hollow, a dress that is close but not quite, and nothing that adds up to a whole household from the 1800s. That is why a Victorian save, whether it is a period legacy, a haunted manor or a modern gothic townhouse, ends up built almost entirely out of custom content.\n\nThis page is every find in our catalog whose title says Victorian, in one grid sorted by downloads. It spans the whole game rather than one CAS slot. On the build side there are furniture sets and single pieces (an obsidian bedroom, a loveseat, a fireplace, a working washstand, a range for the kitchen), paintings and portraits for the walls, and a long shelf of houses, manors and lots to drop straight into a world. On the CAS side there are gowns and dresses, suit jackets for adults and boys, lace gloves, a necklace, a hair-and-hat set, nails, shoes and makeup, and even a dress for your cat.\n\nA few of the biggest sets come in matching pieces. The Modern Victorian Gothic releases run across bedroom furniture, a fireplace, clothing, nails, shoes and a crown, so you can dress the sim and furnish the room from one creator. Houses and lots usually need the packs listed on their download page, so check those before you place one.\n\nIf you want Regency rather than Victorian (Bridgerton gowns, empire waists, 1810s ballrooms), that is a different era with its own CC and it is not mixed in here. Everything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+    filter: { themesAny: ['victorian'] },
+    expectedCount: 44,
+    related: ['goth-cc', 'furniture-cc', 'witch-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // Victorian CC" intent (232 impr / 4 clk, pos 10.9, GSC 10-12 → 11-08);
+    // this page owns browse intent. /sims-4-victorian-cc/ is live (HTTP 200,
+    // verified 2026-11-11) and is not in vercel.json.
+    blogUrl: '/sims-4-victorian-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level

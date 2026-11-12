@@ -8,7 +8,7 @@
       "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/cron/commission-sync",
+      "path": "/api/cron/commission-sync/",
       "schedule": "0 */6 * * *"
     },
     {
@@ -21,6 +21,12 @@
       "maxDuration": 10
     },
     "app/api/cron/**/*": {
+      "maxDuration": 300
+    },
+    "app/api/monetization/agent/run/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/admin/reindex-search/route.ts": {
       "maxDuration": 300
     },
     "app/api/admin/affiliates/earnings/sync/route.ts": {

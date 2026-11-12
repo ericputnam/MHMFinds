@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/middleware/auth';
 import { SubmissionRejectSchema, formatZodError } from '@/lib/validation/schemas';
 import { ZodError } from 'zod';
 import { emailNotifier } from '@/lib/services/emailNotifier';
+import { escapeHtml } from '@/lib/escapeHtml';
 import { discardUploadForSubmission } from '@/lib/modFiles/lifecycle';
 
 export const dynamic = 'force-dynamic';
@@ -51,6 +52,12 @@ export async function POST(
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
+    // Same guard as approve: an already-approved submission must not be flipped to
+    // rejected (and its submitter emailed) while the mod it created stays live.
+    if (submission.status !== 'pending') {
+      return NextResponse.json({ error: 'Submission already processed' }, { status: 400 });
+    }
+
     // Update submission status
     await prisma.modSubmission.update({
       where: { id: params.id },
@@ -72,8 +79,8 @@ export async function POST(
       const html = `
         <p>Your mod submission was reviewed and rejected.</p>
         <ul>
-          <li><strong>Mod:</strong> ${submission.modName}</li>
-          <li><strong>Reason:</strong> ${reason}</li>
+          <li><strong>Mod:</strong> ${escapeHtml(submission.modName)}</li>
+          <li><strong>Reason:</strong> ${escapeHtml(reason)}</li>
         </ul>
       `;
 

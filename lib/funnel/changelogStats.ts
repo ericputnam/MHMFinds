@@ -162,13 +162,27 @@ export function computeTeamStats(rows: ChangelogRow[], nowMs: number, windowDays
  * that have a corresponding entry in `datesWithRun` (e.g. a scoreboard+digest
  * file existing for that morning). Exact fraction; the caller rounds only for
  * display.
+ *
+ * `isScheduled` (E394, 2026-11-11): only days it returns true for are in the
+ * denominator (and can be hits). Since the operator's 2026-11-07 every-other-day
+ * cadence the off days run the guard only and land no scoreboard on main by
+ * design, so counting them read 11-08 and 11-10 as failed mornings (14d 78.6%).
+ * Omitted = every calendar day is scheduled (the pre-cadence behaviour).
  */
-export function computeRunSuccessShare(datesWithRun: Set<string>, todayIso: string, windowDays = 14): number {
+export function computeRunSuccessShare(
+  datesWithRun: Set<string>,
+  todayIso: string,
+  windowDays = 14,
+  isScheduled: (iso: string) => boolean = () => true,
+): number {
   const today = new Date(`${todayIso}T00:00:00Z`).getTime();
   let hits = 0;
+  let scheduled = 0;
   for (let i = 1; i <= windowDays; i++) {
     const d = new Date(today - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    if (!isScheduled(d)) continue;
+    scheduled++;
     if (datesWithRun.has(d)) hits++;
   }
-  return hits / windowDays;
+  return scheduled > 0 ? hits / scheduled : 0;
 }

@@ -47,7 +47,7 @@ export default function MonetizationDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/monetization/dashboard');
+      const response = await fetch('/api/monetization/dashboard/');
       const data = await response.json();
       setStats(data);
     } catch (error) {

@@ -15,7 +15,6 @@
     "test:run": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -101,6 +100,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
@@ -113,8 +113,11 @@
     "@vitest/coverage-v8": "^4.0.16",
     "@wordpress/block-serialization-default-parser": "^5.56.0",
     "autoprefixer": "^10.4.16",
+    "dotenv": "^16.6.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.0",
+    "glob": "^7.1.7",
+    "google-auth-library": "^10.5.0",
     "jsdom": "^27.3.0",
     "playwright": "^1.57.0",
     "postcss": "^8.4.32",

@@ -1,5 +1,6 @@
 'use client';
 
+import { serializeJsonLd } from '@/lib/jsonLd';
 import { Mod } from '@/lib/api';
 import type { CollectionLink } from '@/lib/collections';
 import {
@@ -97,11 +98,11 @@ export function ModJsonLd({ mod, collections = [] }: ModJsonLdProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(softwareSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbSchema) }}
       />
     </>
   );

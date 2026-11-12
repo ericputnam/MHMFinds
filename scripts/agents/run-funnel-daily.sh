@@ -69,7 +69,7 @@ day_lock_acquire() {  # rc 0 this run owns TODAY · 3 another live run owns it (
     holder="$(cat "$DAY_LOCK/pid" 2>/dev/null)"
     case "$holder" in
       '' | *[!0-9]*)
-        m="$(stat -f %m "$DAY_LOCK" 2>/dev/null || stat -c %Y "$DAY_LOCK" 2>/dev/null)"
+        m="$(stat -c %Y "$DAY_LOCK" 2>/dev/null || stat -f %m "$DAY_LOCK" 2>/dev/null)"
         age=$(( $(date +%s) - ${m:-$(date +%s)} ))
         if [ "$age" -lt "${DAY_LOCK_EMPTY_GRACE_S:-60}" ]; then
           log "DUPLICATE RUN — pid ? owns $TODAY (lock ${age}s old, holder pid not written yet), exiting 0"
@@ -131,7 +131,7 @@ run_lock_try() {  # rc 0 taken · 1 held by a live runner (RUN_LOCK_HOLDER / RUN
   RUN_LOCK_HOLDER="$(cat "$RUN_LOCK/pid" 2>/dev/null)"; RUN_LOCK_HOLDER_DAY="$(cat "$RUN_LOCK/day" 2>/dev/null)"
   case "$RUN_LOCK_HOLDER" in
     '' | *[!0-9]*)
-      m="$(stat -f %m "$RUN_LOCK" 2>/dev/null || stat -c %Y "$RUN_LOCK" 2>/dev/null)"
+      m="$(stat -c %Y "$RUN_LOCK" 2>/dev/null || stat -f %m "$RUN_LOCK" 2>/dev/null)"
       age=$(( $(date +%s) - ${m:-$(date +%s)} ))
       [ "$age" -lt "${DAY_LOCK_EMPTY_GRACE_S:-60}" ] && { RUN_LOCK_HOLDER="?"; return 1; }
       log "run-lock: stale lock — no holder pid after ${age}s, breaking it"
