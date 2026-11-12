@@ -685,7 +685,9 @@ run died with `Prompt is too long`.
   and was approved for merge on 09-18 with no signal. Prose loses races; a scanner does not.
 - **Strip comments before a source-level guard test asserts anything.** Comments in this repo
   deliberately quote the bad patterns they warn about, so a naive `indexOf` matches the
-  documentation instead of the code.
+  documentation instead of the code. The same holds for a shell marker check: the
+  `functions.php` push scripts passed `mhm_catalog_mod_links` on staging, where only a comment
+  named it (#516).
 - **Guard the constant, not a copy of its value.** Import the real constant into the test.
   A test that restates the literal passes happily while the two drift.
 - **Enumerate the ways a check can be wrong *before* wiring it to a destructive action.**
@@ -735,7 +737,11 @@ run died with `Prompt is too long`.
   version; the file on disk proves nothing.
 - **`trailingSlash: true` is global — it applies to `/api/*` too.** Every hand-authored URL that
   leaves the app (email link, header, form action, webhook) needs the trailing slash. Browsers
-  follow the 308; RFC 8058 one-click POSTs do not.
+  follow the 308; RFC 8058 one-click POSTs do not. **Vercel cron does not follow it either:**
+  `/api/cron/commission-sync` had no slash in `vercel.json` and most likely never ran (#523).
+  `/api/cron/monetization-agent` still has no slash. That is deliberate: fixing it would start
+  `auto_execute` writes to production (Tier 2). In-app `fetch('/api/x')` paid a 308 round trip
+  per call until #519/#520; `api-fetch-trailing-slash*.test.ts` scan for new ones.
 - **Any new top-level `app/` directory needs a `NEXTJS_PREFIXES` entry in the same PR**, or
   middleware proxies it to WordPress and the visitor gets a 404. Invisible to `next build`.
   It also needs `OTHER_APP_PREFIXES` in `scripts/agents/page-rpm-lib.ts`, or its RPM is counted
@@ -770,7 +776,9 @@ run died with `Prompt is too long`.
   when the env var is unset — "works" in tests, open in production. Write `if (!secret || …)`
   and a test with the var unset (#226).
 - **GET must never mutate** on any consent endpoint (unsubscribe, confirm). Link scanners and mail
-  prefetchers follow GET links. Make the POST idempotent.
+  prefetchers follow GET links. Make the POST idempotent. The same goes for session state:
+  `GET /api/auth/clear-session` deleted the session cookies, so any `<img>` could log a visitor
+  out (removed in #531).
 - **Never let an email carrying a live secret ride the shared notifier's logging path** — pass
   `skipLog: true`. Hashing the token in one table buys nothing if another stores the raw body.
 - **Redact at the point of capture** so every consumer inherits it, and never print a token,
@@ -915,53 +923,51 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-09 — rotated to the archive
+### 2026-10-15 → 11-10 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11.
 
-### 2026-11-10 (covers #502 and three direct-to-`main` audit commits)
+### 2026-11-11 (covers #514–#535 and the 11-11 funnel run)
 
-A project audit landed as 97ee5083 (bugs, secrets), 91483615 (4,128 dead lines removed) and
-#502 (security, payments, catalog), plus runner fix 072a9d91. No funnel merges, 0 rollbacks.
-Subsystem details are in the archive (11-10).
+An operator audit (#514–#532) and the creator-hosted mod files feature (#533–#535) landed, along
+with 7 funnel PRs (#503–#510, #512). 0 rollbacks. Subsystem details are in the archive (11-11).
 
-- **A standing rule stops nothing until a scanner enforces it.** CLAUDE.md has said "a secret
-  check fails closed" since #226 (09-30), but `cron/commission-sync` and `cron/monetization-agent`
-  still had `if (cronSecret && …)` six weeks later. The #219 bullet named the `s-maxage=60`
-  problem, and no path was exempted until #502. `__tests__/unit/audit-bug-fixes.test.ts` covers
-  only the routes it names. When you write a rule here, grep the tree for its pattern in the same
-  PR. Add a scanner when the pattern can come back.
-- **Fire-and-forget is wrong in a serverless webhook.** The Stripe webhook returned 200 and ran
-  `processWebhookEvent(event).catch(…)` without awaiting it. The function can freeze once the
-  response is sent, and Stripe never retries a 200, so a paid checkout could silently never
-  become premium. Await the work and return 500 on failure so the sender retries (the handler
-  must be idempotent).
-- **A flag that two writers share needs each writer to check the other.** `User.isPremium` is
-  set by both Stripe and Patreon. On every sign-in by a non-patron, the Patreon sign-in callback
-  wrote `isPremium = false` and cleared Stripe-paid premium. A writer may only revoke what it
-  granted.
-- **A proxy forwards an allowlist of cookies, never the whole `Cookie` header.** The WordPress
-  proxy in `middleware.ts` sent the visitor's NextAuth session token to the blog origin.
-  `wordpressCookies()` now keeps only `wordpress_` / `wp-` / `wp_` / `comment_` cookies.
-- **Rank before you page.** `/api/creators/rankings` took the first 50 profiles by `createdAt`
-  and sorted only those, so `/top-creators` showed the 50 *oldest* creators in favorites order.
-  Sort the whole population, then slice. Clamp `limit` (1..100) on every paged read.
-- **Don't assign `where.OR` in a Prisma filter builder.** A second assignment replaces the
-  first. The unisex gender filter in `/api/mods` replaced the search clause, so the search box
-  was ignored whenever "unisex" was selected. Add each `OR` group to `where.AND`.
-- **JSON-LD bodies go through `serializeJsonLd()` (`lib/jsonLd.ts`).** Plain `JSON.stringify`
-  leaves `<` as-is, so a scraped title containing `</script>` closes the tag. (`app/layout.tsx`
-  is the one raw exception: static constants only.)
-- **A client-supplied attribution field must never be able to carry a consent marker.**
-  `/api/waitlist` accepted any `source`, including `CONFIRM_SOURCE`, the re-permission marker
-  that only `/api/subscribe/confirm` may write. An anonymous POST could therefore forge a
-  confirmed consent.
-- **Closed:** the 11-09 rollback-CSV bug. All 11 `retag-*-theme.ts` scripts now skip a no-op write.
+- **A fix to a safety gate needs an end-to-end test before it merges.** #516 made the
+  `functions.php` push scripts match markers in code only, using `code_only FILE | grep -q PAT`
+  under `set -o pipefail`. `grep -q` exits at the first match, the upstream command dies of
+  SIGPIPE, and the pipeline fails. So every marker that *was* present read as missing. Both
+  scripts refused to push, and that included `deploy-verify.sh`'s automatic restore. #528 fixed
+  it with `grep -c` and added `push-script-failsafe.test.ts`, which runs both scripts against
+  stubbed ssh/scp/php. Under pipefail, never pipe into `grep -q` or `head`.
+- **A swallowed failure in a safety comparison turns into a pass.** The staging push did
+  `pull … || true`. A failed pull left an empty file, and the wipe check compared against it and
+  passed. A failed server-side `php -l` exited under `set -e` and left the broken file live. Now a
+  failed pull stops the push, and a failed lint restores the backup first (#528). When an input
+  to a check is missing, stop. Don't compare against an empty default.
+- **Role claims in a JWT must expire sooner than the token.** `isAdmin`/`isPremium`/`isCreator`
+  were frozen for the session's 30-day life, so a revoked admin stayed admin. The jwt callback
+  now re-reads them at most every 5 minutes (#515). Compare secrets in constant time, never `!==` (#522).
+- **Never link a verified identity to an account whose address is unproven.** Credentials signup
+  stamped `emailVerified` with no proof. A Patreon sign-in to that address would link to the
+  account, and the squatter's password kept working. Signup no longer auto-verifies. Linking
+  discards the unproven password (#515).
+- **A helper that swallows errors must still return whether it worked.**
+  `updateSearchIndex` swallows its errors by design, so `/api/admin/reindex-search` answered
+  success for every mod with `OPENAI_API_KEY` unset. It now returns a boolean (#526).
+- **Never pass a value through a shell.** `env:push` ran `echo "${value}" | vercel env add`,
+  which mangled any secret containing `$`, a backtick, a quote or a backslash. Use
+  `execFileSync` with stdin (#529). A remove-then-add replace must also report the
+  half-done state ("removed and not re-added"), not count it as an ordinary failure.
+- **Pin the bytes you verified to the bytes you publish.** Hosted mod files record the R2 ETag
+  at verify, and approval copies with `CopySourceIfMatch` on it. A claim that two requests can
+  race for is a conditional write that returns `false`, never a read followed by a write (#533,
+  #534).
+- **Still open:** the `monetization-agent` cron slash (Tier 2, above).
 
 ---
 
-*Last compound review: 2026-11-10*
+*Last compound review: 2026-11-11*
 
 ---
 

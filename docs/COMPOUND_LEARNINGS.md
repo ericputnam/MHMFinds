@@ -3185,6 +3185,90 @@ subsystem entries).
     mods, and the monetization learning page showed `implementedAt` as "now". A missing value
     renders as missing.
 
+### 2026-11-10 — rotated from CLAUDE.md
+
+A project audit landed as 97ee5083 (bugs, secrets), 91483615 (4,128 dead lines removed) and
+#502 (security, payments, catalog), plus runner fix 072a9d91. No funnel merges, 0 rollbacks.
+Subsystem details are in the archive (11-10).
+
+- **A standing rule stops nothing until a scanner enforces it.** CLAUDE.md has said "a secret
+  check fails closed" since #226 (09-30), but `cron/commission-sync` and `cron/monetization-agent`
+  still had `if (cronSecret && …)` six weeks later. The #219 bullet named the `s-maxage=60`
+  problem, and no path was exempted until #502. `__tests__/unit/audit-bug-fixes.test.ts` covers
+  only the routes it names. When you write a rule here, grep the tree for its pattern in the same
+  PR. Add a scanner when the pattern can come back.
+- **Fire-and-forget is wrong in a serverless webhook.** The Stripe webhook returned 200 and ran
+  `processWebhookEvent(event).catch(…)` without awaiting it. The function can freeze once the
+  response is sent, and Stripe never retries a 200, so a paid checkout could silently never
+  become premium. Await the work and return 500 on failure so the sender retries (the handler
+  must be idempotent).
+- **A flag that two writers share needs each writer to check the other.** `User.isPremium` is
+  set by both Stripe and Patreon. On every sign-in by a non-patron, the Patreon sign-in callback
+  wrote `isPremium = false` and cleared Stripe-paid premium. A writer may only revoke what it
+  granted.
+- **A proxy forwards an allowlist of cookies, never the whole `Cookie` header.** The WordPress
+  proxy in `middleware.ts` sent the visitor's NextAuth session token to the blog origin.
+  `wordpressCookies()` now keeps only `wordpress_` / `wp-` / `wp_` / `comment_` cookies.
+- **Rank before you page.** `/api/creators/rankings` took the first 50 profiles by `createdAt`
+  and sorted only those, so `/top-creators` showed the 50 *oldest* creators in favorites order.
+  Sort the whole population, then slice. Clamp `limit` (1..100) on every paged read.
+- **Don't assign `where.OR` in a Prisma filter builder.** A second assignment replaces the
+  first. The unisex gender filter in `/api/mods` replaced the search clause, so the search box
+  was ignored whenever "unisex" was selected. Add each `OR` group to `where.AND`.
+- **JSON-LD bodies go through `serializeJsonLd()` (`lib/jsonLd.ts`).** Plain `JSON.stringify`
+  leaves `<` as-is, so a scraped title containing `</script>` closes the tag. (`app/layout.tsx`
+  is the one raw exception: static constants only.)
+- **A client-supplied attribution field must never be able to carry a consent marker.**
+  `/api/waitlist` accepted any `source`, including `CONFIRM_SOURCE`, the re-permission marker
+  that only `/api/subscribe/confirm` may write. An anonymous POST could therefore forge a
+  confirmed consent.
+- **Closed:** the 11-09 rollback-CSV bug. All 11 `retag-*-theme.ts` scripts now skip a no-op write.
+
+### 2026-11-11 — subsystem entries (written directly to the archive)
+
+- **Creator-hosted mod files (#533, #534, #535).** Files live in a private Cloudflare R2 bucket
+  (`lib/modFiles/`). Browser uploads go to a presigned PUT signed over content-type,
+  content-length and `If-None-Match: *` (one file, once, into the uploader's quarantine key).
+  Verify records the ETag; approval copies with `CopySourceIfMatch` on it, so bytes swapped in
+  after verification never publish. Downloads are 5-minute presigned GETs behind an HMAC download
+  ticket. The feature is off unless all four `MOD_FILES_R2_*` vars are well-formed and
+  `NEXTAUTH_SECRET` is ≥32 chars; it never falls back to `BLOB_READ_WRITE_TOKEN` or `AWS_*`.
+  Admins can publish their own upload with a mod (`publishOwnUpload`, idempotent);
+  `finalizeUploadApproval` claims the file conditionally. Minecraft `.jar`/`.mcpack`/`.mcaddon`/
+  `.mcworld` are inspected byte by byte (`lib/modFiles/minecraft.ts`) and a file must match the
+  mod's game (guard test scans `app/api`). Review is manual: SHA-256 + VirusTotal hash *link*,
+  the file is never sent to a third party.
+- **Second audit batch (#514–#532), details not in CLAUDE.md:**
+  - `npm ci` failed on npm 10: the lockfile lacked `nodemailer` (optional peer of `@auth/core`).
+    `dotenv`, `glob`, `google-auth-library`, `@modelcontextprotocol/sdk` are now declared.
+  - `/api/mods` list loaded four unused columns per row and walked the array ten times (#517).
+  - Public analytics download counter: one per visitor per mod per 10 min; subscription click
+    tracking no longer also increments `downloadCount` (#521).
+  - Revoking premium in admin downgrades the non-Stripe Subscription row; an admin cannot delete
+    their own account; waitlist P2002 race is "already on the list"; submission emails escape
+    user fields; image re-host refuses SVG/non-image and caps size (#521).
+  - First OAuth sign-in: a taken username gets a suffix instead of P2002, and the Favorites
+    collection + Subscription row are created with the pre-created user, because the adapter's
+    `createUser` event never fires for it. Signup password rule is 8 chars, same as reset (#522).
+  - `AISearchService.updateSearchIndex` swallows errors by design; it now returns a boolean so
+    `/api/admin/reindex-search` can report failures (#526).
+  - `ga4Connector.matchesChannel('')` matched everything (`includes('')`) (#530).
+  - `earningsSync` left a run at `running` forever when the rollup recompute threw (#530).
+  - `scripts/lib/setup-env.ts` now says so when it falls back to `.env.production` (#530).
+  - `npm run env:push` piped values through `echo` in a shell, mangling `$`, backticks, quotes;
+    it now uses `execFileSync` with stdin, and reports "REMOVED AND NOT RE-ADDED" (#529).
+  - `auto-compound.sh`/`loop.sh` worked in the operator tree and picked any `reports/*.md` by
+    mtime; now own worktree, only `priorities-YYYY-MM-DD.md` ≤7 days old (#524).
+  - 33 unreferenced class rules removed from `globals.css` (#532); `.env.example` merged into
+    `env.example` (#518).
+- **Funnel 11-11:** victorian-cc hub on title-only `lib/victorianThemeRules.ts` (#508, 44 rows);
+  dresses-cc / bottoms-cc hubs with 122 off-type pins (#509 — shoes via "dress your Sim"
+  description inference, the same class as the room themes); CurseForge author resolved at
+  ingest (#506 — 40% of new CurseForge rows were landing NULL after the E340 backfill); the
+  video queue refuses a short whose `target_url` is not a live 200 (#507 — a bare collection
+  slug produced a 404 link in a published caption); liveness grades operator off-days as
+  OFF-DAY, not MISSED (#505, `funnel-cadence-lib.ts`, every-other-day since 11-07).
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
