@@ -652,3 +652,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-11 19:02 | after-merge | operator / PR #533 | f140b96 | https://mhm-finds-dw5l-i5kprztyr-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-11 19:24 | after-merge | operator / PR #534 | ec3fb08 | https://mhm-finds-dw5l-8o8ecqzlo-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-11 21:32 | after-merge | operator / PR #535 | 48f589a | https://mhm-finds-dw5l-aj83lxptv-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-11-12 06:36 | check | morning-check |  | https://mhm-finds-dw5l-cj1p3b6op-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
