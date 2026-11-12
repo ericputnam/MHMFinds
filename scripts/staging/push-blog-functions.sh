@@ -63,7 +63,10 @@ MISSING=()
 for entry in "${CRITICAL_MARKERS[@]}"; do
   pattern="${entry%%|*}"
   name="${entry##*|}"
-  if ! code_only "$LOCAL_FILE" | grep -q "$pattern"; then
+  # grep -c, not grep -q: -q exits at the first match, the upstream grep then dies of
+  # SIGPIPE, and under `set -o pipefail` the pipeline reads as FAILED — every marker that
+  # IS present was reported missing and the push refused (exit 2). -c reads to the end.
+  if ! code_only "$LOCAL_FILE" | grep -c "$pattern" >/dev/null; then
     MISSING+=("    [MISSING] $name  (pattern: $pattern)")
   fi
 done
@@ -87,7 +90,20 @@ TMP_STAGING="$(mktemp -t functions_staging_XXXXXX.php)"
 trap 'rm -f "$TMP_STAGING"' EXIT
 
 echo "==> Pulling current STAGING file for diff..."
-scp -i "$SSH_KEY" -P "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_FILE}" "$TMP_STAGING" >/dev/null 2>&1 || true
+# A failed pull used to be swallowed (`|| true`). The wipe check below then compared the
+# local file against an EMPTY file, found nothing to protect, and passed — the exact
+# "could not run" graded as "ok" that CLAUDE.md warns about. Could-not-pull now stops the push.
+PULL_OK=1
+scp -i "$SSH_KEY" -P "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_FILE}" "$TMP_STAGING" >/dev/null 2>&1 || PULL_OK=0
+if [ "$PULL_OK" -ne 1 ] || [ ! -s "$TMP_STAGING" ]; then
+  echo "  *** Could not pull the current staging functions.php (scp failed or file empty)."
+  echo "      Without it the wipe check cannot run."
+  if [ $FORCE -ne 1 ]; then
+    echo "  Refusing to push. Fix the connection, or re-run with --force to push blind."
+    exit 4
+  fi
+  echo "  --force passed. Pushing WITHOUT a wipe check."
+fi
 
 ADDED=$(diff "$TMP_STAGING" "$LOCAL_FILE" 2>/dev/null | grep -c '^>' || true)
 REMOVED=$(diff "$TMP_STAGING" "$LOCAL_FILE" 2>/dev/null | grep -c '^<' || true)
@@ -115,16 +131,31 @@ if [ ${#LOCAL_MISSING[@]} -gt 0 ]; then
   fi
 fi
 
+BACKUP_NAME="${REMOTE_FILE}.bak.$(date +%s)"
 echo "==> Creating backup on staging server..."
 ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
-  "cp '$REMOTE_FILE' '${REMOTE_FILE}.bak.$(date +%s)'"
+  "cp '$REMOTE_FILE' '$BACKUP_NAME'"
+echo "    Backup: $BACKUP_NAME"
 
 echo "==> Uploading functions.php to staging..."
 scp -i "$SSH_KEY" -P "$REMOTE_PORT" "$LOCAL_FILE" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_FILE}"
 
 echo "==> Running PHP lint check..."
-ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
-  "php -l '$REMOTE_FILE'"
+# If the uploaded file does not lint on the server, the site is serving a broken
+# functions.php right now. Put the backup back before exiting (set -e used to exit here
+# and leave the broken file live).
+if ! ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
+  "php -l '$REMOTE_FILE'"; then
+  echo "  *** Remote PHP lint FAILED. Restoring the backup..."
+  if ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
+    "cp '$BACKUP_NAME' '$REMOTE_FILE'"; then
+    echo "  Restored $BACKUP_NAME. Staging is back on the previous file."
+  else
+    echo "  *** RESTORE FAILED. Staging is serving a broken functions.php. Restore by hand:"
+    echo "      cp '$BACKUP_NAME' '$REMOTE_FILE'"
+  fi
+  exit 5
+fi
 
 echo "==> Flushing WordPress cache..."
 ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \

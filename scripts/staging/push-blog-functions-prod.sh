@@ -75,7 +75,10 @@ MISSING=()
 for entry in "${CRITICAL_MARKERS[@]}"; do
   pattern="${entry%%|*}"
   name="${entry##*|}"
-  if ! code_only "$LOCAL_FILE" | grep -q "$pattern"; then
+  # grep -c, not grep -q: -q exits at the first match, the upstream grep then dies of
+  # SIGPIPE, and under `set -o pipefail` the pipeline reads as FAILED — every marker that
+  # IS present was reported missing and the push refused (exit 2). -c reads to the end.
+  if ! code_only "$LOCAL_FILE" | grep -c "$pattern" >/dev/null; then
     MISSING+=("    [MISSING] $name  (pattern: $pattern)")
   fi
 done
@@ -104,6 +107,12 @@ trap 'rm -f "$TMP_PROD"' EXIT
 
 echo "==> Pulling current PRODUCTION file for diff..."
 scp -i "$SSH_KEY" -P "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_FILE}" "$TMP_PROD" >/dev/null
+# set -e already stops on a failed scp. An EMPTY pull is the other way the wipe check
+# below can pass on nothing — there is no --force for this one.
+if [ ! -s "$TMP_PROD" ]; then
+  echo "  *** Pulled production functions.php is empty. Cannot run the wipe check. Aborting."
+  exit 4
+fi
 
 # 4. Check that current prod still has the markers — if it doesn't, that means
 #    someone edited prod directly via SSH. Warn loudly.
@@ -195,8 +204,22 @@ echo "==> Uploading functions.php to production..."
 scp -i "$SSH_KEY" -P "$REMOTE_PORT" "$LOCAL_FILE" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_FILE}"
 
 echo "==> Running PHP lint check on prod..."
-ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
-  "php -l '$REMOTE_FILE'"
+# If the uploaded file does not lint on the server, production is serving a broken
+# functions.php right now. Put the backup back before exiting (set -e used to exit here
+# and leave the broken file live, with the rollback command never printed).
+if ! ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
+  "php -l '$REMOTE_FILE'"; then
+  echo "  *** Remote PHP lint FAILED. Restoring the backup..."
+  if ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
+    "cp '$BACKUP_NAME' '$REMOTE_FILE'"; then
+    echo "  Restored $BACKUP_NAME. Production is back on the previous file."
+    echo "  Run: ./scripts/agents/check-blog-sidebar.sh"
+  else
+    echo "  *** RESTORE FAILED. Production is serving a broken functions.php. Restore by hand:"
+    echo "      ssh -i $SSH_KEY -p $REMOTE_PORT ${REMOTE_USER}@${REMOTE_HOST} \"cp '$BACKUP_NAME' '$REMOTE_FILE'\""
+  fi
+  exit 5
+fi
 
 echo "==> Flushing WordPress cache..."
 ssh -i "$SSH_KEY" -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \

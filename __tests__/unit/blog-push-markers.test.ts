@@ -64,7 +64,11 @@ describe('functions.php push-script CRITICAL_MARKERS', () => {
   it('both push scripts check markers against code only', () => {
     for (const script of [PROD, STAGING]) {
       const src = read(script);
-      expect(src, script).toContain('code_only "$LOCAL_FILE" | grep -q "$pattern"');
+      expect(src, script).toContain('code_only "$LOCAL_FILE" | grep -c "$pattern" >/dev/null');
+      // Under `set -o pipefail`, `… | grep -q` fails with SIGPIPE on a match in a large
+      // file, which reported every present marker as missing (push-script-failsafe.test.ts
+      // runs the scripts and caught it).
+      expect(src.replace(/^\s*#.*$/gm, ''), script).not.toMatch(/code_only "\$LOCAL_FILE" \| grep -q/);
       expect(src, script).not.toContain('if ! grep -q "$pattern" "$LOCAL_FILE"');
     }
   });
