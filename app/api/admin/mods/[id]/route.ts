@@ -4,6 +4,9 @@ import { CacheService } from '@/lib/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { rehostModImages, ImageRehostError } from '@/lib/services/imageUploader';
+import { finalizeUploadApproval, findHostedFile, publishOwnUpload } from '@/lib/modFiles/lifecycle';
+import { hostedUploadsDisabledResponse, hostedUploadsEnabled } from '@/lib/modFiles/storage';
+import { isSameOrigin } from '@/lib/modFiles/requestGuards';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -27,7 +30,12 @@ export async function GET(
       return NextResponse.json({ error: 'Mod not found' }, { status: 404 });
     }
 
-    return NextResponse.json(mod);
+    // The edit page shows the current hosted file (if any) next to the uploader.
+    const hostedFile = await findHostedFile(mod.id).catch((err) => {
+      console.error('[mod-files] hosted file lookup failed:', (err as Error).message);
+      return null;
+    });
+    return NextResponse.json({ ...mod, hostedFile });
   } catch (error) {
     console.error('Error fetching mod:', error);
     return NextResponse.json({ error: 'Failed to fetch mod' }, { status: 500 });
@@ -48,6 +56,22 @@ export async function PATCH(
     // Patreon image addresses expire and don't render — copy them to Blob first
     const body = await rehostModImages(await request.json());
 
+    // A new hosted file: the admin's own verified upload replaces the mod's
+    // current one. It is linked before the other fields are written, so a
+    // file that loses a race leaves the mod untouched.
+    const wantsHostedFile = body.uploadId !== undefined && body.uploadId !== null && body.uploadId !== '';
+    if (wantsHostedFile) {
+      if (!isSameOrigin(request)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      if (!hostedUploadsEnabled()) return hostedUploadsDisabledResponse();
+      const exists = await prisma.mod.findUnique({ where: { id: params.id }, select: { id: true } });
+      if (!exists) return NextResponse.json({ error: 'Mod not found' }, { status: 404 });
+      const filePrep = await publishOwnUpload(body.uploadId, session.user.id);
+      if (!filePrep.ok) return NextResponse.json({ error: filePrep.error }, { status: filePrep.status });
+      if (filePrep.uploadId && !(await finalizeUploadApproval(filePrep.uploadId, params.id))) {
+        return NextResponse.json({ error: 'That file was just used for another mod.' }, { status: 409 });
+      }
+    }
+
     const mod = await prisma.mod.update({
       where: { id: params.id },
       data: {
@@ -58,7 +82,7 @@ export async function PATCH(
         ...(body.author !== undefined && { author: body.author }),
         ...(body.thumbnail !== undefined && { thumbnail: body.thumbnail }),
         ...(body.images !== undefined && { images: body.images }),
-        ...(body.downloadUrl !== undefined && { downloadUrl: body.downloadUrl }),
+        ...(body.downloadUrl !== undefined && { downloadUrl: body.downloadUrl || null }),
         ...(body.sourceUrl !== undefined && { sourceUrl: body.sourceUrl }),
         ...(body.source !== undefined && { source: body.source }),
         ...(body.tags !== undefined && { tags: body.tags }),

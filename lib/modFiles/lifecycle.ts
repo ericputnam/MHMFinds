@@ -105,13 +105,88 @@ export async function prepareUploadForApproval(submissionId: string, adminId: st
   return { ok: true, uploadId: upload.id };
 }
 
+export type PublishCheck =
+  | { ok: true; uploadId: string | null }
+  | { ok: false; status: number; error: string };
+
+/**
+ * An admin creating a mod directly (POST /api/admin/mods) publishes their
+ * own upload with no submission in between: the admin is both uploader and
+ * reviewer. The file must be theirs, verified, and not attached to a
+ * submission, and it is copied out of quarantine on the same ETag pin as a
+ * reviewed submission. Call it before the mod is written; idempotent, so a
+ * retry after a failed mod write finds the row already `approved` with no
+ * modId and skips the copy. Absent / empty → ok with no upload.
+ */
+export async function publishOwnUpload(uploadId: unknown, adminId: string): Promise<PublishCheck> {
+  if (uploadId === undefined || uploadId === null || uploadId === '') return { ok: true, uploadId: null };
+  if (!isUploadId(uploadId)) return { ok: false, status: 400, error: 'Invalid uploaded file reference' };
+  const upload = await prisma.modUpload.findUnique({
+    where: { id: uploadId },
+    select: {
+      uploaderId: true,
+      status: true,
+      submissionId: true,
+      modId: true,
+      blobPathname: true,
+      blobDeletedAt: true,
+      downloadName: true,
+      blobEtag: true,
+    },
+  });
+  if (!upload || upload.uploaderId !== adminId) {
+    return { ok: false, status: 404, error: 'Uploaded file not found' };
+  }
+  if (upload.submissionId) {
+    return { ok: false, status: 409, error: 'That file is attached to a submission. Approve the submission instead.' };
+  }
+  if (
+    upload.status === 'approved' &&
+    !upload.modId &&
+    !upload.blobDeletedAt &&
+    isApprovedPath(upload.blobPathname)
+  ) {
+    return { ok: true, uploadId };
+  }
+  if (upload.status !== 'verified') {
+    return { ok: false, status: 409, error: 'That file has not passed checks yet. Upload it again.' };
+  }
+  if (!upload.blobEtag) {
+    return { ok: false, status: 409, error: 'That file has no verification record. Upload it again.' };
+  }
+
+  const dest = approvedPath(uploadId, upload.downloadName);
+  try {
+    await promoteBlob(upload.blobPathname, dest, upload.blobEtag);
+  } catch (err) {
+    if (err instanceof BlobChangedError) {
+      return { ok: false, status: 409, error: 'The stored file changed after it was checked. Upload it again.' };
+    }
+    throw err;
+  }
+  const res = await prisma.modUpload.updateMany({
+    where: { id: uploadId, uploaderId: adminId, status: 'verified', submissionId: null },
+    data: { status: 'approved', blobPathname: dest, reviewedBy: adminId, reviewedAt: new Date() },
+  });
+  if (res.count !== 1) return { ok: false, status: 409, error: 'The file changed while it was being published. Try again.' };
+  return { ok: true, uploadId };
+}
+
 /**
  * After the mod row exists: point the file at it and retire any earlier
  * hosted file for the same mod (a new version replaces the old one).
  * Old blobs are deleted best effort; the cleanup cron retries.
+ *
+ * The link is conditional on the file not already belonging to a mod, so
+ * two requests racing to publish the same file cannot both win. Returns
+ * false when the file was taken in between (the caller undoes its mod).
  */
-export async function finalizeUploadApproval(uploadId: string, modId: string): Promise<void> {
-  await prisma.modUpload.update({ where: { id: uploadId }, data: { modId } });
+export async function finalizeUploadApproval(uploadId: string, modId: string): Promise<boolean> {
+  const claimed = await prisma.modUpload.updateMany({
+    where: { id: uploadId, status: 'approved', modId: null },
+    data: { modId },
+  });
+  if (claimed.count !== 1) return false;
 
   const older = await prisma.modUpload.findMany({
     where: { modId, status: 'approved', id: { not: uploadId } },
@@ -126,6 +201,7 @@ export async function finalizeUploadApproval(uploadId: string, modId: string): P
       console.error('[mod-files] could not delete superseded blob (cron will retry):', (err as Error).message);
     }
   }
+  return true;
 }
 
 /**
