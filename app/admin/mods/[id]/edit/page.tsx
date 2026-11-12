@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
+import { HostedFileUpload } from '@/components/creator/HostedFileUpload';
+import { formatBytes } from '@/lib/modFiles/constants';
 import {
   ArrowLeft,
   Save,
@@ -44,6 +46,16 @@ interface ModFormData {
   genderOptions: string[];
   occultTypes: string[];
   packRequirements: string[];
+  /** A newly uploaded, verified file that replaces the hosted file on save. */
+  uploadId: string | null;
+}
+
+/** The mod's current hosted file, from GET /api/admin/mods/[id]/. */
+interface HostedFile {
+  id: string;
+  downloadName: string;
+  sizeBytes: number;
+  containsScript: boolean;
 }
 
 interface FacetDefinition {
@@ -90,6 +102,8 @@ export default function EditModPage() {
   const [error, setError] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [imageInput, setImageInput] = useState('');
+  const [hostedFile, setHostedFile] = useState<HostedFile | null>(null);
+  const [removingFile, setRemovingFile] = useState(false);
 
   // Facet definitions from API
   const [facetDefinitions, setFacetDefinitions] = useState<Record<string, FacetDefinition[]>>({});
@@ -122,6 +136,7 @@ export default function EditModPage() {
     genderOptions: [],
     occultTypes: [],
     packRequirements: [],
+    uploadId: null,
   });
 
   // Fetch facet definitions
@@ -181,7 +196,9 @@ export default function EditModPage() {
           genderOptions: mod.genderOptions || [],
           occultTypes: mod.occultTypes || [],
           packRequirements: mod.packRequirements || [],
+          uploadId: null,
         });
+        setHostedFile(mod.hostedFile ?? null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load mod');
       } finally {
@@ -194,6 +211,35 @@ export default function EditModPage() {
     }
   }, [modId]);
 
+  /** Take the hosted file down (stop serving it and delete its bytes). */
+  const removeHostedFile = async () => {
+    if (!hostedFile) return;
+    const fallback = formData.downloadUrl.trim()
+      ? 'The mod will use its download URL instead.'
+      : 'This mod has no download URL, so it will have no download until you add one.';
+    if (!window.confirm(`Remove ${hostedFile.downloadName}? The file is deleted and cannot be restored. ${fallback}`)) {
+      return;
+    }
+    setError('');
+    setRemovingFile(true);
+    try {
+      const response = await fetch(`/api/admin/mod-uploads/${hostedFile.id}/`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Removed from the mod edit page' }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to remove the hosted file');
+      }
+      setHostedFile(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove the hosted file');
+    } finally {
+      setRemovingFile(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -203,6 +249,9 @@ export default function EditModPage() {
       // Validate required fields
       if (!formData.title.trim()) {
         throw new Error('Title is required');
+      }
+      if (!formData.downloadUrl.trim() && !formData.uploadId && !hostedFile) {
+        throw new Error('Add a download URL or upload the mod file');
       }
 
       // Prepare data for API
@@ -695,16 +744,51 @@ export default function EditModPage() {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <h2 className="text-xl font-bold text-white mb-6">URLs and Media</h2>
           <div className="space-y-4">
+            {/* Hosted file */}
+            {hostedFile && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-800/60 p-4">
+                <div>
+                  <p className="text-sm font-semibold text-white">Hosted file</p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    {hostedFile.downloadName} · {formatBytes(hostedFile.sizeBytes)}
+                    {hostedFile.containsScript ? ' · contains script files' : ''}
+                  </p>
+                  {formData.uploadId && (
+                    <p className="mt-1 text-xs text-amber-300">Replaced by your new upload when you save.</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={removeHostedFile}
+                  disabled={removingFile || loading}
+                  className="px-3 py-2 text-sm font-medium rounded-lg border border-red-500/40 text-red-300 hover:bg-red-500/10 disabled:opacity-50"
+                >
+                  {removingFile ? 'Removing…' : 'Remove file'}
+                </button>
+              </div>
+            )}
+            <HostedFileUpload
+              disabled={loading || removingFile}
+              publishesOnSubmit
+              replacesExisting={!!hostedFile}
+              onChange={(uploadId) => setFormData((prev) => ({ ...prev, uploadId }))}
+            />
+
             {/* Download URL */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Download URL <span className="text-red-500">*</span>
+                Download URL{' '}
+                {formData.uploadId || hostedFile ? (
+                  <span className="font-normal text-slate-500">(optional when the file is hosted here)</span>
+                ) : (
+                  <span className="text-red-500">*</span>
+                )}
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required
+                  required={!formData.uploadId && !hostedFile}
                   value={formData.downloadUrl}
                   onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"
@@ -716,13 +800,18 @@ export default function EditModPage() {
             {/* Source URL */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Blog or Source URL <span className="text-red-500">*</span>
+                Blog or Source URL{' '}
+                {formData.uploadId || hostedFile ? (
+                  <span className="font-normal text-slate-500">(optional)</span>
+                ) : (
+                  <span className="text-red-500">*</span>
+                )}
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="url"
-                  required
+                  required={!formData.uploadId && !hostedFile}
                   value={formData.sourceUrl}
                   onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sims-pink focus:border-transparent"

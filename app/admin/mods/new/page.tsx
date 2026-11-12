@@ -53,6 +53,7 @@ export default function NewModPage() {
         onSubmit={handleSubmit}
         submitLabel="Create Mod"
         showAdminFields={true}
+        allowHostedFile
       />
     </div>
   );

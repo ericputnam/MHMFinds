@@ -126,6 +126,42 @@ describe('hosted mod files — automation and secrets', () => {
     expect(src.indexOf('finalizeUploadApproval(filePrep.uploadId')).toBeGreaterThan(write);
   });
 
+  it('admin create-mod publishes only its own upload, same-origin, before the mod is written', () => {
+    const src = read('app/api/admin/mods/route.ts');
+    const post = src.slice(src.indexOf('export async function POST'));
+    const auth = post.indexOf('session?.user?.isAdmin');
+    const origin = post.indexOf('isSameOrigin(request)');
+    const publish = post.indexOf('publishOwnUpload(body.uploadId, session.user.id)');
+    const write = post.indexOf('prisma.mod.create(');
+    const link = post.indexOf('finalizeUploadApproval(filePrep.uploadId, mod.id)');
+    expect(auth).toBeGreaterThan(-1);
+    expect(origin).toBeGreaterThan(auth);
+    expect(publish).toBeGreaterThan(origin);
+    expect(write).toBeGreaterThan(publish);
+    expect(post).toMatch(/if\s*\(\s*!filePrep\.ok\s*\)/);
+    expect(link).toBeGreaterThan(write);
+    // A lost race undoes the mod it just wrote.
+    expect(post.slice(link)).toMatch(/prisma\.mod\.delete\(\s*\{\s*where:\s*\{\s*id:\s*mod\.id\s*\}/);
+  });
+
+  it('admin edit-mod links a new file (own upload, same-origin) before any field is written', () => {
+    const src = read('app/api/admin/mods/[id]/route.ts');
+    const patch = src.slice(src.indexOf('export async function PATCH'), src.indexOf('export async function DELETE'));
+    const auth = patch.indexOf('session?.user?.isAdmin');
+    const origin = patch.indexOf('isSameOrigin(request)');
+    const publish = patch.indexOf('publishOwnUpload(body.uploadId, session.user.id)');
+    const link = patch.indexOf('finalizeUploadApproval(filePrep.uploadId, params.id)');
+    const write = patch.indexOf('prisma.mod.update(');
+    expect(auth).toBeGreaterThan(-1);
+    expect(origin).toBeGreaterThan(auth);
+    expect(publish).toBeGreaterThan(origin);
+    expect(link).toBeGreaterThan(publish);
+    expect(write).toBeGreaterThan(link);
+    expect(patch).toMatch(/if\s*\(\s*!filePrep\.ok\s*\)/);
+    // A file that lost the race returns before the mod is touched.
+    expect(patch.slice(link, write)).toMatch(/status:\s*409/);
+  });
+
   it('the funnel approve script can never approve a submission with a hosted file', () => {
     const src = read('scripts/agents/approve-submissions.ts');
     const filters = src.match(/upload:\s*\{\s*is:\s*null\s*\}/g) ?? [];

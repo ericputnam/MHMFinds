@@ -33,6 +33,10 @@ interface Props {
   /** Called with the verified upload's id, or null when removed. */
   onChange: (uploadId: string | null) => void;
   disabled?: boolean;
+  /** Admin create form: the file goes live with the mod, with no separate review. */
+  publishesOnSubmit?: boolean;
+  /** Admin edit form: the mod already has a hosted file, and this one replaces it on save. */
+  replacesExisting?: boolean;
 }
 
 async function readError(res: Response, fallback: string): Promise<string> {
@@ -73,13 +77,14 @@ function putToStorage(url: string, file: File, onProgress: (percent: number) => 
 }
 
 /**
- * "Host the file on MustHaveMods" field for the creator submission form.
+ * "Host the file on MustHaveMods" field for the creator submission form and the
+ * admin create-mod form.
  * Flow: reserve a slot (get a signed upload link) → PUT straight to the private
  * bucket → ask the server
  * to check the bytes. The submission can only reference a file that passed.
  * Renders nothing while the feature is switched off.
  */
-export function HostedFileUpload({ onChange, disabled }: Props) {
+export function HostedFileUpload({ onChange, disabled, publishesOnSubmit = false, replacesExisting = false }: Props) {
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [phase, setPhase] = useState<Phase>({ step: 'idle' });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -150,11 +155,18 @@ export function HostedFileUpload({ onChange, disabled }: Props) {
       <div className="flex items-start gap-3">
         <FileArchive className="mt-0.5 h-5 w-5 flex-shrink-0 text-sims-pink" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-white">Host the file on MustHaveMods (optional)</p>
+          <p className="text-sm font-semibold text-white">
+            {replacesExisting ? 'Upload a new version (optional)' : 'Host the file on MustHaveMods (optional)'}
+          </p>
           <p className="mt-1 text-xs text-slate-400">
             Upload your .package, .ts4script or .zip (up to {formatBytes(MAX_MOD_FILE_BYTES)}) and players download it
-            straight from your mod page. We check every file and an admin reviews it before it goes live. Only upload
-            files you made or have the right to share.
+            straight from your mod page.{' '}
+            {replacesExisting
+              ? 'We check the file, and it replaces the current hosted file when you save.'
+              : publishesOnSubmit
+                ? 'We check the file, and it goes live with this mod as soon as you create it.'
+                : 'We check every file and an admin reviews it before it goes live.'}{' '}
+            Only upload files you made or have the right to share.
           </p>
 
           {phase.step === 'idle' && (

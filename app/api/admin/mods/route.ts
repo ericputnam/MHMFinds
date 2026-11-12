@@ -4,6 +4,9 @@ import { CacheService } from '@/lib/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { rehostModImages, ImageRehostError } from '@/lib/services/imageUploader';
+import { finalizeUploadApproval, publishOwnUpload } from '@/lib/modFiles/lifecycle';
+import { hostedUploadsDisabledResponse, hostedUploadsEnabled } from '@/lib/modFiles/storage';
+import { isSameOrigin } from '@/lib/modFiles/requestGuards';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -167,6 +170,20 @@ export async function POST(request: NextRequest) {
     // Patreon image addresses expire and don't render — copy them to Blob first
     const body = await rehostModImages(await request.json());
 
+    // Hosted file: the admin's own verified upload, copied out of quarantine
+    // before the mod is written (lib/modFiles/lifecycle.ts). Same origin only.
+    const wantsHostedFile = body.uploadId !== undefined && body.uploadId !== null && body.uploadId !== '';
+    if (wantsHostedFile) {
+      if (!isSameOrigin(request)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      if (!hostedUploadsEnabled()) return hostedUploadsDisabledResponse();
+    }
+    const filePrep = await publishOwnUpload(body.uploadId, session.user.id);
+    if (!filePrep.ok) {
+      return NextResponse.json({ error: filePrep.error }, { status: filePrep.status });
+    }
+
     const mod = await prisma.mod.create({
       data: {
         title: body.title,
@@ -176,7 +193,7 @@ export async function POST(request: NextRequest) {
         author: body.author,
         thumbnail: body.thumbnail,
         images: body.images || [],
-        downloadUrl: body.downloadUrl,
+        downloadUrl: body.downloadUrl || null, // optional when a hosted file is attached
         sourceUrl: body.sourceUrl,
         source: body.source || 'Manual',
         tags: body.tags || [],
@@ -191,6 +208,12 @@ export async function POST(request: NextRequest) {
         publishedAt: new Date(), // Set publication date
       },
     });
+
+    if (filePrep.uploadId && !(await finalizeUploadApproval(filePrep.uploadId, mod.id))) {
+      // Another request published the same file first: undo this mod.
+      await prisma.mod.delete({ where: { id: mod.id } });
+      return NextResponse.json({ error: 'That file was just used for another mod.' }, { status: 409 });
+    }
 
     // Generate AI search embeddings for the new mod
     try {

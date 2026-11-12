@@ -33,7 +33,7 @@ export interface ModFormData {
   isNSFW: boolean;
   isFeatured: boolean;
   isVerified: boolean;
-  /** Verified hosted file to attach (creator submissions only). */
+  /** Verified hosted file to attach (creator submissions, or an admin's own upload). */
   uploadId?: string | null;
 }
 
@@ -342,6 +342,7 @@ export function ModSubmissionForm({
             {allowHostedFile && (
               <HostedFileUpload
                 disabled={loading}
+                publishesOnSubmit={showAdminFields}
                 onChange={(uploadId) => setFormData((prev) => ({ ...prev, uploadId }))}
               />
             )}
