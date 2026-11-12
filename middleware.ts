@@ -118,6 +118,18 @@ const BLOG_HREF_REGEX = /href=["']https:\/\/blog\.musthavemods\.com(\/(?!wp-cont
 const BLOG_ACTION_REGEX = /action=["']https:\/\/blog\.musthavemods\.com\/?["']/g;
 
 /**
+ * A post link typed without its scheme (href="gtracing.sjv.io/MmdRkM") is a
+ * relative URL, so the browser and Googlebot resolve it against the post:
+ * /gifts-for-gamer-boyfriend/gtracing.sjv.io/MmdRkM, a 404 (Search Console,
+ * 2026-11-09). Matches an href whose value starts with a dotted host name and
+ * a slash; anything already absolute, root-relative, a fragment or a query
+ * never matches. Script-file names ("index.php/…") are excluded so a real
+ * relative path is never turned into a host.
+ */
+const SCHEMELESS_HOST_HREF_REGEX =
+  /href=(["'])((?:[a-z0-9-]+\.)+(?!(?:php|html?|aspx?|jsp|cgi)\/)[a-z]{2,24}\/[^"']*)\1/gi;
+
+/**
  * Rewrite blog.musthavemods.com references in proxied WordPress HTML:
  * - <head>: Full rewrite of all blog.musthavemods.com references (canonical, og:url, etc.)
  * - <head>: Strip any noindex meta tags (safety net for caching layer issues)
@@ -152,7 +164,8 @@ function rewriteHtml(html: string, preserveNoindex: boolean): string {
       if (path === '/') return `href="${CANONICAL_ORIGIN}/blog/"`;
       return `href="${CANONICAL_ORIGIN}${path}"`;
     })
-    .replace(BLOG_ACTION_REGEX, `action="${CANONICAL_ORIGIN}/blog/"`);
+    .replace(BLOG_ACTION_REGEX, `action="${CANONICAL_ORIGIN}/blog/"`)
+    .replace(SCHEMELESS_HOST_HREF_REGEX, (_match, quote, value) => `href=${quote}https://${value}${quote}`);
 
   return rewrittenHead + rewrittenBody;
 }
@@ -279,6 +292,27 @@ export async function middleware(request: NextRequest) {
   // must run before the WordPress catch-all proxy) ──
   if (pathname === '/sims-4-main-character-energy-trait-pack' || pathname === '/sims-4-main-character-energy-trait-pack/') {
     return NextResponse.redirect(new URL('/mods/cmr5jdnta0ahn2cf8kaj5gfcu/', request.url), 308);
+  }
+
+  // ── Dead URLs Search Console reported as 404 (2026-11-09) ──
+  // /home/: vercel.json's "/home" redirect never fires, because Next's
+  // trailingSlash 308 (/home → /home/) runs first, and /home/ was then proxied
+  // to WordPress, which 404s. /category/ is WordPress's bare category base,
+  // which has no archive page; the blog landing is the nearest real page.
+  if (pathname === '/home/' || pathname === '/home') {
+    return NextResponse.redirect(new URL('/', request.url), 308);
+  }
+  if (pathname === '/category/' || pathname === '/category') {
+    return NextResponse.redirect(new URL('/blog/', request.url), 308);
+  }
+  // /creator/gorillax3/ is the Patreon handle (campaign 1878026) of the
+  // creator whose 36 mods E370 credited to "Gorilla Gorilla Gorilla"
+  // (reports/funnel/triage/patreon-authors-2026-11-07.json); the handle never
+  // had a page and 404'd. Here, not in lib/creatorSlug.ts MOVED_CREATOR_KEYS:
+  // that constant also drives the author-rewrite data scripts, and a change
+  // there would force a CREATOR_TEMPLATE_LASTMOD bump for every creator page.
+  if (pathname === '/creator/gorillax3/') {
+    return NextResponse.redirect(new URL('/creator/gorilla-gorilla-gorilla/', request.url), 308);
   }
 
   // ── Auth: protect /api/admin/* API routes (CRITICAL SECURITY) ──
