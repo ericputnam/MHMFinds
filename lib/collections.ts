@@ -946,7 +946,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // until a witch/spellcaster facet backfill lands (~344 keyword matches).
     filter: { contentType: '__witch_keyword__' },
     expectedCount: 60,
-    related: ['goth-cc', 'cottagecore-cc', 'vampire-cc'],
+    // 2026-11-13 (E400): 'goth-cc' → 'houses-lots' (26 witch cottages live
+    // there; goth-cc keeps 3).
+    related: ['houses-lots', 'cottagecore-cc', 'vampire-cc'],
     blogUrl: '/sims-4-witch-cc/',
   },
   {
@@ -1669,7 +1671,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 2207,
     // 2026-10-11 (E182): 'clutter' → 'cc' so the new top-level CC hub has an
     // anchored inbound source (clutter keeps 2: holidays-cc, decor-cc).
-    related: ['furniture-cc', 'decor-cc', 'cc'],
+    // 2026-11-13 (E400): 'decor-cc' → 'houses-lots' so the new lots page has
+    // an anchored inbound source from the page that excludes lots by design
+    // (decor-cc keeps 4).
+    related: ['furniture-cc', 'houses-lots', 'cc'],
     // Differentiated pair: "30+ Sims 4 CC Furniture Packs" keeps the editorial
     // picks intent, this page owns browse/filter intent. Live 200, self-
     // canonical, not redirected (checked 2026-10-04); 34 impressions at pos
@@ -2132,6 +2137,55 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // owns browse intent. /sims-4-nursery-cc/ is live (HTTP 200, verified
     // 2026-11-13) and is not in vercel.json.
     blogUrl: '/sims-4-nursery-cc/',
+  },
+  {
+    // Sage, 2026-11-13 (E400, Tier 0 — registry entry in the existing
+    // pattern). A browse page for whole houses and lots. build-cc excludes
+    // lots on purpose ("it holds the objects, not the builds") and no other
+    // page covered them. Demand: six legacy articles with no browse page drew
+    // 387 Organic Search + Referral + AI Assistant landings in 28 days (GA4
+    // 10-14 → 11-10): /sims-4-houses/ 163, /sims-4-castles/ 81,
+    // /sims-4-hotel-lots/ 42, /sims-4-family-house/ 39, /sims-4-modern-houses/
+    // 29, /sims-4-cottage-houses/ 27.
+    // Facet cleaned first: all 983 SFW Sims 4 lot/residential/commercial/
+    // community rows were read and 277 (28.2%; residential alone 45.9%) were
+    // not lots — walls, windows, EA packs, furniture, gameplay mods. Pinned in
+    // scripts/lib/hand-audited-content-types.ts and applied (rollback file
+    // reports/funnel/catalog-e400-lots-apply-2026-11-13.json). After: 706
+    // rows, 690 free; collection-hub-eligibility --family=lots top 48 ELIGIBLE
+    // (0 adult, 0 off-type).
+    // Rejected the same day: a gameplay-mods hub (the first E400 candidate).
+    // Its pre-committed grade was NOT ELIGIBLE: Wonderful Whims and Cuddle and
+    // Bath Together are still SFW-flagged in the top 30 (isNSFW is Rowan's
+    // lane). Do not ship it until that grade passes.
+    // Inbound: build-cc (repointed from decor-cc, which keeps 4) and witch-cc
+    // (repointed from goth-cc, which keeps 3).
+    slug: 'houses-lots',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Houses & Lots',
+    heading: 'Sims 4 Houses & Lots',
+    metaTitle: 'Sims 4 Houses & Lots — Browse 700+ Family Homes, Castles & Community Lots | MustHaveMods',
+    metaDescription:
+      'Browse 700+ Sims 4 houses and lots in one grid: family homes, starter builds, castles, farmhouses, cafés, gyms, hotels and hospitals, sorted by downloads.',
+    tagline: 'Family homes, starter builds, castles and community lots',
+    intro:
+      'Building a whole house is the slowest thing you can do in Sims 4, and the gallery is the fastest way to get one. But the gallery is hard to search, and the best builds are often posted on a creator\'s own site with a download link instead. This page gathers the houses and lots in our catalog into one grid, sorted by downloads.\n\nThere are 706 here, and 690 of them are free. Most are homes, from starter and tiny houses to family homes, modern villas, farmhouses, 24 ranches and 26 witch cottages. 27 are castles and palaces. The rest are community and venue lots: restaurants, cafés and shops, hotels, gyms, 12 police stations, hospitals, schools and a campus. Creators with long shelves include plumbobkingdom, xogerardine, simZmora, Moniamay72, Merin Martini and RayDesign9.\n\nWe read every row before building this page, and about a quarter of what the catalog had filed as a lot was something else. Walls, windows, doors and wallpaper are not here. Furnished single rooms, furniture sets, EA packs and gameplay mods are not here either. If you want objects to fill a house you already built, the build CC page holds those.\n\nTwo practical notes. Most lots list the packs they were built with, and a lot placed without them will be missing objects, so check the download page before you place it. Also check the lot size, because a 40×30 build will not fit a 20×20 plot.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+    filter: { contentTypeIn: ['lot', 'residential', 'commercial', 'community'] },
+    expectedCount: 706,
+    related: ['build-cc', 'furniture-cc', 'witch-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // houses" intent (163 landings 28d); this page owns browse intent.
+    // All six legacy URLs are live (HTTP 200, verified 2026-11-13) and none
+    // is in vercel.json.
+    blogUrl: '/sims-4-houses/',
+    guides: [
+      { href: '/sims-4-castles/', label: 'Sims 4 castles and palaces' },
+      { href: '/sims-4-family-house/', label: 'Sims 4 family houses' },
+      { href: '/sims-4-modern-houses/', label: 'Sims 4 modern houses' },
+      { href: '/sims-4-cottage-houses/', label: 'Sims 4 cottage houses' },
+      { href: '/sims-4-hotel-lots/', label: 'Sims 4 hotel lots' },
+    ],
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level

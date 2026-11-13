@@ -145,6 +145,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/05/6adc521c-fb64-4554-a038-8c7113c48924.jpg",
     "https://images.surferseo.art/7c8a88fd-1293-4713-b02f-23f31cb4736f.png",
   ],
+  "houses-lots": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/09/w-920h-690-3784559.jpg",
+    "https://images.surferseo.art/2c30e37f-7166-4b7d-a8f8-97cde43f7d72.png",
+    "https://images.surferseo.art/371ce633-cb77-45e2-815a-add204ca5a94.jpeg",
+  ],
   "jewelry-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/12/57693e2c-5fda-4600-ba8f-2a819934c2d4-1.png",
     "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/nose-set-no-02-for-sims-4-1769616869404-0.jpg",
