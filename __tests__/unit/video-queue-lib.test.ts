@@ -350,4 +350,24 @@ describe('E386 target URLs land', () => {
     expect(check).toMatch(/targetStatusProblem\(d\.targetUrl, await probeTarget\(d\.targetUrl\)\)/);
     expect(src).toMatch(/redirect: 'manual'/);
   });
+
+  // Video 43631 is approved and the bot cannot edit an approved video, so its link is fixed
+  // at the site: both spellings of /christmas-cc 308 to the registry hub. Keep the redirect
+  // until that short is off the platforms; the destination is read from the registry.
+  it('the approved short 43631 link lands: /christmas-cc redirects to the registry hub', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const { SIMS4_COLLECTIONS, collectionHref } = await import('../../lib/collections');
+    const hub = SIMS4_COLLECTIONS.find((c) => c.slug === 'christmas-cc');
+    expect(hub).toBeDefined();
+    const cfg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../vercel.json'), 'utf8')) as {
+      redirects: Array<{ source: string; destination: string; permanent?: boolean }>;
+    };
+    for (const source of ['/christmas-cc', '/christmas-cc/']) {
+      const r = cfg.redirects.find((x) => x.source === source);
+      expect(r, source).toBeDefined();
+      expect(r!.destination).toBe(collectionHref(hub!));
+      expect(r!.permanent).toBe(true);
+    }
+  });
 });
