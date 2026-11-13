@@ -19,10 +19,12 @@ import { prisma } from './prisma';
 // 2026-10-26, app/layout.tsx + HomeJsonLd 2026-10-27 (#389), HomeCapture
 // cadence copy "every two weeks" 2026-11-01 (E314); per-route share card
 // 2026-11-05 (E337, #467 — merged with this guard red); HomeJsonLd FAQ reads
-// CATALOG_FINDS 2026-11-06 (E364). Bump when
+// CATALOG_FINDS 2026-11-06 (E364); JSON-LD via serializeJsonLd in app/page.tsx +
+// HomeJsonLd 2026-11-11 (operator audit 97ee5083, pushed with this guard red;
+// bumped by E405). Bump when
 // app-level pages actually change — the git guard below fails if you forget.
 // HOME_SHELL_LASTMOD in lib/seo/siteLastmod.ts restates this; bump both.
-export const APP_LASTMOD = '2026-11-06';
+export const APP_LASTMOD = '2026-11-11';
 
 // /games/[game]/[topic] template — trailing-slash canonical fix 2026-07-03;
 // og:image on every collection page 2026-10-30 (E298, #410); email-box
@@ -33,9 +35,12 @@ export const APP_LASTMOD = '2026-11-06';
 // "Share this list" button in the intro header 2026-11-06 (E352);
 // CollectionPage JSON-LD gains dateModified 2026-11-06 (E354);
 // descriptive anchor on the blog-twin link 2026-11-07 (E367);
-// "create a free account" link in the email block 2026-11-09 (E380).
+// "create a free account" link in the email block 2026-11-09 (E380);
+// CollectionPageClient fixes 2026-11-10 (#502) and 2026-11-11 (#519, /api
+// trailing slash), JSON-LD via serializeJsonLd 2026-11-11 (97ee5083) — all
+// three merged with this guard red; bumped by E405.
 // Bump when the template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-09';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-11';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
