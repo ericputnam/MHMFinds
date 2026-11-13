@@ -923,51 +923,34 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-10 — rotated to the archive
+### 2026-10-15 → 11-11 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12.
 
-### 2026-11-11 (covers #514–#535 and the 11-11 funnel run)
+### 2026-11-12 (covers #498)
 
-An operator audit (#514–#532) and the creator-hosted mod files feature (#533–#535) landed, along
-with 7 funnel PRs (#503–#510, #512). 0 rollbacks. Subsystem details are in the archive (11-11).
+One operator PR (#498, Search Console indexing errors), no funnel merges, 0 rollbacks. The
+morning check passed. Subsystem details are in the archive (11-12).
 
-- **A fix to a safety gate needs an end-to-end test before it merges.** #516 made the
-  `functions.php` push scripts match markers in code only, using `code_only FILE | grep -q PAT`
-  under `set -o pipefail`. `grep -q` exits at the first match, the upstream command dies of
-  SIGPIPE, and the pipeline fails. So every marker that *was* present read as missing. Both
-  scripts refused to push, and that included `deploy-verify.sh`'s automatic restore. #528 fixed
-  it with `grep -c` and added `push-script-failsafe.test.ts`, which runs both scripts against
-  stubbed ssh/scp/php. Under pipefail, never pipe into `grep -q` or `head`.
-- **A swallowed failure in a safety comparison turns into a pass.** The staging push did
-  `pull … || true`. A failed pull left an empty file, and the wipe check compared against it and
-  passed. A failed server-side `php -l` exited under `set -e` and left the broken file live. Now a
-  failed pull stops the push, and a failed lint restores the backup first (#528). When an input
-  to a check is missing, stop. Don't compare against an empty default.
-- **Role claims in a JWT must expire sooner than the token.** `isAdmin`/`isPremium`/`isCreator`
-  were frozen for the session's 30-day life, so a revoked admin stayed admin. The jwt callback
-  now re-reads them at most every 5 minutes (#515). Compare secrets in constant time, never `!==` (#522).
-- **Never link a verified identity to an account whose address is unproven.** Credentials signup
-  stamped `emailVerified` with no proof. A Patreon sign-in to that address would link to the
-  account, and the squatter's password kept working. Signup no longer auto-verifies. Linking
-  discards the unproven password (#515).
-- **A helper that swallows errors must still return whether it worked.**
-  `updateSearchIndex` swallows its errors by design, so `/api/admin/reindex-search` answered
-  success for every mod with `OPENAI_API_KEY` unset. It now returns a boolean (#526).
-- **Never pass a value through a shell.** `env:push` ran `echo "${value}" | vercel env add`,
-  which mangled any secret containing `$`, a backtick, a quote or a backslash. Use
-  `execFileSync` with stdin (#529). A remove-then-add replace must also report the
-  half-done state ("removed and not re-added"), not count it as an ordinary failure.
-- **Pin the bytes you verified to the bytes you publish.** Hosted mod files record the R2 ETag
-  at verify, and approval copies with `CopySourceIfMatch` on it. A claim that two requests can
-  race for is a conditional write that returns `false`, never a read followed by a write (#533,
-  #534).
-- **Still open:** the `monetization-agent` cron slash (Tier 2, above).
+- **A `vercel.json` redirect whose `source` has no trailing slash never fires.** Next's
+  `trailingSlash` 308 runs first. `/home` → `/` existed from the start, but `/home` went to
+  `/home/`, which was proxied to WordPress and returned a 404 that Search Console reported (#498). Every
+  other entry has a slash twin. `/home` was the one without, and no test checks for that.
+  Write the slash form (or both), and confirm with `curl -sI` that the *slash* URL redirects.
+- **The app's `robots.txt` replaces WordPress's, so WordPress's rules are lost.** The route
+  never reaches the WP file in production, so its `Disallow: /wp-admin/` never applied on the
+  apex. Crawlers fetched `wp-admin` edit URLs (403), `/wp-json/` (401) and Patreon-plugin action
+  URLs (403). When you proxy a host, copy its crawler rules into the proxying route, and add them
+  to **every** user-agent group. A bot that matches a named group ignores `*`.
+- **Proxied post HTML can contain links with no scheme** (`href="host.tld/x"`). Browsers resolve
+  these under the post's own path, which gives a 404. `rewriteHtml` now adds `https://`.
+- **Still open:** the `monetization-agent` cron slash (Tier 2), a `vercel.json` slash-twin guard
+  test, and the missing #498 ledger row.
 
 ---
 
-*Last compound review: 2026-11-11*
+*Last compound review: 2026-11-12*
 
 ---
 

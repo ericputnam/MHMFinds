@@ -3269,6 +3269,60 @@ Subsystem details are in the archive (11-10).
   slug produced a 404 link in a published caption); liveness grades operator off-days as
   OFF-DAY, not MISSED (#505, `funnel-cadence-lib.ts`, every-other-day since 11-07).
 
+### 2026-11-11 — rotated from CLAUDE.md
+
+An operator audit (#514–#532) and the creator-hosted mod files feature (#533–#535) landed, along
+with 7 funnel PRs (#503–#510, #512). 0 rollbacks. Subsystem details are in the archive (11-11).
+
+- **A fix to a safety gate needs an end-to-end test before it merges.** #516 made the
+  `functions.php` push scripts match markers in code only, using `code_only FILE | grep -q PAT`
+  under `set -o pipefail`. `grep -q` exits at the first match, the upstream command dies of
+  SIGPIPE, and the pipeline fails. So every marker that *was* present read as missing. Both
+  scripts refused to push, and that included `deploy-verify.sh`'s automatic restore. #528 fixed
+  it with `grep -c` and added `push-script-failsafe.test.ts`, which runs both scripts against
+  stubbed ssh/scp/php. Under pipefail, never pipe into `grep -q` or `head`.
+- **A swallowed failure in a safety comparison turns into a pass.** The staging push did
+  `pull … || true`. A failed pull left an empty file, and the wipe check compared against it and
+  passed. A failed server-side `php -l` exited under `set -e` and left the broken file live. Now a
+  failed pull stops the push, and a failed lint restores the backup first (#528). When an input
+  to a check is missing, stop. Don't compare against an empty default.
+- **Role claims in a JWT must expire sooner than the token.** `isAdmin`/`isPremium`/`isCreator`
+  were frozen for the session's 30-day life, so a revoked admin stayed admin. The jwt callback
+  now re-reads them at most every 5 minutes (#515). Compare secrets in constant time, never `!==` (#522).
+- **Never link a verified identity to an account whose address is unproven.** Credentials signup
+  stamped `emailVerified` with no proof. A Patreon sign-in to that address would link to the
+  account, and the squatter's password kept working. Signup no longer auto-verifies. Linking
+  discards the unproven password (#515).
+- **A helper that swallows errors must still return whether it worked.**
+  `updateSearchIndex` swallows its errors by design, so `/api/admin/reindex-search` answered
+  success for every mod with `OPENAI_API_KEY` unset. It now returns a boolean (#526).
+- **Never pass a value through a shell.** `env:push` ran `echo "${value}" | vercel env add`,
+  which mangled any secret containing `$`, a backtick, a quote or a backslash. Use
+  `execFileSync` with stdin (#529). A remove-then-add replace must also report the
+  half-done state ("removed and not re-added"), not count it as an ordinary failure.
+- **Pin the bytes you verified to the bytes you publish.** Hosted mod files record the R2 ETag
+  at verify, and approval copies with `CopySourceIfMatch` on it. A claim that two requests can
+  race for is a conditional write that returns `false`, never a read followed by a write (#533,
+  #534).
+- **Still open:** the `monetization-agent` cron slash (Tier 2, above).
+
+
+### 2026-11-12 — subsystem entries (written directly to the archive)
+
+- **#498 (operator) — Search Console 404/403/401 reasons (GSC mail 2026-11-09).** robots.txt now
+  disallows `/wp-admin/` (keeps `admin-ajax.php`), `/wp-json/`, `/patreon-flow/` and the
+  video-player asset paths (`/resource/video_files/`, `/assets/content/`, `/public/video/`,
+  `/player?`) in **every** user-agent group via one `NON_CONTENT_RULES` constant. Middleware 308s
+  `/home/` → `/`, `/category/` → `/blog/`, `/creator/gorillax3/` → `/creator/gorilla-gorilla-gorilla/`
+  (the redirect lives in middleware, not `MOVED_CREATOR_KEYS`, because that constant also drives the
+  author-rewrite scripts and would force a `CREATOR_TEMPLATE_LASTMOD` bump). `rewriteHtml` turns
+  scheme-less post links (`href="gtracing.sjv.io/…"`) into `https://` URLs; script-file names
+  (`index.php/…`) are excluded. Guard: `__tests__/unit/search-console-indexing-2026-11-09.test.ts`.
+  Verified live 2026-11-12: all three 308s fire, robots.txt carries the rules.
+- **Ledger gap:** #498 was merged by the operator at 07:14 and has no `after-merge` row in
+  `reports/funnel/changelog.md` (the 11-11 digest listed it as open). `deploy-verify.sh --check`
+  on the next morning run covers the deploy; the row itself is still missing.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
