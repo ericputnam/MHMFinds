@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-11
+ * Generated on:     2026-11-13
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -27,8 +27,8 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   ],
   "bottoms-cc": [
     "https://images.surferseo.art/094e3696-eff6-4a92-9196-b9058f69e984.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/10/2025-07-28-Kobe-Set-C-1024x768.webp",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/9abfc353-b7c3-497e-81f2-a5b659ffff96-1.png",
-    "https://blog.musthavemods.com/wp-content/uploads/2024/10/image-9.jpg",
   ],
   "build-cc": [
     "https://musthavemods.com/wp-content/uploads/2024/11/image-50.jpeg",
@@ -62,8 +62,8 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   ],
   "cottagecore-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/43b68acd-390b-4d64-b149-6c4c1c930a93-1.webp",
-    "https://images.surferseo.art/5de8dc5c-86d8-4a44-ae02-704827195b15.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/07/1fd24669-e246-447c-9f3b-32f375f1f7be.jpg",
+    "https://images.surferseo.art/5de8dc5c-86d8-4a44-ae02-704827195b15.jpeg",
   ],
   "decor-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/08/ec97cee6-f59d-4e2d-825f-4fa2156e2f66.png",
@@ -78,7 +78,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   "eyebrows-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/9296a107-c166-4536-9738-f8d132bd91d8.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/f291cf95-57aa-4bc8-89ff-b7a7e2a12875.jpg",
-    "https://blog.musthavemods.com/wp-content/uploads/2022/04/venus-sim-4-eyebrows.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/11/54593c3a-ae0b-4d34-b524-3fc2a2c3b9fa-1.png",
   ],
   "eyes-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/aeb04de5-51fb-4f71-8efa-cb21f2e9893c-1.png",
@@ -179,6 +179,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/12/baf0b8a4-b923-4013-bb1a-c2eb6ab109aa-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/80205747-8a08-4c3d-9832-98228cfe3420-1.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/03/14e70d16-1ec8-4135-aa7b-bd731d8817a8-1.png",
+  ],
+  "nursery-cc": [
+    "https://musthavemods.com/wp-content/uploads/2024/10/image-6.jpeg",
+    "https://images.surferseo.art/4133d066-f89d-4ef1-98d4-56f5efe8d1a3.png",
+    "https://musthavemods.com/wp-content/uploads/2025/05/d95db4b7-f0e1-40ea-a3e2-18751a8516d7.jpg",
   ],
   "piercings-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2026/01/bodygems2preview-1024x1024.webp",
