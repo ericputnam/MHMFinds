@@ -22,6 +22,7 @@ import {
   resolveCurseForgeIngestAuthor,
   type SpellingRow,
 } from './curseforgeIngestAuthor';
+import { SIMSFINDS_HOSTS, simsfindsAuthorFromHtml } from './simsfindsAuthor';
 
 // CSV file path for tracking scraped URLs
 const SCRAPED_URLS_CSV_PATH = path.join(process.cwd(), 'data', 'mhm-scraped-urls.csv');
@@ -987,6 +988,12 @@ export class MustHaveModsScraper {
       return undefined; // Let page scraping handle it
     }
 
+    // SIMSFINDS (E401): an aggregator — a bare-host link would otherwise slug to
+    // "Simsfinds" below. The page's JSON-LD names the creator; scrape it.
+    if (SIMSFINDS_HOSTS.has(hostname)) {
+      return undefined;
+    }
+
     // SIMSDOM: Can't reliably extract from URL - need to scrape page
     if (hostname.includes('simsdom.com')) {
       return undefined; // Let page scraping handle it
@@ -1260,6 +1267,15 @@ export class MustHaveModsScraper {
           const author = validateAuthor(cleaned);
           if (author) return author;
         }
+      }
+
+      // Simsfinds (E401, 2026-11-13): the download page names its creator in
+      // JSON-LD only when the creator uploaded it (data-bycreator="1"). A
+      // re-upload names no one — return undefined rather than the generic
+      // fallback, so the row stays NULL instead of taking the uploader's name.
+      else if (SIMSFINDS_HOSTS.has(hostname)) {
+        const sf = typeof response.data === 'string' ? simsfindsAuthorFromHtml(response.data) : null;
+        return sf?.kind === 'found' ? validateAuthor(sf.author) : undefined;
       }
 
       // Generic fallback - look for common author metadata
