@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T11:38:56.428Z",
+  "generatedAt": "2026-11-13T11:38:13.128Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -4551,9 +4551,9 @@
     },
     {
       "date": "2026-11-09",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 215.37,
+      "sessions": 11588,
+      "rpm": 18.58,
       "expectedRevenue": 188.6,
       "expectedSessions": 12837,
       "nonAdMonthly": 139,
@@ -4588,9 +4588,9 @@
     },
     {
       "date": "2026-11-10",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 229.9,
+      "sessions": 11095,
+      "rpm": 20.72,
       "expectedRevenue": 192.2,
       "expectedSessions": 11838,
       "nonAdMonthly": 139,
@@ -4648,6 +4648,71 @@
         "Operator": 1,
         "manual": 1,
         "PR": 1
+      }
+    },
+    {
+      "date": "2026-11-12",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 192.42,
+      "expectedSessions": 11585,
+      "nonAdMonthly": 179,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-11-13",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 214.7,
+      "expectedSessions": 11701,
+      "nonAdMonthly": 179,
+      "ownedAdds7d": 206,
+      "pinterestSessions7d": 56736,
+      "returningShare7d": 0.5155699144136485,
+      "nonPinterestShare7d": 0.19492571623174837,
+      "pagesPerSession7d": 1.7985837655042498,
+      "engagementRate7d": 0.7219051077495716,
+      "favorites7d": 1571,
+      "downloadClicks7d": 155,
+      "newMods7d": 146,
+      "catalogTotal": 17396,
+      "captureRatePer1k": 2.3253188847499717,
+      "creatorsOnboarded": 3,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.9090909090909091,
+      "opsMergeShare7d": 0.0975609756097561,
+      "paperOnlyMerges7d": 4,
+      "mergesByOwner7d": {
+        "Cass": 4,
+        "Rio": 4,
+        "Rowan": 4,
+        "Nova": 4,
+        "Pip": 6,
+        "Ops": 4,
+        "Sage": 6,
+        "Quinn": 3,
+        "Operator": 1,
+        "manual": 1,
+        "PR": 1,
+        "operator": 3
       }
     }
   ],
@@ -8057,6 +8122,90 @@
       "kind": "merge",
       "label": "Quinn: PR #499 funnel: daily run 2026-11-09",
       "commit": "ebd02ff",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Cass: PR #503 E391 newsletter-08 run 1 send record",
+      "commit": "3f25561",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Ops: PR #505 E394 liveness grades off days on the guard",
+      "commit": "0b4aab9",
+      "result": "SUPERSEDED via 0b4aab9 · PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Nova: PR #506 E390 resolve CurseForge authors at ingest + freeze 37-row backfill plan",
+      "commit": "e79698d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Rowan: PR #508 victorian-cc on a title-only victorian theme (E393)",
+      "commit": "d9f1a35",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Pip: PR #507 E386 video-queue refuses a short whose link does not land",
+      "commit": "18a4cb3",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Sage: PR #509 E388 dresses-cc + E389 bottoms-cc hubs",
+      "commit": "f8a4ef7",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Rio: PR #504 affiliates 11-11 read (E392)",
+      "commit": "22ba431",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Nova: PR #510 E390 record applied ids in the CurseForge author plan",
+      "commit": "f08cd32",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "Quinn: PR #512 funnel: daily run 2026-11-11",
+      "commit": "fa1fd43",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "operator / PR #533",
+      "commit": "f140b96",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "operator / PR #534",
+      "commit": "ec3fb08",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "merge",
+      "label": "operator / PR #535",
+      "commit": "48f589a",
       "result": "PASS"
     }
   ]
