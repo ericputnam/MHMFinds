@@ -1,0 +1,520 @@
+{
+ "writtenAt": "2026-11-13T12:08:47.936Z",
+ "mode": "apply",
+ "facets": [
+  "gameplay-mod",
+  "script-mod"
+ ],
+ "rows": [
+  {
+   "id": "cmijmweih008boxc8fvyc61hk",
+   "title": "Cutie Pie Collection",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9nl9z00kboxy7tnw6l57s",
+   "title": "Candy Covered",
+   "from": "gameplay-mod",
+   "to": "furniture"
+  },
+  {
+   "id": "cmil0n87v000yoxees2rm9tpk",
+   "title": "Pretty Girl Treatment Frenchies",
+   "from": "script-mod",
+   "to": "nails"
+  },
+  {
+   "id": "cmim92oxo01sroxy88ejcda5x",
+   "title": "Shauna Box Braids",
+   "from": "gameplay-mod",
+   "to": "hair"
+  },
+  {
+   "id": "cmigu1rkn001soxkzgmn37z77",
+   "title": "Ice Coffee Set",
+   "from": "gameplay-mod",
+   "to": "food"
+  },
+  {
+   "id": "cmijprprl016zoxc82pjsh606",
+   "title": "Fairycore Bloom Collection",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9jog00028oxy7svpzjbg4",
+   "title": "The Sims 4 Get to Work",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmijo07lq00mzoxc8fdmb7e2j",
+   "title": "H&B Dual Wash Dual Dry",
+   "from": "gameplay-mod",
+   "to": "furniture"
+  },
+  {
+   "id": "cmim9jo8h0024oxy78m39mm6y",
+   "title": "The Sims 4 Discover University",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9johy0029oxy7i37z1z95",
+   "title": "The Sims 4 Get Together",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmknf9amb002toxolwjk93ijb",
+   "title": "N34 Teeth",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim8vlq600jloxy8z5978lf1",
+   "title": "Monster High Iconic Werewolf Siblings",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmc2jgp00jioxeup41l9xt5",
+   "title": "The Sims 4 Hospital",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmikd7njn0013oxbhulmpwsih",
+   "title": "Pimple Patches",
+   "from": "gameplay-mod",
+   "to": "accessories"
+  },
+  {
+   "id": "cmil3m7j000gjoxpzgx6gjdkb",
+   "title": "SZA Sim Download",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9mdck00fjoxy79j1xlwbu",
+   "title": "Victus 16 Gaming Laptop",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9lkkv009yoxy7vxwn3m7u",
+   "title": "Growing Up",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmijkhswy000toxc8ngnrrfxm",
+   "title": "Flo’s Ivy League Set",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmikknd4200dvox333rkc9ick",
+   "title": "Birthday Wedges",
+   "from": "script-mod",
+   "to": "shoes"
+  },
+  {
+   "id": "cmim8vkod00j4oxy8u491pprv",
+   "title": "Erika and Eliza",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9ndr400jjoxy7dv2t5xjr",
+   "title": "Barbie’s Closet Collection 2 CC",
+   "from": "gameplay-mod",
+   "to": "full-body"
+  },
+  {
+   "id": "cmim9kw0x006soxy7tb0uihvk",
+   "title": "Beastly: Werewolf Fangs",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmijmurux007loxc8v28z36ne",
+   "title": "Horns Pack- Valhallanism",
+   "from": "gameplay-mod",
+   "to": "accessories"
+  },
+  {
+   "id": "cmijnunx900jqoxc8rx0sv7du",
+   "title": "Cherry Bunnies Tattoo",
+   "from": "gameplay-mod",
+   "to": "tattoos"
+  },
+  {
+   "id": "cmim8vlan00jdoxy8gga9wwju",
+   "title": "Brian Davis",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmcmtwy00ucoxeuie906i6g",
+   "title": "New Sims 4 Police Station Build",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmikkfl0n009lox33j0udbsqs",
+   "title": "Lexel Air",
+   "from": "gameplay-mod",
+   "to": "beard"
+  },
+  {
+   "id": "cmil3q7ca00imoxpzptriq73c",
+   "title": "Daily Casual Set",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9jonr002coxy7evfiecqz",
+   "title": "The Sims 4 Snowy Escape",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmikj3rmd00auoxnaz1c6m7jf",
+   "title": "Sims Dump",
+   "from": "script-mod",
+   "to": null
+  },
+  {
+   "id": "cmim8r8gz0001oxy8c6y09y45",
+   "title": "Asian Garden Plants",
+   "from": "gameplay-mod",
+   "to": "decor"
+  },
+  {
+   "id": "cmikk5p49004lox33ucf669qj",
+   "title": "Pool Sliders For Men",
+   "from": "gameplay-mod",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmd4ufh0142oxeu7fjdh2a3",
+   "title": "Vitiligo V3",
+   "from": "gameplay-mod",
+   "to": "skin"
+  },
+  {
+   "id": "cmky9b6qb00odoxhcf26qq821",
+   "title": "Sims 4 Ski Suit Recolor",
+   "from": "script-mod",
+   "to": "full-body"
+  },
+  {
+   "id": "cmikk0yfu0027ox3362c8x0bs",
+   "title": "Velvet Pajama Set",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmc1xb500j1oxeu02zp1e12",
+   "title": "ADM Hospital",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmil3mi0n00gmoxpzmhxoa2sk",
+   "title": "Visceral Hat",
+   "from": "gameplay-mod",
+   "to": "hats"
+  },
+  {
+   "id": "cmky0jm8k009noxhcz77p3tsf",
+   "title": "Bleached Super Funky Recolor",
+   "from": "script-mod",
+   "to": "hair"
+  },
+  {
+   "id": "cmsmc35d700jroxeumme1tu6f",
+   "title": "The Peninsula Suites",
+   "from": "script-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmim8rno7001toxy8ifq4xlsv",
+   "title": "Soft Boi And Dense Boi",
+   "from": "gameplay-mod",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim8w8d000neoxy8b1vf0zrf",
+   "title": "Denji",
+   "from": "script-mod",
+   "to": null
+  },
+  {
+   "id": "cmim8w94700nroxy878drta3u",
+   "title": "Chang",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9kjc2005boxy7isg30orq",
+   "title": "Sims 4 Male Body Mod",
+   "from": "gameplay-mod",
+   "to": "body-preset"
+  },
+  {
+   "id": "cmim9lkrc00a1oxy7wmq3gdmu",
+   "title": "Sun Haven",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmigomw83000doxkzmqn58wok",
+   "title": "Life’s A Beach Mermaid Tail",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmttzijkp00beoxfeoprkgcet",
+   "title": "Fitness & Gym",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmim9lkgh009woxy7h0tasku1",
+   "title": "Travellers Rest",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmclaug00thoxeuweyd06e3",
+   "title": "Police Department Build",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmsmcmiqx00u4oxeulijf22hh",
+   "title": "ADM Police",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmsmcmjup00u5oxeuunp5plex",
+   "title": "Oak Creek Police Dept.",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmsmcmpzi00u9oxeu7tyfgu6d",
+   "title": "Little Police Station",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmttzig8v00ayoxfeikgzwqzp",
+   "title": "Tempo Plug Collection",
+   "from": "gameplay-mod",
+   "to": "jewelry"
+  },
+  {
+   "id": "cmikipyi20044oxnaapn4jmov",
+   "title": "Deer Mask Child",
+   "from": "gameplay-mod",
+   "to": "accessories"
+  },
+  {
+   "id": "cmim9mczi00fdoxy7qu8runxm",
+   "title": "Acer Nitro 5 AN515-55-53E5 Gaming Laptop",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmbaejo004ioxeuiy76ct1l",
+   "title": "1980 Fiat 124 Sport Spider",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmcl9pp00tgoxeuai4seo6l",
+   "title": "Victorian Police Station Lot",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmijpoeqr015ooxc8fn0tauwn",
+   "title": "Honey Collection",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmil1085o0071oxeen60mjtyj",
+   "title": "Deco Dragon Robe",
+   "from": "gameplay-mod",
+   "to": "full-body"
+  },
+  {
+   "id": "cmim8w9of00nzoxy8cbc8pqaj",
+   "title": "Jaime",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim8w7xh00n6oxy82qziq0cr",
+   "title": "Hugh",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmky9udfq00q0oxhcgedbpnk0",
+   "title": "Sims 4 Men’s Bathing Suit Recolor",
+   "from": "script-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmcqlm500wcoxeu2prvlxkf",
+   "title": "Small Ranch",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmim8w87600nboxy8k740sq0j",
+   "title": "Windsor",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmcmmwn00u7oxeu1asklbwi",
+   "title": "Police Department Build",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmsmc3bxx00jwoxeuox16lh3l",
+   "title": "City Hotel",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmim9fnk2006zoxqwx5q7ianp",
+   "title": "Pearls & Champagne Maxis Match CC",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmigomsow000boxkzikrlcgww",
+   "title": "Adina",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9f745004coxqw0of9y5nz",
+   "title": "The Goth Family Nostalgic Refresh",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9lk7i009soxy7nqt8kfi3",
+   "title": "My Time at Portia",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmikaw7dz00l9oxk78e916pz1",
+   "title": "Anna Bonnet Hat",
+   "from": "gameplay-mod",
+   "to": "hats"
+  },
+  {
+   "id": "cmim8w9zd00o4oxy8p6x9wefd",
+   "title": "Jackson Brukes",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmil1nm1800h2oxeeukcu373i",
+   "title": "Creepy Yeha Ulyana Belt",
+   "from": "gameplay-mod",
+   "to": "accessories"
+  },
+  {
+   "id": "cmikihuu8000xoxna3rp5zhz0",
+   "title": "Belaloallure CC",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmikii64d0016oxnayf94ll4e",
+   "title": "Belaloallure Y2K Style",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmcpld700vwoxeu2wv12b3u",
+   "title": "Willow Creek Prison",
+   "from": "script-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmim8w9v000o2oxy86gl4v7wo",
+   "title": "Alec Rodney",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmijoqynl00sloxc8lmweif7s",
+   "title": "Toilet Door Recolor",
+   "from": "script-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9lk9s009toxy7f3102b0e",
+   "title": "No Time To Relax",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmim9lkil009xoxy7euhbzmdy",
+   "title": "Snowtopia: Ski Resort Tycoon",
+   "from": "gameplay-mod",
+   "to": null
+  },
+  {
+   "id": "cmikknbur00duox33gabz8tye",
+   "title": "Star Wedges",
+   "from": "script-mod",
+   "to": "shoes"
+  },
+  {
+   "id": "cmijqboph01g8oxc8crc9j68v",
+   "title": "Chanel Stiletto Flat",
+   "from": "gameplay-mod",
+   "to": "shoes"
+  },
+  {
+   "id": "cmsmc2fwx00jfoxeufj81g277",
+   "title": "LuxVet Clinic",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmigsu98g0018oxkzmat2jxnh",
+   "title": "Sims 4 Mermaid Scales & Tails Recolors",
+   "from": "script-mod",
+   "to": null
+  },
+  {
+   "id": "cmsmc2a8q00jboxeusmtxm30n",
+   "title": "Rhoads Regional Hospital",
+   "from": "gameplay-mod",
+   "to": "lot"
+  },
+  {
+   "id": "cmsmc2klr00jjoxeupnd7bpdm",
+   "title": "Modern Hospital",
+   "from": "gameplay-mod",
+   "to": "lot"
+  }
+ ]
+}
