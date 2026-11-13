@@ -507,17 +507,17 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // grid rows is a gameplay mod, so the word would promise what the page
     // does not hold.
     heading: 'Sims 4 Male Clothes CC & Packs',
-    metaTitle: "Sims 4 Male Clothes CC & Packs — 400+ Men's Outfits | MustHaveMods",
+    metaTitle: "Sims 4 Male Clothes CC & Packs — 380+ Men's Outfits | MustHaveMods",
     metaDescription:
-      "Sims 4 male CC for men's wardrobes: 400+ tops, jeans, streetwear, full outfits, sneakers and clothing packs, sorted by downloads, links checked.",
+      "Sims 4 male CC for men's wardrobes: 380+ tops, jeans, streetwear, full outfits, sneakers and clothing packs, sorted by downloads, links checked.",
     tagline: 'Streetwear, formal, casual, and everything in between',
     intro:
-      'Male Sims 4 CC has a reputation problem that isn\'t really its fault: the creator scene skews toward feminine fashion because that\'s where the download counts are, so the male side ends up feeling thinner. It\'s not thinner so much as harder to find. This collection does the hunting.\n\nThe 400+ picks here pull from the creators who actually take male CAS seriously — Darte77, Rona Sims, Sentate\'s male lines, Magnolia-C, and Aharris00britney\'s menswear pieces. Expect streetwear (hoodies, oversized tees, cargo shorts, chunky sneakers), tailored formalwear that doesn\'t look like it was clipped out of the base game, and casual sets built around real outfits instead of "shirt tucked into jeans" for the hundredth time.\n\nThe filter here is composite: any tops, bottoms, dresses, full-body outfits, or shoes tagged for masculine sims. Because gender options in Sims 4 CC are frequently mis-tagged, a handful of "unisex" pieces show up too — which is honestly where some of the best menswear lives.',
+      'Male Sims 4 CC has a reputation problem that isn\'t really its fault: the creator scene skews toward feminine fashion because that\'s where the download counts are, so the male side ends up feeling thinner. It\'s not thinner so much as harder to find. This collection does the hunting.\n\nThe 380+ picks here pull from the creators who actually take male CAS seriously — Darte77, Rona Sims, Sentate\'s male lines, Magnolia-C, and Aharris00britney\'s menswear pieces. Expect streetwear (hoodies, oversized tees, cargo shorts, chunky sneakers), tailored formalwear that doesn\'t look like it was clipped out of the base game, and casual sets built around real outfits instead of "shirt tucked into jeans" for the hundredth time.\n\nThe filter here is composite: any tops, bottoms, dresses, full-body outfits, or shoes tagged for masculine sims. Because gender options in Sims 4 CC are frequently mis-tagged, a handful of "unisex" pieces show up too — which is honestly where some of the best menswear lives.',
     filter: {
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['masculine'],
     },
-    expectedCount: 404, // prod count 2026-11-11, after the E388/E389 pins (was 410)
+    expectedCount: 389, // prod count 2026-11-13, after the E399 tops pins (was 404); copy 400+ → 380+
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' so the unified clothes hub
     // has an anchored inbound source (hair-cc keeps 4 inbound: skin-details,
     // shoes-cc, y2k-cc, makeup-cc).
@@ -535,17 +535,17 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     heading: 'Sims 4 Female Clothes CC',
     // Head-term title: the legacy article /sims-4-female-clothes-cc/
     // 301s here (2026-07-03), so this page owns the query.
-    metaTitle: 'Sims 4 Female Clothes CC — 1,600+ Outfits & Dresses | MustHaveMods',
+    metaTitle: 'Sims 4 Female Clothes CC — 1,500+ Outfits & Dresses | MustHaveMods',
     metaDescription:
-      'Over 1,600 Sims 4 female clothes CC picks. Dresses, tops, bottoms, full outfits, and shoes for every style.',
+      'Over 1,500 Sims 4 female clothes CC picks. Dresses, tops, bottoms, full outfits, and shoes for every style.',
     tagline: 'Dresses, tops, bottoms, outfits, and shoes',
     intro:
-      'Female Sims 4 CC is the deepest category in the whole community. There\'s more of it than anyone could ever install, which means the real problem isn\'t "is there CC for this?" — it\'s "which of the 400 options for a cropped cardigan is actually worth downloading?"\n\nThis collection runs past 1,600 picks and still feels curated, because we sort by what people are actually downloading and filter out the mis-tagged, the broken-link, and the NSFW-flagged submissions. You\'ll find the big creators — Rimings, Trillyke, Sentate, Pipco, Simstrouds, Madlen for shoes — plus a lot of mid-tier names whose dresses and tops stack up with anything in the top downloads list.\n\nThe filter is composite: tops, bottoms, dresses, full-body outfits, and shoes tagged feminine. Use this as a starting surface and lean on the main mod finder\'s visual-style and theme filters if you want to narrow to alpha CC, maxis match, goth, streetwear, or whatever aesthetic you\'re building toward.',
+      'Female Sims 4 CC is the deepest category in the whole community. There\'s more of it than anyone could ever install, which means the real problem isn\'t "is there CC for this?" — it\'s "which of the 400 options for a cropped cardigan is actually worth downloading?"\n\nThis collection runs past 1,500 picks and still feels curated, because we sort by what people are actually downloading and filter out the mis-tagged, the broken-link, and the NSFW-flagged submissions. You\'ll find the big creators — Rimings, Trillyke, Sentate, Pipco, Simstrouds, Madlen for shoes — plus a lot of mid-tier names whose dresses and tops stack up with anything in the top downloads list.\n\nThe filter is composite: tops, bottoms, dresses, full-body outfits, and shoes tagged feminine. Use this as a starting surface and lean on the main mod finder\'s visual-style and theme filters if you want to narrow to alpha CC, maxis match, goth, streetwear, or whatever aesthetic you\'re building toward.',
     filter: {
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body', 'shoes'],
       genderOptionsAny: ['feminine'],
     },
-    expectedCount: 1600, // prod count 2026-11-11, after the E388/E389 pins
+    expectedCount: 1573, // prod count 2026-11-13, after the E399 tops pins (was 1,600); copy 1,600+ → 1,500+
     // 2026-10-02 (E157): 'hair-cc' → 'clothes-cc' (see male-clothes note).
     // 2026-11-06 (E362): 'clothes-cc' → 'heels-cc' so the new heels page is
     // linked from the busiest collection page (clothes-cc keeps male-clothes + cc).
@@ -583,10 +583,12 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Browse 600+ Sims 4 dress CC in one grid: gowns, mini and maxi dresses, wedding dresses, ruffled and maternity styles from RIMINGS, Madlen, Sentate and more, sorted by downloads.',
     tagline: 'Gowns, minis, maxis and wedding dresses',
     intro:
-      'Dresses are where the base game shows its age fastest. There are a few sundresses, a few formal gowns, and a wedding dress or two, and most of them look stiff next to anything the community has made since. Dress CC is how people get a gown with a real silhouette, a mini that sits right, or a wedding dress that is not the one every other Sim gets married in.\n\nThis page is only dresses: 608 of them, sorted by downloads. We read every row before it went live. About one in ten of the old dress listings were shoes, tights, wings, jewelry or hairstyles whose descriptions said "dress your Sim", and we moved them out. So every card here is a dress, or a set or collection built around dresses. The grid has more than 40 gowns, about 25 wedding dresses, mini and maxi dresses, ruffled and coquette styles, and a few maternity collections.\n\nThe creators with the most dresses on the page are Madlen, RIMINGS, Mably Store, Joan Campbell Beauty, Sentate and Camuflaje. Camuflaje\'s knit, wedding and maternity collections are near the top of the download counts.\n\nTwo practical notes. Long gowns and full skirts are the dresses most likely to clip through a Sim\'s legs in walk and sit animations, so check the creator\'s preview pictures before you install a big set. Also, about a third of these dresses have no gender tag at all. That is why they never appeared in the female clothes grid, and it is also why some of them work on any frame.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the dresses everyone already has, or scroll for the single releases the big roundups miss.',
+      'Dresses are where the base game shows its age fastest. There are a few sundresses, a few formal gowns, and a wedding dress or two, and most of them look stiff next to anything the community has made since. Dress CC is how people get a gown with a real silhouette, a mini that sits right, or a wedding dress that is not the one every other Sim gets married in.\n\nThis page is only dresses: 630 of them, sorted by downloads. We read every row before it went live. About one in ten of the old dress listings were shoes, tights, wings, jewelry or hairstyles whose descriptions said "dress your Sim", and we moved them out. So every card here is a dress, or a set or collection built around dresses. The grid has more than 40 gowns, about 25 wedding dresses, mini and maxi dresses, ruffled and coquette styles, and a few maternity collections.\n\nThe creators with the most dresses on the page are Madlen, RIMINGS, Mably Store, Joan Campbell Beauty, Sentate and Talarian. Camuflaje\'s knit, wedding and maternity collections are near the top of the download counts.\n\nTwo practical notes. Long gowns and full skirts are the dresses most likely to clip through a Sim\'s legs in walk and sit animations, so check the creator\'s preview pictures before you install a big set. Also, about a third of these dresses have no gender tag at all. That is why they never appeared in the female clothes grid, and it is also why some of them work on any frame.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the dresses everyone already has, or scroll for the single releases the big roundups miss.',
     filter: { contentType: 'dresses' },
-    expectedCount: 608,
-    related: ['female-clothes', 'bottoms-cc', 'wedding-cc'],
+    expectedCount: 630, // prod count 2026-11-13: 608 + 22 dresses moved in by the E399 tops audit
+    // 2026-11-13 (E399): 'female-clothes' → 'tops-cc', the new hub's second
+    // anchored inbound (female-clothes keeps 4).
+    related: ['tops-cc', 'bottoms-cc', 'wedding-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // dress CC" intent; this page owns browse intent. /sims-4-dress-cc/,
     // /sims-4-gown-cc/ and /sims-4-wedding-dress/ are live (HTTP 200,
@@ -623,10 +625,12 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Browse 390+ Sims 4 bottoms CC in one grid: jeans, pants, skirts, shorts and leggings for male and female Sims, from Pinkzombiecupcakes, Trillyke and more, sorted by downloads.',
     tagline: 'Jeans, pants, skirts and shorts',
     intro:
-      'Bottoms are the part of the base-game wardrobe people notice last and complain about longest. Every Sim ends up in the same few pairs of jeans, and the skirts and shorts come in a handful of cuts. Bottoms CC fixes that: different rises and fits, real denim washes, cargo pants, pleated and mini skirts, and shorts that are not just cut-off jeans.\n\nThis page is only bottoms: 396 of them, sorted by downloads. We read every row before it went live. About one in ten of the old listings were shoes, belts, socks or tattoos, and we moved them out. So every card here goes in the bottoms slot, or is a set that includes a pair. Jeans are the biggest group with over 100 pairs. There are more than 50 skirts, about 50 pairs of shorts, and a long run of pants, from wide-leg and cargo to sweatpants.\n\nAbout half the grid is tagged for female Sims, around 75 pieces are tagged for male Sims, and more than a hundred have no gender tag. Untagged pieces never show up on the gendered clothes pages. Pinkzombiecupcakes, Trillyke, Solistair and RIMINGS made the most of them.\n\nOne practical note. Bottoms are the clothes most likely to clip with tops and shoes, especially high-waisted jeans under a cropped top or flared pants over boots. Check the creator\'s preview pictures for the body they built on before you install a big set.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the jeans everyone already uses, or scroll for the single releases the big roundups miss.',
+      'Bottoms are the part of the base-game wardrobe people notice last and complain about longest. Every Sim ends up in the same few pairs of jeans, and the skirts and shorts come in a handful of cuts. Bottoms CC fixes that: different rises and fits, real denim washes, cargo pants, pleated and mini skirts, and shorts that are not just cut-off jeans.\n\nThis page is only bottoms: 438 of them, sorted by downloads. We read every row before it went live. About one in ten of the old listings were shoes, belts, socks or tattoos, and we moved them out. So every card here goes in the bottoms slot, or is a set that includes a pair. Jeans are the biggest group with over 100 pairs. There are more than 50 skirts, about 50 pairs of shorts, and a long run of pants, from wide-leg and cargo to sweatpants.\n\nAbout half the grid is tagged for female Sims, around 75 pieces are tagged for male Sims, and more than a hundred have no gender tag. Untagged pieces never show up on the gendered clothes pages. Pinkzombiecupcakes, Trillyke, Solistair and RIMINGS made the most of them.\n\nOne practical note. Bottoms are the clothes most likely to clip with tops and shoes, especially high-waisted jeans under a cropped top or flared pants over boots. Check the creator\'s preview pictures for the body they built on before you install a big set.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the jeans everyone already uses, or scroll for the single releases the big roundups miss.',
     filter: { contentType: 'bottoms' },
-    expectedCount: 396,
-    related: ['dresses-cc', 'clothes-cc', 'male-clothes'],
+    expectedCount: 438, // prod count 2026-11-13: 396 + 42 pants/skirts moved in by the E399 tops audit
+    // 2026-11-13 (E399): 'male-clothes' → 'tops-cc', the new hub's first
+    // anchored inbound (male-clothes keeps 5).
+    related: ['dresses-cc', 'clothes-cc', 'tops-cc'],
     // Differentiated pair: the legacy listicles keep the editorial intent;
     // this page owns browse intent. All four articles are live (HTTP 200,
     // verified 2026-11-11) and are not in vercel.json.
@@ -635,6 +639,50 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-male-jeans-cc/', label: 'Sims 4 male jeans CC' },
       { href: '/sims-4-male-shorts-cc/', label: 'Sims 4 male shorts CC' },
       { href: '/sims-4-skirt-cc/', label: 'Sims 4 skirt CC' },
+    ],
+  },
+  {
+    // Sage, 2026-11-13 (E399, Tier 0 — same pattern and placement as
+    // dresses-cc / bottoms-cc above, before the clothes-cc union). `tops`
+    // was the largest clothing facet with no page of its own. 463 of the 855
+    // rows carry no gender tag, so they never appear on either gendered page.
+    //
+    // Demand: GA4 2026-10-14 → 11-10 organic + referral + AI landings on the
+    // legacy tops articles (all HTTP 200 on the apex, none in vercel.json):
+    // /sims-4-male-shirts-cc/ 69, /sims-4-tops-cc/ 55, /sims-4-jacket-cc/ 49,
+    // /sims-4-corset-cc/ 42, /sims-4-sweater-cc/ 25, /sims-4-graphic-tees/ 23,
+    // /sims-4-leather-jacket-cc/ 22, /sims-4-trench-coat-cc/ 22,
+    // /sims-4-cardigan-cc/ 19 = 326.
+    //
+    // Eligibility: all 1,083 rows were read by hand on 11-13. 228 (21.1%)
+    // were off-type (42 bottoms, 32 hair, 22 dresses, 22 full-body, 16 shoes,
+    // 16 furniture, 15 accessories, 19 NULL and others) and were pinned and
+    // applied (hand-audited-content-types.ts § E399, ledger e9d33f3d), which
+    // leaves 855. Inbound: bottoms-cc (was male-clothes, which keeps 5) and
+    // dresses-cc (was female-clothes, keeps 4).
+    slug: 'tops-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Tops CC',
+    heading: 'Sims 4 Tops, Shirts, Sweaters & Jackets CC',
+    metaTitle: 'Sims 4 Tops CC — Browse 850+ Shirts, Sweaters, Jackets & Corsets | MustHaveMods',
+    metaDescription:
+      'Browse 850+ Sims 4 tops CC in one grid: tees, shirts, sweaters, cardigans, hoodies, jackets and corsets for male and female Sims, from McLayneSims, Camuflaje and more, sorted by downloads.',
+    tagline: 'Shirts, sweaters, jackets and corsets',
+    intro:
+      'Tops are where a Sim\'s outfit starts. The base game gives you plenty of them, but most are plain tees and button-ups in a few prints. Tops CC adds the rest: oversized graphic tees, chunky knits, cropped cardigans, corsets, blazers, and jackets that look like real outerwear.\n\nThis page is only tops: 855 of them, sorted by downloads. We read every row before it went live. About one in five of the old listings were not tops at all. They were pants, hairstyles, dresses, full outfits, shoes and even furniture, and we moved them out. So every card here goes in the top slot, or is a set that includes one. Jackets, coats and blazers are the biggest group with about 190. There are around 130 shirts and tees, about 120 sweaters, knits and cardigans, and smaller runs of hoodies, crop tops and corsets.\n\nAbout 260 pieces are tagged for female Sims and about 130 for male Sims. More than half have no gender tag at all. Untagged pieces never show up on the gendered clothes pages, so this is the only grid where you will find them. McLayneSims, Camuflaje, Gorilla Gorilla Gorilla, backtrackcc, Belaloallure, Trillyke and Garfiel made the most of them.\n\nOne practical note. Tops are the clothes most likely to clash with what is below them. A tucked shirt needs high-waisted bottoms that were built for it, and long jackets can clip through a full skirt. Check the creator\'s preview pictures before you install a big set.\n\nEverything in this grid is Sims 4 only and filtered to SFW. Sort by downloads for the tops everyone already uses, or scroll for the single releases the big roundups miss.',
+    filter: { contentType: 'tops' },
+    expectedCount: 855, // prod count 2026-11-13, after the E399 pins (was 1,083)
+    related: ['bottoms-cc', 'male-clothes', 'clothes-cc'],
+    // Differentiated pair: the legacy listicles keep the editorial intent;
+    // this page owns browse intent. All five articles are live (HTTP 200,
+    // verified 2026-11-13) and are not in vercel.json.
+    blogUrl: '/sims-4-tops-cc/',
+    guides: [
+      { href: '/sims-4-male-shirts-cc/', label: 'Sims 4 male shirts CC' },
+      { href: '/sims-4-jacket-cc/', label: 'Sims 4 jacket CC' },
+      { href: '/sims-4-sweater-cc/', label: 'Sims 4 sweater CC' },
+      { href: '/sims-4-corset-cc/', label: 'Sims 4 corset CC' },
     ],
   },
   {
@@ -657,13 +705,16 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     gameSlug: 'sims-4',
     title: 'Clothes CC',
     heading: 'Sims 4 Clothes CC',
-    metaTitle: 'Sims 4 Clothes CC Finder — Browse 3,500+ Tops, Dresses & Outfits | MustHaveMods',
+    metaTitle: 'Sims 4 Clothes CC Finder — Browse 3,400+ Tops, Dresses & Outfits | MustHaveMods',
     metaDescription:
-      'Browse 3,500+ Sims 4 clothes CC in one filterable grid — tops, bottoms, dresses, and full outfits for every sim, sorted by downloads with verified download links.',
+      'Browse 3,400+ Sims 4 clothes CC in one filterable grid — tops, bottoms, dresses, and full outfits for every sim, sorted by downloads with verified download links.',
     tagline: 'Tops, bottoms, dresses, and full outfits for every sim',
     intro:
-      'Clothes are the reason most people install their first piece of Sims 4 CC. The base-game wardrobe runs out fast: a few dozen tops, the same three pairs of jeans in four washes, and formalwear that reads as 2014 the moment you put it next to anything the community has made since. Expansion packs add outfits, but they add them in the pack\'s theme, so you end up with a sim who owns a full snowboarding kit and nothing to wear to a Tuesday.\n\nThis collection is every piece of Sims 4 clothes CC in our catalog in one grid — 3,594 finds as of today. Roughly 1,500 are full-body outfits and sets, 1,080 are tops, 610 are dresses, and 400 are bottoms. Shoes have their own collection, so this page stays focused on what goes on the body rather than the feet.\n\nIt is deliberately ungendered. We also keep separate female and male clothes pages, and if you are dressing one specific sim those are the faster route. But a large slice of the best clothing CC — oversized tees, tracksuits, graphic hoodies, denim, knitwear — is made for whichever frame you put it on, and creators tag those pieces inconsistently or not at all. Around 640 of the finds here carry no gender tag, which means they never showed up on either gendered page. They show up here.\n\nThe names that recur most are the ones who have effectively made clothing their whole output: Madlen, Trillyke, Dissia, Talarian, Busra Tr, DanSimsFantasy, McLayneSims, Garfiel, and Mermalade. Streetwear sets and Y2K pieces sit near the top of the download counts; further down you hit the single-release dresses and tops from smaller creators that the big roundup posts never reach.\n\nOne practical note: clothes CC is where the alpha-versus-maxis-match split matters most, because a photoreal denim jacket on a clay-hair sim looks wrong in a way a photoreal rug does not. Use the main finder\'s visual-style filter to stay inside one art style, and check creator notes for required body presets or sliders before you install a full set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pieces half the community already wears, or scroll for the ones nobody has written up yet.',
+      'Clothes are the reason most people install their first piece of Sims 4 CC. The base-game wardrobe runs out fast: a few dozen tops, the same three pairs of jeans in four washes, and formalwear that reads as 2014 the moment you put it next to anything the community has made since. Expansion packs add outfits, but they add them in the pack\'s theme, so you end up with a sim who owns a full snowboarding kit and nothing to wear to a Tuesday.\n\nThis collection is every piece of Sims 4 clothes CC in our catalog in one grid — 3,452 finds as of today. Roughly 1,530 are full-body outfits and sets, 855 are tops, 630 are dresses, and 440 are bottoms. Shoes have their own collection, so this page stays focused on what goes on the body rather than the feet.\n\nIt is deliberately ungendered. We also keep separate female and male clothes pages, and if you are dressing one specific sim those are the faster route. But a large slice of the best clothing CC — oversized tees, tracksuits, graphic hoodies, denim, knitwear — is made for whichever frame you put it on, and creators tag those pieces inconsistently or not at all. Around 420 of the finds here carry no gender tag, which means they never showed up on either gendered page. They show up here.\n\nThe names that recur most are the ones who have effectively made clothing their whole output: Madlen, Trillyke, Dissia, Talarian, Busra Tr, DanSimsFantasy, McLayneSims, Garfiel, and Mermalade. Streetwear sets and Y2K pieces sit near the top of the download counts; further down you hit the single-release dresses and tops from smaller creators that the big roundup posts never reach.\n\nOne practical note: clothes CC is where the alpha-versus-maxis-match split matters most, because a photoreal denim jacket on a clay-hair sim looks wrong in a way a photoreal rug does not. Use the main finder\'s visual-style filter to stay inside one art style, and check creator notes for required body presets or sliders before you install a full set.\n\nEverything in this grid is Sims 4 only, checked for a working download link, and filtered to SFW. Sort by downloads for the pieces half the community already wears, or scroll for the ones nobody has written up yet.',
     filter: {
+      // 2026-11-13 (E399): tops 855 + bottoms 438 + dresses 630 +
+      // full-body 1,529 = 3,452 after the tops off-type pins (128 of the
+      // 228 moved to another clothing facet; 416 rows carry no gender tag).
       // 2026-11-11 (E388/E389): tops 1,083 + bottoms 396 + dresses 608 +
       // full-body 1,507 = 3,594 after the dress/bottoms off-type pins.
       // Original count: tops (1,054) + bottoms (439) + dresses (675) + full-body (1,497) =
@@ -674,7 +725,7 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       // the union with shoes would be 4,315.
       contentTypeIn: ['tops', 'bottoms', 'dresses', 'full-body'],
     },
-    expectedCount: 3594, // prod count 2026-11-11, after the E388/E389 pins (was 3,665)
+    expectedCount: 3452, // prod count 2026-11-13, after the E399 pins (was 3,594)
     // 2026-10-11 (E182): 'shoes-cc' → 'cc', the second anchored inbound
     // source for the CC hub (shoes-cc keeps 2: male-clothes, female-clothes).
     related: ['female-clothes', 'male-clothes', 'cc'],

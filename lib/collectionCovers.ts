@@ -215,6 +215,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/07/tumblr_634150d776c186290d3339aef72db998_e76876cb_540.jpg",
     "https://images.surferseo.art/49fe964a-4976-4eda-a893-7696a330969e.png",
   ],
+  "tops-cc": [
+    "https://images.surferseo.art/6c68d4f0-a4e0-489e-b253-a2f8a939ea74.png",
+    "https://musthavemods.com/wp-content/uploads/2024/10/image-19.jpeg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/09/1-2-1-1024x1024.webp",
+  ],
   "vampire-cc": [
     "https://images.surferseo.art/45be5ad0-d3f1-4978-896a-3d2bd889a493.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/10/teethpreview2.webp",
