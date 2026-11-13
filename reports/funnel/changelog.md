@@ -662,3 +662,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-13 06:48 | after-merge | Cass: PR #538 E391 newsletter-08 run 2 send record | ccf162e | https://mhm-finds-dw5l-45vgde3lh-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-13 06:52 | after-merge | Rowan: PR #540 nursery-cc on a title-only nursery theme (E404) | 43057c8 | https://mhm-finds-dw5l-25e2632io-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-13 06:56 | after-merge | Ops: PR #537 E405 template lastmod bump | e9b5d76 | https://mhm-finds-dw5l-9zfgr93iw-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-11-13 07:00 | after-merge | Sage: PR #541 E399 tops-cc hub | e3fe870 | https://mhm-finds-dw5l-l6komi3p8-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
