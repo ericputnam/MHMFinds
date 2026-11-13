@@ -64,6 +64,7 @@ import {
   formatPaidByAmount,
   ga4DateKey,
   meanDailyUsers,
+  pickPatreonPaid,
   summarizePatreonMembers,
   type MeanDailyUsers,
   type PatreonMemberAttrs,
@@ -1106,7 +1107,20 @@ async function main() {
   const month = today.slice(0, 7);
   const ownedTarget = targets?.targets?.weekly?.ownedAudienceNetAdds?.[month] ?? null;
   const nonAdTarget = targets?.targets?.monthly?.nonAdRevenue?.[month] ?? null;
-  const nonAdRevenue = (patreon.ok && patreon.data.grossMonthlyUsd != null ? patreon.data.grossMonthlyUsd : 0) + (db.ok ? db.data.affiliateEarnings30d : 0);
+  // E403: the Members API is the paid count; the public tier counter is a fallback only
+  // (E392 — it read 69 / $179 while the API read 54 / $138.50). Unmeasured → null (E126).
+  const patreonPaid = pickPatreonPaid(
+    patreonApi.ok ? { ok: true, paid: patreonApi.data.paid, grossMonthlyUsd: patreonApi.data.grossMonthlyUsd } : null,
+    patreon.ok ? { ok: true, paidPatrons: patreon.data.paidPatrons, grossMonthlyUsd: patreon.data.grossMonthlyUsd } : null,
+  );
+  const nonAdRevenue: number | null =
+    patreonPaid.grossMonthlyUsd != null && db.ok ? Math.round((patreonPaid.grossMonthlyUsd + db.data.affiliateEarnings30d) * 100) / 100 : null;
+  const nonAdSourceLabel =
+    patreonPaid.source === 'members-api'
+      ? `Patreon Members API ${patreonPaid.paid ?? '?'} paid${patreon.ok && patreon.data.grossMonthlyUsd != null ? `; public counter ${money(patreon.data.grossMonthlyUsd)} not used, E392` : ''}`
+      : patreonPaid.source === 'public-page'
+        ? `Patreon public counter — Members API unavailable, overstates paid (E392)`
+        : 'Patreon unavailable';
 
   // --- long-range / product health (E-audit, 2026-09-22): each derived value
   // degrades to null independently when either of its inputs is unavailable —
@@ -1192,7 +1206,7 @@ async function main() {
 
   // --- markdown
   let md = `# Funnel scoreboard — ${today}\n\n`;
-  md += `**Headline:** owned-audience adds 7d **${ownedAdds7d ?? '?'}**${ownedTarget ? ` (target ${ownedTarget}/wk)` : ''} · non-ad revenue **${money(nonAdRevenue)}/mo gross**${nonAdTarget ? ` (target ${money(nonAdTarget)})` : ''} · Mediavine 28d **${mv.ok ? money(mv.data.revenue28d) : '?'}** ${mv.ok ? `(${pct(mv.data.revenue28d, mv.data.revenuePrev28d)} vs prior)` : ''}\n\n`;
+  md += `**Headline:** owned-audience adds 7d **${ownedAdds7d ?? '?'}**${ownedTarget ? ` (target ${ownedTarget}/wk)` : ''} · non-ad revenue **${nonAdRevenue != null ? money(nonAdRevenue) : '?'}/mo gross** (${nonAdSourceLabel})${nonAdTarget ? ` (target ${money(nonAdTarget)})` : ''} · Mediavine 28d **${mv.ok ? money(mv.data.revenue28d) : '?'}** ${mv.ok ? `(${pct(mv.data.revenue28d, mv.data.revenuePrev28d)} vs prior)` : ''}\n\n`;
   md += `## Flags\n\n${flags.length ? flags.map((f) => `- ${f}`).join('\n') : '- 🟢 none'}\n\n`;
 
   md += `## Audience (GA4 ${ga4.ok ? ga4.data.window : ''})\n\n`;
@@ -1312,7 +1326,7 @@ async function main() {
 
   const json = {
     date: today,
-    headline: { ownedAdds7d, ownedTargetWeekly: ownedTarget, nonAdRevenueMonthlyGross: nonAdRevenue, nonAdTarget, mediavine28d: mv.ok ? mv.data.revenue28d : null, mediavine28dPrev: mv.ok ? mv.data.revenuePrev28d : null },
+    headline: { ownedAdds7d, ownedTargetWeekly: ownedTarget, nonAdRevenueMonthlyGross: nonAdRevenue, nonAdSource: patreonPaid.source, nonAdTarget, mediavine28d: mv.ok ? mv.data.revenue28d : null, mediavine28dPrev: mv.ok ? mv.data.revenuePrev28d : null },
     flags, ga4, gsc, mediavine: mv,
     headlineExSegment28d: headlineExSeg.ok ? headlineExSeg.value : { unavailable: headlineExSeg.why }, db, patreon, patreonApi, wordpress: wp, pinner,
     longRange: {

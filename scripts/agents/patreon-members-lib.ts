@@ -415,3 +415,38 @@ export function meanDailyUsers(byDay: Record<string, number>, start: string, end
   const perDay = keys.length ? Math.round((users / keys.length) * 100) / 100 : 0;
   return { days: keys.length, users, perDay, window: `${start}→${end}` };
 }
+
+/**
+ * E403 (2026-11-13) — which Patreon number feeds the scoreboard's non-ad headline.
+ *
+ * Until E403 the headline summed the *public page* tier counter (`patron_count`). E392
+ * (2026-11-11) showed that counter is not a count of paying members: it read 69 paid /
+ * $179 while the Members API read 54 / $138.50 with net −8 for November, i.e. the
+ * headline overstated metric #2 by $40.50 (+29%). The counter also disagrees with the
+ * API on free members (6,658 vs 6,429).
+ *
+ * Rule: the Members API wins whenever its walk completed (the scoreboard's pull throws
+ * on a truncated walk, so `ok` already means "complete"). The public page is a fallback
+ * only, and the headline names which one it used. Neither available → null (not
+ * measured), never 0 (E126).
+ */
+export type PatreonPaidSource = 'members-api' | 'public-page';
+
+export interface PatreonPaidPick {
+  source: PatreonPaidSource | null;
+  paid: number | null;
+  grossMonthlyUsd: number | null;
+}
+
+export function pickPatreonPaid(
+  api: { ok: boolean; paid?: number | null; grossMonthlyUsd?: number | null } | null,
+  publicPage: { ok: boolean; paidPatrons?: number | null; grossMonthlyUsd?: number | null } | null,
+): PatreonPaidPick {
+  if (api?.ok && typeof api.grossMonthlyUsd === 'number' && Number.isFinite(api.grossMonthlyUsd)) {
+    return { source: 'members-api', paid: typeof api.paid === 'number' ? api.paid : null, grossMonthlyUsd: api.grossMonthlyUsd };
+  }
+  if (publicPage?.ok && typeof publicPage.grossMonthlyUsd === 'number' && Number.isFinite(publicPage.grossMonthlyUsd)) {
+    return { source: 'public-page', paid: typeof publicPage.paidPatrons === 'number' ? publicPage.paidPatrons : null, grossMonthlyUsd: publicPage.grossMonthlyUsd };
+  }
+  return { source: null, paid: null, grossMonthlyUsd: null };
+}

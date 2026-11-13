@@ -136,10 +136,13 @@ interface ScoreboardJson {
   date?: string;
   headline?: {
     ownedAdds7d?: number;
-    nonAdRevenueMonthlyGross?: number;
+    nonAdRevenueMonthlyGross?: number | null;
+    /** E403: which Patreon source fed the headline; present (possibly null) on scoreboards from 2026-11-13 on. */
+    nonAdSource?: 'members-api' | 'public-page' | null;
   };
   db?: { ok: boolean };
   patreon?: { ok: boolean };
+  patreonApi?: { ok: boolean };
   ga4?: {
     ok: boolean;
     data?: { byChannel7d?: Record<string, number>; returningShare7d?: number | null; pagesPerSession7d?: number | null; engagementRate7d?: number | null };
@@ -287,7 +290,13 @@ export function deriveScoreboardFields(
   const nullableNum = (v: unknown): number | null => (typeof v === 'number' ? v : null);
   const ga4Bad = sectionFailed(scoreboard, 'ga4');
   const dbBad = sectionFailed(scoreboard, 'db');
-  const patreonBad = sectionFailed(scoreboard, 'patreon');
+  // E403: since 2026-11-13 the headline reads the Members API first and the public page only as a
+  // fallback, so Patreon is unmeasured only when BOTH failed. Older scoreboards have no patreonApi
+  // section feeding the headline, so for them the public-page flag alone still decides.
+  const headlineHasSource = !!scoreboard?.headline && 'nonAdSource' in scoreboard.headline;
+  const patreonBad = headlineHasSource
+    ? scoreboard?.headline?.nonAdSource == null
+    : sectionFailed(scoreboard, 'patreon');
   const teamBad = sectionFailed(scoreboard, 'team');
   const ga4 = (v: unknown): number | null => (ga4Bad ? null : nullableNum(v));
   const db = (v: unknown): number | null => (dbBad ? null : nullableNum(v));
