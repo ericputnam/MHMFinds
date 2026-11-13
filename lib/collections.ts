@@ -159,7 +159,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // skin-details -> kids-cc (2026-09-21): pregnancy is the one topic whose
     // visitors reliably need the *next* thing, and skin-details was the most
     // linked page in the graph at 7 inbound.
-    related: ['body-presets', 'poses', 'kids-cc'],
+    // 2026-11-13 (E404): 'poses' → 'nursery-cc' (poses keeps vampire-cc and
+    // gallery-poses; a pregnancy save's next build is the nursery).
+    related: ['body-presets', 'nursery-cc', 'kids-cc'],
     // Consolidated 2026-07-03 (legacy article 301'd here), un-redirected
     // 2026-09: Google refused this page as the canonical and indexed the
     // blog-subdomain copy of the article instead (pos 10.95, 93 clicks
@@ -1333,7 +1335,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 686,
     // 2026-09-24: 'hair-cc' → 'bedroom-cc' (kids/toddler/teen bedroom sets
     // are the second-largest slice of that page; hair-cc keeps 6 inbound).
-    related: ['bedroom-cc', 'pregnancy-mods', 'furniture-cc'],
+    // 2026-11-13 (E404): 'furniture-cc' → 'nursery-cc' (furniture-cc keeps
+    // 6 inbound; the nursery is the kids page's missing room).
+    related: ['bedroom-cc', 'pregnancy-mods', 'nursery-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best kids
     // cc" intent, this page owns browse/filter intent. /sims-4-kids-cc/ is
     // live (HTTP 200, no redirect, verified 2026-09-21) and appears in neither
@@ -2041,6 +2045,42 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // this page owns browse intent. /sims-4-victorian-cc/ is live (HTTP 200,
     // verified 2026-11-11) and is not in vercel.json.
     blogUrl: '/sims-4-victorian-cc/',
+  },
+  {
+    // Rowan, 2026-11-13 (E404, Tier 0 — registry entry in the existing
+    // pattern). A browse page for nursery CC behind the legacy article
+    // /sims-4-nursery-cc/, which had 1,125 landing sessions in 14 days (GA4
+    // 10-30 → 11-12: 976 Pinterest, 127 organic search) and no browse page.
+    // GSC 10-14 → 11-10: 45 impr / 1 clk at position 33.8.
+    // The `nursery` theme was the last room theme still read from the shared
+    // blog-post description (ROOM_THEME_RULES): 100 rows, 45.0% title-
+    // supported, a pregnancy overhaul mod at card #5. Moved to TITLE-ONLY
+    // (lib/nurseryThemeRules.ts, accepted and rejected words with counts) and
+    // applied 2026-11-13: add 4 / strip 53, every ADD row read; 51 rows, 51/51
+    // SFW Sims 4, top 24 by downloads hand-read 24/24 nursery.
+    // Inbound: kids-cc (repointed from furniture-cc) and pregnancy-mods
+    // (repointed from poses).
+    // Appended after the contentType pages because a themesAny entry scores
+    // specificity 1, so every nursery mod keeps its own breadcrumb.
+    slug: 'nursery-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Nursery CC',
+    heading: 'Sims 4 Nursery CC',
+    metaTitle: 'Sims 4 Nursery CC — Browse 50+ Nursery Sets, Cribs & Changing Tables | MustHaveMods',
+    metaDescription:
+      'Browse 50+ Sims 4 nursery CC finds in one grid: full nursery furniture sets, cribs, changing tables, nursery wallpaper, rugs and decor, sorted by downloads.',
+    tagline: 'Nursery sets, cribs, changing tables and baby room decor',
+    intro:
+      'The nursery is the room Sims 4 gives you the least to build with. Infants arrived years after launch with a crib and a short list of matching objects, so the moment a pregnancy save reaches the third trimester, the baby room ends up half-finished or borrowed from a bedroom set that was never meant for it. That is why nursery CC is one of the first things players go looking for once a baby is on the way.\n\nThis page is every find in our catalog whose title says nursery, crib or changing table, in one grid sorted by downloads. That rule is deliberate. A pregnancy mod, an infant gameplay tweak or a toddler outfit that came from the same blog post is not a nursery, so none of them show up here, and toddler rooms are left to the kids collection. Invisible crib and bassinet overrides are left out too, since they are gameplay tools rather than furniture.\n\nMost of the grid is complete nursery sets: crib, dresser, changing table and clutter from one creator, so a single download furnishes the room. The styles cover a lot of ground, from soft pastel and cottage nurseries to woodland and animal themes (a sleepy lion, a deer wallpaper, a Hundred Acre Wood set), boho and vintage rooms, and a goth and a vampire nursery for darker households. Standalone cribs, changing tables, nursery wallpaper and rugs fill in the rest.\n\nTwo practical notes. Some cribs and changing tables are functional and some are decor only, so check the creator\'s page for which one you are getting and for any required packs. And several sets come in parts, so look for a part 2 before you build.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+    filter: { themesAny: ['nursery'] },
+    expectedCount: 51,
+    related: ['kids-cc', 'pregnancy-mods', 'bedroom-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // nursery CC" intent (1,125 landings 14d, mostly Pinterest); this page
+    // owns browse intent. /sims-4-nursery-cc/ is live (HTTP 200, verified
+    // 2026-11-13) and is not in vercel.json.
+    blogUrl: '/sims-4-nursery-cc/',
   },
   {
     // Sage, 2026-10-11 (E182, Tier 1 — new structural page). The top-level
