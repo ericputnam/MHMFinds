@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
+import { VERIFIED_HINT } from '@/components/admin/ModSubmissionForm';
 import { HostedFileUpload, runsCodeLabel } from '@/components/creator/HostedFileUpload';
 import { formatBytes } from '@/lib/modFiles/constants';
 import {
@@ -1041,7 +1042,7 @@ export default function EditModPage() {
               />
               <div>
                 <p className="text-sm font-semibold text-slate-300">Verified Mod</p>
-                <p className="text-xs text-slate-400">Mark as tested and safe</p>
+                <p className="text-xs text-slate-400">{VERIFIED_HINT}</p>
               </div>
             </label>
 

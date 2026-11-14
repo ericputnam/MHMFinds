@@ -15,6 +15,9 @@ import {
   FileArchive,
 } from 'lucide-react';
 
+/** Under the "Verified Mod" checkbox: what the flag actually does. */
+export const VERIFIED_HINT = 'Shown in browse and search. Unverified mods open only by their link.';
+
 export interface ModFormData {
   title: string;
   description: string;
@@ -106,7 +109,10 @@ export function ModSubmissionForm({
     currency: 'USD',
     isNSFW: false,
     isFeatured: false,
-    isVerified: false,
+    // The public grid and search list only verified mods. An admin creating a
+    // mod is the review, so it starts verified; left unchecked, a new mod was
+    // reachable by its link but missing from every grid (Center Stage, 11-11).
+    isVerified: showAdminFields,
     ...initialData,
   });
 
@@ -404,6 +410,7 @@ export function ModSubmissionForm({
               <div hidden={!fileMode}>
                 <HostedFileUpload
                   enabled={canHost}
+                  required
                   gameVersion={formData.gameVersion}
                   disabled={loading}
                   publishesOnSubmit={showAdminFields}
@@ -676,7 +683,7 @@ export function ModSubmissionForm({
                 />
                 <div>
                   <p className="text-sm font-semibold text-slate-300">Verified Mod</p>
-                  <p className="text-xs text-slate-400">Mark as tested and safe</p>
+                  <p className="text-xs text-slate-400">{VERIFIED_HINT}</p>
                 </div>
               </label>
 
