@@ -3323,6 +3323,80 @@ with 7 funnel PRs (#503–#510, #512). 0 rollbacks. Subsystem details are in the
   `reports/funnel/changelog.md` (the 11-11 digest listed it as open). `deploy-verify.sh --check`
   on the next morning run covers the deploy; the row itself is still missing.
 
+### 2026-11-13 — subsystem entries (written directly to the archive)
+
+- **#540 (Rowan, E404) — `nursery` moved to title-only `lib/nurseryThemeRules.ts`.** The old
+  `ROOM_THEME_RULES` entry tagged 100 rows, 45.0% title-supported (LittleMsSam's Pregnancy
+  Overhaul at card #5). Kept: nursery/nurseries 46, crib(s) 4, changing table(s) 2; `invisible`
+  excluded. Rejected with counts: toddler room 6, newborn 3, playmat 3, bassinet 1, bare `baby` 79,
+  mobile 2. Applied add 4 / strip 53 → 51 rows, 51/51 supported. The strip list was larger than
+  the page. Read it for real items whose title does not say so; those become `--ids` pins, not
+  rule words. The unscheduled WeWantMods scraper's `detectThemes` now runs `applyNurseryTheme`, but
+  it still writes bathroom/kitchen/bedroom/kids-room from URL slugs. Close those if it is ever
+  scheduled. The PR body called nursery "the last room theme still in ROOM_THEME_RULES". That is
+  false: living-room, dining-room, outdoor, office and kids-room are still description-fed (see
+  the CLAUDE.md 11-13 entry). The new guard was not run against pre-fix `main` (Quinn noted it as a slip).
+- **#541 / #544 (Sage, E399/E400) — off-type rates differ by category.** All 1,083 SFW `tops`
+  rows were read by hand, and 228 were wrong (21.1%). For lot-family rows it was 277/983 (28.2%), and
+  `residential` alone was 251/547 (45.9%, mostly walls/windows/furniture). Gameplay was 85/557
+  (15.3%). All were pinned in `hand-audited-content-types.ts` with rollback files. The gameplay-mods hub
+  failed its pre-set eligibility gate on 2 adult rows still marked SFW (Wonderful Whims, Cuddle
+  and Bath Together), so it was not shipped. Shipped as `houses-lots` (706). The 07:09 and 07:13
+  apply rows used the *planned* names ("gameplay-mods hub", "lots-cc hub"). Write the shipped name in
+  the apply row. 131 walls/windows/doors rows are now uncategorised. A `walls` type could give
+  them a page. The eligibility off-type check matches "Bed" in "Bed Cuddle" (false positive).
+- **#542 / #543 (Nova, E401) — Simsfinds author from the page's JSON-LD.** Simsfinds puts a
+  single `Person` author in JSON-LD only on pages flagged `data-bycreator="1"`. On re-uploads
+  (`bycreator=0`) the page names nobody, even when the URL says `-by-pralinesims-`.
+  `lib/services/simsfindsAuthor.ts` checks for an exact host, by-creator only, exactly one Person,
+  and a usable name, and it never reads the URL. 91 targets → 70 applied, 20 re-uploads skipped. The
+  "Modcollective" author was dropped by hand: every row under that key links modcollective.gg, a
+  marketplace (it probably belongs in `NON_CREATOR_SLUGS`). Before you grow a creator page, check
+  what the rows under that key already link to. #543 landed the applied-id list on `main` so
+  `--rollback` from `main` finds it (the E379 gap). `curseforgeProjectSlug` rejects slugs with `_`.
+- **#539 (Rio, E403) — non-ad headline uses the Patreon Members API.** The public tier counter
+  read 69 paid / $179. The Members API read 54–56 / $138.50–$144.50. The headline now names its
+  source (`members-api` / `public-page`) and writes null when neither is measured. Non-ad now
+  reads below the $155 floor without any revenue change, because the old number was wrong. E332(b)
+  PASS and closed: the RPM rise (+15.5%) was all pageviews/session (+18.5%). Impressions/pageview
+  fell 6.0% and $/1k impressions rose 3.7%. Decompose RPM into those three factors before calling a rise "rate".
+- **#537 (Ops, E405) — template lastmod hand bump #3 in 9 days** (E329 11-04, E364 11-06). The
+  `template-lastmod-git-guard` was red on `main` after 97ee5083 (operator audit), #502 and #519.
+  Two of those were operator commits outside the ship protocol. The class fix (a pre-merge check)
+  is due on the 4th occurrence.
+- **#511 (Pip, E386)** — `/christmas-cc` and `/christmas-cc/` both 308 to the hub. This is the 11-12
+  slash-twin rule applied by hand, and curl confirmed it. There is still no guard test over `vercel.json`.
+- **#538 (Cass, E391)** — newsletter-08 run 2: 100 sent, 30 deferred. A deferred tail grows by
+  every opt-in between runs (117 → 130). Schedule the last run before `computeIssueNumber`
+  steps (11-17), or the tail gets the next issue. The run-2 ledger row stated "200 of 247 eligible".
+  The correct figure is 200 of 230, fixed by a correcting row, not an edit.
+- **Process notes.** `deploy-verify.sh` leaves its ledger row as an uncommitted `M changelog.md` in
+  the agent's worktree after `ledger-commit.sh` has already landed it on `main`. This blocked
+  `git checkout` for 3 agents. Three agents chained `; gh pr view` instead of `&&`. Rio labelled
+  #539 Tier 1 and merged it the same day. A label and its action must agree: call it Tier 0 and say why.
+  The video-queue reviewer email failed on 2/2 runs (`wp_mail`). Pip found ≥1,548 sessions/14d of
+  Yahoo country-domain and cn.bing search traffic counted as referral.
+
+### 2026-11-12 — rotated from CLAUDE.md
+
+One operator PR (#498, Search Console indexing errors), no funnel merges, 0 rollbacks. The
+morning check passed. Subsystem details are in the archive (11-12).
+
+- **A `vercel.json` redirect whose `source` has no trailing slash never fires.** Next's
+  `trailingSlash` 308 runs first. `/home` → `/` existed from the start, but `/home` went to
+  `/home/`, which was proxied to WordPress and returned a 404 that Search Console reported (#498). Every
+  other entry has a slash twin. `/home` was the one without, and no test checks for that.
+  Write the slash form (or both), and confirm with `curl -sI` that the *slash* URL redirects.
+- **The app's `robots.txt` replaces WordPress's, so WordPress's rules are lost.** The route
+  never reaches the WP file in production, so its `Disallow: /wp-admin/` never applied on the
+  apex. Crawlers fetched `wp-admin` edit URLs (403), `/wp-json/` (401) and Patreon-plugin action
+  URLs (403). When you proxy a host, copy its crawler rules into the proxying route, and add them
+  to **every** user-agent group. A bot that matches a named group ignores `*`.
+- **Proxied post HTML can contain links with no scheme** (`href="host.tld/x"`). Browsers resolve
+  these under the post's own path, which gives a 404. `rewriteHtml` now adds `https://`.
+- **Still open:** the `monetization-agent` cron slash (Tier 2), a `vercel.json` slash-twin guard
+  test, and the missing #498 ledger row.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

@@ -808,8 +808,10 @@ run died with `Prompt is too long`.
   packs) before #170 moved it to title-only `lib/bedroomThemeRules.ts` (250/250 supported);
   `kitchen` was 345 rows / 34.2% before #179 (`lib/kitchenThemeRules.ts`, 160/160); `bathroom`
   was 456 rows / 26.5% (Wicked Whims at card #1, "Tube Top Dress" via `tub`) before #187
-  (`lib/bathroomThemeRules.ts`, 123/123). **Every room theme is now title-only** — a new one must
-  follow the same pattern, not go back into `ROOM_THEME_RULES`. **Fix a theme at
+  (`lib/bathroomThemeRules.ts`, 123/123); `nursery` was 100 rows / 45.0% before #540
+  (`lib/nurseryThemeRules.ts`, 51/51). **Five room themes are still description-fed** in
+  `ROOM_THEME_RULES` (living-room, dining-room, outdoor, office, kids-room). None backs a page
+  yet. Move a theme to title-only before you build a page on it, and never add a new one to that list. **Fix a theme at
   the source before you build a page on it**, and read the dry run's ADD list as hard as its STRIP
   list — that is where `pumpkin` and `ghost` were caught.
 - **Measure a candidate keyword against the whole catalog before adding it, and record the
@@ -923,34 +925,48 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-11 — rotated to the archive
+### 2026-10-15 → 11-12 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13.
 
-### 2026-11-12 (covers #498)
+### 2026-11-13 (covers #511, #537–#545)
 
-One operator PR (#498, Search Console indexing errors), no funnel merges, 0 rollbacks. The
-morning check passed. Subsystem details are in the archive (11-12).
+11 funnel merges, 7 production DB applies, 0 rollbacks. The morning check passed. Subsystem
+details are in the archive (11-13).
 
-- **A `vercel.json` redirect whose `source` has no trailing slash never fires.** Next's
-  `trailingSlash` 308 runs first. `/home` → `/` existed from the start, but `/home` went to
-  `/home/`, which was proxied to WordPress and returned a 404 that Search Console reported (#498). Every
-  other entry has a slash twin. `/home` was the one without, and no test checks for that.
-  Write the slash form (or both), and confirm with `curl -sI` that the *slash* URL redirects.
-- **The app's `robots.txt` replaces WordPress's, so WordPress's rules are lost.** The route
-  never reaches the WP file in production, so its `Disallow: /wp-admin/` never applied on the
-  apex. Crawlers fetched `wp-admin` edit URLs (403), `/wp-json/` (401) and Patreon-plugin action
-  URLs (403). When you proxy a host, copy its crawler rules into the proxying route, and add them
-  to **every** user-agent group. A bot that matches a named group ignores `*`.
-- **Proxied post HTML can contain links with no scheme** (`href="host.tld/x"`). Browsers resolve
-  these under the post's own path, which gives a 404. `rewriteHtml` now adds `https://`.
-- **Still open:** the `monetization-agent` cron slash (Tier 2), a `vercel.json` slash-twin guard
-  test, and the missing #498 ledger row.
+- **A completeness claim in docs is a hypothesis. Read the constant before you repeat it.** This
+  file said "every room theme is now title-only" while `nursery` was still in `ROOM_THEME_RULES`.
+  #540 then called nursery "the last" one, and five more are still there. Before you write
+  "all", "every" or "the last", grep the list and paste the count.
+- **A guard that is not in the merge path only reports after the merge.** The ship protocol runs
+  one test file. `template-lastmod-git-guard` was red on `main` through three merges, two of them
+  operator commits outside the protocol. #537 is the third hand bump in 9 days (E405). A fourth
+  means the class fix: a pre-merge check, not another bump. When you merge, run the full unit suite. A red file on
+  `main` that nobody owns hides the next regression.
+- **A busy merge day switches off the revenue breaker.** Auto-rollback only fires for ≤24
+  in-window production deploys (`ROLLBACK_BOUNDS`). Every merge *and* every ledger commit to `main`
+  is a deploy. The window holding the operator's #514→#535 batch has 59, so a red day there gets
+  no automatic rollback. When the count passes the bound, bisect by page RPM by hand (Rio's
+  playbook).
+- **Prefer what a source says about itself, under its own trust flag, to text parsed from its
+  URL.** Simsfinds names the creator in JSON-LD only when `data-bycreator="1"`. On a re-upload
+  the `-by-x-` slug names someone who did not upload it (#542). This is the same class as the
+  original "Title"/"ShRef" author garbage taken from URL path segments.
+- **A public counter is not a measurement.** Patreon's public tier count read 69 paid / $179. The
+  Members API read 54–56 / ~$140. A headline metric names its source and reads null when nothing
+  was measured (#539). The corrected number fell below the floor with no revenue change.
+- **State a move's ceiling against the gap before you dispatch it.** The baselines graded for all
+  11 merges add up to ≈3,000 sessions/28d against a ~115k gap. Even if every one doubles, that is
+  ≈2.6%. Every AUDIENCE move now states its 28d session ceiling, and each run includes at least
+  one move sized at ≥1% of the gap.
+- **Still open:** `deploy-verify.sh` leaves an uncommitted ledger edit that blocks `git checkout`
+  (3 agents on 11-13), the `vercel.json` slash-twin guard test, the `monetization-agent` cron
+  slash (Tier 2), and the missing #498 ledger row.
 
 ---
 
-*Last compound review: 2026-11-12*
+*Last compound review: 2026-11-13*
 
 ---
 
