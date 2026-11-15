@@ -672,3 +672,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-13 07:17 | after-merge | Sage: PR #544 E400 houses-lots hub | ed3fa41 | https://mhm-finds-dw5l-lotxp35lq-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-13 07:24 | after-merge | Quinn: PR #545 funnel: daily run 2026-11-13 | c6892ab | https://mhm-finds-dw5l-q0z2xk7ay-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-14 06:35 | check | morning-check |  | https://mhm-finds-dw5l-7fogrs5f9-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-11-15 06:35 | check | morning-check |  | https://mhm-finds-dw5l-hmyw2i8sa-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
