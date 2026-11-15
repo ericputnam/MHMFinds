@@ -925,48 +925,30 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-12 — rotated to the archive
+### 2026-10-15 → 11-13 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14.
 
-### 2026-11-13 (covers #511, #537–#545)
+### 2026-11-14 (no merges; morning check PASS)
 
-11 funnel merges, 7 production DB applies, 0 rollbacks. The morning check passed. Subsystem
-details are in the archive (11-13).
+0 funnel merges, 0 production DB applies, 0 rollbacks. Only the 11-13 compound commit and a PASS
+morning-check row reached `main`.
 
-- **A completeness claim in docs is a hypothesis. Read the constant before you repeat it.** This
-  file said "every room theme is now title-only" while `nursery` was still in `ROOM_THEME_RULES`.
-  #540 then called nursery "the last" one, and five more are still there. Before you write
-  "all", "every" or "the last", grep the list and paste the count.
-- **A guard that is not in the merge path only reports after the merge.** The ship protocol runs
-  one test file. `template-lastmod-git-guard` was red on `main` through three merges, two of them
-  operator commits outside the protocol. #537 is the third hand bump in 9 days (E405). A fourth
-  means the class fix: a pre-merge check, not another bump. When you merge, run the full unit suite. A red file on
-  `main` that nobody owns hides the next regression.
-- **A busy merge day switches off the revenue breaker.** Auto-rollback only fires for ≤24
-  in-window production deploys (`ROLLBACK_BOUNDS`). Every merge *and* every ledger commit to `main`
-  is a deploy. The window holding the operator's #514→#535 batch has 59, so a red day there gets
-  no automatic rollback. When the count passes the bound, bisect by page RPM by hand (Rio's
-  playbook).
-- **Prefer what a source says about itself, under its own trust flag, to text parsed from its
-  URL.** Simsfinds names the creator in JSON-LD only when `data-bycreator="1"`. On a re-upload
-  the `-by-x-` slug names someone who did not upload it (#542). This is the same class as the
-  original "Title"/"ShRef" author garbage taken from URL path segments.
-- **A public counter is not a measurement.** Patreon's public tier count read 69 paid / $179. The
-  Members API read 54–56 / ~$140. A headline metric names its source and reads null when nothing
-  was measured (#539). The corrected number fell below the floor with no revenue change.
-- **State a move's ceiling against the gap before you dispatch it.** The baselines graded for all
-  11 merges add up to ≈3,000 sessions/28d against a ~115k gap. Even if every one doubles, that is
-  ≈2.6%. Every AUDIENCE move now states its 28d session ceiling, and each run includes at least
-  one move sized at ≥1% of the gap.
-- **Still open:** `deploy-verify.sh` leaves an uncommitted ledger edit that blocks `git checkout`
-  (3 agents on 11-13), the `vercel.json` slash-twin guard test, the `monetization-agent` cron
+- **An operator-watch block is only real once it is on `main`.** Funnel runs read
+  `ideas-inbox.md` from a clean worktree of `origin/main`. The launcher opens a PR for each new
+  "## Operator watch" block and does not merge it. #500 (11-09), #513 (11-11) and #546 (11-13) are
+  all still open, so `main` still carries the **11-06** block (77.9% of the sessions line). The live
+  ratio is 75.4%. Quinn re-derived the gap from `history.json` on 11-13, so that run was not misled. Any
+  agent that trusts the block is reading numbers 8 days old. Merge the newest watch PR (Tier 0,
+  docs only) and close the ones it supersedes. Do not open another PR on top of them.
+- **Still open:** carried from 11-13 — `deploy-verify.sh` leaves an uncommitted ledger edit that
+  blocks `git checkout`, the `vercel.json` slash-twin guard test, the `monetization-agent` cron
   slash (Tier 2), and the missing #498 ledger row.
 
 ---
 
-*Last compound review: 2026-11-13*
+*Last compound review: 2026-11-14*
 
 ---
 

@@ -3397,6 +3397,40 @@ morning check passed. Subsystem details are in the archive (11-12).
 - **Still open:** the `monetization-agent` cron slash (Tier 2), a `vercel.json` slash-twin guard
   test, and the missing #498 ledger row.
 
+### 2026-11-13 — rotated from CLAUDE.md
+
+11 funnel merges, 7 production DB applies, 0 rollbacks. The morning check passed. Subsystem
+details are in the archive (11-13).
+
+- **A completeness claim in docs is a hypothesis. Read the constant before you repeat it.** This
+  file said "every room theme is now title-only" while `nursery` was still in `ROOM_THEME_RULES`.
+  #540 then called nursery "the last" one, and five more are still there. Before you write
+  "all", "every" or "the last", grep the list and paste the count.
+- **A guard that is not in the merge path only reports after the merge.** The ship protocol runs
+  one test file. `template-lastmod-git-guard` was red on `main` through three merges, two of them
+  operator commits outside the protocol. #537 is the third hand bump in 9 days (E405). A fourth
+  means the class fix: a pre-merge check, not another bump. When you merge, run the full unit suite. A red file on
+  `main` that nobody owns hides the next regression.
+- **A busy merge day switches off the revenue breaker.** Auto-rollback only fires for ≤24
+  in-window production deploys (`ROLLBACK_BOUNDS`). Every merge *and* every ledger commit to `main`
+  is a deploy. The window holding the operator's #514→#535 batch has 59, so a red day there gets
+  no automatic rollback. When the count passes the bound, bisect by page RPM by hand (Rio's
+  playbook).
+- **Prefer what a source says about itself, under its own trust flag, to text parsed from its
+  URL.** Simsfinds names the creator in JSON-LD only when `data-bycreator="1"`. On a re-upload
+  the `-by-x-` slug names someone who did not upload it (#542). This is the same class as the
+  original "Title"/"ShRef" author garbage taken from URL path segments.
+- **A public counter is not a measurement.** Patreon's public tier count read 69 paid / $179. The
+  Members API read 54–56 / ~$140. A headline metric names its source and reads null when nothing
+  was measured (#539). The corrected number fell below the floor with no revenue change.
+- **State a move's ceiling against the gap before you dispatch it.** The baselines graded for all
+  11 merges add up to ≈3,000 sessions/28d against a ~115k gap. Even if every one doubles, that is
+  ≈2.6%. Every AUDIENCE move now states its 28d session ceiling, and each run includes at least
+  one move sized at ≥1% of the gap.
+- **Still open:** `deploy-verify.sh` leaves an uncommitted ledger edit that blocks `git checkout`
+  (3 agents on 11-13), the `vercel.json` slash-twin guard test, the `monetization-agent` cron
+  slash (Tier 2), and the missing #498 ledger row.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
