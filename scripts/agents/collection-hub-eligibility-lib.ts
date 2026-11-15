@@ -47,6 +47,11 @@ export const GAMEPLAY_ADULT_WATCHLIST: ReadonlyArray<{ id: string; label: string
   { id: 'cmikk9oj9006tox331c1a2g0g', label: 'Basemental' },
   { id: 'cmim91d7u01l8oxy8mrvijtik', label: 'Wonderful Whims' },
   { id: 'cmim8rs4i002eoxy8enc7gbsp', label: 'Cuddle and Bath' },
+  // E419 (Rowan, 2026-11-15): teen–young-adult "mess around"; no adult word
+  // in its title, so only the watchlist can catch it.
+  { id: 'cmijj4iqq003roxs3l45il7cz', label: 'Teen Romance' },
+  { id: 'cmmvase5900e1oxzgw4y6q5h6', label: 'Teen/Adult Romance' },
+  { id: 'cmik9snkb00a4oxk72fxpft4e', label: 'Sleeping Anim (WW)' },
 ];
 
 /**
@@ -117,6 +122,41 @@ export const OFF_TYPE_RE: Readonly<Record<string, RegExp>> = {
     /\b(nose|noses|lips?|mouth|chin|jaw|cheeks?|ears?|body|face|sliders?|skin|hair|dress(?:es)?|tops?|shoes?|furniture|clutter|poses?|lot|house|makeup|eyeliner|lashes|eyebrows?|tattoos?|nails?|lighting)\b/i,
 };
 
+/**
+ * Rows a human read that an OFF_TYPE_RE word flags but that ARE on-type, by
+ * family and id, each with its reason. Leg (c) skips exactly these ids for
+ * exactly that family. Keeping the regex and pinning the rows keeps the word
+ * able to catch the next real off-type row, so the gate does not get looser.
+ *
+ * gameplay (Rowan, E418, 2026-11-15): all 517 SFW Sims 4 gameplay-mod /
+ * script-mod / career rows were run through OFF_TYPE_RE.gameplay and it
+ * flagged 15. Each title was read, plus the mod text where the title was not
+ * enough, and all 15 are gameplay. Sage's 85 E400 pins had already moved the
+ * real off-type rows out of the facet. This regex in this family now flags
+ * false positives only, so `bed`, `hair`, `kitchen`, `lot`, `house`, `top`,
+ * `tattoo` and `cottage` are object words inside mod titles.
+ * "Bed Cuddle" (#27 after E418) was the only one in the top 30.
+ */
+export const HAND_AUDITED_ON_TYPE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  gameplay: {
+    cmim8uhmm00d4oxy8txx74wqw: '"Bed Cuddle": a couples-snuggle sleep interaction (thepancake1 & MizoreYukii), not a bed',
+    cmoipxt4u000yoxkj6nutxrgw: '"Got2bVanity Hair Mod": an interactive lace-wig install routine with moodlets, not a hairstyle',
+    cmim9vkim000dox9sz6dw72dp: '"Toddler Play Kitchen Mod": a functional toy that builds toddler movement skill, not a kitchen',
+    cmoircqok002poxbhi7ccni49: '"Read in Bed": a read-while-lying-down interaction (Simkatu)',
+    cmoircqr2002qoxbhx9phoueg: '"Nap with Baby in Bed": a co-nap caregiving interaction (Simkatu)',
+    cmim9evxj0025oxqwgd049wow: '"Animal Shop Mod for Cottage Living": shop gameplay; the pack name holds the word',
+    cmijpvf0z0198oxc8ku3nlctc: '"Lot Traits Pack": lot traits are gameplay modifiers, not lots',
+    'sims-4-lookbook-camera-mod': '"Top-Down CAS Camera": a CAS camera mod; "Top" is the camera angle',
+    cmim8uhov00d5oxy8hvqy0zbs: '"Pumpkin Patch Lot Trait": a lot trait',
+    cmim8ugvk00croxy8jy92xsrk: '"Clean House & Ask to Clean House": a chore interaction',
+    cmim8xgo200w9oxy8kbkjdv60: '"Tattoo Artist Career": a career',
+    cmtvefvko0008oxl9cddewchv: '"Airport Lot Trait": a lot trait',
+    cmsmb799j0031oxeuckmn2glw: '"Basketball Court Lot Trait": a lot trait',
+    cmijpvjwy019boxc8k4hwaky9: '"Pyromania Trait + Allow Fire on Every Lot Script": a trait script',
+    cmijnpsdb00hgoxc8uq1h4zq0: '"Lot Trait: Pumpkin Patch": a lot trait',
+  },
+};
+
 /** The families leg (c) can grade; the CLI rejects anything else. */
 export const OFF_TYPE_FAMILIES: ReadonlyArray<string> = Object.keys(OFF_TYPE_RE);
 
@@ -153,6 +193,7 @@ export function gradeHub(
   const rule = opts.rule ?? DEFAULT_RULE;
   const watch = new Set((opts.watchlist ?? []).map((w) => w.id));
   const offRe = opts.family ? OFF_TYPE_RE[opts.family] : undefined;
+  const onTypePins = (opts.family ? HAND_AUDITED_ON_TYPE[opts.family] : undefined) ?? {};
   const audited = top.slice(0, rule.topN);
 
   const adultInTop: HubGrade['adultInTop'] = [];
@@ -161,7 +202,7 @@ export function gradeHub(
     if (watch.has(r.id)) adultInTop.push({ id: r.id, title: r.title, via: 'watchlist' });
     else if (ADULT_TITLE_RE.test(r.title)) adultInTop.push({ id: r.id, title: r.title, via: 'title' });
     const m = offRe ? r.title.match(offRe) : null;
-    if (m) offTypeInTop.push({ id: r.id, title: r.title, word: m[0] });
+    if (m && !onTypePins[r.id]) offTypeInTop.push({ id: r.id, title: r.title, word: m[0] });
   }
 
   const reasons: string[] = [];
@@ -197,7 +238,7 @@ export function formatRule(rule: HubRule, family: string | undefined): string {
     `  (b) 0 adult-themed SFW-flagged titles in the top ${rule.topN} by downloads (watchlist ids OR ADULT_TITLE_RE)`,
     `  (c) 0 off-type titles in the top ${rule.topN}${
       family
-        ? ` (OFF_TYPE_RE.${family})`
+        ? ` (OFF_TYPE_RE.${family}, minus ${Object.keys(HAND_AUDITED_ON_TYPE[family] ?? {}).length} hand-read on-type pins)`
         : ` (NO family given: leg (c) will not be graded — the verdict can be at most INCONCLUSIVE; pass --family=${OFF_TYPE_FAMILIES.join('|')})`
     }`,
   ].join('\n');

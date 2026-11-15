@@ -4,6 +4,7 @@ import {
   ADULT_TITLE_RE,
   DEFAULT_RULE,
   GAMEPLAY_ADULT_WATCHLIST,
+  HAND_AUDITED_ON_TYPE,
   OFF_TYPE_FAMILIES,
   OFF_TYPE_RE,
   formatGrade,
@@ -11,6 +12,8 @@ import {
   gradeHub,
   type HubRow,
 } from '../../scripts/agents/collection-hub-eligibility-lib';
+import { HAND_AUDITED_NSFW } from '../../scripts/lib/hand-audited-content-types';
+import { getCollection } from '../../lib/collections';
 
 function row(i: number, title: string, extra: Partial<HubRow> = {}): HubRow {
   return { id: `id${i}`, title, contentType: 'gameplay-mod', isNSFW: false, downloadCount: 1000 - i, ...extra };
@@ -67,12 +70,13 @@ describe('collection-hub-eligibility (E238)', () => {
     expect(gradeHub(top, 511, { family: 'gameplay', rule: { minRows: 20, topN: 31 } }).eligible).toBe(false);
   });
 
-  it('watchlist is the 8 ids from playbooks/sage.md 2026-10-18 and every label trips ADULT_TITLE_RE', () => {
-    expect(GAMEPLAY_ADULT_WATCHLIST).toHaveLength(8);
-    expect(new Set(GAMEPLAY_ADULT_WATCHLIST.map((w) => w.id)).size).toBe(8);
+  it('watchlist is the 8 ids from playbooks/sage.md 2026-10-18 + 3 E419 ids, and which labels trip ADULT_TITLE_RE', () => {
+    expect(GAMEPLAY_ADULT_WATCHLIST).toHaveLength(11);
+    expect(new Set(GAMEPLAY_ADULT_WATCHLIST.map((w) => w.id)).size).toBe(11);
     for (const w of GAMEPLAY_ADULT_WATCHLIST) expect(w.id).toMatch(/^c[a-z0-9]{24}$/);
     // Labels that the regex is expected to catch on their own; "Cuddle and
-    // Bath" is the one the id list exists for — its title is innocuous.
+    // Bath" is the one the id list exists for — its title is innocuous, and so
+    // are the three E419 titles (teen + adult romance, a Wicked Whims animation).
     const byTitle = GAMEPLAY_ADULT_WATCHLIST.filter((w) => ADULT_TITLE_RE.test(w.label)).map((w) => w.label);
     expect(byTitle).toEqual(['MC WooHoo', 'Wicked Whims', 'Prostitution Mod', 'Ho* It Up', 'Breast Slider', 'Basemental', 'Wonderful Whims']);
   });
@@ -167,6 +171,55 @@ describe('collection-hub-eligibility (E238)', () => {
     expect(g.verdict).toBe('NOT ELIGIBLE');
     expect(g.offTypeInTop).toHaveLength(16);
     for (const o of g.offTypeInTop) expect(o.word.length).toBeGreaterThan(0);
+  });
+
+  // ── E418 (Rowan, 2026-11-15). The gameplay hub was ungradeable by
+  //    construction: E242 pinned Wonderful Whims and Cuddle and Bath Together
+  //    isNSFW=false while this watchlist failed the hub on them, so the two
+  //    pieces of the same pipeline disagreed and no data fix could pass.
+  it('every watchlist id is pinned isNSFW=true in HAND_AUDITED_NSFW (the two tables agree)', () => {
+    expect(GAMEPLAY_ADULT_WATCHLIST.length).toBeGreaterThanOrEqual(8); // vacuity guard
+    const disagree = GAMEPLAY_ADULT_WATCHLIST.filter((w) => HAND_AUDITED_NSFW[w.id]?.isNSFW !== true).map(
+      (w) => `${w.label} (${w.id}) pinned ${HAND_AUDITED_NSFW[w.id]?.isNSFW}`,
+    );
+    expect(disagree).toEqual([]);
+  });
+
+  //    Leg (c) is a title regex. In the gameplay family after Sage's E400 lot
+  //    pins it flagged 15 of 15 hits wrongly ("Bed Cuddle", "Got2bVanity Hair
+  //    Mod", "Lot Traits Pack" …). The fix is by id, never by loosening the regex.
+  it('HAND_AUDITED_ON_TYPE exempts only its own id, only in its own family', () => {
+    const pinned = Object.keys(HAND_AUDITED_ON_TYPE.gameplay ?? {});
+    expect(pinned.length).toBeGreaterThanOrEqual(10); // vacuity guard
+    const id = 'cmim8uhmm00d4oxy8txx74wqw'; // Bed Cuddle
+    expect(pinned).toContain(id);
+    expect(OFF_TYPE_RE.gameplay.test('Bed Cuddle')).toBe(true); // the regex still fires
+    const withPin = [row(0, 'Bed Cuddle', { id }), ...CLEAN_30.slice(1)];
+    expect(gradeHub(withPin, 511, { family: 'gameplay' }).verdict).toBe('ELIGIBLE');
+    // same title, unpinned id → still off-type
+    const noPin = [row(0, 'Bed Cuddle', { id: 'cnotpinned00000000000000000' }), ...CLEAN_30.slice(1)];
+    expect(gradeHub(noPin, 511, { family: 'gameplay' }).offTypeInTop).toHaveLength(1);
+    // a gameplay pin does not exempt the row in another family
+    const lotTraits = 'cmijpvf0z0198oxc8ku3nlctc'; // Lot Traits Pack
+    expect(pinned).toContain(lotTraits);
+    const lots = [row(0, 'Lot Traits Pack', { id: lotTraits, contentType: 'lot' }), ...CLEAN_30.slice(1)];
+    expect(gradeHub(lots, 959, { family: 'lots' }).offTypeInTop).toHaveLength(1);
+  });
+
+  it('no on-type pin is also an adult row (a pin can never launder a watchlist id)', () => {
+    const adult = new Set(GAMEPLAY_ADULT_WATCHLIST.map((w) => w.id));
+    for (const fam of Object.keys(HAND_AUDITED_ON_TYPE))
+      for (const id of Object.keys(HAND_AUDITED_ON_TYPE[fam])) {
+        expect(adult.has(id), `${fam}:${id}`).toBe(false);
+        expect(HAND_AUDITED_NSFW[id]?.isNSFW, `${fam}:${id}`).not.toBe(true);
+        expect(HAND_AUDITED_ON_TYPE[fam][id].trim().length, `${fam}:${id} why`).toBeGreaterThan(8);
+      }
+  });
+
+  it('the gameplay-mods page lists exactly the content types the gate graded', () => {
+    const c = getCollection('sims-4', 'gameplay-mods');
+    expect(c).toBeDefined();
+    expect([...(c!.filter.contentTypeIn ?? [])].sort()).toEqual(['career', 'gameplay-mod', 'script-mod']);
   });
 
   it('prints the rule before the reading, with the default thresholds', () => {

@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-13
+ * Generated on:     2026-11-15
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -104,6 +104,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/female-secondary-sims-4-gallery-poses.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/family-portrait-gallery-pose-sims-4.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2022/03/sims-4-hand-poses-for-cas-1-1024x247.jpg",
+  ],
+  "gameplay-mods": [
+    "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-247.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-114.jpeg",
+    "https://images.surferseo.art/15e9e166-9585-484e-8a28-f945f020b679.jpeg",
   ],
   "goth-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2024/10/image-9.jpg",
@@ -206,9 +211,9 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://images.surferseo.art/af7f30cb-76cb-4ecd-90fc-576daddbaf07.png",
   ],
   "pregnancy-mods": [
-    "https://blog.musthavemods.com/wp-content/uploads/2024/11/MTS_PolarBearSims-1729927-TeenAdultRomanceMessAround-1024x576.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-247.png",
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-114.jpeg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/07/0841ce0e-e0de-4149-94ac-e71d8db293b5-1.png",
   ],
   "shoes-cc": [
     "https://musthavemods.com/wp-content/uploads/2024/09/image-136.png",
@@ -226,9 +231,9 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://images.surferseo.art/49fe964a-4976-4eda-a893-7696a330969e.png",
   ],
   "tops-cc": [
+    "https://images.surferseo.art/8102bc3f-5909-409f-9592-6199434de136.jpeg",
     "https://images.surferseo.art/6c68d4f0-a4e0-489e-b253-a2f8a939ea74.png",
-    "https://musthavemods.com/wp-content/uploads/2024/10/image-19.jpeg",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/09/1-2-1-1024x1024.webp",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/417d543f-d690-4930-88f8-98399291f5d0-1.png",
   ],
   "vampire-cc": [
     "https://images.surferseo.art/45be5ad0-d3f1-4978-896a-3d2bd889a493.png",

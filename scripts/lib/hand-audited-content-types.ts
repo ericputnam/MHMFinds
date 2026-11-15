@@ -2130,8 +2130,30 @@ export const HAND_AUDITED_NSFW: Record<string, HandAuditedNsfw> = {
   cmim9dnuf000yoxqwqbhi32f4: { isNSFW: true, why: 'E242 "The Ho* It Up Mod" — sex-work gameplay mod (adult)' },
   cmim9jz39002uoxy7z2tbyidh: { isNSFW: true, why: 'E242 "Sims 4 Breast Slider Mod" — sexualised body slider; conservative call for an ad page' },
   cmikk9oj9006tox331c1a2g0g: { isNSFW: true, why: 'E242 "Basemental Drugs & Gangs Mods" — Basemental drugs/gangs mod; illegal-drug content, not sexual, flagged for ad-policy reasons' },
-  cmim91d7u01l8oxy8mrvijtik: { isNSFW: false, why: 'E242 "Wonderful Whims" — KEEP SFW: TURBODRIVER publishes it as the non-explicit counterpart of Wicked Whims (attraction, relationships, cycle); the shared franchise is not the content' },
-  cmim8rs4i002eoxy8enc7gbsp: { isNSFW: false, why: 'E242 "Cuddle and Bath Together" — KEEP SFW: shared cuddling/bathing at base-game level (base game censors); nothing in the title is adult' },
+  // E418 (Rowan, 2026-11-15) reverses the two E242 SFW keeps. E242 decided
+  // from the title and the franchise only. The per-mod text on each row
+  // (written for that mod, not shared with a post) says more, and each one is
+  // quoted in its `why`. Both ids are also in GAMEPLAY_ADULT_WATCHLIST, so an
+  // SFW pin kept the gameplay hub's gate failing for good (Sage, 11-13). Cost:
+  // 34 landing sessions in 28 days across both pages (GA4 10-17→11-13) and
+  // 1 GSC click.
+  cmim91d7u01l8oxy8mrvijtik: { isNSFW: true, why: 'E418 "Wonderful Whims" — the mod text sells WooHoo with condoms and birth control, plus STDs ("Crabs"). Sexual-health gameplay from the Wicked Whims author; the same conservative call for an ad page as Breast Slider (E242 had kept it SFW from the title alone)' },
+  cmim8rs4i002eoxy8enc7gbsp: { isNSFW: true, why: 'E418 "Cuddle and Bath Together" — the mod text: "The creator recommends having the Wicked Whims mod … This ensures your Sims nudity isn\'t blurred out". The intended setup is nude bathing (E242 had kept it SFW from the title alone)' },
+  cmijqo05c004iox8oyskgcrb6: { isNSFW: true, why: 'E418 "Wicked Whims – Menstrual Cycle Feature" — a feature of Wicked Whims (E242: NSFW). The download link is the Wicked Whims devlog on turbodriver.itch.io, so the visitor installs the explicit mod. Hub top-48 #31 once the two above leave' },
+  // E419 (Rowan, 2026-11-15): found while reading the gameplay hub's first
+  // homepage cover, which was this mod's screenshot — a Teen kissing a Young
+  // Adult under a pie menu offering "Sexy Pose" and "Mess Around". It is a
+  // separate batch from E418 because E418's rollback file was frozen and
+  // applied before this was read.
+  cmijj4iqq003roxs3l45il7cz: { isNSFW: true, why: 'E419 "Teen Romance Mod" — the mod text: "unlocks romantic interactions between teens and young adults, including flirting, dating, and “mess around”", offered as a substitute for the MCCC WooHoo module. WooHoo between a minor and an adult; never SFW on an ad page (the 2026-11-15 hub draft had kept it SFW from its title, and it was the hub\'s #1 card and #1 homepage cover)' },
+  // E419, same read: the 514-row text scan for woohoo / mess around / Wicked
+  // Whims / nudity / sex found two more rows of the two classes pinned NSFW
+  // above (minor+adult romance; Wicked Whims dependent). The ~20 rows that
+  // only tweak base-game WooHoo (Risky Woohoo, Expanded Woohoo, No Strings
+  // Attached, …) stay SFW: a mechanic of EA's T-rated base game with no
+  // nudity. That is a ruling, not an oversight — queued for operator review.
+  cmmvase5900e1oxzgw4y6q5h6: { isNSFW: true, why: 'E419 "Teen/Adult Romance & Mess Around" — the same PolarBearSims mod as "Teen Romance Mod" (second catalog row); the mod text: "open all romantic interactions, including messing around, for teens and adults to do together"' },
+  cmik9snkb00a4oxk72fxpft4e: { isNSFW: true, why: 'E419 "Sleeping Animation Pack" — the mod text: "you need to download the Wicked Whims mod … click on the bed, select “sex,” then “teasing”"; a Wicked Whims animation, same class as E418 Cuddle and Bath Together' },
 };
 
 /**

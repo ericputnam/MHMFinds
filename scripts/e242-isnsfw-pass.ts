@@ -8,8 +8,10 @@
  *   npx tsx scripts/e242-isnsfw-pass.ts --rollback  # restore every row to the prior value in the rollback file
  *
  * The plan is HAND_AUDITED_NSFW (scripts/lib/hand-audited-content-types.ts),
- * restricted to entries whose `why` starts with "E242 ". It never decides a
- * value itself. Prints titles only, never descriptions.
+ * restricted to entries whose `why` starts with "<label> " (default E242;
+ * `--label=E418` for the 2026-11-15 batch). Each label gets its own frozen
+ * rollback file, so a later batch never overwrites an earlier one's priors.
+ * It never decides a value itself. Prints titles only, never descriptions.
  * Exit codes: 0 ok, 1 refused, 2 could-not-run (DB error).
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,8 +27,13 @@ import { PrismaClient } from '@prisma/client';
 import { HAND_AUDITED_NSFW } from './lib/hand-audited-content-types';
 
 const PROJECT_DIR = process.env.MHM_PROJECT_DIR ?? resolve(__dirname, '..');
-const ROLLBACK_PATH = resolve(PROJECT_DIR, 'reports/funnel/triage/e242-rollback.json');
-const LABEL = 'E242 ';
+const LABEL_ARG = process.argv.find((a) => a.startsWith('--label='))?.slice('--label='.length) ?? 'E242';
+if (!/^E\d+$/.test(LABEL_ARG)) {
+  console.error(`refused: --label must look like E242, got ${JSON.stringify(LABEL_ARG)}`);
+  process.exit(1);
+}
+const ROLLBACK_PATH = resolve(PROJECT_DIR, `reports/funnel/triage/${LABEL_ARG.toLowerCase()}-rollback.json`);
+const LABEL = `${LABEL_ARG} `;
 
 interface RollbackRow {
   id: string;
@@ -39,7 +46,7 @@ async function main(): Promise<number> {
   const mode = process.argv.includes('--apply') ? 'apply' : process.argv.includes('--rollback') ? 'rollback' : 'dry';
   const plan = Object.entries(HAND_AUDITED_NSFW).filter(([, v]) => v.why.startsWith(LABEL));
   if (plan.length === 0) {
-    console.error('refused: no E242 pins found');
+    console.error(`refused: no ${LABEL_ARG} pins found`);
     return 1;
   }
   const prisma = new PrismaClient();

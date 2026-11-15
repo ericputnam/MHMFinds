@@ -19,8 +19,19 @@ const E242_EXPECTED: Record<string, boolean> = {
   cmim9dnuf000yoxqwqbhi32f4: true, // The Ho* It Up Mod
   cmim9jz39002uoxy7z2tbyidh: true, // Sims 4 Breast Slider Mod
   cmikk9oj9006tox331c1a2g0g: true, // Basemental Drugs & Gangs Mods
-  cmim91d7u01l8oxy8mrvijtik: false, // Wonderful Whims — TURBODRIVER's non-explicit counterpart, pinned SFW
-  cmim8rs4i002eoxy8enc7gbsp: false, // Cuddle and Bath Together — base-game-level, pinned SFW
+};
+
+// E418/E419 (Rowan, 2026-11-15): decided on each row's own mod text, not its
+// title. E418 reverses E242's two title-only SFW keeps (Wonderful Whims,
+// Cuddle and Bath Together); E419 was found reading the gameplay hub's first
+// homepage cover. Each label has its own frozen rollback file.
+const LATER_EXPECTED: Record<string, { want: boolean; label: 'E418' | 'E419' }> = {
+  cmim91d7u01l8oxy8mrvijtik: { want: true, label: 'E418' }, // Wonderful Whims — condoms, birth control, STDs
+  cmim8rs4i002eoxy8enc7gbsp: { want: true, label: 'E418' }, // Cuddle and Bath Together — needs WW so nudity isn't blurred
+  cmijqo05c004iox8oyskgcrb6: { want: true, label: 'E418' }, // Wicked Whims – Menstrual Cycle Feature — links WW's devlog
+  cmijj4iqq003roxs3l45il7cz: { want: true, label: 'E419' }, // Teen Romance Mod — teen + young adult "mess around"
+  cmmvase5900e1oxzgw4y6q5h6: { want: true, label: 'E419' }, // Teen/Adult Romance & Mess Around — same mod, second row
+  cmik9snkb00a4oxk72fxpft4e: { want: true, label: 'E419' }, // Sleeping Animation Pack — WW "sex" menu animation
 };
 
 type Pin = { isNSFW: boolean; why: string };
@@ -37,6 +48,14 @@ describe('E242 hand-audited isNSFW pins', () => {
     it(`${id} is pinned isNSFW=${want} with a dated why`, () => {
       expect(pins?.[id]?.isNSFW).toBe(want);
       expect(pins?.[id]?.why).toMatch(/^E242 /);
+      expect(pinnedIsNSFW?.(id)).toBe(want);
+    });
+  }
+
+  for (const [id, { want, label }] of Object.entries(LATER_EXPECTED)) {
+    it(`${id} is pinned isNSFW=${want} by ${label}`, () => {
+      expect(pins?.[id]?.isNSFW).toBe(want);
+      expect(pins?.[id]?.why.startsWith(`${label} `)).toBe(true);
       expect(pinnedIsNSFW?.(id)).toBe(want);
     });
   }
