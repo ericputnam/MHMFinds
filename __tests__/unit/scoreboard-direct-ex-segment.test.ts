@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SG_DIRECT_RULE } from '../../scripts/agents/direct-bot-lib';
 import * as lib from '../../scripts/agents/scoreboard-segment-lib';
+import { classifyChannel } from '../../scripts/agents/scoreboard-channel-lib';
 
 const ROOT = join(__dirname, '..', '..');
 const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
@@ -31,8 +32,13 @@ describe('E236 — the segment is E216\'s constant, not a copy', () => {
     });
   });
   it('the segment source is exactly the scoreboard Direct selector, so it subtracts cleanly', () => {
+    // E409 moved the selector out of funnel-scoreboard.ts into scoreboard-channel-lib.ts; the
+    // scoreboard classifies through classifyChannel, so the behavioural check is the invariant.
+    expect(classifyChannel(SG_DIRECT_RULE.source, '(none)').channel).toBe('direct');
+    const channelLib = stripComments(readFileSync(join(ROOT, 'scripts/agents/scoreboard-channel-lib.ts'), 'utf8'));
+    expect(channelLib).toContain(`src === '${SG_DIRECT_RULE.source}'`);
     const scoreboard = stripComments(readFileSync(join(ROOT, 'scripts/agents/funnel-scoreboard.ts'), 'utf8'));
-    expect(scoreboard).toContain(`src === '${SG_DIRECT_RULE.source}'`);
+    expect(scoreboard).toContain('classifyChannel(');
   });
 });
 

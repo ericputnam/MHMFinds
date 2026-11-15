@@ -74,6 +74,7 @@ import { requireProjectDir } from './project-dir-guard';
 import { externalWindowNotes } from './channel-external-windows';
 import { directExSegment, directExSegmentRow, headlineExSegment, headlineExSegmentLine, segmentDimensionFilter, DIRECT_EX_SEGMENT_CHANNEL, HEADLINE_EX_SEGMENT_DAYS, type DirectExSegment, type HeadlineExSegmentResult, type HistoryDayLike } from './scoreboard-segment-lib';
 import type { SessionsByDate } from './revenue-guardrail-lib';
+import { classifyChannel } from './scoreboard-channel-lib';
 
 // E215: MHM_PROJECT_DIR unset + running from a worktree used to write into the operator's checkout
 // (2 of 7 agents on 2026-10-14). The guard refuses with exit 2 instead of guessing.
@@ -86,7 +87,6 @@ const GSC_SITE = process.env.GSC_SITE ?? 'sc-domain:musthavemods.com';
 const PATREON_URL = 'https://www.patreon.com/MustHaveModsOfficial';
 const WP_API = 'https://blog.musthavemods.com/wp-json/wp/v2';
 const PINNER_ENV = process.env.MHM_UTILS_ENV ?? join(homedir(), 'java_projects', 'MHMUtils', '.env');
-const AI_REFERRERS = ['chatgpt', 'perplexity', 'copilot', 'gemini', 'claude', 'openai', 'bing.com/chat', 'you.com'];
 
 type Section<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -230,20 +230,11 @@ async function pullGa4(): Promise<Ga4Data> {
       const med = (row.dimensionValues?.[1]?.value ?? '').toLowerCase();
       const n = Number(row.metricValues?.[0]?.value ?? 0);
       total += n;
-      let ch = 'other';
-      if (src.includes('pinterest')) ch = 'pinterest';
-      else if (src === 'google' && med === 'organic') ch = 'google_organic';
-      else if (src === 'bing' && med === 'organic') ch = 'bing_organic';
-      else if (src === '(direct)') ch = 'direct';
-      else if (src.includes('tumblr')) ch = 'tumblr';
-      else if (src.includes('reddit')) ch = 'reddit';
-      else if (med === 'organic') ch = 'other_search';
-      else if (med === 'email' || src.includes('sendgrid')) ch = 'email';
-      if (AI_REFERRERS.some((a) => src.includes(a)) || med.includes('ai')) {
-        ch = 'ai_referral';
-        ai += n;
-      }
-      channels[ch] = (channels[ch] ?? 0) + n;
+      // E409: rule lives in scoreboard-channel-lib.ts (pure, tested). Bing-syndicated
+      // search referrals (*.search.yahoo.com, cn.bing.com, ntp.msn.com) read as other_search.
+      const cls = classifyChannel(src, med);
+      if (cls.ai) ai += n;
+      channels[cls.channel] = (channels[cls.channel] ?? 0) + n;
     }
     return { channels, ai, total };
   }
