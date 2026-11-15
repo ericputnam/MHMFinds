@@ -161,7 +161,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // linked page in the graph at 7 inbound.
     // 2026-11-13 (E404): 'poses' → 'nursery-cc' (poses keeps vampire-cc and
     // gallery-poses; a pregnancy save's next build is the nursery).
-    related: ['body-presets', 'nursery-cc', 'kids-cc'],
+    // 2026-11-15 (E418): 'kids-cc' → 'gameplay-mods' (the gameplay hub this
+    // page's gameplay visitors had no route to; kids-cc keeps its other sources).
+    related: ['body-presets', 'nursery-cc', 'gameplay-mods'],
     // Consolidated 2026-07-03 (legacy article 301'd here), un-redirected
     // 2026-09: Google refused this page as the canonical and indexed the
     // blog-subdomain copy of the article instead (pos 10.95, 93 clicks
@@ -2173,7 +2175,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Building a whole house is the slowest thing you can do in Sims 4, and the gallery is the fastest way to get one. But the gallery is hard to search, and the best builds are often posted on a creator\'s own site with a download link instead. This page gathers the houses and lots in our catalog into one grid, sorted by downloads.\n\nThere are 706 here, and 690 of them are free. Most are homes, from starter and tiny houses to family homes, modern villas, farmhouses, 24 ranches and 26 witch cottages. 27 are castles and palaces. The rest are community and venue lots: restaurants, cafés and shops, hotels, gyms, 12 police stations, hospitals, schools and a campus. Creators with long shelves include plumbobkingdom, xogerardine, simZmora, Moniamay72, Merin Martini and RayDesign9.\n\nWe read every row before building this page, and about a quarter of what the catalog had filed as a lot was something else. Walls, windows, doors and wallpaper are not here. Furnished single rooms, furniture sets, EA packs and gameplay mods are not here either. If you want objects to fill a house you already built, the build CC page holds those.\n\nTwo practical notes. Most lots list the packs they were built with, and a lot placed without them will be missing objects, so check the download page before you place it. Also check the lot size, because a 40×30 build will not fit a 20×20 plot.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
     filter: { contentTypeIn: ['lot', 'residential', 'commercial', 'community'] },
     expectedCount: 706,
-    related: ['build-cc', 'furniture-cc', 'witch-cc'],
+    // 2026-11-15 (E418): 'witch-cc' → 'gameplay-mods' (lot traits and lot
+    // gameplay live there; witch-cc keeps its other sources).
+    related: ['build-cc', 'furniture-cc', 'gameplay-mods'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // houses" intent (163 landings 28d); this page owns browse intent.
     // All six legacy URLs are live (HTTP 200, verified 2026-11-13) and none
@@ -2185,6 +2189,65 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       { href: '/sims-4-modern-houses/', label: 'Sims 4 modern houses' },
       { href: '/sims-4-cottage-houses/', label: 'Sims 4 cottage houses' },
       { href: '/sims-4-hotel-lots/', label: 'Sims 4 hotel lots' },
+    ],
+  },
+  {
+    // Rowan, 2026-11-15 (E418/E419, Tier 0 — registry entry in the existing
+    // pattern). The gameplay hub Sage rejected on 11-13 (houses-lots comment
+    // above), shipped now that its pre-committed grade passes.
+    // Demand: the gameplay-family legacy articles have no browse page and drew
+    // ≈4,051 organic-search landings in 28 days (GA4 10-17→11-13):
+    // /sims-4-career-mods/ 1,366, /sims-4-gameplay-mods/ 936 (+609 social),
+    // /sims-4-teen-mods/ 663, /sims-4-mods-for-realistic-relationships/ 447,
+    // /sims-4-trait-mods/ 234, /sims-4-pregnancy-mods/ 148,
+    // /sims-4-quality-of-life-mods/ 118, /best-sims-4-mods/ 109. GSC (Google,
+    // 10-16→11-12): "sims 4 mods" 351 impressions at pos 39.5, "the sims 4
+    // mods" 115 at 38, "best sims 4 mods" 51 at 30 — no page owns the head term.
+    // Gate fixed first (E418): Wonderful Whims, Cuddle and Bath Together and
+    // "Wicked Whims – Menstrual Cycle Feature" pinned isNSFW=true from their
+    // mod text (HAND_AUDITED_NSFW, applied to prod with rollback file
+    // reports/funnel/triage/e418-rollback.json), and 15 gameplay rows that
+    // OFF_TYPE_RE.gameplay mis-flags on a word ("Bed", "Hair", "Kitchen",
+    // "Lot") pinned on-type by id in HAND_AUDITED_ON_TYPE. After:
+    // collection-hub-eligibility --content-type=gameplay-mod,script-mod,career
+    // --family=gameplay --watchlist=gameplay --top=48 → ELIGIBLE (511 SFW rows after E419,
+    // 0 adult, 0 off-type in the first-paint 48; all 48 read by hand).
+    // E419, same day: the first homepage cover was "Teen Romance Mod" (#1),
+    // a teen + young-adult "mess around" mod; it, its second catalog row and
+    // a Wicked Whims animation pack were pinned NSFW (rollback file
+    // reports/funnel/triage/e419-rollback.json). Ruling, not a pin: "Teen
+    // Pregnancy and Drama" (now #1) stays SFW — family-reaction storylines,
+    // no explicit content or Wicked Whims dependency in its text — and so do
+    // the ~20 mods that only tweak base-game WooHoo (queued for the operator).
+    // Inbound: pregnancy-mods and houses-lots `related`, plus the primary
+    // breadcrumb of every SFW gameplay/script/career /mods/[id] page.
+    slug: 'gameplay-mods',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Gameplay Mods',
+    heading: 'Sims 4 Gameplay Mods',
+    metaTitle: 'Sims 4 Gameplay Mod Finder — Browse 500+ Gameplay, Trait & Career Mods | MustHaveMods',
+    metaDescription:
+      'Browse 500+ Sims 4 gameplay mods in one grid: life and pregnancy overhauls, teen and school mods, traits, careers, lot traits and script mods, sorted by downloads.',
+    tagline: 'Life overhauls, traits, careers, teen mods and script mods',
+    intro:
+      'Custom content changes what your sims look like. Gameplay mods change what they do, and that is usually the reason a save gets interesting again after a few hundred hours. This page is every gameplay mod in our catalog in one grid, sorted by how often people download it.\n\nThere are 511 here, and 502 of them are free. 467 are gameplay mods, 36 are script mods and 8 are careers, though many more active careers are filed as gameplay mods. The most downloaded are the life-sim overhauls: teen life and teen pregnancy mods, realistic pregnancy and childbirth, mental health and healthcare, and relationship mods built around exes, cheating and love triangles. Below those you get dozens of trait mods, school and preschool mods, lot traits, cooking and grocery mods, and the utility mods most players install first, such as MC Command Center and UI Cheats Extension. Creators with long shelves here include KiaraSims4Mods, LittleMsSam, Lumpinou, PolarBearSims, Ravasheen and TwistedMexi.\n\nWhat is not here: CC, lots and builds have their own pages, and adult mods are filtered out. That includes any mod that needs an adult mod to work and any mod that pairs teens with adults romantically, even when the title sounds innocent. We read those mods\' own descriptions rather than trusting the name.\n\nTwo practical notes. Script mods break after most game patches, so check the creator\'s page for a version that matches your game before you install. And never run two mods that change the same system, such as two pregnancy overhauls, in one save.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+    filter: { contentTypeIn: ['gameplay-mod', 'script-mod', 'career'] },
+    // Counted on prod 2026-11-15 with the page's own where (gameVersion +
+    // !isNSFW), after the E418 + E419 applies: 467 + 36 + 8 = 511, 502 free.
+    expectedCount: 511,
+    related: ['pregnancy-mods', 'houses-lots', 'kids-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // gameplay mods" intent (936 organic + 609 social landings 28d); this page
+    // owns browse intent. All URLs below are live (HTTP 200, verified
+    // 2026-11-15) and none is in vercel.json.
+    blogUrl: '/sims-4-gameplay-mods/',
+    guides: [
+      { href: '/sims-4-career-mods/', label: 'Sims 4 career mods' },
+      { href: '/sims-4-teen-mods/', label: 'Sims 4 teen mods' },
+      { href: '/sims-4-mods-for-realistic-relationships/', label: 'Sims 4 mods for realistic relationships' },
+      { href: '/sims-4-trait-mods/', label: 'Sims 4 trait mods' },
+      { href: '/sims-4-quality-of-life-mods/', label: 'Sims 4 quality of life mods' },
     ],
   },
   {
