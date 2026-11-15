@@ -4,6 +4,7 @@ import { SIMS4_COLLECTIONS } from '../lib/collections';
 import { Icon } from '../components/launcher/Icon';
 import { collectionCovers } from '../lib/collectionCovers';
 import { seasonalHubSlug } from '../lib/seasonalHub';
+import { HOME_GUIDES } from '../lib/homeGuides';
 
 /**
  * Server component: the homepage's "browse by collection" block.
@@ -102,6 +103,7 @@ export function HomeCollections() {
   // come from the static lib/collectionCovers.ts so the page stays query-free.
   // The overflow sits in <details>, so all links stay in the served HTML.
   return (
+    <>
     <section id="collections" aria-labelledby="home-collections-heading" className="below-sec">
       <div className="sec-head">
         <h2 id="home-collections-heading">Browse Sims 4 CC by collection</h2>
@@ -156,6 +158,34 @@ export function HomeCollections() {
           </div>
         </details>
       )}
+    </section>
+    <HomeGuides />
+    </>
+  );
+}
+
+/**
+ * E412 (Sage, 2026-11-15): links to 20 WordPress guides in Google's striking
+ * distance, the treated arm of a randomized test (lib/homeGuides.ts has the
+ * pool, the pairing and the read rule). Plain <a> links in served HTML,
+ * below the grid and outside every ad container.
+ */
+export function HomeGuides() {
+  return (
+    <section aria-labelledby="home-guides-heading" className="below-sec" data-testid="home-guides">
+      <div className="sec-head">
+        <h2 id="home-guides-heading">Popular Sims 4 guides</h2>
+      </div>
+      <p className="sec-sub">Hand-picked lists and how-tos from the MustHaveMods blog.</p>
+      <ul className="coll-pills">
+        {HOME_GUIDES.map((g) => (
+          <li key={g.href}>
+            <a href={g.href} className="coll-pill guide-pill">
+              {g.label}
+            </a>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
