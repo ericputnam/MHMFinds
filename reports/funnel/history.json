@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T11:38:13.128Z",
+  "generatedAt": "2026-11-15T11:37:50.628Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -4614,9 +4614,9 @@
     },
     {
       "date": "2026-11-11",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 235.63,
+      "sessions": 12580,
+      "rpm": 18.73,
       "expectedRevenue": 192.67,
       "expectedSessions": 11705,
       "nonAdMonthly": 179,
@@ -4652,9 +4652,9 @@
     },
     {
       "date": "2026-11-12",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 202.19,
+      "sessions": 11767,
+      "rpm": 17.18,
       "expectedRevenue": 192.42,
       "expectedSessions": 11585,
       "nonAdMonthly": 179,
@@ -4712,6 +4712,71 @@
         "Operator": 1,
         "manual": 1,
         "PR": 1,
+        "operator": 3
+      }
+    },
+    {
+      "date": "2026-11-14",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 260.71,
+      "expectedSessions": 14210,
+      "nonAdMonthly": 179,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-11-15",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 272.04,
+      "expectedSessions": 15086,
+      "nonAdMonthly": 150.5,
+      "ownedAdds7d": 201,
+      "pinterestSessions7d": 49137,
+      "returningShare7d": 0.5163571835984536,
+      "nonPinterestShare7d": 0.21076470871681208,
+      "pagesPerSession7d": 1.8009846644299616,
+      "engagementRate7d": 0.7236383736325891,
+      "favorites7d": 2267,
+      "downloadClicks7d": 290,
+      "newMods7d": 137,
+      "catalogTotal": 17415,
+      "captureRatePer1k": 2.5688214094011195,
+      "creatorsOnboarded": 3,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.9,
+      "opsMergeShare7d": 0.08823529411764706,
+      "paperOnlyMerges7d": 4,
+      "mergesByOwner7d": {
+        "Operator": 1,
+        "manual": 1,
+        "Cass": 3,
+        "Ops": 3,
+        "Rowan": 3,
+        "Sage": 5,
+        "Rio": 3,
+        "Pip": 4,
+        "PR": 1,
+        "Quinn": 3,
+        "Nova": 4,
         "operator": 3
       }
     }
@@ -8206,6 +8271,76 @@
       "kind": "merge",
       "label": "operator / PR #535",
       "commit": "48f589a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Pip: PR #511 E386 /christmas-cc redirects to its hub",
+      "commit": "49df1c1",
+      "result": "SUPERSEDED via 85e568b · SUPERSEDED (production already on f14703c, newer)"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Cass: PR #538 E391 newsletter-08 run 2 send record",
+      "commit": "ccf162e",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Rowan: PR #540 nursery-cc on a title-only nursery theme (E404)",
+      "commit": "43057c8",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Ops: PR #537 E405 template lastmod bump",
+      "commit": "e9b5d76",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Sage: PR #541 E399 tops-cc hub",
+      "commit": "e3fe870",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Nova: PR #542 E401 Simsfinds creators from page JSON-LD",
+      "commit": "4387b6f",
+      "result": "SUPERSEDED (production already on 9e88ae2, newer)"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Rio: PR #539 E403 non-ad headline reads the Patreon Members API",
+      "commit": "ab6b947",
+      "result": "SUPERSEDED via 07d034a · PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Nova: PR #543 E401 record applied ids in the Simsfinds author plan",
+      "commit": "de55b8b",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Sage: PR #544 E400 houses-lots hub",
+      "commit": "ed3fa41",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "merge",
+      "label": "Quinn: PR #545 funnel: daily run 2026-11-13",
+      "commit": "c6892ab",
       "result": "PASS"
     }
   ]
