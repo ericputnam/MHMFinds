@@ -365,13 +365,23 @@ ledger() {  # $1 result, $2 notes
   # LOCAL append (for this run's own digest / same-run reads): $ROOT and Quinn's primary worktree only.
   # $OPERATOR_DIR is deliberately NOT written here any more — that tree carries untracked reports/
   # junk from interactive sessions, and a working-tree copy was never durable anyway (see below).
-  local row dir f seen=" " notes res="$1"
+  # E420 (11-15): $ROOT is mirrored ONLY when it is the primary tree or no primary is set (standalone run).
+  # A per-agent worktree ($FUNNEL_PRIMARY_WT-<agent>) is a checkout of main: appending there left
+  # changelog.md modified while ledger-commit.sh landed the SAME row on origin/main, so the agent's next
+  # `git checkout -b … origin/main` refused ("local changes would be overwritten") — 3 agents on 11-13.
+  # Durability never depended on that copy: ledger-commit lands on main or queues in the operator tree.
+  local row dir f seen=" " notes res="$1" root_dir="$ROOT/reports/funnel" root_real prim_real
+  if [ -n "${FUNNEL_PRIMARY_WT:-}" ]; then
+    root_real="$(cd "$ROOT" 2>/dev/null && pwd -P)"; prim_real="$(cd "$FUNNEL_PRIMARY_WT" 2>/dev/null && pwd -P)"
+    [ -n "$prim_real" ] && [ "$root_real" != "$prim_real" ] && root_dir=""
+  fi
   # E201: an after-merge result graded past a platform ERROR says so in the result column itself
   case "$MODE:$res" in after-merge:"${PLATFORM_RES:-}"*) ;; after-merge:*) [ -n "${PLATFORM_RES:-}" ] && res="$PLATFORM_RES · $res" ;; esac
   case "$MODE" in after-merge) [ -n "${SUPER_RES:-}" ] && res="$SUPER_RES · $res" ;; esac  # E308
   notes="${PR_NOTE}$(pr_mc_note "$PR_NUM" "$PR_MC" "$GRADED")$2"
   row="$(printf '| %s | %s | %s | %s | %s | %s | %s |' "$TS" "$MODE" "$LABEL" "${SHA:0:7}" "${DEPLOY_URL:-}" "$res" "$(echo "$notes" | tr '|' '/' | tr '\n' ' ')")"
-  for dir in "$ROOT/reports/funnel" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
+  for dir in "$root_dir" "${FUNNEL_PRIMARY_WT:-}/reports/funnel"; do
+    [ -z "$dir" ] && continue                   # E420: $ROOT is an agent worktree — never dirty it
     [ "$dir" = "/reports/funnel" ] && continue  # FUNNEL_PRIMARY_WT unset (manual / standalone run)
     case "$seen" in *" $dir "*) continue;; esac; seen="$seen$dir "
     mkdir -p "$dir" 2>/dev/null
@@ -386,6 +396,12 @@ ledger() {  # $1 result, $2 notes
     "$ROOT/scripts/agents/ledger-commit.sh" --row "$row" --label "$MODE: $LABEL" ${LAST_INCIDENT_FILE:+--incident "$LAST_INCIDENT_FILE"} >>"$LOG" 2>&1
     local rc=$?
     [ "$rc" -eq 0 ] || log "WARN: ledger-commit.sh could not land the row on main (exit $rc) — queued in reports/funnel/ledger-pending.jsonl, will be flushed next run"
+    # E420, same class: the incident file is untracked here and now ALSO on main under the same name, which
+    # blocks `git checkout origin/main` ("untracked working tree files would be overwritten"). Only once it
+    # landed (rc 0) and only in an agent worktree; the primary tree keeps its mirror copy.
+    if [ "$rc" -eq 0 ] && [ -z "$root_dir" ] && [ -n "${LAST_INCIDENT_FILE:-}" ]; then
+      case "$LAST_INCIDENT_FILE" in "$INC_DIR"/*) rm -f "$LAST_INCIDENT_FILE" && log "incident $(basename "$LAST_INCIDENT_FILE") landed on main — removed the agent-worktree copy"; LAST_INCIDENT_FILE="" ;; esac
+    fi
   else
     log "WARN: scripts/agents/ledger-commit.sh not found — row recorded locally only (not durable)"
   fi
