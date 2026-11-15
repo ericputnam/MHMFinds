@@ -44,10 +44,28 @@ describe('MOVED_CREATOR_KEYS', () => {
     }
   });
 
-  it('does not carry the held pairs (no shared source identity on 2026-11-06)', () => {
-    for (const k of ['camuflaje', 'camuflajesims', 'ebonix', 'ebonixsims', 'harrie', 'harriecc', 'jius', 'jiussims', 'jomsims', 'jomsimscreations', 'katverse', 'katversecc', 'miro', 'mirosims', 'serenity', 'serenitycc']) {
+  it('does not carry the held pairs (no shared source identity on 2026-11-06, still none on 2026-11-15)', () => {
+    for (const k of ['camuflaje', 'camuflajesims', 'ebonix', 'ebonixsims', 'harrie', 'harriecc', 'jius', 'jiussims', 'jomsims', 'jomsimscreations', 'katverse', 'katversecc']) {
       expect(MOVED_CREATOR_KEYS[k]).toBeUndefined();
     }
+  });
+
+  it('E413: does not carry evidence-less, tied or still-sub-page pairs', () => {
+    for (const k of ['mermalade', 'mermaladesims', 'wisteriasimss4', 'twistedcatcc', 'lvndr', 'aurumsims', 'aveira', 'aveirasims', 'strifewife', 'strifewifesims', 'tilliesims', 'oshin', 'bibid']) {
+      expect(MOVED_CREATOR_KEYS[k]).toBeUndefined();
+    }
+  });
+
+  it('E413: folds the 19 evidence-backed pairs, smaller key into larger', () => {
+    const e413: Array<[string, string]> = [
+      ['serenitycc', 'serenity'], ['mirosims', 'miro'], ['ravasheencc', 'ravasheen'], ['greenllamascc', 'greenllamas'],
+      ['bluecravingcc', 'blue-craving'], ['nataliscc', 'natalis'], ['simplisticsims4', 'simplistic'], ['bloodmoon', 'bloodmooncc'],
+      ['obscurus', 'obscurus-sims'], ['peacemakercc', 'peacemaker'], ['sunberrysims', 'sunberry'], ['lumpinoumods', 'lumpinou'],
+      ['luumia', 'luumiasims'], ['dumbabysims', 'dumbaby'], ['saurussims', 'saurus'], ['demondaresims', 'demondare'],
+      ['mikkimursims', 'mikkimur'], ['boschiana', 'boschiana-cc'], ['rustys', 'rustys-cc'],
+    ];
+    for (const [k, slug] of e413) expect(MOVED_CREATOR_KEYS[k]).toBe(slug);
+    expect(entries.length).toBe(6 + e413.length);
   });
 });
 
@@ -61,11 +79,15 @@ describe('movedCreatorSlug', () => {
     ['caiocc', 'caio'],
     ['caio-cc', 'caio'],
     ['madlensims', 'madlen'],
+    ['serenity-cc', 'serenity'],
+    ['miro-sims', 'miro'],
+    ['bloodmoon', 'bloodmooncc'],
+    ['blue-craving-cc', 'blue-craving'],
   ])('%s → %s', (slug, target) => {
     expect(movedCreatorSlug(slug)).toBe(target);
   });
 
-  it.each(['sixam-cc', 'miiko', 'caio', 'madlen', 'someone-else', 'sixamcc'])('%s → null (not moved, or is the target key)', (slug) => {
+  it.each(['sixam-cc', 'miiko', 'caio', 'madlen', 'someone-else', 'sixamcc', 'serenity', 'miro', 'blue-craving', 'rustys-cc'])('%s → null (not moved, or is the target key)', (slug) => {
     expect(movedCreatorSlug(slug)).toBeNull();
   });
 });
