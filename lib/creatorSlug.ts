@@ -88,7 +88,30 @@ export function creatorRedirectSlug(requested: string, canonical: string, reques
  * The smaller key moves into the larger (by SFW mods). HELD, no shared
  * identity found (do not add without one): camuflaje/camuflajesims,
  * ebonix/ebonixsims, harrie/harriecc, jius/jiussims, jomsims/
- * jomsimscreations, katverse/katversecc, miro/mirosims, serenity/serenitycc.
+ * jomsimscreations, katverse/katversecc.
+ *
+ * E413 (Nova, 2026-11-15) — the class, not six hand-picked pairs. Census of
+ * every SFW key pair K / K+suffix (cc, sims, sims4, mods, …; |K| ≥ 4): 105
+ * pairs. Kept only the 25 with identity evidence from the rows' own links:
+ * the SAME Tumblr blog / patreon.com/<handle> / creator-owned domain on both
+ * keys, a row on one key linking the other key's handle, or the CurseForge
+ * API author of one key's project naming the other key. Bare patreon.com/
+ * posts and platforms (CF, TSR, SFS, Drive, …) are never evidence. Of the
+ * 25, 3 are ties (aveira, strifewife, anazanacolle — foldTargets refuses)
+ * and 3 stay < MIN_MODS_FOR_PAGE even folded (tillie, oshin, bibid — a 308
+ * to a 404 helps nobody); the other 19 are below. Evidence per pair:
+ *   serenitycc → serenity      ("Serenity" rows link patreon.com/serenitycc) — was HELD
+ *   mirosims   → miro          ("Miro" rows link tumblr.com/miro-sims) — was HELD
+ *   ravasheencc, greenllamascc, bluecravingcc, nataliscc, simplisticsims4,
+ *   bloodmoon, obscurus        (same <blog>.tumblr on both keys)
+ *   peacemakercc → peacemaker  (peacemaker-ic.tumblr on both keys)
+ *   sunberrysims, lumpinoumods, luumia, dumbabysims (same creator domain on both keys)
+ *   saurussims, demondaresims, mikkimursims (base rows link the long key's handle)
+ *   boschiana, rustys          (CurseForge API author on one key names the other)
+ * Not foldable without evidence (largest): mermalade/mermaladesims,
+ * wisteriasims/wisteriasimss4, twistedcat/twistedcatcc, lvndr/lvndrcc,
+ * aurum/aurumsims, simpliciaty/simpliciatycc, daphs/daphsmods, kikovanity/
+ * kikovanitysimmer, kerriganhouse/kerriganhousedesigns, astya96/astya96cc.
  *
  * Key = creatorKey of the moved spelling; value = the canonical dash-slug it
  * now lives at. The data half is scripts/agents/creator-split-fold.ts, which
@@ -103,6 +126,26 @@ export const MOVED_CREATOR_KEYS: Readonly<Record<string, string>> = Object.freez
   backtrack: 'backtrackcc',
   caiocc: 'caio',
   madlensims: 'madlen',
+  // E413 (2026-11-15) — evidence in the comment above.
+  serenitycc: 'serenity',
+  mirosims: 'miro',
+  ravasheencc: 'ravasheen',
+  greenllamascc: 'greenllamas',
+  bluecravingcc: 'blue-craving',
+  nataliscc: 'natalis',
+  simplisticsims4: 'simplistic',
+  bloodmoon: 'bloodmooncc',
+  obscurus: 'obscurus-sims',
+  peacemakercc: 'peacemaker',
+  sunberrysims: 'sunberry',
+  lumpinoumods: 'lumpinou',
+  luumia: 'luumiasims',
+  dumbabysims: 'dumbaby',
+  saurussims: 'saurus',
+  demondaresims: 'demondare',
+  mikkimursims: 'mikkimur',
+  boschiana: 'boschiana-cc',
+  rustys: 'rustys-cc',
 });
 
 /** Where a slug that no longer has a page should 308 to (E356), or null. */

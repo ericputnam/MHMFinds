@@ -1,0 +1,532 @@
+{
+  "experiment": "E356",
+  "createdAt": "2026-11-15T11:46:21.239Z",
+  "targets": [
+    {
+      "fromKey": "sixam",
+      "toSlug": "sixam-cc",
+      "spelling": "SIXAM CC",
+      "toKeyMods": 49,
+      "fromKeyMods": 0
+    },
+    {
+      "fromKey": "miikocc",
+      "toSlug": "miiko",
+      "spelling": "Miiko",
+      "toKeyMods": 61,
+      "fromKeyMods": 0
+    },
+    {
+      "fromKey": "guemara",
+      "toSlug": "guemarasims",
+      "spelling": "Guemarasims",
+      "toKeyMods": 58,
+      "fromKeyMods": 0
+    },
+    {
+      "fromKey": "backtrack",
+      "toSlug": "backtrackcc",
+      "spelling": "backtrackcc",
+      "toKeyMods": 60,
+      "fromKeyMods": 0
+    },
+    {
+      "fromKey": "caiocc",
+      "toSlug": "caio",
+      "spelling": "Caio",
+      "toKeyMods": 39,
+      "fromKeyMods": 0
+    },
+    {
+      "fromKey": "madlensims",
+      "toSlug": "madlen",
+      "spelling": "Madlen",
+      "toKeyMods": 159,
+      "fromKeyMods": 0
+    },
+    {
+      "fromKey": "serenitycc",
+      "toSlug": "serenity",
+      "spelling": "Serenity",
+      "toKeyMods": 26,
+      "fromKeyMods": 19
+    },
+    {
+      "fromKey": "mirosims",
+      "toSlug": "miro",
+      "spelling": "MIRO",
+      "toKeyMods": 25,
+      "fromKeyMods": 7
+    },
+    {
+      "fromKey": "ravasheencc",
+      "toSlug": "ravasheen",
+      "spelling": "Ravasheen",
+      "toKeyMods": 55,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "greenllamascc",
+      "toSlug": "greenllamas",
+      "spelling": "greenllamas",
+      "toKeyMods": 30,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "bluecravingcc",
+      "toSlug": "blue-craving",
+      "spelling": "Blue Craving",
+      "toKeyMods": 20,
+      "fromKeyMods": 3
+    },
+    {
+      "fromKey": "nataliscc",
+      "toSlug": "natalis",
+      "spelling": "Natalis",
+      "toKeyMods": 13,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "simplisticsims4",
+      "toSlug": "simplistic",
+      "spelling": "SimPlistic",
+      "toKeyMods": 12,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "bloodmoon",
+      "toSlug": "bloodmooncc",
+      "spelling": "Bloodmooncc",
+      "toKeyMods": 11,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "obscurus",
+      "toSlug": "obscurus-sims",
+      "spelling": "Obscurus-sims",
+      "toKeyMods": 10,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "peacemakercc",
+      "toSlug": "peacemaker",
+      "spelling": "Peacemaker",
+      "toKeyMods": 8,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "sunberrysims",
+      "toSlug": "sunberry",
+      "spelling": "SUNBERRY",
+      "toKeyMods": 39,
+      "fromKeyMods": 3
+    },
+    {
+      "fromKey": "lumpinoumods",
+      "toSlug": "lumpinou",
+      "spelling": "Lumpinou",
+      "toKeyMods": 14,
+      "fromKeyMods": 3
+    },
+    {
+      "fromKey": "luumia",
+      "toSlug": "luumiasims",
+      "spelling": "Luumiasims",
+      "toKeyMods": 5,
+      "fromKeyMods": 4
+    },
+    {
+      "fromKey": "dumbabysims",
+      "toSlug": "dumbaby",
+      "spelling": "Dumbaby",
+      "toKeyMods": 3,
+      "fromKeyMods": 2
+    },
+    {
+      "fromKey": "saurussims",
+      "toSlug": "saurus",
+      "spelling": "Saurus",
+      "toKeyMods": 12,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "demondaresims",
+      "toSlug": "demondare",
+      "spelling": "demondare",
+      "toKeyMods": 6,
+      "fromKeyMods": 1
+    },
+    {
+      "fromKey": "mikkimursims",
+      "toSlug": "mikkimur",
+      "spelling": "MikkiMur",
+      "toKeyMods": 3,
+      "fromKeyMods": 2
+    },
+    {
+      "fromKey": "boschiana",
+      "toSlug": "boschiana-cc",
+      "spelling": "Boschiana CC",
+      "toKeyMods": 24,
+      "fromKeyMods": 2
+    },
+    {
+      "fromKey": "rustys",
+      "toSlug": "rustys-cc",
+      "spelling": "Rustys Cc",
+      "toKeyMods": 15,
+      "fromKeyMods": 4
+    }
+  ],
+  "rows": [
+    {
+      "id": "cmku5s3vs002qoxkzfitf5azw",
+      "fromKey": "peacemakercc",
+      "prior": "Peacemaker-cc",
+      "next": "Peacemaker"
+    },
+    {
+      "id": "cmky6kybc00gdoxhc6tfb19xx",
+      "fromKey": "mirosims",
+      "prior": "Miro-Sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmijjhuip009roxs3rg7g6hz2",
+      "fromKey": "luumia",
+      "prior": "luumia",
+      "next": "Luumiasims"
+    },
+    {
+      "id": "cmkxy9983002goxhcr1qj7ph6",
+      "fromKey": "boschiana",
+      "prior": "Boschiana",
+      "next": "Boschiana CC"
+    },
+    {
+      "id": "cmim8z37z016boxy8k9yz6k2k",
+      "fromKey": "mirosims",
+      "prior": "Miro Sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmijp3ahf00v8oxc8cihs2tso",
+      "fromKey": "demondaresims",
+      "prior": "demondare_sims",
+      "next": "demondare"
+    },
+    {
+      "id": "cmijnjajh00eboxc8fcw5ykji",
+      "fromKey": "sunberrysims",
+      "prior": "Sunberrysims",
+      "next": "SUNBERRY"
+    },
+    {
+      "id": "cmky63apw00ewoxhco8f4tqkv",
+      "fromKey": "mirosims",
+      "prior": "Miro-Sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmijnjch800ecoxc8de1iwdq2",
+      "fromKey": "sunberrysims",
+      "prior": "Sunberrysims",
+      "next": "SUNBERRY"
+    },
+    {
+      "id": "cmmvao53o000foxzgjcv2ljxe",
+      "fromKey": "mirosims",
+      "prior": "Miro Sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmim8rs8m002goxy899te49tn",
+      "fromKey": "lumpinoumods",
+      "prior": "Lumpinoumods",
+      "next": "Lumpinou"
+    },
+    {
+      "id": "cmijpfntx0112oxc8ckst022u",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmkycltjw00vvoxhc2qj422o3",
+      "fromKey": "rustys",
+      "prior": "Rusty’s",
+      "next": "Rustys Cc"
+    },
+    {
+      "id": "cmijndu8e00cyoxc8hw24m6cu",
+      "fromKey": "mikkimursims",
+      "prior": "MikkiMur_sims",
+      "next": "MikkiMur"
+    },
+    {
+      "id": "cmim9jyyw002soxy7swsbvyjq",
+      "fromKey": "dumbabysims",
+      "prior": "dumbabysims",
+      "next": "Dumbaby"
+    },
+    {
+      "id": "cmijp4u7q00vvoxc8b32oh9k5",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmmvao55r000goxzgq2wxb7hh",
+      "fromKey": "mirosims",
+      "prior": "Miro Sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmim9f03c002soxqwi1iitocf",
+      "fromKey": "luumia",
+      "prior": "Luumia",
+      "next": "Luumiasims"
+    },
+    {
+      "id": "cmwc1mwjb0000ox5rwq95uryh",
+      "fromKey": "sunberrysims",
+      "prior": "Sunberrysims",
+      "next": "SUNBERRY"
+    },
+    {
+      "id": "cmwc1mx440009ox5rztzvoax5",
+      "fromKey": "serenitycc",
+      "prior": "Serenitycc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmijpd6w20105oxc8fzh2ckwz",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmiglj2z90014oxm5by0zaefe",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmky6m25m00ghoxhc6wk84s0r",
+      "fromKey": "rustys",
+      "prior": "Rusty’s",
+      "next": "Rustys Cc"
+    },
+    {
+      "id": "cmim9fagr004loxqwlo8g4ncj",
+      "fromKey": "greenllamascc",
+      "prior": "greenllamascc",
+      "next": "greenllamas"
+    },
+    {
+      "id": "cmky8jcv800m0oxhcgihr3gs6",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmw1vly6k23k1xjdz3rsl89nu",
+      "fromKey": "rustys",
+      "prior": "Rustys",
+      "next": "Rustys Cc"
+    },
+    {
+      "id": "cmky6mmv900gjoxhc7ca9naus",
+      "fromKey": "mirosims",
+      "prior": "Miro-sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmijpi1a00128oxc8n4ibqsbc",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmim8tv6z009soxy8negecfxv",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmsmbh31u007zoxeuwst1nggv",
+      "fromKey": "bluecravingcc",
+      "prior": "Bluecravingcc",
+      "next": "Blue Craving"
+    },
+    {
+      "id": "cmijp2x7700uzoxc8hlwo69iy",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmvma28uh0009oxvem3izfzoj",
+      "fromKey": "mikkimursims",
+      "prior": "MikkiMur_sims",
+      "next": "MikkiMur"
+    },
+    {
+      "id": "cmim9m9qi00f5oxy7x4n6wbfw",
+      "fromKey": "bloodmoon",
+      "prior": "bloodmoon",
+      "next": "Bloodmooncc"
+    },
+    {
+      "id": "cmijpde7r0109oxc8txayviub",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmkyccely00vkoxhcizi75fhh",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmsmbm63300aloxeu636x144g",
+      "fromKey": "serenitycc",
+      "prior": "Serenitycc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmsmbd549005xoxeu4igzfhrw",
+      "fromKey": "serenitycc",
+      "prior": "Serenitycc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmoisufdu0023oxvtrdjjr3mk",
+      "fromKey": "nataliscc",
+      "prior": "Nataliscc",
+      "next": "Natalis"
+    },
+    {
+      "id": "cmikdbknx0031oxbhgmsygr13",
+      "fromKey": "bluecravingcc",
+      "prior": "Bluecravingcc",
+      "next": "Blue Craving"
+    },
+    {
+      "id": "cmim9ez7e002eoxqw8ehn4myw",
+      "fromKey": "luumia",
+      "prior": "luumia",
+      "next": "Luumiasims"
+    },
+    {
+      "id": "cmoisurqp002soxvt0sokha1v",
+      "fromKey": "bluecravingcc",
+      "prior": "Bluecravingcc",
+      "next": "Blue Craving"
+    },
+    {
+      "id": "cmw1vg5k523irxjdzhqmqdcvp",
+      "fromKey": "rustys",
+      "prior": "Rustys",
+      "next": "Rustys Cc"
+    },
+    {
+      "id": "cmku8hbz10051oxkz8e3ulzmw",
+      "fromKey": "mirosims",
+      "prior": "Miro-sims",
+      "next": "MIRO"
+    },
+    {
+      "id": "cmim9jy81002foxy7incll0m6",
+      "fromKey": "luumia",
+      "prior": "Luumia",
+      "next": "Luumiasims"
+    },
+    {
+      "id": "cmim9jyot002noxy7qjx59jym",
+      "fromKey": "dumbabysims",
+      "prior": "dumbabysims",
+      "next": "Dumbaby"
+    },
+    {
+      "id": "cmim8tupl009koxy861dkos6a",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmikkoela00egox33x4gg49jx",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmttzhusq007ioxfebp2617by",
+      "fromKey": "lumpinoumods",
+      "prior": "Lumpinoumods",
+      "next": "Lumpinou"
+    },
+    {
+      "id": "cmsmclvgy00ttoxeutfy4452i",
+      "fromKey": "lumpinoumods",
+      "prior": "Lumpinoumods",
+      "next": "Lumpinou"
+    },
+    {
+      "id": "cmijj9arr0065oxs3309aqjsm",
+      "fromKey": "ravasheencc",
+      "prior": "Ravasheencc",
+      "next": "Ravasheen"
+    },
+    {
+      "id": "cmijp2cch00uloxc8vx1ayn5w",
+      "fromKey": "boschiana",
+      "prior": "Boschiana",
+      "next": "Boschiana CC"
+    },
+    {
+      "id": "cmijp30fw00v1oxc8ctdho5ol",
+      "fromKey": "saurussims",
+      "prior": "Saurussims",
+      "next": "Saurus"
+    },
+    {
+      "id": "cmijpnk3v015aoxc8a8e1n3dl",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmikd8z20001soxbh8o48dolr",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmil0tser003woxee2sxnwlq6",
+      "fromKey": "simplisticsims4",
+      "prior": "Simplistic Sims4",
+      "next": "SimPlistic"
+    },
+    {
+      "id": "cmim9jyqm002ooxy7b64rey0f",
+      "fromKey": "obscurus",
+      "prior": "Obscurus",
+      "next": "Obscurus-sims"
+    },
+    {
+      "id": "cmijp86dz00xkoxc8vaqhzt0n",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    },
+    {
+      "id": "cmijpt2uj017xoxc8a7vmlerk",
+      "fromKey": "serenitycc",
+      "prior": "Serenity-cc",
+      "next": "Serenity"
+    }
+  ],
+  "applied": []
+}
