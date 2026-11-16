@@ -3431,6 +3431,22 @@ details are in the archive (11-13).
   (3 agents on 11-13), the `vercel.json` slash-twin guard test, the `monetization-agent` cron
   slash (Tier 2), and the missing #498 ledger row.
 
+### 2026-11-14 — rotated from CLAUDE.md
+
+0 funnel merges, 0 production DB applies, 0 rollbacks. Only the 11-13 compound commit and a PASS
+morning-check row reached `main`.
+
+- **An operator-watch block is only real once it is on `main`.** Funnel runs read
+  `ideas-inbox.md` from a clean worktree of `origin/main`. The launcher opens a PR for each new
+  "## Operator watch" block and does not merge it. #500 (11-09), #513 (11-11) and #546 (11-13) are
+  all still open, so `main` still carries the **11-06** block (77.9% of the sessions line). The live
+  ratio is 75.4%. Quinn re-derived the gap from `history.json` on 11-13, so that run was not misled. Any
+  agent that trusts the block is reading numbers 8 days old. Merge the newest watch PR (Tier 0,
+  docs only) and close the ones it supersedes. Do not open another PR on top of them.
+- **Still open:** carried from 11-13 — `deploy-verify.sh` leaves an uncommitted ledger edit that
+  blocks `git checkout`, the `vercel.json` slash-twin guard test, the `monetization-agent` cron
+  slash (Tier 2), and the missing #498 ledger row.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

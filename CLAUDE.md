@@ -928,27 +928,45 @@ run died with `Prompt is too long`.
 ### 2026-10-15 → 11-13 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15.
 
-### 2026-11-14 (no merges; morning check PASS)
+### 2026-11-15 (10 funnel merges; morning check PASS)
 
-0 funnel merges, 0 production DB applies, 0 rollbacks. Only the 11-13 compound commit and a PASS
-morning-check row reached `main`.
+10 merges, 3 production DB applies, 1 IndexNow push, 0 rollbacks, 5xx = 0 on every verify.
 
-- **An operator-watch block is only real once it is on `main`.** Funnel runs read
-  `ideas-inbox.md` from a clean worktree of `origin/main`. The launcher opens a PR for each new
-  "## Operator watch" block and does not merge it. #500 (11-09), #513 (11-11) and #546 (11-13) are
-  all still open, so `main` still carries the **11-06** block (77.9% of the sessions line). The live
-  ratio is 75.4%. Quinn re-derived the gap from `history.json` on 11-13, so that run was not misled. Any
-  agent that trusts the block is reading numbers 8 days old. Merge the newest watch PR (Tier 0,
-  docs only) and close the ones it supersedes. Do not open another PR on top of them.
-- **Still open:** carried from 11-13 — `deploy-verify.sh` leaves an uncommitted ledger edit that
-  blocks `git checkout`, the `vercel.json` slash-twin guard test, the `monetization-agent` cron
-  slash (Tier 2), and the missing #498 ledger row.
+- **Never classify by substring on a short token.** The scoreboard tested
+  `medium.includes('ai')`, and `email` contains `ai`, so every newsletter session was counted as
+  AI referral and the table never had an email row. Yahoo country front doors, `cn.bing.com` and
+  `ntp.msn.com` (≈3,700/28d) landed in "other" because only `medium=organic` counted as
+  search (#554, E409). Match whole tokens or exact hosts, in a tested pure lib
+  (`scripts/agents/scoreboard-channel-lib.ts`).
+- **Title-only is for *inclusion*. A safety *exclusion* reads every field.** Title-only tagging keeps
+  wrong mods out of a facet. It also kept "Teen Romance Mod" and Wonderful Whims SFW, and the first
+  of these became the gameplay hub's homepage cover (#552, E418/E419). Judge `isNSFW` from the
+  row's full text, and pin each ruling by id with a frozen rollback file. A false SFW is a policy
+  breach. A false NSFW only hides one mod.
+- **An incremental job never backfills what existed before its first run.** The daily IndexNow
+  push sends only mods created inside its `--days` window. 15,838 of the 17,365 sitemap mods were
+  never submitted (#550, E411). When you add a windowed job, ask where the older rows are covered.
+  Backfill them as a hash-split holdout (`sha256('E411:'+id)`), and run the gate on an A/A split
+  of the pre-period first. E411's DiD gate read KILL (rel −6.9%) with no treatment, so that is the
+  noise floor a real result has to clear.
+- **The revenue breaker's auto-rollback has been unarmed since at least 10-30.** In-window deploys
+  exceeded `ROLLBACK_BOUNDS.maxInWindowDeploys` (24) on all 12 guardrail files from 10-30 to 11-15,
+  with counts of 34–128. It is not a busy-day effect (11-13). It is the steady state, so rule 2's
+  auto-rollback is paper. A red day is a manual Tier 1 rollback, read on the Mediavine side
+  first, until Ops changes the bound (Tier 2).
+- **Fixed:** `deploy-verify.sh` no longer writes the ledger row into a per-agent worktree, and it
+  removes a landed incident file there (#548, E420, test `deploy-verify-agent-tree-clean`). #546
+  merged and #500/#513 are closed. **Still open:** watch PR #557 is already unmerged (the
+  launcher still never merges them), the `vercel.json` slash-twin
+  guard test, the `monetization-agent` cron slash (Tier 2), and the missing #498 ledger row. Six
+  days of `quinn-pending-*.md` edits to `.claude/agents/` are off `main` because headless runs
+  cannot write there (Q43). One interactive session must apply them.
 
 ---
 
-*Last compound review: 2026-11-14*
+*Last compound review: 2026-11-15*
 
 ---
 
