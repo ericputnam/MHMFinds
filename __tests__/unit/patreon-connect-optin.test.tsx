@@ -120,7 +120,7 @@ describe('ConnectEmailOptIn component', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(gtag).toHaveBeenCalledTimes(1);
     expect(gtag).toHaveBeenCalledWith('event', PATREON_CONNECT_OPTIN_EVENTS.view, {
-      source: PATREON_CONNECT_OPTIN_SOURCE,
+      content_type: PATREON_CONNECT_OPTIN_SOURCE,
       mod_id: 'm1',
     });
     expect(screen.getByText(ADDR)).toBeInTheDocument();
@@ -138,7 +138,7 @@ describe('ConnectEmailOptIn component', () => {
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body)).toEqual({ email: ADDR, source: PATREON_CONNECT_OPTIN_SOURCE });
     expect(gtag).toHaveBeenCalledWith('event', 'newsletter_signup', {
-      source: PATREON_CONNECT_OPTIN_SOURCE,
+      content_type: PATREON_CONNECT_OPTIN_SOURCE,
       mod_id: 'm1',
     });
   });

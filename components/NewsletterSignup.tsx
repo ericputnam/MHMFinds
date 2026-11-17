@@ -42,7 +42,7 @@ export function NewsletterSignup({ source = 'footer', variant = 'default' }: New
         (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
           'event',
           NEWSLETTER_FORM_VIEW_EVENT,
-          { source }
+          { content_type: source }
         );
       },
       { threshold: NEWSLETTER_FORM_VIEW_THRESHOLD }
@@ -74,7 +74,7 @@ export function NewsletterSignup({ source = 'footer', variant = 'default' }: New
         (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
           'event',
           'newsletter_signup',
-          { source }
+          { content_type: source }
         );
       } else {
         setStatus('error');

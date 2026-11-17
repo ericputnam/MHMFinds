@@ -31,7 +31,7 @@ export function HomeCapture() {
     (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
       'event',
       'account_cta_click',
-      { source: HOME_CAPTURE_SOURCE }
+      { content_type: HOME_CAPTURE_SOURCE }
     );
   };
 

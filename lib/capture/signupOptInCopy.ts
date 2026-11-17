@@ -11,11 +11,12 @@
  * Attribution: both arms keep `waitlist.source = 'signup-optin'`. That source is
  * what the E270 scripted-sign-up exclusion keys on (`sendExclusions.ts`), so a
  * new source value would leak scripted rows into the sendable list. The arm is
- * measured in GA4 only, on the registered `source` dimension:
+ * measured in GA4 only, on `contentType` (param `content_type`; `customEvent:source`
+ * before the E426 deploy on 2026-11-17 — sum both across that date):
  *   - `signup_optin_exposure` fires once the account is created (denominator:
  *     people who submitted the form and so read the checkbox);
  *   - `signup_optin_tick` fires when that sign-up created a NEW waitlist row.
- * The shared `newsletter_signup` event is unchanged (`source: 'signup-optin'`).
+ * The shared `newsletter_signup` event is unchanged (surface `signup-optin`).
  *
  * Consent is unchanged: the box starts unticked in both arms.
  */
@@ -27,13 +28,13 @@ export const SIGNUP_OPTIN_ARMS: readonly SignupOptInArm[] = ['a', 'b'];
 /** localStorage key that keeps one browser in one arm across visits. */
 export const SIGNUP_OPTIN_ARM_STORAGE_KEY = 'mhm_e327_signup_optin_arm';
 
-/** GA4 events for the split (both carry `source` = the arm's label). */
+/** GA4 events for the split (both carry `content_type` = the arm's label). */
 export const SIGNUP_OPTIN_EVENTS = {
   exposure: 'signup_optin_exposure',
   tick: 'signup_optin_tick',
 } as const;
 
-/** GA4 `source` value per arm. Never written to `waitlist.source`. */
+/** GA4 `content_type` value per arm. Never written to `waitlist.source`. */
 export const SIGNUP_OPTIN_ARM_LABEL: Record<SignupOptInArm, string> = {
   a: 'signup-optin-a',
   b: 'signup-optin-b',

@@ -62,7 +62,7 @@ export function ConnectEmailOptIn({
     if (viewFired.current) return;
     viewFired.current = true;
     gtag('event', viewEvent, {
-      source,
+      content_type: source,
       mod_id: modId,
     });
   }, [modId, source, viewEvent]);
@@ -80,7 +80,7 @@ export function ConnectEmailOptIn({
       const result = interpretWaitlistResponse(res.ok, body);
       if (result === 'subscribed') {
         gtag('event', PATREON_CONNECT_OPTIN_EVENTS.signup, {
-          source,
+          content_type: source,
           mod_id: modId,
         });
       }

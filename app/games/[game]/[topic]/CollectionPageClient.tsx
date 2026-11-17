@@ -115,7 +115,7 @@ export default function CollectionPageClient({
     (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
       'event',
       COLLECTION_ACCOUNT_CTA_EVENT,
-      { source: COLLECTION_CAPTURE_SOURCE },
+      { content_type: COLLECTION_CAPTURE_SOURCE },
     );
   };
 

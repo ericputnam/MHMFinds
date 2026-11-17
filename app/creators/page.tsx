@@ -34,7 +34,7 @@ function trackSubmitCta(source: CreatorSubmitCtaSource) {
   (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
     'event',
     CREATOR_SUBMIT_CTA_EVENT,
-    { source }
+    { content_type: source }
   );
 }
 
@@ -43,7 +43,7 @@ function trackBadgeCta() {
   (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
     'event',
     BADGE_CTA_EVENT,
-    { source: BADGE_CTA_SOURCES.dashboard }
+    { content_type: BADGE_CTA_SOURCES.dashboard }
   );
 }
 

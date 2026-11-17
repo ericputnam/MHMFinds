@@ -123,7 +123,7 @@ describe('app/sign-in/page.tsx wires the intent (source-level, comments stripped
     expect(evt).toBeGreaterThan(0);
     const block = page.slice(evt, evt + 400);
     expect(block).toMatch(/ref: searchParams\?\.get\('ref'\) \|\| 'direct'/);
-    expect(block).toMatch(/source: intent\.source/);
+    expect(block).toMatch(/content_type: intent\.source/);
   });
 
   it('keeps the E118 return-path shape: every success branch goes through returnPath()', () => {

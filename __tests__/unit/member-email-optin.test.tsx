@@ -214,7 +214,7 @@ describe('ConnectEmailOptIn with the E198 props', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(gtag).toHaveBeenCalledTimes(1);
     expect(gtag).toHaveBeenCalledWith('event', MEMBER_OPTIN_EVENTS.view, {
-      source: MEMBER_OPTIN_SOURCE,
+      content_type: MEMBER_OPTIN_SOURCE,
       mod_id: 'm1',
     });
     expect(screen.getByText(ADDR)).toBeInTheDocument();
@@ -231,7 +231,7 @@ describe('ConnectEmailOptIn with the E198 props', () => {
     expect(url).toBe(PATREON_CONNECT_OPTIN_ENDPOINT);
     expect(JSON.parse(init.body)).toEqual({ email: ADDR, source: MEMBER_OPTIN_SOURCE });
     expect(gtag).toHaveBeenCalledWith('event', 'newsletter_signup', {
-      source: MEMBER_OPTIN_SOURCE,
+      content_type: MEMBER_OPTIN_SOURCE,
       mod_id: 'm1',
     });
     expect(onResult).toHaveBeenCalledWith('subscribed');
@@ -269,7 +269,7 @@ describe('ConnectEmailOptIn with the E198 props', () => {
   it('the E173 instance is unchanged: default source + view event, no dismiss button', () => {
     render(<ConnectEmailOptIn email={ADDR} modId="m1" />);
     expect(gtag).toHaveBeenCalledWith('event', PATREON_CONNECT_OPTIN_EVENTS.view, {
-      source: PATREON_CONNECT_OPTIN_SOURCE,
+      content_type: PATREON_CONNECT_OPTIN_SOURCE,
       mod_id: 'm1',
     });
     expect(screen.queryByRole('button', { name: /not now/i })).toBeNull();

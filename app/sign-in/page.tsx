@@ -39,7 +39,7 @@ export default function SignInPage() {
     (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
       'event',
       SIGNUP_INTENT_VIEW_EVENT,
-      { source: intent.source, intent: intent.kind }
+      { content_type: intent.source, intent: intent.kind }
     );
   }, [intent.source, intent.kind]);
 
@@ -158,15 +158,16 @@ export default function SignInPage() {
 
       // GA4 conversion event — the account was created (Cass, E73). Analytics
       // only; `ref` names the surface that sent the visitor (e.g. home-hero).
-      // `source` carries the same value on the registered dimension
-      // (`customEvent:source` is registered, `customEvent:ref` is not — E173).
+      // `content_type` carries the same value on the standard `contentType`
+      // dimension (E426: never `source`, which gtag reads as the campaign
+      // source and restarts the session; see GA4_SURFACE_PARAM).
       (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
         'event',
         'sign_up',
         {
           method: 'credentials',
           ref: searchParams?.get('ref') || 'direct',
-          source: intent.source,
+          content_type: intent.source,
           intent: intent.kind,
         }
       );
@@ -177,7 +178,7 @@ export default function SignInPage() {
         (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
           'event',
           SIGNUP_OPTIN_EVENTS.exposure,
-          { source: armLabel }
+          { content_type: armLabel }
         );
       }
 
@@ -198,13 +199,13 @@ export default function SignInPage() {
             (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
               'event',
               'newsletter_signup',
-              { source: SIGNUP_OPTIN_SOURCE }
+              { content_type: SIGNUP_OPTIN_SOURCE }
             );
             if (armLabel) {
               (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag?.(
                 'event',
                 SIGNUP_OPTIN_EVENTS.tick,
-                { source: armLabel }
+                { content_type: armLabel }
               );
             }
           }
