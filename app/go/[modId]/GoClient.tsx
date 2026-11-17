@@ -127,7 +127,7 @@ export default function GoClient() {
   });
 
   const handleConnectPatreon = useCallback(() => {
-    gtag('event', 'patreon_click', { source: 'go-member-cta-connect', mod_id: String(params.modId) });
+    gtag('event', 'patreon_click', { content_type: 'go-member-cta-connect', mod_id: String(params.modId) });
     signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
   }, [params.modId]);
 
@@ -135,7 +135,7 @@ export default function GoClient() {
   // did not take, or someone who just followed/joined). Its own event name so
   // the E65 `patreon_click` read (09-26) is not diluted by re-connects.
   const handleReconnectPatreon = useCallback(() => {
-    gtag('event', 'patreon_reconnect_click', { source: 'go-post-connect', mod_id: String(params.modId) });
+    gtag('event', 'patreon_reconnect_click', { content_type: 'go-post-connect', mod_id: String(params.modId) });
     signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
   }, [params.modId]);
 
@@ -145,7 +145,7 @@ export default function GoClient() {
   // showed both links at t+4s and neither at t+13s. Its own event name so the
   // E65 `patreon_click` read (09-26) is not diluted; the scoreboard lists it.
   const handleConnectPatreonAfterWait = useCallback(() => {
-    gtag('event', 'patreon_click_after_wait', { source: 'go-member-cta-connect-after-wait', mod_id: String(params.modId) });
+    gtag('event', 'patreon_click_after_wait', { content_type: 'go-member-cta-connect-after-wait', mod_id: String(params.modId) });
     signIn('patreon', { callbackUrl: withPostConnectMarker(window.location.href) });
   }, [params.modId]);
 
@@ -164,7 +164,7 @@ export default function GoClient() {
   // constants because /sign-in still recognises `ref=go-save`. The slot now
   // carries a free-tier Patreon follow ask (lib/capture/goPatreonFollow.ts).
   const handleFollowSlotClick = useCallback(() => {
-    gtag('event', GO_FOLLOW_SLOT_EVENT, { source: GO_FOLLOW_SLOT_SOURCE, mod_id: String(params.modId) });
+    gtag('event', GO_FOLLOW_SLOT_EVENT, { content_type: GO_FOLLOW_SLOT_SOURCE, mod_id: String(params.modId) });
   }, [params.modId]);
 
   // Fetch mod details + related mods
@@ -511,7 +511,7 @@ export default function GoClient() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() =>
-                            gtag('event', 'patreon_click', { source: 'go-member-cta-join', mod_id: String(params.modId) })
+                            gtag('event', 'patreon_click', { content_type: 'go-member-cta-join', mod_id: String(params.modId) })
                           }
                           className="text-sims-pink hover:underline font-semibold"
                         >
@@ -551,7 +551,7 @@ export default function GoClient() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() =>
-                        gtag('event', 'patreon_click_after_wait', { source: 'go-member-cta-join-after-wait', mod_id: String(params.modId) })
+                        gtag('event', 'patreon_click_after_wait', { content_type: 'go-member-cta-join-after-wait', mod_id: String(params.modId) })
                       }
                       className="text-sims-pink hover:underline font-semibold"
                     >
@@ -575,7 +575,7 @@ export default function GoClient() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() =>
-                        gtag('event', 'patreon_follow_click', { source: 'go-post-connect-follow', mod_id: String(params.modId) })
+                        gtag('event', 'patreon_follow_click', { content_type: 'go-post-connect-follow', mod_id: String(params.modId) })
                       }
                       className="text-sims-pink hover:underline font-semibold"
                     >

@@ -99,8 +99,8 @@ describe('dashboard wiring (E211)', () => {
     );
   });
 
-  it('fires the event from the constant, with { source }', () => {
-    expect(dashboard).toMatch(/CREATOR_SUBMIT_CTA_EVENT,\s*\{ source \}/);
+  it('fires the event from the constant, with { content_type: source }', () => {
+    expect(dashboard).toMatch(/CREATOR_SUBMIT_CTA_EVENT,\s*\{ content_type: source \}/);
     expect(dashboard).not.toContain("'creator_submit_cta_click'");
   });
 

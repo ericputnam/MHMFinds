@@ -48,7 +48,7 @@ export function useGridFavoriteCapture(
           headers: { 'Content-Type': 'application/json' },
         });
         if (!response.ok) return;
-        fireGtag(GRID_FAVORITE_EVENTS.afterSignin, { source, mod_id: modId });
+        fireGtag(GRID_FAVORITE_EVENTS.afterSignin, { content_type: source, mod_id: modId });
         onSavedRef.current?.(modId);
       } catch (error) {
         console.error('Error resuming favorite:', error);
@@ -58,7 +58,7 @@ export function useGridFavoriteCapture(
 
   const onUnauthorized = useCallback(
     (modId: string) => {
-      fireGtag(GRID_FAVORITE_EVENTS.signinRedirect, { source, mod_id: modId });
+      fireGtag(GRID_FAVORITE_EVENTS.signinRedirect, { content_type: source, mod_id: modId });
       const { pathname, search } = window.location;
       window.location.assign(gridFavoriteSignInHref(source, pathname, search, modId));
     },

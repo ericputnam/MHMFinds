@@ -201,8 +201,8 @@ describe('E65 — E40 reverted per its rule: /go member CTA is Connect first, la
 
   it('both GA4 source names survive the revert so E24/E40 reads stay comparable', () => {
     const src = readSource('app/go/[modId]/GoClient.tsx')
-    expect(src).toContain("source: 'go-member-cta-join'")
-    expect(src).toContain("source: 'go-member-cta-connect'")
+    expect(src).toContain("content_type: 'go-member-cta-join'")
+    expect(src).toContain("content_type: 'go-member-cta-connect'")
     expect(src).toContain("gtag('event', 'member_skip_countdown'")
   })
 
@@ -311,8 +311,8 @@ describe('E74 — /go post-connect state: follow free first (Rio, 2026-09-21)', 
     const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
     const clicks = code.match(/gtag\('event',\s*'patreon_click'/g) ?? []
     expect(clicks).toHaveLength(2)
-    expect(code).toContain("source: 'go-member-cta-connect'")
-    expect(code).toContain("source: 'go-member-cta-join'")
+    expect(code).toContain("content_type: 'go-member-cta-connect'")
+    expect(code).toContain("content_type: 'go-member-cta-join'")
     expect(code).toContain("gtag('event', 'patreon_post_connect_view'")
     expect(code).toContain("gtag('event', 'patreon_follow_click'")
     expect(code).toContain("gtag('event', 'patreon_reconnect_click'")
@@ -349,8 +349,8 @@ describe('E99 — /go member CTA stays visible after the countdown (Rio, 2026-09
     const code = strip(readSource('app/go/[modId]/GoClient.tsx'))
     const afterWait = code.match(/gtag\('event',\s*'patreon_click_after_wait'/g) ?? []
     expect(afterWait).toHaveLength(2)
-    expect(code).toContain("source: 'go-member-cta-connect-after-wait'")
-    expect(code).toContain("source: 'go-member-cta-join-after-wait'")
+    expect(code).toContain("content_type: 'go-member-cta-connect-after-wait'")
+    expect(code).toContain("content_type: 'go-member-cta-join-after-wait'")
     const clicks = code.match(/gtag\('event',\s*'patreon_click'/g) ?? []
     expect(clicks).toHaveLength(2)
   })

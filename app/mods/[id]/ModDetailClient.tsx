@@ -165,7 +165,7 @@ export default function ModDetailClient({
       if (response.status === 401) return 'unauthorized';
       if (response.ok) {
         setIsFavorited(true);
-        fireGtag('favorite', { source, mod_id: mod.id });
+        fireGtag('favorite', { content_type: source, mod_id: mod.id });
         return 'saved';
       }
       if (response.status === 400) {
@@ -192,7 +192,7 @@ export default function ModDetailClient({
       const outcome = await addFavorite('mod-detail');
       if (outcome === 'unauthorized') {
         fireGtag(MOD_DETAIL_FAVORITE_EVENTS.signinRedirect, {
-          source: MOD_DETAIL_FAVORITE_SOURCE,
+          content_type: MOD_DETAIL_FAVORITE_SOURCE,
           mod_id: mod.id,
         });
         router.push(favoriteSignInHref(mod.id));
@@ -217,7 +217,7 @@ export default function ModDetailClient({
       const outcome = await addFavorite(MOD_DETAIL_SAVE_SOURCE);
       if (outcome === 'unauthorized') {
         fireGtag(MOD_DETAIL_SAVE_EVENTS.signinRedirect, {
-          source: MOD_DETAIL_SAVE_SOURCE,
+          content_type: MOD_DETAIL_SAVE_SOURCE,
           mod_id: mod.id,
         });
         router.push(saveFindsSignInHref(mod.id));
@@ -249,7 +249,7 @@ export default function ModDetailClient({
           fireGtag(
             viaOffer ? MOD_DETAIL_SAVE_EVENTS.afterSignin : MOD_DETAIL_FAVORITE_EVENTS.afterSignin,
             {
-              source: viaOffer ? MOD_DETAIL_SAVE_SOURCE : MOD_DETAIL_FAVORITE_SOURCE,
+              content_type: viaOffer ? MOD_DETAIL_SAVE_SOURCE : MOD_DETAIL_FAVORITE_SOURCE,
               mod_id: mod.id,
             },
           );

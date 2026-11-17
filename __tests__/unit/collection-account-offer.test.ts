@@ -61,7 +61,7 @@ describe('E380 collection-hub account offer', () => {
 
   it('fires the click event with the hub source', () => {
     expect(client).toMatch(/onClick=\{handleAccountCtaClick\}/);
-    expect(client).toMatch(/COLLECTION_ACCOUNT_CTA_EVENT,\s*\{\s*source:\s*COLLECTION_CAPTURE_SOURCE\s*\}/);
+    expect(client).toMatch(/COLLECTION_ACCOUNT_CTA_EVENT,\s*\{\s*content_type:\s*COLLECTION_CAPTURE_SOURCE\s*\}/);
   });
 
   it('the sign-in page still copies ref into sign_up', () => {

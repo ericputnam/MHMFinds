@@ -165,7 +165,7 @@ describe('GoClient — follow ask placement and wiring', () => {
   });
 
   it('fires its own event with its own source on click', () => {
-    expect(src).toMatch(/gtag\('event', GO_FOLLOW_SLOT_EVENT, \{ source: GO_FOLLOW_SLOT_SOURCE/);
+    expect(src).toMatch(/gtag\('event', GO_FOLLOW_SLOT_EVENT, \{ content_type: GO_FOLLOW_SLOT_SOURCE/);
   });
 
   it('is hidden for members and in the post-connect state', () => {

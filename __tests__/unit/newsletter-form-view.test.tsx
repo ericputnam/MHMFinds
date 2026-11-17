@@ -99,7 +99,7 @@ describe('NewsletterSignup view event', () => {
 
       act(() => observers[0].cb([{ isIntersecting: true, intersectionRatio: 0.8 }]));
       act(() => observers[0].cb([{ isIntersecting: true, intersectionRatio: 1 }]));
-      expect(viewCalls()).toEqual([['event', NEWSLETTER_FORM_VIEW_EVENT, { source: 'collection-page' }]]);
+      expect(viewCalls()).toEqual([['event', NEWSLETTER_FORM_VIEW_EVENT, { content_type: 'collection-page' }]]);
       expect(observers[0].disconnect).toHaveBeenCalled();
     });
   }
@@ -114,7 +114,7 @@ describe('NewsletterSignup view event', () => {
   it('defaults to the footer source', () => {
     render(<NewsletterSignup />);
     act(() => observers[0].cb([{ isIntersecting: true, intersectionRatio: 1 }]));
-    expect(viewCalls()).toEqual([['event', NEWSLETTER_FORM_VIEW_EVENT, { source: 'footer' }]]);
+    expect(viewCalls()).toEqual([['event', NEWSLETTER_FORM_VIEW_EVENT, { content_type: 'footer' }]]);
   });
 });
 
