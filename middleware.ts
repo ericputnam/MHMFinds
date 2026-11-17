@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { applyGuideTitleOverride } from '@/lib/seo/guideTitleOverrides';
 
 // Known Next.js app route prefixes — these are NOT WordPress routes.
 // Any request whose first path segment matches one of these goes to Next.js.
@@ -238,10 +239,14 @@ async function proxyAndRewriteWordPress(
   if (contentType.includes('text/html')) {
     const html = await wpResponse.text();
     let rewritten = rewriteHtml(html, preserveNoindex);
+    const pathname = request.nextUrl.pathname;
+    // E429 (Sage, 2026-11-17): `<title>` overrides for the treated arm of a
+    // randomized guide-title test; a no-op for every other path and once the
+    // writer changes the WordPress title. See lib/seo/guideTitleOverrides.ts.
+    rewritten = applyGuideTitleOverride(pathname, rewritten);
     // The /blog/ landing proxies WP's /homepage/ page, whose canonical and
     // og:url point at /homepage/ — a URL that 301s to /. Point them at
     // /blog/, the URL actually being served, so the page self-canonicalizes.
-    const pathname = request.nextUrl.pathname;
     if (pathname === '/blog' || pathname === '/blog/') {
       rewritten = rewritten.replace(
         /https:\/\/musthavemods\.com\/homepage\//g,
