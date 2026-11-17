@@ -75,6 +75,7 @@ import { externalWindowNotes } from './channel-external-windows';
 import { directExSegment, directExSegmentRow, headlineExSegment, headlineExSegmentLine, segmentDimensionFilter, DIRECT_EX_SEGMENT_CHANNEL, HEADLINE_EX_SEGMENT_DAYS, type DirectExSegment, type HeadlineExSegmentResult, type HistoryDayLike } from './scoreboard-segment-lib';
 import type { SessionsByDate } from './revenue-guardrail-lib';
 import { classifyChannel } from './scoreboard-channel-lib';
+import { rpmLegs, splitWindows, formatRpmLegsLine, type RpmLegs } from './scoreboard-rpm-legs-lib';
 
 // E215: MHM_PROJECT_DIR unset + running from a worktree used to write into the operator's checkout
 // (2 of 7 agents on 2026-10-14). The guard refuses with exit 2 instead of guessing.
@@ -456,6 +457,8 @@ interface MvData {
   revenue28d: number; revenuePrev28d: number; rpm28d: number;
   health: Record<string, unknown>;
   tokenDaysLeft: number | null;
+  /** E424: session RPM = imp/session × CPM, 7d vs prev 7d, from the same daily rows; carries the E416 falsifier state. */
+  rpmLegs: RpmLegs;
 }
 
 async function pullMediavine(): Promise<MvData> {
@@ -465,21 +468,25 @@ async function pullMediavine(): Promise<MvData> {
   const latest = [...(recent.earnings ?? [])].reverse().find((r) => Number(r.revenue) > 0 && Number(r.sessions) > 0);
   const latestDay = latest ? String(latest.date).slice(0, 10).replace(/\//g, '-') : null;
   const end = latestDay ? ([1, 2, 3, 4, 5, 6, 7].find((n) => daysAgo(n) === latestDay) ?? 1) : 1;
-  const [l7, p7, l28, p28, health] = await Promise.all([
+  const [l7, p7, l28, p28, health, daily14] = await Promise.all([
     client.metricsSummary(daysAgo(end + 6), daysAgo(end)),
     client.metricsSummary(daysAgo(end + 13), daysAgo(end + 7)),
     client.metricsSummary(daysAgo(end + 27), daysAgo(end)),
     client.metricsSummary(daysAgo(end + 55), daysAgo(end + 28)),
     client.healthCheckStatus() as Promise<{ health_check?: Record<string, unknown> }>,
+    client.earnings(daysAgo(end + 13), daysAgo(end)),
   ]);
   const hc = { ...(health.health_check ?? {}) };
   for (const k of ['site_id', 'created_at', 'updated_at']) delete hc[k];
+  // E424: the two 7d windows are matched by date against the anchored end, never by row position.
+  const windows = splitWindows(daily14.earnings ?? [], daysAgo(end));
   return {
     latestDay,
     revenue7d: l7.revenue, revenuePrev7d: p7.revenue, rpm7d: l7.session_rpm, rpmPrev7d: p7.session_rpm, sessions7d: l7.sessions,
     revenue28d: l28.revenue, revenuePrev28d: p28.revenue, rpm28d: l28.session_rpm,
     health: hc,
     tokenDaysLeft: tokenDaysRemaining(jwt),
+    rpmLegs: rpmLegs(windows.cur, windows.prev),
   };
 }
 
@@ -1229,7 +1236,8 @@ async function main() {
     md += `| Window | Revenue | Δ | Session RPM | Sessions |\n|---|--:|--:|--:|--:|\n`;
     md += `| 7d | ${money(m.revenue7d)} | ${pct(m.revenue7d, m.revenuePrev7d)} | ${money(m.rpm7d)} (prev ${money(m.rpmPrev7d)}) | ${num(m.sessions7d)} |\n`;
     md += `| 28d | ${money(m.revenue28d)} | ${pct(m.revenue28d, m.revenuePrev28d)} | ${money(m.rpm28d)} | |\n\n`;
-    md += `- Health: ${Object.entries(m.health).map(([k, v]) => `${k}=${String(v)}`).join(' · ') || 'n/a'}\n\n`;
+    md += `- Health: ${Object.entries(m.health).map(([k, v]) => `${k}=${String(v)}`).join(' · ') || 'n/a'}\n`;
+    md += `${formatRpmLegsLine(m.rpmLegs)}\n\n`;
   } else md += `_unavailable: ${errOf(mv)}_\n\n`;
 
   md += `## Owned audience & engagement (production DB)\n\n`;
