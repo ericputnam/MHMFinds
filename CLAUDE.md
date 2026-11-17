@@ -966,7 +966,7 @@ Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 
 
 ---
 
-*Last compound review: 2026-11-15*
+*Last compound review: 2026-11-16 (no merges since the 11-15 review; morning check PASS, 5xx = 0)*
 
 ---
 
