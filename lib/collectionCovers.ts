@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-15
+ * Generated on:     2026-11-17
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -61,8 +61,8 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-158.png",
   ],
   "cottagecore-cc": [
-    "https://blog.musthavemods.com/wp-content/uploads/2025/04/43b68acd-390b-4d64-b149-6c4c1c930a93-1.webp",
     "https://blog.musthavemods.com/wp-content/uploads/2025/07/1fd24669-e246-447c-9f3b-32f375f1f7be.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/43b68acd-390b-4d64-b149-6c4c1c930a93-1.webp",
     "https://images.surferseo.art/5de8dc5c-86d8-4a44-ae02-704827195b15.jpeg",
   ],
   "decor-cc": [
@@ -127,8 +127,8 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   ],
   "halloween-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2026/07/Outbreak_header-1024x768.webp",
-    "https://blog.musthavemods.com/wp-content/uploads/2025/10/5Q2Mo7eg-tile-747x1024.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/43e0676f-e7de-40d1-b034-08b3df451c12-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/10/5Q2Mo7eg-tile-747x1024.jpg",
   ],
   "hats-cc": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/02/d640b4e8-1ea1-4f03-abe9-979ee2649807.jpg",
@@ -148,7 +148,7 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
   "holidays-cc": [
     "https://musthavemods.com/wp-content/uploads/2025/12/w-920h-690-3383266.jpg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/05/6adc521c-fb64-4554-a038-8c7113c48924.jpg",
-    "https://images.surferseo.art/7c8a88fd-1293-4713-b02f-23f31cb4736f.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/12/Wine-country-3-1024x1024.webp",
   ],
   "houses-lots": [
     "https://blog.musthavemods.com/wp-content/uploads/2025/09/w-920h-690-3784559.jpg",
@@ -169,6 +169,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/3d3c1b7b-0f59-4150-9ff6-a2501084dbd3-1.webp",
     "https://blog.musthavemods.com/wp-content/uploads/2024/11/image-174.png",
     "https://blog.musthavemods.com/wp-content/uploads/2025/09/7-1-1024x576.webp",
+  ],
+  "living-room-cc": [
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/96e38e32-4dab-4220-869c-9085078d55d3.jpg",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/04/b21f661a-57ee-44a7-9012-9151bf399316.jpg",
+    "https://images.surferseo.art/e2b79556-fa96-4d7c-a7ba-b5ea4935e53f.png",
   ],
   "loading-screens": [
     "https://images.surferseo.art/dac15196-29a5-4270-80cf-e6ea4088a07f.jpeg",

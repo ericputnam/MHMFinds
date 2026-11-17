@@ -2154,6 +2154,11 @@ export const HAND_AUDITED_NSFW: Record<string, HandAuditedNsfw> = {
   // nudity. That is a ruling, not an oversight — queued for operator review.
   cmmvase5900e1oxzgw4y6q5h6: { isNSFW: true, why: 'E419 "Teen/Adult Romance & Mess Around" — the same PolarBearSims mod as "Teen Romance Mod" (second catalog row); the mod text: "open all romantic interactions, including messing around, for teens and adults to do together"' },
   cmik9snkb00a4oxk72fxpft4e: { isNSFW: true, why: 'E419 "Sleeping Animation Pack" — the mod text: "you need to download the Wicked Whims mod … click on the bed, select “sex,” then “teasing”"; a Wicked Whims animation, same class as E418 Cuddle and Bath Together' },
+  // E425 (Rowan, 2026-11-17): the full-text scan of the 149 rows behind the
+  // new living-room page (/games/sims-4/living-room-cc/) found one row whose
+  // own mod text describes adult art. Conservative call for an ad page; the
+  // cost is one 8-download furniture set.
+  cmikivd5c006voxnaup0dfup1: { isNSFW: true, why: 'E425 "Lime Light Living Room Collection" — the mod text: "the wall painting that comes with different prints from script text to erotic images". The set ships erotic wall art; a false SFW on a living-room browse page is the worse error' },
 };
 
 /**

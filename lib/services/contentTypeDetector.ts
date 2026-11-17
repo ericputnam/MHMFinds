@@ -25,6 +25,7 @@ import { SANRIO_THEME, isSanrioTitle } from '../sanrioThemeRules';
 import { HEADWEAR_THEME, isHeadwearTitle } from '../headwearThemeRules';
 import { VICTORIAN_THEME, isVictorianTitle } from '../victorianThemeRules';
 import { NURSERY_THEME, isNurseryTitle } from '../nurseryThemeRules';
+import { LIVING_ROOM_THEME, isLivingRoomTitle } from '../livingRoomThemeRules';
 import { CHRISTMAS_THEME, isChristmasTitle } from '../christmasThemeRules';
 import { PIERCING_THEME, isPiercingTitle } from '../piercingThemeRules';
 import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRules';
@@ -576,11 +577,12 @@ const ROOM_THEME_RULES: RoomThemeRule[] = [
   // entry ('bedroom', 'bed room', 'sleeping', ... over title + description)
   // left the theme 37.3% title-supported (195 of 523 rows) — 133 of them
   // whole house builds, 26 pose packs, and "Sleeping Animation Pack".
-  {
-    keywords: ['living room', 'livingroom', 'living-room', 'lounge', 'family room',
-               'sitting room', 'den'],
-    theme: 'living-room',
-  },
+  // `living-room` is deliberately NOT a keyword rule here: it is derived from
+  // the TITLE only by `lib/livingRoomThemeRules.ts` (Rowan, 2026-11-17, E425).
+  // The old entry ('living room', 'lounge', 'family room', 'sitting room',
+  // 'den', ... as SUBSTRINGS of title + description; 'den' matched "garden"
+  // and "Denim") left the theme 7.7% title-supported (112 of 1,459 rows) —
+  // "Tus & Lus Slippers" at card #1.
   {
     keywords: ['dining room', 'diningroom', 'dining-room', 'dining area', 'eating area'],
     theme: 'dining-room',
@@ -1191,6 +1193,14 @@ export function detectRoomThemesWithConfidence(
     hasHighConfidenceMatch = true;
   }
 
+  // Living-room theme — title only, whole words (E425; see lib/livingRoomThemeRules.ts).
+  // Never add it back to ROOM_THEME_RULES: those also read the shared description.
+  if (isLivingRoomTitle(title) && !detectedThemes.includes(LIVING_ROOM_THEME)) {
+    detectedThemes.push(LIVING_ROOM_THEME);
+    allMatchedKeywords.push(LIVING_ROOM_THEME);
+    hasHighConfidenceMatch = true;
+  }
+
   // Victorian theme — title only, whole words (E393; see lib/victorianThemeRules.ts).
   if (isVictorianTitle(title) && !detectedThemes.includes(VICTORIAN_THEME)) {
     detectedThemes.push(VICTORIAN_THEME);
@@ -1232,5 +1242,5 @@ export function getSupportedRoomThemes(): string[] {
   // Title-only themes live outside ROOM_THEME_RULES; list them too, or moving
   // a theme to its own rule file silently drops it from this list (bedroom
   // was missing here from #170 until 2026-09-25).
-  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME, PLUMBOB_THEME, HEELS_THEME, SANRIO_THEME, HEADWEAR_THEME, VICTORIAN_THEME, NURSERY_THEME].sort();
+  return [...ROOM_THEME_RULES.map(rule => rule.theme), BEDROOM_THEME, KITCHEN_THEME, BATHROOM_THEME, WEDDING_THEME, GALLERY_POSE_THEME, PIERCING_THEME, PLUMBOB_THEME, HEELS_THEME, SANRIO_THEME, HEADWEAR_THEME, VICTORIAN_THEME, NURSERY_THEME, LIVING_ROOM_THEME].sort();
 }

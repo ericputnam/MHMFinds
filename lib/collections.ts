@@ -778,7 +778,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // 2026-11-11 (E393): 'build-cc' → 'victorian-cc' (build-cc keeps
     // bedroom-cc, bathroom-cc and cc; /sims-4-victorian-furniture-cc/ is the
     // largest of the three Victorian legacy articles by landings).
-    related: ['bedroom-cc', 'kitchen-cc', 'victorian-cc'],
+    // 2026-11-17 (E425): 'kitchen-cc' → 'living-room-cc' (kitchen-cc keeps
+    // clutter and bathroom-cc; the living room is furniture's biggest room).
+    related: ['bedroom-cc', 'living-room-cc', 'victorian-cc'],
     blogUrl: '/sims-4-furniture-cc/',
   },
   {
@@ -1558,7 +1560,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     expectedCount: 160,
     // 2026-09-26: 'clutter' → 'bathroom-cc' (clutter keeps 2 inbound:
     // decor-cc, holidays-cc).
-    related: ['furniture-cc', 'bathroom-cc', 'decor-cc'],
+    // 2026-11-17 (E425): 'decor-cc' → 'living-room-cc' (decor-cc keeps
+    // clutter, bathroom-cc, christmas-cc and living-room-cc).
+    related: ['furniture-cc', 'bathroom-cc', 'living-room-cc'],
     // Differentiated pair: /sims-4-kitchen-clutter-cc/ keeps the editorial
     // "best kitchen clutter" intent, this page owns browse/filter intent. It
     // is live (HTTP 200, no redirect, checked 2026-09-25) and not in
@@ -2139,6 +2143,43 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // owns browse intent. /sims-4-nursery-cc/ is live (HTTP 200, verified
     // 2026-11-13) and is not in vercel.json.
     blogUrl: '/sims-4-nursery-cc/',
+  },
+  {
+    // Rowan, 2026-11-17 (E425, Tier 0 — registry entry in the existing
+    // pattern). A browse page for living room CC behind the legacy articles
+    // /sims-4-living-room-cc/ (384 landing sessions, 335 of them Pinterest)
+    // and /sims-4-cozy-living-room-cc/ (53), GA4 10-20 → 11-16, no browse
+    // page behind either. GSC 10-17 → 11-14: 31 impr / 0 clk at position 24.6.
+    // The `living-room` theme was a SUBSTRING rule over title + the shared
+    // blog-post description ('den' matched "garden" and "Denim"): 1,459 rows,
+    // 112 (7.7%) title-supported, "Tus & Lus Slippers" at card #1. Moved to
+    // TITLE-ONLY (lib/livingRoomThemeRules.ts, accepted and rejected words with
+    // counts) and applied 2026-11-17: add 27 / strip 1,338, every ADD row read;
+    // 148 rows, 1 pinned NSFW from its own mod text (E425, erotic wall-art
+    // prints), 147 SFW Sims 4. Top 24 by downloads hand-read 24/24 living room.
+    // Inbound: furniture-cc (repointed from kitchen-cc) and kitchen-cc
+    // (repointed from decor-cc).
+    // Appended after the contentType pages because a themesAny entry scores
+    // specificity 1, so every living-room mod keeps its own breadcrumb.
+    slug: 'living-room-cc',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Living Room CC',
+    heading: 'Sims 4 Living Room CC',
+    metaTitle: 'Sims 4 Living Room CC — Browse 140+ Living Room Sets & Sofas | MustHaveMods',
+    metaDescription:
+      'Browse 140+ Sims 4 living room CC finds in one grid: full living room sets, sofas, sectionals, loveseats, TV units and living room decor, sorted by downloads.',
+    tagline: 'Living room sets, sofas, loveseats and living room decor',
+    intro:
+      "The living room is the room every Sims 4 build is judged by. It is the first thing you see when the lot loads and where your sims spend every evening, and the base game gives you only a handful of sofas that all share the same frame. Living room CC is how builders get past that: matching sofa and armchair sets, coffee tables, TV units and the clutter that makes the room look lived in.\n\nThis page is every find in our catalog whose title says living room, sitting room, sofa, couch or loveseat, in one grid sorted by downloads. That rule is deliberate. Until this page existed, our living room tag was read from the blog post a mod came from, and it had spread to slippers, jeans, lashes, body presets and gameplay mods. Fewer than one in ten of those rows was a living room. None of them are here. Pose packs staged on a sofa are left out too, because they are animations, not furniture.\n\nMost of the grid is complete living room sets: sofa, armchair, coffee table, side tables, shelving and decor from one creator, so a single download furnishes the room. The styles range from modern and minimalist to Japandi, retro and mid-century, boho, coastal, Victorian, gothic and seasonal rooms dressed for Christmas or Valentine's Day. Standalone sofas, sectionals, sofa beds and loveseats fill in the rest, along with TV units, a fireplace, curtains and sofa pillows.\n\nTwo practical notes. Big sets often ship in parts, so look for a part 2 before you build. And some functional pieces depend on a specific pack, so check the creator's page for requirements.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator's own download page.",
+    filter: { themesAny: ['living-room'] },
+    expectedCount: 147,
+    related: ['decor-cc', 'build-cc', 'bedroom-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // living room CC" intent (384 landings 28d, mostly Pinterest); this page
+    // owns browse intent. /sims-4-living-room-cc/ is live (HTTP 200, verified
+    // 2026-11-17) and is not in vercel.json.
+    blogUrl: '/sims-4-living-room-cc/',
   },
   {
     // Sage, 2026-11-13 (E400, Tier 0 — registry entry in the existing
