@@ -43,6 +43,34 @@ export function isBingSyndicatedReferral(source: string): boolean {
   return BING_SYNDICATED_REFERRAL_HOSTS.some((re) => re.test(s));
 }
 
+/**
+ * Search engines outside the Bing family that GA4 also files as `referral`
+ * (Pip, 2026-11-17, E409 follow-up). GA4's default channel grouping knows
+ * `yandex`, `duckduckgo`, `ecosia.org` and `qwant.com` as `organic`, but the
+ * engines' own front-door and country hosts arrive as plain referrals, so the
+ * 11-17 scoreboard still read them as "other" (GA4 11-09→11-15, sessions):
+ * yandex.ru 254, ya.ru 58, yandex.by 25, yandex.kz 17, yandex.com.tr 9,
+ * alice.yandex.ru 5, search.brave.com 41, noai.duckduckgo.com 21,
+ * oceanhero.today 19 — ≈450/7d, ≈1,800/28d, all with ≥1 pageview per session.
+ *
+ * Measured and rejected (keep them out, do not re-propose): `m.baidu.com` (2/7d)
+ * and `wenxin.baidu.com` (4/7d — Ernie, Baidu's chatbot, not a SERP); `startpage.com`
+ * (1/7d); bare `bing.com` (Copilot / image panels, see above).
+ */
+export const SEARCH_REFERRAL_HOSTS: ReadonlyArray<RegExp> = [
+  /(^|\.)yandex\.(ru|by|kz|uz|com\.tr|com)$/, // yandex.ru, yandex.by, yandex.kz, yandex.com.tr, alice.yandex.ru
+  /^ya\.ru$/, // Yandex's short front door
+  /^search\.brave\.com$/,
+  /(^|\.)duckduckgo\.com$/, // noai.duckduckgo.com; the canonical click is already `duckduckgo / organic`
+  /^oceanhero\.today$/,
+];
+
+/** True for any search-engine host GA4 files as `referral`, Bing family or not. */
+export function isSearchReferral(source: string): boolean {
+  const s = source.toLowerCase().trim();
+  return isBingSyndicatedReferral(s) || SEARCH_REFERRAL_HOSTS.some((re) => re.test(s));
+}
+
 export type ScoreboardChannel =
   | 'pinterest'
   | 'google_organic'
@@ -78,7 +106,7 @@ export function classifyChannel(sessionSource: string, sessionMedium: string): C
   else if (src === '(direct)') channel = 'direct';
   else if (src.includes('tumblr')) channel = 'tumblr';
   else if (src.includes('reddit')) channel = 'reddit';
-  else if (med === 'organic' || isBingSyndicatedReferral(src)) channel = 'other_search';
+  else if (med === 'organic' || isSearchReferral(src)) channel = 'other_search';
   else if (med === 'email' || src.includes('sendgrid')) channel = 'email';
   const ai = AI_REFERRERS.some((a) => src.includes(a)) || AI_MEDIUM.test(med);
   if (ai) channel = 'ai_referral';
