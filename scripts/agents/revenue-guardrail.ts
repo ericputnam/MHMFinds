@@ -23,7 +23,7 @@ import { execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, sessionsExSegment, sessionsExSegmentLine, exSegmentRpm, exSegmentRpmLine, segmentDimensionFilter, type ExSegmentRpm, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts, type SessionsByDate, type SessionsExSegment } from './revenue-guardrail-lib';
+import { listDeploymentsPaged, classifyWindow, decideAction, coverageLine, boundLine, ROLLBACK_BOUNDS, splitInWindowByBuild, buildSplitLine, type BuildSplit, sessionsExSegment, sessionsExSegmentLine, exSegmentRpm, exSegmentRpmLine, segmentDimensionFilter, type ExSegmentRpm, type VercelDeployment, type VercelPage, type Coverage, type InWindow, type Status, type Action, type RollbackFacts, type SessionsByDate, type SessionsExSegment } from './revenue-guardrail-lib';
 
 const args = process.argv.slice(2);
 const arg = (k: string): string | undefined => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
@@ -42,7 +42,7 @@ interface Verdict {
   status: Status; action: Action; actionDetail: string | null;
   vercelCoverage: Coverage & { line: string; inWindow: InWindow };
   /** E169-b: the facts the rollback bound was judged on, the bound itself, and the one-line verdict. */
-  rollbackBound: RollbackFacts & { maxInWindowDeploys: number; maxTargetAgeHours: number; line: string };
+  rollbackBound: RollbackFacts & { maxInWindowDeploys: number; maxTargetAgeHours: number; line: string; split: BuildSplit; splitLine: string };
   day: string; expectedDay: Row; actualDay: Row;
   window3: { actualRevenue: number; expectedRevenue: number; actualRpm: number; expectedRpm: number; actualSessions: number; expectedSessions: number };
   /** Set only when action is `rollback` — the runner acts on this field. */
@@ -126,12 +126,21 @@ function fetchVercelPage(cwd: string, deadline: number) {
   };
 }
 
-function recentChanges(sinceIso: string, untilIso: string, cwd: string): { changes: Change[]; rollbackTo: string | null; inWindow: InWindow; coverage: Coverage; facts: RollbackFacts } {
+function recentChanges(sinceIso: string, untilIso: string, cwd: string): { changes: Change[]; rollbackTo: string | null; inWindow: InWindow; coverage: Coverage; facts: RollbackFacts; split: BuildSplit } {
   const changes: Change[] = [];
   const sinceMs = new Date(`${sinceIso}T00:00:00`).getTime();
   const untilMs = new Date(`${untilIso}T00:00:00`).getTime(); // deploys after the judged day cannot have caused it; listed as unjudged
   const { deployments, coverage } = listDeploymentsPaged(fetchVercelPage(cwd, Date.now() + VERCEL_LIST_BUDGET_MS), sinceMs);
   const { inWindowDeps, afterDeps, inWindow, rollbackTo, facts } = classifyWindow(deployments, sinceMs, untilMs, coverage);
+  // E427: informational build/paper split of the in-window count. decideAction never reads it.
+  const filesOf = (sha: string): string[] | null => {
+    try {
+      const out = execSync(`git diff --name-only ${sha}^1 ${sha}`, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 20000 });
+      return out.split('\n').map((s) => s.trim()).filter(Boolean);
+    } catch { return null; }
+  };
+  // A sha that is not hex never reaches the shell; it is unclassified (counted as build).
+  const split = splitInWindowByBuild(inWindowDeps, (sha) => (/^[0-9a-f]{7,40}$/.test(sha) ? filesOf(sha) : null));
   for (const d of [...afterDeps, ...inWindowDeps].sort((a, b) => Number(b.createdAt) - Number(a.createdAt))) {
     const m = (d.meta ?? {}) as Record<string, string>;
     const unjudged = Number(d.createdAt) >= untilMs ? ' [after judged day — judged tomorrow]' : '';
@@ -143,7 +152,7 @@ function recentChanges(sinceIso: string, untilIso: string, cwd: string): { chang
     const fp = execSync(`git log origin/main --since="${sinceIso}" --format='%h|%cI|%s' -- staging/wordpress/kadence-child-prod/functions.php`, { cwd, encoding: 'utf8', timeout: 20000 }).trim();
     for (const l of fp.split('\n').filter(Boolean)) { const [h, at, ...s] = l.split('|'); changes.push({ kind: 'functions.php', at, ref: h, text: s.join('|').slice(0, 90) }); }
   } catch { /* offline: git changes unknown */ }
-  return { changes, rollbackTo, inWindow, coverage, facts };
+  return { changes, rollbackTo, inWindow, coverage, facts, split };
 }
 
 async function main() {
@@ -199,9 +208,10 @@ async function main() {
   if (status === 'green') reasons.push(`Revenue ${money(actualDay.revenue)} (${pct(actualDay.revenue, expectedDay.revenue)}), RPM ${actualDay.rpm.toFixed(2)} (${pct(actualDay.rpm, expectedDay.rpm)}), sessions ${pct(actualDay.sessions, expectedDay.sessions)} vs same weekday, prior 4 weeks · 3-day revenue ${pct(window3.actualRevenue, window3.expectedRevenue)}`);
 
   const since = shift(day, -3);
-  const { changes, rollbackTo, inWindow, coverage, facts } = recentChanges(since, shift(day, 1), cwd);
+  const { changes, rollbackTo, inWindow, coverage, facts, split } = recentChanges(since, shift(day, 1), cwd);
   const covLine = coverageLine(coverage);
   const bLine = boundLine(facts, rollbackTo);
+  const sLine = buildSplitLine(split); // E427: informational; decideAction below does not read `split`
   // Never claim "no deploy in window" on a truncated list: inWindow is 'unknown' then, and unknown never rolls back.
   // E169-b: a known in-window deploy still only rolls back inside ROLLBACK_BOUNDS (one day of deploys, target ≤ 48 h).
   const { action, detail: actionDetail } = decideAction(status, inWindow, rollbackTo, facts);
@@ -212,14 +222,14 @@ async function main() {
 
   const v: Verdict = {
     status, action, actionDetail, vercelCoverage: { ...coverage, line: covLine, inWindow },
-    rollbackBound: { ...facts, maxInWindowDeploys: ROLLBACK_BOUNDS.maxInWindowDeploys, maxTargetAgeHours: ROLLBACK_BOUNDS.maxTargetAgeMs / 3_600_000, line: bLine },
+    rollbackBound: { ...facts, maxInWindowDeploys: ROLLBACK_BOUNDS.maxInWindowDeploys, maxTargetAgeHours: ROLLBACK_BOUNDS.maxTargetAgeMs / 3_600_000, line: bLine, split, splitLine: sLine },
     day, expectedDay, actualDay, window3, rollbackTo: action === 'rollback' ? rollbackTo : null, rollbackCandidate: rollbackTo, changes, health, reasons,
     sessionsExSegment: exSeg, sessionsExSegmentLine: exSegLine,
     sessionsExSegmentRpm: exSegRpm, sessionsExSegmentRpmLine: exSegRpmLine,
   };
   const icon = status === 'green' ? '🟢' : status === 'yellow' ? '🟡' : '🔴';
   const actionText = `${action}${actionDetail ? ` (${actionDetail})` : ''}`;
-  let md = `# Revenue guardrail — ${daysAgo(0)} (last finalized day ${day})\n\n${icon} **${status.toUpperCase()}** → action: **${actionText}**${v.rollbackTo ? ` → ${v.rollbackTo}` : ''}\n\n${covLine} · deploy in window: ${inWindow}\n\n${bLine}\n\n`;
+  let md = `# Revenue guardrail — ${daysAgo(0)} (last finalized day ${day})\n\n${icon} **${status.toUpperCase()}** → action: **${actionText}**${v.rollbackTo ? ` → ${v.rollbackTo}` : ''}\n\n${covLine} · deploy in window: ${inWindow}\n\n${bLine}\n\n${sLine}\n\n`;
   for (const r of reasons) md += `- ${r}\n`;
   md += `\n| | ${day} | expected (same weekday, 4-wk avg) | Δ |\n|---|---|---|---|\n`;
   md += `| revenue | ${money(actualDay.revenue)} | ${money(expectedDay.revenue)} | ${pct(actualDay.revenue, expectedDay.revenue)} |\n`;
