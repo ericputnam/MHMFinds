@@ -360,6 +360,71 @@ export function exSegmentRpmLine(r: ExSegmentRpm | null, unavailableWhy: string 
   return `${tag}: $${r.actual.toFixed(2)} vs $${r.expected.toFixed(2)} (${pctDelta(r.actual, r.expected)}) · mix alone predicts raw RPM ${mix} → ${r.read} (mix band ±${(band * 100).toFixed(0)}%)`;
 }
 
+// ---------------------------------------------------------------------------------------------
+// E427 (Ops, 2026-11-17): split the in-window count into build-relevant vs paper-only deploys.
+//
+// Why: the in-window count was within the bound on only 2 of the 28 guardrail files that carry it (10-07 →
+// 11-17): 10-11 (21) and 10-12 (23). It has been over the bound on every file since 10-13 (34–128). Most
+// of those deploys are paper-only commits: ledger rows, digests, reports. A paper-only commit cannot change
+// what a visitor is served (deploy-verify.sh E250), so it cannot be the "one bad deploy" the bound reasons
+// about. On the last 20 files the paper share was 51.8–72.6% (11-17: 63 in window = 18 build-relevant + 45 paper).
+//
+// INFORMATIONAL ONLY. `decideAction` / `boundReason` do NOT read this split. Arming the breaker on the
+// build-relevant count would change when production is auto-rolled back. That is the guardrail bound,
+// and the bound is Tier 2 (operator). This line gives the operator the number every morning to decide on.
+//
+// `isPaperPath` mirrors `is_paper_path` in scripts/agents/deploy-verify.sh. The parity test runs the REAL
+// bash function over a path corpus, so the two cannot drift silently. Fail closed: a deploy with no commit sha,
+// an unreadable diff or an empty file list is "unclassified", and any future gate must count it as build.
+/** E427: the TS twin of deploy-verify.sh `is_paper_path` — true ONLY if no Vercel build reads the path. */
+export function isPaperPath(p: string): boolean {
+  if (p === '' || p === 'reports/funnel/history.json' || p === 'reports/funnel/newsletter-sends.jsonl') return false;
+  if (/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(p)) return false;
+  if (/^(reports|docs|logs|\.claude)\//.test(p)) return true;
+  if (p.includes('/')) return false;
+  if (p.endsWith('.md')) return true;
+  return false;
+}
+
+export interface BuildSplit {
+  /** In-window production deploys whose commit touches at least one build-relevant path. */
+  build: number;
+  /** In-window production deploys whose commit touches only paper paths. */
+  paper: number;
+  /** No sha / unreadable diff / empty diff. Counts as build in `buildRelevant` (fail closed). */
+  unclassified: number;
+  /** build + unclassified: what a build-relevant bound would have to read. */
+  buildRelevant: number;
+  total: number;
+}
+
+/**
+ * E427: classify each in-window production deploy by the files its commit changed.
+ * `filesOf(sha)` returns the changed paths vs the first parent, or null when they cannot be read.
+ */
+export function splitInWindowByBuild(
+  inWindowDeps: VercelDeployment[],
+  filesOf: (sha: string) => string[] | null,
+): BuildSplit {
+  let build = 0, paper = 0, unclassified = 0;
+  for (const d of inWindowDeps) {
+    const sha = (d.meta ?? {}).githubCommitSha ?? '';
+    const files = sha ? filesOf(sha) : null;
+    if (!files || files.length === 0) unclassified++;
+    else if (files.every(isPaperPath)) paper++;
+    else build++;
+  }
+  return { build, paper, unclassified, buildRelevant: build + unclassified, total: inWindowDeps.length };
+}
+
+/** E427: one informational line under the bound line. It never says "eligible": the bound does not read it. */
+export function buildSplitLine(split: BuildSplit | null, bounds: RollbackBounds = ROLLBACK_BOUNDS): string {
+  if (!split) return 'rollback bound split (E427, informational): unavailable';
+  const unc = split.unclassified ? `, ${split.unclassified} unclassified counted as build` : '';
+  const vs = split.buildRelevant <= bounds.maxInWindowDeploys ? '≤' : '>';
+  return `rollback bound split (E427, informational — the bound reads all ${split.total}): build-relevant ${split.buildRelevant} ${vs} ${bounds.maxInWindowDeploys} · paper-only ${split.paper}${unc}`;
+}
+
 /** One line, printed every run next to the coverage line, so the numbers behind a withheld rollback are visible. */
 export function boundLine(facts: RollbackFacts | undefined, rollbackTo: string | null, bounds: RollbackBounds = ROLLBACK_BOUNDS): string {
   if (!facts) return 'rollback bound: facts unknown (no classifyWindow pass) → withheld';
