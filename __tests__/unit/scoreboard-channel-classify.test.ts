@@ -13,13 +13,49 @@ import { join } from 'node:path';
 import {
   AI_REFERRERS,
   BING_SYNDICATED_REFERRAL_HOSTS,
+  SEARCH_REFERRAL_HOSTS,
   classifyChannel,
   isBingSyndicatedReferral,
+  isSearchReferral,
 } from '../../scripts/agents/scoreboard-channel-lib';
 
 const ROOT = join(__dirname, '..', '..');
 
 describe('scoreboard channel classification (E409)', () => {
+  // 2026-11-17 follow-up: engines outside the Bing family that GA4 files as referral
+  // (yandex.ru 254, ya.ru 58, search.brave.com 41, noai.duckduckgo.com 21,
+  // oceanhero.today 19 sessions in 11-09→11-15). Red pre-fix: every line of the
+  // first block below read `other`.
+  it('non-Bing search-engine referral hosts are search, not other', () => {
+    expect(classifyChannel('yandex.ru', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('ya.ru', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('yandex.by', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('yandex.kz', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('yandex.com.tr', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('alice.yandex.ru', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('search.brave.com', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('noai.duckduckgo.com', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('oceanhero.today', 'referral').channel).toBe('other_search');
+    expect(classifyChannel('Search.Brave.com', 'Referral').channel).toBe('other_search');
+    // the rows GA4 already files as organic are untouched
+    expect(classifyChannel('yandex', 'organic').channel).toBe('other_search');
+    expect(classifyChannel('qwant.com', 'organic').channel).toBe('other_search');
+    // measured and rejected hosts stay where they were
+    expect(classifyChannel('m.baidu.com', 'referral').channel).toBe('other');
+    expect(classifyChannel('wenxin.baidu.com', 'referral').channel).toBe('other');
+    expect(classifyChannel('startpage.com', 'referral').channel).toBe('other');
+    expect(classifyChannel('bing.com', 'referral').channel).toBe('other');
+    // exact host match, never a substring
+    expect(isSearchReferral('yandex.ru.evil.example')).toBe(false);
+    expect(isSearchReferral('notyandex.ru')).toBe(false);
+    expect(isSearchReferral('brave.com')).toBe(false);
+    expect(isSearchReferral('duckduckgo.com.evil.example')).toBe(false);
+    expect(isSearchReferral('myoceanhero.today')).toBe(false);
+    // the Bing family still answers through the same door
+    expect(isSearchReferral('uk.search.yahoo.com')).toBe(true);
+    expect(SEARCH_REFERRAL_HOSTS.length).toBeGreaterThanOrEqual(5);
+  });
+
   it('Bing-syndicated search referrals are search, not other', () => {
     expect(classifyChannel('uk.search.yahoo.com', 'referral').channel).toBe('other_search');
     expect(classifyChannel('fr.search.yahoo.com', 'referral').channel).toBe('other_search');
