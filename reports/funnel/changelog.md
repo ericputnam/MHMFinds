@@ -690,3 +690,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-15 07:19 | after-merge | Rowan: PR #552 E418/E419 gameplay-mods hub | ed0d5a6 | https://mhm-finds-dw5l-bkj7bdcp3-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-15 07:26 | after-merge | Quinn: PR #556 funnel: daily run 2026-11-15 | b19b52a | https://mhm-finds-dw5l-hc1vkhwbp-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-16 06:35 | check | morning-check |  | https://mhm-finds-dw5l-7t3zwljpv-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-11-17 06:36 | check | morning-check |  | https://mhm-finds-dw5l-g3wcokzjt-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
