@@ -7,6 +7,7 @@ import * as path from 'path';
 import { getPrivacyConfig, PrivacyConfig } from '@/lib/config/privacy';
 import { uploadImageToBlob, isValidImageUrl } from './imageUploader';
 import { applyNurseryTheme } from '../nurseryThemeRules';
+import { applyLivingRoomTheme } from '../livingRoomThemeRules';
 import {
   detectContentType as detectContentTypeFromLib,
   detectRoomThemes,
@@ -2068,8 +2069,10 @@ export class WeWantModsScraper {
 
     // `nursery` is title-only (E404, lib/nurseryThemeRules.ts): the collection
     // page title, the URL slug ('nursery', 'baby') and the description above
-    // can all add it; the item's own title decides.
-    return applyNurseryTheme(themes, title);
+    // can all add it; the item's own title decides. Same for `living-room`
+    // (E425, lib/livingRoomThemeRules.ts; URL slugs 'living-room',
+    // 'livingroom' and 'living').
+    return applyLivingRoomTheme(applyNurseryTheme(themes, title), title);
   }
 
   /**
