@@ -691,3 +691,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-15 07:26 | after-merge | Quinn: PR #556 funnel: daily run 2026-11-15 | b19b52a | https://mhm-finds-dw5l-hc1vkhwbp-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-16 06:35 | check | morning-check |  | https://mhm-finds-dw5l-7t3zwljpv-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-11-17 06:36 | check | morning-check |  | https://mhm-finds-dw5l-g3wcokzjt-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-11-17 06:45 | after-merge | Nova: PR #558 E423 refresh brief for /new-sims-4-mods-2026/ (Q46, paper trail only) | 46a04f2 | https://mhm-finds-dw5l-4g4kr6q2h-ericputnams-projects.vercel.app | PAPER PASS | paper-only merge (no build-relevant paths); production https://mhm-finds-dw5l-4g4kr6q2h-ericputnams-projects.vercel.app checked · 5xx/15m=0  |
