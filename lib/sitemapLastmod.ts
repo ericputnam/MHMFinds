@@ -21,10 +21,11 @@ import { prisma } from './prisma';
 // 2026-11-05 (E337, #467 — merged with this guard red); HomeJsonLd FAQ reads
 // CATALOG_FINDS 2026-11-06 (E364); JSON-LD via serializeJsonLd in app/page.tsx +
 // HomeJsonLd 2026-11-11 (operator audit 97ee5083, pushed with this guard red;
-// bumped by E405). Bump when
+// bumped by E405); GA4 surface param on the capture surfaces 2026-11-17 (E426,
+// #560 2b647e7f — merged with this guard red; bumped by E430). Bump when
 // app-level pages actually change — the git guard below fails if you forget.
 // HOME_SHELL_LASTMOD in lib/seo/siteLastmod.ts restates this; bump both.
-export const APP_LASTMOD = '2026-11-11';
+export const APP_LASTMOD = '2026-11-17';
 
 // /games/[game]/[topic] template — trailing-slash canonical fix 2026-07-03;
 // og:image on every collection page 2026-10-30 (E298, #410); email-box
@@ -38,9 +39,11 @@ export const APP_LASTMOD = '2026-11-11';
 // "create a free account" link in the email block 2026-11-09 (E380);
 // CollectionPageClient fixes 2026-11-10 (#502) and 2026-11-11 (#519, /api
 // trailing slash), JSON-LD via serializeJsonLd 2026-11-11 (97ee5083) — all
-// three merged with this guard red; bumped by E405.
+// three merged with this guard red; bumped by E405. GA4 surface param on the
+// collection capture surface 2026-11-17 (E426, #560 2b647e7f — merged with
+// this guard red; bumped by E430).
 // Bump when the template changes.
-export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-11';
+export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-17';
 
 // /creator/[slug]/ template (E299, Sage, 2026-10-30). Every creator page's
 // title + meta changed on 2026-10-27 (E267) and every page gained its
@@ -55,7 +58,10 @@ export const COLLECTION_TEMPLATE_LASTMOD = '2026-11-11';
 // becomes a full ISO 8601 DateTime 2026-11-07 (Search Console "Invalid
 // datetime value for dateModified" on Profile pages). Bumped 2026-11-11 for the
 // creator-hosted mod file upload (components/creator/HostedFileUpload.tsx).
-export const CREATOR_TEMPLATE_LASTMOD = '2026-11-11';
+// Bumped 2026-11-15 for the E413 suffix-split fold of the creator sources
+// (#549, 7fd0a815 — merged with this guard red; bumped by E430, Sage,
+// 2026-11-17, with a one-off IndexNow push of every /creator/ page).
+export const CREATOR_TEMPLATE_LASTMOD = '2026-11-15';
 
 /**
  * Which source files each template constant stands for (E303, Sage,
