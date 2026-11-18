@@ -809,9 +809,10 @@ run died with `Prompt is too long`.
   `kitchen` was 345 rows / 34.2% before #179 (`lib/kitchenThemeRules.ts`, 160/160); `bathroom`
   was 456 rows / 26.5% (Wicked Whims at card #1, "Tube Top Dress" via `tub`) before #187
   (`lib/bathroomThemeRules.ts`, 123/123); `nursery` was 100 rows / 45.0% before #540
-  (`lib/nurseryThemeRules.ts`, 51/51). **Five room themes are still description-fed** in
-  `ROOM_THEME_RULES` (living-room, dining-room, outdoor, office, kids-room). None backs a page
-  yet. Move a theme to title-only before you build a page on it, and never add a new one to that list. **Fix a theme at
+  (`lib/nurseryThemeRules.ts`, 51/51); `living-room` was 1,459 rows / 7.7% (`den` matched denim
+  and garden) before #563 (`lib/livingRoomThemeRules.ts`, 148 left). **Four room themes are still
+  description-fed** in `ROOM_THEME_RULES` (dining-room, outdoor, office, kids-room). None backs a
+  page yet. Move a theme to title-only before you build a page on it, and never add a new one to that list. **Fix a theme at
   the source before you build a page on it**, and read the dry run's ADD list as hard as its STRIP
   list — that is where `pumpkin` and `ghost` were caught.
 - **Measure a candidate keyword against the whole catalog before adding it, and record the
@@ -928,45 +929,41 @@ run died with `Prompt is too long`.
 ### 2026-10-15 → 11-13 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15, 11-15 on 2026-11-17.
 
-### 2026-11-15 (10 funnel merges; morning check PASS)
+### 2026-11-17 (8 funnel merges #558–#565; 11-16 had none)
 
-10 merges, 3 production DB applies, 1 IndexNow push, 0 rollbacks, 5xx = 0 on every verify.
+8 merges, 4 production DB/external applies (living-room retag 1,365 rows, 1 NSFW pin, 2 IndexNow
+pushes), 0 rollbacks, 5xx = 0 on every verify.
 
-- **Never classify by substring on a short token.** The scoreboard tested
-  `medium.includes('ai')`, and `email` contains `ai`, so every newsletter session was counted as
-  AI referral and the table never had an email row. Yahoo country front doors, `cn.bing.com` and
-  `ntp.msn.com` (≈3,700/28d) landed in "other" because only `medium=organic` counted as
-  search (#554, E409). Match whole tokens or exact hosts, in a tested pure lib
-  (`scripts/agents/scoreboard-channel-lib.ts`).
-- **Title-only is for *inclusion*. A safety *exclusion* reads every field.** Title-only tagging keeps
-  wrong mods out of a facet. It also kept "Teen Romance Mod" and Wonderful Whims SFW, and the first
-  of these became the gameplay hub's homepage cover (#552, E418/E419). Judge `isNSFW` from the
-  row's full text, and pin each ruling by id with a frozen rollback file. A false SFW is a policy
-  breach. A false NSFW only hides one mod.
-- **An incremental job never backfills what existed before its first run.** The daily IndexNow
-  push sends only mods created inside its `--days` window. 15,838 of the 17,365 sitemap mods were
-  never submitted (#550, E411). When you add a windowed job, ask where the older rows are covered.
-  Backfill them as a hash-split holdout (`sha256('E411:'+id)`), and run the gate on an A/A split
-  of the pre-period first. E411's DiD gate read KILL (rel −6.9%) with no treatment, so that is the
-  noise floor a real result has to clear.
-- **The revenue breaker's auto-rollback has been unarmed since at least 10-30.** In-window deploys
-  exceeded `ROLLBACK_BOUNDS.maxInWindowDeploys` (24) on all 12 guardrail files from 10-30 to 11-15,
-  with counts of 34–128. It is not a busy-day effect (11-13). It is the steady state, so rule 2's
-  auto-rollback is paper. A red day is a manual Tier 1 rollback, read on the Mediavine side
-  first, until Ops changes the bound (Tier 2).
-- **Fixed:** `deploy-verify.sh` no longer writes the ledger row into a per-agent worktree, and it
-  removes a landed incident file there (#548, E420, test `deploy-verify-agent-tree-clean`). #546
-  merged and #500/#513 are closed. **Still open:** watch PR #557 is already unmerged (the
-  launcher still never merges them), the `vercel.json` slash-twin
-  guard test, the `monetization-agent` cron slash (Tier 2), and the missing #498 ledger row. Six
-  days of `quinn-pending-*.md` edits to `.claude/agents/` are off `main` because headless runs
-  cannot write there (Q43). One interactive session must apply them.
-
+- **Never name a gtag event parameter `source`, `medium` or `campaign`.** gtag.js reads them as
+  the session's traffic source. Every capture event sent its surface as `source`, so the first
+  `newsletter_form_view` restarted a Pinterest/Google visit as `home-hero / (not set)`. That made
+  ≈1,265 sessions/wk Unassigned. GA4 now reads ≈1.4% lower, a measurement fix, not lost traffic
+  (#560, E426). Use `content_type`; `ga4-no-traffic-source-params.test.ts` scans every call.
+- **"Already red on `main`" is a finding, not a footnote.** #560 listed four unrelated red tests.
+  One was this file at 60,067 B, which the 11-15 compound commit itself had pushed over budget.
+  Run `funnel-context-budget.test.ts` before committing here. It fails above 60,000 B.
+- **A check that times out on a working page teaches agents to ignore INCONCLUSIVE.** `/go/[id]`
+  took 944 s in smoke-render against a 600 s deploy-verify limit, so 3 of 8 merges needed a hand
+  verify. Separately, `vercel inspect` hung ≈17 min with stdin left open, so give it `</dev/null`.
+  Fix the probe, not the grade.
+- **Overlapping experiments must assert disjoint arms in a test.** E429 rewrites only the first
+  `<head>` `<title>` at the proxy and leaves `og:title` alone, because Pinterest pin titles are
+  frozen under SD-10. Its test recomputes the salted arms and fails if they overlap E412 or E311
+  (#564).
+- **The 11-15 rollback-bound finding is now quantified.** 45 of 63 in-window deploys were
+  paper-only (51.8–72.6% on the last 20 files). Counting only build-relevant deploys would arm the
+  bound again (18 ≤ 24). The guardrail prints the split (#559), but the arming change is Tier 2
+  (Q50). Until then a red day still means a manual rollback.
+- **A digest saying something was "applied" does not put it on `main`.** The 11-17 digest closes
+  Q43 ("Clerk applied the pending files"), but `origin/main` has no `.claude/agents/` commit since
+  #546, and E413/E420 are absent from `experiments.md`. **Still open:** Q43, the unmerged watch
+  PRs #557 and #566, the `vercel.json` slash-twin guard test, the `monetization-agent` cron slash
+  (Tier 2), and the missing #498 ledger row.
 ---
 
-*Last compound review: 2026-11-16 (no merges since the 11-15 review; morning check PASS, 5xx = 0)*
+*Last compound review: 2026-11-17 (8 merges #558–#565, 0 rollbacks, 5xx = 0)*
 
 ---
 

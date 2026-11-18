@@ -3447,6 +3447,40 @@ morning-check row reached `main`.
   blocks `git checkout`, the `vercel.json` slash-twin guard test, the `monetization-agent` cron
   slash (Tier 2), and the missing #498 ledger row.
 
+### 2026-11-15 — rotated from CLAUDE.md
+
+10 merges, 3 production DB applies, 1 IndexNow push, 0 rollbacks, 5xx = 0 on every verify.
+
+- **Never classify by substring on a short token.** The scoreboard tested
+  `medium.includes('ai')`, and `email` contains `ai`, so every newsletter session was counted as
+  AI referral and the table never had an email row. Yahoo country front doors, `cn.bing.com` and
+  `ntp.msn.com` (≈3,700/28d) landed in "other" because only `medium=organic` counted as
+  search (#554, E409). Match whole tokens or exact hosts, in a tested pure lib
+  (`scripts/agents/scoreboard-channel-lib.ts`).
+- **Title-only is for *inclusion*. A safety *exclusion* reads every field.** Title-only tagging keeps
+  wrong mods out of a facet. It also kept "Teen Romance Mod" and Wonderful Whims SFW, and the first
+  of these became the gameplay hub's homepage cover (#552, E418/E419). Judge `isNSFW` from the
+  row's full text, and pin each ruling by id with a frozen rollback file. A false SFW is a policy
+  breach. A false NSFW only hides one mod.
+- **An incremental job never backfills what existed before its first run.** The daily IndexNow
+  push sends only mods created inside its `--days` window. 15,838 of the 17,365 sitemap mods were
+  never submitted (#550, E411). When you add a windowed job, ask where the older rows are covered.
+  Backfill them as a hash-split holdout (`sha256('E411:'+id)`), and run the gate on an A/A split
+  of the pre-period first. E411's DiD gate read KILL (rel −6.9%) with no treatment, so that is the
+  noise floor a real result has to clear.
+- **The revenue breaker's auto-rollback has been unarmed since at least 10-30.** In-window deploys
+  exceeded `ROLLBACK_BOUNDS.maxInWindowDeploys` (24) on all 12 guardrail files from 10-30 to 11-15,
+  with counts of 34–128. It is not a busy-day effect (11-13). It is the steady state, so rule 2's
+  auto-rollback is paper. A red day is a manual Tier 1 rollback, read on the Mediavine side
+  first, until Ops changes the bound (Tier 2).
+- **Fixed:** `deploy-verify.sh` no longer writes the ledger row into a per-agent worktree, and it
+  removes a landed incident file there (#548, E420, test `deploy-verify-agent-tree-clean`). #546
+  merged and #500/#513 are closed. **Still open:** watch PR #557 is already unmerged (the
+  launcher still never merges them), the `vercel.json` slash-twin
+  guard test, the `monetization-agent` cron slash (Tier 2), and the missing #498 ledger row. Six
+  days of `quinn-pending-*.md` edits to `.claude/agents/` are off `main` because headless runs
+  cannot write there (Q43). One interactive session must apply them.
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*
