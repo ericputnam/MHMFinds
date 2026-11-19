@@ -18,6 +18,7 @@ import { getCreatorPageData, creatorHref, type CreatorPageData } from '../../../
 import { movedCreatorSlug } from '../../../lib/creatorSlug';
 import { getRelatedCreators } from '../../../lib/creatorHubRelated';
 import { creatorHubLinks } from '../../../lib/creatorHubLinks';
+import { creatorOfficialLinks, type CreatorOfficialLink } from '../../../lib/creatorOfficialLinks';
 import { creatorMetaDescription, creatorPageTitle } from '../../../lib/seo/creatorMeta';
 import { shareCard } from '../../../lib/seo/shareCard';
 import { creatorDateModified } from '../../../lib/sitemapLastmod';
@@ -67,8 +68,12 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
   };
 }
 
-function buildJsonLd(data: CreatorPageData) {
+function buildJsonLd(data: CreatorPageData, officialLinks: CreatorOfficialLink[]) {
   const canonical = canonicalFor(data.slug);
+  // E435: the creator's own Patreon / Tumblr / TSR / site, derived from the
+  // page's mods (lib/creatorOfficialLinks.ts). `url` stays the claimed
+  // profile's website; `sameAs` is the catalog-derived set.
+  const sameAs = officialLinks.map((l) => l.href);
   const itemList = {
     '@type': 'ItemList',
     numberOfItems: Math.min(data.mods.length, data.totalMods),
@@ -96,6 +101,7 @@ function buildJsonLd(data: CreatorPageData) {
           '@type': 'Person',
           name: data.displayName,
           ...(data.profile?.website ? { url: data.profile.website } : {}),
+          ...(sameAs.length > 0 ? { sameAs } : {}),
         },
         hasPart: itemList,
       },
@@ -122,11 +128,16 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   // Collection hubs this creator's mods are listed in (E292, Sage): resolved
   // here, in memory, so the links are in the first-paint HTML a crawler reads.
   const hubs = creatorHubLinks(data.mods);
-  const jsonLd = buildJsonLd(data);
+  // Official off-site links (E435, Nova): the creator's own Patreon / Tumblr /
+  // TSR / site from the mods' download and source URLs, in memory, so they
+  // are in the first-paint HTML and in the Person's sameAs. The claimed
+  // profile's website is rendered on its own line, so it is excluded here.
+  const officialLinks = creatorOfficialLinks(data.mods, data.profile?.website);
+  const jsonLd = buildJsonLd(data, officialLinks);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <CreatorPageClient data={data} related={related} hubs={hubs} />
+      <CreatorPageClient data={data} related={related} hubs={hubs} officialLinks={officialLinks} />
     </>
   );
 }
