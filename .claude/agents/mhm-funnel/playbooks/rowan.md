@@ -21,6 +21,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-19 — E438 career-mods hub (T0, PR #571)
+- Tried: `/games/sims-4/career-mods/` (51 cards) on a title-only `career` type (`lib/careerContentTypeRules.ts`, whole word, 6 CC veto words). Retag 45 rows (32 gameplay-mod, 6 decor, 3 workout; ledger 3cb62caa), 2 adult careers flagged NSFW (c8780538), hub grade ELIGIBLE 48/48 read. Demand: legacy article 1,421 landings/28d (almost all Bing); ceiling 1,421 × 10–25% ≈ 140–355 first 28d.
+- Before → after: `career` facet 8 → 51 rows; "Bakery Career" and "Nurse Career" sat in `decor` from a shared post description; page 0 → read 12-03 / 12-17.
+- Verdict: MORE DATA (keep if ≥140 landings/28d and legacy ≥85%).
+- Next time: an existing FACET_VALUES type with <10 rows is a cheap hub — the rows exist under the wrong type, and the keyword rule losing to `gameplay-mod` is the class, not the row. Veto `set` was wrong on all 3 — read the ADD list before adding a veto.
+
 ## 2026-11-04 — E328 Atino00 pins (T0 data; traffic page skipped)
 - Tried: male hair and male body presets as a traffic page. Neither cleared the bar: 73/259 masculine-tagged hair titles say male (28%) with "Bernard Face Mask" at #16, and male body presets has 14 rows. So 7 `--ids` pins on the Atino00 submissions instead; apply 5, no-op 2 (ledger 60887367).
 - Before → after: Atino00 NULL 4 → 0, wrong-type 1 → 0 (a wall portrait in `hair` from "Dark Hair").
@@ -72,16 +78,4 @@ because collection pages are now Rowan's, not Nova's. Full originals in
 - Before → after: 8/8 isNSFW=false and 8/8 in sitemap-mods → 6 true; 0 of 8 in any live collection grid (31 pages curled), but /pregnancy-mods/ copy names MC WooHoo + Wonderful Whims. Cost: the 6 leave sitemap/feeds/`/mods`, ~42 GSC clicks/28d on their pages. Test 10/13 red pre-fix.
 - Verdict: MORE DATA (read 2026-10-20).
 - Next time: the gameplay top 25 opens with Teen Romance and Teen Pregnancy (#1, #2). Sage should rule on those before the hub ships. Do not widen E242 to cover them.
-
-## 2026-10-18
-- Tried: E235 (T0): URL map `/clutter/`→clutter, `/body-preset/`→body-preset (E228's two KNOWN_GAPS, now assertions; 3 of 21 red pre-fix) + 32 `--ids` pins: /sims-4-accessories-cc/ 13, /sims-4-male-shoes-cc/ 12, clutter top-30 7 (6 room sets/big appliances → furniture, 1 keep). Graded E186 KEEP.
-- Before → after: disagree 296/4,891 → 274/4,865; accessories-cc 10/26 → 0, male-shoes 12/34 → 0; clutter 226 → 219, top 30 room sets 6 → 0. Replay: 14 posts / 361 rows change URL category, ingest answer differs on 129, 0 stored rows move (E161: ingest never re-types). Pins E186 80/80, E193 69/69, E228 21/21, E235 32/32.
-- Verdict: MORE DATA (read 2026-10-25).
-- Next time: keep the disagreement FAMILY equal to the old one when a map entry splits, or the headline number moves for no real change (296 held exactly across the map edit).
-
-## 2026-10-17
-- Tried: E228 (T0, PR #325 aed39ae): URL map `/jewelry/`→jewelry and `/farmhouse-cc/`→furniture, a registry guard test (30 collections walked, 2 of 19 cases red pre-fix), 21 `--ids` pins on food-clutter and male-accessories; `catalog-post-disagreement.ts` prints pins-not-yet-at-value and takes `--label`.
-- Before → after: food-clutter 7/15 → 0/8, male-accessories 13/30 → 0/17; catalog mismatches 318/4,911 → 296/4,891; posts >50% wrong 1 → 0; farmhouse-cc 10/17 → 8/17 (map entry only). Map change touches 60 post categories on ingest, 0 DB rows rewritten.
-- Verdict: MORE DATA (read 2026-10-19).
-- Next time: the URL map is the ingest fallback, so measure it against the registry, not only against the disagreement tool. FAMILY agreement hid the jewelry gap (the accessories family contains jewelry).
 
