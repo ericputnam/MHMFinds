@@ -111,6 +111,12 @@ export interface ModRow {
   contentType: string | null;
   downloadCount: number;
   createdAt: Date;
+  /**
+   * The page the row was scraped from. For blog-scraped mods this is the listicle
+   * (`musthavemods.com/sims-4-skincare-cc/`), shared by every mod on that post, so it
+   * is the real "same theme" key (E436). Optional so fakes and older selects still type.
+   */
+  sourceUrl?: string | null;
 }
 
 export interface SavedModRow extends ModRow {
@@ -211,6 +217,46 @@ export function diversifyByContentType<T extends { contentType: string | null }>
 }
 
 /**
+ * One-per-source-post first (Cass, E436, 2026-11-19). `diversifyByContentType` was
+ * not enough: one blog listicle is scraped into 20-30 rows, and its rows carry
+ * *different* (often wrong) content types, so type diversity happily took five of
+ * them. The 11-19 issue-09 dry run had 5 of 6 picks from /sims-4-skincare-cc/
+ * (typed furniture, blush, null, clutter, skin) and issue 08 had 3 of 6 from one
+ * laundry post. The key is `sourceUrl`; a row without one falls back to its
+ * content type, so a source-less input behaves exactly like
+ * `diversifyByContentType`. Pure and order-preserving; tops up from the remainder,
+ * so a single-post fortnight still fills every slot.
+ */
+export function diversifyBySourcePost<T extends { contentType: string | null; sourceUrl?: string | null }>(
+  rows: readonly T[],
+  need: number
+): T[] {
+  if (need <= 0) return [];
+  const seen = new Set<string>();
+  const first: T[] = [];
+  const rest: T[] = [];
+  for (const row of rows) {
+    const key = row.sourceUrl ? `post:${row.sourceUrl}` : `type:${row.contentType ?? ''}`;
+    if (seen.has(key)) {
+      rest.push(row);
+    } else {
+      seen.add(key);
+      first.push(row);
+    }
+  }
+  return first.concat(rest).slice(0, need);
+}
+
+/**
+ * How many recent rows to over-fetch before the image-host filter (E436). Was
+ * `max(need * 5, 25)` = 30: on 11-19 the 30 most-downloaded rows of the 14-day
+ * window held 23 creator-hosted thumbnails and only 7 on an allowed host, all from
+ * two posts, while the window held 226 allowed-host rows from 10 posts. 200 covers
+ * a fortnight (264 rows on 11-19) at a select of eight columns.
+ */
+export const RECENT_CANDIDATE_TAKE = 200;
+
+/**
  * Pick `need` recent mods with an image on an allowed host
  * (`newsletterIssue.ts` throws otherwise — most mod images are hosted on
  * blog.musthavemods.com, but some source hosts (Patreon, TSR, Tumblr CDNs)
@@ -224,10 +270,10 @@ async function pickRecentPosts(db: NewsletterDb, now: Date, need: number): Promi
   const windows = [ISSUE_WINDOW_DAYS, 21, 28];
   for (const days of windows) {
     const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-    const candidates = await db.findRecentMods({ since, take: Math.max(need * 5, 25) });
+    const candidates = await db.findRecentMods({ since, take: Math.max(need * 5, RECENT_CANDIDATE_TAKE) });
     const eligible = candidates.filter((m) => m.thumbnail && isAllowedImageUrl(m.thumbnail));
     if (eligible.length >= Math.min(need, 2)) {
-      return diversifyByContentType(eligible, need).map(toIssuePost);
+      return diversifyBySourcePost(eligible, need).map(toIssuePost);
     }
   }
   throw new Error(
@@ -374,11 +420,23 @@ type PrismaLike = {
   };
 };
 
+/** The only game the issue's "new since the last issue" picks come from (E436). */
+export const NEWSLETTER_GAME = 'Sims 4';
+
 export function createPrismaDataSource(prisma: PrismaLike): NewsletterDb {
   return {
     async findRecentMods({ since, take }) {
       return prisma.mod.findMany({
-        where: { isVerified: true, isNSFW: false, createdAt: { gte: since }, thumbnail: { not: null } },
+        // Sims 4 only (E436): the list signed up for Sims 4 CC, and the 11-19 28-day
+        // window held 55 Minecraft + 10 Stardew rows that a per-post spread would
+        // otherwise reach. A row with no gameVersion is kept (legacy rows).
+        where: {
+          isVerified: true,
+          isNSFW: false,
+          createdAt: { gte: since },
+          thumbnail: { not: null },
+          OR: [{ gameVersion: NEWSLETTER_GAME }, { gameVersion: null }],
+        },
         orderBy: [{ downloadCount: 'desc' }, { createdAt: 'desc' }],
         take,
         select: {
@@ -390,6 +448,7 @@ export function createPrismaDataSource(prisma: PrismaLike): NewsletterDb {
           contentType: true,
           downloadCount: true,
           createdAt: true,
+          sourceUrl: true,
         },
       });
     },
