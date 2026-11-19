@@ -19,6 +19,12 @@ _(ideas you tried that did not work — never re-propose without saying what cha
 
 ---
 
+## 2026-11-19 — E436 issue-09 pick spread + draft (T0)
+- Tried: read the pre-send preview before trusting it. Picks were 5/6 one skincare listicle: the fetch took 30 rows and 23 had creator-hosted thumbs, and the type spread was keyed on contentType, which differs within one post. Now 1 per sourceUrl, fetch 200, Sims 4 only.
+- Before → after: distinct source posts in the 6 picks 2 → 6 (11-19 dry, same DB, same hour); allowed-host pool 7 → 226 rows. Dry: 264 recipients, defers 164.
+- Verdict: PENDING (each dry ≥5 posts; sessions D+7 after issue 09).
+- Next time: a "spread" rule needs a key shared by everything one source produces. Check the pool size after every filter, not before.
+
 ## 2026-11-04 — E334 (PR #451 says E327) sign-up opt-in copy A/B (T0, #451)
 - Tried: checkbox copy split (b names the cadence); kept one waitlist source because a signup-optin-b would have bypassed the E270 scripted exclusion, which keys on source === 'signup-optin'; the cadence guard never scanned this form (it posts to /api/waitlist) and now does.
 - Before → after: 42/100 human-shaped form sign-ups ticked (42.0%, 10-21→11-03); 32/32 scripted-shaped ticked; accounts 14d: 108 Patreon, 129 form, 3 both → read 11-18.

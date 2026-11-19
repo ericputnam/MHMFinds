@@ -33,8 +33,12 @@ vi.mock('@/lib/prisma', () => ({
 import {
   buildWeeklyIssueData,
   computeIssueNumber,
+  createPrismaDataSource,
   diversifyByContentType,
+  diversifyBySourcePost,
   formatDateLabel,
+  NEWSLETTER_GAME,
+  RECENT_CANDIDATE_TAKE,
   ISSUE_WINDOW_DAYS,
   pickCollectionDefinition,
   type ModRow,
@@ -273,6 +277,79 @@ describe('buildWeeklyIssueData', () => {
     const mono = [1, 2, 3].map((n) => mod({ id: `h${n}`, contentType: 'hair' }));
     expect(diversifyByContentType(mono, 6).map((m) => m.id)).toEqual(['h1', 'h2', 'h3']);
     expect(diverse.map((m) => m.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('spreads the picks across source posts, not just content types (E436)', async () => {
+    // The 11-19 issue-09 dry run: five rows from one skincare listicle, each typed
+    // differently (furniture, blush, null, clutter, skin), so type diversity took all
+    // five. One per post first, then the remainder in download order.
+    const SKIN = 'https://musthavemods.com/sims-4-skincare-cc/';
+    const rows = [
+      mod({ id: 'skin-1', contentType: 'furniture', sourceUrl: SKIN }),
+      mod({ id: 'skin-2', contentType: 'blush', sourceUrl: SKIN }),
+      mod({ id: 'skin-3', contentType: null, sourceUrl: SKIN }),
+      mod({ id: 'skin-4', contentType: 'clutter', sourceUrl: SKIN }),
+      mod({ id: 'skin-5', contentType: 'skin', sourceUrl: SKIN }),
+      mod({ id: 'chand-1', contentType: 'lighting', sourceUrl: 'https://musthavemods.com/sims-4-chandelier-cc/' }),
+      mod({ id: 'heels-1', contentType: 'shoes', sourceUrl: 'https://musthavemods.com/sims-4-kitten-heels-cc/' }),
+      mod({ id: 'perf-1', contentType: 'clutter', sourceUrl: 'https://musthavemods.com/sims-4-perfume-cc/' }),
+      mod({ id: 'curt-1', contentType: 'furniture', sourceUrl: 'https://musthavemods.com/sims-4-curtains-cc/' }),
+    ];
+    const issue = await buildWeeklyIssueData(fakeDb({ async findRecentMods() { return rows; } }), {
+      now: new Date('2026-11-19T12:00:00Z'),
+    });
+    const ids = issue.posts.map((p) => p.url.match(/\/mods\/([^/]+)\//)?.[1]);
+    expect(ids).toEqual(['skin-1', 'chand-1', 'heels-1', 'perf-1', 'curt-1', 'skin-2']);
+    expect(ids.filter((id) => id?.startsWith('skin-')).length).toBeLessThanOrEqual(2);
+  });
+
+  it('diversifyBySourcePost is pure, fills every slot, and equals the type spread when no row has a source', () => {
+    const one = [1, 2, 3].map((n) => mod({ id: `p${n}`, sourceUrl: 'https://musthavemods.com/x/' }));
+    expect(diversifyBySourcePost(one, 6).map((m) => m.id)).toEqual(['p1', 'p2', 'p3']);
+    expect(diversifyBySourcePost(one, 0)).toEqual([]);
+    const sourceless = [
+      ...[1, 2, 3].map((n) => mod({ id: `hair-${n}`, contentType: 'hair' })),
+      mod({ id: 'furn-1', contentType: 'furniture' }),
+      mod({ id: 'untyped-1', contentType: null }),
+    ];
+    expect(diversifyBySourcePost(sourceless, 4).map((m) => m.id)).toEqual(
+      diversifyByContentType(sourceless, 4).map((m) => m.id)
+    );
+    expect(sourceless.map((m) => m.id)).toEqual(['hair-1', 'hair-2', 'hair-3', 'furn-1', 'untyped-1']);
+  });
+
+  it('over-fetches enough rows that creator-hosted thumbnails cannot starve the pool (E436)', async () => {
+    const takes: number[] = [];
+    await buildWeeklyIssueData(
+      fakeDb({
+        async findRecentMods({ take }) {
+          takes.push(take);
+          return [mod({ id: 'a' }), mod({ id: 'b' })];
+        },
+      }),
+      { now: new Date('2026-11-19T12:00:00Z') }
+    );
+    expect(RECENT_CANDIDATE_TAKE).toBeGreaterThanOrEqual(200);
+    expect(takes[0]).toBeGreaterThanOrEqual(RECENT_CANDIDATE_TAKE);
+  });
+
+  it('the Prisma adapter asks for Sims 4 (or untagged) rows and selects sourceUrl (E436)', async () => {
+    const calls: any[] = [];
+    const client = {
+      mod: {
+        findMany: async (args: any) => {
+          calls.push(args);
+          return [];
+        },
+        count: async () => 0,
+      },
+      favorite: { groupBy: async () => [] },
+    };
+    await createPrismaDataSource(client as any).findRecentMods({ since: new Date('2026-11-05T00:00:00Z'), take: 200 });
+    expect(NEWSLETTER_GAME).toBe('Sims 4');
+    expect(calls[0].where.OR).toEqual([{ gameVersion: 'Sims 4' }, { gameVersion: null }]);
+    expect(calls[0].select.sourceUrl).toBe(true);
+    expect(calls[0].take).toBe(200);
   });
 
   it('throws rather than sending a hollow issue when no window has enough eligible mods', async () => {
