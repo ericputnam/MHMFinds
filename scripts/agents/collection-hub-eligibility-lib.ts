@@ -52,6 +52,16 @@ export const GAMEPLAY_ADULT_WATCHLIST: ReadonlyArray<{ id: string; label: string
   { id: 'cmijj4iqq003roxs3l45il7cz', label: 'Teen Romance' },
   { id: 'cmmvase5900e1oxzgw4y6q5h6', label: 'Teen/Adult Romance' },
   { id: 'cmik9snkb00a4oxk72fxpft4e', label: 'Sleeping Anim (WW)' },
+  // E438 (Rowan, 2026-11-19): two careers from /sims-4-custom-active-careers/
+  // whose titles carry no adult word, both flagged NSFW (rollback file
+  // reports/funnel/triage/e438-rollback.json). "Part-Time Active Career
+  // at Adult Company" (RedAppleNet; its own description: "an adult career mod
+  // … VERY SPICY"). "Active Honey Trapper Career": the job is seducing an
+  // assigned target who is "in a relationship or married" ("pretty SPICY" in
+  // its own words) — adult-themed by its premise, not a base-game WooHoo
+  // tweak, so the E419 SFW ruling for those does not cover it.
+  { id: 'cmim9kaf60041oxy7kp0oberp', label: 'Adult Company career' },
+  { id: 'cmim9kahb0042oxy702pv7xtv', label: 'Honey Trapper career' },
 ];
 
 /**

@@ -1394,7 +1394,9 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // are the second-largest slice of that page; hair-cc keeps 6 inbound).
     // 2026-11-13 (E404): 'furniture-cc' → 'nursery-cc' (furniture-cc keeps
     // 6 inbound; the nursery is the kids page's missing room).
-    related: ['bedroom-cc', 'pregnancy-mods', 'nursery-cc'],
+    // E438 (2026-11-19): bedroom-cc → career-mods (teen career packs live
+    // there; bedroom-cc keeps 3 other inbound links).
+    related: ['career-mods', 'pregnancy-mods', 'nursery-cc'],
     // Differentiated pair: the legacy listicle keeps the editorial "best kids
     // cc" intent, this page owns browse/filter intent. /sims-4-kids-cc/ is
     // live (HTTP 200, no redirect, verified 2026-09-21) and appears in neither
@@ -2233,6 +2235,58 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     ],
   },
   {
+    // Rowan, 2026-11-19 (E438, Tier 0 — registry entry in the existing
+    // pattern). Sits BEFORE gameplay-mods on purpose: both score specificity
+    // 0 for a career row, registry order breaks the tie, so every SFW career
+    // /mods/[id] page takes this breadcrumb and gameplay-mods is its second
+    // link. Demand: the legacy listicle /sims-4-career-mods/ landed 1,421
+    // organic + AI + referral sessions in 28d (GA4 10-22→11-18; 1,020 organic
+    // search 10-30→11-18, almost all Bing — Google GSC 28d gives it 4 clicks /
+    // 85 impressions at pos 43) and had no browse hub; the gameplay-mods hub
+    // links it as a guide but files careers among 500 other mods. Ceiling,
+    // from first-28d hub capture of its legacy article (christmas-cc 26%,
+    // piercings 12%, wedding 8%, plumbob 4.5%): 1,421 × 10–25% ≈ 140–355
+    // sessions in the first 28d; mature hubs hold 30–60% (skin-details 61%,
+    // loading-screens 55%). Facet fixed first: `career` held 8 rows while 45
+    // career-titled rows sat in gameplay-mod (32), decor (6), workout (3),
+    // furniture, clutter, script-mod and NULL — description inference from
+    // bakery / gym posts. Title-only rule in lib/careerContentTypeRules.ts
+    // (56 title hits, 53 accepted, 3 CC rows vetoed: a police uniform, DNA
+    // earrings, a police-department lot); applied 2026-11-19 (45 rows,
+    // rollback reports/funnel/career-retag-2026-11-19.csv). Two adult careers
+    // from /sims-4-custom-active-careers/ flagged NSFW
+    // (reports/funnel/triage/e438-rollback.json). Grade after:
+    // collection-hub-eligibility --content-type=career --family=gameplay
+    // --watchlist=gameplay --top=48 → ELIGIBLE (51 SFW rows, 0 adult, 0
+    // off-type in the top 48; all 48 read by hand).
+    // Inbound: gameplay-mods + kids-cc `related`, the career breadcrumb.
+    slug: 'career-mods',
+    game: 'Sims 4',
+    gameSlug: 'sims-4',
+    title: 'Career Mods',
+    heading: 'Sims 4 Career Mods',
+    metaTitle: 'Sims 4 Career Mod Finder — Browse 50+ Custom & Active Careers | MustHaveMods',
+    metaDescription:
+      'Browse 50+ Sims 4 career mods in one grid: active careers, teen job packs, career megapacks and career overhauls, sorted by downloads and linked to the creator.',
+    tagline: 'Active careers, teen jobs, megapacks and career overhauls',
+    intro:
+      'The base game ships with a short list of careers and most of them are rabbit holes. Career mods fix both problems: they add new jobs, and the active ones let you follow your sim to work and play the shift. This page is every career mod in our catalog in one grid, sorted by how often people download it.\n\nThere are 51 here and all 51 are free. The most downloaded are the big ones: the OBGYN active career, the Model career, the Turbo Careers pack that turns base-game rabbit holes into active workplaces, and the Midnitetech career megapack. Below those you get single careers such as Stylist, Military, Plastic Surgeon, Dentist, Real Estate, Psychologist and a Naruto ninja career, active careers like the Freelance Chef, Doggy Daycare, Lifeguard and Dog Groomer, several police careers, and a shelf of teen job packs that give teenagers camp counselor, lifeguard and newspaper jobs instead of adult careers. A few mods change the career system itself: Career Overhaul, Career Day Overhaul and the Career Aptitude Test, plus a work-from-home tweak for the base-game careers. Creators here include adeepindigo, ItsKatato, MarlynSims, asiashamecca, MesmericSimmer and ilkavelle.\n\nWhat is not here: career-themed clothing, uniforms and lots have their own pages, and adult careers are filtered out. Trait mods, aspirations and the rest of the gameplay shelf are on the gameplay mods page.\n\nOne practical note. Custom careers depend on the game version and on each other less than script mods do, but a career pack and a career overhaul that both edit the same base-game career will fight. Check the creator\'s page for the current version before you install.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+    filter: { contentType: 'career' },
+    // Counted on prod 2026-11-19 with the page's own where (gameVersion +
+    // !isNSFW) after the retag and the two NSFW flags: 51, 51 free.
+    expectedCount: 51,
+    related: ['gameplay-mods', 'pregnancy-mods', 'kids-cc'],
+    // Differentiated pair: the legacy listicle keeps the editorial "best
+    // career mods" intent; this page owns browse intent. All URLs below are
+    // live (HTTP 200, verified 2026-11-19) and none is in vercel.json.
+    blogUrl: '/sims-4-career-mods/',
+    guides: [
+      { href: '/sims-4-custom-active-careers/', label: 'Sims 4 custom active careers' },
+      { href: '/sims-4-teen-jobs/', label: 'Sims 4 teen jobs and careers' },
+      { href: '/sims-4-school-mods/', label: 'Sims 4 school mods' },
+    ],
+  },
+  {
     // Rowan, 2026-11-15 (E418/E419, Tier 0 — registry entry in the existing
     // pattern). The gameplay hub Sage rejected on 11-13 (houses-lots comment
     // above), shipped now that its pre-committed grade passes.
@@ -2260,8 +2314,10 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
     // Pregnancy and Drama" (now #1) stays SFW — family-reaction storylines,
     // no explicit content or Wicked Whims dependency in its text — and so do
     // the ~20 mods that only tweak base-game WooHoo (queued for the operator).
-    // Inbound: pregnancy-mods and houses-lots `related`, plus the primary
-    // breadcrumb of every SFW gameplay/script/career /mods/[id] page.
+    // Inbound: pregnancy-mods, houses-lots and career-mods `related`, plus the
+    // primary breadcrumb of every SFW gameplay/script /mods/[id] page (career
+    // rows take the career-mods breadcrumb since E438; this page is their
+    // second link).
     slug: 'gameplay-mods',
     game: 'Sims 4',
     gameSlug: 'sims-4',
@@ -2272,12 +2328,14 @@ export const SIMS4_COLLECTIONS: CollectionDefinition[] = [
       'Browse 500+ Sims 4 gameplay mods in one grid: life and pregnancy overhauls, teen and school mods, traits, careers, lot traits and script mods, sorted by downloads.',
     tagline: 'Life overhauls, traits, careers, teen mods and script mods',
     intro:
-      'Custom content changes what your sims look like. Gameplay mods change what they do, and that is usually the reason a save gets interesting again after a few hundred hours. This page is every gameplay mod in our catalog in one grid, sorted by how often people download it.\n\nThere are 511 here, and 502 of them are free. 467 are gameplay mods, 36 are script mods and 8 are careers, though many more active careers are filed as gameplay mods. The most downloaded are the life-sim overhauls: teen life and teen pregnancy mods, realistic pregnancy and childbirth, mental health and healthcare, and relationship mods built around exes, cheating and love triangles. Below those you get dozens of trait mods, school and preschool mods, lot traits, cooking and grocery mods, and the utility mods most players install first, such as MC Command Center and UI Cheats Extension. Creators with long shelves here include KiaraSims4Mods, LittleMsSam, Lumpinou, PolarBearSims, Ravasheen and TwistedMexi.\n\nWhat is not here: CC, lots and builds have their own pages, and adult mods are filtered out. That includes any mod that needs an adult mod to work and any mod that pairs teens with adults romantically, even when the title sounds innocent. We read those mods\' own descriptions rather than trusting the name.\n\nTwo practical notes. Script mods break after most game patches, so check the creator\'s page for a version that matches your game before you install. And never run two mods that change the same system, such as two pregnancy overhauls, in one save.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
+      'Custom content changes what your sims look like. Gameplay mods change what they do, and that is usually the reason a save gets interesting again after a few hundred hours. This page is every gameplay mod in our catalog in one grid, sorted by how often people download it.\n\nThere are 521 here, and 520 of them are free. 435 are gameplay mods, 35 are script mods and 51 are careers, which also have their own page. The most downloaded are the life-sim overhauls: teen life and teen pregnancy mods, realistic pregnancy and childbirth, mental health and healthcare, and relationship mods built around exes, cheating and love triangles. Below those you get dozens of trait mods, school and preschool mods, lot traits, cooking and grocery mods, and the utility mods most players install first, such as MC Command Center and UI Cheats Extension. Creators with long shelves here include KiaraSims4Mods, LittleMsSam, Lumpinou, PolarBearSims, Ravasheen and TwistedMexi.\n\nWhat is not here: CC, lots and builds have their own pages, and adult mods are filtered out. That includes any mod that needs an adult mod to work and any mod that pairs teens with adults romantically, even when the title sounds innocent. We read those mods\' own descriptions rather than trusting the name.\n\nTwo practical notes. Script mods break after most game patches, so check the creator\'s page for a version that matches your game before you install. And never run two mods that change the same system, such as two pregnancy overhauls, in one save.\n\nEverything in this grid is Sims 4 only, filtered to SFW, and linked to the creator\'s own download page.',
     filter: { contentTypeIn: ['gameplay-mod', 'script-mod', 'career'] },
-    // Counted on prod 2026-11-15 with the page's own where (gameVersion +
-    // !isNSFW), after the E418 + E419 applies: 467 + 36 + 8 = 511, 502 free.
-    expectedCount: 511,
-    related: ['pregnancy-mods', 'houses-lots', 'kids-cc'],
+    // Counted on prod 2026-11-19 with the page's own where (gameVersion +
+    // !isNSFW), after the E438 career retag (45 rows → career, 12 of them
+    // from outside this family) and two NSFW flags: 435 + 35 + 51 = 521,
+    // 520 free. (2026-11-15, pre-E438: 467 + 36 + 8 = 511.)
+    expectedCount: 521,
+    related: ['pregnancy-mods', 'houses-lots', 'career-mods'],
     // Differentiated pair: the legacy listicle keeps the editorial "best
     // gameplay mods" intent (936 organic + 609 social landings 28d); this page
     // owns browse intent. All URLs below are live (HTTP 200, verified
