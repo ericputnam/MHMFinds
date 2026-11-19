@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { applyGuideTitleOverride } from '@/lib/seo/guideTitleOverrides';
+import { applyGuideCollectionCrosslink } from '@/lib/seo/guideCollectionCrosslinks';
 
 // Known Next.js app route prefixes — these are NOT WordPress routes.
 // Any request whose first path segment matches one of these goes to Next.js.
@@ -244,6 +245,12 @@ async function proxyAndRewriteWordPress(
     // randomized guide-title test; a no-op for every other path and once the
     // writer changes the WordPress title. See lib/seo/guideTitleOverrides.ts.
     rewritten = applyGuideTitleOverride(pathname, rewritten);
+    // E433 (Sage, 2026-11-19): "Browse the full Sims 4 <topic> collection" box
+    // at the end of the entry content on the 95 guides the collection registry
+    // names as companions and functions.php does not already cover. A no-op
+    // for every other path and when the box is already present. Ad anchors are
+    // outside .entry-content and untouched. See lib/seo/guideCollectionCrosslinks.ts.
+    rewritten = applyGuideCollectionCrosslink(pathname, rewritten);
     // The /blog/ landing proxies WP's /homepage/ page, whose canonical and
     // og:url point at /homepage/ — a URL that 301s to /. Point them at
     // /blog/, the URL actually being served, so the page self-canonicalizes.
