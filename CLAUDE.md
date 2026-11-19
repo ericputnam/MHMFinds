@@ -929,41 +929,25 @@ run died with `Prompt is too long`.
 ### 2026-10-15 → 11-13 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15, 11-15 on 2026-11-17.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15, 11-15 on 2026-11-17, 11-17 on 2026-11-18.
 
-### 2026-11-17 (8 funnel merges #558–#565; 11-16 had none)
+### 2026-11-18 (off day: 0 merges; morning check PASS, breaker green)
 
-8 merges, 4 production DB/external applies (living-room retag 1,365 rows, 1 NSFW pin, 2 IndexNow
-pushes), 0 rollbacks, 5xx = 0 on every verify.
-
-- **Never name a gtag event parameter `source`, `medium` or `campaign`.** gtag.js reads them as
-  the session's traffic source. Every capture event sent its surface as `source`, so the first
-  `newsletter_form_view` restarted a Pinterest/Google visit as `home-hero / (not set)`. That made
-  ≈1,265 sessions/wk Unassigned. GA4 now reads ≈1.4% lower, a measurement fix, not lost traffic
-  (#560, E426). Use `content_type`; `ga4-no-traffic-source-params.test.ts` scans every call.
-- **"Already red on `main`" is a finding, not a footnote.** #560 listed four unrelated red tests.
-  One was this file at 60,067 B, which the 11-15 compound commit itself had pushed over budget.
-  Run `funnel-context-budget.test.ts` before committing here. It fails above 60,000 B.
-- **A check that times out on a working page teaches agents to ignore INCONCLUSIVE.** `/go/[id]`
-  took 944 s in smoke-render against a 600 s deploy-verify limit, so 3 of 8 merges needed a hand
-  verify. Separately, `vercel inspect` hung ≈17 min with stdin left open, so give it `</dev/null`.
-  Fix the probe, not the grade.
-- **Overlapping experiments must assert disjoint arms in a test.** E429 rewrites only the first
-  `<head>` `<title>` at the proxy and leaves `og:title` alone, because Pinterest pin titles are
-  frozen under SD-10. Its test recomputes the salted arms and fails if they overlap E412 or E311
-  (#564).
-- **The 11-15 rollback-bound finding is now quantified.** 45 of 63 in-window deploys were
-  paper-only (51.8–72.6% on the last 20 files). Counting only build-relevant deploys would arm the
-  bound again (18 ≤ 24). The guardrail prints the split (#559), but the arming change is Tier 2
-  (Q50). Until then a red day still means a manual rollback.
-- **A digest saying something was "applied" does not put it on `main`.** The 11-17 digest closes
-  Q43 ("Clerk applied the pending files"), but `origin/main` has no `.claude/agents/` commit since
-  #546, and E413/E420 are absent from `experiments.md`. **Still open:** Q43, the unmerged watch
-  PRs #557 and #566, the `vercel.json` slash-twin guard test, the `monetization-agent` cron slash
-  (Tier 2), and the missing #498 ledger row.
+- **No off day since the cadence began has put anything on `main`.** The `mhm-funnel-daily`
+  task says off days "land a guard-only digest". Its off-day command relies on a
+  `# >>> off-day` block that exists in no runner on any branch. The env falls through to
+  `FUNNEL_DRY_RUN=1`, the runner stops after the breaker (`run-funnel-daily.sh:504`), and the
+  scoreboard survives only as an untracked file in the operator's tree. `origin/main` has no
+  digest or scoreboard for 11-08, 10, 12, 14, 16 or 18. The guard itself ran (ledger row
+  `check: morning-check` PASS). **A task description is a claim about the code. Grep for the
+  block it names before you trust it.** Fixing it is Ops work: add the block, or have the
+  off-day path call `ledger-commit.sh` for the scoreboard.
+- **Still open (from 11-17):** Q43 (`.claude/agents/` edits off `main`), the unmerged watch PRs
+  #557 and #566, the `vercel.json` slash-twin guard test, the `monetization-agent` cron slash
+  (Tier 2), the missing #498 ledger row, and the Q50 rollback-bound arming change (Tier 2).
 ---
 
-*Last compound review: 2026-11-17 (8 merges #558–#565, 0 rollbacks, 5xx = 0)*
+*Last compound review: 2026-11-18 (off day, 0 merges, morning check PASS)*
 
 ---
 
