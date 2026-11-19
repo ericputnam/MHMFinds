@@ -704,3 +704,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-17 08:39 | after-merge | Sage: PR #565 E430 sitemap template lastmods | 7cfcf67 | https://mhm-finds-dw5l-7e2it1vdn-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
 | 2026-11-17 08:48 | external-apply | Sage: E430 IndexNow push of every /creator/ page (PR #565) | 7cfcf67 | api.indexnow.org | OK http=200 | `indexnow-submit.ts --apply --no-collections --days 1 --creators`: 777 URLs (748 /creator/ = every loc in sitemap-creators.xml, all lastmod ≥ 2026-11-15 after the deploy; 29 mods ≤1d), dropped 0; dry run first; read 2026-12-01 |
 | 2026-11-18 06:37 | check | morning-check |  | https://mhm-finds-dw5l-meqky4pbd-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
+| 2026-11-19 06:35 | check | morning-check |  | https://mhm-finds-dw5l-gqqyf5ja2-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
