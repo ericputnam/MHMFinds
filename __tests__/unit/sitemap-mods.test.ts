@@ -5,6 +5,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { mockPrismaClient, resetPrismaMocks } from '../setup/mocks/prisma';
 import { modLastmod } from '@/lib/seo/modLastmod';
+import { SITEMAP_MODS_PAGE_SIZE } from '@/lib/seo/sitemapMods';
 import { ModJsonLd } from '@/components/ModJsonLd';
 import type { Mod } from '@/lib/api';
 
@@ -32,6 +33,10 @@ const stripComments = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').repl
 const fakeMods = [
   {
     id: 'mod-alpha',
+    // E431: the thumbnail is the page's og:image and becomes <image:loc>;
+    // the title carries the two characters that must be escaped in XML.
+    title: 'Alpha Hair <v2> & More',
+    thumbnail: 'https://blog.musthavemods.com/wp-content/uploads/2026/03/alpha.jpg?w=800&h=600',
     createdAt: new Date('2026-03-01T12:34:56.000Z'),
     lastScraped: null,
     publishedAt: null,
@@ -39,6 +44,9 @@ const fakeMods = [
   },
   {
     id: 'mod-beta',
+    title: 'Beta Poses',
+    // Not an absolute http(s) URL → no <image:image> for this entry.
+    thumbnail: '/images/beta.png',
     createdAt: new Date('2026-02-15T00:00:00.000Z'),
     // Re-scraped after creation → the scrape date is the honest lastmod.
     lastScraped: new Date('2026-02-20T09:00:00.000Z'),
@@ -48,6 +56,8 @@ const fakeMods = [
   },
   {
     id: 'mod-gamma',
+    title: 'Gamma Kitchen',
+    thumbnail: null,
     createdAt: new Date('2026-01-20T09:00:00.000Z'),
     // A scrape timestamp older than creation (backfilled row) never moves lastmod backwards.
     lastScraped: new Date('2025-12-01T00:00:00.000Z'),
@@ -56,6 +66,8 @@ const fakeMods = [
   },
   {
     id: 'mod-delta',
+    title: 'Delta Build Set',
+    thumbnail: 'https://images.surferseo.art/delta.webp',
     createdAt: new Date('2025-11-30T21:42:15.000Z'),
     lastScraped: null,
     // The E196 shape: 7,076 live rows got a publishedAt later than createdAt
@@ -126,7 +138,8 @@ describe('GET /sitemap-mods.xml', () => {
     const body = await (await GET()).text();
 
     expect(body.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-    expect(body).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+    // The urlset also declares xmlns:image since E431, so match the prefix only.
+    expect(body).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
     const urlMatches = body.match(/<url>/g) ?? [];
     expect(urlMatches.length).toBe(fakeMods.length);
 
@@ -179,8 +192,79 @@ describe('GET /sitemap-mods.xml', () => {
     expect(args.where).toMatchObject({ isNSFW: false, isVerified: true });
     // Every input modLastmod() reads must be selected, or the floor is silently a no-op.
     expect(args.select).toMatchObject({ id: true, createdAt: true, lastScraped: true, publishedAt: true });
+    // E431: the image child needs the thumbnail and the title.
+    expect(args.select).toMatchObject({ thumbnail: true, title: true });
     expect(args.select).not.toHaveProperty('updatedAt');
-    expect(args.orderBy).toMatchObject({ createdAt: 'desc' });
+    // Newest first, with a total order so skip/take paging is stable.
+    expect(args.orderBy).toEqual([{ createdAt: 'desc' }, { id: 'asc' }]);
+    expect(args.skip).toBe(0);
+    expect(args.take).toBe(SITEMAP_MODS_PAGE_SIZE);
+  });
+
+  // E431: one Accelerate response is capped at 5 MB and the six-column select
+  // for the live catalog is 5.6 MB (`next build` failed with P6009 on the
+  // first attempt), so the route pages. A full page means "ask again".
+  it('pages through the catalog until a short page and emits every row once', async () => {
+    const pageSize = SITEMAP_MODS_PAGE_SIZE;
+    const row = (n: number) => ({
+      id: `mod-${String(n).padStart(5, '0')}`,
+      title: `Mod ${n}`,
+      thumbnail: `https://blog.musthavemods.com/u/${n}.jpg`,
+      createdAt: new Date('2026-03-01T00:00:00.000Z'),
+      lastScraped: null,
+      publishedAt: null,
+    });
+    const full = Array.from({ length: pageSize }, (_, i) => row(i));
+    const tail = Array.from({ length: 3 }, (_, i) => row(pageSize + i));
+    mockPrismaClient.mod.findMany.mockResolvedValueOnce(full).mockResolvedValueOnce(tail);
+    const { GET } = await import('@/app/sitemap-mods.xml/route');
+
+    const body = await (await GET()).text();
+
+    expect(mockPrismaClient.mod.findMany).toHaveBeenCalledTimes(2);
+    const calls = mockPrismaClient.mod.findMany.mock.calls.map((c) => c[0]);
+    expect(calls.map((c) => c.skip)).toEqual([0, pageSize]);
+    expect(calls.every((c) => c.take === pageSize)).toBe(true);
+    expect((body.match(/<url>/g) ?? []).length).toBe(pageSize + 3);
+    expect((body.match(/<image:image>/g) ?? []).length).toBe(pageSize + 3);
+    expect(body).toContain(`<loc>https://musthavemods.com/mods/mod-${String(pageSize + 2).padStart(5, '0')}/</loc>`);
+    // Each page must stay well inside the 5 MB cap at ~320 B a row.
+    expect(pageSize * 320).toBeLessThan(2 * 1024 * 1024);
+  });
+
+  // E431 (2026-11-19). Pre-fix origin/main fails every assertion in this
+  // block: the urlset had no image namespace and no <image:image> child.
+  it('carries each absolute-URL thumbnail as an <image:image> child with an escaped title (E431)', async () => {
+    mockPrismaClient.mod.findMany.mockResolvedValue(fakeMods);
+    const { GET } = await import('@/app/sitemap-mods.xml/route');
+
+    const body = await (await GET()).text();
+
+    expect(body).toContain('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+    // alpha and delta have absolute http(s) thumbnails; beta (relative) and gamma (null) do not.
+    expect((body.match(/<image:image>/g) ?? []).length).toBe(2);
+
+    const alpha = body.match(/<loc>[^<]*\/mods\/mod-alpha\/<\/loc>[\s\S]*?<\/url>/)?.[0] ?? '';
+    expect(alpha).toContain(
+      '<image:loc>https://blog.musthavemods.com/wp-content/uploads/2026/03/alpha.jpg?w=800&amp;h=600</image:loc>',
+    );
+    expect(alpha).toContain('<image:title>Alpha Hair &lt;v2&gt; &amp; More</image:title>');
+    // Raw `&` or `<` inside the image block would make the whole file unparsable.
+    expect(alpha).not.toMatch(/<image:(loc|title)>[^<]*&(?!amp;|lt;|gt;|quot;|apos;)/);
+
+    const delta = body.match(/<loc>[^<]*\/mods\/mod-delta\/<\/loc>[\s\S]*?<\/url>/)?.[0] ?? '';
+    expect(delta).toContain('<image:loc>https://images.surferseo.art/delta.webp</image:loc>');
+    expect(delta).toContain('<image:title>Delta Build Set</image:title>');
+
+    const beta = body.match(/<loc>[^<]*\/mods\/mod-beta\/<\/loc>[\s\S]*?<\/url>/)?.[0] ?? '';
+    expect(beta).not.toContain('<image:');
+    const gamma = body.match(/<loc>[^<]*\/mods\/mod-gamma\/<\/loc>[\s\S]*?<\/url>/)?.[0] ?? '';
+    expect(gamma).not.toContain('<image:');
+    // A relative path must never leak into the file as an image location.
+    expect(body).not.toContain('/images/beta.png');
+
+    // The image child must not disturb the per-URL lastmod the E136/E196 tests read.
+    expect(body.match(/<loc>[^<]*\/mods\/mod-alpha\/<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/)?.[1]).toBe('2026-03-01');
   });
 
   it('returns an empty but valid urlset when no mods match', async () => {
@@ -256,6 +340,13 @@ describe('sitemap-mods.xml route source', () => {
     expect(src).toMatch(/from '@\/lib\/seo\/modLastmod'/);
     expect(src).toMatch(/modLastmod\(/);
     expect(src).not.toContain('updatedAt');
+    // The query lives in the paged helper; the route must not grow its own findMany.
+    expect(src).toMatch(/listSitemapMods\(\)/);
+    expect(src).not.toContain('findMany');
+    const lib = stripComments(read('lib/seo/sitemapMods.ts'));
+    expect(lib).not.toContain('updatedAt');
+    expect(lib).toContain('skip');
+    expect(lib).toContain('take: pageSize');
   });
 
   it('keeps the class closed on the collection sitemap too (E37)', () => {

@@ -249,8 +249,9 @@ describe('newModDataFromSubmission (shared with the approve route)', () => {
   it('E322: publishes the mod (isVerified true) so every isVerified:true reader selects it', () => {
     const data = newModDataFromSubmission(sub, { thumbnail: null, images: [] });
     expect(data.isVerified).toBe(true);
-    // The reader filter the flag must satisfy, read from the real sitemap route source.
-    const src = readFileSync(join(process.cwd(), 'app/sitemap-mods.xml/route.ts'), 'utf8')
+    // The reader filter the flag must satisfy, read from the real sitemap query
+    // source (E431 moved it from the route into lib/seo/sitemapMods.ts).
+    const src = readFileSync(join(process.cwd(), 'lib/seo/sitemapMods.ts'), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, ''); // strip comments: assert the code, not its documentation
     expect(src).toMatch(/isVerified:\s*true/);
