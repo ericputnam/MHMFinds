@@ -79,6 +79,57 @@ export const CONTROL_SLOW_MS = 4_000;
  *  article took 23.7 s and still answered 200, so the probe waits longer than a healthy page ever needs. */
 export const PROBE_TIMEOUT_MS = 30_000;
 
+/**
+ * E439: wall-clock budgets, so no single page can take the whole smoke down with it.
+ *
+ * Every step of one render was bounded EXCEPT `page.evaluate`, `page.close` and `ctx.newPage` — Playwright gives
+ * those no timeout, and a renderer whose main thread is busy (ad scripts on a 10-second countdown page) can hold
+ * them indefinitely. First render: goto 45 s + networkidle 20 s + settle 6 s = 71 s by design; the retry 60 + 40 +
+ * 18 = 118 s. Yet /go/<id> logged 201,126 ms on a PASS run, and on 2026-11-17 a /go render ran 944 s, past
+ * deploy-verify's 600 s kill. 3 of 8 merges that day were graded "smoke-render timed out (killed) — pages NOT
+ * judged". The kill threw away every page that HAD rendered, including the ad anchors on all the other pages.
+ *
+ * PAGE_BUDGET_MS bounds one render end to end (the designed sum plus headroom for evaluate/close). A page that hits
+ * it is graded as a navigation that did not finish: status null, `navigation:` error. classifyRender then makes it
+ * INCONCLUSIVE for that page alone, or FAIL only if a direct fetch with the network control passing also gets no
+ * 200. SMOKE_RUN_BUDGET_MS bounds the whole render loop below deploy-verify's DEPLOY_VERIFY_SMOKE_MAX_S (600 s).
+ * smoke-render therefore always finishes and writes its JSON, and the pages it reached are judged. A target that
+ * the budget never reached is "not rendered" (inconclusive, never probed, never a verdict).
+ */
+export const PAGE_BUDGET_MS = { first: 90_000, retry: 130_000 } as const;
+/** The render loop's share of the run. Leaves room under deploy-verify's 600 s cap for the after-control and probes. */
+export const SMOKE_RUN_BUDGET_MS = 420_000;
+/** Direct probes (≤ PROBE_TIMEOUT_MS each) may start only within this tail after the loop's budget. Worst case:
+ *  420 s loop + 60 s probes (+ one 30 s in flight) + 2 × 8 s controls + 15 s close + startup ≈ 545 s < 600 s. */
+export const PROBE_TAIL_MS = 60_000;
+/** No render is started with less than this left: it could not finish, so it would only burn the tail. */
+export const MIN_RENDER_MS = 15_000;
+export const PAGE_BUDGET_ERROR = 'navigation: page budget';
+export const NOT_RENDERED_ERROR = 'navigation: not rendered';
+
+/** Resolve with the promise's value, or with `onTimeout()` after `ms`. The losing promise is left to settle on its own. */
+export async function withDeadline<T>(p: Promise<T>, ms: number, onTimeout: () => T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<T>((resolve) => { timer = setTimeout(() => resolve(onTimeout()), Math.max(0, ms)); });
+  try { return await Promise.race([p, late]); } finally { if (timer) clearTimeout(timer); }
+}
+
+/**
+ * Budget for the next render: the smaller of its own page budget and what is left of the run. Returns 0 (= do not
+ * start it) when less than MIN_RENDER_MS remains. `elapsedMs` is measured from the start of the render loop.
+ */
+export function nextRenderBudget(elapsedMs: number, pageBudgetMs: number, runBudgetMs: number = SMOKE_RUN_BUDGET_MS): number {
+  const left = runBudgetMs - elapsedMs;
+  if (left < MIN_RENDER_MS) return 0;
+  return Math.min(pageBudgetMs, left);
+}
+
+/** The run budget from SMOKE_RUN_BUDGET_MS (ms) when it is a positive number, else the default. Never above the default cap. */
+export function runBudgetFromEnv(raw: string | undefined): number {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, SMOKE_RUN_BUDGET_MS) : SMOKE_RUN_BUDGET_MS;
+}
+
 export interface ControlSample { url: string; status: number | null; ms: number; }
 export interface NetworkGrade { ok: boolean; passed: number; total: number; why: string; samples: ControlSample[]; }
 

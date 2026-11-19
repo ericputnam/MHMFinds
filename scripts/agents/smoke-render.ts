@@ -21,8 +21,9 @@ import { dirname } from 'node:path';
 import { INDEXNOW_KEY } from './indexnow-lib';
 import { collectionHref, getCollectionsForGame } from '../../lib/collections';
 import {
-  AD_KINDS, CONTROL_TIMEOUT_MS, collectionPathsAddedInDiff, NETWORK_CONTROL_URLS, PROBE_TIMEOUT_MS, classifyRender, gradeNetwork, isNavError,
-  isThirdPartyPageError, navigationFailed, pickCollectionPath, shouldRetryRender, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
+  AD_KINDS, CONTROL_TIMEOUT_MS, PROBE_TAIL_MS, collectionPathsAddedInDiff, NETWORK_CONTROL_URLS, NOT_RENDERED_ERROR, PAGE_BUDGET_ERROR, PAGE_BUDGET_MS, PROBE_TIMEOUT_MS,
+  SECONDARY_KINDS, classifyRender, gradeNetwork, isNavError, isThirdPartyPageError, navigationFailed, nextRenderBudget, pickCollectionPath, runBudgetFromEnv,
+  shouldRetryRender, withDeadline, type ControlSample, type NetworkGrade, type ProbeSample, type SmokeKind, type Verdict,
 } from './smoke-render-lib';
 
 const args = process.argv.slice(2);
@@ -45,6 +46,8 @@ interface Result {
   hydrationErrors: number; thirdPartyErrors: number; failures: string[]; transientErrors?: string[];
   expectText?: string; bodyText?: string; settledText?: number;
   retried?: boolean; verdict?: Verdict; why?: string; probe?: ProbeSample | null;
+  /** E439: the render hit its page budget (ms) and was abandoned; `observedStatus` is what goto had answered by then. */
+  budgetMs?: number; observedStatus?: number | null; notRendered?: boolean;
 }
 interface RenderOpts { gotoMs: number; idleMs: number; settleMs: number; }
 const FIRST_RENDER: RenderOpts = { gotoMs: 45000, idleMs: 20000, settleMs: SETTLE_MS };
@@ -89,7 +92,7 @@ const isThirdParty = (e: string) => isThirdPartyPageError(e, OUR_HOST);
 
 async function modIdFromSitemap(): Promise<string | null> {
   try {
-    const xml = await (await fetch(`${BASE}/sitemap-mods.xml`)).text();
+    const xml = await (await fetch(`${BASE}/sitemap-mods.xml`, { signal: AbortSignal.timeout(20_000) })).text();  // E439: bounded
     const m = xml.match(/\/mods\/([a-z0-9]+)\/?</i);
     return m ? m[1] : null;
   } catch { return null; }
@@ -171,15 +174,43 @@ async function main() {
   ];
   if (!modId) console.error('[smoke] WARN could not read a mod id from /sitemap-mods.xml — detail + interstitial skipped');
   if (!collectionPath) console.error('[smoke] WARN lib/collections.ts returned no sims-4 collections — collection route NOT rendered');
+  // E439: ad pages first (stable), so a run that spends its budget early has still judged the revenue surfaces.
+  targets.sort((a, b) => Number(SECONDARY_KINDS.has(a.kind)) - Number(SECONDARY_KINDS.has(b.kind)));
+  const RUN_BUDGET_MS = runBudgetFromEnv(process.env.SMOKE_RUN_BUDGET_MS);
 
   const netBefore = await networkControl();
   console.log(`[smoke] network control before: ${netBefore.ok ? 'ok' : 'DEGRADED'} (${netBefore.passed}/${netBefore.total}: ${netBefore.why})`);
 
   const browser = await chromium.launch({ headless: true });
-  const ctx = await browser.newContext({ viewport: { width: 1366, height: 900 }, userAgent: UA });
+  const newCtx = () => browser.newContext({ viewport: { width: 1366, height: 900 }, userAgent: UA });
+  let ctx = await newCtx();
   const results: Result[] = [];
-  const render = async (t: Target, o: RenderOpts = FIRST_RENDER): Promise<Result> => {
+  const blank = (t: Target, status: number | null, ms: number, pageErrors: string[]): Result => {
+    const r: Result = { path: t.path, kind: t.kind, status, ms, secondary: 0, mvAds: 0, mediavineScript: false, textLength: 0, pageErrors, consoleErrors: 0, appError: false, hydrationErrors: 0, thirdPartyErrors: 0, failures: [], ...(t.expectText ? { expectText: t.expectText, bodyText: '' } : {}), ...(t.settledText ? { settledText: t.settledText } : {}) };
+    r.failures = expectations(r);
+    return r;
+  };
+  // E439: one render, end to end (newPage → goto → evaluate → close), inside a hard wall-clock budget. Playwright gives
+  // newPage/evaluate/close no timeout of their own; a render past its budget is a navigation that did not finish.
+  const render = async (t: Target, o: RenderOpts = FIRST_RENDER, budgetMs: number = PAGE_BUDGET_MS.first): Promise<Result> => {
+    const seen: { status: number | null; page?: import('playwright').Page } = { status: null };
+    const t0 = Date.now();
+    const r = await withDeadline(renderOnce(t, o, seen), budgetMs, () => {
+      const why = `${PAGE_BUDGET_ERROR} ${budgetMs}ms exceeded — render did not finish (goto had answered ${seen.status ?? 'nothing'})`;
+      return { ...blank(t, null, Date.now() - t0, [why]), budgetMs, observedStatus: seen.status };
+    });
+    if (r.budgetMs) {
+      // Never awaited: close is what may be hung. The abandoned renderer would otherwise keep running (a spinning main
+      // thread burns a core for the rest of the run), so its whole context is discarded and the next page gets a new one.
+      const old = ctx;
+      void withDeadline(old.close().catch(() => undefined), 10_000, () => undefined);
+      ctx = await withDeadline(newCtx(), 15_000, () => old);
+    }
+    return r;
+  };
+  const renderOnce = async (t: Target, o: RenderOpts, seen: { status: number | null; page?: import('playwright').Page }): Promise<Result> => {
     const page = await ctx.newPage();
+    seen.page = page;
     const pageErrors: string[] = []; let consoleErrors = 0;
     page.on('pageerror', (e) => {
       const frame = String(e?.stack ?? '').split('\n').find((l) => /https?:\/\//.test(l))?.trim();
@@ -191,6 +222,7 @@ async function main() {
     try {
       const resp = await page.goto(`${BASE}${t.path}`, { waitUntil: 'domcontentloaded', timeout: o.gotoMs });
       status = resp?.status() ?? null;
+      seen.status = status;
       if (t.kind !== 'xml' && t.kind !== 'text') {
         await page.waitForLoadState('networkidle', { timeout: o.idleMs }).catch(() => undefined);
         await page.waitForTimeout(o.settleMs);
@@ -217,8 +249,17 @@ async function main() {
     return r;
   };
   const facts = (r: Result) => ({ kind: r.kind, status: r.status, ms: r.ms, textLength: r.textLength, appError: r.appError, pageErrors: r.pageErrors, failures: r.failures, settledText: r.settledText });
+  const loopT0 = Date.now();
   for (const t of targets) {
-    let r = await render(t);
+    const budget = nextRenderBudget(Date.now() - loopT0, PAGE_BUDGET_MS.first, RUN_BUDGET_MS);
+    if (!budget) {
+      const r = { ...blank(t, null, 0, [`${NOT_RENDERED_ERROR} — smoke run budget ${RUN_BUDGET_MS}ms spent before this target`]), notRendered: true };
+      results.push(r);
+      console.log(`… ${t.path.padEnd(34)} not rendered (run budget ${RUN_BUDGET_MS} ms spent) — INCONCLUSIVE, not a verdict`);
+      continue;
+    }
+    let r = await render(t, FIRST_RENDER, budget);
+    if (r.budgetMs) console.log(`  ⏱ ${t.path}: render abandoned at its ${r.budgetMs} ms page budget (goto had answered ${r.observedStatus ?? 'nothing'})`);
     // A single uncaught page error on one load (third-party script, race) must not roll production back by
     // itself (2026-09-05: 1 of 7 homepage loads threw a circular-JSON error nobody could reproduce). A navigation
     // timeout on ANY target, or a slow unsettled 200 on an ad page, gets one fresh page with a longer settle too
@@ -226,8 +267,9 @@ async function main() {
     // stall). The failure counts only if it reproduces — and classifyRender then decides whether what reproduced
     // is evidence about the site. When the control already says the network is degraded, the retry cannot make
     // the run conclusive, so it is skipped to bound the run time. Decisions in smoke-render-lib.ts (unit-tested).
-    if (netBefore.ok && shouldRetryRender(t.kind, r.failures, r.pageErrors, facts(r))) {
-      const again = await render(t, RETRY_RENDER);
+    const retryBudget = nextRenderBudget(Date.now() - loopT0, PAGE_BUDGET_MS.retry, RUN_BUDGET_MS);
+    if (netBefore.ok && retryBudget && shouldRetryRender(t.kind, r.failures, r.pageErrors, facts(r))) {
+      const again = await render(t, RETRY_RENDER, retryBudget);
       if (!again.failures.length) { again.transientErrors = r.failures; console.log(`  ↻ ${t.path}: ${r.failures[0]} did not reproduce on a fresh page — recorded as transient, not a failure`); }
       else console.log(`  ↻ ${t.path}: ${r.failures[0]} — reproduced on a fresh page (${again.ms} ms, ${again.textLength} chars)`);
       again.retried = true;
@@ -236,7 +278,8 @@ async function main() {
     results.push(r);
     console.log(`${r.failures.length ? '✗' : '✓'} ${t.path.padEnd(34)} ${String(r.status).padEnd(4)} ${String(r.ms).padStart(5)}ms  secondary=${r.secondary} mv-ads=${r.mvAds} mv-script=${r.mediavineScript ? 'y' : 'n'} text=${r.textLength} errors=${r.pageErrors.length}${r.hydrationErrors ? ` (hydration ${r.hydrationErrors} ⚠)` : ''}${r.thirdPartyErrors ? ` (3rd-party ${r.thirdPartyErrors} ⚠ ${r.pageErrors.find(isThirdParty)?.slice(0, 90)})` : ''}${r.transientErrors ? ` (transient ${r.transientErrors.length} ↻)` : ''}${r.failures.length ? '\n    → ' + r.failures.join('; ') : ''}`);
   }
-  await browser.close();
+  // E439: an abandoned (hung) renderer can hold browser.close too — bound it; process.exit below reaps the rest.
+  await withDeadline(browser.close().catch(() => undefined), 15_000, () => { console.error('[smoke] WARN browser.close did not finish in 15 s — continuing'); });
   const netAfter = await networkControl();
   console.log(`[smoke] network control after: ${netAfter.ok ? 'ok' : 'DEGRADED'} (${netAfter.passed}/${netAfter.total}: ${netAfter.why})`);
   const networkOk = netBefore.ok && netAfter.ok;
@@ -245,7 +288,9 @@ async function main() {
   // one direct fetch as a second, independent client — only when the control says the network itself is fine.
   for (const r of results) {
     if (!r.failures.length) { r.verdict = 'pass'; continue; }
-    if (networkOk && navigationFailed(r)) r.probe = await directProbe(`${BASE}${r.path}`);
+    if (r.notRendered) { r.verdict = 'inconclusive'; r.why = 'not rendered: the smoke run budget was spent before this target — could not run, not a site verdict'; console.log(`  ? ${r.path}: INCONCLUSIVE — ${r.why}`); continue; }
+    // E439: probes share a bounded tail after the loop; past it a page stays unprobed (→ inconclusive, never fail).
+    if (networkOk && navigationFailed(r) && Date.now() - loopT0 < RUN_BUDGET_MS + PROBE_TAIL_MS) r.probe = await directProbe(`${BASE}${r.path}`);
     const c = classifyRender(facts(r), { networkOk, probe: r.probe });
     r.verdict = c.verdict; r.why = c.why;
     if (c.verdict !== 'fail') console.log(`  ? ${r.path}: INCONCLUSIVE — ${c.why}`);
