@@ -24,7 +24,9 @@
 #   --check [--label "<who>"]      verify what is live now (morning check, runner step 0e); roll back / restore on failure
 #   --rollback [--to <url>]          roll production back (default: previous READY deployment), then verify
 #   --smoke-only                     verify only; never roll back (exit 1 on failure)
-# Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back. DEPLOY_VERIFY_SMOKE_MAX_S (default 600) caps one smoke-render.
+# Env: FUNNEL_NO_ROLLBACK=1 → report only, never roll back. DEPLOY_VERIFY_SMOKE_MAX_S (default 600) caps one smoke-render
+# in seconds the host was AWAKE (E439). Every vercel call reads </dev/null: with stdin left open `vercel inspect` hung
+# ~17 min on 11-17.
 # E308 (2026-10-31): (a) while <sha>'s own build is absent/BUILDING, a READY production build whose commit CONTAINS <sha>
 # is graded instead of waiting out --wait-min; the result column says "SUPERSEDED via <sha7> · <verdict>" (10-30 #394
 # TIMEOUT). Its own ERROR/CANCELED still takes the stricter E201 same-code path. (b) smoke-render past the cap is killed
@@ -80,7 +82,7 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$MODE" ] || { sed -n '2,/^set -uo/p' "$0" | sed '$d'; exit 64; }
 case "$PLATFORM_WAIT_MIN" in ''|*[!0-9]*) echo "--platform-wait-min needs a whole number of minutes"; exit 64 ;; esac
-SMOKE_MAX_S="${DEPLOY_VERIFY_SMOKE_MAX_S:-600}"  # E308: wall-clock cap on one smoke-render run (≤10 min)
+SMOKE_MAX_S="${DEPLOY_VERIFY_SMOKE_MAX_S:-600}"  # E308: cap on one smoke-render run (≤10 min); E439: awake seconds, not wall clock
 case "$SMOKE_MAX_S" in ''|*[!0-9]*|0) echo "DEPLOY_VERIFY_SMOKE_MAX_S needs a positive whole number of seconds"; exit 64 ;; esac
 
 TS="$(date '+%Y-%m-%d %H:%M')"; STAMP="$(date '+%Y-%m-%d-%H%M%S')"
@@ -89,11 +91,11 @@ LOG="$ROOT/logs/deploy-verify.log"
 log() { echo "[$(date '+%H:%M:%S')] $*" | tee -a "$LOG"; }
 
 # ---------------------------------------------------------------- vercel helpers
-vls() { (cd "$ROOT" && vercel ls --format json --yes 2>/dev/null); }
+vls() { (cd "$ROOT" && vercel ls --format json --yes </dev/null 2>/dev/null); }
 current_prod() {  # inspect prints on stderr; the CLI occasionally aborts, so retry
   local u i
   for i in 1 2 3; do
-    u="$( (cd "$ROOT" && vercel inspect "$PROD_ALIAS" 2>&1) 2>/dev/null | awk '$1=="url"{print $2; exit}')"  # outer 2> hides the CLI's occasional "Abort trap"
+    u="$( (cd "$ROOT" && vercel inspect "$PROD_ALIAS" </dev/null 2>&1) 2>/dev/null | awk '$1=="url"{print $2; exit}')"  # outer 2> hides the CLI's occasional "Abort trap"
     [ -n "$u" ] && { echo "$u"; return 0; }; sleep 3
   done
   return 1
@@ -185,18 +187,26 @@ killtree() {  # $1 pid → TERM it and every descendant (npx → tsx → node �
   for c in $(pgrep -P "$1" 2>/dev/null); do killtree "$c"; done
   kill -TERM "$1" 2>/dev/null
 }
-capped_wait() {  # E308: $1 background pid, $2 max seconds (wall clock) → 0 it exited in time · 1 killed at the cap.
+capped_wait() {  # E308: $1 background pid, $2 max AWAKE seconds → 0 it exited in time · 1 killed at the cap.
   # 10-30: smoke-render hung ~3 h after READY on #392 and ~40 min on #394, so the after-merge row (and the agent's
   # turn) waited on it. A smoke that did not finish is could-not-run (INCONCLUSIVE, exit 0, no rollback), never FAIL.
-  local t0; t0=$(date +%s)
+  # E439: the cap counts only seconds the host was AWAKE. On 11-17 the host slept for most of 06:47-07:58 (pmset:
+  # Maintenance / Dark Wake sleep, awake 45-90 s at a time) and the wall-clock cap killed the #559 and #560 smokes at
+  # "600 s", discarding every page that had already rendered. Node's timers inside smoke-render stop while the host
+  # sleeps, so wall-clock time spent asleep is not time the smoke was running. A poll step longer than 5 s is
+  # counted as 1 s awake and the rest as asleep. SMOKE_SLEPT_S is reported in the log and in the timeout note.
+  local awake=0 prev now d; prev=$(date +%s); SMOKE_SLEPT_S=0
   while kill -0 "$1" 2>/dev/null; do
-    if [ $(( $(date +%s) - t0 )) -ge "$2" ]; then
-      log "WARN: smoke-render still running after ${2}s wall clock — killing it (INCONCLUSIVE, not a verdict)"
-      killtree "$1"; sleep 2; pkill -KILL -P "$1" 2>/dev/null; kill -KILL "$1" 2>/dev/null; wait "$1" 2>/dev/null
+    if [ "$awake" -ge "$2" ]; then
+      log "WARN: smoke-render still running after ${2}s awake (host asleep ${SMOKE_SLEPT_S}s, not counted) — killing it (INCONCLUSIVE, not a verdict)"
+      killtree "$1"; /bin/sleep 2; pkill -KILL -P "$1" 2>/dev/null; kill -KILL "$1" 2>/dev/null; wait "$1" 2>/dev/null
       return 1
     fi
-    /bin/sleep 0.5
+    /bin/sleep 1
+    now=$(date +%s); d=$(( now - prev )); prev=$now
+    if [ "$d" -gt 5 ]; then SMOKE_SLEPT_S=$(( SMOKE_SLEPT_S + d - 1 )); awake=$(( awake + 1 )); else awake=$(( awake + d )); fi
   done
+  [ "$SMOKE_SLEPT_S" -gt 0 ] && log "note: host was asleep ${SMOKE_SLEPT_S}s while smoke-render ran (not counted against the ${2}s cap)"
   wait "$1" 2>/dev/null; return 0
 }
 smoke() {
@@ -215,7 +225,7 @@ smoke() {
     (cd "$sdir" && SMOKE_COLLECTIONS_DIFF="$cdiff" npx tsx scripts/agents/smoke-render.ts --json "$SMOKE_JSON") >"$out" 2>&1 &
     if ! capped_wait $! "${SMOKE_MAX_S:-600}"; then
       cat "$out" >>"$LOG"; rm -f "$SMOKE_JSON"  # a JSON written in the kill window is not a finished run
-      INCONCLUSIVE="smoke-render timed out after ${SMOKE_MAX_S:-600}s wall clock (killed) — pages NOT judged"
+      INCONCLUSIVE="smoke-render timed out after ${SMOKE_MAX_S:-600}s awake (killed; host asleep ${SMOKE_SLEPT_S:-0}s more) — pages NOT judged"
     else cat "$out" >>"$LOG"; fi
     if [ -n "$INCONCLUSIVE" ]; then :  # E308: timed out — could not run, never FAIL
     elif [ -f "$SMOKE_JSON" ]; then  # smoke-render writes the JSON only after it really rendered every page
@@ -253,7 +263,7 @@ smoke() {
     else INCONCLUSIVE="${INCONCLUSIVE:+$INCONCLUSIVE · }check-blog-sidebar could not run (non-zero exit, no FAIL line: $(echo "$blog_out" | grep -m1 WARN | cut -c1-120 || true)) — markers NOT judged"; fi
   fi
   local n5
-  n5="$( (cd "$ROOT" && vercel logs --no-branch --environment production --status-code 5xx --since 15m 2>/dev/null) | grep -cE '^[0-9]{2}:[0-9]{2}:[0-9]{2}' || true)"
+  n5="$( (cd "$ROOT" && vercel logs --no-branch --environment production --status-code 5xx --since 15m </dev/null 2>/dev/null) | grep -cE '^[0-9]{2}:[0-9]{2}:[0-9]{2}' || true)"
   FIVEXX="${n5:-0}"
   # The WordPress proxy returns a trickle of 502s for font files at all times; only a flood counts.
   [ "$FIVEXX" -gt 60 ] && addfail "$FIVEXX 5xx responses in the last 15 min (threshold 60)"
@@ -264,7 +274,7 @@ verdict() { if [ -n "$NET_DEGRADED" ]; then echo "INCONCLUSIVE (network)"; elif 
 vnotes() { echo "${INCONCLUSIVE:+$INCONCLUSIVE · blog markers + 5xx checked, smoke NOT — verify by hand: npx tsx scripts/agents/smoke-render.ts · }$1"; }
 do_rollback() {
   log "ROLLING BACK production to $1"
-  if (cd "$ROOT" && vercel rollback "$1" --timeout 5m --yes >>"$LOG" 2>&1) || (cd "$ROOT" && vercel rollback "$1" --timeout 5m >>"$LOG" 2>&1); then
+  if (cd "$ROOT" && vercel rollback "$1" --timeout 5m --yes </dev/null >>"$LOG" 2>&1) || (cd "$ROOT" && vercel rollback "$1" --timeout 5m </dev/null >>"$LOG" 2>&1); then
     sleep 20; log "rollback done; production now serves $(current_prod)"
     log "NOTE: after a rollback Vercel stops auto-promoting new builds; the next after-merge run promotes explicitly (ensure_promoted)"; return 0
   fi
@@ -313,7 +323,7 @@ ensure_promoted() {  # $1 = READY deployment for the merged sha. A `vercel rollb
     SUPERSEDED) log "alias serves $cur (${SERVED_SHA:0:7}), newer than / containing $1 (${cm:0:7}) — NOT promoting over it"; return 3 ;;
   esac
   log "alias serves $cur (${SERVED_SHA:0:7}), older than the new build $1 — auto-promotion is paused; promoting explicitly"
-  if ! (cd "$ROOT" && vercel promote "$1" --yes >>"$LOG" 2>&1); then log "vercel promote FAILED — see $LOG"; fi
+  if ! (cd "$ROOT" && vercel promote "$1" --yes </dev/null >>"$LOG" 2>&1); then log "vercel promote FAILED — see $LOG"; fi
   for i in 1 2 3 4 5 6; do
     sleep 10; cur="$(current_prod)"; [ "$cur" = "$1" ] && { log "promoted: production now serves $1"; return 0; }
   done

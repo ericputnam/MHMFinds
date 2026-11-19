@@ -73,6 +73,35 @@ export function trackAffiliateClick(params: AffiliateClickEventParams): void {
   }
 }
 
+// GA4 event name for a click on a creator's official off-site link on
+// /creator/[slug]/ (Nova, E435). Exported so the guard test imports the
+// constant instead of restating the literal.
+export const CREATOR_LINK_CLICK_EVENT = 'creator_link_click';
+
+export interface CreatorLinkClickParams {
+  creatorSlug: string;
+  /** 'patreon' | 'tumblr' | 'tsr' | 'site' — see lib/creatorOfficialLinks.ts. */
+  platform: string;
+  /** Hostname of the link, never the full URL (no path, no query). */
+  linkHost: string;
+}
+
+// Fires creator_link_click. The surface rides on GA4_SURFACE_PARAM
+// (content_type), never on `source` (E426). Carries no visitor data.
+export function trackCreatorLinkClick(params: CreatorLinkClickParams): void {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  try {
+    window.gtag('event', CREATOR_LINK_CLICK_EVENT, {
+      [GA4_SURFACE_PARAM]: 'creator-page',
+      creator_slug: params.creatorSlug,
+      platform: params.platform,
+      link_host: params.linkHost,
+    });
+  } catch {
+    // Analytics must never break the click-through.
+  }
+}
+
 // GA4 event name for a completed /set-password/ submission (Cass, E123).
 // Unblocks the E39 read: reset tokens are deleted on consume, so without this
 // event a completed reset leaves no trace anywhere. Exported so the guard test

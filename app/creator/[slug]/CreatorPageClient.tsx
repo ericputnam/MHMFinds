@@ -20,6 +20,8 @@ import type { Mod } from '../../../lib/api';
 import type { CreatorPageData } from '../../../lib/creators';
 import type { RelatedCreator } from '../../../lib/creatorHubRelated';
 import type { CreatorHubLink } from '../../../lib/creatorHubLinks';
+import type { CreatorOfficialLink } from '../../../lib/creatorOfficialLinks';
+import { trackCreatorLinkClick } from '../../../lib/analytics/gtag';
 import { creatorHref } from '../../../lib/creatorSlug';
 import { badgeHref } from '../../../lib/creatorBadge';
 import { CreatorClaimCard } from '../../../components/creator/CreatorClaimCard';
@@ -33,9 +35,16 @@ interface CreatorPageClientProps {
   related?: RelatedCreator[];
   /** Server-resolved collection hubs the creator's mods are listed in (E292). */
   hubs?: CreatorHubLink[];
+  /** Server-derived official off-site links: Patreon / Tumblr / TSR / own site (E435). */
+  officialLinks?: CreatorOfficialLink[];
 }
 
-export default function CreatorPageClient({ data, related = [], hubs = [] }: CreatorPageClientProps) {
+export default function CreatorPageClient({
+  data,
+  related = [],
+  hubs = [],
+  officialLinks = [],
+}: CreatorPageClientProps) {
   const [mods] = useState<Mod[]>(data.mods);
   const [favorites, setFavorites] = useState<string[]>([]);
   useGridFavoriteIds(setFavorites); // signed-in: fill the hearts of mods already saved
@@ -140,6 +149,37 @@ export default function CreatorPageClient({ data, related = [], hubs = [] }: Cre
                   {websiteHost}
                   <ExternalLink size={12} />
                 </a>
+              </p>
+            )}
+            {/* Official links (E435, Nova): the creator's own Patreon / Tumblr /
+                TSR / site, derived server-side from the mods' download and
+                source URLs (lib/creatorOfficialLinks.ts). A child of the hero
+                <header>, never inside the ad anchor; not a capture surface. */}
+            {officialLinks.length > 0 && (
+              <p className="mt-2 text-sm text-slate-400" data-testid="creator-official-links">
+                Find {data.displayName} on{' '}
+                {officialLinks.map((l, i) => (
+                  <React.Fragment key={l.href}>
+                    {i > 0 && <span className="text-slate-600"> · </span>}
+                    <a
+                      href={l.href}
+                      className="text-sims-pink hover:underline inline-flex items-center gap-1"
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      data-platform={l.platform}
+                      onClick={() =>
+                        trackCreatorLinkClick({
+                          creatorSlug: data.slug,
+                          platform: l.platform,
+                          linkHost: new URL(l.href).hostname,
+                        })
+                      }
+                    >
+                      {l.label}
+                      <ExternalLink size={12} />
+                    </a>
+                  </React.Fragment>
+                ))}
               </p>
             )}
             {/* Claim card (E122 → E144): the creator's "Claim this page" link

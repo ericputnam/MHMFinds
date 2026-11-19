@@ -505,8 +505,11 @@ describe('the shipped script', () => {
 
   it("mirrors the mod sitemap's selection (isNSFW false, isVerified true) and the endpoint constant", () => {
     expect(src).toMatch(/isNSFW: false, isVerified: true/);
-    const sitemap = read('app/sitemap-mods.xml/route.ts');
-    expect(sitemap).toMatch(/isNSFW: false, isVerified: true/);
+    // E431 moved the sitemap's query into lib/seo/sitemapMods.ts (paged for
+    // Accelerate's 5 MB cap); the route must read it from there.
+    const sitemapLib = read('lib/seo/sitemapMods.ts');
+    expect(sitemapLib).toMatch(/isNSFW: false, isVerified: true/);
+    expect(stripComments(read('app/sitemap-mods.xml/route.ts'))).toMatch(/listSitemapMods\(\)/);
     // E128 moved the POST into the lib; the endpoint constant is used there.
     expect(stripComments(read('scripts/agents/indexnow-lib.ts'))).toMatch(/fetchImpl\(INDEXNOW_ENDPOINT,/);
   });

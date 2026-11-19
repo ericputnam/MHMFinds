@@ -6,7 +6,19 @@ import {
   collectionLastmod,
   laterOf,
 } from '../../lib/sitemapLastmod';
+import {
+  IMAGE_SITEMAP_NS,
+  collectionHubImages,
+  imageEntries,
+  type SitemapImage,
+} from '../../lib/seo/sitemapImage';
 
+// Every collection hub also lists its first card images as <image:image>
+// children (E432, Pip, 2026-11-19): the hubs took 36 Google Images clicks in
+// the 28 days to 2026-11-16 against 1,465 for the WordPress posts that show
+// the same pictures. Images come from lib/seo/sitemapImage.ts with the hub
+// page's own where-clause and ordering, and degrade to none on a DB error.
+//
 // This sitemap reads the catalog to derive per-collection <lastmod>, so it
 // must render per request (the CDN cache below keeps it cheap). See
 // lib/sitemapLastmod.ts for why lastmod is per-URL and createdAt-based.
@@ -19,10 +31,13 @@ export async function GET() {
   // template date on its own if the DB is unreachable.
   const routes = getAllCollectionRoutes();
   const collectionStamps = await Promise.all(
-    routes.map(async (r) => ({
-      ...r,
-      lastmod: await collectionLastmod(r.gameSlug, r.topicSlug),
-    })),
+    routes.map(async (r) => {
+      const [lastmod, images] = await Promise.all([
+        collectionLastmod(r.gameSlug, r.topicSlug),
+        collectionHubImages(r.gameSlug, r.topicSlug),
+      ]);
+      return { ...r, lastmod, images };
+    }),
   );
 
   // A game hub (/games/sims-4/) lists its collections, so it changed when
@@ -77,23 +92,31 @@ export async function GET() {
     lastmod: c.lastmod,
     priority: '0.85',
     changefreq: 'weekly',
+    images: c.images,
   }));
 
-  const allUrls = [...staticUrls, ...collectionUrls];
+  const allUrls: Array<{
+    loc: string;
+    lastmod: string;
+    priority: string;
+    changefreq: string;
+    images?: SitemapImage[];
+  }> = [...staticUrls, ...collectionUrls];
 
   const urlEntries = allUrls
-    .map(
-      (u) => `  <url>
+    .map((u) => {
+      const image = u.images?.length ? imageEntries(u.images) : '';
+      return `  <url>
     <loc>${u.loc}</loc>
     <lastmod>${u.lastmod}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
-  </url>`,
-    )
+    <priority>${u.priority}</priority>${image ? `\n${image}` : ''}
+  </url>`;
+    })
     .join('\n');
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="${IMAGE_SITEMAP_NS}">
 ${urlEntries}
 </urlset>`;
 
