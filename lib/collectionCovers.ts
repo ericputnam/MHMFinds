@@ -3,7 +3,7 @@
  *
  * Cover thumbnails for the homepage "Browse Sims 4 CC by collection" cards.
  * Regenerate with:  npx tsx scripts/generate-collection-covers.ts
- * Generated on:     2026-11-17
+ * Generated on:     2026-11-19
  *
  * Each list is the top mods (by the collection page's own sort: downloads,
  * then newest; SFW only) that have an https thumbnail, preferring distinct
@@ -34,6 +34,11 @@ export const COLLECTION_COVERS: Record<string, string[]> = {
     "https://musthavemods.com/wp-content/uploads/2024/11/image-50.jpeg",
     "https://blog.musthavemods.com/wp-content/uploads/2025/04/662f8614-4c93-4d71-a0f7-db9dca7ea088-1.png",
     "https://h9zcspxlg2hrrozh.public.blob.vercel-storage.com/mods/1-robin-bedroom-set-1769368650934-0.jpg",
+  ],
+  "career-mods": [
+    "https://images.surferseo.art/9433873c-6a1b-4053-8fff-255096e51400.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2025/05/6d4e9c2c-034e-4fb0-bfe0-5ac402e49448-1.png",
+    "https://blog.musthavemods.com/wp-content/uploads/2024/11/01cd2fa4-4950-4c64-9a13-38c6b491cbdb.jpeg",
   ],
   "cas-backgrounds": [
     "https://images.surferseo.art/dac15196-29a5-4270-80cf-e6ea4088a07f.jpeg",

@@ -159,8 +159,11 @@ describe('detectContentType', () => {
   // collection page and in no /games/* grid.
   describe('gameplay mods named after a career / aspiration / trait', () => {
     it('detects a career mod', () => {
-      expect(detectContentType('Social Media Influencer Career')).toBe('gameplay-mod');
-      expect(detectContentType('Teen Criminal Career')).toBe('gameplay-mod');
+      // E438 (Rowan, 2026-11-19): a career title is the `career` facet (title-only
+      // rule in lib/careerContentTypeRules.ts), no longer the broader
+      // `gameplay-mod`. The gameplay-mods hub keeps `career` in its filter.
+      expect(detectContentType('Social Media Influencer Career')).toBe('career');
+      expect(detectContentType('Teen Criminal Career')).toBe('career');
     });
 
     it('detects an aspiration mod', () => {
@@ -189,8 +192,13 @@ describe('detectContentType', () => {
     });
 
     it('leaves career-themed CC to the CAS and build rules', () => {
-      expect(detectContentType('Ultimate Teen Career Set')).not.toBe('gameplay-mod');
+      // "Ultimate Teen Career Set" is a pack of eight teen careers (its own
+      // description, read 2026-11-19), so it is `career` — the E33 negative
+      // 'career set' was written on the opposite assumption. The clothing
+      // cases stay with the CAS rules via the career rule's veto words.
+      expect(detectContentType('Ultimate Teen Career Set')).toBe('career');
       expect(detectContentType('Doctor Career Outfit')).not.toBe('gameplay-mod');
+      expect(detectContentType('Doctor Career Outfit')).not.toBe('career');
       expect(detectContentType('Career Day Dress for Toddlers')).toBe('dresses');
     });
 

@@ -2159,6 +2159,12 @@ export const HAND_AUDITED_NSFW: Record<string, HandAuditedNsfw> = {
   // own mod text describes adult art. Conservative call for an ad page; the
   // cost is one 8-download furniture set.
   cmikivd5c006voxnaup0dfup1: { isNSFW: true, why: 'E425 "Lime Light Living Room Collection" — the mod text: "the wall painting that comes with different prints from script text to erotic images". The set ships erotic wall art; a false SFW on a living-room browse page is the worse error' },
+  // E438 (Rowan, 2026-11-19): the two /sims-4-custom-active-careers/ rows in
+  // the new career-mods hub's top 48 whose titles carry no adult word. Both
+  // are on GAMEPLAY_ADULT_WATCHLIST, so the two tables agree; rollback file
+  // reports/funnel/triage/e438-rollback.json.
+  cmim9kaf60041oxy7kp0oberp: { isNSFW: true, why: 'E438 "Sims 4 Part-Time Active Career at Adult Company" — the mod text: "This is an adult career mod where your sims will work at RedAppleNet … it\'s VERY SPICY"; an adult-industry career, never SFW on an ad page' },
+  cmim9kahb0042oxy702pv7xtv: { isNSFW: true, why: 'E438 "Sims 4 Active Honey Trapper Career" — the mod text: "pretty SPICY! … sent to a location with an assignment of seducing a target. Their target is either in a relationship or married"; adult-themed by premise, not a base-game WooHoo tweak, so the E419 SFW ruling for those does not cover it' },
 };
 
 /**

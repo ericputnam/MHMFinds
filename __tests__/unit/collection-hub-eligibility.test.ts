@@ -70,9 +70,9 @@ describe('collection-hub-eligibility (E238)', () => {
     expect(gradeHub(top, 511, { family: 'gameplay', rule: { minRows: 20, topN: 31 } }).eligible).toBe(false);
   });
 
-  it('watchlist is the 8 ids from playbooks/sage.md 2026-10-18 + 3 E419 ids, and which labels trip ADULT_TITLE_RE', () => {
-    expect(GAMEPLAY_ADULT_WATCHLIST).toHaveLength(11);
-    expect(new Set(GAMEPLAY_ADULT_WATCHLIST.map((w) => w.id)).size).toBe(11);
+  it('watchlist is the 8 ids from playbooks/sage.md 2026-10-18 + 3 E419 ids + 2 E438 ids, and which labels trip ADULT_TITLE_RE', () => {
+    expect(GAMEPLAY_ADULT_WATCHLIST).toHaveLength(13);
+    expect(new Set(GAMEPLAY_ADULT_WATCHLIST.map((w) => w.id)).size).toBe(13);
     for (const w of GAMEPLAY_ADULT_WATCHLIST) expect(w.id).toMatch(/^c[a-z0-9]{24}$/);
     // Labels that the regex is expected to catch on their own; "Cuddle and
     // Bath" is the one the id list exists for — its title is innocuous, and so

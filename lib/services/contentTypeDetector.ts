@@ -32,6 +32,7 @@ import { HOLIDAYS_CONTENT_TYPE, isHolidaysTitle } from '../holidaysContentTypeRu
 import { LOT_CONTENT_TYPE, LOT_TITLE_KEYWORDS } from '../lotContentTypeRules';
 import { ACCESSORIES_CONTENT_TYPE, ACCESSORIES_TITLE_KEYWORDS } from '../accessoriesContentTypeRules';
 import { UI_PRESET_CONTENT_TYPE, isUiPresetTitle } from '../uiPresetRules';
+import { CAREER_CONTENT_TYPE, isCareerTitle } from '../careerContentTypeRules';
 
 // ============================================
 // TYPES
@@ -744,6 +745,20 @@ export function detectContentTypeWithConfidence(
       confidence: 'high',
       matchedKeywords: [UI_PRESET_CONTENT_TYPE],
       reasoning: 'Title names a GShade/ReShade preset (title-only rule)',
+    };
+  }
+  // E438 (2026-11-19): a career mod is `career` on the TITLE alone
+  // (lib/careerContentTypeRules.ts). Checked before the keyword rules because
+  // the `gameplay-mod` rule lists `career` as a keyword and would win on it,
+  // and because a shared blog description ("…your Sim's bakery career…") must
+  // never type counters and clutter as careers. The rule's own veto words
+  // keep "Careers – Police Uniform Male" with the CAS rules.
+  if (isCareerTitle(title)) {
+    return {
+      contentType: CAREER_CONTENT_TYPE,
+      confidence: 'high',
+      matchedKeywords: [CAREER_CONTENT_TYPE],
+      reasoning: 'Title names a career mod (title-only rule)',
     };
   }
   const result = detectWithRules(title, description, SORTED_RULES);

@@ -157,6 +157,11 @@ const SIMS_4_CONTENT_MAPPINGS: ContentTypeMapping[] = [
   // collection filters on `ui-preset`. Must sit BEFORE `/presets/`.
   { patterns: [/gshade/, /reshade/], contentType: 'ui-preset' },
   { patterns: [/presets/, /ear-preset/], contentType: 'preset' },
+  // E438 (Rowan, 2026-11-19): `/sims-4-career-mods/` and
+  // `/sims-4-custom-active-careers/` had no rule, so a career post's untitled
+  // row fell through to the AI extractor. The career-mods collection filters
+  // on `career`. Must sit BEFORE the generic `gameplay-mod` rule.
+  { patterns: [/career/], contentType: 'career' },
   { patterns: [/woohoo|gameplay-mod|trait-mod/], contentType: 'gameplay-mod' },
   // E235: `/clutter/` used to share the `decor` rule; the clutter collection
   // filters on `clutter` only. `/decor/` stays first, so a slug naming both
