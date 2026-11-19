@@ -62,7 +62,8 @@ describe('shouldRetryRender (smoke-render false-alarm guard, E91 + E111)', () =>
     const src = readFileSync(join(process.cwd(), 'scripts/agents/smoke-render.ts'), 'utf8')
       .split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
     expect(src).toMatch(/from '\.\/smoke-render-lib'/);
-    expect(src).toMatch(/if \(netBefore\.ok && shouldRetryRender\(t\.kind, r\.failures, r\.pageErrors, facts\(r\)\)\)/);
-    expect(src).toMatch(/await render\(t, RETRY_RENDER\)/);
+    // E439: the retry also needs run budget left (retryBudget = 0 → keep the first result, never an unbounded retry).
+    expect(src).toMatch(/if \(netBefore\.ok && retryBudget && shouldRetryRender\(t\.kind, r\.failures, r\.pageErrors, facts\(r\)\)\)/);
+    expect(src).toMatch(/await render\(t, RETRY_RENDER, retryBudget\)/);
   });
 });

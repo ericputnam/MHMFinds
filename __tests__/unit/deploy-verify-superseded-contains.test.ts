@@ -11,7 +11,7 @@ import { join } from 'node:path';
  *     sibling verifies at 07:19 and 07:29 had already seen newer READY builds that CONTAIN fb4b264 — Vercel coalesced the
  *     PR's own build away, and the wait loop only ever looked for a deploy *of* the sha. A READY production build whose
  *     commit contains the sha (git ancestry, never timing) is now graded instead: "SUPERSEDED via <sha7> · <verdict>".
- * (b) 10-30: smoke-render hung ~3 h after READY on #392 and ~40 min on #394. One smoke run is now capped on wall clock
+ * (b) 10-30: smoke-render hung ~3 h after READY on #392 and ~40 min on #394. One smoke run is now capped (E439: in awake seconds)
  *     (DEPLOY_VERIFY_SMOKE_MAX_S, default 600) and a killed run is INCONCLUSIVE — exit 0, nothing rolled back.
  *
  * Same harness as deploy-verify-platform-error.test.ts: the REAL script runs from a throwaway git repo (real commits and
@@ -175,7 +175,7 @@ describe('deploy-verify.sh: smoke-render is capped on wall clock and a killed ru
     expect(r.code).toBe(0);
     expect(r.ms).toBeLessThan(20_000);
     expect(r.afterMerge[0]).toContain('| INCONCLUSIVE |');
-    expect(r.afterMerge[0]).toContain('smoke-render timed out after 2s wall clock (killed)');
+    expect(r.afterMerge[0]).toContain('smoke-render timed out after 2s awake (killed;');
     expect(r.vercel).not.toMatch(/^rollback/m);
     expect(r.php).toBe('');
     const pid = Number(readFileSync(join(root, 'smoke.pid'), 'utf8').trim());
