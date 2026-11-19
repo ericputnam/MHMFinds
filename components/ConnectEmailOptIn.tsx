@@ -6,7 +6,9 @@ import {
   PATREON_CONNECT_OPTIN_ENDPOINT,
   PATREON_CONNECT_OPTIN_EVENTS,
   PATREON_CONNECT_OPTIN_SOURCE,
+  CONNECT_OPTIN_COPY,
   interpretWaitlistResponse,
+  type ConnectOptInCopy,
   type ConnectOptInResult,
 } from '@/lib/capture/patreonConnectOptIn';
 
@@ -35,6 +37,11 @@ interface ConnectEmailOptInProps {
    * dismissal). The E173 instance passes nothing and renders no dismiss.
    */
   onDismiss?: () => void;
+  /**
+   * User-visible copy. Defaults to arm `a`; E305 passes the visitor's arm on
+   * /go so each arm reads alone (its `source` comes with it).
+   */
+  copy?: ConnectOptInCopy;
 }
 
 /**
@@ -54,6 +61,7 @@ export function ConnectEmailOptIn({
   viewEvent = PATREON_CONNECT_OPTIN_EVENTS.view,
   onResult,
   onDismiss,
+  copy = CONNECT_OPTIN_COPY.a,
 }: ConnectEmailOptInProps) {
   const [state, setState] = useState<'idle' | 'pending' | ConnectOptInResult>('idle');
   const viewFired = useRef(false);
@@ -100,7 +108,7 @@ export function ConnectEmailOptIn({
       >
         <CheckCircle2 size={16} className="text-sims-green flex-shrink-0" />
         {state === 'subscribed'
-          ? "You're on the list. The best new Sims 4 CC finds, once a week."
+          ? copy.subscribed
           : "You're already on the list."}
       </p>
     );
@@ -113,7 +121,8 @@ export function ConnectEmailOptIn({
     >
       <Mail size={18} className="text-sims-pink flex-shrink-0 hidden sm:block" />
       <p className="flex-1 min-w-0 text-sm text-slate-300">
-        Get the best new Sims 4 CC finds by email, once a week.{' '}
+        {copy.lead && <span className="block font-semibold text-white">{copy.lead}</span>}
+        {copy.body}{' '}
         <span className="text-slate-500">
           Goes to <span className="text-slate-400 break-all">{email}</span>. Unsubscribe anytime.
         </span>
@@ -135,7 +144,7 @@ export function ConnectEmailOptIn({
               Adding...
             </>
           ) : (
-            'Email me weekly'
+            copy.button
           )}
         </button>
         {onDismiss && (

@@ -225,7 +225,7 @@ describe('ConnectEmailOptIn with the E198 props', () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
     const onResult = vi.fn();
     renderMember({ onResult });
-    fireEvent.click(screen.getByRole('button', { name: /email me weekly/i }));
+    fireEvent.click(screen.getByRole('button', { name: /email me new finds/i }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/on the list/i));
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(PATREON_CONNECT_OPTIN_ENDPOINT);
@@ -241,7 +241,7 @@ describe('ConnectEmailOptIn with the E198 props', () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ success: true, alreadyExists: true }) });
     const onResult = vi.fn();
     renderMember({ onResult });
-    fireEvent.click(screen.getByRole('button', { name: /email me weekly/i }));
+    fireEvent.click(screen.getByRole('button', { name: /email me new finds/i }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/already on the list/i));
     expect(onResult).toHaveBeenCalledWith('already');
     expect(gtag.mock.calls.filter((c) => c[1] === 'newsletter_signup')).toHaveLength(0);
@@ -251,10 +251,10 @@ describe('ConnectEmailOptIn with the E198 props', () => {
     fetchMock.mockResolvedValue({ ok: false, json: async () => ({ success: false }) });
     const onResult = vi.fn();
     renderMember({ onResult });
-    fireEvent.click(screen.getByRole('button', { name: /email me weekly/i }));
+    fireEvent.click(screen.getByRole('button', { name: /email me new finds/i }));
     await waitFor(() => expect(screen.getByText(/something went wrong/i)).toBeInTheDocument());
     expect(onResult).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: /email me weekly/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /email me new finds/i })).toBeInTheDocument();
   });
 
   it('"Not now" calls onDismiss and sends nothing', () => {

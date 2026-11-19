@@ -130,7 +130,7 @@ describe('ConnectEmailOptIn component', () => {
   it('one click posts the session address with its source and fires newsletter_signup for a new row', async () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
     render(<ConnectEmailOptIn email={ADDR} modId="m1" />);
-    fireEvent.click(screen.getByRole('button', { name: /email me weekly/i }));
+    fireEvent.click(screen.getByRole('button', { name: /email me new finds/i }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/on the list/i));
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
@@ -146,7 +146,7 @@ describe('ConnectEmailOptIn component', () => {
   it('an address already on the list does not fire the conversion', async () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ success: true, alreadyExists: true }) });
     render(<ConnectEmailOptIn email={ADDR} modId="m1" />);
-    fireEvent.click(screen.getByRole('button', { name: /email me weekly/i }));
+    fireEvent.click(screen.getByRole('button', { name: /email me new finds/i }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/already on the list/i));
     expect(gtag.mock.calls.filter((c) => c[1] === 'newsletter_signup')).toHaveLength(0);
   });
@@ -154,9 +154,9 @@ describe('ConnectEmailOptIn component', () => {
   it('an error keeps the button and fires no conversion', async () => {
     fetchMock.mockResolvedValue({ ok: false, json: async () => ({ success: false }) });
     render(<ConnectEmailOptIn email={ADDR} modId="m1" />);
-    fireEvent.click(screen.getByRole('button', { name: /email me weekly/i }));
+    fireEvent.click(screen.getByRole('button', { name: /email me new finds/i }));
     await waitFor(() => expect(screen.getByText(/something went wrong/i)).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /email me weekly/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /email me new finds/i })).toBeInTheDocument();
     expect(gtag.mock.calls.filter((c) => c[1] === 'newsletter_signup')).toHaveLength(0);
   });
 
