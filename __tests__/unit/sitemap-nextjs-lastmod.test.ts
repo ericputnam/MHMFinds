@@ -16,11 +16,16 @@ import { APP_LASTMOD, COLLECTION_TEMPLATE_LASTMOD } from '@/lib/sitemapLastmod';
  */
 
 const aggregateMock = vi.fn();
+// E432: the route also reads each hub's first card images (findMany).
+const findManyMock = vi.fn();
 
-vi.mock('@/lib/prisma', () => ({
-  prisma: { mod: { aggregate: (...args: unknown[]) => aggregateMock(...args) } },
-  default: { mod: { aggregate: (...args: unknown[]) => aggregateMock(...args) } },
-}));
+vi.mock('@/lib/prisma', () => {
+  const mod = {
+    aggregate: (...args: unknown[]) => aggregateMock(...args),
+    findMany: (...args: unknown[]) => findManyMock(...args),
+  };
+  return { prisma: { mod }, default: { mod } };
+});
 
 const ROUTE = 'app/sitemap-nextjs.xml/route.ts';
 const LIB = 'lib/sitemapLastmod.ts';
@@ -62,6 +67,8 @@ function aggregateByWhere(args: any) {
 
 beforeEach(() => {
   aggregateMock.mockReset();
+  findManyMock.mockReset();
+  findManyMock.mockResolvedValue([]);
 });
 
 describe('sitemap-nextjs.xml route structure', () => {
@@ -139,6 +146,64 @@ describe('sitemap-nextjs.xml per-URL lastmod', () => {
     const sims4 = rows.find((r) => r.loc === 'https://musthavemods.com/games/sims-4/');
     expect(home?.lastmod).toBe(HAIR_STAMP);
     expect(sims4?.lastmod).toBe(HAIR_STAMP);
+  });
+
+  // E432 (2026-11-19). Pre-fix origin/main fails this block: no image
+  // namespace, no findMany, no <image:image> under any hub.
+  it('lists each hub’s first card images as <image:image> children, in the hub’s own order (E432)', async () => {
+    aggregateMock.mockImplementation(aggregateByWhere);
+    findManyMock.mockImplementation((args: any) => {
+      const where = JSON.stringify(args?.where ?? {});
+      if (where.includes('"hair"')) {
+        return Promise.resolve([
+          { thumbnail: 'https://blog.musthavemods.com/u/hair-1.jpg', title: 'Hair One & Two' },
+          { thumbnail: '/relative/hair-2.jpg', title: 'Relative is skipped' },
+          { thumbnail: null, title: 'Null is skipped' },
+          { thumbnail: 'https://images.surferseo.art/hair-3.webp', title: 'Hair <Three>' },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route');
+    const xml = await (await GET()).text();
+
+    expect(xml).toContain('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+    const hair = xml.match(/<loc>https:\/\/musthavemods\.com\/games\/sims-4\/hair-cc\/<\/loc>[\s\S]*?<\/url>/)?.[0] ?? '';
+    expect((hair.match(/<image:image>/g) ?? []).length).toBe(2);
+    expect(hair.indexOf('hair-1.jpg')).toBeLessThan(hair.indexOf('hair-3.webp'));
+    expect(hair).toContain('<image:title>Hair One &amp; Two</image:title>');
+    expect(hair).toContain('<image:title>Hair &lt;Three&gt;</image:title>');
+    expect(xml).not.toContain('/relative/hair-2.jpg');
+    // Hubs whose query returned nothing carry no image child at all.
+    const goth = xml.match(/<loc>https:\/\/musthavemods\.com\/games\/sims-4\/goth-cc\/<\/loc>[\s\S]*?<\/url>/)?.[0] ?? '';
+    expect(goth).not.toContain('<image:');
+
+    // One image query per collection, bounded, with the hub page's own
+    // where-clause (gameVersion + isNSFW:false) and ordering.
+    expect(findManyMock).toHaveBeenCalledTimes(SIMS4_COLLECTIONS.length);
+    for (const call of findManyMock.mock.calls) {
+      const args = call[0];
+      expect(args.where).toMatchObject({ isNSFW: false, thumbnail: { not: null } });
+      expect(typeof args.where.gameVersion).toBe('string');
+      expect(args.orderBy).toEqual([{ downloadCount: 'desc' }, { createdAt: 'desc' }]);
+      expect(args.take).toBeGreaterThan(0);
+      expect(args.take).toBeLessThanOrEqual(24);
+      expect(args.select).toEqual({ thumbnail: true, title: true });
+    }
+    // The lastmod the E37 tests read is untouched by the image child.
+    const hairRow = entries(xml).find((r) => r.loc === 'https://musthavemods.com/games/sims-4/hair-cc/');
+    expect(hairRow?.lastmod).toBe(HAIR_STAMP);
+  });
+
+  it('still serves every hub with a 200 and no image child when the image query rejects (E432)', async () => {
+    aggregateMock.mockImplementation(aggregateByWhere);
+    findManyMock.mockRejectedValue(new Error('db down'));
+    const { GET } = await import('@/app/sitemap-nextjs.xml/route');
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const xml = await res.text();
+    expect(xml).not.toContain('<image:image>');
+    expect(entries(xml).length).toBeGreaterThan(SIMS4_COLLECTIONS.length);
   });
 
   it('degrades to the template date with a 200 when the DB rejects', async () => {
