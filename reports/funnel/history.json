@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T11:37:50.628Z",
+  "generatedAt": "2026-11-19T11:38:17.497Z",
   "expectation": {
     "startDate": "2026-08-31",
     "endDate": "2026-12-31",
@@ -4678,9 +4678,9 @@
     },
     {
       "date": "2026-11-13",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 236.02,
+      "sessions": 12226,
+      "rpm": 19.3,
       "expectedRevenue": 214.7,
       "expectedSessions": 11701,
       "nonAdMonthly": 179,
@@ -4717,9 +4717,9 @@
     },
     {
       "date": "2026-11-14",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 315.01,
+      "sessions": 14477,
+      "rpm": 21.75,
       "expectedRevenue": 260.71,
       "expectedSessions": 14210,
       "nonAdMonthly": 179,
@@ -4743,9 +4743,9 @@
     },
     {
       "date": "2026-11-15",
-      "revenue": null,
-      "sessions": null,
-      "rpm": null,
+      "revenue": 293.92,
+      "sessions": 14869,
+      "rpm": 19.76,
       "expectedRevenue": 272.04,
       "expectedSessions": 15086,
       "nonAdMonthly": 150.5,
@@ -4778,6 +4778,119 @@
         "Quinn": 3,
         "Nova": 4,
         "operator": 3
+      }
+    },
+    {
+      "date": "2026-11-16",
+      "revenue": 200.92,
+      "sessions": 11641,
+      "rpm": 17.26,
+      "expectedRevenue": 190.68,
+      "expectedSessions": 12174,
+      "nonAdMonthly": 150.5,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-11-17",
+      "revenue": 218.07,
+      "sessions": 11567,
+      "rpm": 18.85,
+      "expectedRevenue": 202.86,
+      "expectedSessions": 11628,
+      "nonAdMonthly": 150.5,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-11-18",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 202.76,
+      "expectedSessions": 11643,
+      "nonAdMonthly": 150.5,
+      "ownedAdds7d": null,
+      "pinterestSessions7d": null,
+      "returningShare7d": null,
+      "nonPinterestShare7d": null,
+      "pagesPerSession7d": null,
+      "engagementRate7d": null,
+      "favorites7d": null,
+      "downloadClicks7d": null,
+      "newMods7d": null,
+      "catalogTotal": null,
+      "captureRatePer1k": null,
+      "creatorsOnboarded": null,
+      "creatorSubmissions7d": null,
+      "runSuccess14d": null,
+      "opsMergeShare7d": null,
+      "paperOnlyMerges7d": null,
+      "mergesByOwner7d": null
+    },
+    {
+      "date": "2026-11-19",
+      "revenue": null,
+      "sessions": null,
+      "rpm": null,
+      "expectedRevenue": 194.2,
+      "expectedSessions": 11299,
+      "nonAdMonthly": 165.5,
+      "ownedAdds7d": 198,
+      "pinterestSessions7d": 56262,
+      "returningShare7d": 0.5165959626326396,
+      "nonPinterestShare7d": 0.22548938630544313,
+      "pagesPerSession7d": 1.7902650328972494,
+      "engagementRate7d": 0.7102096040327772,
+      "favorites7d": 1808,
+      "downloadClicks7d": 381,
+      "newMods7d": 119,
+      "catalogTotal": 17489,
+      "captureRatePer1k": 2.153929834103889,
+      "creatorsOnboarded": 3,
+      "creatorSubmissions7d": 0,
+      "runSuccess14d": 0.875,
+      "opsMergeShare7d": 0.10344827586206896,
+      "paperOnlyMerges7d": 5,
+      "mergesByOwner7d": {
+        "Pip": 3,
+        "Cass": 3,
+        "Rowan": 3,
+        "Ops": 3,
+        "Sage": 6,
+        "Nova": 5,
+        "Rio": 3,
+        "Quinn": 3
       }
     }
   ],
@@ -8341,6 +8454,139 @@
       "kind": "merge",
       "label": "Quinn: PR #545 funnel: daily run 2026-11-13",
       "commit": "c6892ab",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Quinn: PR #546 funnel: operator watch 2026-11-13",
+      "commit": "577e027",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Cass: PR #547 E391 newsletter-08 run 3 send record",
+      "commit": "ac81e21",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Nova: PR #549 E413 fold 19 evidence-backed suffix-split creator spellings",
+      "commit": "7fd0a81",
+      "result": "SUPERSEDED (production already on 6cf21ba, newer)"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Sage: PR #550 E411 IndexNow mod backfill holdout",
+      "commit": "c6a9203",
+      "result": "SUPERSEDED (production already on 5b5b690, newer)"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Ops: PR #548 E420 deploy-verify never dirties a per-agent worktree",
+      "commit": "edcff84",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Nova: PR #553 E413 record applied ids in the frozen split-fold plan",
+      "commit": "be90986",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Pip: PR #554 E409 scoreboard channel rule → lib; Bing-syndicated referrals read as search",
+      "commit": "4858df2",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Rio: PR #551 E416 verdict 2026-11-15 — perk read + RPM/page-mix (Tier 0, paper)",
+      "commit": "a17f9c6",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Sage: PR #555 E412 homepage guides RCT",
+      "commit": "b50df4d",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Rowan: PR #552 E418/E419 gameplay-mods hub",
+      "commit": "ed0d5a6",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-15",
+      "kind": "merge",
+      "label": "Quinn: PR #556 funnel: daily run 2026-11-15",
+      "commit": "b19b52a",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Nova: PR #558 E423 refresh brief for /new-sims-4-mods-2026/ (Q46, paper trail only)",
+      "commit": "46a04f2",
+      "result": "PAPER PASS"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Ops: PR #559 E427 guardrail build-relevant vs paper split",
+      "commit": "437448e",
+      "result": "INCONCLUSIVE"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Cass: PR #560 E426 GA4 surface param source -> content_type",
+      "commit": "2b647e7",
+      "result": "INCONCLUSIVE"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Rio: PR #561 E424 scoreboard RPM legs + E416 falsifier",
+      "commit": "184589d",
+      "result": "SUPERSEDED (production already on 38e7f29, newer)"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Pip: PR #562 E428 scoreboard reads Yandex/Brave/DDG/OceanHero referrals as other_search",
+      "commit": "4facbfa",
+      "result": "SUPERSEDED (production already on 38e7f29, newer)"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Rowan: PR #563 living-room-cc + title-only living-room theme (E425)",
+      "commit": "c4551bf",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Sage: PR #564 E429 guide title overrides",
+      "commit": "c4551bf",
+      "result": "PASS"
+    },
+    {
+      "date": "2026-11-17",
+      "kind": "merge",
+      "label": "Sage: PR #565 E430 sitemap template lastmods",
+      "commit": "7cfcf67",
       "result": "PASS"
     }
   ]
