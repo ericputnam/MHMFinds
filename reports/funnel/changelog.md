@@ -706,3 +706,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-18 06:37 | check | morning-check |  | https://mhm-finds-dw5l-meqky4pbd-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-11-19 06:35 | check | morning-check |  | https://mhm-finds-dw5l-gqqyf5ja2-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-11-19 06:46 | after-merge | Cass: PR #567 E436 newsletter picks spread by source post + issue-09 draft | bc369c9 | https://mhm-finds-dw5l-cicao2ti9-ericputnams-projects.vercel.app | PASS | verified live · 5xx/15m=0  |
+| 2026-11-19 06:51 | after-merge | Rio: PR #568 E437 November non-ad MTD read | 14161a4 | https://mhm-finds-dw5l-kh82q9gfx-ericputnams-projects.vercel.app | PAPER PASS | paper-only merge (no build-relevant paths); production https://mhm-finds-dw5l-kh82q9gfx-ericputnams-projects.vercel.app checked · 5xx/15m=0  |
