@@ -3514,6 +3514,24 @@ pushes), 0 rollbacks, 5xx = 0 on every verify.
   PRs #557 and #566, the `vercel.json` slash-twin guard test, the `monetization-agent` cron slash
   (Tier 2), and the missing #498 ledger row.
 
+### 2026-11-18 — rotated from CLAUDE.md
+
+(off day: 0 merges; morning check PASS, breaker green)
+
+
+- **No off day since the cadence began has put anything on `main`.** The `mhm-funnel-daily`
+  task says off days "land a guard-only digest". Its off-day command relies on a
+  `# >>> off-day` block that exists in no runner on any branch. The env falls through to
+  `FUNNEL_DRY_RUN=1`, the runner stops after the breaker (`run-funnel-daily.sh:504`), and the
+  scoreboard survives only as an untracked file in the operator's tree. `origin/main` has no
+  digest or scoreboard for 11-08, 10, 12, 14, 16 or 18. The guard itself ran (ledger row
+  `check: morning-check` PASS). **A task description is a claim about the code. Grep for the
+  block it names before you trust it.** Fixing it is Ops work: add the block, or have the
+  off-day path call `ledger-commit.sh` for the scoreboard.
+- **Still open (from 11-17):** Q43 (`.claude/agents/` edits off `main`), the unmerged watch PRs
+  #557 and #566, the `vercel.json` slash-twin guard test, the `monetization-agent` cron slash
+  (Tier 2), the missing #498 ledger row, and the Q50 rollback-bound arming change (Tier 2).
+
 ## Recent UI/UX Enhancements
 
 *(relocated verbatim from CLAUDE.md 2026-10-17, E229 — the search-page redesign notes)*

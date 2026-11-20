@@ -926,28 +926,43 @@ run died with `Prompt is too long`.
   IMAP commands it can send and fails if a reader opens the mailbox without it. The next mailbox
   consumer must use the wrapper. Do not copy the two lines again.
 
-### 2026-10-15 → 11-13 — rotated to the archive
+### 2026-10-15 → 11-18 — rotated to the archive
 
 Rotated verbatim to [`docs/COMPOUND_LEARNINGS.md`](docs/COMPOUND_LEARNINGS.md): 10-15/16 on 2026-10-17
-(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15, 11-15 on 2026-11-17, 11-17 on 2026-11-18.
+(E229, CLAUDE.md was 60,372 B), 10-17 on 2026-10-19, 10-18 on 2026-10-20, 10-19 on 2026-10-21, 10-20 and 10-21 on 2026-10-25, 10-25 on 2026-10-26, 10-26 on 2026-10-29, 10-29 on 2026-10-30, 10-30 on 2026-10-31, 10-31 on 2026-11-01, 11-01 on 2026-11-02, 11-02 on 2026-11-03, 11-03 on 2026-11-06, 11-06 on 2026-11-07, 11-07 on 2026-11-08, 11-08 on 2026-11-09, 11-09 on 2026-11-10, 11-10 on 2026-11-11, 11-11 on 2026-11-12, 11-12 on 2026-11-13, 11-13 on 2026-11-14, 11-14 on 2026-11-15, 11-15 on 2026-11-17, 11-17 on 2026-11-18, 11-18 on 2026-11-19.
 
-### 2026-11-18 (off day: 0 merges; morning check PASS, breaker green)
+### 2026-11-19 (8 merges #567–#575, 3 production DB applies, 0 rollbacks)
 
-- **No off day since the cadence began has put anything on `main`.** The `mhm-funnel-daily`
-  task says off days "land a guard-only digest". Its off-day command relies on a
-  `# >>> off-day` block that exists in no runner on any branch. The env falls through to
-  `FUNNEL_DRY_RUN=1`, the runner stops after the breaker (`run-funnel-daily.sh:504`), and the
-  scoreboard survives only as an untracked file in the operator's tree. `origin/main` has no
-  digest or scoreboard for 11-08, 10, 12, 14, 16 or 18. The guard itself ran (ledger row
-  `check: morning-check` PASS). **A task description is a claim about the code. Grep for the
-  block it names before you trust it.** Fixing it is Ops work: add the block, or have the
-  off-day path call `ledger-commit.sh` for the scoreboard.
-- **Still open (from 11-17):** Q43 (`.claude/agents/` edits off `main`), the unmerged watch PRs
-  #557 and #566, the `vercel.json` slash-twin guard test, the `monetization-agent` cron slash
-  (Tier 2), the missing #498 ledger row, and the Q50 rollback-bound arming change (Tier 2).
+- **Prisma Accelerate caps one response at 5 MB (P6009), and a prerendered route hits it at
+  build time.** `/sitemap-mods.xml` grew a six-column select over the catalog (5.61 MB) and the
+  first `next build` failed. `lib/seo/sitemapMods.ts` now pages at 2,000 rows (#573). Page any
+  full-catalog read; never assume one `findMany` fits.
+- **Filter after a wide fetch, not after a narrow one.** The newsletter took the top 30 rows,
+  then dropped rows without an allowed-host image, so 7 survived and 5 of 6 picks came from one
+  post. 226 eligible rows sat in the window. It now fetches 200 and keeps one pick per source
+  post. It also lacked a `gameVersion` filter (Minecraft rows got in, #567).
+- **Give every await in a probe a wall-clock budget, and keep the run budget under its parent's
+  cap.** Playwright puts no timeout on `newPage`, `evaluate` or `close`. One spinning page held
+  smoke-render past deploy-verify's 600 s kill, so no JSON landed and 3 good pages were thrown
+  away. Now: 90 s per page, 420 s per run, ad pages first, unreached pages INCONCLUSIVE. Count
+  **awake** seconds: the 11-17 "killed at 600 s" merges spanned host sleep. Every `vercel` CLI
+  call reads `</dev/null` (#572).
+- **When one feature lives in two places, a test must parse both.** E433 adds the hub crosslink
+  box to 95 WordPress guides through `middleware.ts`, because the `functions.php` route is Tier 2.
+  Its test parses `mhm_collection_crosslink_map()` from `functions.php` and fails on any overlap,
+  so no guide gets two boxes (#574).
+- **`career` is now title-only** (`lib/careerContentTypeRules.ts`, 45 rows retagged, #571). It
+  was the same description-contamination class as the room themes: "Bakery Career" was `decor`.
+  The rule runs before the keyword rules, because `gameplay-mod` was winning. Registry order
+  decides breadcrumbs: a narrower hub goes first.
+- **Still open:** the off-day path still has no `# >>> off-day` block, so off days land nothing
+  on `main` (#575 backfilled history.json by hand). `direct-bot-read.test.ts` is red on `main`
+  (#573). Also open: Q43 (`.claude/agents/` edits stay in `quinn-pending-*.md` files), the
+  `vercel.json` slash-twin guard test, the `monetization-agent` cron slash (Tier 2), the missing
+  #498 ledger row, and Q50 (Tier 2). #569 merged, so #557 and #566 are superseded.
 ---
 
-*Last compound review: 2026-11-18 (off day, 0 merges, morning check PASS)*
+*Last compound review: 2026-11-19 (8 merges, 0 rollbacks)*
 
 ---
 
