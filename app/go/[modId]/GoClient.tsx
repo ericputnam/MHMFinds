@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Download, ArrowLeft, Loader2, Clock, Info, Package, Crown, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { formatBytes } from '@/lib/modFiles/constants';
+import { downloadedHintFor, installStepsFor, stepSegments } from '@/lib/installSteps';
 import { useSession, signIn } from 'next-auth/react';
 import { useDownloadTracking } from '@/lib/hooks/useAnalytics';
 import { AffiliateRecommendations } from '@/components/AffiliateRecommendations';
@@ -531,8 +532,8 @@ export default function GoClient() {
                 */}
                 {hostedStarted && (
                   <p className="mt-3 text-sm text-emerald-400 text-center">
-                    Your download has started. Check your downloads folder, then move the file into
-                    Documents/Electronic Arts/The Sims 4/Mods.
+                    Your download has started. Check your downloads folder.{' '}
+                    {downloadedHintFor(mod?.gameVersion, mod?.hostedFile?.kind)}
                   </p>
                 )}
                 {canProceed && mod && membershipOn && !isMember && !showPostConnect && (
@@ -628,13 +629,19 @@ export default function GoClient() {
                       How to install this mod
                     </h2>
                     <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
-                      <li>Extract the downloaded .zip file</li>
-                      <li>
-                        Copy the <code className="text-sims-pink">.package</code> files to{' '}
-                        <code className="text-sims-pink">Documents/Electronic Arts/The Sims 4/Mods</code>
-                      </li>
-                      <li>Enable custom content in Game Options → Other</li>
-                      <li>Restart The Sims 4 and enjoy!</li>
+                      {installStepsFor(mod?.gameVersion, useHostedFile ? mod?.hostedFile?.kind : null).map((step, i) => (
+                        <li key={i}>
+                          {stepSegments(step).map((s, j) =>
+                            s.code ? (
+                              <code key={j} className="text-sims-pink">
+                                {s.text}
+                              </code>
+                            ) : (
+                              <span key={j}>{s.text}</span>
+                            ),
+                          )}
+                        </li>
+                      ))}
                     </ol>
                   </div>
                 </div>

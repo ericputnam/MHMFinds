@@ -8,6 +8,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ModSubmissionForm } from '../../components/admin/ModSubmissionForm';
+import { hostedUploadHeading } from '../../components/creator/HostedFileUpload';
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -46,6 +47,15 @@ describe('file or link choice', () => {
     await waitFor(() => expect(radio('Upload the file').getAttribute('aria-checked')).toBe('true'));
     expect(screen.queryByPlaceholderText('https://example.com/download')).toBeNull();
     expect(screen.getByText('(optional credit)')).toBeTruthy();
+  });
+
+  it('in "Upload the file" mode the file is required, so its heading does not say "optional"', async () => {
+    setup();
+    await waitFor(() => expect(radio('Upload the file').getAttribute('aria-checked')).toBe('true'));
+    expect(screen.getByText('Upload the mod file')).toBeTruthy();
+    expect(screen.queryByText(/Host the file on MustHaveMods/)).toBeNull();
+    expect(hostedUploadHeading(false, false)).toBe('Host the file on MustHaveMods (optional)');
+    expect(hostedUploadHeading(true, true)).toBe('Upload a new version (optional)');
   });
 
   it('the file field follows the game, and the choice goes away for games we cannot host', async () => {
@@ -95,5 +105,35 @@ describe('file or link choice', () => {
     setup();
     await waitFor(() => expect(screen.getByText(/At least one is required/)).toBeTruthy());
     expect(screen.queryByRole('radiogroup')).toBeNull();
+  });
+});
+
+describe('verified default', () => {
+  // The public grid lists only verified mods, so an admin-created mod that
+  // starts unverified is reachable by link but missing from browse and search.
+  async function submitWith(showAdminFields: boolean, initialData: Record<string, unknown> = {}) {
+    const onSubmit = vi.fn(async () => {});
+    const view = render(
+      <ModSubmissionForm
+        onSubmit={onSubmit}
+        showAdminFields={showAdminFields}
+        initialData={{ title: 'Example', sourceUrl: 'https://example.com/post', ...initialData } as never}
+      />,
+    );
+    fireEvent.submit(view.container.querySelector('form')!);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    return (onSubmit.mock.calls[0] as unknown[])[0] as { isVerified: boolean };
+  }
+
+  it('an admin creating a mod starts verified', async () => {
+    expect((await submitWith(true)).isVerified).toBe(true);
+  });
+
+  it('a non-admin submission does not', async () => {
+    expect((await submitWith(false)).isVerified).toBe(false);
+  });
+
+  it('an explicit value in initialData still wins', async () => {
+    expect((await submitWith(true, { isVerified: false })).isVerified).toBe(false);
   });
 });
