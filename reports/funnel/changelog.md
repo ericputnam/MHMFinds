@@ -719,3 +719,4 @@ Appended automatically by `scripts/agents/deploy-verify.sh` on every production 
 | 2026-11-20 06:37 | check | morning-check |  | https://mhm-finds-dw5l-2sps5f4ks-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-11-21 06:35 | check | morning-check |  | https://mhm-finds-dw5l-q2t5vxcpa-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
 | 2026-11-21 06:37 | check | mhm-funnel-daily: MISSED 2026-11-21 — Quinn did not run (preflight=AUTH, cli=2.1.280 (Claude Code)) |  |  | MISSED | Failed to authenticate: OAuth session expired and could not be refreshed  · access=1969-12-31 19:00 refresh=2026-11-20 06:02 refresh_days=-2 · degraded digest + scoreboard + guardrail landed on main by the runner (E264) |
+| 2026-11-22 06:37 | check | morning-check |  | https://mhm-finds-dw5l-k08erff7g-ericputnams-projects.vercel.app | PASS | scheduled/ad-hoc check · 5xx/15m=0  |
