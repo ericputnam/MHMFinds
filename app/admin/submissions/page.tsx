@@ -98,8 +98,13 @@ export default function SubmissionsPage() {
       });
 
       if (response.ok) {
+        const data = await response.json().catch(() => ({}));
         fetchSubmissions();
-        alert('Submission approved and mod created!');
+        alert(
+          data.emailSent
+            ? 'Submission approved and mod created! The creator has been emailed.'
+            : 'Submission approved and mod created, but the email to the creator was NOT sent. Check the mail settings.'
+        );
       } else {
         const data = await response.json();
         alert(`Failed to approve: ${data.error}`);
