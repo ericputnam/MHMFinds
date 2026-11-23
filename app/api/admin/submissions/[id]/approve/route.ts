@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/middleware/auth';
-import { newModDataFromSubmission, planApprovalProfile } from '@/lib/submissionApprovalProfile';
+import { approvalSlug, newModDataFromSubmission, planApprovalProfile } from '@/lib/submissionApprovalProfile';
+import { buildApprovalEmail } from '@/lib/submissionApprovalEmail';
+import { emailNotifier } from '@/lib/services/emailNotifier';
+import { baseUrl } from '@/lib/services/unsubscribe';
 import { rehostModImages } from '@/lib/services/imageUploader';
 import { finalizeUploadApproval, prepareUploadForApproval } from '@/lib/modFiles/lifecycle';
 
@@ -104,6 +107,8 @@ export async function POST(
 
     let mod;
     let profileHandle: string | null = null;
+    // Whether the submitter's account holds a CreatorProfile after this approval (email copy).
+    let hasProfile = Boolean(submission.user?.creatorProfile);
 
     // Check if this is an edit submission
     if (submission.isEdit && submission.approvedModId) {
@@ -151,6 +156,7 @@ export async function POST(
       } else if (plan.kind === 'create') {
         const profileId = await ensureApprovalProfile(plan.data);
         if (profileId) {
+          hasProfile = true;
           modData.creatorId = profileId;
           profileHandle = plan.data.handle;
         }
@@ -176,9 +182,39 @@ export async function POST(
       },
     });
 
+    // Tell the creator. Awaited (a serverless function can be frozen once it
+    // responds), but never allowed to fail an approval that has already landed.
+    let emailSent = false;
+    if (submission.submitterEmail) {
+      try {
+        const email = buildApprovalEmail({
+          siteUrl: baseUrl(),
+          modName: submission.modName,
+          modId: mod.id,
+          // Greeting: the name they typed. A claim submission's `author` is the page slug.
+          author: submission.submitterName || submission.author,
+          isEdit: Boolean(submission.isEdit && submission.approvedModId),
+          hasProfile,
+          claimSlug: approvalSlug({
+            author: submission.author,
+            displayName: submission.user?.displayName ?? null,
+            username: submission.user?.username ?? null,
+          }),
+        });
+        emailSent = await emailNotifier.send(submission.submitterEmail, email.subject, email.html, {
+          from: email.from,
+          fromName: email.fromName,
+          replyTo: email.replyTo,
+        });
+      } catch (notifyError) {
+        console.error('Failed to send approval email:', (notifyError as Error).message);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       mod,
+      emailSent,
       createdCreatorProfileHandle: profileHandle,
       message: submission.isEdit
         ? 'Edit approved and mod updated successfully'
