@@ -282,3 +282,42 @@ export function emailVerifiedVia(input: { emailVerified: Date | string | null; p
   if (input.providers.some((p) => p !== 'credentials')) return 'oauth';
   return input.emailVerified ? 'credentials-auto' : 'none';
 }
+
+/** One approved submission, as the approval email needs it. Never written to the plan file. */
+export interface ApprovedForEmail {
+  submissionId: string;
+  modId: string;
+  modName: string;
+  submitterEmail: string | null;
+  greetingName: string | null;
+}
+
+export interface ApprovalEmailGroup {
+  to: string;
+  greetingName: string | null;
+  mods: Array<{ id: string; name: string }>;
+  submissionIds: string[];
+}
+
+/**
+ * One email per submitter per apply, not one per mod: a batch is usually
+ * several mods from one account (7 on 2026-11-01). Grouped on the trimmed,
+ * lower-cased address; rows without an address get no email. Order is kept,
+ * so the first approved mod leads the email.
+ */
+export function groupApprovalEmails(rows: readonly ApprovedForEmail[]): ApprovalEmailGroup[] {
+  const groups = new Map<string, ApprovalEmailGroup>();
+  for (const row of rows) {
+    const to = row.submitterEmail?.trim();
+    if (!to) continue;
+    const key = to.toLowerCase();
+    let group = groups.get(key);
+    if (!group) {
+      group = { to, greetingName: row.greetingName, mods: [], submissionIds: [] };
+      groups.set(key, group);
+    }
+    group.mods.push({ id: row.modId, name: row.modName });
+    group.submissionIds.push(row.submissionId);
+  }
+  return Array.from(groups.values());
+}

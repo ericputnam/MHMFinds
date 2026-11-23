@@ -18,6 +18,7 @@ import {
   MAX_APPROVE_ROWS,
   curseforgeSlug,
   emailVerifiedVia,
+  groupApprovalEmails,
   nameMatches,
   ownershipVerdict,
   parseIds,
@@ -264,5 +265,48 @@ describe('newModDataFromSubmission (shared with the approve route)', () => {
     expect(typeof ct).toBe('string');
     const vague = newModDataFromSubmission({ ...sub, modName: 'Set 3', description: 'nice' }, { thumbnail: null, images: [] });
     expect(vague.contentType).toBeNull();
+  });
+});
+
+describe('approval email (2026-11-22)', () => {
+  const approved = (n: number, submitterEmail: string | null, greetingName = 'Atino') => ({
+    submissionId: `s${n}`,
+    modId: `m${n}`,
+    modName: `Mod ${n}`,
+    submitterEmail,
+    greetingName,
+  });
+
+  it('sends one email per submitter, listing every mod in approval order', () => {
+    const groups = groupApprovalEmails([
+      approved(1, 'a@example.com'),
+      approved(2, 'b@example.com', 'Bea'),
+      approved(3, ' A@Example.com '),
+    ]);
+    expect(groups).toHaveLength(2);
+    expect(groups[0].mods.map((m) => m.id)).toEqual(['m1', 'm3']);
+    expect(groups[0].submissionIds).toEqual(['s1', 's3']);
+    expect(groups[0].to).toBe('a@example.com');
+    expect(groups[1].greetingName).toBe('Bea');
+  });
+
+  it('sends nothing for a row without an address', () => {
+    expect(groupApprovalEmails([approved(1, null), approved(2, '  ')])).toEqual([]);
+  });
+
+  it('the script emails after its writes, with public links, and keeps the address out of the plan file', () => {
+    const src = readFileSync(join(process.cwd(), 'scripts/agents/approve-submissions.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(src).toContain('groupApprovalEmails(toEmail)');
+    expect(src).toContain('siteUrl: SITE_ORIGIN');
+    // The send comes after the last database write of the apply loop.
+    expect(src.indexOf('emailNotifier.send(')).toBeGreaterThan(src.lastIndexOf('tx.modSubmission.updateMany('));
+    // The mailer loads lib/prisma, so it must not be a top-level import.
+    expect(src).not.toMatch(/^import .*emailNotifier/m);
+    // Nothing that holds an address is ever handed to the plan writer.
+    const applied = src.slice(src.indexOf('interface AppliedRow'), src.indexOf('interface PlanFile'));
+    expect(applied).not.toMatch(/submitterEmail|\bto\b/);
+    expect(src).not.toMatch(/console\.(log|error)\([^)]*(group\.to|submitterEmail)/);
   });
 });
