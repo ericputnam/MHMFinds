@@ -16,6 +16,12 @@
  * "script:approve-submissions"` so the row is distinguishable from a human
  * click. Only `source-verified` rows are ever written (see the lib).
  *
+ * After the writes, --apply emails each submitter once from olivia@ (the same
+ * email the admin route sends, listing every mod approved for them in this
+ * run). A failed send never undoes an approval and is never retried: an
+ * already-applied row is skipped on the next run. The plan file records
+ * `emailSent` per row, never the address.
+ *
  * The plan file is the rollback artifact; land it on `main` before --apply.
  * Prints no email address. Exit codes: 0 ok, 1 refused, 2 could-not-run.
  */
@@ -30,8 +36,10 @@ if (process.env.DIRECT_DATABASE_URL && /^prisma(\+postgres)?:\/\//.test(process.
 
 import { Prisma, PrismaClient } from '@prisma/client';
 import { isPendingHandle } from '../../lib/creatorClaim';
+import { SITE_ORIGIN } from '../../lib/creatorBadge';
 import { creatorKey } from '../../lib/creatorSlug';
 import { MIN_MODS_FOR_PAGE } from '../../lib/creators';
+import { buildApprovalEmail } from '../../lib/submissionApprovalEmail';
 import { newModDataFromSubmission } from '../../lib/submissionApprovalProfile';
 import { resolveIngestContentType } from '../../lib/services/contentTypeDetector';
 import { rehostModImages } from '../../lib/services/imageUploader';
@@ -41,6 +49,7 @@ import {
   MAX_APPROVE_ROWS,
   curseforgeSlug,
   emailVerifiedVia,
+  groupApprovalEmails,
   parseIds,
   parsePlanName,
   planApprovals,
@@ -48,6 +57,7 @@ import {
   stillApplicable,
   unknownFlags,
   writable,
+  type ApprovedForEmail,
   type Decision,
   type SourceLookup,
   type SubmissionRow,
@@ -67,6 +77,8 @@ interface AppliedRow {
   profileId: string | null;
   profileCreated: boolean;
   contentType: string | null;
+  /** Whether the approval email for this row's submitter was accepted for delivery. Absent on rows applied before 2026-11-22. */
+  emailSent?: boolean;
 }
 
 interface PlanFile {
@@ -298,6 +310,7 @@ async function main(): Promise<number> {
         const have = Number(existing[0]?.n ?? 0);
         console.log(`  creator page for key "${k}": ${have} existing + ${n} new = ${have + n} (page needs ≥${MIN_MODS_FOR_PAGE})`);
       }
+      console.log(`  --apply would send ${new Set(rows.map((r) => r.userId)).size} approval email(s) from olivia@ (one per submitting account, ${rows.length} mod(s))`);
       const existing = readPlan();
       if (!shouldWritePlan(existing ? existing.rows.length : null, argv.includes('--replace-plan'))) {
         console.log(`plan NOT written: ${PLAN_PATH} already holds ${existing?.rows.length} rows (the rollback artifact); pass --replace-plan to overwrite`);
@@ -333,6 +346,7 @@ async function main(): Promise<number> {
     }
     const alreadyApplied = new Set(plan.applied.map((a) => a.submissionId));
     let written = 0;
+    const toEmail: ApprovedForEmail[] = [];
     for (const row of rows) {
       if (alreadyApplied.has(row.submissionId)) {
         console.log(`  ${row.submissionId}: already applied — skipped`);
@@ -394,6 +408,14 @@ async function main(): Promise<number> {
         });
         plan.applied.push(applied);
         writePlan(plan); // the rollback artifact grows with every write
+        toEmail.push({
+          submissionId: row.submissionId,
+          modId: applied.modId,
+          modName: sub.modName,
+          submitterEmail: sub.submitterEmail,
+          // The name they typed; `author` can be a creator-page slug.
+          greetingName: sub.submitterName || sub.author,
+        });
         written++;
         console.log(`  ${row.submissionId}: APPROVED → mod ${applied.modId} contentType=${applied.contentType ?? 'NULL'} profile=${applied.profileId ?? '-'}${applied.profileCreated ? ' (created)' : ''}`);
       } catch (error) {
@@ -402,6 +424,44 @@ async function main(): Promise<number> {
       }
     }
     console.log(`APPLIED: ${written} approved; ${drifted.length} plan row(s) skipped as drifted${drifted.length ? ` (${drifted.join(', ')})` : ''}`);
+
+    // Tell each creator once, after every write of this run has landed. The
+    // mailer is imported here, not at the top: it pulls in lib/prisma, which
+    // must not be constructed before dotenv has run. Links use the fixed
+    // public origin — .env.local points NEXTAUTH_URL at localhost.
+    const groups = groupApprovalEmails(toEmail);
+    if (groups.length) {
+      const { emailNotifier } = await import('../../lib/services/emailNotifier');
+      let sent = 0;
+      for (const group of groups) {
+        const [first, ...rest] = group.mods;
+        let ok = false;
+        try {
+          const email = buildApprovalEmail({
+            siteUrl: SITE_ORIGIN,
+            modName: first.name,
+            modId: first.id,
+            author: group.greetingName,
+            isEdit: false,
+            hasProfile: true, // every written row links or creates the account's profile
+            claimSlug: null,
+            moreMods: rest,
+          });
+          ok = await emailNotifier.send(group.to, email.subject, email.html, {
+            from: email.from,
+            fromName: email.fromName,
+            replyTo: email.replyTo,
+          });
+        } catch (error) {
+          console.error(`  email FAILED: ${String((error as Error)?.message ?? error).slice(0, 120)}`);
+        }
+        if (ok) sent++;
+        for (const a of plan.applied) if (group.submissionIds.includes(a.submissionId)) a.emailSent = ok;
+        console.log(`  email for ${group.submissionIds.join(', ')}: ${ok ? 'SENT' : 'NOT SENT'}`);
+      }
+      writePlan(plan);
+      console.log(`EMAILED: ${sent}/${groups.length} submitter(s)`);
+    }
 
     // Read-back as separate queries on the fields the change alters.
     let ok = 0;

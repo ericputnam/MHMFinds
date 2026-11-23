@@ -36,6 +36,11 @@ export interface ApprovalEmailInput {
   hasProfile: boolean;
   /** Creator-page slug to claim when there is no profile yet; null when none is valid. */
   claimSlug: string | null;
+  /**
+   * Further mods approved in the same batch (the scripted path approves
+   * several per creator). One email lists them all instead of one email each.
+   */
+  moreMods?: ReadonlyArray<{ id: string; name: string }>;
 }
 
 export interface ApprovalEmail {
@@ -74,15 +79,27 @@ export function buildApprovalEmail(input: ApprovalEmailInput): ApprovalEmail {
   const name = input.author?.trim();
   const modName = escapeHtml(input.modName);
   const steps = profileSteps(input);
+  const more = input.moreMods ?? [];
+  const andMore = more.length ? ` and ${more.length} more ${more.length === 1 ? 'mod' : 'mods'}` : '';
+  const verb = more.length ? 'are' : 'is';
+  const moreList = more.length
+    ? `
+    <p>Also live:</p>
+    <ul>
+      ${more
+        .map((m) => `<li><a href="${escapeHtml(`${site}/mods/${encodeURIComponent(m.id)}/`)}">${escapeHtml(m.name)}</a></li>`)
+        .join('\n      ')}
+    </ul>`
+    : '';
 
   const html = `
     <p>Hi${name ? ` ${escapeHtml(name)}` : ''},</p>
     <p>${
       input.isEdit
         ? `Your update to <strong>${modName}</strong> is approved and live on MustHaveMods.`
-        : `Good news: <strong>${modName}</strong> is approved and live on MustHaveMods.`
+        : `Good news: <strong>${modName}</strong>${andMore} ${verb} approved and live on MustHaveMods.`
     }</p>
-    <p><a href="${escapeHtml(modUrl)}">See your mod page</a></p>
+    <p><a href="${escapeHtml(modUrl)}">See your mod page</a></p>${moreList}
 
     <p><strong>${input.hasProfile ? 'Finish your creator profile' : 'Set up your creator profile'} (3 steps)</strong></p>
     <ol>
@@ -107,7 +124,7 @@ export function buildApprovalEmail(input: ApprovalEmailInput): ApprovalEmail {
   return {
     subject: input.isEdit
       ? `Your update to ${input.modName} is live on MustHaveMods`
-      : `${input.modName} is live on MustHaveMods`,
+      : `${input.modName}${andMore} ${verb} live on MustHaveMods`,
     html,
     from: APPROVAL_EMAIL_FROM,
     fromName: APPROVAL_EMAIL_FROM_NAME,

@@ -105,6 +105,21 @@ describe('buildApprovalEmail (pure)', () => {
     expect(html).not.toContain('<b>E</b>');
   });
 
+  it('lists every further mod of a batch in the one email', () => {
+    const one = buildApprovalEmail(input());
+    expect(one.subject).toBe("Women's Aurelia Gown is live on MustHaveMods");
+    expect(one.html).not.toContain('Also live');
+
+    const email = buildApprovalEmail(
+      input({ moreMods: [{ id: 'm2', name: 'Second <b>Gown</b>' }, { id: 'm3', name: 'Third' }] })
+    );
+    expect(email.subject).toBe("Women's Aurelia Gown and 2 more mods are live on MustHaveMods");
+    expect(email.html).toContain(`href="${SITE}/mods/m2/"`);
+    expect(email.html).toContain(`href="${SITE}/mods/m3/"`);
+    expect(email.html).not.toContain('<b>Gown</b>');
+    expect(buildApprovalEmail(input({ moreMods: [{ id: 'm2', name: 'B' }] })).subject).toContain('and 1 more mod are live');
+  });
+
   it('words an edit as an update', () => {
     const email = buildApprovalEmail(input({ isEdit: true }));
     expect(email.subject).toMatch(/^Your update to /);
