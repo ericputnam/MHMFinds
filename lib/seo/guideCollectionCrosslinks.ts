@@ -73,7 +73,7 @@ export const FUNCTIONS_PHP_CROSSLINK_SLUGS: readonly string[] = [
 
 /** Hand-chosen hub where the registry gives two, or an unexpected one. */
 export const CROSSLINK_PINS: Readonly<Record<string, { topic: string; why: string }>> = {
-  '/sims-4-career-mods/': { topic: 'gameplay-mods', why: 'listed under pregnancy-mods and gameplay-mods; a careers post belongs with gameplay' },
+  '/sims-4-career-mods/': { topic: 'career-mods', why: 'listed under pregnancy-mods, gameplay-mods and career-mods; it is the Career Mods hub\'s own blogUrl companion (#571), the narrowest hub. Pointed at gameplay-mods from 11-19 until 2026-11-26, before that hub existed' },
   '/sims-4-hospital-lots/': { topic: 'build-cc', why: 'listed under pregnancy-mods and build-cc; hospital builds are build content' },
   '/sims-4-eyebrows/': { topic: 'eyebrows-cc', why: 'listed under eyebrows-cc and eyes-cc; the narrower hub' },
   '/sims-4-nursery-cc/': { topic: 'nursery-cc', why: 'listed under kids-cc and nursery-cc; the narrower hub' },
@@ -94,7 +94,7 @@ export const GUIDE_COLLECTION_CROSSLINKS: Readonly<Record<string, GuideCollectio
   '/sims-4-beds/': { topic: 'bedroom-cc', title: 'Bedroom CC' },
   '/sims-4-black-hair/': { topic: 'hair-cc', title: 'Hair CC & Hair Mods' },
   '/sims-4-build-cheats/': { topic: 'build-cc', title: 'Build CC' },
-  '/sims-4-career-mods/': { topic: 'gameplay-mods', title: 'Gameplay Mods' },
+  '/sims-4-career-mods/': { topic: 'career-mods', title: 'Career Mods' },
   '/sims-4-cas-background-cc/': { topic: 'cas-backgrounds', title: 'CAS Backgrounds' },
   '/sims-4-cas-background/': { topic: 'cas-backgrounds', title: 'CAS Backgrounds' },
   '/sims-4-cas-mirror-background/': { topic: 'cas-backgrounds', title: 'CAS Backgrounds' },
