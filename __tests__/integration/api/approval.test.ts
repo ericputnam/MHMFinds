@@ -200,9 +200,14 @@ describe('API /api/admin/submissions/[id]/approve', () => {
                         id: 'profile-1',
                     },
                 },
+                // Real rows always carry `images` (String[]); an edit with no image of its
+                // own keeps the live mod's thumbnail (#579, lib/submissionThumbnail.ts).
+                thumbnail: null,
+                images: [],
                 approvedMod: {
                     id: 'existing-mod-1',
                     title: 'Old Title',
+                    thumbnail: 'https://example.com/existing-thumb.jpg',
                 },
             }
 
@@ -259,6 +264,9 @@ describe('API /api/admin/submissions/[id]/approve', () => {
                 isEdit: false,
                 user: null,
                 modUrl: 'https://example.com/mod',
+                // Approval refuses a submission with no image since #579.
+                thumbnail: 'https://example.com/thumb.jpg',
+                images: [],
             }
 
             mockPrismaClient.modSubmission.findUnique.mockResolvedValue(mockSubmission as any)
