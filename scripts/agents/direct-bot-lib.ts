@@ -13,7 +13,9 @@
  * (116–262/day since 09-15) is the same two fingerprints with the same 1:1:1 shape. Rio's method
  * read 1.93% of the 28d headline; the segment is 4.1%.
  *
- * `source` mirrors `funnel-scoreboard.ts` `bySource` (`src === '(direct)'` → 'direct') so a
+ * `source` mirrors the scoreboard's Direct selector — `classifyChannel` in
+ * `scoreboard-channel-lib.ts` (`src === '(direct)'` → 'direct'; it lived inline in
+ * `funnel-scoreboard.ts` until E409, #554) — so a
  * number this prints can be subtracted from the scoreboard's own Direct line without a basis gap
  * (CLAUDE.md: "a monitor must mirror its consumer's selection query"). The unit test imports this
  * constant and asserts the scoreboard still selects on it.

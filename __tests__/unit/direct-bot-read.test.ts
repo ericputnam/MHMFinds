@@ -10,6 +10,7 @@ import {
   type DailyRow,
   type SegmentDailyRow,
 } from '../../scripts/agents/direct-bot-lib';
+import { classifyChannel } from '../../scripts/agents/scoreboard-channel-lib';
 
 const ROOT = join(__dirname, '..', '..');
 const read = (p: string) => readFileSync(join(ROOT, p), 'utf8');
@@ -121,7 +122,17 @@ describe('direct-bot-read.ts mirrors its consumer and respects the project-dir g
   const scoreboard = stripComments(read('scripts/agents/funnel-scoreboard.ts'));
 
   it('the segment selector is the scoreboard Direct selector (guard the constant, not a copy)', () => {
-    expect(scoreboard).toContain(`src === '${SG_DIRECT_RULE.source}'`);
+    // E409 (#554) moved the scoreboard's channel chain out of funnel-scoreboard.ts into
+    // scoreboard-channel-lib.ts. This used to grep the scoreboard source for the literal
+    // `src === '(direct)'`, which went red the day the code moved. Guard the behaviour
+    // instead: the scoreboard classifies through the lib, and the lib puts the E216 rule's
+    // source in the Direct row, with any medium.
+    expect(scoreboard).toMatch(/import \{[^}]*\bclassifyChannel\b[^}]*\} from '\.\/scoreboard-channel-lib'/);
+    expect(scoreboard).toMatch(/classifyChannel\(/);
+    for (const medium of ['(none)', '', '(not set)']) {
+      expect(classifyChannel(SG_DIRECT_RULE.source, medium).channel, medium).toBe('direct');
+    }
+    expect(classifyChannel('google', 'organic').channel).not.toBe('direct');
     expect(entry).toContain("fieldName: 'sessionSource'");
     expect(entry).toContain('SG_DIRECT_RULE.source');
     expect(entry).not.toMatch(/sessionDefaultChannelGroup/);
