@@ -14,7 +14,9 @@ import {
   Edit,
   FileArchive,
 } from 'lucide-react';
+import Image from 'next/image';
 import { HostedFileReview, type AdminHostedUpload } from '@/components/admin/HostedFileReview';
+import { ImageUploadButton } from '@/components/admin/ImageUploadButton';
 import { formatBytes } from '@/lib/modFiles/constants';
 
 /** Creator view of their own hosted file (CREATOR_UPLOAD_SELECT). */
@@ -49,6 +51,7 @@ interface ModSubmission {
   createdAt: string;
   isEdit?: boolean;
   thumbnail?: string | null;
+  images?: string[];
   approvedMod?: {
     id: string;
     title: string;
@@ -64,6 +67,12 @@ export default function SubmissionsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [processing, setProcessing] = useState<string | null>(null);
+  // Thumbnails uploaded here for submissions that arrived without one, by submission id.
+  const [uploadedThumbs, setUploadedThumbs] = useState<Record<string, string>>({});
+
+  /** What the mod's card will show: an upload made here, else the submission's own image. */
+  const thumbFor = (s: ModSubmission): string | null =>
+    uploadedThumbs[s.id] || s.thumbnail || s.images?.find(Boolean) || null;
 
   const isAdmin = session?.user?.isAdmin || false;
 
@@ -89,12 +98,19 @@ export default function SubmissionsPage() {
   }, [fetchSubmissions]);
 
   const handleApprove = async (submission: ModSubmission) => {
+    // An edit keeps the mod's current thumbnail, so only a new mod needs one here.
+    if (!submission.isEdit && !thumbFor(submission)) {
+      alert('This submission has no image. Upload a thumbnail before approving.');
+      return;
+    }
     if (!confirm(`Convert "${submission.modName}" to a mod?`)) return;
 
     try {
       setProcessing(submission.id);
       const response = await fetch(`/api/admin/submissions/${submission.id}/approve/`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ thumbnail: uploadedThumbs[submission.id] ?? null }),
       });
 
       if (response.ok) {
@@ -254,6 +270,29 @@ export default function SubmissionsPage() {
                       >
                         {submission.modUrl}
                       </a>
+                    </div>
+                  )}
+
+                  {isAdmin && submission.status === 'pending' && (
+                    <div className="flex flex-wrap items-center gap-4">
+                      {thumbFor(submission) ? (
+                        <Image
+                          src={thumbFor(submission) as string}
+                          alt={`${submission.modName} thumbnail`}
+                          width={96}
+                          height={96}
+                          unoptimized
+                          className="w-24 h-24 object-cover rounded-lg border border-slate-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-yellow-400">
+                          No image. Save the preview from the creator&apos;s post and upload it before approving.
+                        </p>
+                      )}
+                      <ImageUploadButton
+                        label={thumbFor(submission) ? 'Replace thumbnail' : 'Upload thumbnail'}
+                        onUploaded={(url) => setUploadedThumbs((prev) => ({ ...prev, [submission.id]: url }))}
+                      />
                     </div>
                   )}
 

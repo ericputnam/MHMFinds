@@ -326,16 +326,31 @@ export default function ModDetailClient({
           <div className="lg:col-span-2">
             {/* Main Image */}
             <div className="bg-mhm-card border border-white/5 rounded-2xl shadow-lg overflow-hidden mb-6">
-              <div className="relative aspect-video bg-gradient-to-br from-mhm-elevated to-mhm-card">
+              <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-mhm-elevated to-mhm-card">
                 {selectedImage ? (
-                  <Image
-                    src={selectedImage}
-                    alt={mod.title}
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 66vw"
-                    className="w-full h-full object-cover"
-                  />
+                  <>
+                    {/* Creator images come in any shape; object-cover cropped tall and
+                        square ones (ErinAOK's gown lost the top of the dress, 2026-11-22).
+                        The box keeps its 16:9 size so the page and ads don't move; the
+                        whole image shows, over a blurred copy of itself. Same src and
+                        sizes, so the browser fetches it once. */}
+                    <Image
+                      src={selectedImage}
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      className="object-cover scale-110 blur-2xl opacity-60"
+                    />
+                    <Image
+                      src={selectedImage}
+                      alt={mod.title}
+                      fill
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      className="object-contain"
+                    />
+                  </>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Package size={64} className="text-slate-500" />

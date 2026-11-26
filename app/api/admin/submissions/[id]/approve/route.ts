@@ -8,6 +8,11 @@ import { emailNotifier } from '@/lib/services/emailNotifier';
 import { baseUrl } from '@/lib/services/unsubscribe';
 import { rehostModImages } from '@/lib/services/imageUploader';
 import { finalizeUploadApproval, prepareUploadForApproval } from '@/lib/modFiles/lifecycle';
+import {
+  MISSING_THUMBNAIL_ERROR,
+  isAllowedThumbnailOverride,
+  resolveApprovalThumbnail,
+} from '@/lib/submissionThumbnail';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +60,17 @@ export async function POST(
   }
 
   try {
+    // Optional body: { thumbnail } uploaded by the reviewer on /admin/submissions
+    // when the submission arrived without an image. An empty body is fine.
+    const body = (await request.json().catch(() => null)) as { thumbnail?: unknown } | null;
+    const override = body?.thumbnail;
+    if (override != null && override !== '' && !isAllowedThumbnailOverride(override)) {
+      return NextResponse.json(
+        { error: 'The thumbnail must be an image uploaded on this page.' },
+        { status: 400 }
+      );
+    }
+
     // Get the submission with related data
     const submission = await prisma.modSubmission.findUnique({
       where: { id: params.id },
@@ -82,6 +98,21 @@ export async function POST(
       );
     }
 
+    // No mod goes live without a thumbnail (lib/submissionThumbnail.ts). Checked
+    // before anything is written, including the hosted-file move below.
+    const resolvedThumbnail = resolveApprovalThumbnail({
+      override: typeof override === 'string' ? override : null,
+      thumbnail: submission.thumbnail,
+      images: submission.images,
+      existingModThumbnail: submission.isEdit ? submission.approvedMod?.thumbnail ?? null : null,
+    });
+    if (!resolvedThumbnail) {
+      return NextResponse.json(
+        { error: MISSING_THUMBNAIL_ERROR, code: 'missing_thumbnail' },
+        { status: 400 }
+      );
+    }
+
     // Hosted file: move it out of quarantine before the mod is written.
     // Idempotent, so a retry after a failure further down is safe.
     const filePrep = submission.upload
@@ -98,11 +129,11 @@ export async function POST(
     // Patreon image addresses expire and don't render — copy them to Blob.
     // Best effort: approval still goes through with the original URLs.
     const { thumbnail, images } = await rehostModImages({
-      thumbnail: submission.thumbnail,
+      thumbnail: resolvedThumbnail,
       images: submission.images,
     }).catch((err) => {
       console.error('Image rehost failed on approval:', err);
-      return { thumbnail: submission.thumbnail, images: submission.images };
+      return { thumbnail: resolvedThumbnail, images: submission.images };
     });
 
     let mod;
