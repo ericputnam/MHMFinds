@@ -5,7 +5,8 @@
  *
  * Why: functions.php has carried `mhm_collection_crosslinks` since 2026-07 for
  * 19 legacy listicles, and the hubs' only other referrers are hubs and creator
- * pages (E292). The 95 guides below are the ones the collection registry
+ * pages (E292). The 95 guides below (97 since 2026-11-26: the career-mods hub, #571,
+ * added two companions) are the ones the collection registry
  * (lib/collections.ts `blogUrl` / `guides`) already names as companions of a
  * hub, yet none of them links back. GA4 2026-10-20→11-16 counted ≥20,200
  * Google+Bing+AI landing sessions on the visible top of this set
@@ -79,6 +80,7 @@ export const CROSSLINK_PINS: Readonly<Record<string, { topic: string; why: strin
   '/sims-4-drama-mods/': { topic: 'gameplay-mods', why: 'registry lists it only under pregnancy-mods; a drama-mods reader expects gameplay' },
   '/sims-4-health-mods/': { topic: 'gameplay-mods', why: 'registry lists it only under pregnancy-mods; health mods are gameplay' },
   '/sims-4-romance-mods/': { topic: 'gameplay-mods', why: 'registry lists it only under pregnancy-mods; romance mods are gameplay' },
+  '/sims-4-school-mods/': { topic: 'kids-cc', why: 'listed under kids-cc and, since the career-mods hub (#571), career-mods; kept on kids-cc so the E433 treatment it has had since 11-19 does not change mid-read' },
 };
 
 export const GUIDE_COLLECTION_CROSSLINKS: Readonly<Record<string, GuideCollectionCrosslink>> = {
@@ -113,6 +115,7 @@ export const GUIDE_COLLECTION_CROSSLINKS: Readonly<Record<string, GuideCollectio
   '/sims-4-corset-cc/': { topic: 'tops-cc', title: 'Tops, Shirts, Sweaters & Jackets CC' },
   '/sims-4-cottage-houses/': { topic: 'houses-lots', title: 'Houses & Lots' },
   '/sims-4-cowboy-cc/': { topic: 'clothes-cc', title: 'Clothes CC' },
+  '/sims-4-custom-active-careers/': { topic: 'career-mods', title: 'Career Mods' },
   '/sims-4-decor-cc/': { topic: 'decor-cc', title: 'Decor CC' },
   '/sims-4-drama-mods/': { topic: 'gameplay-mods', title: 'Gameplay Mods' },
   '/sims-4-dress-cc/': { topic: 'dresses-cc', title: 'Dress CC' },
@@ -165,6 +168,7 @@ export const GUIDE_COLLECTION_CROSSLINKS: Readonly<Record<string, GuideCollectio
   '/sims-4-skirt-cc/': { topic: 'bottoms-cc', title: 'Pants, Jeans, Skirts & Shorts CC' },
   '/sims-4-sliders/': { topic: 'body-presets', title: 'Body Presets' },
   '/sims-4-sweater-cc/': { topic: 'tops-cc', title: 'Tops, Shirts, Sweaters & Jackets CC' },
+  '/sims-4-teen-jobs/': { topic: 'career-mods', title: 'Career Mods' },
   '/sims-4-teen-mods/': { topic: 'gameplay-mods', title: 'Gameplay Mods' },
   '/sims-4-thanksgiving-cc/': { topic: 'holidays-cc', title: 'Holiday & Seasonal CC' },
   '/sims-4-tops-cc/': { topic: 'tops-cc', title: 'Tops, Shirts, Sweaters & Jackets CC' },
