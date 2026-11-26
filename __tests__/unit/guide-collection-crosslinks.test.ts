@@ -142,7 +142,13 @@ describe('applyGuideCollectionCrosslink', () => {
     const box = out.indexOf(E433_BOX_CLASS);
     expect(box).toBeGreaterThan(out.indexOf('<p>hi</p>'));
     expect(box).toBeLessThan(out.indexOf('<!-- .entry-content -->'));
-    expect(out).toContain('/games/sims-4/gameplay-mods/');
+    // Read the target from the map (guard the constant, not a copy of it), and pin the
+    // one decision this case stands for: the careers guide links to the Career Mods hub
+    // that names it as its own companion (#571), not to Gameplay Mods as it did until 11-26.
+    const target = GUIDE_COLLECTION_CROSSLINKS['/sims-4-career-mods/'].topic;
+    expect(target).toBe('career-mods');
+    expect(out).toContain(`/games/sims-4/${target}/`);
+    expect(out).not.toContain('/games/sims-4/gameplay-mods/');
     // The closing </div> of entry-content still immediately precedes the marker.
     expect(out).toMatch(/<\/div><\/div><!-- \.entry-content -->/);
     // Nothing before or after the entry content changed.
