@@ -43,6 +43,7 @@ import { buildApprovalEmail } from '../../lib/submissionApprovalEmail';
 import { newModDataFromSubmission } from '../../lib/submissionApprovalProfile';
 import { resolveIngestContentType } from '../../lib/services/contentTypeDetector';
 import { rehostModImages } from '../../lib/services/imageUploader';
+import { resolveApprovalThumbnail } from '../../lib/submissionThumbnail';
 import {
   CURSEFORGE_SIMS4_GAME_ID,
   DEFAULT_PLAN_NAME,
@@ -362,9 +363,15 @@ async function main(): Promise<number> {
         console.log(`  ${row.submissionId}: has a hosted file — skipped (approve in /admin/submissions only)`);
         continue;
       }
+      // Same thumbnail rule as the route: no mod goes live without one.
+      const resolvedThumbnail = resolveApprovalThumbnail({ thumbnail: sub.thumbnail, images: sub.images });
+      if (!resolvedThumbnail) {
+        console.log(`  ${row.submissionId}: no thumbnail — skipped (upload one and approve in /admin/submissions)`);
+        continue;
+      }
       // Same best-effort rehost as the route (Patreon-hosted images only).
-      const { thumbnail, images } = await rehostModImages({ thumbnail: sub.thumbnail, images: sub.images }).catch(() => ({
-        thumbnail: sub.thumbnail,
+      const { thumbnail, images } = await rehostModImages({ thumbnail: resolvedThumbnail, images: sub.images }).catch(() => ({
+        thumbnail: resolvedThumbnail,
         images: sub.images,
       }));
       try {

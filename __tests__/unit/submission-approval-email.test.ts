@@ -143,7 +143,7 @@ function submission(overrides: Record<string, unknown> = {}) {
     gameVersion: null,
     category: 'CAS',
     tags: [],
-    thumbnail: null,
+    thumbnail: 'https://abc123.public.blob.vercel-storage.com/mods/uploads/t.jpg',
     images: [],
     downloadUrl: null,
     sourceUrl: null,
