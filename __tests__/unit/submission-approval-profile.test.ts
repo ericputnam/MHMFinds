@@ -146,7 +146,8 @@ function submission(overrides: Record<string, unknown> = {}) {
     gameVersion: null,
     category: 'Build/Buy',
     tags: [],
-    thumbnail: null,
+    // Approval refuses a submission with no image since #579 (lib/submissionThumbnail.ts).
+    thumbnail: 'https://example.com/thumb.jpg',
     images: [],
     downloadUrl: 'https://example.com/d',
     sourceUrl: null,
