@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
-import { Upload, AlertCircle, CheckCircle2, Loader2, BadgeCheck } from 'lucide-react';
+import { Upload, AlertCircle, CheckCircle2, Loader2, BadgeCheck, ImagePlus, X } from 'lucide-react';
+import { shrinkImageForUpload } from '../../lib/shrinkImageForUpload';
+import { SUBMISSION_IMAGE_REQUIRED } from '../../lib/submissionImage';
 import { Turnstile } from '@marsidev/react-turnstile';
 import {
   CLAIM_BODY_FIELD,
@@ -42,6 +44,26 @@ export default function SubmitModPage() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  // Preview image, already shrunk to a JPEG data URL (lib/shrinkImageForUpload.ts).
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [imageProcessing, setImageProcessing] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageProcessing(true);
+    setErrors(prev => ({ ...prev, image: '' }));
+    try {
+      setImageData(await shrinkImageForUpload(file));
+    } catch (err) {
+      setImageData(null);
+      setErrors(prev => ({ ...prev, image: err instanceof Error ? err.message : 'That image could not be used.' }));
+    } finally {
+      setImageProcessing(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
 
   // Creator claim (E122): the slug of the /creator/[slug]/ page that sent
   // the visitor here. Read from window.location in an effect rather than
@@ -99,6 +121,10 @@ export default function SubmitModPage() {
       newErrors.submitterEmail = 'Please enter a valid email address';
     }
 
+    if (!imageData) {
+      newErrors.image = SUBMISSION_IMAGE_REQUIRED;
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -138,6 +164,7 @@ export default function SubmitModPage() {
         body: JSON.stringify({
           ...formData,
           captchaToken,
+          imageData,
           ...(claimedSlug ? { [CLAIM_BODY_FIELD]: claimedSlug } : {}),
         }),
       });
@@ -157,7 +184,9 @@ export default function SubmitModPage() {
           submitterEmail: '',
         });
         setCaptchaToken(null);
+        setImageData(null);
       } else {
+        if (data.errors?.image) setErrors(prev => ({ ...prev, image: data.errors.image }));
         setSubmitStatus('error');
         setSubmitMessage(data.message || 'Failed to submit mod. Please try again later.');
       }
@@ -378,6 +407,74 @@ export default function SubmitModPage() {
                     {formData.description.length}/2000
                   </p>
                 </div>
+              </div>
+
+              {/* Preview image */}
+              <div>
+                <label htmlFor="modImage" className="block text-sm font-semibold text-white mb-2">
+                  Preview Image <span className="text-red-500">*</span>
+                </label>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  id="modImage"
+                  name="modImage"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                  onChange={handleImageChange}
+                  className="sr-only"
+                />
+                {imageData ? (
+                  <div className="relative rounded-lg overflow-hidden border border-white/10 bg-white/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- a local data URL preview; next/image cannot optimize it */}
+                    <img src={imageData} alt="Preview of your mod image" className="w-full max-h-72 object-contain" />
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => imageInputRef.current?.click()}
+                        className="px-3 py-1.5 rounded-md bg-black/70 text-sm text-white hover:bg-black/90"
+                      >
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImageData(null)}
+                        aria-label="Remove image"
+                        className="p-1.5 rounded-md bg-black/70 text-white hover:bg-black/90"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={imageProcessing}
+                    className={`w-full flex flex-col items-center justify-center gap-2 px-4 py-8 bg-white/5 border border-dashed ${
+                      errors.image ? 'border-red-500' : 'border-white/20'
+                    } rounded-lg text-slate-400 hover:border-sims-pink hover:text-slate-200 transition-all disabled:opacity-60`}
+                  >
+                    {imageProcessing ? (
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    ) : (
+                      <ImagePlus className="h-6 w-6" />
+                    )}
+                    <span className="text-sm font-medium">
+                      {imageProcessing ? 'Preparing image…' : 'Choose an image'}
+                    </span>
+                    <span className="text-xs text-slate-500">JPG, PNG, WebP, GIF or AVIF</span>
+                  </button>
+                )}
+                {errors.image ? (
+                  <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    {errors.image}
+                  </p>
+                ) : (
+                  <p className="mt-2 text-sm text-slate-500">
+                    A screenshot or preview of the mod. This becomes the picture on its mod page.
+                  </p>
+                )}
               </div>
 
               {/* Divider */}

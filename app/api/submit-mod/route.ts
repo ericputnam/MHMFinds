@@ -8,6 +8,8 @@ import { verifyTurnstileToken } from '@/lib/services/turnstile';
 import { emailNotifier } from '@/lib/services/emailNotifier';
 import { CLAIM_SOURCE, parseClaimSlug, pendingProfileHandle } from '@/lib/creatorClaim';
 import { escapeHtml } from '@/lib/escapeHtml';
+import { put } from '@vercel/blob';
+import { decodeSubmissionImage } from '@/lib/submissionImage';
 
 // getServerSession reads request headers; never let this route be
 // evaluated statically.
@@ -105,9 +107,11 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body with Zod
     let validatedData;
     let captchaToken;
+    let imageData: unknown;
     try {
       const body = await request.json();
       captchaToken = body.captchaToken;
+      imageData = body.imageData;
       validatedData = ModSubmissionSchema.parse(body);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -121,6 +125,16 @@ export async function POST(request: NextRequest) {
         );
       }
       throw error;
+    }
+
+    // Preview image (required since 2026-11-26: a mod can't be approved without
+    // one). Checked here, stored on Blob only after every other check passes.
+    const decodedImage = decodeSubmissionImage(imageData);
+    if (!decodedImage.ok) {
+      return NextResponse.json(
+        { success: false, message: decodedImage.error, errors: { image: decodedImage.error } },
+        { status: 400 }
+      );
     }
 
     // Verify CAPTCHA token
@@ -171,6 +185,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Store the preview image. A random suffix keeps one visitor from
+    // overwriting another's file.
+    let imageUrl: string;
+    try {
+      const { image } = decodedImage;
+      const blob = await put(`mods/submissions/preview.${image.extension}`, image.buffer, {
+        access: 'public',
+        contentType: image.contentType,
+        addRandomSuffix: true,
+      });
+      imageUrl = blob.url;
+    } catch (uploadError) {
+      console.error('Submission image upload failed:', (uploadError as Error).message);
+      return NextResponse.json(
+        { success: false, message: 'We could not save your image. Please try again in a minute.' },
+        { status: 502 }
+      );
+    }
+
     // Create submission in database
     const submission = await prisma.modSubmission.create({
       data: {
@@ -181,6 +214,8 @@ export async function POST(request: NextRequest) {
         submitterName,
         submitterEmail,
         submitterIp: ip,
+        thumbnail: imageUrl,
+        images: [imageUrl],
         status: 'pending',
         // E122: tie the row to the signed-in account (null when anonymous —
         // the pre-E122 behaviour) and record which creator page was claimed.
