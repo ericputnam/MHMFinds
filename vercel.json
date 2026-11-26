@@ -12,7 +12,7 @@
       "schedule": "0 */6 * * *"
     },
     {
-      "path": "/api/cron/mod-upload-cleanup",
+      "path": "/api/cron/mod-upload-cleanup/",
       "schedule": "30 4 * * *"
     }
   ],
