@@ -1,0 +1,291 @@
+{
+  "status": "green",
+  "action": "none",
+  "actionDetail": null,
+  "vercelCoverage": {
+    "state": "COMPLETE",
+    "rows": 40,
+    "pages": 2,
+    "oldestMs": 1795099583147,
+    "windowStartMs": 1795323600000,
+    "exhausted": false,
+    "stoppedBy": null,
+    "line": "vercel coverage: COMPLETE (40 rows over 2 pages, oldest 2026-11-19T14:46Z ≤ window start 2026-11-22T05:00Z)",
+    "inWindow": "yes"
+  },
+  "rollbackBound": {
+    "inWindowCount": 5,
+    "rollbackTargetMs": 1795261074075,
+    "windowStartMs": 1795323600000,
+    "maxInWindowDeploys": 24,
+    "maxTargetAgeHours": 48,
+    "line": "rollback bound: in-window production deploys 5 (≤24 to auto-rollback) · target 17.4 h before window start (≤48 h) → eligible",
+    "split": {
+      "build": 2,
+      "paper": 3,
+      "unclassified": 0,
+      "buildRelevant": 2,
+      "total": 5
+    },
+    "splitLine": "rollback bound split (E427, informational — the bound reads all 5): build-relevant 2 ≤ 24 · paper-only 3"
+  },
+  "day": "2026-11-25",
+  "expectedDay": {
+    "date": "expected",
+    "revenue": 211.6725,
+    "sessions": 11566.75,
+    "rpm": 18.29
+  },
+  "actualDay": {
+    "date": "2026-11-25",
+    "revenue": 276.48,
+    "sessions": 13358,
+    "rpm": 20.69
+  },
+  "window3": {
+    "actualRevenue": 847.7900000000001,
+    "expectedRevenue": 624.675,
+    "actualSessions": 40746,
+    "expectedSessions": 35014.5,
+    "actualRpm": 20.80670495263339,
+    "expectedRpm": 17.848039868822692
+  },
+  "rollbackTo": null,
+  "rollbackCandidate": "https://mhm-finds-dw5l-k08erff7g-ericputnams-projects.vercel.app",
+  "changes": [
+    {
+      "kind": "vercel",
+      "at": "2026-11-27T13:15:23.894Z",
+      "ref": "1d11ac8",
+      "text": "READY funnel(ledger): check: morning-check [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-qw9e8fnlq-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T16:34:27.139Z",
+      "ref": "3856eec",
+      "text": "READY fix(seo): the careers guide's crosslink box points at the Career Mods hub (#585) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-6e3hrakjx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T16:28:52.072Z",
+      "ref": "fca4e27",
+      "text": "READY test(funnel): direct-bot-read mirror test follows the Direct selector to scoreboard-channe [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-o2qehux37-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T16:24:40.952Z",
+      "ref": "26ccc70",
+      "text": "READY fix(seo): E433 crosslink map catches up with the career-mods hub (#583) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-apn67fcz0-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T16:20:30.523Z",
+      "ref": "4acd956",
+      "text": "READY test(submissions): approval fixtures carry an image, as #579 now requires (#582) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-cy4qocydz-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T16:06:06.741Z",
+      "ref": "c291b99",
+      "text": "READY funnel(ledger): after-merge: operator session / PR #581 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-h0br3ghul-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T16:02:17.058Z",
+      "ref": "f10a8d6",
+      "text": "READY feat(submissions): require a preview image on /submit-mod (#581) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fh92ks077-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T15:57:14.971Z",
+      "ref": "e861ca8",
+      "text": "READY fix(vercel): mod-upload-cleanup cron path gets its trailing slash; guard every cron path ( [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-qkvgim9wv-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T15:52:51.643Z",
+      "ref": "e44cb10",
+      "text": "READY funnel(ledger): after-merge: operator session / PR #579 [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-ix3cbt392-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-26T15:49:09.606Z",
+      "ref": "d8ab9ed",
+      "text": "READY feat(submissions): require a thumbnail to approve; show the whole hero image (#579) [after judged day — judged tomorrow]",
+      "url": "https://mhm-finds-dw5l-fya8fl9fx-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-23T00:41:00.665Z",
+      "ref": "5f29301",
+      "text": "READY funnel(ledger): after-merge: operator session / PR #578",
+      "url": "https://mhm-finds-dw5l-2bfp2r79t-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-23T00:37:46.897Z",
+      "ref": "b8505ae",
+      "text": "READY feat(submissions): send the approval email from the scripted approval path (#578)",
+      "url": "https://mhm-finds-dw5l-16xjaxk41-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-23T00:31:05.039Z",
+      "ref": "4453f99",
+      "text": "READY funnel(ledger): after-merge: operator session / PR #577",
+      "url": "https://mhm-finds-dw5l-4fhmg9ljj-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-23T00:26:56.865Z",
+      "ref": "67a8d3f",
+      "text": "READY feat(submissions): email the creator from olivia@ when a submission is approved (#577)",
+      "url": "https://mhm-finds-dw5l-gag2zyqal-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "vercel",
+      "at": "2026-11-22T11:39:48.180Z",
+      "ref": "c527b5c",
+      "text": "READY funnel(ledger): check: morning-check",
+      "url": "https://mhm-finds-dw5l-cza41967w-ericputnams-projects.vercel.app"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-27T08:15:19-05:00",
+      "ref": "1d11ac8a",
+      "text": "funnel(ledger): check: morning-check"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T11:34:23-05:00",
+      "ref": "3856eec8",
+      "text": "fix(seo): the careers guide's crosslink box points at the Career Mods hub (#585)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T11:28:48-05:00",
+      "ref": "fca4e27f",
+      "text": "test(funnel): direct-bot-read mirror test follows the Direct selector to scoreboard-channe"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T11:24:37-05:00",
+      "ref": "26ccc704",
+      "text": "fix(seo): E433 crosslink map catches up with the career-mods hub (#583)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T11:20:26-05:00",
+      "ref": "4acd9562",
+      "text": "test(submissions): approval fixtures carry an image, as #579 now requires (#582)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T11:06:02-05:00",
+      "ref": "c291b990",
+      "text": "funnel(ledger): after-merge: operator session / PR #581"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T11:02:13-05:00",
+      "ref": "f10a8d6d",
+      "text": "feat(submissions): require a preview image on /submit-mod (#581)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T10:57:11-05:00",
+      "ref": "e861ca81",
+      "text": "fix(vercel): mod-upload-cleanup cron path gets its trailing slash; guard every cron path ("
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T10:52:48-05:00",
+      "ref": "e44cb101",
+      "text": "funnel(ledger): after-merge: operator session / PR #579"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-26T10:49:05-05:00",
+      "ref": "d8ab9ede",
+      "text": "feat(submissions): require a thumbnail to approve; show the whole hero image (#579)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-22T19:40:57-05:00",
+      "ref": "5f293015",
+      "text": "funnel(ledger): after-merge: operator session / PR #578"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-22T19:37:43-05:00",
+      "ref": "b8505aea",
+      "text": "feat(submissions): send the approval email from the scripted approval path (#578)"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-22T19:31:02-05:00",
+      "ref": "4453f99d",
+      "text": "funnel(ledger): after-merge: operator session / PR #577"
+    },
+    {
+      "kind": "commit",
+      "at": "2026-11-22T19:26:53-05:00",
+      "ref": "67a8d3ff",
+      "text": "feat(submissions): email the creator from olivia@ when a submission is approved (#577)"
+    }
+  ],
+  "health": {
+    "date": "2026/11/27",
+    "ads_txt": "ok",
+    "privacy_policy": "ok"
+  },
+  "reasons": [
+    "Revenue $276.48 (30.6%), RPM 20.69 (13.1%), sessions 15.5% vs same weekday, prior 4 weeks · 3-day revenue 35.7%"
+  ],
+  "sessionsExSegment": {
+    "rule": {
+      "experiment": "E216",
+      "country": "Singapore",
+      "source": "(direct)"
+    },
+    "day": "2026-11-25",
+    "priorDays": [
+      "2026-11-18",
+      "2026-11-11",
+      "2026-11-04",
+      "2026-10-28"
+    ],
+    "raw": {
+      "actual": 13392,
+      "expected": 11741.5
+    },
+    "segment": {
+      "actual": 373,
+      "expected": 353.25,
+      "shareActual": 0.027852449223416967,
+      "shareExpected": 0.030085593833837243
+    },
+    "exSegment": {
+      "actual": 13019,
+      "expected": 11388.25
+    }
+  },
+  "sessionsExSegmentLine": "sessions ex Singapore (direct) (E216, GA4): raw 13,392 vs 11,742 (+14.1%) → ex-segment 13,019 vs 11,388 (+14.3%) · segment 373 = 2.79% of the day (controls 3.01%, 4 same weekdays)",
+  "sessionsExSegmentRpm": {
+    "actual": 21.236654120900223,
+    "expected": 18.58692072969947,
+    "mixPredictedRpmDelta": 0.002302414106052142,
+    "exSegmentRpmDelta": 0.14255903006929072,
+    "read": "rate"
+  },
+  "sessionsExSegmentRpmLine": "ex-segment RPM (E216; Mediavine revenue ÷ GA4 sessions ex Singapore (direct)): $21.24 vs $18.59 (+14.3%) · mix alone predicts raw RPM +0.2% → rate (mix band ±1%)"
+}
