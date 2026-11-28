@@ -45,6 +45,7 @@ import { useFacetOptions, useGameCounts } from '../components/launcher/useLaunch
 import { GRID_FAVORITE_SOURCES } from '../lib/capture/gridFavorite';
 import { useGridFavoriteCapture } from '../lib/capture/useGridFavoriteCapture';
 import { useGridFavoriteIds, isAlreadyFavorited } from '../lib/capture/useGridFavoriteIds';
+import { defaultSortFor, effectiveSort, sortParamFor } from '../lib/searchSort';
 
 interface HomePageClientProps {
   /**
@@ -82,17 +83,19 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'All';
   const initialGameVersion = routeGame ? routeGame.value : searchParams.get('gameVersion') || '';
-  const initialSort = searchParams.get('sort') || 'downloads';
+  // Null until the visitor picks one; see lib/searchSort.ts for the default.
+  const initialSort = searchParams.get('sort');
   const initialContentType = searchParams.get('contentType') || '';
   const initialVisualStyle = searchParams.get('visualStyle') || '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedGameVersion, setSelectedGameVersion] = useState(initialGameVersion);
-  const [sortBy, setSortBy] = useState(initialSort);
+  const [chosenSort, setChosenSort] = useState<string | null>(initialSort);
   const [currentPage, setCurrentPage] = useState(Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1);
   const [contentType, setContentType] = useState(initialContentType);
   const [visualStyle, setVisualStyle] = useState(initialVisualStyle);
+  const sortBy = effectiveSort(chosenSort, searchQuery);
   const [favorites, setFavorites] = useState<string[]>([]);
   useGridFavoriteIds(setFavorites); // signed-in: fill the hearts of mods already saved
   // E279: a signed-out heart tap goes to the save-intent sign-up and the
@@ -129,12 +132,13 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
     if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
     // On a game page the path carries the game.
     if (selectedGameVersion && basePath === '/') params.set('gameVersion', selectedGameVersion);
-    if (sortBy && sortBy !== 'downloads') params.set('sort', sortBy);
+    const sortParam = sortParamFor(chosenSort, searchQuery);
+    if (sortParam) params.set('sort', sortParam);
     if (contentType) params.set('contentType', contentType);
     if (visualStyle) params.set('visualStyle', visualStyle);
     if (creatorParam) params.set('creator', creatorParam);
     return params;
-  }, [basePath, currentPage, searchQuery, selectedCategory, selectedGameVersion, sortBy, contentType, visualStyle, creatorParam]);
+  }, [basePath, currentPage, searchQuery, selectedCategory, selectedGameVersion, chosenSort, contentType, visualStyle, creatorParam]);
 
   /**
    * Update browser URL without navigation
@@ -230,7 +234,9 @@ export default function HomePageClient({ collectionsSlot, collectionStripSlot, r
 
   const handleSortChange = (newSortBy: string) => {
     setCurrentPage(1);
-    setSortBy(newSortBy);
+    // Picking the default for the current view is the same as not choosing,
+    // so a later search still gets "Best matches" (and the URL agrees).
+    setChosenSort(newSortBy === defaultSortFor(searchQuery) ? null : newSortBy);
   };
 
   // Chips narrow the current results; they keep the search query.

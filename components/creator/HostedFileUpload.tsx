@@ -77,6 +77,14 @@ interface Props {
   gameVersion?: string;
   /** Hosting switch already fetched by the parent. When omitted, this component asks. */
   enabled?: boolean | null;
+  /** The form needs this file (the "Upload the file" choice), so the heading must not say "optional". */
+  required?: boolean;
+}
+
+/** The box heading. Only a file the form can do without is "(optional)". */
+export function hostedUploadHeading(replacesExisting: boolean, required: boolean): string {
+  if (replacesExisting) return 'Upload a new version (optional)';
+  return required ? 'Upload the mod file' : 'Host the file on MustHaveMods (optional)';
 }
 
 async function readError(res: Response, fallback: string): Promise<string> {
@@ -131,6 +139,7 @@ export function HostedFileUpload({
   replacesExisting = false,
   gameVersion,
   enabled: enabledProp,
+  required = false,
 }: Props) {
   const fetched = useHostedUploadsEnabled(enabledProp !== undefined);
   const enabled = enabledProp !== undefined ? enabledProp : fetched;
@@ -208,7 +217,7 @@ export function HostedFileUpload({
         <FileArchive className="mt-0.5 h-5 w-5 flex-shrink-0 text-sims-pink" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-white">
-            {replacesExisting ? 'Upload a new version (optional)' : 'Host the file on MustHaveMods (optional)'}
+            {hostedUploadHeading(replacesExisting, required)}
           </p>
           <p className="mt-1 text-xs text-slate-400">
             Upload your {kindListText(game)} (up to {formatBytes(MAX_MOD_FILE_BYTES)}) and players download it
